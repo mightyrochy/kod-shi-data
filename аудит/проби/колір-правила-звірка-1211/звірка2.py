@@ -345,13 +345,17 @@ def перевірки():
     def _бік(src, очі):
         б = PN.бік_b_проти_людини(профіль(src, очі=очі)[0])
         return "%s: вхід %s, бік %s" % (src or "model_hex", б.get("вхід"), б.get("бік"))
+    # Рядок без суфікса — шлях продукту (src None: `model_hex`, з `ZVIRKA_PORTRET=1` — вимір кадру), «·spectro» — найкраще
+    # джерело; доти рядок продукту ганяв лише spectro (наряд Річ-ознаки-обличчя-вимір-портрета)
     for сц, f in (("S1п", s1п), ("S2", s2)):
-        пара("R-COL-16", сц, lambda f=f: ід_є(f(ХОЛ_ВГОРІ, "spectro", очі="#6b4a2a", **({"сценарій": dict(мета="лестити")} if f is s1п else {})), "R-COL-16"),
-             lambda f=f: ід_є(f(ХОЛ_ВГОРІ, "spectro", очі="#3a6fb0", **({"сценарій": dict(мета="лестити")} if f is s1п else {})), "R-COL-16"),
-             lambda f=f: "холодний верх біля обличчя, мета «лестити»: карі очі %s, блакитні %s; свідок боку очей — %s" % (
-                 [x for x in f(ХОЛ_ВГОРІ, "spectro", очі="#6b4a2a", **({"сценарій": dict(мета="лестити")} if f is s1п else {})) if x[0] == "R-COL-16"],
-                 [x for x in f(ХОЛ_ВГОРІ, "spectro", очі="#3a6fb0", **({"сценарій": dict(мета="лестити")} if f is s1п else {})) if x[0] == "R-COL-16"],
-                 "; ".join(_бік(s_, "#6b4a2a") for s_ in (None, "uncontrolled", "protocolized", "spectro"))))
+        for дж in (None, "spectro"):
+            пара("R-COL-16", сц + ("·" + дж if дж else ""),
+                 lambda f=f, дж=дж: ід_є(f(ХОЛ_ВГОРІ, дж, очі="#6b4a2a", **({"сценарій": dict(мета="лестити")} if f is s1п else {})), "R-COL-16"),
+                 lambda f=f, дж=дж: ід_є(f(ХОЛ_ВГОРІ, дж, очі="#3a6fb0", **({"сценарій": dict(мета="лестити")} if f is s1п else {})), "R-COL-16"),
+                 lambda f=f, дж=дж: "холодний верх біля обличчя, мета «лестити»: карі очі %s, блакитні %s; свідок боку очей — %s" % (
+                     [x for x in f(ХОЛ_ВГОРІ, дж, очі="#6b4a2a", **({"сценарій": dict(мета="лестити")} if f is s1п else {})) if x[0] == "R-COL-16"],
+                     [x for x in f(ХОЛ_ВГОРІ, дж, очі="#3a6fb0", **({"сценарій": dict(мета="лестити")} if f is s1п else {})) if x[0] == "R-COL-16"],
+                     "; ".join(_бік(s_, "#6b4a2a") for s_ in (None, "uncontrolled", "protocolized", "spectro"))))
     # ══ R-COL — правила-примітки про простір і вимір: суд на прикладі, де простір чи вимір вирішує ══════
     # R-COL-01 Lab, не hex: запис, де hex і lab розходяться — суд іде за lab
     def _розійшлись(gучно_lab):
@@ -620,7 +624,11 @@ def перевірки():
          lambda: "найдальші: model_hex %s; protocolized %s" % (str((s4п().get("найдальші") or {}).get("словами"))[:60], str((s4п("protocolized").get("найдальші") or {}).get("словами"))[:60]))
     пара("K-PAL-16", "S4п", lambda: False, lambda: False, "палітра з портрета не має компаньйонів: прийом K-PAL-16 — над образом")
     _b_сер = lambda src, очі: round(sum(cs.hx(к["hex"])[2] for к in s4п(src, очі=очі)["кольори"]) / len(s4п(src, очі=очі)["кольори"]), 1)
-    пара("R-COL-16", "S4п", lambda: _b_сер("spectro", "#6b4a2a") != _b_сер("spectro", "#3a6fb0"), lambda: False,
+    # рядок без суфікса — шлях продукту (src None), «·spectro» — найкраще джерело (як R-COL-16 S1п/S2 вище)
+    пара("R-COL-16", "S4п", lambda: _b_сер(None, "#6b4a2a") != _b_сер(None, "#3a6fb0"), lambda: False,
+         lambda: "середнє b* кольорів палітри (шлях продукту): карі очі %s, блакитні %s" % (
+             _b_сер(None, "#6b4a2a"), _b_сер(None, "#3a6fb0")))
+    пара("R-COL-16", "S4п·spectro", lambda: _b_сер("spectro", "#6b4a2a") != _b_сер("spectro", "#3a6fb0"), lambda: False,
          lambda: "середнє b* кольорів палітри (spectro): карі очі %s, блакитні %s; засмагла/світла шкіра (uncontrolled) %s / %s" % (
              _b_сер("spectro", "#6b4a2a"), _b_сер("spectro", "#3a6fb0"),
              round(sum(cs.hx(к["hex"])[2] for к in s4п("uncontrolled", шкіра="#c08a60")["кольори"]) / len(s4п("uncontrolled", шкіра="#c08a60")["кольори"]), 1),
