@@ -151,6 +151,16 @@ try {
     [void](Invoke-Native "$tmpRoot/sleep.cmd" @() '' 0.1)
     $beat = Get-Content "$OutDir/heartbeat.json" -Encoding UTF8 -Raw | ConvertFrom-Json
     Check 'gemini-run: під час очікування CLI пише UTC, смуги й слоти' ($beat.read_utc -match 'Z$' -and $beat.lanes.Count -eq 2)
+    # Розбивка профілю: діти першого рівня й копії `w` (тут поза профілем — окремий вимір); кеш старого вигляду міряється наново
+    # процесом -MeasureProfile (Invoke-ProfileMeasure) і розбивку несе health.json.
+    [void][System.IO.Directory]::CreateDirectory("$tmpRoot/profile/p1"); [System.IO.File]::WriteAllBytes("$tmpRoot/profile/p1/x.bin", (New-Object byte[] 4000))
+    [void][System.IO.Directory]::CreateDirectory("$RunsDir/w/c1"); [System.IO.File]::WriteAllBytes("$RunsDir/w/c1/y.bin", (New-Object byte[] 900))
+    [System.IO.File]::WriteAllText("$RunsDir/health.json", ('{"time":' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + ',"read":"2026-11-11T00:00:00Z","profile":"1","skipped":"0"}'), $utf)
+    $null = Get-GeminiHealth
+    $pm = Get-Variable -Scope Script -Name ProfileMeasure -ValueOnly -ErrorAction SilentlyContinue
+    Check 'gemini-run: кеш без розбивки запускає вимір окремим процесом' ($null -ne $pm -and $pm.WaitForExit(60000) -and $pm.ExitCode -eq 0)
+    $gh = Get-GeminiHealth
+    Check "gemini-run: кеш без розбивки міряється наново — профіль $($gh.profile), теки '$($gh.top)', копії '$($gh.copies)'" ($gh.profile -eq '4000' -and $gh.top -ceq 'p1=4000' -and $gh.copies -ceq 'c1=900')
 
     $gemOut = $OutDir
     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$tmpRoot/owner" -RepoDir $tmpRoot -GeminiOutDir $gemOut -PublishDir "$tmpRoot/exhaust/pub" -GhExe "$tmpRoot/gh.cmd" -LaneDir "$tmpRoot/lanes"

@@ -246,8 +246,8 @@ def main():
                                 other = args.copy()
                                 other[other.index('-Lane') + 1] = 'claude' if lane == 'gemini' else 'gemini'
                                 busy = subprocess.run(other + ['-TestMode', 'busy'], capture_output=True, timeout=45)
-                                check(lane + ': живий наряд з моделлю на карті тримає ворота іншої смуги',
-                                      'модель GPU-наряду на карті' in busy.stdout.decode('utf-8', errors='replace'))
+                                check(lane + ': живий наряд тримає ворота іншої смуги',
+                                      'тримає живий GPU-наряд' in busy.stdout.decode('utf-8', errors='replace'))
                             child = int((d / 'ready').read_text())
                             killed = subprocess.run(['taskkill', '/PID', str(p.pid), '/T', '/F'], capture_output=True)
                             gone = subprocess.run(['tasklist', '/FI', 'PID eq ' + str(child), '/NH', '/FO', 'CSV'], capture_output=True)
