@@ -20,6 +20,9 @@
 import copy
 import re
 
+import пошук_речі as _ПР
+import силует_крої as _СК
+
 ІНСТРУМЕНТИ = {
     "save_scenario": {
         "робить": "зберегти сценарій цієї розмови в збережені сценарії: новим або оновити відкритий",
@@ -123,6 +126,32 @@ import re
             "feel": {"type": "string", "description": "обране відчуття; порожньо, коли вибір знято"}}},
         "показ": "картка під реплікою: яке відчуття погоди обрано — тим самим підписом, що на плитці",
         "функція": "обратиВідчуттяП",
+    },
+    # «ЗНАЙДИ МЕНІ ТАКУ» (наряд Функція-купити-річ, сценарій Б; слово власника 12.11 14:13, 14:18): її опис речі модель
+    # кладе кодами, код добирає речі каталогу, що відповідають кожному коду, і судить кожну для неї (`пошук_речі`).
+    # Переліки кодів — ті самі, що читає пошук (`пошук_речі.ЧИТАЧІ`); крій — ядра (`силует_крої.КРОЇ`).
+    "find_item": {
+        "робить": "знайти в каталозі речі за її описом і оцінити кожну для неї",
+        "для_моделі": "finds catalogue items that match every code of her description; each comes back judged for "
+                      "her",
+        "коли": "she asks to find, show or pick an item to buy by describing it; only codes she named, the rest "
+                "left out",
+        "вхід": {"type": "object", "additionalProperties": False, "required": ["item_type"], "properties": {
+            "item_type": {"type": "string", "enum": _ПР.ЧИТАЧІ["item_type"][1], "description": "kind of item"},
+            "colour": {"type": "string", "enum": _ПР.ЧИТАЧІ["colour"][1], "description": "colour she named"},
+            "length": {"type": "string", "enum": _ПР.ДОВЖИНИ, "description": "length she named"},
+            "cut": {"type": "string", "enum": list(_СК.КРОЇ), "description": "cut she named"},
+            "pattern": {"type": "string", "enum": _ПР.ЧИТАЧІ["pattern"][1], "description": "pattern she named"},
+            "texture": {"type": "string", "enum": _ПР.ЧИТАЧІ["texture"][1],
+                        "description": "fabric surface she named (leather, satin, denim…)"},
+            "shine": {"type": "string", "enum": _ПР.ЧИТАЧІ["shine"][1],
+                      "description": "shine she named; sequins or rhinestones — sequins_rhinestones"}}},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи пошук відбувся"},
+            "catalogue_search": {"type": "object", "description": "варіанти з вердиктами для неї й заяви пошуку"}}},
+        "показ": "картка під реплікою: знайдені речі каталогу (назва, ціна, крамниця) у порядку, в якому код радить; "
+                 "оцінку кожної каже репліка",
+        "функція": "знайтиРічП",
     },
 }
 

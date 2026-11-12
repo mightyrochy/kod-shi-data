@@ -690,6 +690,19 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                                              "verdict": {"$ref": "#/$defs/screen_message"}},
                               "required": ["verdict"]},
                              "вердикт про кожну її річ з фото: заяви кодами"),
+    # «ЗНАЙДИ МЕНІ ТАКУ» (наряд Функція-купити-річ): речі каталогу за її описом — кожна з вердиктом для неї
+    "catalogue_search": {"type": "object", "additionalProperties": False,
+                         "description": "що знайдено в каталозі на її опис речі: result — заяви про сам пошук і котру "
+                                        "річ код радить першою; variants — знайдені речі каталогу, кожна з вердиктом",
+                         "properties": {
+                             "result": {"$ref": "#/$defs/screen_message"},
+                             "variants": _список({"type": "object", "additionalProperties": False,
+                                                  "properties": {"item": dict(_ВІЛЬНИЙ, description="назва речі в крамниці"),
+                                                                 "slot": _перелік("slot", "слот речі"),
+                                                                 "item_type": _перелік("item_type", "вид речі"),
+                                                                 "verdict": {"$ref": "#/$defs/screen_message"}},
+                                                  "required": ["verdict"]},
+                                                 "знайдені речі каталогу в порядку, в якому код їх радить")}},
     # ДОДАНЕ ДО СЦЕНАРІЮ — КОДАМИ (М-1, аудит/ПРОДУКТ.md п.12): доти показ писав це фразою
     # («Додала до сценарію: «…» — твоя річ, вона стане в кожен образ.»)
     "added": {"description": "що додано до сценарію з її слів, сказаних поза екраном сценарію: "
@@ -785,6 +798,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                            "радимо, але можна», і під кольором губ, який вона назвала сама. Вибору "
                            "не блокує ніколи — рамку «вибір лишається твій» дописує сам екран",
     "her_item_verdict": "вердикт про її власну річ: чи підійде вона під цей вихід",
+    "catalogue_search": "що код знайшов у каталозі на її опис речі і котру з знайдених радить першою",
     "her_item_softening": "рядок під її річчю на картці: річ стоїть у кожному образі, і чим решта "
                           "образу її пом'якшує",
     "no_photo_reason": "рядок біля речі на картці: чому в неї нема знімка",
@@ -1140,6 +1154,18 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "buy_first": "of the items she is choosing between, this one is advised first (values: reasons — statement "
                  "codes that set it apart from the others; then — the others in order)",
     "buy_order_tie": "the items she is choosing between came out equal in the code's judgement: the choice is hers",
+    "colour_role_not_judged": "whether the item's colour is a neutral base or an accent was not judged (values: "
+                              "missing — colour_measure: neither a measurement nor a shop colour word places it "
+                              "on one side; a photo of the item in daylight lets it be judged)",
+    # ── «ЗНАЙДИ МЕНІ ТАКУ»: ПОШУК У КАТАЛОЗІ (`пошук_речі`) ──
+    "catalogue_variants_found": "the catalogue has items that match every code of her description; each is shown "
+                                "with the code's judgement for her (values: count — how many; asked — the codes "
+                                "of her description)",
+    "catalogue_has_none": "the catalogue has no item that matches every code of her description; nothing similar "
+                          "is offered in its place (values: asked — the codes of her description)",
+    "catalogue_records_without_code": "some catalogue items of this kind do not state this feature, so the code "
+                                      "cannot tell whether they match and does not show them (values: field — the "
+                                      "feature; count — how many items)",
     # ── ЇЇ РІЧ НА КАРТЦІ: ЧИМ РЕШТА ОБРАЗУ ЇЇ ПОМʼЯКШУЄ (`річ_з_фото.помʼякшення`) ──
     "her_item_in_every_look": "she chose this item herself, so it stands in every outfit",
     "colour_unknown_rest_not_matched": "this item's colour is unknown, as neither a photo measured it nor "

@@ -2274,6 +2274,172 @@
       ]
      }
     },
+    "catalogue_search": {
+     "type": "object",
+     "additionalProperties": false,
+     "description": "що знайдено в каталозі на її опис речі: result — заяви про сам пошук і котру річ код радить першою; variants — знайдені речі каталогу, кожна з вердиктом",
+     "properties": {
+      "result": {
+       "$ref": "#/$defs/screen_message"
+      },
+      "variants": {
+       "description": "знайдені речі каталогу в порядку, в якому код їх радить",
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "item": {
+          "$ref": "#/$defs/free_text",
+          "description": "назва речі в крамниці"
+         },
+         "slot": {
+          "description": "слот речі",
+          "enum": [
+           "top",
+           "bottom",
+           "dress",
+           "set",
+           "outerwear",
+           "shoes",
+           "bag",
+           "scarf",
+           "headwear",
+           "belt",
+           "tights",
+           "socks",
+           "jewelry",
+           "earrings",
+           "collar_necklace",
+           "necklace",
+           "brooch",
+           "bracelet",
+           "ring",
+           "glasses",
+           "gloves",
+           "watch",
+           "swimwear",
+           "underwear",
+           "accessory",
+           "unknown"
+          ]
+         },
+         "item_type": {
+          "description": "вид речі",
+          "enum": [
+           "evening_dress",
+           "cocktail_dress",
+           "suit",
+           "sheath_dress",
+           "sundress",
+           "blazer",
+           "over_knee_boots",
+           "chelsea_boots",
+           "ugg_boots",
+           "ballet_flats",
+           "mules",
+           "espadrilles",
+           "pumps",
+           "dress_shoes",
+           "moccasins",
+           "loafers",
+           "sneakers",
+           "plimsolls",
+           "ankle_boots",
+           "boots",
+           "heeled_sandals",
+           "sandals",
+           "clutch",
+           "backpack",
+           "tote",
+           "baguette_bag",
+           "hobo_bag",
+           "crossbody_bag",
+           "bucket_bag",
+           "belt_bag",
+           "briefcase",
+           "saddle_bag",
+           "hoodie",
+           "sportswear",
+           "loungewear",
+           "leggings",
+           "jeans",
+           "t_shirt",
+           "shirt",
+           "blouse",
+           "knitwear",
+           "cardigan",
+           "sweater",
+           "shorts",
+           "jumpsuit",
+           "skirt",
+           "trousers",
+           "coat",
+           "trench_coat",
+           "jacket",
+           "vest",
+           "top_garment",
+           "stole",
+           "kerchief",
+           "twilly",
+           "snood",
+           "shawl",
+           "bactus_scarf",
+           "ring",
+           "headband",
+           "bow",
+           "hair_clip",
+           "hair_tie",
+           "scarf_generic",
+           "jewelry_generic",
+           "bag_generic",
+           "dress_generic",
+           "two_piece_set",
+           "casual_suit",
+           "bodysuit",
+           "longsleeve",
+           "half_coat",
+           "down_jacket",
+           "fur_coat",
+           "sheepskin_coat",
+           "parka",
+           "raincoat",
+           "rain_cape",
+           "windbreaker",
+           "anorak",
+           "bomber",
+           "poncho",
+           "beanie",
+           "hat",
+           "beret",
+           "cap",
+           "belt",
+           "earrings",
+           "bracelet",
+           "necklace",
+           "collar_necklace",
+           "brooch",
+           "watch",
+           "glasses",
+           "gloves",
+           "tights",
+           "socks",
+           "swimsuit",
+           "lingerie",
+           "unknown"
+          ]
+         },
+         "verdict": {
+          "$ref": "#/$defs/screen_message"
+         }
+        },
+        "required": [
+         "verdict"
+        ]
+       }
+      }
+     }
+    },
     "added": {
      "description": "що додано до сценарію з її слів, сказаних поза екраном сценарію: own_items — її речі (її словами), які стоять у кожному образі; wish — сказане стало побажанням до образів; build_on: scenario_screen — образи з цим збираються кнопкою «Зібрати образи» на екрані «Сценарій»",
      "type": "object",
@@ -4226,6 +4392,272 @@
          }
         }
        }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "find_item"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "item_type"
+         ],
+         "properties": {
+          "item_type": {
+           "type": "string",
+           "enum": [
+            "ankle_boots",
+            "anorak",
+            "backpack",
+            "bactus_scarf",
+            "bag_generic",
+            "baguette_bag",
+            "ballet_flats",
+            "beanie",
+            "belt",
+            "belt_bag",
+            "beret",
+            "blazer",
+            "blouse",
+            "bodysuit",
+            "bomber",
+            "boots",
+            "bow",
+            "bracelet",
+            "briefcase",
+            "brooch",
+            "bucket_bag",
+            "cap",
+            "cardigan",
+            "casual_suit",
+            "chelsea_boots",
+            "clutch",
+            "coat",
+            "cocktail_dress",
+            "collar_necklace",
+            "crossbody_bag",
+            "down_jacket",
+            "dress_generic",
+            "dress_shoes",
+            "earrings",
+            "espadrilles",
+            "evening_dress",
+            "fur_coat",
+            "glasses",
+            "gloves",
+            "hair_clip",
+            "hair_tie",
+            "half_coat",
+            "hat",
+            "headband",
+            "heeled_sandals",
+            "hobo_bag",
+            "hoodie",
+            "jacket",
+            "jeans",
+            "jewelry_generic",
+            "jumpsuit",
+            "kerchief",
+            "knitwear",
+            "leggings",
+            "lingerie",
+            "loafers",
+            "longsleeve",
+            "loungewear",
+            "moccasins",
+            "mules",
+            "necklace",
+            "over_knee_boots",
+            "parka",
+            "plimsolls",
+            "poncho",
+            "pumps",
+            "rain_cape",
+            "raincoat",
+            "ring",
+            "saddle_bag",
+            "sandals",
+            "scarf_generic",
+            "shawl",
+            "sheath_dress",
+            "sheepskin_coat",
+            "shirt",
+            "shorts",
+            "skirt",
+            "sneakers",
+            "snood",
+            "socks",
+            "sportswear",
+            "stole",
+            "suit",
+            "sundress",
+            "sweater",
+            "swimsuit",
+            "t_shirt",
+            "tights",
+            "top_garment",
+            "tote",
+            "trench_coat",
+            "trousers",
+            "twilly",
+            "two_piece_set",
+            "ugg_boots",
+            "vest",
+            "watch",
+            "windbreaker"
+           ],
+           "description": "kind of item"
+          },
+          "colour": {
+           "type": "string",
+           "enum": [
+            "beige",
+            "black",
+            "blue",
+            "brick",
+            "brown",
+            "burgundy",
+            "camel",
+            "cappuccino",
+            "cherry",
+            "chocolate",
+            "cocoa",
+            "coral",
+            "cream",
+            "creamy",
+            "denim_blue",
+            "electric_blue",
+            "emerald",
+            "fuchsia",
+            "ginger",
+            "golden",
+            "graphite",
+            "green",
+            "grey",
+            "khaki",
+            "latte",
+            "lemon",
+            "light_blue",
+            "lilac",
+            "magenta",
+            "milky",
+            "mint",
+            "mocha",
+            "mustard",
+            "navy",
+            "olive",
+            "orange",
+            "peach",
+            "pearly",
+            "petrol",
+            "pine_green",
+            "pink",
+            "plum",
+            "powder",
+            "powder_pink",
+            "purple",
+            "raspberry",
+            "red",
+            "rose",
+            "sand",
+            "silvery",
+            "soft_pink",
+            "taupe",
+            "terracotta",
+            "turquoise",
+            "white",
+            "yellow"
+           ],
+           "description": "colour she named"
+          },
+          "length": {
+           "type": "string",
+           "enum": [
+            "knee",
+            "maxi",
+            "mid_thigh",
+            "midi",
+            "mini",
+            "waist"
+           ],
+           "description": "length she named"
+          },
+          "cut": {
+           "type": "string",
+           "enum": [
+            "skinny",
+            "straight",
+            "tapered",
+            "wide",
+            "flared",
+            "culottes",
+            "pencil",
+            "a-line",
+            "full",
+            "pleated",
+            "bias-slip",
+            "bodycon",
+            "fitted",
+            "regular",
+            "relaxed",
+            "oversized",
+            "belted",
+            "wrap",
+            "peplum",
+            "shift",
+            "sheath",
+            "empire",
+            "double-breasted"
+           ],
+           "description": "cut she named"
+          },
+          "pattern": {
+           "type": "string",
+           "enum": [
+            "abstract",
+            "animal_print",
+            "camouflage",
+            "check",
+            "embroidery",
+            "floral",
+            "geometric",
+            "lace_motif",
+            "polka_dot",
+            "print_generic",
+            "solid",
+            "stripes"
+           ],
+           "description": "pattern she named"
+          },
+          "texture": {
+           "type": "string",
+           "enum": [
+            "denim",
+            "knit_fine",
+            "leather",
+            "patent",
+            "satin",
+            "silk_shine",
+            "smooth_matte",
+            "tweed_boucle"
+           ],
+           "description": "fabric surface she named (leather, satin, denim…)"
+          },
+          "shine": {
+           "type": "string",
+           "enum": [
+            "matte",
+            "soft_lustre",
+            "gloss",
+            "sequins_rhinestones"
+           ],
+           "description": "shine she named; sequins or rhinestones — sequins_rhinestones"
+          }
+         }
+        }
+       }
       }
      ],
      "properties": {
@@ -4238,7 +4670,8 @@
         "new_scenario",
         "switch_profile",
         "confirm_case",
-        "set_weather_feel"
+        "set_weather_feel",
+        "find_item"
        ]
       },
       "args": {
@@ -4302,6 +4735,10 @@
       {
        "const": "her_item_verdict",
        "description": "вердикт про її власну річ: чи підійде вона під цей вихід"
+      },
+      {
+       "const": "catalogue_search",
+       "description": "що код знайшов у каталозі на її опис речі і котру з знайдених радить першою"
       },
       {
        "const": "her_item_softening",
@@ -4937,6 +5374,22 @@
          {
           "const": "buy_order_tie",
           "description": "the items she is choosing between came out equal in the code's judgement: the choice is hers"
+         },
+         {
+          "const": "colour_role_not_judged",
+          "description": "whether the item's colour is a neutral base or an accent was not judged (values: missing — colour_measure: neither a measurement nor a shop colour word places it on one side; a photo of the item in daylight lets it be judged)"
+         },
+         {
+          "const": "catalogue_variants_found",
+          "description": "the catalogue has items that match every code of her description; each is shown with the code's judgement for her (values: count — how many; asked — the codes of her description)"
+         },
+         {
+          "const": "catalogue_has_none",
+          "description": "the catalogue has no item that matches every code of her description; nothing similar is offered in its place (values: asked — the codes of her description)"
+         },
+         {
+          "const": "catalogue_records_without_code",
+          "description": "some catalogue items of this kind do not state this feature, so the code cannot tell whether they match and does not show them (values: field — the feature; count — how many items)"
          },
          {
           "const": "her_item_in_every_look",
