@@ -36,6 +36,7 @@ import схема_відповіді as _СВ
 import збирач_промптів as _ЗП
 import спільні_вимоги as _ВИМ
 import річ_з_фото as _РФ
+import суд_покупки as _СП
 import brief as _БР  # щаблі ошатності кодами (НГ-3)
 import дріт_моделі as _Д
 import оцінка_образу as _ОО  # ід її речей на дроті латинкою
@@ -71,6 +72,12 @@ import міст_помічниця as _МП  # запобіжник обіцян
         _ЗП.Поле("photos", "which attached image (in order) shows which item: [{photo, item}]",
                  без="No image is attached: judge only by the item descriptions."),
         _ВИМ.поле("case", без="The occasion is not known yet."),
+        # ВИБІР МІЖ РЕЧАМИ, ЯКІ ВОНА ХОЧЕ КУПИТИ (наряд Функція-купити-річ; дошка 14719): порядок і причина першої —
+        # код (`суд_покупки.вибір`), модель їх лише каже
+        _ЗП.Поле("choice", "the code's comparison of the items she is choosing whether to buy: which is advised "
+                           "first and why — statement codes",
+                 "do not contradict \"choice\"",
+                 без="She is not choosing between items to buy."),
     ),
     правила=(
         "Answer exactly what she asked about her look: whether the item suits her and this "
@@ -79,7 +86,11 @@ import міст_помічниця as _МП  # запобіжник обіцян
         # «без пальта» — ні речі, ні міста, ні пальта в її словах і в `case` не було.
         "When she has shown or described no item, speak of no particular item.",
         _ВИМ.БЕЗ_КАТАЛОГУ,
-        "Two to four sentences.",
+        # «Two to four sentences» на п'ять речей причин про кожну не вміщало (проба 12.11, дошка 14723)
+        "About one item, two to four sentences. About several items, one or two sentences on each — how it sits on "
+        "her, its colour and what to wear it with — and one on which to buy first and why, as \"choice\" says.",
+        "Say an item suits her only when its verdict says so. What its verdict says was not judged, say plainly, "
+        "with what she can send so that it is judged.",
         # На українське питання 4 з 11 відповідей — українською, одна на «ви».
         # З правилом «Write in the language…» — українською 3 з 3: межа «для_неї» вимагала від
         # англійського тексту «familiar singular» і «feminine grammatical gender». Мову й граматику тепер несе межа
@@ -136,8 +147,11 @@ def промпт(питання, речі=None, паспорт=None, сцена�
     прикріплено до яких речей. Фото без речі в паспорті не згадується."""
     речі = [р for р in речі or [] if isinstance(р, dict) and р.get("ід")]
     за_фото = {р.get("фото"): р.get("ід") for р in речі if р.get("фото")}
+    кандидати = {_ОО.ід_на_дріт(р["ід"]): р.get("вердикт") for р in речі
+                 if р.get("чия") == "хочу купити" and isinstance(р.get("вердикт"), dict)}
     дані = dict(question=str(питання or "").strip(),
                 items=[_річ(р) for р in речі],
+                choice=_СП.вибір(кандидати)["заяви"],
                 photos=[dict(photo=_ОО.ід_на_дріт(ф), item=_ОО.ід_на_дріт(за_фото[ф]))
                         for ф in фото_речей or [] if ф in за_фото],
                 case=_випадок(паспорт, сценарій))
