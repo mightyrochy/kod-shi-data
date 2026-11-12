@@ -399,6 +399,26 @@ function Get-Lane([string]$Model) {
     'agy'
 }
 
+# Клас моделі за назвою: код — flash, проєктування — pro; інше — без каскаду.
+function Get-ModelClass([string]$Model) {
+    $t = @(Get-NameTokens $Model)
+    if ($t -contains 'flash') { return 'code' }
+    if ($t -contains 'pro') { return 'design' }
+    ''
+}
+
+# Каскад моделей «проєктування» (pro): наступна за пулом після самої моделі позначки; далі лише Codex (-CodexFallbackModel).
+$script:ClaudeCascadeModel = 'claude-opus-5-5-high'
+
+# Кандидати каскаду за порядком: модель позначки → [claude-opus-5-5-high для проєктування] → Codex (CodexModel, якщо задано).
+# Єдиний порядок: gemini_run.ps1 (Get-Cascade, Select-Engine) вибирає за ним рушій, claude_run.ps1 (Get-CascadeZero) — чи є що брати.
+function Get-CascadePlan([string]$Model, [string]$CodexModel = '') {
+    $c = @($Model)
+    if ((Get-ModelClass $Model) -eq 'design') { $c += $script:ClaudeCascadeModel }
+    if ($CodexModel) { $c += $CodexModel }
+    $c
+}
+
 function ConvertTo-Marker([string]$Line) {
     <# Рядок for-each-ref (посилання, SHA, час коміту) -> позначка; Valid=$false — назва не за форматом. #>
     $f = $Line -split "`t"
@@ -745,22 +765,52 @@ function Get-WaitingMarkers {
 
 # --- здоров'я машини (лише показ, узяття не гейтить) ----------------------------------------------------------------
 
-function Measure-DirBytes([string]$Path) {
-    <# Розмір названої теки без переходу за точками з'єднання (профіль має петлі); недоступні теки — лічбою Skipped. #>
+function Measure-DirBytes([string]$Path, [string]$Under = '', [switch]$Breakdown) {
+    <# Розмір названої теки без переходу за точками з'єднання (профіль має петлі); недоступні теки — лічбою Skipped.
+    -Breakdown у тому самому обході додає суми за дітьми першого рівня (Top) і за дітьми теки $Under, що лежить усередині
+    $Path (Under): усі пари Name/Bytes з вагою понад нуль за спаданням; файли просто в корені — під іменем «(файли)». #>
     if (-not $Path -or -not (Test-Path -LiteralPath $Path -PathType Container)) { return $null }
     $bytes = 0L; $skipped = 0
+    $kids = @{}; $sub = @{}
+    $underFull = $(if ($Under) { [IO.Path]::GetFullPath($Under).TrimEnd('\', '/') } else { '' })
     $stack = New-Object System.Collections.Stack
-    $stack.Push((New-Object System.IO.DirectoryInfo $Path))
+    $stack.Push(@((New-Object System.IO.DirectoryInfo $Path), '', ''))
     while ($stack.Count -gt 0) {
-        $d = $stack.Pop()
+        $it = $stack.Pop(); $d = $it[0]
         try {
             foreach ($e in $d.EnumerateFileSystemInfos()) {
                 if ($e.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { continue }
-                if ($e -is [System.IO.DirectoryInfo]) { $stack.Push($e) } else { $bytes += $e.Length }
+                $tk = $it[1]; $uk = $it[2]
+                if ($Breakdown -and $e -is [System.IO.DirectoryInfo]) {
+                    if ($tk -eq '') { $tk = $e.Name }
+                    if ($underFull -and $d.FullName.TrimEnd('\', '/') -ieq $underFull) { $uk = $e.Name }
+                }
+                if ($e -is [System.IO.DirectoryInfo]) { $stack.Push(@($e, $tk, $uk)); continue }
+                $bytes += $e.Length
+                if ($Breakdown) {
+                    $k = $(if ($tk -eq '') { '(файли)' } else { $tk })
+                    $kids[$k] = [long]$kids[$k] + $e.Length
+                    if ($uk) { $sub[$uk] = [long]$sub[$uk] + $e.Length }
+                }
             }
         } catch { $skipped++ }
     }
-    [pscustomobject]@{ Bytes = $bytes; Skipped = $skipped }
+    $largest = { param($h) @($h.GetEnumerator() | Where-Object { $_.Value -gt 0 } | Sort-Object Value -Descending | ForEach-Object { [pscustomobject]@{ Name = [string]$_.Key; Bytes = [long]$_.Value } }) }
+    [pscustomobject]@{ Bytes = $bytes; Skipped = $skipped; Top = @(& $largest $kids); Under = @(& $largest $sub) }
+}
+
+function ConvertTo-SizeList($Rows) {
+    <# Пари Name/Bytes — рядок «назва=байти;…» для heartbeat; назви без службових знаків: рядок читає розбір недовіреного файла. #>
+    @(foreach ($r in @($Rows)) {
+        $n = [regex]::Replace([string]$r.Name, '[^\p{L}\p{N}._ -]', '_')
+        "$n=$([long]$r.Bytes)"
+    }) -join ';'
+}
+
+function ConvertFrom-SizeList([string]$Text) {
+    <# Обернене до ConvertTo-SizeList: пари Name/Bytes лише за форматом, решта відкидається. #>
+    @(($Text -split ';') | Where-Object { $_ -cmatch '^[\p{L}\p{N}._ -]+=[0-9]{1,15}$' } | ForEach-Object {
+        $i = $_.LastIndexOf('='); [pscustomobject]@{ Name = $_.Substring(0, $i); Bytes = [long]$_.Substring($i + 1) } })
 }
 
 function Get-Unsourced($Limits) {
@@ -1067,9 +1117,9 @@ function Start-GpuModels($Job) {
 function Enter-GpuLease($Job) {
     <# Допуск GPU-наряду в процесі наряду; '' — допущено, інакше причина, і позначка лишається в черзі.
 
-    Ворота `gpu.lock` тримаються лише на час рішення, а не весь прогін: наряд, що готується, качає чи думає хмарною
-    моделлю, карти не займає й інших GPU-нарядів не тримає. Під воротами — прибирання мертвих оренд, карта без моделей
-    живих GPU-нарядів (Get-GpuSessionReason), вільна пам'ять (Test-ExternalGpuFree), приєднання до сесії. #>
+    Ворота `gpu.lock` тримаються лише на час рішення; весь прогін карту тримає замок оренди (Start-GpuModels). Під
+    воротами — прибирання мертвих оренд, жодної живої оренди (Get-GpuSessionReason), вільна пам'ять
+    (Test-ExternalGpuFree), приєднання до сесії. #>
     $gate = Open-Lock (Get-GpuLockPath)
     if ($null -eq $gate) { return 'замок GPU' }
     try {
@@ -1334,9 +1384,24 @@ function Close-TaskCopy([string[]]$Delivered) {
     Remove-TaskCopy $c.Dir $Delivered
 }
 
+function Reset-TreeAcl([string]$Dir) {
+    <# Знімає з дерева заборони, що лишив обірваний прогін: deny на читання теки робить дерево непрохідним навіть для
+    власника, і `Remove-Item` падає щоразу. Усі ACL дерева стають успадкованими від батька (`icacls /reset`: власнику
+    вистачає неявних READ_CONTROL і WRITE_DAC, прав адміністратора не треба); поза Windows — `chmod -R u+rwX`.
+    Повертає, чи команда відпрацювала. #>
+    try {
+        $r = $(if ($env:OS -eq 'Windows_NT') { Invoke-Native 'icacls.exe' @($Dir, '/reset', '/T', '/C', '/L', '/Q') }
+               else { Invoke-Native 'chmod' @('-R', 'u+rwX', '--', $Dir) })
+        $r.Code -eq 0
+    } catch { $false }
+}
+
 function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
     <# Тека задачі чи давня робоча копія слота — геть, коли голова не несе комітів поза $Delivered (`rev-list --not`).
-    Несе — тека лишається з `kept.txt`, гілку звільнено, повертає шлях теки; інакше ''. #>
+    Несе — тека лишається з `kept.txt`, гілку звільнено, повертає шлях теки; інакше ''.
+    Прибирання не залежить від заборон у копії: тека, яку не можна перелічити (вимір дав недоступні теки), чи видалення
+    з UnauthorizedAccess — спершу Reset-TreeAcl, тоді ще раз; зайнятий іншим процесом файл — тимчасовий стан, його лишає
+    наступне прибирання. У журнал — звільнені байти (вимір до видалення, після скидання ACL — повний). #>
     $repo = $(if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { $Dir } else { Join-Path $Dir 'repo' })
     if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
         $n = 0
@@ -1347,11 +1412,24 @@ function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
             Write-Log "копія задачі $Dir лишається: недоставлених комітів голови $n"
             return $Dir
         }
-        [void](Invoke-Git @('worktree', 'remove', '-f', '-f', $repo) -AllowFail)
     }
+    $freed = 0L; $reset = $false; $existed = Test-Path -LiteralPath $Dir
+    $m = Measure-DirBytes $Dir
+    if ($null -ne $m -and $m.Skipped -gt 0) { $reset = Reset-TreeAcl $Dir; $m = Measure-DirBytes $Dir }
+    if ($null -ne $m) { $freed = $m.Bytes }
+    if (Test-Path -LiteralPath (Join-Path $repo '.git')) { [void](Invoke-Git @('worktree', 'remove', '-f', '-f', $repo) -AllowFail) }
     if (Test-Path -LiteralPath $Dir) {
-        try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { Write-Log "копія задачі $Dir не прибрана: $($_.Exception.Message)" }
+        try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop }
+        catch {
+            $first = $_.Exception
+            if ($first.GetBaseException() -is [UnauthorizedAccessException] -and -not $reset) {
+                $reset = Reset-TreeAcl $Dir
+                try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { $first = $_.Exception }
+            }
+            if (Test-Path -LiteralPath $Dir) { Write-Log "копія задачі $Dir не прибрана: $($first.Message)" }
+        }
     }
+    if ($existed -and -not (Test-Path -LiteralPath $Dir)) { Write-Log "копія задачі $Dir прибрана: звільнено $freed байт$(if ($reset) { ' (ACL скинуто)' })" }
     [void](Invoke-Git @('worktree', 'prune') -AllowFail)
     ''
 }
@@ -1866,26 +1944,22 @@ function Test-ExternalGpuFree([switch]$LogAcquisition) {
 }
 
 function Get-GpuSessionReason {
-    <# Чи тримають карту GPU-наряди: живий наряд обох облікових записів має на ній модель, завантажену після початку сесії
-    (екземпляр LM Studio поза before), — зайнята; запис без живих оренд чи пошкоджений — прибирання ще не відбулось.
-    Оренда без моделі карти не тримає: така карта ділиться за пам'яттю (Get-GpuLoad). '' — сесія не заважає. #>
+    <# Чи тримають карту GPU-наряди: жива оренда будь-якого облікового запису — зайнята, хоч би яка модель на карті цієї миті;
+    запис без живих оренд чи пошкоджений — прибирання ще не відбулось. '' — сесії нема.
+
+    Карту тримає оренда, а не знімок LM Studio: живий прогін вантажить і вивантажує моделі між кроками, і знімок у
+    проміжку порожній — так допуск пустив другий GPU-наряд поруч із живим, і обидва ділили :1234 і стенд. Оренда живе,
+    доки процес наряду тримає її замок: сон і пауза (призупинений процес) його не відпускають, перезапуск планувальника
+    не чіпає процесу наряду, а смерть наряду відпускає замок — мертву оренду прибирає наступний прохід. #>
     try { $s = Read-GpuSession } catch { $s = $false }
     if ($null -eq $s) { return '' }
-    if ($false -eq $s -or @(Get-LiveGpuLeases $s).Count -eq 0) {
+    $live = @(if ($false -ne $s) { Get-LiveGpuLeases $s })
+    if ($live.Count -eq 0) {
         $script:GpuHoldReason = 'незакритий знімок моделей GPU'
         return 'GPU: незакритий знімок моделей попереднього наряду (lanes/gpu-models.json)'
     }
-    $before = @($s.Before | ForEach-Object { [string]$_.id })
-    try { $new = @(Get-LmsInstances | Where-Object { $before -cnotcontains $_.id }) }
-    catch {
-        $script:GpuHoldReason = 'LM Studio недоступний на :1234'
-        return 'GPU: LM Studio недоступний на :1234 — неможливо перевірити моделі живих GPU-нарядів'
-    }
-    if ($new.Count) {
-        $script:GpuHoldReason = 'модель GPU-наряду на карті'
-        return "GPU: модель GPU-наряду на карті ($(@($new | ForEach-Object { $_.model }) -join ', '))"
-    }
-    ''
+    $script:GpuHoldReason = 'замок GPU іншого наряду'
+    "GPU: її тримає живий GPU-наряд ($(@($live | ForEach-Object { $_.marker }) -join ', '))"
 }
 
 $script:GpuHoldReason = ''
@@ -1894,7 +1968,7 @@ function Get-GpuBusyReason([switch]$LockHeld) {
     <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
     GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без числових показників). LockHeld — ворота GPU
     тримає сам викликач (процес наряду в Enter-GpuLease): причина — сторонній процес, а не «замок тримає інший процес».
-    Свій живий GPU-наряд сам по собі карти не тримає — лише його модель на карті (Get-GpuSessionReason) чи пам'ять. #>
+    Живий GPU-наряд будь-якого облікового запису тримає карту весь прогін (Get-GpuSessionReason). #>
     $script:GpuHoldReason = ''
     if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
     $why = Get-GpuSessionReason
@@ -2018,9 +2092,10 @@ function Get-UtcProp($Obj, [string]$Name) {
     [string]$v
 }
 
-function Update-Idle([bool]$Busy, [scriptblock]$Send, [bool]$Reset = $false) {
+function Update-Idle([bool]$Busy, [scriptblock]$Send, [bool]$Reset = $false, [string]$Why = '') {
     <# idle.json у теці стану: busy_utc — останній прохід із роботою; since — початок простою (порожній, доки є робота);
-    sent — рядок ПРОСТІЙ цього простою доставлено в теку вихідних. Новий рядок — лише після нової роботи. #>
+    sent — рядок ПРОСТІЙ цього простою доставлено в теку вихідних. Новий рядок — лише після нової роботи. $Why — причина
+    (` QUOTA0 <N> <ГРУПИ> <скидання UTC|->`): усі позначки черги чекають рушіїв з нульовою квотою; порожній — черга порожня. #>
     $path = Join-Path $script:StateDir 'idle.json'
     $now = Get-UtcStamp (Get-Date)
     $prev = $null
@@ -2039,7 +2114,7 @@ function Update-Idle([bool]$Busy, [scriptblock]$Send, [bool]$Reset = $false) {
     if (-not $sent) {
         $from = [datetime]::ParseExact($since, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
         $min = [Math]::Max(0, [int][Math]::Floor(([datetime]::UtcNow - $from).TotalMinutes))
-        if (& $Send "GEMINI ОБГОРТКА: ПРОСТІЙ $since $min") { $sent = $true }
+        if (& $Send "GEMINI ОБГОРТКА: ПРОСТІЙ $since $min$Why") { $sent = $true }
     }
     $busyUtc = $(if ($null -ne $prev -and -not $Reset) { (Get-UtcProp $prev 'busy_utc') } else { '' })
     Write-FileAtomic $path ((@{ busy_utc = $busyUtc; since = $since; sent = $sent }) | ConvertTo-Json -Compress)

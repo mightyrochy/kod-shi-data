@@ -138,7 +138,7 @@ function текстП(вузол, т){ if (вузол.textContent !== т) наз
 const ПРОЗА_ВУЗЛА_П = new WeakMap();
 function прозаП(вузол, т, свої){
   if (ПРОЗА_ВУЗЛА_П.get(вузол) === т) return;
-  ПРОЗА_ВУЗЛА_П.set(вузол, т); текстЖінціП(вузол, т, undefined, свої);
+  ПРОЗА_ВУЗЛА_П.set(вузол, т); текстЖінціП(вузол, т, 'evaluation_item_name_failed', свої);
 }
 function оновитиРядокП(б, р, п){
   const відкр = п.відкрито === р.ід;
@@ -202,7 +202,7 @@ function наповнитиКолаП(ред, ід){
   ред.колаВузол.innerHTML = ''; ред.кола.clear();
   п.довідник.кольори.filter(к=>п.всіКольори || к.часто).forEach(к=>{
     const б = ел('button', 'оц-коло'); б.type = 'button';
-    б.style.background = к.hex; текстЖінціП(б, к.ключ, 'without_text', своїЕкрануП(), 'title'); текстЖінціП(б, к.ключ, 'without_text', своїЕкрануП(), 'aria-label'); б.dataset.код = к.код;
+    б.style.background = к.hex; текстЖінціП(б, к.ключ, 'evaluation_color_failed', своїЕкрануП(), 'title'); текстЖінціП(б, к.ключ, 'evaluation_color_failed', своїЕкрануП(), 'aria-label'); б.dataset.код = к.код;
     б.onclick = ()=>{ дотикП(); виправитиПерелікП([{op: 'set', item: ід, color: к.код}]); };
     ред.колаВузол.appendChild(б); ред.кола.set(к.ключ, б);
   });
@@ -432,25 +432,25 @@ function малюватиКарткуОцінкиП(){
     const і = ел('img'); і.src = урлФотоП(ф); і.alt = 'твоє фото'; о.appendChild(і); вн.appendChild(о); });
   кол.appendChild(вн); кп.appendChild(кол); д.appendChild(кп);
   const т = ел('div', 'к-текст');
-  т.appendChild(елЖінціП('div', 'текст-образу оц-відповідь', с.відповідь || '', undefined, своїЕкрануП()));
+  т.appendChild(елЖінціП('div', 'текст-образу оц-відповідь', с.відповідь || '', 'evaluation_verdict_failed', своїЕкрануП()));
   if ((с.вдало || []).length){
     т.appendChild(ел('h3', null, 'Що вдало'));
     const з = ел('div', 'задум оц-вдало');
-    с.вдало.filter(п=>п.текст).forEach(п=>з.appendChild(елЖінціП('div', null, п.текст, undefined, своїЕкрануП()))); т.appendChild(з);
+    с.вдало.filter(п=>п.текст).forEach(п=>з.appendChild(елЖінціП('div', null, п.текст, 'evaluation_works_failed', своїЕкрануП()))); т.appendChild(з);
   }
   if ((с.змінити || []).length){
     т.appendChild(ел('h3', null, 'Що змінити'));
     const сп = ел('div', 'список оц-зміни'); с.змінити.forEach(з=>сп.appendChild(рядокЗміниП(з, р))); т.appendChild(сп);
   }
   const нема = рядокНемаНаФотоП(с.нема_на_фото);
-  if (нема) т.appendChild(елЖінціП('div', 'задум оц-нема-на-фото', нема, undefined, своїЕкрануП()));
+  if (нема) т.appendChild(елЖінціП('div', 'задум оц-нема-на-фото', нема, 'evaluation_absent_failed', своїЕкрануП()));
   if ((с.не_знаю || []).some(п=>п.текст || (МОДЕЛЬ_МОВИ_П && (п.входи || []).length))){
     const дт = ел('details', 'розкривач оц-не-знаю'); дт.appendChild(ел('summary', null, 'Чого я не знаю'));
     const з = ел('div', 'задум');
     const етапи = ОЦ.етапи;
     const рядки = ()=>{
       з.innerHTML = '';
-      с.не_знаю.filter(п=>п.текст).forEach(п=>з.appendChild(елЖінціП('div', null, п.текст, undefined, своїЕкрануП())));   /* без слів шару рядка нема (5274) */
+      с.не_знаю.filter(п=>п.текст).forEach(п=>з.appendChild(елЖінціП('div', null, п.текст, 'evaluation_unknown_failed', своїЕкрануП())));   /* без слів шару рядка нема (5274) */
     };
     const стан = ПЕРЕКЛАД_НЕВІДОМОГО_ОЦІНКИ_П.get(с);
     if (!МОДЕЛЬ_МОВИ_П || (стан && стан.готово)) рядки();
@@ -475,7 +475,7 @@ function малюватиКарткуОцінкиП(){
 function рядокЗміниП(з, р){
   if ((з.зміна || {}).звідки === 'own' && ((з.зміна || {}).складові || []).length > 1){
     const група = ел('div', 'оц-спільна-зміна');
-    група.appendChild(елЖінціП('div', 'назва', з.текст || '', undefined, своїЕкрануП()));
+    if (з.текст) група.appendChild(елЖінціП('div', 'назва', з.текст, 'evaluation_change_failed', своїЕкрануП()));
     const речі = ел('div', 'список');
     з.зміна.складові.forEach(ч=>речі.appendChild(рядокЗміниП({текст: '', зміна: {...ч, звідки: 'own'}}, р)));
     група.appendChild(речі);
@@ -491,21 +491,21 @@ function рядокЗміниП(з, р){
        мусить бачити, яку саме має на увазі зміна (ручний огляд стенда, сцена 6) */
     if (ф){ і.src = урлФотоП(ф); кадрРечіУрлП(ф, річ.рамка).then(у=>{ if (у) і.src = у; }); }
     else і.style.visibility = 'hidden';
-    н.appendChild(елЖінціП('span', 'назва', з.текст || '', undefined, своїЕкрануП()));
+    if (з.текст) н.appendChild(елЖінціП('span', 'назва', з.текст, 'evaluation_change_failed', своїЕкрануП()));
     н.appendChild(ел('div', 'під', 'твоя річ з фото'));
   } else {
     const х = зм.річ || {};
     /* те саме, що на картці (Ф-143): кадри вичерпались — силует, а не порожній квадрат */
     if (х.фото) підставитиКадр(і, х, ()=>{ і.replaceWith(силуетКадру()); }); else і.style.visibility = 'hidden';
-    н.appendChild(елЖінціП('span', 'назва оц-чому', з.текст || '', undefined, своїЕкрануП()));
+    if (з.текст) н.appendChild(елЖінціП('span', 'назва оц-чому', з.текст, 'evaluation_change_failed', своїЕкрануП()));
     /* назва — з `міст_опис.показ`, як на картках рук: її пише код каталогу, тож вона йде прозою з назвами
        каталогу як своїми словами, як у списку картки (паспорт Е2-текст-жінці, 05.11) */
     const своїРечі = своїЕкрануП({речі: [х]});
-    if (х.урл){ const л = елЖінціП('a', null, х.назва || '', undefined, своїРечі); л.href = х.урл; л.target = '_blank'; л.rel = 'noopener'; н.appendChild(л); }
-    else if (х.назва) н.appendChild(елЖінціП('span', 'назва', х.назва, undefined, своїРечі));
+    if (х.урл){ const л = елЖінціП('a', null, х.назва || '', 'evaluation_item_name_failed', своїРечі); л.href = х.урл; л.target = '_blank'; л.rel = 'noopener'; н.appendChild(л); }
+    else if (х.назва) н.appendChild(елЖінціП('span', 'назва', х.назва, 'evaluation_item_name_failed', своїРечі));
     const під = ел('div', 'під');
-    if (х.крамниця){ const тв = document.createTextNode(''); текстЖінціП(тв, підписЗНазвоюП([{назва: String(х.крамниця)}, х.ціна ? ' · ' : '']), undefined, undefined, 'data'); під.appendChild(тв); }
-    if (х.ціна) під.appendChild(елЖінціП('span', 'ціна', грн(х.ціна)));
+    if (х.крамниця){ const тв = document.createTextNode(''); текстЖінціП(тв, підписЗНазвоюП([{назва: String(х.крамниця)}, х.ціна ? ' · ' : '']), 'evaluation_shop_failed', undefined, 'data'); під.appendChild(тв); }
+    if (х.ціна) під.appendChild(елЖінціП('span', 'ціна', грн(х.ціна), 'evaluation_price_failed'));
     н.appendChild(під);
   }
   ряд.appendChild(і); ряд.appendChild(н); ряд.appendChild(ел('span'));
@@ -609,7 +609,7 @@ function допитОцінкиБлокП(){
   const стр = ел('div', 'розмова оц-допит-стрічка'); стр.id = 'оц-допит-стрічка';
   ((ОЦ.результат || {}).допит || []).forEach(х=>{
     стр.appendChild(їїСловаЕлП('div', 'репліка вона', х.питання));
-    if (х.відповідь) стр.appendChild(елЖінціП('div', 'репліка ші', х.відповідь, undefined, своїЕкрануП())); });
+    if (х.відповідь) стр.appendChild(елЖінціП('div', 'репліка ші', х.відповідь, 'evaluation_answer_failed', своїЕкрануП())); });
   б.appendChild(стр);
   const та = ел('textarea', 'коробка'); та.id = 'оц-допит-поле'; та.rows = 2; та.placeholder = 'Твоє питання про цей образ';
   б.appendChild(та);
@@ -660,7 +660,7 @@ async function допитОцінкиП(){
       текст = м.тексти['відповідь'] || текст;
     }
     х.відповідь = текст;
-    if (стр) стр.appendChild(елЖінціП('div', 'репліка ші', текст, undefined, своїЕкрануП()));
+    if (стр) стр.appendChild(елЖінціП('div', 'репліка ші', текст, 'evaluation_answer_failed', своїЕкрануП()));
     ст.textContent = '';
   }catch(e){
     х.помилка = String((e && e.message) || e);
