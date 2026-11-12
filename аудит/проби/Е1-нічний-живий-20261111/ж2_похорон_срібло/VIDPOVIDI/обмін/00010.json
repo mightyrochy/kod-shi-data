@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"похорон дідуся в четвер зранку\", \"part_of_day\": \"зранку\", \"host_context\": \"похорон дідуся\", \"role\": \"похорон дідуся\"}, \"formality_reason\": \"her_words\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"host_context\": {\"kind\": \"reading\", \"quote\": \"похорон дідуся\"}, \"reserved_colour\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"похорон дідуся в четвер зранку\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\", \"quote\": \"зранку\"}, \"role\": {\"kind\": \"reading\", \"quote\": \"похорон дідуся\"}}, \"event\": \"похорон дідуся в четвер зранку\", \"part_of_day\": \"morning\", \"occasion\": \"mourning\", \"host_context\": true, \"role\": \"mourner_close\", \"formality\": [\"home\"], \"season\": \"autumn\", \"light\": \"daylight\"}, \"person\": {\"skin_hex\": [\"#d9b48f\", \"#d1ab86\", \"#e0bd9a\"], \"hair_hex\": [\"#745a3b\", \"#664f34\"], \"eyes_hex\": \"#7a7a4c\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Black high-necked long-sleeve top, straight cut, knee-length, #000000, fine merino wool.\\nCharcoal grey tailored wide-leg trousers, slim fit through the hip, ankle length, #36454F, heavy worsted wool.\\nNude leather pointed-toe pumps with a moderate heel, almond shape, #E8C499, smooth calfskin.\\nMatte black pearl-encrusted stud earrings and a simple silver locket on a fine chain.\\n\\nThis ensemble honors the somber occasion of your grandfather's funeral while adhering to your wish for home-appropriate attire by avoiding restrictive business structures. The all-black top paired with dark grey trousers creates a unified, respectful silhouette suitable for mourning without feeling overly formal or ceremonial. The neutral nude shoes elongate the legs gently, ensuring you can stand still and move quietly during the early morning service with dignity. The choice of natural wool fabrics adds warmth for the autumn weather while maintaining a soft texture that aligns with your personal comfort needs.\"}],\"usage\":{\"input_tokens\":868,\"output_tokens\":219},\"stop_reason\":\"end_turn\"}"
+ }
+}
