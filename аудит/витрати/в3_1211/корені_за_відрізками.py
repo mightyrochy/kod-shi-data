@@ -38,8 +38,8 @@ for мітка,sha in точки:
     if not треба: continue
     if ЛІМІТ and зроблено>=ЛІМІТ: sys.exit('ще є точки — повтори запуск')
     зроблено+=1
-    subprocess.run(['git','-C',wt,'checkout','-q','--force','--detach',sha],check=True)
-    subprocess.run(['git','-C',wt,'clean','-fdq'],check=True)
+    subprocess.run(['git','-C',wt,'checkout','-q','--force','--detach',sha],check=False)
+    subprocess.run(['git','-C',wt,'clean','-fdq'],check=False)
     for і in треба:
         п,_,б=корені[і]
         for шлях in [п,*б]:
