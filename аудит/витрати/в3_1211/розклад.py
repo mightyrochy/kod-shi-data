@@ -48,11 +48,9 @@ w=csv.DictWriter(open(f'{О}/злиття_1211.csv','w',newline=''),fieldnames=[
 w.writeheader(); [w.writerow({k:z[k] for k in w.fieldnames}) for z in злиття]
 # ---------- Claude: сесії
 сесії=[json.loads(l) for l in open(f'{T}/дані.jsonl')]
-ПОПРАВКА={ # $ поза вікном (див. аналіз §1)
- 'session_01TctSEcetUWE1jcJWUpJjRY':142.7493, # до 29.10 — cost_у_вікні В.2 (сесії_2229.csv)
- 'session_01FPQuiashigctm8vV4JXxd7':29.1476,  # до 29.10 — cost_у_вікні В.2
- 'session_01FPQuiZyd9M1gnM6g7n3Gkn':68.6324-66.7463, # після 05.11: usage − total_cost_usd останнього result до межі
- 'session_01FPQuiY6a3ufUCxKG2Naof8':222.1027-216.8689, # після 05.11: різниця total_cost_usd після межі
+ПОПРАВКА={ # $ поза вікном: після 12.11 00:00 = total_cost_usd останнього result − total_cost_usd останнього result до межі (пр_*.tsv, див. аналіз §1)
+ 'session_01FPQuiYXzFVPfNqvogAGgsQ':round(55.90047200000006-52.004462000000046,4), # менеджер 09.11–12.11
+ 'session_01FPQuiYP2kgiheh6tmAX3ft':round(37.59332795500004-34.533325155000036,4),
 }
 сесія_злиття=C.defaultdict(list)
 for z in злиття:
