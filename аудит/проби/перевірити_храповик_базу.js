@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs'), path = require('path'), os = require('os');
 const {spawnSync} = require('child_process');
 const {знімок} = require('./храповик_записів.js');
+const {створитиЗразок} = require('./зразок_приймання.js');
 
 if (process.env.RATCHET_PROBE) {
   require('child_process').spawnSync = (_команда, аргументи, параметри) => {
@@ -30,20 +31,9 @@ if (process.env.RATCHET_PROBE) {
   const до = джерело !== __dirname;
   const тека = fs.mkdtempSync(path.join(os.tmpdir(), 'храповик-база-'));
   try {
-    const проби = path.join(тека, 'аудит/проби');
-    fs.mkdirSync(проби, {recursive: true});
-    for (const ім of ['приймання_записів.js', 'храповик_записів.js', 'записаний_обмін.js', 'живий_після_CI.js'])
-      fs.copyFileSync(path.join(джерело, ім), path.join(проби, ім));
-    fs.writeFileSync(path.join(проби, 'рв6_стенд.js'), '/* Дочірній браузер замінено виходами зразка. */\n');
     const база = знімок('  ✔ зелена зразкова звірка\n  ✗ відома червона звірка\n', {вердикт: {доведено: true}}, 1);
     база.звірки[1].вада = 1;
-    for (const id of ['зразок_а', 'зразок_б']) {
-      const місце = path.join(проби, 'нічні/20261112', id);
-      const обмін = path.join(місце, 'VIDPOVIDI/обмін');
-      fs.mkdirSync(обмін, {recursive: true});
-      fs.writeFileSync(path.join(місце, 'повтор.json'), JSON.stringify({версія: 1, жінка: {імʼя: id}, змінні: {}, сід: 3}));
-      fs.writeFileSync(path.join(місце, 'база.json'), JSON.stringify(база));
-    }
+    const проби = створитиЗразок(тека, ['зразок_а', 'зразок_б'].map(id => ({id, база})), джерело);
     const рядок = 'ЖИВИЙ ПІСЛЯ: зразок_а — перезаписати змінений вхід';
     let перевірок = 0;
     for (const [назва, варіант, стан, безРядка, зРядком] of [
