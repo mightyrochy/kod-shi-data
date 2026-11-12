@@ -1,7 +1,7 @@
 """Мірило А наряду Функція-купити-річ: 5 спідниць каталогу (ід, назва, крій, колір, lab, довжина, см картки, тканина) як
 речі з фото «хочу купити», 2 тіла, без портрета → `bridge.виклик("річ_з_фото")` і вибір у промпті стилістки; лічба (1)–(7)."""
 import sys, os, json, time; sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import bridge, міст_стилістка as МС
+import bridge, суд_покупки as СП
 Р = [("ж-06737@ricamare.com.ua", "Спідниця міні на запах", "wrap", "white", (99, 0, 0), "mini", 44, None),
      ("ж-06105@sarahberlin.com", "Спідниця олівець з розрізом", "pencil", "graphite", (32, 0, 0), "midi", 72.5, None),
      ("ж-05634@likeangel.com.ua", "Спідниця сатинова лаванда", "bodycon", "lilac", (70, 10, -9), "midi", 82, "satin"),
@@ -16,7 +16,8 @@ import bridge, міст_стилістка as МС
 речі = json.loads(bridge.виклик("річ_з_фото", json.dumps(dict(опис_фото="відповідь", відповідь_моделі=відп, фото=фото)))).get("речі_з_фото") or []
 for р, з in zip(речі, Р):   # вимір кольору пікселями речі (`річ_з_фото.виміряти`) — lab запису каталогу
     р["вимір"] = dict(lab=list(з[4]), слово=р.get("колір"))
-лічба, коди, мс, вибір = dict.fromkeys(range(1, 8), 0), {}, [], []
+лічба, коди, мс, вибір, рядки_6 = dict.fromkeys(range(1, 8), 0), {}, [], [], []
+ТІЛО_ПРОЙШЛО = {"maxi_holds"}   # заяви правила тіла, яке річ пройшла (`суд_покупки.тіло_речі`, `судилось`)
 for тіло, вх in ТІЛА.items():
     d, вв = dict(вх, шкіра=[], волосся=[], очі=None, сценарій={}, колір_відмова="portrait_face_small", паспорт={"речі_з_фото": речі}), {}
     for р, з in zip(речі, Р):
@@ -31,10 +32,19 @@ for тіло, вх in ТІЛА.items():
         лічба[2] += any(x in к for x in ("hem_on_her_body", "hem_not_judged")) and any(x in к for x in ("rise_of_item", "rise_not_named"))
         помітна = з[4][0] > 80 or з[7] == "satin"   # світла чи блискуча
         лічба[4] += any(x.startswith("colour_role_") for x in к) and any(x.startswith("pairs_with_") for x in к) and (not помітна or "draws_eye_enlarges" in к)
-        лічба[5] += в["рівень"] == "личить" and "hem_on_her_body" not in к
+        # «личить» без пройденого правила тіла (клас краю — факт, не перевірка; перевірка-1211-11 на #3578)
+        лічба[5] += в["рівень"] == "личить" and not set(к) & ТІЛО_ПРОЙШЛО
         лічба[7] += "colour_profile_needs_portrait" in к
-    вибір.append("buy_first" in МС.промпт("яку з цих купити?", list(вв.values())))
+    # (6) по суті: перша — ОДНА річ із причиною (заяви, яких у решти нема, чи ризики решти), без нічиї
+    в6 = СП.вибір({і: р["вердикт"] for і, р in вв.items()})["заяви"]
+    з6 = next((з for з in в6 if з["code"] == "buy_first"), {})
+    перша = з6.get("values") or {}
+    вибір.append(len(з6.get("item_ids") or ()) == 1 and bool(перша.get("reasons") or перша.get("avoids"))
+                 and not any(з["code"] == "buy_order_tie" for з in в6))
+    рядки_6.append("  %s: перша %s, причини %s, уникає %s, далі %s" % (тіло, з6.get("item_ids"), перша.get("reasons"),
+                                                                       перша.get("avoids"), перша.get("then")))
 лічба[3] = sum(len(в) > 1 for в in коди.values())
 лічба[6] = int(all(вибір) and not any(р.get("чому_не_закріплена") == "her_item_later_item_in_same_place" for р in речі))
 print("А:", " ".join("(%d) %d/5" % (н, ч) if н != 6 else "(6) %s" % ("так" if ч else "ні") for н, ч in лічба.items()),
       "| суд речі: %.0f–%.0f мс" % (min(мс) * 1000, max(мс) * 1000), "| закріплення:", sorted({str(р.get("чому_не_закріплена")) for р in речі}))
+print("\n".join(рядки_6))

@@ -2808,9 +2808,7 @@ def промпт_репліки(репліка):
     обов = "; ".join("%s — %s" % (к, о) for к, о in _ВМ.ОБОВʼЯЗКОВЕ.items())
     # Ч-6: коди у `values` вердиктів визначаються так само, як у промпті повідомлень —
     # інакше модель пише жінці «bag» замість слова (той самий отвір, та сама латка).
-    пошук = вх.get("catalogue_search") if isinstance(вх.get("catalogue_search"), dict) else {}
-    _вв = list(вх.get("item_verdicts") or []) + list(пошук.get("variants") or []) + [{"verdict": пошук.get("result")}]
-    _зз = [з for в in _вв
+    _зз = [з for в in (вх.get("item_verdicts") or [])
            for з in ((в.get("verdict") or {}).get("statements") or []) if isinstance(з, dict)]
     вжиті = {з.get("code") for з in _зз}
     заяви = (_коди_словником(_зз) + ["", РЯДОК_ЗАЯВ_АНГЛІЙСЬКОЮ, "", "ЗАЯВИ ВЕРДИКТІВ:"]
@@ -2831,12 +2829,6 @@ def промпт_репліки(репліка):
         ("item_verdicts", "- item_verdicts — %s: передай їхній зміст, по речі; коди — не слова для неї. Річ "
          "називай її видом (item_type); коли виду нема чи він unknown — лише загальним словом її слота (slot: "
          "взуття, сумка, верх), іншого виду не добирай." % р["item_verdicts"]["description"]),
-        # «ЗНАЙДИ МЕНІ ТАКУ» (наряд Функція-купити-річ): що код знайшов у каталозі на її опис. Кожна знайдена річ —
-        # з тим самим вердиктом, що її річ з фото; котру першою — заява вибору в result. Нема — пряме «нема»:
-        # схожого замість не пропонуй (код не знайшов річ, що відповідає всім її ознакам).
-        ("catalogue_search", "- catalogue_search — %s: скажи, що знайдено (result), і про кожну річ variants — її "
-         "вердикт, по речі, як item_verdicts; котру радиш першою й чому — з result. Коли result каже, що такої в "
-         "каталозі нема, — прямо скажи «нема» й не пропонуй схожого чи іншого." % р["catalogue_search"]["description"]),
         ("added", "- added — %s: коротко скажи їй це." % р["added"]["description"]),
         ("answer", "- answer — %s: передай її зміст." % р["answer"]["description"]),
         ("passport", "- passport — відомі факти: про них не питай, підтверджуй лише recorded."),
@@ -2969,7 +2961,7 @@ def суд_речень_репліки(текст, репліка, записа�
     """[(речення, прийнято, причини)] — суд опори кожного речення репліки перекладача (`суд_підтвердження`).
 
     Той самий вхід, що й `суд_репліки` у показі, бо його й кличе показ; прилад мірила (`прилади/replay_опори.py`)
-    кличе цю ж функцію, а не складає вхід суду сам. Ключі входу (answer, item_verdicts, catalogue_search, added,
+    кличе цю ж функцію, а не складає вхід суду сам. Ключі входу (answer, item_verdicts, added,
     not_recorded, partly_recorded, required) — опора без стану; коди полів, які вхід називає незаписаними чи обовʼязковими, — поля,
     про які речення саме каже `recorded`, записано чи ні, а код звіряє це з `recorded` входу (рішення 08.11 на КОЛО #3347): з того,
     що код стоїть у `not_recorded`, твердження «не записала» код не виводить. Речення з полями суд судить завжди;
@@ -2979,13 +2971,13 @@ def суд_речень_репліки(текст, репліка, записа�
     хоч `recorded` входу несе лише цей хід."""
     р = репліка if isinstance(репліка, dict) else {}
     частини = [ч for ч in (текст if isinstance(текст, list) else [{"says": текст}]) if isinstance(ч, dict)]
-    вхід = [к for к in ("answer", "item_verdicts", "catalogue_search", "added", "not_recorded", "partly_recorded",
+    вхід = [к for к in ("answer", "item_verdicts", "added", "not_recorded", "partly_recorded",
                         "required") if р.get(к)]
     записано = р.get("recorded") if isinstance(р.get("recorded"), dict) else {}
     судити = bool(записано or set(вхід) - {"required", "not_recorded"})
-    # числа заяв пошуку в каталозі (скільки знайдено, скільки записів без коду) — опора речення з коду
-    пошук = р.get("catalogue_search") if isinstance(р.get("catalogue_search"), dict) else {}
-    числа_входу = {з["values"][к] for з in ((пошук.get("result") or {}).get("statements") or ())
+    # числа заяв вердиктів (скільки знайдено в каталозі, скільки записів без коду, см) — опора речення з коду
+    числа_входу = {з["values"][к] for в in (р.get("item_verdicts") or ()) if isinstance(в, dict)
+                   for з in ((в.get("verdict") or {}).get("statements") or ())
                    if isinstance(з, dict) and isinstance(з.get("values"), dict)
                    for к in з["values"] if isinstance(з["values"][к], int) and not isinstance(з["values"][к], bool)}
     вих = []

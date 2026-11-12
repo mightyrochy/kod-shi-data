@@ -32,7 +32,7 @@ import силует_крої as _СК
         # доведені слова (корінь Е2-текст-жінці); без назви оновлення лишає назву відкритого сценарію.
         "вхід": {"type": "object", "additionalProperties": False, "properties": {
             "as_new": {"type": "boolean",
-                       "description": "true — as one more saved case; else the open one is updated"}}},
+                       "description": "true — a new saved case; else the open one is updated"}}},
         "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
             "done": {"type": "boolean", "description": "чи збережено"},
             "as_new": {"type": "boolean", "description": "збережено новим, а не оновлено відкритий"},
@@ -53,10 +53,10 @@ import силует_крої as _СК
     },
     "open_scenario": {
         "робить": "відкрити збережений сценарій: його паспорт і розмову замість поточних",
-        "для_моделі": "opens one of her saved cases (unsaved is lost)",
+        "для_моделі": "opens a saved case (unsaved is lost)",
         "коли": "she asks to open one",
         "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
-            "id": {"type": "string", "minLength": 1, "description": "the \"id\" of one of saved_cases"}}},
+            "id": {"type": "string", "minLength": 1, "description": "from saved_cases"}}},
         "переліки": {"id": "saved_cases"},
         "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
             "done": {"type": "boolean", "description": "чи відкрито"},
@@ -70,7 +70,7 @@ import силует_крої as _СК
         "для_моделі": "deletes a saved case for good",
         "коли": "she asks to delete one",
         "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
-            "id": {"type": "string", "minLength": 1, "description": "the \"id\" of one of saved_cases"}}},
+            "id": {"type": "string", "minLength": 1, "description": "from saved_cases"}}},
         "переліки": {"id": "saved_cases"},
         "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
             "done": {"type": "boolean", "description": "чи видалено"},
@@ -80,7 +80,7 @@ import силует_крої as _СК
     },
     "new_scenario": {
         "робить": "почати новий сценарій: порожній паспорт і нова розмова",
-        "для_моделі": "starts a new empty case (unsaved is lost)",
+        "для_моделі": "starts an empty case (unsaved is lost)",
         "коли": "she asks for a new case",
         "вхід": {"type": "object", "additionalProperties": False, "properties": {}},
         "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
@@ -94,7 +94,7 @@ import силует_крої as _СК
         "для_моделі": "opens a profile and its conversation",
         "коли": "she asks to switch profiles",
         "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
-            "id": {"type": "string", "minLength": 1, "description": "the \"id\" of one of profiles"}}},
+            "id": {"type": "string", "minLength": 1, "description": "from profiles"}}},
         "переліки": {"id": "profiles"},
         "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
             "done": {"type": "boolean", "description": "чи перемкнуто"},
@@ -132,10 +132,8 @@ import силует_крої as _СК
     # Переліки кодів — ті самі, що читає пошук (`пошук_речі.ЧИТАЧІ`); крій — ядра (`силует_крої.КРОЇ`).
     "find_item": {
         "робить": "знайти в каталозі речі за її описом і оцінити кожну для неї",
-        "для_моделі": "finds catalogue items that match every code of her description; each comes back judged for "
-                      "her",
-        "коли": "she asks to find, show or pick an item to buy by describing it; only codes she named, the rest "
-                "left out",
+        "для_моделі": "finds shop items with every code she named, judged for her",
+        "коли": "she asks to find an item to buy",
         "вхід": {"type": "object", "additionalProperties": False, "required": ["item_type"], "properties": {
             "item_type": {"type": "string", "enum": _ПР.ЧИТАЧІ["item_type"][1], "description": "kind of item"},
             "colour": {"type": "string", "enum": _ПР.ЧИТАЧІ["colour"][1], "description": "colour she named"},
@@ -179,12 +177,13 @@ def скелет():
 
 
 def коди_для_промпту():
-    """Рядки переліку для сталого словника кодів ходу: ім'я, що робить, коли кликати, аргументи з їхніх описів."""
+    """Рядки переліку для сталого словника кодів ходу: ім'я, що робить, коли кликати, аргументи з їхніх описів.
+    Тип і коди аргументу — у схемі виклику (`схема_виклику`), тож аргумент із переліком кодів — лише назвою."""
     р = ["Tools (results below your reply):"]
     for ім, о in ІНСТРУМЕНТИ.items():
-        аргументи = "; ".join("%s (%s) — %s" % (к, с["type"], с["description"])
-                              for к, с in о["вхід"]["properties"].items()) or "none"
-        р.append("- %s: %s; when %s. args: %s" % (ім, о["для_моделі"], о["коли"], аргументи))
+        аргументи = "; ".join(к if "enum" in с else "%s — %s" % (к, с["description"])
+                              for к, с in о["вхід"]["properties"].items())
+        р.append("- %s: %s; when %s.%s" % (ім, о["для_моделі"], о["коли"], " args: " + аргументи if аргументи else ""))
     return tuple(р)
 
 

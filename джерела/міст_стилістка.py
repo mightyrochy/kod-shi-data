@@ -74,10 +74,8 @@ import міст_помічниця as _МП  # запобіжник обіцян
         _ВИМ.поле("case", без="The occasion is not known yet."),
         # ВИБІР МІЖ РЕЧАМИ, ЯКІ ВОНА ХОЧЕ КУПИТИ (наряд Функція-купити-річ; дошка 14719): порядок і причина першої —
         # код (`суд_покупки.вибір`), модель їх лише каже
-        _ЗП.Поле("choice", "the code's comparison of the items she is choosing whether to buy: which is advised "
-                           "first and why — statement codes",
-                 "do not contradict \"choice\"",
-                 без="She is not choosing between items to buy."),
+        _ЗП.Поле("choice", "which item to buy first and why — statement codes",
+                 "do not contradict it"),
     ),
     правила=(
         "Answer exactly what she asked about her look: whether the item suits her and this "
@@ -87,10 +85,7 @@ import міст_помічниця as _МП  # запобіжник обіцян
         "When she has shown or described no item, speak of no particular item.",
         _ВИМ.БЕЗ_КАТАЛОГУ,
         # «Two to four sentences» на п'ять речей причин про кожну не вміщало (проба 12.11, дошка 14723)
-        "About one item, two to four sentences. About several items, one or two sentences on each — how it sits on "
-        "her, its colour and what to wear it with — and one on which to buy first and why, as \"choice\" says.",
-        "Say an item suits her only when its verdict says so. What its verdict says was not judged, say plainly, "
-        "with what she can send so that it is judged.",
+        "Two to four sentences per item; which to buy first, as \"choice\" says.",
         # На українське питання 4 з 11 відповідей — українською, одна на «ви».
         # З правилом «Write in the language…» — українською 3 з 3: межа «для_неї» вимагала від
         # англійського тексту «familiar singular» і «feminine grammatical gender». Мову й граматику тепер несе межа

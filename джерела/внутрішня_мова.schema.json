@@ -2119,7 +2119,7 @@
      "type": "object"
     },
     "item_verdicts": {
-     "description": "вердикт про кожну її річ з фото: заяви кодами",
+     "description": "вердикт про кожну річ: заяви кодами",
      "type": "array",
      "items": {
       "type": "object",
@@ -2272,172 +2272,6 @@
       "required": [
        "verdict"
       ]
-     }
-    },
-    "catalogue_search": {
-     "type": "object",
-     "additionalProperties": false,
-     "description": "що знайдено в каталозі на її опис речі: result — заяви про сам пошук і котру річ код радить першою; variants — знайдені речі каталогу, кожна з вердиктом",
-     "properties": {
-      "result": {
-       "$ref": "#/$defs/screen_message"
-      },
-      "variants": {
-       "description": "знайдені речі каталогу в порядку, в якому код їх радить",
-       "type": "array",
-       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-         "item": {
-          "$ref": "#/$defs/free_text",
-          "description": "назва речі в крамниці"
-         },
-         "slot": {
-          "description": "слот речі",
-          "enum": [
-           "top",
-           "bottom",
-           "dress",
-           "set",
-           "outerwear",
-           "shoes",
-           "bag",
-           "scarf",
-           "headwear",
-           "belt",
-           "tights",
-           "socks",
-           "jewelry",
-           "earrings",
-           "collar_necklace",
-           "necklace",
-           "brooch",
-           "bracelet",
-           "ring",
-           "glasses",
-           "gloves",
-           "watch",
-           "swimwear",
-           "underwear",
-           "accessory",
-           "unknown"
-          ]
-         },
-         "item_type": {
-          "description": "вид речі",
-          "enum": [
-           "evening_dress",
-           "cocktail_dress",
-           "suit",
-           "sheath_dress",
-           "sundress",
-           "blazer",
-           "over_knee_boots",
-           "chelsea_boots",
-           "ugg_boots",
-           "ballet_flats",
-           "mules",
-           "espadrilles",
-           "pumps",
-           "dress_shoes",
-           "moccasins",
-           "loafers",
-           "sneakers",
-           "plimsolls",
-           "ankle_boots",
-           "boots",
-           "heeled_sandals",
-           "sandals",
-           "clutch",
-           "backpack",
-           "tote",
-           "baguette_bag",
-           "hobo_bag",
-           "crossbody_bag",
-           "bucket_bag",
-           "belt_bag",
-           "briefcase",
-           "saddle_bag",
-           "hoodie",
-           "sportswear",
-           "loungewear",
-           "leggings",
-           "jeans",
-           "t_shirt",
-           "shirt",
-           "blouse",
-           "knitwear",
-           "cardigan",
-           "sweater",
-           "shorts",
-           "jumpsuit",
-           "skirt",
-           "trousers",
-           "coat",
-           "trench_coat",
-           "jacket",
-           "vest",
-           "top_garment",
-           "stole",
-           "kerchief",
-           "twilly",
-           "snood",
-           "shawl",
-           "bactus_scarf",
-           "ring",
-           "headband",
-           "bow",
-           "hair_clip",
-           "hair_tie",
-           "scarf_generic",
-           "jewelry_generic",
-           "bag_generic",
-           "dress_generic",
-           "two_piece_set",
-           "casual_suit",
-           "bodysuit",
-           "longsleeve",
-           "half_coat",
-           "down_jacket",
-           "fur_coat",
-           "sheepskin_coat",
-           "parka",
-           "raincoat",
-           "rain_cape",
-           "windbreaker",
-           "anorak",
-           "bomber",
-           "poncho",
-           "beanie",
-           "hat",
-           "beret",
-           "cap",
-           "belt",
-           "earrings",
-           "bracelet",
-           "necklace",
-           "collar_necklace",
-           "brooch",
-           "watch",
-           "glasses",
-           "gloves",
-           "tights",
-           "socks",
-           "swimsuit",
-           "lingerie",
-           "unknown"
-          ]
-         },
-         "verdict": {
-          "$ref": "#/$defs/screen_message"
-         }
-        },
-        "required": [
-         "verdict"
-        ]
-       }
-      }
      }
     },
     "added": {
@@ -4259,7 +4093,7 @@
          "properties": {
           "as_new": {
            "type": "boolean",
-           "description": "true — as one more saved case; else the open one is updated"
+           "description": "true — a new saved case; else the open one is updated"
           }
          }
         }
@@ -4292,7 +4126,7 @@
           "id": {
            "type": "string",
            "minLength": 1,
-           "description": "the \"id\" of one of saved_cases"
+           "description": "from saved_cases"
           }
          }
         }
@@ -4313,7 +4147,7 @@
           "id": {
            "type": "string",
            "minLength": 1,
-           "description": "the \"id\" of one of saved_cases"
+           "description": "from saved_cases"
           }
          }
         }
@@ -4346,7 +4180,7 @@
           "id": {
            "type": "string",
            "minLength": 1,
-           "description": "the \"id\" of one of profiles"
+           "description": "from profiles"
           }
          }
         }
@@ -5310,6 +5144,10 @@
          {
           "const": "figure_needs_measurements",
           "description": "how the item sits on her body is not judged: she has not named her height and at least three girths (shoulders, chest, waist, hips); with them it can be judged"
+         },
+         {
+          "const": "maxi_holds",
+          "description": "on her height the hem of this skirt falls to maxi, and maxi holds here: of the three supports maxi needs (height, lift of the shoes or the skirt's own volume) it has one (values: by — volume)"
          },
          {
           "const": "hem_on_her_body",

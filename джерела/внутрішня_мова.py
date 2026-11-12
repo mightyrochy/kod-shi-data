@@ -689,20 +689,7 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                                              "item_type": _перелік("item_type", "вид її речі з фото"),
                                              "verdict": {"$ref": "#/$defs/screen_message"}},
                               "required": ["verdict"]},
-                             "вердикт про кожну її річ з фото: заяви кодами"),
-    # «ЗНАЙДИ МЕНІ ТАКУ» (наряд Функція-купити-річ): речі каталогу за її описом — кожна з вердиктом для неї
-    "catalogue_search": {"type": "object", "additionalProperties": False,
-                         "description": "що знайдено в каталозі на її опис речі: result — заяви про сам пошук і котру "
-                                        "річ код радить першою; variants — знайдені речі каталогу, кожна з вердиктом",
-                         "properties": {
-                             "result": {"$ref": "#/$defs/screen_message"},
-                             "variants": _список({"type": "object", "additionalProperties": False,
-                                                  "properties": {"item": dict(_ВІЛЬНИЙ, description="назва речі в крамниці"),
-                                                                 "slot": _перелік("slot", "слот речі"),
-                                                                 "item_type": _перелік("item_type", "вид речі"),
-                                                                 "verdict": {"$ref": "#/$defs/screen_message"}},
-                                                  "required": ["verdict"]},
-                                                 "знайдені речі каталогу в порядку, в якому код їх радить")}},
+                             "вердикт про кожну річ: заяви кодами"),
     # ДОДАНЕ ДО СЦЕНАРІЮ — КОДАМИ (М-1, аудит/ПРОДУКТ.md п.12): доти показ писав це фразою
     # («Додала до сценарію: «…» — твоя річ, вона стане в кожен образ.»)
     "added": {"description": "що додано до сценарію з її слів, сказаних поза екраном сценарію: "
@@ -1115,6 +1102,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     # ── РІЧ НА ПОКУПКУ: СУД ОДНІЄЇ РЕЧІ ТИМИ САМИМИ ПРАВИЛАМИ, ЩО Й ОБРАЗ (`суд_покупки`) ──
     "figure_needs_measurements": "how the item sits on her body is not judged: she has not named her height and at "
                                  "least three girths (shoulders, chest, waist, hips); with them it can be judged",
+    "maxi_holds": "on her height the hem of this skirt falls to maxi, and maxi holds here: of the three supports "
+                  "maxi needs (height, lift of the shoes or the skirt's own volume) it has one (values: by — volume)",
     "hem_on_her_body": "where the item's hem falls on her body at her height (values: level — body level code: "
                        "waist, mini, knee, calf, maxi; measured_from — garment_length when the shop's length in cm was "
                        "laid on her height, shop_word when only the shop's length word is known); the level "
