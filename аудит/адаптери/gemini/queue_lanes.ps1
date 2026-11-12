@@ -765,22 +765,52 @@ function Get-WaitingMarkers {
 
 # --- здоров'я машини (лише показ, узяття не гейтить) ----------------------------------------------------------------
 
-function Measure-DirBytes([string]$Path) {
-    <# Розмір названої теки без переходу за точками з'єднання (профіль має петлі); недоступні теки — лічбою Skipped. #>
+function Measure-DirBytes([string]$Path, [string]$Under = '', [switch]$Breakdown) {
+    <# Розмір названої теки без переходу за точками з'єднання (профіль має петлі); недоступні теки — лічбою Skipped.
+    -Breakdown у тому самому обході додає суми за дітьми першого рівня (Top) і за дітьми теки $Under, що лежить усередині
+    $Path (Under): усі пари Name/Bytes з вагою понад нуль за спаданням; файли просто в корені — під іменем «(файли)». #>
     if (-not $Path -or -not (Test-Path -LiteralPath $Path -PathType Container)) { return $null }
     $bytes = 0L; $skipped = 0
+    $kids = @{}; $sub = @{}
+    $underFull = $(if ($Under) { [IO.Path]::GetFullPath($Under).TrimEnd('\', '/') } else { '' })
     $stack = New-Object System.Collections.Stack
-    $stack.Push((New-Object System.IO.DirectoryInfo $Path))
+    $stack.Push(@((New-Object System.IO.DirectoryInfo $Path), '', ''))
     while ($stack.Count -gt 0) {
-        $d = $stack.Pop()
+        $it = $stack.Pop(); $d = $it[0]
         try {
             foreach ($e in $d.EnumerateFileSystemInfos()) {
                 if ($e.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { continue }
-                if ($e -is [System.IO.DirectoryInfo]) { $stack.Push($e) } else { $bytes += $e.Length }
+                $tk = $it[1]; $uk = $it[2]
+                if ($Breakdown -and $e -is [System.IO.DirectoryInfo]) {
+                    if ($tk -eq '') { $tk = $e.Name }
+                    if ($underFull -and $d.FullName.TrimEnd('\', '/') -ieq $underFull) { $uk = $e.Name }
+                }
+                if ($e -is [System.IO.DirectoryInfo]) { $stack.Push(@($e, $tk, $uk)); continue }
+                $bytes += $e.Length
+                if ($Breakdown) {
+                    $k = $(if ($tk -eq '') { '(файли)' } else { $tk })
+                    $kids[$k] = [long]$kids[$k] + $e.Length
+                    if ($uk) { $sub[$uk] = [long]$sub[$uk] + $e.Length }
+                }
             }
         } catch { $skipped++ }
     }
-    [pscustomobject]@{ Bytes = $bytes; Skipped = $skipped }
+    $largest = { param($h) @($h.GetEnumerator() | Where-Object { $_.Value -gt 0 } | Sort-Object Value -Descending | ForEach-Object { [pscustomobject]@{ Name = [string]$_.Key; Bytes = [long]$_.Value } }) }
+    [pscustomobject]@{ Bytes = $bytes; Skipped = $skipped; Top = @(& $largest $kids); Under = @(& $largest $sub) }
+}
+
+function ConvertTo-SizeList($Rows) {
+    <# Пари Name/Bytes — рядок «назва=байти;…» для heartbeat; назви без службових знаків: рядок читає розбір недовіреного файла. #>
+    @(foreach ($r in @($Rows)) {
+        $n = [regex]::Replace([string]$r.Name, '[^\p{L}\p{N}._ -]', '_')
+        "$n=$([long]$r.Bytes)"
+    }) -join ';'
+}
+
+function ConvertFrom-SizeList([string]$Text) {
+    <# Обернене до ConvertTo-SizeList: пари Name/Bytes лише за форматом, решта відкидається. #>
+    @(($Text -split ';') | Where-Object { $_ -cmatch '^[\p{L}\p{N}._ -]+=[0-9]{1,15}$' } | ForEach-Object {
+        $i = $_.LastIndexOf('='); [pscustomobject]@{ Name = $_.Substring(0, $i); Bytes = [long]$_.Substring($i + 1) } })
 }
 
 function Get-Unsourced($Limits) {
@@ -1354,9 +1384,24 @@ function Close-TaskCopy([string[]]$Delivered) {
     Remove-TaskCopy $c.Dir $Delivered
 }
 
+function Reset-TreeAcl([string]$Dir) {
+    <# Знімає з дерева заборони, що лишив обірваний прогін: deny на читання теки робить дерево непрохідним навіть для
+    власника, і `Remove-Item` падає щоразу. Усі ACL дерева стають успадкованими від батька (`icacls /reset`: власнику
+    вистачає неявних READ_CONTROL і WRITE_DAC, прав адміністратора не треба); поза Windows — `chmod -R u+rwX`.
+    Повертає, чи команда відпрацювала. #>
+    try {
+        $r = $(if ($env:OS -eq 'Windows_NT') { Invoke-Native 'icacls.exe' @($Dir, '/reset', '/T', '/C', '/L', '/Q') }
+               else { Invoke-Native 'chmod' @('-R', 'u+rwX', '--', $Dir) })
+        $r.Code -eq 0
+    } catch { $false }
+}
+
 function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
     <# Тека задачі чи давня робоча копія слота — геть, коли голова не несе комітів поза $Delivered (`rev-list --not`).
-    Несе — тека лишається з `kept.txt`, гілку звільнено, повертає шлях теки; інакше ''. #>
+    Несе — тека лишається з `kept.txt`, гілку звільнено, повертає шлях теки; інакше ''.
+    Прибирання не залежить від заборон у копії: тека, яку не можна перелічити (вимір дав недоступні теки), чи видалення
+    з UnauthorizedAccess — спершу Reset-TreeAcl, тоді ще раз; зайнятий іншим процесом файл — тимчасовий стан, його лишає
+    наступне прибирання. У журнал — звільнені байти (вимір до видалення, після скидання ACL — повний). #>
     $repo = $(if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { $Dir } else { Join-Path $Dir 'repo' })
     if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
         $n = 0
@@ -1367,11 +1412,24 @@ function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
             Write-Log "копія задачі $Dir лишається: недоставлених комітів голови $n"
             return $Dir
         }
-        [void](Invoke-Git @('worktree', 'remove', '-f', '-f', $repo) -AllowFail)
     }
+    $freed = 0L; $reset = $false; $existed = Test-Path -LiteralPath $Dir
+    $m = Measure-DirBytes $Dir
+    if ($null -ne $m -and $m.Skipped -gt 0) { $reset = Reset-TreeAcl $Dir; $m = Measure-DirBytes $Dir }
+    if ($null -ne $m) { $freed = $m.Bytes }
+    if (Test-Path -LiteralPath (Join-Path $repo '.git')) { [void](Invoke-Git @('worktree', 'remove', '-f', '-f', $repo) -AllowFail) }
     if (Test-Path -LiteralPath $Dir) {
-        try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { Write-Log "копія задачі $Dir не прибрана: $($_.Exception.Message)" }
+        try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop }
+        catch {
+            $first = $_.Exception
+            if ($first.GetBaseException() -is [UnauthorizedAccessException] -and -not $reset) {
+                $reset = Reset-TreeAcl $Dir
+                try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { $first = $_.Exception }
+            }
+            if (Test-Path -LiteralPath $Dir) { Write-Log "копія задачі $Dir не прибрана: $($first.Message)" }
+        }
     }
+    if ($existed -and -not (Test-Path -LiteralPath $Dir)) { Write-Log "копія задачі $Dir прибрана: звільнено $freed байт$(if ($reset) { ' (ACL скинуто)' })" }
     [void](Invoke-Git @('worktree', 'prune') -AllowFail)
     ''
 }
