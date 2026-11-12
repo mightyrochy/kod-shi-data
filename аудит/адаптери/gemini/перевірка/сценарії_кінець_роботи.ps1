@@ -61,20 +61,15 @@ try {
     Write-FileAtomic ("$tmp/claude-run/state/branch-" + (Get-Sha256Hex $slug) + '.txt') 'claude/5.3-повний-обхід'
     $lock = [IO.File]::Open("$tmp/claude-run/slots/claude-1.lock", 'OpenOrCreate', 'ReadWrite', 'None')
     foreach ($head in @(('b'*40), ('c'*40), ('d'*40))) { Tick $head }
-    $state = ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/chain.json"))
-    Check 'активна голова лишається придатною в heads' ($state.heads.'2386'.sha -ceq ('d'*40) -and $state.heads.'2386'.eligible)
     Check "проміжних позначок: $(CountReviews 2386)" ((CountReviews 2386) -eq $(if ($Before) { 3 } else { 0 }))
-    Check 'хмарний PR без смуги: рівно 1' ((CountReviews 2400) -eq 1)
+    Check 'PR без смуги: позначки нема, її ставить диспетчер' ((CountReviews 2400) -eq 0)
     # Complete-Task записує кінець до звільнення слота; SHA3 вже є головою PR.
     Write-FileAtomic "$WorkDir/state/done.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО claude/5.3-повний-обхід $('d'*40) МОДЕЛЬ cc-claude-sonnet-5-5-medium"}) | ConvertTo-Json)
     $lock.Dispose(); $lock = $null
     Tick ('d'*40); Tick ('d'*40)
-    Check "три голови й ГОТОВО: перевірок $(CountReviews 2386) (ДО 3 → ПІСЛЯ 1)" ((CountReviews 2386) -eq $(if ($Before) { 3 } else { 1 }))
-    Check 'перевірка кінцевої SHA3' (@($script:Markers | Where-Object { $_ -ceq "автоперевірка-2386-$('d'*40)" }).Count -eq 1)
-    Check 'PR без смуги: ДО 1 → ПІСЛЯ 1' ((CountReviews 2400) -eq 1)
+    Check "три голови й ГОТОВО: перевірок $(CountReviews 2386) (ДО 3 → ПІСЛЯ 0: ставить диспетчер)" ((CountReviews 2386) -eq $(if ($Before) { 3 } else { 0 }))
+    Check 'PR без смуги: перевірок нема' ((CountReviews 2400) -eq 0)
     if (-not $Before) {
-        Check 'пропуск і хмарний шлях видимі в журналі' (@($script:Logs | Where-Object { $_ -like '*смуга ще пише*' }).Count -eq 3 -and
-            @($script:Logs | Where-Object { $_ -like '*#2400*активної смуги нема*' }).Count -gt 0)
         Check 'старий JSON слота з вільним замком не блокує' (-not (Get-ChainBranchWork 'claude/5.3-повний-обхід'))
         $lock = [IO.File]::Open("$tmp/claude-run/slots/claude-1.lock", 'Open', 'ReadWrite', 'None')
         # Перша спроба ще не має branch-<hash>: гілка вже видима в HEAD її робочої копії.
@@ -110,17 +105,17 @@ try {
             $lock.Dispose(); $lock = $null
             Check "${lane}: старий busy з вільним замком не блокує" (-not (Get-ChainBranchWork "gemini/спільний-$lane"))
             Tick $head "gemini/спільний-$lane"; Tick $head "gemini/спільний-$lane"
-            Check "${lane}: після ГОТОВО зі старим busy — 1 перевірка" ((CountReviews 2386) -eq ($n+1))
+            Check "${lane}: після ГОТОВО зі старим busy — 0 перевірок" ((CountReviews 2386) -eq $n)
             $blockedHead = $(if ($lane -ceq 'codex') { '2'*40 } else { '3'*40 })
             # Автора заблокованої голови ланцюг знає з опублікованої моделі (невідомий автор перевірки не отримує).
             Save-DraftRequest "gemini/спільний-$lane" $blockedHead 'gpt-test'
             $lock = [IO.File]::Open("$GeminiRunsDir/slots/$lane-1.lock", 'Open', 'ReadWrite', 'None')
             Tick $blockedHead "gemini/спільний-$lane"
-            Check "${lane}: наступна активна голова — 0 перевірок" ((CountReviews 2386) -eq ($n+1))
+            Check "${lane}: наступна активна голова — 0 перевірок" ((CountReviews 2386) -eq $n)
             Write-FileAtomic "$WorkDir/state/blocked-$lane.json" ((@{line="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/спільний-$lane BLOCKED"}) | ConvertTo-Json)
             $lock.Dispose(); $lock = $null
             Tick $blockedHead "gemini/спільний-$lane"; Tick $blockedHead "gemini/спільний-$lane"
-            Check "${lane}: після ЗАБЛОКОВАНО — 1 перевірка" ((CountReviews 2386) -eq ($n+2))
+            Check "${lane}: після ЗАБЛОКОВАНО — 0 перевірок" ((CountReviews 2386) -eq $n)
         }
         if ($env:OS -eq 'Windows_NT' -and -not ('ChainFixtureToken' -as [type])) {
             # Обмежується лише токен потоку фікстури; вихідний токен та ACL робочих тек не змінюються.
@@ -304,14 +299,16 @@ public sealed class ChainFixtureToken {
                     $script:Pulls = @((Pull 2386 'claude/доступ' ($case.ToString('x') + ('a'*39))),
                         (Pull 2501 'gemini/доступ-codex' ('8'*40)), (Pull 2502 'gemini/доступ-agy' ('9'*40)))
                     Invoke-WrapperChain
+                    # Читачі активності смуг ланцюг більше не викликає (перевірки ставить диспетчер) — викликаємо їх прямо.
+                    $work = $null; $workCodex = $null; $workAgy = $null
+                    try { $work = Get-ChainBranchWork 'claude/доступ'; $workCodex = Get-ChainBranchWork 'gemini/доступ-codex'; $workAgy = Get-ChainBranchWork 'gemini/доступ-agy' } catch { if (-not $AccessBefore) { throw } }
                     $addedLogs = @($script:Logs | Select-Object -Skip $logStart)
                     $failed = @($addedLogs | Where-Object { $_ -like '*CHAIN_FAILED*' }).Count -gt 0
                     Check "ACL ${case}: падінь ланцюга $(if ($failed) { 1 } else { 0 }) (ДО 1 → ПІСЛЯ 0)" ($failed -eq [bool]$AccessBefore)
                     if (-not $AccessBefore) {
                         Check "ACL ${case}: журнал називає недоступну смугу" (@($addedLogs | Where-Object { $_ -like 'стан смуги claude недоступний:*' }).Count -eq 1)
-                        Check "ACL ${case}: голова Claude перевіряється як звичайно" ((CountReviews 2386) -eq ($n+1))
-                        Check "ACL ${case}: Codex і agy далі відкладають активні голови" ((CountReviews 2501) -eq 0 -and (CountReviews 2502) -eq 0 -and
-                            @($addedLogs | Where-Object { $_ -like '*смуга ще пише*' }).Count -eq 2)
+                        Check "ACL ${case}: недоступна смуга Claude — звичайний шлях, перевірок нема" (-not $work -and (CountReviews 2386) -eq $n)
+                        Check "ACL ${case}: Codex і agy далі бачать активні слоти" ($workCodex -ceq 'gemini-queue/доступ-codex/gpt-test/1/p1' -and $workAgy -ceq 'gemini-queue/доступ-agy/gpt-test/1/p1' -and (CountReviews 2501) -eq 0 -and (CountReviews 2502) -eq 0)
                     }
                 }
             }
