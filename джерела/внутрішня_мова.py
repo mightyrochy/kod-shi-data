@@ -1140,11 +1140,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "pairs_with_role_palette_unknown": "the item makes a scheme with the opposite role (values: partner — "
                                        "neutrals or accent); which colours are hers needs her colours from a "
                                        "portrait",
-    "draws_eye_enlarges": "light, bright and shiny surfaces advance: the item draws the eye to this zone of her "
-                          "figure and makes it look larger (values: zone — hips_legs, bust_shoulders, "
-                          "whole_figure; by — light, bright, shiny)",
-    "recedes_zone": "dark, muted and matte surfaces recede: the item does not draw the eye to this zone of her "
-                    "figure (values: zone — hips_legs, bust_shoulders, whole_figure)",
+    "draws_eye_enlarges": "light, bright and shiny surfaces advance: the item draws the eye to the part of her "
+                          "figure it covers and makes that part look larger (values: by — light, bright, shiny)",
+    "recedes_zone": "dark, muted and matte surfaces recede: the item does not draw the eye to the part of her "
+                    "figure it covers",
     "colour_profile_needs_portrait": "her colours were not read, so the item's colour is not checked against her "
                                      "palette or her face: a portrait in daylight, face at least a quarter of the "
                                      "frame, makes it possible (values: reason — why the photo was not read, when "

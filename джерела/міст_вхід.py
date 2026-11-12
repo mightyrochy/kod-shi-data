@@ -147,8 +147,11 @@ def збірка_речі(d):
     if є_кольори and є_зріст:
         F, T, _з, _kw = збірка(d)
         return F, T
-    F = збірка(d, лише_палітра=True)[0] if є_кольори else None
-    об = {k: float(v) for k, v in (d.get("обхвати") or {}).items() if v not in (None, "")}
+    F = None
+    if є_кольори:
+        # розпаковка за позицією, не `[0]`: четверте поле — kwargs сценарію, а F — профіль, не сценарій
+        F, _T, _з, _kw = збірка(d, лише_палітра=True)
+    об ={k: float(v) for k, v in (d.get("обхвати") or {}).items() if v not in (None, "")}
     T = (ПС.тіло(float(d["зріст"]), об, аксесуарні=d.get("аксесуарні"))
          if є_зріст and len(об) >= 3 else None)
     return F, T

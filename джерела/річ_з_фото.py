@@ -348,12 +348,16 @@ def рамка_з_тисячних(v):
     return dict(ліво=round(л), верх=round(в_), право=round(п), низ=round(н))
 
 
+_ЧИСЛО_СМ = _re.compile(r"^\s*(\d+(?:[.,]\d+)?)\s*(?:см|cm)?\s*$")
+
+
 def _довжина_см(в):
     """Довжина виробу з картки на фото → см у межах довжини виробу каталогу (`фід_атрибути.ДОВЖИНА_МЕЖІ_СМ`) або None."""
-    try:
-        см = float(str(в).replace(",", ".").replace("см", "").strip()) if в not in (None, "") else None
-    except ValueError:
-        return None
+    if isinstance(в, (int, float)) and not isinstance(в, bool):
+        см = float(в)
+    else:   # рядок картки «72,5 см» — число розбором, без винятку; інше — None
+        м = _ЧИСЛО_СМ.match(str(в or ""))
+        см = float(м.group(1).replace(",", ".")) if м else None
     низ, верх = _ФА.ДОВЖИНА_МЕЖІ_СМ
     return см if см is not None and низ <= см <= верх else None
 
