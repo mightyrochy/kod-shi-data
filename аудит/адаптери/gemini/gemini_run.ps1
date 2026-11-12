@@ -54,6 +54,7 @@ param(
     [double]$QuotaMinutes = 2,
     [int]$MarkerMaxAgeDays = 7,
     [switch]$NoPrintTimeoutFlag,
+    [switch]$MeasureProfile,
     [string]$WorkerFile = ''
 )
 
@@ -76,8 +77,6 @@ $script:Lanes = @('codex', 'agy')
 $script:PoolModelPattern = '^(gemini|claude|gpt)-[a-z0-9.-]{1,36}$'
 # `agy -p "/usage"` без ходу моделі й без витрати квоти — з v1.1.11 (changelog agy, 7.08.2026): перелік у НАЛАШТУВАННЯ.md.
 $script:UsageMinVersion = [version]'1.1.11'
-# Каскад моделей «проєктування» (pro): наступна за пулом після самої моделі позначки; далі лише Codex (-CodexFallbackModel).
-$script:ClaudeCascadeModel = 'claude-opus-5-5-high'
 # Суфікс-зусилля позначки gpt-*: що `codex exec` не приймає, то відмова (EFFORT_INVALID), а не тиха підміна.
 $script:CodexEfforts = 'none|minimal|low|medium|high|xhigh|max|ultra'
 $script:AgyVersionDone = $false; $script:AgyVersion = $null; $script:AgyModels = $null
@@ -118,16 +117,13 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
     $p = Start-Tree $psi
     $err = $p.StandardError.ReadToEndAsync()
     $out = New-Object System.Text.StringBuilder
-    $last = Get-Date
-    $tick = $last
+    $last = Get-AwakeTime
     $stalled = $false
     $pending = $null
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
-        $now = Get-Date
-        $last = $last + (Get-SleepGap $tick $now)
-        $tick = $now
-        $left = ($last.AddMinutes($StallMinutes) - $now).TotalMilliseconds
+        Wait-PowerPause
+        $left = ($last + [timespan]::FromMinutes($StallMinutes) - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { $stalled = $true; break }
         if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
@@ -137,13 +133,12 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         $line = $pending.Result
         $pending = $null
         if ($null -eq $line) { break }
-        $last = Get-Date
-        $tick = $last  # сон до цієї події вже скинуто, вдруге його не додавати
+        $last = Get-AwakeTime
         [void]$out.Append($line).Append("`n")
         [System.IO.File]::AppendAllText($LogFile, $line + "`n", $script:Utf8)
         $type = ''
         if ($line -match '"type"\s*:\s*"([^"]{1,60})"') { $type = $Matches[1] }
-        [System.IO.File]::AppendAllText($EventsFile, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
+        [System.IO.File]::AppendAllText($EventsFile, (Get-Date).ToString('s') + "`t" + $type + "`n", $script:Utf8)
     }
     if (-not $stalled -and -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
     if (-not $stalled) { $p.WaitForExit() }
@@ -449,21 +444,11 @@ function Get-Quota([string]$Model, [switch]$Fresh, [long]$After = 0) {
         ResetAt = $(if ($null -ne $ref.Reset) { $ref.Reset.ToUnixTimeSeconds() } else { 0L }); Left = $ref.Left }
 }
 
-# Клас моделі за назвою: код — flash, проєктування — pro; інше — без каскаду.
-function Get-ModelClass([string]$Model) {
-    $t = @(Get-NameTokens $Model)
-    if ($t -contains 'flash') { return 'code' }
-    if ($t -contains 'pro') { return 'design' }
-    ''
-}
+# Codex у каскаді: лише з -EnableCodex і gpt-моделлю в -CodexFallbackModel (heartbeat `codex_fallback` — для claude_run.ps1).
+function Test-CodexFallback { [bool]($EnableCodex -and $CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') }
 
-# Кандидати за порядком: модель позначки → [claude-opus-5-5-high для проєктування] → Codex (лише з -CodexFallbackModel).
-function Get-Cascade([string]$Model) {
-    $c = @($Model)
-    if ((Get-ModelClass $Model) -eq 'design') { $c += $script:ClaudeCascadeModel }
-    if ($EnableCodex -and $CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') { $c += $CodexFallbackModel }
-    $c
-}
+# Кандидати за порядком (Get-CascadePlan, queue_lanes.ps1 — той самий порядок читає claude_run.ps1 для простою).
+function Get-Cascade([string]$Model) { @(Get-CascadePlan $Model $(if (Test-CodexFallback) { $CodexFallbackModel } else { '' })) }
 
 # Рушій наряду за позначкою й квотою пулів. Model — фактична модель (каскад); Quota — пулу першого кандидата, якщо всі
 # на 0 % (Blocked); Exe $null — рушія нема на ноутбуці. -After — позначка чекала скидання до цього часу (unix): квоту
@@ -540,7 +525,7 @@ function Get-TaskRole([string]$TaskText) {
     'ВИКОНАВЕЦЬ'
 }
 
-function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy', [string]$TaskDir = '') {
+function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy', [string]$TaskDir = '', [string]$MergeStep = '') {
     $taskSource = Get-TaskSource $M
     $branch = "gemini/$($M.Slug)"
     $adapter = $(if ($EngineName -eq 'codex') { 'адаптер — лише цей текст' } else { 'адаптер середовища — `GEMINI.md`' })
@@ -559,7 +544,7 @@ function Get-Prompt($M, [string]$TaskText, [string]$EngineName = 'agy', [string]
 - Наряд — ``$taskSource`` з ``main`` на коміті $($M.Sha); повний текст — нижче між рисками.
 - Гілку ``$branch`` уже вибрано: працюй і коміть лише в ній. Не пуш і не створюй бандла — це робить обгортка.
 $(if ($TaskDir) { '- ' + ((Get-TaskDirText $TaskDir) -replace "`n", "`n  ") })
-  Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.
+  Файлів ``.github/`` і ``аудит/адаптери/gemini/`` не змінюй: таку гілку не опублікують.$(if ($MergeStep) { "`n- " + $MergeStep })
 - Кожну команду виконуй на передньому плані й чекай її завершення: фонове завдання зупиняється разом із ходом, а
   звіт без результату — кинутий прогін.
 - Коміть після кожного завершеного кроку; $commitRule
@@ -657,10 +642,11 @@ function Get-AgyArgs($M, [string]$Conversation, [string[]]$Head) {
 }
 
 # Один хід у режимі stream: подія result, eof (процес закінчився) або timeout.
-function Wait-StreamResult($Run, [datetime]$Deadline) {
+function Wait-StreamResult($Run, [timespan]$Deadline) {
     while ($true) {
         if ($null -eq $Run.Pending) { $Run.Pending = $Run.Proc.StandardOutput.ReadLineAsync() }
-        $left = ($Deadline - (Get-Date)).TotalMilliseconds
+        Wait-PowerPause
+        $left = ($Deadline - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
         if (-not $Run.Pending.Wait([int][Math]::Min($left, 60000))) { continue }
         $line = $Run.Pending.Result
@@ -683,11 +669,7 @@ function Start-StreamRun($M, $Run) {
     $psi = New-StartInfo $script:Agy (Get-AgyArgs $M $Run.Conversation @()) $RepoDir
     $psi.RedirectStandardInput = $true
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
-    $stdinEncoding = [Console]::InputEncoding
-    try {
-        [Console]::InputEncoding = $script:Utf8
-        $Run.Proc = Start-Tree $psi
-    } finally { [Console]::InputEncoding = $stdinEncoding }
+    $Run.Proc = Invoke-WithStdinUtf8 { Start-Tree $psi }
     $Run.Stdin = New-Object System.IO.StreamWriter($Run.Proc.StandardInput.BaseStream, $script:Utf8)
     $Run.Stderr = $Run.Proc.StandardError.ReadToEndAsync()
     $Run.Pending = $null
@@ -731,7 +713,7 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     [pscustomobject]@{ Kind = 'result'; Result = $res }
 }
 
-function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
+function Invoke-Turn($M, $Run, [string]$Text, [timespan]$Deadline) {
     if ($Run.Engine.Name -ne 'agy') { return Invoke-OneShotTurn $M $Run $Text }
     if ($Mode -eq 'stream') {
         if ($null -eq $Run.Proc) { Start-StreamRun $M $Run }
@@ -748,7 +730,7 @@ function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
     $file = Join-Path $Run.Dir ('turn{0}.md' -f $Run.Turn)
     [System.IO.File]::WriteAllText($file, $Text, $script:Utf8)
     $short = "Прочитай файл $file і виконай його повністю"
-    $minutes = ($Deadline - (Get-Date)).TotalMinutes
+    $minutes = ($Deadline - (Get-AwakeTime)).TotalMinutes
     if ($minutes -le 0) { return [pscustomobject]@{ Kind = 'timeout'; Result = $null } }
     # Запас 2 хв: agy має встигнути сам віддати конверт із conversation_id по своїй --print-timeout.
     $r = Invoke-Native $script:Agy (Get-AgyArgs $M $Run.Conversation @('-p', $short)) $RepoDir ($minutes + 2)
@@ -770,7 +752,8 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         Responses = New-Object System.Collections.Generic.List[string] }
     # Codex без межі часу всього й ходу (власник 26.10): його зупиняє лише завислість; `agy` — як було.
     $unlimited = ($Sel.Engine.Name -eq 'codex')
-    $deadline = $(if ($unlimited) { [datetime]::MaxValue } else { (Get-Date).AddMinutes($TotalMinutes) })
+    # Межі — за часом неспання (Get-AwakeTime): сон ноутбука посеред ходу не закриває наряд як TIMEOUT.
+    $deadline = $(if ($unlimited) { [timespan]::MaxValue } else { (Get-AwakeTime) + [timespan]::FromMinutes($TotalMinutes) })
     $text = $Prompt
     $turns = 0
     $nudges = 0
@@ -781,7 +764,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         while ($true) {
             $turnDeadline = $deadline
             if (-not $unlimited) {
-                $turnDeadline = (Get-Date).AddMinutes($TurnMinutes)
+                $turnDeadline = (Get-AwakeTime) + [timespan]::FromMinutes($TurnMinutes)
                 if ($turnDeadline -gt $deadline) { $turnDeadline = $deadline }
             }
             $turns++
@@ -830,7 +813,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                 Write-Log "agy: $($r.Kind) без id розмови — догонки нема"
                 break
             }
-            if ((Get-Date) -ge $deadline) { $code = 'TIMEOUT'; break }
+            if ((Get-AwakeTime) -ge $deadline) { $code = 'TIMEOUT'; break }
             if ($nudges -ge $MaxNudges) { $code = 'NO_REPORT'; break }
             $nudges++
             $text = Get-Nudge $M (Test-Report $M $Start '') $why
@@ -1065,8 +1048,14 @@ function Invoke-Task($M, $Job) {
         $start = Get-RefSha "refs/remotes/origin/gemini/$($M.Slug)"
         # Повтор після відмови за квотою: від голови того прогону, якщо опублікована гілка — її предок (інакше NOT_FF).
         $wh = [string]$Job.head
+        $att = $null
         if ($wh -match '^[0-9a-f]{40}$' -and (Get-RefSha $wh) -and (-not $start -or (Invoke-Git @('merge-base', '--is-ancestor', $start, $wh) -AllowFail).Code -eq 0)) { $start = $wh }
-        if (-not $start) { $start = $main }
+        else {
+            # Нова спроба, не повтор: гілка попередньої — лише коли не злита; злита чи відсутня — від свіжого main (Get-AttemptStart).
+            $att = Get-AttemptStart $start $main
+            $start = $att.Start
+            if ($att.Mode -in @('MERGED', 'BEHIND')) { Write-Log "старт нової спроби $($M.Name): гілка $(if ($att.Mode -eq 'MERGED') { 'злита — від main' } else { 'відстала — main буде влито' })" }
+        }
         # Звірка голови — до копії задачі: мертва позначка копії не отримує.
         $review = Get-AutoReviewState $M.Slug
         if ($review -eq 'REVIEW_API') {
@@ -1089,10 +1078,16 @@ function Invoke-Task($M, $Job) {
         $taskDir = Join-Path (Join-Path $RunsDir 'w') $id
         try { [void](New-TaskCopy $taskDir $start $taskText) } catch { $copyFailed = $true; throw }
         [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))
+        $mergeStep = ''
+        if ($att -and $att.Mode -eq 'BEHIND') {
+            # Старт — після злиття: його коміт не рахується за роботу агента (Get-Facts: $start..голова).
+            $merged = Merge-MainIntoCopy $main "gemini/$($M.Slug)"
+            if ($merged) { $start = $merged } else { $mergeStep = Get-MergeStepText "gemini/$($M.Slug)" }
+        }
         $status.start = $start
         # Стан із початком гілки: перерваний прогін наступний запуск закриє й забандлить (Resume-Interrupted).
         Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
-        $prompt = Get-Prompt $MA $taskText $sel.Engine.Name $taskDir
+        $prompt = Get-Prompt $MA $taskText $sel.Engine.Name $taskDir $mergeStep
         [IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
         $res = Invoke-Agent $MA $start $prompt $dir $sel
         $tail = $res.Tail
@@ -1222,6 +1217,7 @@ function Start-Markers($Workers) {
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
             continue
         }
+        if (Test-OldChainMarker $m) { Add-Skip $m 'давня позначка ланцюга: перевірки ставить диспетчер, умова не p2'; continue }
         if ((@($Workers | Where-Object { $_.Slug -ceq $m.Slug -and -not $_.Proc.HasExited }).Count -gt 0) -or (Test-SlugBusy $m.Slug $script:Lanes)) { Add-Skip $m 'той самий наряд уже йде в слоті'; continue }
         if ($m.Gpu) {
             if ($null -eq $gpuWhy) { $gpuWhy = Get-GpuBusyReason }
@@ -1268,19 +1264,32 @@ function Start-Markers($Workers) {
     $started
 }
 
-# Здоров'я для стану ноутбука (10971; лише показ): розмір профілю gemini (-ProfileDir; нема теки — порожньо) — не
-# частіше за usage_minutes (кеш health.json), і скільки позначок agy стоїть на групі квоти з 0 % (усі групи моделі — 0 %,
-# як Get-Quota).
+# Розмір профілю gemini (-ProfileDir) міряє окремий процес цього скрипта (-MeasureProfile): обхід ~245 ГБ ішов ~15 хв
+# (вимір 11.11), і всередині heartbeat тримав головний цикл. Замок health.lock — один обхід водночас; час кешу
+# health.json — кінець обходу, тож наступний обхід не раніше ніж за usage_minutes після нього.
+function Invoke-ProfileMeasure {
+    $lock = Open-Lock (Join-Path $RunsDir 'health.lock')
+    if ($null -eq $lock) { return 0 }
+    try {
+        $r = Measure-DirBytes $ProfileDir
+        $c = [ordered]@{ time = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
+        Write-FileAtomic (Join-Path $RunsDir 'health.json') ($c | ConvertTo-Json -Compress)
+    } finally { $lock.Dispose() }
+    0
+}
+
+# Здоров'я для стану ноутбука (10971; лише показ): розмір профілю gemini з кешу health.json (застарів за usage_minutes —
+# запускає Invoke-ProfileMeasure окремим процесом і не чекає його), і скільки позначок agy стоїть на групі квоти з 0 %
+# (усі групи моделі — 0 %, як Get-Quota).
 function Get-GeminiHealth {
     $path = Join-Path $RunsDir 'health.json'
     $c = $null
     if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     if ($null -eq $c -or $now - [long]$c.time -ge 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) {
-        $r = Measure-DirBytes $ProfileDir
-        $c = [pscustomobject]@{ time = $now; read = (Get-UtcStamp (Get-Date)); profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
-        Write-FileAtomic $path ($c | ConvertTo-Json -Compress)
+        if (Test-LockFree (Join-Path $RunsDir 'health.lock')) { $script:ProfileMeasure =[System.Diagnostics.Process]::Start((New-StartInfo (Get-Process -Id $PID).Path @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $script:SelfPath, '-MeasureProfile', '-RunsDir', $RunsDir, '-ProfileDir', $ProfileDir) '' -NoRedirect)) }
     }
+    if ($null -eq $c) { $c = [pscustomobject]@{ profile = ''; skipped = ''; read = '' } }
     # Кеш /usage, як у квоті heartbeat: сам вимір agy не запускає; нема кешу — «?» у стані.
     $zero = ''
     try {
@@ -1298,6 +1307,9 @@ function Get-GeminiHealth {
 # heartbeat.json для стану ноутбука (claude_run.ps1 читає, перевіряючи кожне поле): смуги й слоти, квота груп моделей
 # (вікна, % залишку, скидання UTC, коли зчитано), остання відмова Codex, позначки в чеканні квоти. Лише назви й числа.
 function Write-Heartbeat([string]$Iso) {
+    # До Get-Limits смуг не знаємо: неповний heartbeat (без lanes) затер би повний попереднього проходу, а claude-run
+    # прочитав би «смуги вільні». Ізоляцію пишемо завжди — вона й без меж каже, що нових прогонів нема.
+    if (-not $Iso -and $null -eq $script:Limits) { return }
     $hb = [ordered]@{ read_utc = (Get-UtcStamp (Get-Date)); time = (Get-Date).ToString('s'); isolation = $(if ($Iso) { $Iso } else { 'OK' }) }
     if (-not $Iso -and $null -ne $script:Limits) {
         $lanes = @(); $first = $null
@@ -1325,6 +1337,7 @@ function Write-Heartbeat([string]$Iso) {
                 }) }
         } catch { $null = $_ }
         try { $hb.codex = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+        $hb.codex_fallback = (Test-CodexFallback)
         $hb.wait = @(foreach ($w in @(Get-WaitingMarkers | Select-Object -First 12)) { [ordered]@{ marker = $w.Marker; until = $w.Until; g = $w.Group } })
         try { $hb.health = Get-GeminiHealth } catch { Write-Log "здоров'я: $($_.Exception.Message)" }
     }
@@ -1459,6 +1472,7 @@ function Restore-FinishedMarkerState([string]$Target) {
 
 
 function Main {
+    if ($MeasureProfile) { return (Invoke-ProfileMeasure) }
     if ($WorkerFile) { $script:Job = Read-WorkerJob $WorkerFile }
     $script:StateDir = Join-Path $RunsDir 'state'
     $script:SlotDir = Join-Path $RunsDir 'slots'
@@ -1512,6 +1526,7 @@ function Main {
                 Clear-OrphanClaims $RunsDir
                 $script:Agy = Find-EngineExe $AgyExe
                 if ($script:Agy) { [void](Read-Usage) }
+                Wait-PowerPause  # без світла нові позначки не стартують
                 $started = Start-Markers $workers
                 Update-HoldSignals $script:Held { param($l) Add-HoldLine $l }
             } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }
