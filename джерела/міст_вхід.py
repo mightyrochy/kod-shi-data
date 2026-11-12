@@ -28,6 +28,8 @@ import протокол as _ПР
 from протокол import (РЕГ_ІД_ПРАВИЛА, без_ід_рядків, без_ід,
                       без_ід_глибоко)
 import каблук as _КБ
+import face_features as _ОЗ
+import портрет_вимір as _ПВ
 import trace as _СЛ
 
 СЛОТИ = ("верх", "низ", "взуття", "сумка")
@@ -101,12 +103,52 @@ def _джерело_кольору(d):
     return дж
 
 
-def features(d):
-    """Риси з hex-входу та його походження: (F, шкіра, пасма, очі, точки шкіри).
+def вимір_портрета(d):
+    """Вимір кадру портрета з входу показу (`портрет_вимір.виміряти`, ключ `портрет_вимір`), коли ворота кадру
+    пройдено й є всі три риси; інакше None — діє hex моделі під власним ім'ям (`model_hex`)."""
+    в = d.get("портрет_вимір")
+    if not isinstance(в, dict) or в.get("стан") != "вимір":
+        return None
+    if not all(isinstance(в.get(к), dict) and в[к].get("lab") for к in ("шкіра", "волосся", "очі")):
+        return None
+    return в
 
-    Оцінка моделі не отримує протоколу камери. Додані пасма й кільце
-    успадковують спільне походження профілю через `_meta`.
+
+def _features_виміру(d, вим):
+    """Риси з виміру кадру: Lab, похибка оцінки (`se_L`, `se_ab`), джерело «uncontrolled» і слід виміру з
+    певністю класів (`портрет_вимір.певні`). Кільце райдужки з hex моделі сюди не домішується: одне джерело на профіль."""
+    lab = lambda к: tuple(float(x) for x in вим[к]["lab"])
+    точки = [tuple(float(x) for x in т) for т in (вим["шкіра"].get("точки") or [вим["шкіра"]["lab"]])]
+    ш, о = lab("шкіра"), lab("очі")
+    вл = зсув_волосся([lab("волосся")], d.get("L_волосся"))
+    if d.get("L_шкіра") is not None:
+        ш = (float(d["L_шкіра"]), ш[1], ш[2])
+    риси = {"шкіра": (ш,) + _похибки(вим["шкіра"]), "волосся": (вл[0],) + _похибки(вим["волосся"]),
+            "очі": (о,) + _похибки(вим["очі"])}
+    будувати = lambda в: cs.features(в["шкіра"], в["волосся"], в["очі"], джерело=_ПВ.ДЖЕРЕЛО)
+    певні = _ПВ.певні(риси, lambda в: _ОЗ.класи(будувати(в), _ПВ.ДЖЕРЕЛО))
+    F = будувати({р: в[0] for р, в in риси.items()})
+    for р, (_, se_L, se_ab) in риси.items():
+        F[р].update(se_L=se_L, se_ab=se_ab)
+    F["_meta"]["protocol"] = _ПВ.ДЖЕРЕЛО
+    F["_meta"]["вимір_портрета"] = dict(певні=певні, шум_зон=вим["шкіра"].get("шум_зон"),
+                                        n={р: вим[р].get("n") for р in ("шкіра", "волосся", "очі")})
+    return F, ш, вл, о, точки
+
+
+def _похибки(риса):
+    return (float(риса.get("se_L") or 0.0), float(риса.get("se_ab") or 0.0))
+
+
+def features(d):
+    """Риси з входу та їхнє походження: (F, шкіра, пасма, очі, точки шкіри).
+
+    Вимір кадру портрета (`вимір_портрета`) — риси, які зміряв код; без нього — hex моделі зору, оцінка
+    (`model_hex`) без протоколу камери. Додані пасма й кільце успадковують спільне походження профілю через `_meta`.
     """
+    вим = вимір_портрета(d)
+    if вим:
+        return _features_виміру(d, вим)
     точки = [cs.hx(x) for x in шкіра(d)]
     ш = медіана_lab(точки); о = cs.hx(d["очі"])
     вл = зсув_волосся([cs.hx(x) for x in волосся(d)], d.get("L_волосся"))
@@ -183,8 +225,8 @@ def збірка(d, донорський=False, лише_палітра=False):
         # така сама властивість людини, як і контраст, тож донор його теж вивертає:
         # у донора волосся однотонне.
         #
-        # Донор змінює кольори, але не спосіб, у який їх отримано.
-        F = cs.features(ш, в, о, джерело=_джерело_кольору(d))
+        # Донор змінює кольори, але не спосіб, у який їх отримано (вимір кадру — «uncontrolled», не `source` входу).
+        F = cs.features(ш, в, о, джерело=(F0.get("_meta") or {}).get("protocol") or _джерело_кольору(d))
     else:
         F = F0
     # АКСЕСУАРНІ ВИМІРИ ЇДУТЬ ТИМ САМИМ ПАКЕТОМ (Н-V13-025), щоб таблиця воріт
@@ -546,18 +588,24 @@ def індекс_гілки(розвилка, гілка, схема):
         "Take the colours from her, not from the background or her clothes.",
         "If the light makes the photo yellow or blue, correct the colours to neutral daylight and "
         "record the correction.",
+        "Zones: boxes where the code measures her colours itself, in thousandths of the photo — [left, top, right, "
+        "bottom], 0–1000 from the top-left corner. \"cheek_left\", \"cheek_right\" and \"forehead\" — clear skin "
+        "only; \"hair\" — a patch fully inside the hair, in its largest-area tone; \"iris_left\" and "
+        "\"iris_right\" — a box tight around each iris. A zone you cannot see is null.",
     ),
     вихід="PORTRAIT_COLOURS",
     скелет={"photo": "|".join((ПОРТРЕТ_ПРИДАТНИЙ,) + ПРИЧИНИ_ПОРТРЕТА),
             "skin": ["<hex>"], "hair": ["<hex>"], "eyes": "<hex>", "limbal_ring": "<hex>",
-            "light_cast": "none|yellow|blue", "light_correction": "none|slight|strong"},
+            "light_cast": "none|yellow|blue", "light_correction": "none|slight|strong",
+            "zones": {к: ["<left>", "<top>", "<right>", "<bottom>"] for к in _ПВ.ЗОНИ}},
     поля_виходу={"photo": "usable, or why it is not",
                  "skin": "#rrggbb at each point",
                  "hair": "#rrggbb, the largest-area tone first",
                  "eyes": "#rrggbb of the iris body",
                  "limbal_ring": "#rrggbb, or null",
                  "light_cast": "the cast you corrected",
-                 "light_correction": "how much you corrected it"},
+                 "light_correction": "how much you corrected it",
+                 **{"zones." + к: "four numbers: left, top, right, bottom in thousandths of the photo; null if you cannot see it" for к in _ПВ.ЗОНИ}},
     межі=("лише_вхід", "невідомо"),
     мова_промпту="en",
 )
@@ -598,7 +646,7 @@ def _hex_кольору(значення):
 
 def прийняти_колір(відповідь):
     """Сира відповідь моделі про кольори з портрета → dict(стан, шкіра, волосся, очі, кільце, освітлення, відмова,
-    джерело, нотатки, помилки, повтор).
+    джерело, нотатки, помилки, повтор, зони).
 
     `стан`: «готово» (шкіра, волосся й око прочитано), «відмова» (`відмова` — код причини; кольорів із відмови не
     беремо: hex ішов би в розрахунок, який не вміє сумніватись) або «брак_точок» (чого не прочитано — `помилки`).
@@ -608,7 +656,7 @@ def прийняти_колір(відповідь):
     об, причина, нот = _ПР.розбір_за_схемою(текст, "PORTRAIT_COLOURS")
     нотатки = list(нот.get("нормалізовано") or [])
     р = dict(стан="брак_точок", шкіра=[], волосся=[], очі=None, кільце=None, освітлення=None, відмова=None,
-             джерело="json", нотатки=нотатки, помилки=[], повтор=None)
+             джерело="json", нотатки=нотатки, помилки=[], повтор=None, зони={})
     if isinstance(об, dict) and any(к in об for к in ("photo", "skin", "hair", "eyes")):
         # «photo» без коду (нема чи `true`) — розбіжність зі схемою, як будь-яка інша: повтор називає її словами
         # (Е2-межі п.4); доти код сам читав його як «usable» — і hex ішов у розрахунок без її придатності
@@ -624,6 +672,8 @@ def прийняти_колір(відповідь):
         сила = об.get("light_correction") if об.get("light_correction") in _СИЛА_КОРЕКЦІЇ else None
         if вид or сила:
             р["освітлення"] = dict(cast=вид, correction=сила)
+        # рамки зон для виміру кадру кодом (`портрет_вимір`): показ ріже їх із портрета й шле в `колір` {виміряти}
+        р["зони"] = _ПВ.рамки(об.get("zones"))
         р["помилки"] = _ПР.перевірити(_ПР.ПОЗА_ПАКЕТОМ["PORTRAIT_COLOURS"],
                                       dict(об, photo=ПОРТРЕТ_ПРИДАТНИЙ) if isinstance(фото, str) else об)
     else:
