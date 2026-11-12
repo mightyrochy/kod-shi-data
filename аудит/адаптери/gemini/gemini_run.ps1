@@ -1268,17 +1268,23 @@ function Start-Markers($Workers) {
 # і всередині heartbeat тримав головний цикл. Кеш health.json, замок health.lock й запуск — Get-MeasureCache.
 function Invoke-ProfileMeasure {
     Save-MeasureCache $RunsDir 'health' {
-        $r = Measure-DirBytes $ProfileDir
-        [ordered]@{ profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' }) }
+        # Куди йде місце: найбільші теки першого рівня профілю й найбільші копії задач (діти `w`) — тим самим обходом;
+        # `w` поза профілем міряється окремо.
+        $copies = Join-Path $RunsDir 'w'
+        $r = Measure-DirBytes $ProfileDir $copies -Breakdown
+        $cp = @($(if ($null -ne $r) { $r.Under }))
+        if ($cp.Count -eq 0) { $w = Measure-DirBytes $copies -Breakdown; if ($null -ne $w) { $cp = @($w.Top) } }
+        [ordered]@{ profile = $(if ($null -ne $r) { [string]$r.Bytes } else { '' }); skipped = $(if ($null -ne $r) { [string]$r.Skipped } else { '' })
+            top = $(if ($null -ne $r) { ConvertTo-SizeList $r.Top } else { '' }); copies = (ConvertTo-SizeList $cp) }
     }
 }
 
-# Здоров'я для стану ноутбука (10971; лише показ): розмір профілю gemini з кешу health.json (застарів за usage_minutes —
+# Здоров'я для стану ноутбука (10971; лише показ): розмір профілю gemini з розбивкою з кешу health.json (застарів за usage_minutes —
 # запускає Invoke-ProfileMeasure окремим процесом і не чекає його), і скільки позначок agy стоїть на групі квоти з 0 %
 # (усі групи моделі — 0 %, як Get-Quota).
 function Get-GeminiHealth {
-    $c = Get-MeasureCache $RunsDir 'health' @('-MeasureProfile', '-RunsDir', $RunsDir, '-ProfileDir', $ProfileDir) (60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes'))
-    if ($null -eq $c) { $c = [pscustomobject]@{ profile = ''; skipped = ''; read = '' } }
+    $c = Get-MeasureCache $RunsDir 'health' @('-MeasureProfile', '-RunsDir', $RunsDir, '-ProfileDir', $ProfileDir) (60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) 'copies'
+    if ($null -eq $c) { $c = [pscustomobject]@{ profile = ''; skipped = ''; read = ''; top = ''; copies = '' } }
     # Кеш /usage, як у квоті heartbeat: сам вимір agy не запускає; нема кешу — «?» у стані.
     $zero = ''
     try {
@@ -1290,7 +1296,7 @@ function Get-GeminiHealth {
                     $hit = @(Get-ModelGroups $_.Model $groups); $hit.Count -gt 0 -and @($hit | Where-Object { $_.Left -eq 0 }).Count -eq $hit.Count }).Count
         }
     } catch { $null = $_ }
-    [ordered]@{ profile = [string]$c.profile; skipped = [string]$c.skipped; read = [string]$c.read; zero = $zero }
+    [ordered]@{ profile = [string]$c.profile; skipped = [string]$c.skipped; read = [string]$c.read; zero = $zero; top = [string](Get-JsonProp $c 'top'); copies = [string](Get-JsonProp $c 'copies') }
 }
 
 # heartbeat.json для стану ноутбука (claude_run.ps1 читає, перевіряючи кожне поле): смуги й слоти, квота груп моделей

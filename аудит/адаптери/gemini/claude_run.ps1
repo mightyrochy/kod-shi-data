@@ -248,7 +248,7 @@ function Read-GeminiBeat {
     $b.Unsourced = @(@(Get-JsonProp $j 'unsourced' | Select-Object -First 16) | ForEach-Object { [string]$_ } | Where-Object { $fields -ccontains $_ })
     $h = Get-JsonProp $j 'health'
     $pb = & $get $h 'profile'; $ps = & $get $h 'skipped'; $pu = & $utc (& $get $h 'read')
-    if ($pb -match '^[0-9]{1,15}$' -and $ps -match '^[0-9]{1,9}$' -and $pu) { $b.Profile = [pscustomobject]@{ Bytes = [long]$pb; Skipped = [int]$ps; Read = $pu } }
+    if ($pb -match '^[0-9]{1,15}$' -and $ps -match '^[0-9]{1,9}$' -and $pu) { $b.Profile = [pscustomobject]@{ Bytes = [long]$pb; Skipped = [int]$ps; Read = $pu; Top = @(ConvertFrom-SizeList (& $get $h 'top')); Copies = @(ConvertFrom-SizeList (& $get $h 'copies')) } }
     $z = & $get $h 'zero'
     if ($z -match '^[0-9]{1,5}$') { $b.Zero = $z }
     $mk = & $get $j 'marker'
@@ -364,6 +364,11 @@ function Get-HealthLines($G, $Cq) {
     $sizes = @(foreach ($d in @($h.dirs)) { "$($d.name) $(if ([long]$d.bytes -lt 0) { 'нема' } else { Format-Gb $d.bytes })$(if ([int]$d.skipped -gt 0) { " (недоступних тек $($d.skipped))" })" })
     $sizes += "профіль gemini $(if ($null -ne $G.Profile) { (Format-Gb $G.Profile.Bytes) + $(if ($G.Profile.Skipped -gt 0) { " (недоступних тек $($G.Profile.Skipped))" }) + " (зчитано $($G.Profile.Read))" } else { '? (gemini-run не дав)' })"
     $lines += "- розміри: $($sizes -join ' · ')"
+    if ($null -ne $G.Profile) {
+        foreach ($row in @(@('профіль gemini за теками', $G.Profile.Top), @('копії задач gemini (gemini-runs\w)', $G.Profile.Copies))) {
+            $lines += "- $($row[0]): $(if (@($row[1]).Count) { (@($row[1]) | ForEach-Object { "$($_.Name) $(Format-Gb $_.Bytes)" }) -join ' · ' } else { 'нема' })"
+        }
+    }
     $ms = @(try { Get-Markers } catch { Write-Log "здоров'я: позначки не прочитано"; @() })
     $lines += @('', "Позначки черги: $($ms.Count) (вік — від коміту голови)", '', '| рушій | вид | < 1 год | < 1 доба | ≥ 1 доба |', '|---|---|---|---|---|')
     $keys = @{}; $cnt = @{}
