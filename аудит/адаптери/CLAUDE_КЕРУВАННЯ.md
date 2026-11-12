@@ -25,8 +25,8 @@
 
 - Стан сесії: `get_session(<id>)` того самого ходу, час UTC.
   `list_*` — фільтри й `limit` ≤ 10, `list_events` — `kinds`; не тягти весь список у контекст.
-- Недоставлені листи: `list_triggers(recurring=false, include_completed=true, limit=6)`, звірити `last_run`.
-  Прямий патч між сесіями — `send_message`, доставка — `updated_at`; звичайний лист — `CLAUDE.md`, «Лист».
+- Недоставлені листи: `list_triggers(recurring=false, include_completed=true, limit=6)`, звірити `last_run`; лист —
+  `CLAUDE.md`, «Лист».
 - Нагляд PR — такт пульсу; `subscribe_pr_activity` закрито в `.claude/settings.json` — підписки дали 44 % пробуджень
   диспетчера (власник 29.10). Останній коментар — `get_comments(perPage=1, page=<кількість>)`. Архів/повернення —
   `archive_session` / `unarchive_session`.
