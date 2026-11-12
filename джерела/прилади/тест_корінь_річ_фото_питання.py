@@ -94,6 +94,15 @@ class КласА(unittest.TestCase):
     def test_а1_не_місце_протокол(self):
         self.assertNotIn("а1", правила(вхід('п = d.get("пікселі") or {}\nreturn п["дані"]')))
 
+    def test_а1_не_місце_вихід_кроку_коду(self):
+        self.assertNotIn("а1", правила(вхід('с = (d.get("суд") or {}).get("зміни")[0]\nreturn с["ціль"]')))
+
+    def test_а1_не_місце_функція_знає_ключ(self):
+        дер = вхід('return _елемент(d)["місце"]')
+        дер["м.py"] += ('\ndef _елемент(х):\n    if "місце" in х:\n        return х\n'
+                        '    raise ValueError("нема поля `місце`")\n')
+        self.assertNotIn("а1", правила(дер))
+
     def test_а2_місце(self):
         self.assertIn("а2", правила(вхід('return statistics.median([x for x in d.get("тони") or []])')))
 
@@ -174,7 +183,7 @@ class КласБ(unittest.TestCase):
         self.assertEqual(р, [])
 
     def _промпт(self, правило):
-        return {"м.py": "import json\nОГ = Оголошення(задача='x', правила=(%r,))\n\ndef Оголошення(**к):\n    return к\n\n"
+        return {"м.py": "import json\nОГ = Оголошення(задача='x', вхід=('question',), правила=(%r,))\n\ndef Оголошення(**к):\n    return к\n\n"
                         "def вхід(в):\n    return json.dumps(ОГ)\n" % правило}
 
     def test_б3_місце(self):
@@ -182,6 +191,39 @@ class КласБ(unittest.TestCase):
 
     def test_б3_не_місце(self):
         self.assertNotIn("б3", правила(self._промпт("Answer in the language of her question.")))
+
+    def test_б3_не_місце_оголошення_без_питання(self):
+        дер = {"м.py": "import json\nОГ = Оголошення(задача='x', правила=('Two to four sentences.',))\n\n"
+                       "def Оголошення(**к):\n    return к\n\ndef вхід(в):\n    return json.dumps(ОГ)\n"}
+        self.assertNotIn("б3", правила(дер))
+
+    def test_б3_місце_поза_оголошенням(self):
+        дер = {"м.py": "import json\nПРАВИЛО = ('Her new question: answer it alone, in one to four sentences.')\n\n"
+                       "def вхід(в):\n    return json.dumps({'rule': ПРАВИЛО})\n"}
+        self.assertIn("б3", правила(дер))
+
+    def test_б3_не_місце_не_відповідь_на_питання(self):
+        дер = {"м.py": "import json\n\ndef вхід(в):\n"
+                       "    return json.dumps({'reply': 'one sentence for her: what you understood or what you ask'})\n"}
+        self.assertNotIn("б3", правила(дер))
+
+
+class Входи(unittest.TestCase):
+    """Входи шляху — з викликів показу до моста: ендпойнт із її фото — вхід, без фото — ні."""
+
+    ДЕРЕВО = {
+        "bridge.py": "from а import фото_е\nfrom б import слова_е\n\n"
+                     "def виклик(ім, вхід):\n    return {'фото_е': фото_е, 'слова_е': слова_е}[ім](вхід)\n",
+        "а.py": "import json\n\ndef фото_е(в):\n    d = json.loads(в)\n    return d['очі']\n",
+        "б.py": "import json\n\ndef слова_е(в):\n    d = json.loads(в)\n    return d['текст']\n",
+        "показ/п.js": "async function оцінитиП(ф, т) {\n  await містП('фото_е', {фото: ф});\n"
+                      "  await містП('слова_е', {текст: т});\n}\n",
+    }
+
+    def test_вхід_з_фото(self):
+        місця, (_д, входи) = П.лічба(дерево(self.ДЕРЕВО))
+        self.assertEqual(входи, (("а", "фото_е"),))
+        self.assertEqual([(м.файл, м.правило) for м in місця], [("джерела/а.py", "а1")])
 
 
 class Паспорт(unittest.TestCase):
@@ -216,6 +258,13 @@ class Паспорт(unittest.TestCase):
 
     def test_п7_два_чотири_речення(self):
         self.є("міст_стилістка.py", 82, "б3")
+        self.є("оцінка_образу.py", 1387, "б3")
+        self.є("оцінка_образу.py", 1552, "б3")
+
+    def test_входи_з_показу(self):
+        for в in (("міст_річ", "річ_з_фото"), ("міст_оцінка", "оцінка"), ("міст_стилістка", "стилістка"),
+                  ("міст_вхід", "промпт_кольору"), ("міст_відповіді", "колір")):
+            self.assertIn(в, self.довжина[1])
 
 
 def tearDownModule():
