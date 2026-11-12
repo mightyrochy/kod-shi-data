@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tailored blazer, single-breasted, hip length, slightly structured shoulder, charcoal grey (#4A4F57), textured wool tweed-like twill\\n\\nStraight-leg trousers, high waist, full length to the ankle bone, charcoal grey (#4A4F57), matching wool twill\\n\\nFine-knit crew-neck sweater, tucked in, hip-skimming, soft ivory (#EFE6D6), merino wool\\n\\nAnkle boots, almond toe, low block heel, ankle height, dark chocolate brown (#4B3A32), smooth leather\\n\\nLeather belt, slim, brushed-gold buckle, dark chocolate brown (#4B3A32), smooth leather\\n\\nStructured tote bag, medium size, top handles, dark chocolate brown (#4B3A32), smooth leather\\n\\nSmall stud earrings, round, soft gold (#C9A66B), polished metal\\n\\nWhy this outfit works: it keeps to a calm, classic office look with a quiet palette of grey, ivory and brown, which suits the restrained mood you asked for. The tailored blazer and straight trousers give a clean, polished line, while the fine merino knit adds softness for an autumn day. The warm ivory sits gently against your light golden hair and warm skin, and the muted grey brings out the soft green-grey of your eyes. Brown leather accents tie the look together and keep it neat without drawing attention.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Tailored blazer\\\",\\\"details\\\":\\\"single-breasted, hip length, slightly structured shoulder, textured wool tweed-like twill\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#4A4F57\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg trousers\\\",\\\"details\\\":\\\"high waist, full length to the ankle bone, wool twill\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#4A4F57\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Fine-knit crew-neck sweater\\\",\\\"details\\\":\\\"tucked in, hip-skimming, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#EFE6D6\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"almond toe, low block heel, ankle height, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#4B3A32\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Leather belt\\\",\\\"details\\\":\\\"slim, brushed-gold buckle, smooth leather\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#4B3A32\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Structured tote bag\\\",\\\"details\\\":\\\"medium size, top handles, smooth leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#4B3A32\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small stud earrings\\\",\\\"details\\\":\\\"round, polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A66B\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2145,\"output_tokens\":446},\"stop_reason\":\"end_turn\"}"
+ }
+}

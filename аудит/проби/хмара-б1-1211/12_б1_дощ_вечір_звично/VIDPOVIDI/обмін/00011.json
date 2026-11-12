@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Refined knit: V-neck sweater, fitted through the shoulders and skimming the hips, hip length, deep emerald (#1F5C4A), fine merino wool\\n\\nSkirt: A-line, mid-calf length, with a soft flare from the waist, deep burgundy (#5E1F2B), lined wool crepe\\n\\nTights: opaque, full length, black (#1A1A1A), matte microfibre with a fleece-soft feel\\n\\nOuter layer: belted trench coat, knee length, with a storm flap and a hood, camel (#B5835A), water-repellent cotton-blend gabardine\\n\\nShoes: ankle boots with a low block heel, black (#1C1A19), waterproof smooth leather\\n\\nScarf: wide and long, wraps twice at the neck, warm gold-ochre (#C8963E), soft wool-cashmere blend\\n\\nUmbrella: large, wind-resistant, black (#111111), reinforced nylon canopy\\n\\nBag: compact crossbody with a zip closure, dark chocolate (#3B2417), grained leather\\n\\nEarrings: medium hoops, warm gold (#D4A64A), polished brass with gold plating\\n\\nThis outfit suits a neat evening at the cinema followed by dinner: a refined knit with a wool skirt and ankle boots is polished without being stiff. The emerald and burgundy are rich jewel tones that glow against your deep skin, dark hair and brown eyes under the cinema's artificial light, and the gold accents echo that warmth. The belted hooded coat, the wide scarf and the opaque tights handle 9 °C, wind and a downpour, while the mid-calf A-line skirt moves easily and stays dry-hemmed under the coat. The low block heel and waterproof leather keep you steady and comfortable on wet pavements, from the cinema seat to the restaurant table.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"V-neck sweater\\\",\\\"details\\\":\\\"fitted through the shoulders, skimming the hips, hip length, fine merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#1F5C4A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"A-line skirt\\\",\\\"details\\\":\\\"mid-calf length, soft flare from the waist, lined wool crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#5E1F2B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tights\\\",\\\"details\\\":\\\"opaque, full length, matte microfibre with a fleece-soft feel\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Belted trench coat\\\",\\\"details\\\":\\\"knee length, storm flap, hood, water-repellent cotton-blend gabardine\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B5835A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"low block heel, waterproof smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1C1A19\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"wide and long, wraps twice at the neck, soft wool-cashmere blend\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#C8963E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Umbrella\\\",\\\"details\\\":\\\"large, wind-resistant, reinforced nylon canopy\\\",\\\"slot\\\":\\\"accessory\\\",\\\"color_hex\\\":\\\"#111111\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Crossbody bag\\\",\\\"details\\\":\\\"compact, zip closure, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#3B2417\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Hoop earrings\\\",\\\"details\\\":\\\"medium hoops, polished brass with gold plating\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#D4A64A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2293,\"output_tokens\":575},\"stop_reason\":\"end_turn\"}"
+ }
+}
