@@ -570,9 +570,9 @@ function Get-ContinueBranch([string]$Slug) {
     ''
 }
 
-function Get-Prompt($M, [string]$TaskText, [string]$Continue, [string]$TaskDir, [bool]$MergeMain = $false) {
+function Get-Prompt($M, [string]$TaskText, [string]$Continue, [string]$TaskDir, [string]$MergeMain = '') {
     $cont = $(if ($Continue) { "Продовжуй з гілки ``$Continue``: попередня спроба цього наряду вже запушила її.`n" } else { '' })
-    if ($MergeMain) { $cont += (Get-MergeStepText $Continue) + "`n" }
+    if ($MergeMain) { $cont += (Get-MergeStepText $Continue $MergeMain) + "`n" }
 @"
 Середовище й кроки ноутбука — ``аудит/НОУТБУК.md``: прочитай; канал результату — останній рядок твоєї відповіді
 («НОУТБУК ГОТОВО <гілка> <повний SHA>» чи «НОУТБУК ЗАБЛОКОВАНО: …»): його читає обгортка claude-run і сама пише
@@ -935,13 +935,13 @@ function Invoke-Task($M, $Job) {
     }
     if (Test-AutoPlanEmpty $M.Slug $taskText) { return (Complete-Task $M $statePath $id 'EMPTY_PLAN') }
     $cont = Get-ContinueBranch $M.Slug
-    $mergeMain = $false
+    $mergeMain = ''
     if ($cont) {
         # Гілка попередньої спроби: злита в main — агент іде від main, не з неї; відстала — перший крок влити main (Get-AttemptStart).
         [void](Invoke-Git @('fetch', '-q', '--no-tags', '--refmap=', 'origin', "+refs/heads/${cont}:$script:RemoteRoot/$cont") -AllowFail)
         $att = Get-AttemptStart (Get-RefSha "$script:RemoteRoot/$cont") $main
         if ($att.Mode -eq 'MERGED') { Write-Log "позначка $($M.Name): $cont злита в main — старт від main"; $cont = '' }
-        elseif ($att.Mode -eq 'BEHIND') { Write-Log "позначка $($M.Name): $cont відстала від main — перший крок влити main"; $mergeMain = $true }
+        elseif ($att.Mode -eq 'BEHIND') { Write-Log "позначка $($M.Name): $cont відстала від main — перший крок влити main"; $mergeMain = $main }
     }
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
     [void](New-Item -ItemType Directory -Force -Path $runDir)
@@ -959,7 +959,7 @@ function Invoke-Task($M, $Job) {
 function Get-TaskCopyDir([string]$Id) { Join-Path (Join-Path $WorkDir 'w') $Id }
 
 # Прогін claude у копії задачі ($RepoDir) і кінець за звітом.
-function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$Cont, [string]$RunDir, [string]$StatePath, [string]$TaskDir, [bool]$MergeMain = $false) {
+function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$Cont, [string]$RunDir, [string]$StatePath, [string]$TaskDir, [string]$MergeMain = '') {
     $id = [string]$Job.id
     $prompt = Get-Prompt $M $TaskText $Cont $TaskDir $MergeMain
     [System.IO.File]::WriteAllText((Join-Path $runDir 'prompt.txt'), $prompt, $script:Utf8)

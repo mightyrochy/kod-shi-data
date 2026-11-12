@@ -176,9 +176,9 @@ try {
         $gem = & ([scriptblock]::Create((Get-FnText 'gemini_run.ps1' 'Get-Prompt') + "`nGet-Prompt @args")) ([pscustomobject]@{ Slug = 'konflikt'; Sha = 'a' * 40 }) 'НАРЯД' 'codex' '' $step
         $gemPlain = & ([scriptblock]::Create((Get-FnText 'gemini_run.ps1' 'Get-Prompt') + "`nGet-Prompt @args")) ([pscustomobject]@{ Slug = 'konflikt'; Sha = 'a' * 40 }) 'НАРЯД' 'codex' '' ''
         Check 'gemini: turn1 несе крок «влий origin/main, за змістом main» лише при конфлікті' ($step -cmatch 'origin/main' -and $step -cmatch 'за змістом' -and $gem.Contains($step) -and -not $gemPlain.Contains('Перший крок'))
-        $cl = & ([scriptblock]::Create((Get-FnText 'claude_run.ps1' 'Get-Prompt') + "`nGet-Prompt @args")) ([pscustomobject]@{ Slug = 'konflikt'; Sha = 'a' * 40 }) 'НАРЯД' 'claude/konflikt' '' $true
-        $clPlain = & ([scriptblock]::Create((Get-FnText 'claude_run.ps1' 'Get-Prompt') + "`nGet-Prompt @args")) ([pscustomobject]@{ Slug = 'konflikt'; Sha = 'a' * 40 }) 'НАРЯД' 'claude/konflikt' '' $false
-        Check 'claude: відстала гілка — у промпті крок влити main; без цього — як було' ($cl.Contains((Get-MergeStepText 'claude/konflikt')) -and $cl.Contains('Продовжуй з гілки') -and -not $clPlain.Contains('Перший крок'))
+        $cl = & ([scriptblock]::Create((Get-FnText 'claude_run.ps1' 'Get-Prompt') + "`nGet-Prompt @args")) ([pscustomobject]@{ Slug = 'konflikt'; Sha = 'a' * 40 }) 'НАРЯД' 'claude/konflikt' '' $main
+        $clPlain = & ([scriptblock]::Create((Get-FnText 'claude_run.ps1' 'Get-Prompt') + "`nGet-Prompt @args")) ([pscustomobject]@{ Slug = 'konflikt'; Sha = 'a' * 40 }) 'НАРЯД' 'claude/konflikt' '' ''
+        Check 'claude: відстала гілка — у промпті крок влити отриманий SHA main (не origin/main спільного клону); без цього — як було' ($cl.Contains((Get-MergeStepText 'claude/konflikt' $main)) -and $cl.Contains("git merge $main") -and -not $cl.Contains('origin/main') -and $cl.Contains('Продовжуй з гілки') -and -not $clPlain.Contains('Перший крок'))
         [void](Close-TaskCopy @('--branches', '--remotes'))
         Check 'обидві смуги обирають старт спільним Get-AttemptStart, без власної копії правила' ((Get-FnText 'gemini_run.ps1' 'Invoke-Task').Contains('Get-AttemptStart') -and (Get-FnText 'claude_run.ps1' 'Invoke-Task').Contains('Get-AttemptStart') -and (Get-FnText 'gemini_run.ps1' 'Invoke-Task').Contains('Merge-MainIntoCopy'))
     }

@@ -1366,9 +1366,11 @@ function Merge-MainIntoCopy([string]$Main, [string]$Branch) {
     ''
 }
 
-function Get-MergeStepText([string]$Branch) {
-    <# Крок промпту, коли обгортка не влила main сама (конфлікт) чи гілку веде агент: він вливає main першим кроком. #>
-    "Перший крок: влий свіжий ``origin/main`` у ``$Branch`` (``git merge origin/main``), конфлікти розв'язуй за змістом ``main``: гілка " +
+function Get-MergeStepText([string]$Branch, [string]$Main = 'origin/main') {
+    <# Крок промпту, коли обгортка не влила main сама (конфлікт) чи гілку веде агент: він вливає main першим кроком. $Main —
+    що влити: gemini — origin/main свого клону; claude-run освіжає лише свій простір посилань, а origin/main у спільному
+    клоні може бути старим, тож передає SHA main, отриманого в цьому проході. #>
+    "Перший крок: влий свіжий ``main`` у ``$Branch`` (``git merge $Main``), конфлікти розв'язуй за змістом ``main``: гілка " +
     "відстала від ``main``, тож код, який у ``main`` уже змінено чи прибрано, не лагодь і не відновлюй. Далі — наряд."
 }
 

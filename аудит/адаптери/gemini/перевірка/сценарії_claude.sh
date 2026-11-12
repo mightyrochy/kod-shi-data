@@ -183,5 +183,14 @@ SHA=$(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null)
 chk "fetch сусіда в полёті: origin/main клону посунуто ($(git -C "$W/clone" rev-parse --short refs/remotes/origin/main))" '[ "$(git -C "$W/clone" rev-parse refs/remotes/origin/main)" = "$NEXT" ]'
 chk "claude-run.log без «cannot lock ref»: $(grep -c 'cannot lock ref' "$W/cr/claude-run.log" 2>/dev/null || true) разів" '! grep -q "cannot lock ref" "$W/cr/claude-run.log" 2>/dev/null'
 chk "прохід дійшов до наряду: ГОТОВО з SHA origin (є: $(lines))" '[ -n "$SHA" ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $SHA МОДЕЛЬ $M" ]'
+echo "=== К12 відстала гілка: крок «влий main» несе SHA, отриманий claude-run, а не origin/main спільного клону (14592)"
+# claude-run освіжає лише refs/claude-run/*; refs/remotes/origin/main клону лишається таким, яким його лишили сусіди, — до:
+# у промпті «git merge origin/main», тобто стара голова.
+setup k12; mark "$SLUG/$M/1"; cr
+(cd "$W/seed"; git commit -q --allow-empty -m next; git push -q origin main 2>/dev/null); NEXT=$(git -C "$W/seed" rev-parse HEAD)
+STALE=$(git -C "$W/clone" rev-parse refs/remotes/origin/main)
+mark "$SLUG/cc-claude-opus-5-5/2"; cr
+chk "origin/main клону не освіжено (стара голова $(git -C "$W/clone" rev-parse --short refs/remotes/origin/main))" '[ "$(git -C "$W/clone" rev-parse refs/remotes/origin/main)" = "$STALE" ] && [ "$STALE" != "$NEXT" ]'
+chk "промпт відстала гілка: «git merge $NEXT» (свіжий main), без origin/main" 'P=$(prompt); [[ "$P" == *"Перший крок: влий свіжий"* && "$P" == *"git merge $NEXT"* && "$P" != *"origin/main"* ]]'
 
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD
