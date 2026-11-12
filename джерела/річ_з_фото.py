@@ -587,6 +587,8 @@ def фото_речей():
                 "fabric": "<code from codes.fabric when the texture is visible, else null>",
                 "cut": "<code from codes.cut or null>",
                 "length": "<code from codes.length or null>",
+                # довжина виробу з картки крамниці на фото (наряд Функція-купити-річ): край на її зрості рахує код
+                "length_cm": "<the item's length in cm when the shop card or text on the photo states it, else null>",
                 "pattern": "<code from codes.pattern>",
                 "formality": "<code from codes.formality: the occasion step the item suits — " + _БР.ЩАБЛІ_EN + ">",
                 "in_outfit": "<true | false | unknown>",
@@ -656,7 +658,8 @@ def речі_з_відповіді_фото(відповідь, фото, дос
             незнайомі.append("items[%d]: не обʼєкт" % н)
             continue
         р = {"фото": о.get("photo"), "назва": о.get("name"), "ошатність": о.get("formality"),
-             "вид": о.get("kind"), "чия": ключ_поля("owner", о.get("owner")) or "невідомо"}
+             "вид": о.get("kind"), "чия": ключ_поля("owner", о.get("owner")) or "невідомо",
+             "довжина_см": о.get("length_cm")}
         if о.get("kind") is not None and str(о.get("kind")).strip() not in _ВМ.ТАБЛИЦЯ["item_type"] \
                 and not _ВМ.невідомо(о.get("kind")):
             незнайомі.append("items[%d].kind: код «%s» поза переліком" % (н, о.get("kind")))
@@ -1777,7 +1780,7 @@ def вердикт(річ, F, T, сцен=None, source=ДЖЕРЕЛО_ФОТО_�
                               ("balance_contour_with_rest", dict(balance=_вільний(_р[0])))))
             else:
                 пройдено += 1
-    тіло_судилось = None
+    тіло_судилось, ризик = None, []
     if слот in ("верх", "низ") and річ_г is not None:
         # ТОЙ САМИЙ СУД, ЩО Й ОБРАЗУ (`суд_покупки`): край на її тілі (K-FIT-03, K-SIL-10), посадка (K-FIT-04), крій
         # проти фігури (K-BOD-02). Доти тут стояв рядок «судиться в образі з другою половиною» — і верх чи низ
@@ -1790,6 +1793,10 @@ def вердикт(річ, F, T, сцен=None, source=ДЖЕРЕЛО_ФОТО_�
             if з.get("сила") in ("strong", "soft", "default", "hard"):
                 знахідки.append(з)
                 рівень = "з умовою" if рівень == "личить" else рівень
+            elif з.get("сила") == "hint":
+                # ризик, який корпус називає, але не вада (міді — «найризикованіша довжина», K-SIL-10): рівня не
+                # знижує, а між речами, з яких вона вибирає, важить (`суд_покупки.вибір`)
+                ризик.append(з)
     if слот:
         # свідок кольору — запис речі (вимір точкою чи вікно слова), а не центр вікна, підставлений вище для палітри
         про_річ += _СП.колір_речі(запис if запис is not None else запис_каталогу(річ), слот,
@@ -1905,6 +1912,8 @@ def вердикт(річ, F, T, сцен=None, source=ДЖЕРЕЛО_ФОТО_�
                 чекліст=dict(пройдено=пройдено,
                              провал=[з["суть"] for з in знахідки
                                      if (з.get("палітра") or {}).get("стан") != "у палітрі"],
+                             ризик=[dict(суть=з["суть"], коди=[x.get("code") for x in з.get("заяви") or []
+                                                               if isinstance(x, dict)]) for з in ризик],
                              без_входу=без_входу))
 
 

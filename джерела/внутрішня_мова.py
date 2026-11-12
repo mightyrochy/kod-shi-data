@@ -1151,9 +1151,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                      "it was refused)",
     "her_item_candidate_to_buy": "she is deciding whether to buy this item: it is compared with the others she "
                                  "is choosing between, not put into her outfits",
-    "buy_first": "of the items she is choosing between, this one is advised first (values: reasons — statement "
-                 "codes that set it apart from the others; then — the others in order)",
-    "buy_order_tie": "the items she is choosing between came out equal in the code's judgement: the choice is hers",
+    "buy_first": "of the items she is choosing between, this one — or these, when several came out equal at the "
+                 "top — is advised first (values: reasons — statement codes that set it apart from the others; "
+                 "avoids — risks the corpus names that the others carry and it does not; then — the others in "
+                 "order)",
+    "buy_order_tie": "these items she is choosing between came out equal in the code's judgement: the choice "
+                     "between them is hers",
     "colour_role_not_judged": "whether the item's colour is a neutral base or an accent was not judged (values: "
                               "missing — colour_measure: neither a measurement nor a shop colour word places it "
                               "on one side; a photo of the item in daylight lets it be judged)",
