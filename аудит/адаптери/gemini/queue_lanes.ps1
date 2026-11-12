@@ -1155,9 +1155,9 @@ function Start-GpuModels($Job) {
 function Enter-GpuLease($Job) {
     <# Допуск GPU-наряду в процесі наряду; '' — допущено, інакше причина, і позначка лишається в черзі.
 
-    Ворота `gpu.lock` тримаються лише на час рішення, а не весь прогін: наряд, що готується, качає чи думає хмарною
-    моделлю, карти не займає й інших GPU-нарядів не тримає. Під воротами — прибирання мертвих оренд, карта без моделей
-    живих GPU-нарядів (Get-GpuSessionReason), вільна пам'ять (Test-ExternalGpuFree), приєднання до сесії. #>
+    Ворота `gpu.lock` тримаються лише на час рішення; весь прогін карту тримає замок оренди (Start-GpuModels). Під
+    воротами — прибирання мертвих оренд, жодної живої оренди (Get-GpuSessionReason), вільна пам'ять
+    (Test-ExternalGpuFree), приєднання до сесії. #>
     $gate = Open-Lock (Get-GpuLockPath)
     if ($null -eq $gate) { return 'замок GPU' }
     try {
@@ -1984,26 +1984,22 @@ function Test-ExternalGpuFree([switch]$LogAcquisition) {
 }
 
 function Get-GpuSessionReason {
-    <# Чи тримають карту GPU-наряди: живий наряд обох облікових записів має на ній модель, завантажену після початку сесії
-    (екземпляр LM Studio поза before), — зайнята; запис без живих оренд чи пошкоджений — прибирання ще не відбулось.
-    Оренда без моделі карти не тримає: така карта ділиться за пам'яттю (Get-GpuLoad). '' — сесія не заважає. #>
+    <# Чи тримають карту GPU-наряди: жива оренда будь-якого облікового запису — зайнята, хоч би яка модель на карті цієї миті;
+    запис без живих оренд чи пошкоджений — прибирання ще не відбулось. '' — сесії нема.
+
+    Карту тримає оренда, а не знімок LM Studio: живий прогін вантажить і вивантажує моделі між кроками, і знімок у
+    проміжку порожній — так допуск пустив другий GPU-наряд поруч із живим, і обидва ділили :1234 і стенд. Оренда живе,
+    доки процес наряду тримає її замок: сон і пауза (призупинений процес) його не відпускають, перезапуск планувальника
+    не чіпає процесу наряду, а смерть наряду відпускає замок — мертву оренду прибирає наступний прохід. #>
     try { $s = Read-GpuSession } catch { $s = $false }
     if ($null -eq $s) { return '' }
-    if ($false -eq $s -or @(Get-LiveGpuLeases $s).Count -eq 0) {
+    $live = @(if ($false -ne $s) { Get-LiveGpuLeases $s })
+    if ($live.Count -eq 0) {
         $script:GpuHoldReason = 'незакритий знімок моделей GPU'
         return 'GPU: незакритий знімок моделей попереднього наряду (lanes/gpu-models.json)'
     }
-    $before = @($s.Before | ForEach-Object { [string]$_.id })
-    try { $new = @(Get-LmsInstances | Where-Object { $before -cnotcontains $_.id }) }
-    catch {
-        $script:GpuHoldReason = 'LM Studio недоступний на :1234'
-        return 'GPU: LM Studio недоступний на :1234 — неможливо перевірити моделі живих GPU-нарядів'
-    }
-    if ($new.Count) {
-        $script:GpuHoldReason = 'модель GPU-наряду на карті'
-        return "GPU: модель GPU-наряду на карті ($(@($new | ForEach-Object { $_.model }) -join ', '))"
-    }
-    ''
+    $script:GpuHoldReason = 'замок GPU іншого наряду'
+    "GPU: її тримає живий GPU-наряд ($(@($live | ForEach-Object { $_.marker }) -join ', '))"
 }
 
 $script:GpuHoldReason = ''
@@ -2012,7 +2008,7 @@ function Get-GpuBusyReason([switch]$LockHeld) {
     <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
     GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без числових показників). LockHeld — ворота GPU
     тримає сам викликач (процес наряду в Enter-GpuLease): причина — сторонній процес, а не «замок тримає інший процес».
-    Свій живий GPU-наряд сам по собі карти не тримає — лише його модель на карті (Get-GpuSessionReason) чи пам'ять. #>
+    Живий GPU-наряд будь-якого облікового запису тримає карту весь прогін (Get-GpuSessionReason). #>
     $script:GpuHoldReason = ''
     if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
     $why = Get-GpuSessionReason
