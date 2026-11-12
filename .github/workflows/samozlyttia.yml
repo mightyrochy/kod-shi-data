@@ -1,0 +1,111 @@
+# Самозлиття документа без коду (ядро, «Документ без коду зливається сам»). Після кожного завершеного запуску CI на
+# події `pull_request` крок обходить відкриті PR до `main` і зливає squash з `sha` голови той, що: від `mightyrochy` з
+# гілки цього репозиторію, не чернетка, прилад `джерела/прилади/документ_без_коду.py` каже «документ» на файлах PR з
+# API, а всі перевірки голови завершені й `success` чи `skipped`. Решту лишає диспетчерові; причина — у підсумку job.
+# Безпека: прилад — з `main` (`workflow_run` бере цей файл і `github.sha` лише з типової гілки), коду гілки PR крок не
+# бере й не виконує, файли PR — лише списком з API; запис — лише в job злиття; одне злиття за раз.
+# Злиття токеном CI не будить `push` у `main` (документація GitHub: події `GITHUB_TOKEN` не створюють нових запусків,
+# крім `workflow_dispatch` і `repository_dispatch`; вимір — PR цього кроку), тож робочі процеси `main` після злиття
+# крок викликає сам (`workflow_call`) з `main` до злиття (`pered`) і комітом злиття (`pislia`).
+name: самозлиття документа
+
+on:
+  workflow_run:
+    workflows: [збірка показу, храповик кореня, рядок ЖИВИЙ ПІСЛЯ у тілі PR, стенди обгортки]
+    types: [completed]
+
+permissions: {}
+
+# Кожен запуск обходить усі відкриті PR, тож витіснена очікувана черга нічого не губить.
+concurrency:
+  group: самозлиття-документа
+  cancel-in-progress: false
+
+jobs:
+  rishennia:
+    name: рішення
+    if: github.event.workflow_run.event == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: read
+      checks: read
+      statuses: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      kandydaty: ${{ steps.rishennia.outputs.kandydaty }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          sparse-checkout: джерела/прилади/документ_без_коду.py
+          sparse-checkout-cone-mode: false
+
+      - name: відкриті PR → кандидати
+        id: rishennia
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I джерела/прилади/документ_без_коду.py --рішення
+
+  zlyttia:
+    name: злиття
+    needs: rishennia
+    if: needs.rishennia.outputs.kandydaty != '' && needs.rishennia.outputs.kandydaty != '[]'
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      zlyto: ${{ steps.zlyttia.outputs.zlyto }}
+      pered: ${{ steps.zlyttia.outputs.pered }}
+      pislia: ${{ steps.zlyttia.outputs.pislia }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          sparse-checkout: джерела/прилади/документ_без_коду.py
+          sparse-checkout-cone-mode: false
+
+      - name: squash з sha голови
+        id: zlyttia
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KANDYDATY: ${{ needs.rishennia.outputs.kandydaty }}
+        run: python3 -I джерела/прилади/документ_без_коду.py --злити
+
+  # Робочі процеси `main`, які будить push злиття: згортання дошки й публікація, храповик, сигнал рядків кореня.
+  # `стенди обгортки` документ не будить (його шляхи для приладу — «ні»; звіряє тест приладу).
+  zbirka:
+    name: збірка показу після злиття
+    needs: zlyttia
+    if: needs.zlyttia.outputs.zlyto == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/zbirka.yml
+    with:
+      pered: ${{ needs.zlyttia.outputs.pered }}
+      pislia: ${{ needs.zlyttia.outputs.pislia }}
+
+  khrapovyk:
+    name: храповик кореня після злиття
+    needs: zlyttia
+    if: needs.zlyttia.outputs.zlyto == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/khrapovyk.yml
+    with:
+      pered: ${{ needs.zlyttia.outputs.pered }}
+      pislia: ${{ needs.zlyttia.outputs.pislia }}
+
+  syhnal:
+    name: сигнал рядків кореня після злиття
+    needs: zlyttia
+    if: needs.zlyttia.outputs.zlyto == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/syhnal-ryadky.yml
+    with:
+      pered: ${{ needs.zlyttia.outputs.pered }}
+      pislia: ${{ needs.zlyttia.outputs.pislia }}

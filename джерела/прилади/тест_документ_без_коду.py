@@ -92,6 +92,7 @@ def таблиця():
     return рядки, розбіжностей, sum(1 for н in КЛАС if н in коміти)
 
 
+ВЛАСНІ = {"джерела/прилади/документ_без_коду.py", "джерела/прилади/тест_документ_без_коду.py"}
 КОМЕНТАР = ("#", "//", "/*", "* ", "<!--", "REM ", "::")
 
 
@@ -104,6 +105,8 @@ def посилання_коду():
         if not ф or ф.endswith((".md", ".txt", ".png", ".jpg", ".webp", ".gz", ".jsonl", ".json", ".tsv", ".csv",
                                 ".log", ".xml")):
             continue
+        if ф in ВЛАСНІ:
+            continue  # прилад і його тест називають теки класу як приклади, а не читають їх
         if ч[0] == "аудит" and not (ч[1] == "адаптери" or len(ч) == 2
                                      or (ч[1] == "проби" and len(ч) == 3)):
             continue  # скрипти в теках звітів — проби, не код CI
@@ -186,11 +189,11 @@ class Рішення(unittest.TestCase):
         with open(os.path.join(ТУТ, "документ_без_коду_події.json"), encoding="utf-8") as ф:
             cls.події = json.load(ф)
 
-    def рішення(self, зміна=None):
+    def рішення(self, зміна=None, свій_запуск=""):
         п = copy.deepcopy(self.події)
         if зміна:
             зміна(п)
-        return д.рішення_pr(п["pr"], п["файли"], п["запуски"], п["check_runs"], п["статуси"])
+        return д.рішення_pr(п["pr"], п["файли"], п["запуски"], п["check_runs"], п["статуси"], свій_запуск)
 
     def злити(self, зміна=None):
         так, чому = self.рішення(зміна)
@@ -285,6 +288,67 @@ class Рішення(unittest.TestCase):
 
     def test_неповний_список_файлів(self):
         self.не_зливати(lambda п: п["pr"].update(changed_files=3001), "неповний")
+
+    @staticmethod
+    def свій_крок(п):
+        п["check_runs"].append({"name": "рішення", "status": "in_progress", "conclusion": None,
+                                "details_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/777/job/1"})
+
+    def test_власний_незавершений_крок_не_заважає(self):
+        так, чому = self.рішення(self.свій_крок, свій_запуск="777")
+        self.assertTrue(так, чому)
+
+    def test_чужий_незавершений_крок_заважає(self):
+        так, чому = self.рішення(self.свій_крок, свій_запуск="778")
+        self.assertFalse(так, чому)
+        self.assertIn("ще йде", чому)
+
+
+class ФальшивийAPI:
+    """Записані відповіді API для `злити`: PR, злиття й коміт злиття."""
+
+    def __init__(self, pr, злиття):
+        self.р, self.pr, self.злиття, self.виклики = "mightyrochy/kod-shi-data", pr, злиття, []
+
+    def запит(self, метод, шлях, тіло=None):
+        self.виклики.append((метод, шлях, тіло))
+        if метод == "GET" and шлях.endswith("/pulls/3584"):
+            return 200, self.pr, ""
+        if метод == "PUT":
+            return self.злиття
+        if метод == "GET" and "/commits/" in шлях:
+            return 200, {"parents": [{"sha": "b" * 40}]}, ""
+        return 404, None, ""
+
+
+class Злиття(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(ТУТ, "документ_без_коду_події.json"), encoding="utf-8") as ф:
+            cls.pr = json.load(ф)["pr"]
+
+    def test_злиття_squash_з_голови(self):
+        api = ФальшивийAPI(self.pr, (200, {"merged": True, "sha": "c" * 40}, ""))
+        голова = self.pr["head"]["sha"]
+        злито, перед, рядки = д.злити(api, [{"номер": 3584, "голова": голова}])
+        self.assertEqual(злито, [(3584, "c" * 40)])
+        self.assertEqual(перед, "b" * 40)
+        put = [в for в in api.виклики if в[0] == "PUT"][0]
+        self.assertEqual(put[2]["sha"], голова)
+        self.assertEqual(put[2]["merge_method"], "squash")
+        self.assertTrue(put[2]["commit_title"].endswith("(#3584)"))
+
+    def test_голова_змінилась_після_рішення(self):
+        api = ФальшивийAPI(self.pr, (200, {"merged": True, "sha": "c" * 40}, ""))
+        злито, перед, рядки = д.злити(api, [{"номер": 3584, "голова": "0" * 40}])
+        self.assertEqual((злито, перед), ([], ""))
+        self.assertFalse([в for в in api.виклики if в[0] == "PUT"])
+
+    def test_відмова_злиття(self):
+        api = ФальшивийAPI(self.pr, (405, {"message": "Pull Request is not mergeable"}, ""))
+        злито, перед, рядки = д.злити(api, [{"номер": 3584, "голова": self.pr["head"]["sha"]}])
+        self.assertEqual((злито, перед), ([], ""))
+        self.assertIn("405", рядки[0])
 
 
 class Самоперевірка(unittest.TestCase):
