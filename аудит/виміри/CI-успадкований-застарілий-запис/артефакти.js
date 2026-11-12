@@ -15,7 +15,7 @@ function розбіжності(а, б, шлях = '') {
   return а === б ? [] : [шлях];
 }
 
-function виміряти(тека) {
+function виміряти(тека, префікс = 'артефакти') {
   const читати = файл => JSON.parse(fs.readFileSync(файл, 'utf8'));
   const сцени = [], докази = [];
   for (const артефакт of fs.readdirSync(тека).filter(ім => ім.startsWith('replay-')).sort()) {
@@ -40,9 +40,27 @@ function виміряти(тека) {
     однакові: сцени.filter(с => с.однаковийВиклик && с.однаковийЗапит).length,
     інший_виклик: сцени.filter(с => !с.однаковийВиклик).length,
     інший_запит: сцени.filter(с => !с.однаковийЗапит).length, сцени};
-  fs.writeFileSync(path.join(__dirname, 'артефакти.json'), JSON.stringify(результат, null, 1) + '\n');
-  fs.writeFileSync(path.join(__dirname, 'артефакти-докази.json.gz'), zlib.gzipSync(JSON.stringify(докази)));
+  fs.writeFileSync(path.join(__dirname, префікс + '.json'), JSON.stringify(результат, null, 1) + '\n');
+  fs.writeFileSync(path.join(__dirname, префікс + '-докази.json.gz'), zlib.gzipSync(JSON.stringify(докази)));
   console.log(JSON.stringify(результат, null, 1));
 }
 
-if (require.main === module) виміряти(path.resolve(process.argv[2]));
+function зіставити() {
+  const читати = ім => JSON.parse(zlib.gunzipSync(fs.readFileSync(path.join(__dirname, ім))));
+  const main = new Map(читати('main-c2fe3fe9-докази.json.gz').map(с => [с.сцена, с]));
+  const сцени = читати('артефакти-докази.json.gz').map(голова => {
+    const база = main.get(голова.сцена);
+    assert(база, 'Нема тієї самої сцени на main c2fe3fe9');
+    return {сцена: голова.сцена, голова_PR: голова.голова.застарілий, main_c2fe3fe9: база.голова.застарілий,
+      розбіжності: розбіжності(база.запитГолови.запит, голова.запитГолови.запит)};
+  });
+  fs.writeFileSync(path.join(__dirname, 'голова-проти-c2fe3fe9.json'), JSON.stringify(сцени, null, 1) + '\n');
+  console.log('Сцен: ' + сцени.length + '; однаковий виклик: ' + сцени.filter(
+    с => с.голова_PR.виклик === с.main_c2fe3fe9.виклик).length + '; однаковий запит: ' + сцени.filter(
+    с => с.голова_PR.вхід === с.main_c2fe3fe9.вхід).length);
+}
+
+if (require.main === module) {
+  if (process.argv[2] === '--зіставити') зіставити();
+  else виміряти(path.resolve(process.argv[2]), process.argv[3]);
+}
