@@ -37,4 +37,7 @@ with tempfile.TemporaryDirectory() as т:
     assert not р.stdout and р.stderr
     р = subprocess.run([sys.executable, str(хук), т], text=True, encoding='utf-8', capture_output=True, check=True)
     assert 'кінці: 1' in р.stdout
+    шлях.write_text(json.dumps({'type': 'assistant', 'message': {'stop_reason': 'end_turn', 'content': [{'type': 'text', 'text': 'Зараз зроблю.'}]}}), encoding='utf-8')
+    причина = json.loads(запуск(json.dumps({'transcript_path': str(шлях)})).stdout)['reason']
+    assert 'з прив\'язкою' in причина and 'о 14:30' in причина and 'після злиття #N' in причина and 'лише коли потрібне від когось' in причина, причина
 print(f'проба: {len(випадки)} випадків, захист від петлі, субагент, помилка і вимір — гаразд')
