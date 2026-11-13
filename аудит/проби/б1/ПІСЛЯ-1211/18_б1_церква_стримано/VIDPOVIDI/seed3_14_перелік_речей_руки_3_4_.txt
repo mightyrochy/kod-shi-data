@@ -1,0 +1,30 @@
+── ПРОМПТ (2123 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined wool-blend skirt suit in a deep forest green, featuring a tailored jacket with notch lapels cut to a classic fit and reaching the hip on the matching pencil skirt.\nThe ensemble is grounded by polished leather loafers in a rich burgundy shade (#800020), chosen for their understated elegance and comfort for an afternoon meal.\nA silk camisole in creamy white (#FFFFF0) with a subtle V-neckline completes the layering, providing a soft contrast to the structured outerwear while maintaining modesty suitable for church services.\nThis outfit works perfectly because the neutral base colors convey respect during the religious service, while the rich earth tones of the suit and shoes bring warmth and style as you transition to family lunch. The neat cut ensures you feel polished and confident without appearing overly formal for a Sunday gathering with parents."}
+
+── ВІДПОВІДЬ (572 симв., 5.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "silk camisole",
+      "details": "subtle V-neckline",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "wool-blend skirt suit",
+      "details": "tailored jacket with notch lapels and matching pencil skirt; classic fit reaching the hip",
+      "slot": "set",
+      "color_hex": "#006400",
+      "worn": true
+    },
+    {
+      "name": "leather loafers",
+      "details": "polished",
+      "slot": "shoes",
+      "color_hex": "#800020",
+      "worn": true
+    }
+  ]
+}
