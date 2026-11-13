@@ -766,6 +766,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     # функціональна модель українською, і показ ставив її рядком як є.
     "portrait_unreadable": "рядок під портретом на першому кроці знайомства: чому стилістка не "
                            "прочитала кольори з цього фото",
+    # наряд Річ-ознаки-обличчя-вимір-портрета: кольори прочитано, та кадр не пройшов воріт виміру кодом
+    # (`портрет_вимір.ПРИЧИНИ_ВИМІРУ`) — профіль лишається оцінкою моделі, а жінці сказано, який портрет надіслати
+    "portrait_unmeasured": "рядок під портретом на першому кроці знайомства: кольори з цього фото — оцінка на "
+                           "око, бо виміряти їх з кадру не вдалося; який портрет надіслати, щоб їх виміряти",
     "palette_scheme_note": "пояснення властивостей цієї схеми; автор вибору й ранг задані лише полями заяви",
     # П-7: схему, основу й гаму, які вона лишила «хай обере стилістка», обирає
     # функціональна модель (`вибір_палітри`); слова «код» у цих рядках для неї нема (Ш-1 — теж).
@@ -883,6 +887,15 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "portrait_eyes_hidden": "the eyes are covered by glasses or hair, or squinted",
     "portrait_coloured_light": "the photo has coloured light (stage, neon) that tints the skin",
     "portrait_overexposed": "the photo is overexposed: the skin is blown out to white",
+    # ── портрет, з якого кольорів не виміряно (`портрет_вимір.ПРИЧИНИ_ВИМІРУ`): що надіслати ─────
+    "portrait_uneven_light": "the light falls on one side of the face: one cheek is lit and the other in shadow; "
+                             "a portrait facing a window, in even daylight, lets the colours be measured",
+    "portrait_skin_unmeasured": "both cheeks are not visible in clear skin (turned head, hair, hands, shadow); a "
+                                "portrait facing the camera with both cheeks open lets the skin be measured",
+    "portrait_hair_unmeasured": "no clear patch of hair is visible (covered, cropped, or against a similar "
+                                "background); a portrait with the hair visible lets it be measured",
+    "portrait_eyes_unmeasured": "the irises are not visible clearly enough (small, closed, glasses, glare); a "
+                                "closer portrait with open eyes and no glasses lets the eyes be measured",
     # ── схеми палітри: що це за хід ──────────────────────────────────────────
     "scheme_tonal": "one tone on all items, with small steps of lightness",
     "scheme_analogous": "neighbouring hues of the colour wheel",
