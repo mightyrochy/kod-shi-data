@@ -751,23 +751,21 @@ function Clear-UnstartedClaim([string]$StatePath) {
     Remove-Claim $StatePath
 }
 
-function Get-FailReason($Err, [int]$Max = 160) {
+function Get-FailReason($Err) {
     <# Причина збою одним рядком для стану чекання й примітки в #1856 (blocked-reasons.json): тип винятку, текст, місце
     в скрипті (файл:рядок). Репозиторій відкритий, а примітка може піти в GitHub, тож шляхи профілю користувача
-    (`C:\Users\<ім'я>`, `/home/<ім'я>`, $env:USERPROFILE), облікові дані в URL і ключі замінено, а рядок скорочено. #>
+    (`C:\Users\<ім'я>`, `/home/<ім'я>`, $env:USERPROFILE), облікові дані в URL і ключі замінено, а рядок скорочено до межі приміток (ConvertTo-NoteText). #>
     $text = [string]$Err
     if ($Err -is [System.Management.Automation.ErrorRecord]) {
         $text = $Err.Exception.GetType().Name + ': ' + $Err.Exception.Message
         $info = $Err.InvocationInfo
         if ($null -ne $info -and $info.ScriptName) { $text += ' (' + [IO.Path]::GetFileName([string]$info.ScriptName) + ':' + $info.ScriptLineNumber + ')' }
     } elseif ($Err -is [Exception]) { $text = $Err.GetType().Name + ': ' + $Err.Message }
-    if ($env:USERPROFILE -and $env:USERPROFILE.Length -gt 3) { $text = [regex]::Replace($text, [regex]::Escape($env:USERPROFILE), '~', 'IgnoreCase') }
+    if ($env:USERPROFILE -and $env:USERPROFILE -ne [IO.Path]::GetPathRoot($env:USERPROFILE)) { $text = [regex]::Replace($text, [regex]::Escape($env:USERPROFILE), '~', 'IgnoreCase') }
     $text = [regex]::Replace($text, '(?i)(?:[a-z]:)?[\\/]+(?:users|home)[\\/]+(?!public\b)[^\\/\s''"]+', '~')
     $text = [regex]::Replace($text, '(?<=://)[^/@\s]+@', '')
     $text = [regex]::Replace($text, '\b(?:gh[pousr]_|github_pat_|sk-)[A-Za-z0-9_-]{8,}', '***')
-    $text = ([regex]::Replace($text, '[\x00-\x20\x7f]+', ' ')).Trim()
-    if ($text.Length -gt $Max) { $text = $text.Substring(0, $Max - 1) + '…' }
-    $text
+    ConvertTo-NoteText ([regex]::Replace($text, '\s+', ' '))
 }
 
 function Get-StartFailReason([string]$StatePath, [string]$Reason = '') {

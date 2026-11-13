@@ -37,7 +37,7 @@ try {
     Check 'причина: шлях профілю замінено' ($clean -notmatch 'Тест' -and $clean -match '~\\gemini-runs')
     Check 'причина: спільна тека Public лишається' ($clean -match 'C:\\Users\\Public\\gemini\\out')
     Check 'причина: облікові дані в URL прибрано' ($clean -notmatch 'ghp_|x-access-token' -and $clean -match 'https://github.com/o/r')
-    Check 'причина: один рядок розумної довжини' ($clean -notmatch '[\r\n]' -and (Get-FailReason ('х' * 500)).Length -le 160 -and $clean.StartsWith('IOException: '))
+    Check 'причина: один рядок розумної довжини' ($clean -notmatch '[\r\n]' -and (Get-FailReason ('х' * 500)).Length -le 240 -and $clean.StartsWith('IOException: '))
 
     # gpt-* без вибору планувальника: рушій Codex, як у Get-Engine; перші MaxRetakes відмов — лише чекання з причиною.
     $m = NewMarker 'Живий-як-людина-1-суддя' 'gpt-6.1-astra-max'
