@@ -268,10 +268,12 @@ function Read-GeminiBeat {
     $path = Join-Path $GeminiOutDir 'heartbeat.json'
     try { $j = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { return [pscustomobject]$b }
     $get = { param($o, $n) $p = $(if ($null -eq $o -or $o -is [string] -or $o -is [ValueType]) { $null } else { $o.PSObject.Properties[$n] }); if ($null -eq $p -or $null -eq $p.Value) { '' } elseif ($p.Value -is [datetime]) { $p.Value.ToString('s') } else { [string]$p.Value } }
+    # Поля UTC із Z: PowerShell 7 (і `\/Date()\/` у 5.1) віддає їх [datetime], а `.ToString('s')` з $get дав би час без Z, який $utc відкинув би.
+    $getu = { param($o, $n) $p = $(if ($null -eq $o -or $o -is [string] -or $o -is [ValueType]) { $null } else { $o.PSObject.Properties[$n] }); if ($null -eq $p -or $null -eq $p.Value) { '' } elseif ($p.Value -is [datetime]) { Get-UtcStamp $p.Value } else { [string]$p.Value } }
     $utc = { param($s) if ($s -match $script:UtcRx) { $s } else { '' } }
     $t = & $get $j 'time'
     if ($t -match '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d$') { $b.Time = Get-UtcStamp ([datetime]::ParseExact($t, 's', [cultureinfo]::InvariantCulture)) }
-    $readUtc = & $get $j 'read_utc'
+    $readUtc = & $getu $j 'read_utc'
     if ($readUtc -cmatch $script:UtcRx) { $b.Time = $readUtc }
     $iso = & $get $j 'isolation'
     if ($iso -cmatch '^[A-Z0-9_]{2,40}$') { $b.Isolation = $iso }
@@ -280,7 +282,7 @@ function Read-GeminiBeat {
     $fields = @(Get-LimitFields)
     $b.Unsourced = @(@(Get-JsonProp $j 'unsourced' | Select-Object -First 16) | ForEach-Object { [string]$_ } | Where-Object { $fields -ccontains $_ })
     $h = Get-JsonProp $j 'health'
-    $pb = & $get $h 'profile'; $ps = & $get $h 'skipped'; $pu = & $utc (& $get $h 'read')
+    $pb = & $get $h 'profile'; $ps = & $get $h 'skipped'; $pu = & $utc (& $getu $h 'read')
     if ($pb -match '^[0-9]{1,15}$' -and $ps -match '^[0-9]{1,9}$' -and $pu) { $b.Profile = [pscustomobject]@{ Bytes = [long]$pb; Skipped = [int]$ps; Read = $pu; Top = @(ConvertFrom-SizeList (& $get $h 'top')); Copies = @(ConvertFrom-SizeList (& $get $h 'copies')) } }
     $z = & $get $h 'zero'
     if ($z -match '^[0-9]{1,5}$') { $b.Zero = $z }
@@ -299,7 +301,7 @@ function Read-GeminiBeat {
         $ln = & $get $l 'lane'; $n = & $get $l 'n'
         if ($ln -notin @('codex', 'agy') -or -not (Test-SlotCount $n)) { continue }
         $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First $script:Ceil.slots[1])) {
-            $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $get $s 'since')
+            $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $getu $s 'since')
             if (-not (Test-SlotName $sl @($ln)) -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
             [pscustomobject]@{ Slot = $sl; Marker = $m; Model = $md; Since = $since; Gpu = ((& $get $s 'gpu') -eq 'True') }
         })
@@ -313,16 +315,29 @@ function Read-GeminiBeat {
             if ($g -cnotmatch '^[A-Z0-9]{1,16}$' -or $wn -cnotmatch '^(?:WEEK|5H|DAY|OTHER|)$' -or $left -notmatch '^(?:100|[1-9]?[0-9])$') { continue }
             [pscustomobject]@{ G = $g; W = $wn; Left = [int]$left; Reset = (& $utc $r) }
         })
-        $b.Quota = [pscustomobject]@{ Read = (& $utc (& $get $q 'read')); Windows = $win }
+        $b.Quota = [pscustomobject]@{ Read = (& $utc (& $getu $q 'read')); Windows = $win }
     }
     $cf = & $get $j 'codex_fallback'
     if ($cf -in @('True', 'False')) { $b.CodexFallback = ($cf -eq 'True') }
     $c = Get-JsonProp $j 'codex'
-    if ($null -ne $c) { $b.Codex = [pscustomobject]@{ Refused = (& $utc (& $get $c 'refused')); Reset = (& $utc (& $get $c 'reset')) } }
+    if ($null -ne $c) {
+        # Вимір квоти Codex (пише gemini-run із журналу сесії Codex): за формою — id, вікна {хвилини, використано, залишок, скидання}.
+        $lims = @(foreach ($l in @(Get-JsonProp $c 'limits')) {
+            $id = & $get $l 'id'
+            if ($id -cnotmatch '^[A-Za-z0-9_.-]{1,40}$') { continue }
+            $ws = @(foreach ($w in @(Get-JsonProp $l 'windows')) {
+                $m = & $get $w 'm'; $us = & $get $w 'used'; $lf = & $get $w 'left'
+                if ($m -notmatch '^[0-9]{1,9}$' -or $us -notmatch '^(?:100|[1-9]?[0-9])(?:\.[0-9]{1,3})?$' -or $lf -notmatch '^(?:100|[1-9]?[0-9])$') { continue }
+                [pscustomobject]@{ M = [long]$m; Used = $us; Left = [int]$lf; Reset = (& $utc (& $getu $w 'reset')) }
+            })
+            if ($ws.Count -gt 0) { [pscustomobject]@{ Id = $id; Windows = $ws } }
+        })
+        $b.Codex = [pscustomobject]@{ Refused = (& $utc (& $getu $c 'refused')); Reset = (& $utc (& $getu $c 'reset')); Read = (& $utc (& $getu $c 'read')); Limits = $lims }
+    }
     $b.Wait = @(foreach ($w in @(Get-JsonProp $j 'wait' | Select-Object -First 12)) {
         $m = & $get $w 'marker'; $g = & $get $w 'g'
         if ($m -cnotmatch $script:MarkerRx -or $m.Contains('..')) { continue }
-        [pscustomobject]@{ Marker = $m; Until = (& $utc (& $get $w 'until')); Group = $(if ($g -cmatch '^[A-Z0-9]{1,16}$') { $g } else { '' }) }
+        [pscustomobject]@{ Marker = $m; Until = (& $utc (& $getu $w 'until')); Group = $(if ($g -cmatch '^[A-Z0-9]{1,16}$') { $g } else { '' }) }
     })
     [pscustomobject]$b
 }
@@ -336,7 +351,7 @@ function Get-Minutes([string]$Utc) {
 
 # Квота Claude з останньої події `rate_limit_event` (quota-claude.json, пише процес наряду) — лише обчислене.
 function Read-ClaudeQuota {
-    try { [System.IO.File]::ReadAllText((Join-Path $WorkDir 'quota-claude.json'), $script:Utf8) | ConvertFrom-Json } catch { $null }
+    try { ConvertTo-PlainJson ([System.IO.File]::ReadAllText((Join-Path $WorkDir 'quota-claude.json'), $script:Utf8) | ConvertFrom-Json) } catch { $null }
 }
 
 # Здоров'я машини (10971): вільне місце диска й зміна за добу, розміри названих тек, позначки черги за рушієм, видом і
@@ -376,6 +391,69 @@ function Update-Health {
     try { $samples += [pscustomobject]@{ t = $now; free = [long](Get-FreeBytes) } } catch { Write-Log "здоров'я: місце не виміряно" }
     Write-FileAtomic $path ([pscustomobject]@{ time = $now; samples = $samples } | ConvertTo-Json -Compress -Depth 4)
     [pscustomobject]@{ time = $now; samples = $samples; dirs = $dirs }
+}
+
+# Вікно квоти за довжиною в хвилинах (window_minutes): «5 год», «7 д».
+function Format-WindowLabel([long]$Minutes) {
+    if ($Minutes -le 0) { return '?' }
+    if ($Minutes % 1440 -eq 0) { return "$($Minutes / 1440) д" }
+    if ($Minutes % 60 -eq 0) { return "$($Minutes / 60) год" }
+    "$Minutes хв"
+}
+
+# Вік UTC-часу словами: «3 д 4 год», «2 год 5 хв», «7 хв».
+function Format-Age([string]$Utc) {
+    if ($Utc -notmatch $script:UtcRx) { return '?' }
+    $m = [long](Get-Minutes $Utc)
+    if ($m -lt 0) { return '?' }
+    $d = [long][Math]::Floor($m / 1440); $h = [long][Math]::Floor(($m % 1440) / 60)
+    if ($d -gt 0) { return "$d д $h год" }
+    if ($h -gt 0) { return "$h год $($m % 60) хв" }
+    "$m хв"
+}
+
+# Остання відповідь Codex після $Since (UTC): запис кінця наряду в спільному out з engine codex і engine_answer_utc — часом, коли
+# процес Codex віддав відповідь (його ставить gemini-run одразу після ходу). Його, а не ended_utc, порівнюємо з відмовою: ended_utc
+# ставиться вже після фактів, збірки й супровідних файлів, тож відповідь раніше за відмову іншого слота виглядала б пізнішою.
+# Порожній engine_answer_utc — рушія не кликали (NOT_ON_MAIN, NO_TASK_FILE, ISOLATION) чи він не відповів; код, що є відмовою
+# квоти (QUOTA, QUOTA_ZERO) чи збоєм рушія (AGY_ERROR, AUTH тощо), теж не успіх. '' — такої відповіді нема.
+function Get-CodexSuccessAfter([string]$Since) {
+    if ($Since -cnotmatch $script:UtcRx) { return '' }
+    $from = [datetime]::ParseExact($Since, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
+    $failed = @('', 'QUOTA', 'QUOTA_ZERO', 'AGY_ERROR', 'AUTH', 'EFFORT_INVALID', 'MODEL_INVALID', 'TIMEOUT', 'ENGINE_MISSING', 'CRASH', 'COPY_FAILED')
+    $best = ''
+    foreach ($f in @(Get-ChildItem -LiteralPath $GeminiOutDir -Filter '*.json' -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -cmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json$' -and $_.LastWriteTimeUtc -ge $from })) {
+        try { $t = [System.IO.File]::ReadAllText($f.FullName, $script:Utf8) } catch { continue }
+        if ($t -cnotmatch '"engine":"codex"') { continue }
+        if ($t -cmatch '"code":"([A-Z0-9_]*)"') { $code = $Matches[1] } else { continue }
+        if ($failed -ccontains $code) { continue }
+        if ($t -cmatch '"engine_answer_utc":"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)"') { $end = $Matches[1] } else { continue }
+        if ([string]::CompareOrdinal($end, $Since) -gt 0 -and [string]::CompareOrdinal($end, $best) -gt 0) { $best = $end }
+    }
+    $best
+}
+
+# Стан квоти Codex: відмова діє (Zero), доки не скинуто (Reset) чи не минув quota_wait_minutes від неї, а пізніша відповідь Codex
+# (Success) її скасовує; вимір теж дає нуль, коли вікно використано повністю й скидання попереду чи невідоме.
+function Get-CodexState($Codex) {
+    $s = [pscustomobject]@{ Refused = ''; Reset = ''; Success = ''; Zero = $false; Read = ''; Limits = @() }
+    if ($null -eq $Codex) { return $s }
+    # Запис Codex буває без вимірних полів (старий heartbeat, стенди): читаємо їх лише коли вони є.
+    $s.Refused = [string]$Codex.Refused; $s.Reset = [string]$Codex.Reset
+    if ($null -ne $Codex.PSObject.Properties['Read']) { $s.Read = [string]$Codex.Read }
+    if ($null -ne $Codex.PSObject.Properties['Limits']) { $s.Limits = @($Codex.Limits) }
+    if ($s.Refused -cmatch $script:UtcRx) {
+        $s.Success = Get-CodexSuccessAfter $s.Refused
+        # Вимір пізніший за відмову — ходу Codex після неї знято залишок із журналу (відмовлений хід пише вимір до відмови).
+        if (-not $s.Success -and $s.Read -cmatch $script:UtcRx -and [string]::CompareOrdinal($s.Read, $s.Refused) -gt 0) { $s.Success = $s.Read }
+        if (-not $s.Success) {
+            $s.Zero = $(if ($s.Reset -cmatch $script:UtcRx) { [int](Get-Minutes $s.Reset) -lt 0 } else { [int](Get-Minutes $s.Refused) -lt (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') })
+        }
+    }
+    foreach ($l in $s.Limits) {
+        foreach ($w in @($l.Windows)) { if ((100 - [double]$w.Used) -le 0 -and (-not $w.Reset -or (Test-FutureUtc ([string]$w.Reset)))) { $s.Zero = $true } }
+    }
+    $s
 }
 
 function Get-HealthLines($G, $Cq) {
@@ -422,7 +500,7 @@ function Get-HealthLines($G, $Cq) {
         if ($Reset -match $script:UtcRx) { return [int](Get-Minutes $Reset) -lt 0 }
         [int](Get-Minutes $Refused) -lt (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') }
     $cz = $(if ($null -ne $Cq -and (& $zero ([string](Get-JsonProp $Cq 'refused')) ([string](Get-JsonProp $Cq 'reset')))) { @($ms | Where-Object { $_.Lane -eq 'claude' }).Count } else { 0 })
-    $xz = $(if ($null -ne $G.Codex -and (& $zero $G.Codex.Refused $G.Codex.Reset)) { @($ms | Where-Object { $_.Lane -eq 'codex' }).Count } else { 0 })
+    $xz = $(if ((Get-CodexState $G.Codex).Zero) { @($ms | Where-Object { $_.Lane -eq 'codex' }).Count } else { 0 })
     $lines += @('', "Позначки на рушії з нульовою квотою: claude $cz · codex $xz · agy $(if ($G.Zero) { $G.Zero } else { '?' })")
     $lines
 }
@@ -530,8 +608,21 @@ function Get-StatusBody {
         }
         if ([string](Get-JsonProp $cq 'refused')) { $lines += "| claude · остання відмова | — | 0 % | $(if ($cq.reset) { [string]$cq.reset } else { 'CLI не дав' }) | $([string]$cq.refused) |" }
     } else { $lines += '| claude | — | невідомо (ще не було прогону) | — | — |' }
-    if ($null -ne $g.Codex -and $g.Codex.Refused) { $lines += "| codex · остання відмова | — | 0 % | $(if ($g.Codex.Reset) { $g.Codex.Reset } else { 'CLI не дав — чекання quota_wait_minutes' }) | $($g.Codex.Refused) |" }
-    else { $lines += '| codex | — | невідомо (CLI без ходу не дає; відмов не було) | — | — |' }
+    $cx = Get-CodexState $g.Codex
+    $measured = 0
+    if ($null -ne $g.Codex) {
+        foreach ($l in $cx.Limits) {
+            foreach ($w in @($l.Windows)) {
+                $measured++
+                $lines += "| codex · $($l.Id) | $(Format-WindowLabel $w.M) | $($w.Left) % (використано $($w.Used) %) | $(if ($w.Reset) { $w.Reset } else { '?' }) | $(if ($cx.Read) { $cx.Read } else { '?' }) |"
+            }
+        }
+    }
+    if ($measured -eq 0) { $lines += '| codex | — | невідомо (виміру ще нема: його пише gemini-run після ходу Codex) | — | — |' }
+    if ($cx.Refused) {
+        $left = $(if ($cx.Zero) { '0 %' } elseif ($cx.Success) { "— (пізніше був успішний запуск, $($cx.Success))" } else { '— (чекання минуло)' })
+        $lines += "| codex · остання відмова | відмова $(Format-Age $cx.Refused) тому | $left | $(if ($cx.Reset) { $cx.Reset } else { 'CLI не дав — чекання quota_wait_minutes' }) | $($cx.Refused) |"
+    }
     $wait = @(Get-WaitingMarkers) + @($g.Wait)
     if ($wait.Count -gt 0) {
         $lines += @('', '### Чекають скидання квоти', '', '| позначка | до (UTC) | група |', '|---|---|---|')
@@ -1215,7 +1306,8 @@ function Test-IdleBusy($G) {
     if (Test-ClaudeBusy) { return $true }
     if (Test-GeminiBusy) { return $true }
     $claudeReset = Get-ClaudeZeroReset
-    $codexReset = $(if ($null -ne $G.Codex -and (Test-FutureUtc ([string]$G.Codex.Reset))) { [string]$G.Codex.Reset } else { '' })
+    $cxs = Get-CodexState $G.Codex
+    $codexReset = $(if ($cxs.Refused -and -not $cxs.Success -and (Test-FutureUtc $cxs.Reset)) { $cxs.Reset } else { '' })
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $today = [datetime]::UtcNow.ToString('yyyyMMdd')
     $zero = @()
