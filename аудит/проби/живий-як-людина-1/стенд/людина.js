@@ -173,6 +173,10 @@ async function головна(){
     await з.saveAs(path.join(ТЕКА, ім)).catch(е => консоль.write('download: ' + е + '\n'));
     ж('\n> файл збережено на телефоні: `', ім, '`\n');
   });
+  /* фото речей: що не дійшло до екрана і чому — щоб відрізнити крамницю від стенда (службове, не для судді) */
+  const фотоЖурнал = fs.createWriteStream(path.join(СЛУЖБОВЕ, 'фото_речей.txt'));
+  стор.on('requestfailed', з => { if (з.resourceType() === 'image') фотоЖурнал.write(new Date().toISOString() + ' FAIL ' + ((з.failure() || {}).errorText || '') + ' ' + з.url().slice(0, 200) + '\n'); });
+  стор.on('response', в => { const з = в.request(); if (з.resourceType() === 'image' && !з.url().startsWith(БАЗА)) фотоЖурнал.write(new Date().toISOString() + ' ' + в.status() + ' ' + з.url().slice(0, 200) + '\n'); });
   const цеМіст = u => decodeURIComponent(u.pathname).endsWith('/міст');
   const обміни = fs.createWriteStream(path.join(СЛУЖБОВЕ, 'обміни.jsonl'));
   await стор.route(u => u.origin === БАЗА && !цеМіст(u), async route => {
@@ -272,7 +276,7 @@ async function головна(){
   fs.writeFileSync(path.join(ТЕКА, 'повідомлення.md'), '# Повідомлення тестувальниці (' + ПРОХІД + ')\n\n' + (фін || '(не написала)') + '\n');
   fs.writeFileSync(path.join(СЛУЖБОВЕ, 'жінка.json'), JSON.stringify({модель: МОДЕЛЬ_ЖІНКИ, кроків: крок, викликів: викликівЖінки,
     usd: +доларівЖінки.toFixed(4), сесія}, null, 1));
-  консоль.end(); обміни.end();
+  консоль.end(); обміни.end(); фотоЖурнал.end();
   await браузер.close();
   console.log(ПРОХІД + ' кроків ' + крок + ' жінка $' + доларівЖінки.toFixed(2));
 }
