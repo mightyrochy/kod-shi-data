@@ -527,15 +527,6 @@ function Get-CodexHome {
     Join-Path ([Environment]::GetFolderPath('UserProfile')) '.codex'
 }
 
-# Значення з ConvertFrom-Json без дат: PowerShell 7 (і `\/Date()\/` у 5.1) віддає ISO-рядок як [datetime], а за ним і порівняння
-# рядків, і повторний запис у JSON дають не ISO UTC (місцевий час чи формат культури). Дату повертаємо UTC-рядком з Z, як її писали.
-function ConvertTo-PlainJson($Value) {
-    if ($Value -is [datetime]) { return Get-UtcStamp $Value }
-    if ($Value -is [pscustomobject]) { foreach ($p in $Value.PSObject.Properties) { $p.Value = ConvertTo-PlainJson $p.Value }; return $Value }
-    if ($Value -is [array]) { return , @(foreach ($v in $Value) { ConvertTo-PlainJson $v }) }
-    $Value
-}
-
 # Квота Codex, записана раніше (refused/reset — відмова, read/limits — вимір): файл читає й пише лише цей планувальник.
 function Read-CodexQuota {
     $q = [ordered]@{}

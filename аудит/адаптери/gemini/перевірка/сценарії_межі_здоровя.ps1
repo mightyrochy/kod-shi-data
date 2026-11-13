@@ -147,6 +147,26 @@ try {
         $full = @{ read = (& $stamp -60); limits = @(@{ id = 'codex'; windows = @((& $win 300 100 0 7200)) }) }
         Check '2 вікно Codex використано на 100 %, скидання попереду: codex 3 без відмови' ((& $beat $full).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
         Check '2 вікно Codex не зіпсоване чужими полями: id із зайвими знаками й залишок поза 0–100 відкинуто' ((& $beat @{ read = (& $stamp -60); limits = @(@{ id = 'x|y'; windows = @((& $win 300 5 90 60)) }, @{ id = 'ok'; windows = @((& $win 300 5 900 60)) }) }).Contains('| codex | — | невідомо (виміру ще нема'))
+
+        # Часи heartbeat і quota-claude.json у вигляді [datetime] (PowerShell 7 — для кожного ISO-рядка, 5.1 — для `\/Date(мс)\/`, що тут
+        # і відтворюється): $get віддавав би час без Z, і скидання та час зчитування відкидались би («?»), а вікно, використане
+        # повністю, лишалось би нульовим і після скидання. Вираз '@@D<мс>@@' у JSON стає `\/Date(<мс>)\/`.
+        $t0 = [DateTimeOffset]::UtcNow
+        $dat = { param($sec) '@@D' + $t0.AddSeconds($sec).ToUnixTimeMilliseconds() + '@@' }
+        $iso = { param($sec) Get-UtcStamp $t0.AddSeconds($sec).UtcDateTime }
+        $toDate = { param($json) $json -replace '"@@D(\d+)@@"', '"\/Date($1)\/"' }
+        $beatD = { param($codex) $base | Add-Member -NotePropertyName codex -NotePropertyValue $codex -Force
+            [IO.File]::WriteAllText("$tmp/gout/heartbeat.json", (& $toDate ($base | ConvertTo-Json -Compress -Depth 8)), $utf); Get-StatusBody }
+        $dw = { param($used, $left, $resetSec) @{ m = 300; used = $used; left = $left; reset = (& $dat $resetSec) } }
+        $body = & $beatD @{ refused = (& $dat -600); reset = ''; read = (& $dat -60); limits = @(@{ id = 'codex'; windows = @((& $dw 12.5 88 10800)) }) }
+        Check '2 часи Codex у heartbeat як [datetime]: скидання, час зчитування й час відмови лишаються UTC, не «?»' ($body.Contains("| codex · codex | 5 год | 88 % (використано 12.5 %) | $(& $iso 10800) | $(& $iso -60) |") -and $body -cmatch ('\| codex · остання відмова \|[^\n]*\| ' + [regex]::Escape((& $iso -600)) + ' \|'))
+        $body = & $beatD @{ read = (& $dat -60); limits = @(@{ id = 'codex'; windows = @((& $dw 100 0 -120)) }) }
+        Check '2 вікно Codex використано на 100 %, скидання в [datetime] уже минуло: нульової квоти нема (codex 0)' ($body.Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 0 · agy 4'))
+        $body = & $beatD @{ read = (& $dat -60); limits = @(@{ id = 'codex'; windows = @((& $dw 100 0 7200)) }) }
+        Check '2 вікно Codex використано на 100 %, скидання в [datetime] попереду: codex 3' ($body.Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
+        [IO.File]::WriteAllText("$tmp/cr/quota-claude.json", (& $toDate (@{ read = (& $dat -60); status = 'allowed'; refused = ''; reset = ''; windows = @(@{ w = '5H'; left = 0; reset = (& $dat 3600) }) } | ConvertTo-Json -Compress -Depth 4)), $utf)
+        $body = Get-StatusBody
+        Check '2 квота Claude з [datetime]: скидання й час зчитування лишаються UTC' ($body.Contains("| claude | 5H | 0 % | $(& $iso 3600) | $(& $iso -60) |"))
     }
 
     # --- 3: аварії однієї причини (gemini_publish.ps1) --------------------------------------------------------------

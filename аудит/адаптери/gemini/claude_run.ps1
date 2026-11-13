@@ -268,10 +268,12 @@ function Read-GeminiBeat {
     $path = Join-Path $GeminiOutDir 'heartbeat.json'
     try { $j = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { return [pscustomobject]$b }
     $get = { param($o, $n) $p = $(if ($null -eq $o -or $o -is [string] -or $o -is [ValueType]) { $null } else { $o.PSObject.Properties[$n] }); if ($null -eq $p -or $null -eq $p.Value) { '' } elseif ($p.Value -is [datetime]) { $p.Value.ToString('s') } else { [string]$p.Value } }
+    # Поля UTC із Z: PowerShell 7 (і `\/Date()\/` у 5.1) віддає їх [datetime], а `.ToString('s')` з $get дав би час без Z, який $utc відкинув би.
+    $getu = { param($o, $n) $p = $(if ($null -eq $o -or $o -is [string] -or $o -is [ValueType]) { $null } else { $o.PSObject.Properties[$n] }); if ($null -eq $p -or $null -eq $p.Value) { '' } elseif ($p.Value -is [datetime]) { Get-UtcStamp $p.Value } else { [string]$p.Value } }
     $utc = { param($s) if ($s -match $script:UtcRx) { $s } else { '' } }
     $t = & $get $j 'time'
     if ($t -match '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d$') { $b.Time = Get-UtcStamp ([datetime]::ParseExact($t, 's', [cultureinfo]::InvariantCulture)) }
-    $readUtc = & $get $j 'read_utc'
+    $readUtc = & $getu $j 'read_utc'
     if ($readUtc -cmatch $script:UtcRx) { $b.Time = $readUtc }
     $iso = & $get $j 'isolation'
     if ($iso -cmatch '^[A-Z0-9_]{2,40}$') { $b.Isolation = $iso }
@@ -280,7 +282,7 @@ function Read-GeminiBeat {
     $fields = @(Get-LimitFields)
     $b.Unsourced = @(@(Get-JsonProp $j 'unsourced' | Select-Object -First 16) | ForEach-Object { [string]$_ } | Where-Object { $fields -ccontains $_ })
     $h = Get-JsonProp $j 'health'
-    $pb = & $get $h 'profile'; $ps = & $get $h 'skipped'; $pu = & $utc (& $get $h 'read')
+    $pb = & $get $h 'profile'; $ps = & $get $h 'skipped'; $pu = & $utc (& $getu $h 'read')
     if ($pb -match '^[0-9]{1,15}$' -and $ps -match '^[0-9]{1,9}$' -and $pu) { $b.Profile = [pscustomobject]@{ Bytes = [long]$pb; Skipped = [int]$ps; Read = $pu; Top = @(ConvertFrom-SizeList (& $get $h 'top')); Copies = @(ConvertFrom-SizeList (& $get $h 'copies')) } }
     $z = & $get $h 'zero'
     if ($z -match '^[0-9]{1,5}$') { $b.Zero = $z }
@@ -299,7 +301,7 @@ function Read-GeminiBeat {
         $ln = & $get $l 'lane'; $n = & $get $l 'n'
         if ($ln -notin @('codex', 'agy') -or -not (Test-SlotCount $n)) { continue }
         $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First $script:Ceil.slots[1])) {
-            $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $get $s 'since')
+            $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $getu $s 'since')
             if (-not (Test-SlotName $sl @($ln)) -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
             [pscustomobject]@{ Slot = $sl; Marker = $m; Model = $md; Since = $since; Gpu = ((& $get $s 'gpu') -eq 'True') }
         })
@@ -313,7 +315,7 @@ function Read-GeminiBeat {
             if ($g -cnotmatch '^[A-Z0-9]{1,16}$' -or $wn -cnotmatch '^(?:WEEK|5H|DAY|OTHER|)$' -or $left -notmatch '^(?:100|[1-9]?[0-9])$') { continue }
             [pscustomobject]@{ G = $g; W = $wn; Left = [int]$left; Reset = (& $utc $r) }
         })
-        $b.Quota = [pscustomobject]@{ Read = (& $utc (& $get $q 'read')); Windows = $win }
+        $b.Quota = [pscustomobject]@{ Read = (& $utc (& $getu $q 'read')); Windows = $win }
     }
     $cf = & $get $j 'codex_fallback'
     if ($cf -in @('True', 'False')) { $b.CodexFallback = ($cf -eq 'True') }
@@ -326,16 +328,16 @@ function Read-GeminiBeat {
             $ws = @(foreach ($w in @(Get-JsonProp $l 'windows')) {
                 $m = & $get $w 'm'; $us = & $get $w 'used'; $lf = & $get $w 'left'
                 if ($m -notmatch '^[0-9]{1,9}$' -or $us -notmatch '^(?:100|[1-9]?[0-9])(?:\.[0-9]{1,3})?$' -or $lf -notmatch '^(?:100|[1-9]?[0-9])$') { continue }
-                [pscustomobject]@{ M = [long]$m; Used = $us; Left = [int]$lf; Reset = (& $utc (& $get $w 'reset')) }
+                [pscustomobject]@{ M = [long]$m; Used = $us; Left = [int]$lf; Reset = (& $utc (& $getu $w 'reset')) }
             })
             if ($ws.Count -gt 0) { [pscustomobject]@{ Id = $id; Windows = $ws } }
         })
-        $b.Codex = [pscustomobject]@{ Refused = (& $utc (& $get $c 'refused')); Reset = (& $utc (& $get $c 'reset')); Read = (& $utc (& $get $c 'read')); Limits = $lims }
+        $b.Codex = [pscustomobject]@{ Refused = (& $utc (& $getu $c 'refused')); Reset = (& $utc (& $getu $c 'reset')); Read = (& $utc (& $getu $c 'read')); Limits = $lims }
     }
     $b.Wait = @(foreach ($w in @(Get-JsonProp $j 'wait' | Select-Object -First 12)) {
         $m = & $get $w 'marker'; $g = & $get $w 'g'
         if ($m -cnotmatch $script:MarkerRx -or $m.Contains('..')) { continue }
-        [pscustomobject]@{ Marker = $m; Until = (& $utc (& $get $w 'until')); Group = $(if ($g -cmatch '^[A-Z0-9]{1,16}$') { $g } else { '' }) }
+        [pscustomobject]@{ Marker = $m; Until = (& $utc (& $getu $w 'until')); Group = $(if ($g -cmatch '^[A-Z0-9]{1,16}$') { $g } else { '' }) }
     })
     [pscustomobject]$b
 }
@@ -349,7 +351,7 @@ function Get-Minutes([string]$Utc) {
 
 # Квота Claude з останньої події `rate_limit_event` (quota-claude.json, пише процес наряду) — лише обчислене.
 function Read-ClaudeQuota {
-    try { [System.IO.File]::ReadAllText((Join-Path $WorkDir 'quota-claude.json'), $script:Utf8) | ConvertFrom-Json } catch { $null }
+    try { ConvertTo-PlainJson ([System.IO.File]::ReadAllText((Join-Path $WorkDir 'quota-claude.json'), $script:Utf8) | ConvertFrom-Json) } catch { $null }
 }
 
 # Здоров'я машини (10971): вільне місце диска й зміна за добу, розміри названих тек, позначки черги за рушієм, видом і
