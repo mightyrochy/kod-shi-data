@@ -2252,6 +2252,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                          "when one dominates (values: registers — register codes)",
     "one_register_leads_other_one_quote": "one register leads, another gives one quote item, or declare the "
                                           "break",
+    "declare_register_mix_break": "keep the outfit as it is and declare the mix of registers a deliberate "
+                                  "break",
     "conflicting_register_pair": "these two registers are a conflicting pair with no dominant one (values: "
                                  "registers — the codes of the two registers)",
     "one_grammar_or_declared_break": "one style grammar, or a declared break",
