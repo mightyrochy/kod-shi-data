@@ -104,9 +104,29 @@ class Походження:
         if isinstance(вираз, ast.Call) and вираз.args:
             if isinstance(вираз.args[0], ast.Constant) and вираз.args[0].value in ВАРІАНТИ:
                 return True
-            if ім_виклику(вираз.func) in ("enumerate", "sorted", "iter", "list", "tuple"):
+            if ім_виклику(вираз.func) in ("enumerate", "sorted", "iter", "list", "tuple") or self.обгортка(вираз.func):
                 return self.із_варіацій(вираз.args[0], шлях)
         return False
+
+    def обгортка(self, функція):
+        """Функція модуля, що лише нормалізує аргумент до списку (`_список(x)`: `[]`, `x` чи `[x]`), — не новий вибір."""
+        ф = self.функції.get(функція.id) if isinstance(функція, ast.Name) else None
+        if ф is None or not ф.args.args:
+            return False
+        перший = ф.args.args[0].arg
+
+        def свій(в):
+            if isinstance(в, ast.Name):
+                return в.id == перший
+            if isinstance(в, ast.Constant):
+                return в.value is None
+            if isinstance(в, (ast.List, ast.Tuple)):
+                return all(свій(е) for е in в.elts)
+            if isinstance(в, ast.IfExp):
+                return свій(в.body) and свій(в.orelse)
+            return False
+        повернення = [н.value for н in власні_вузли(ф) if isinstance(н, ast.Return)]
+        return bool(повернення) and all(в is not None and свій(в) for в in повернення)
 
     def _звязати(self, ціль, значення):
         """Зберігає також розпакування кортежів."""

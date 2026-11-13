@@ -23,7 +23,7 @@
 останній рядок stdout: «місць: N», код виходу 0.
 """
 import argparse, ast, collections, gzip, hashlib, json, os, re, sys, warnings
-from походження_запису import Походження, константи_імпортів, ім_виклику
+from походження_запису import Походження, константи_імпортів, ім_виклику, власні_вузли, поля
 import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
 
 # ---- ОБСЯГ ----------------------------------------------------------------------------------------------------
@@ -32,10 +32,12 @@ import обсяг_приладу as ОБСЯГ  # Д10: непрочитане �
 ПОЗА_ТЕКИ = {"__pycache__", "node_modules", "фікстури", "аудит", "дані_корпусу", "дані_5191_5194", "лабораторія"}
 # стадії виробництва каталогу (виконання: жнива → фід → збагачення → каталог); решта файлів — читачі, доки їхній запис на диск
 # не називає файл чи модуль, який читає продукт
-ВИРОБНИК = re.compile(r"^(zhnyvarka/.+\.py|джерела/(фід_(?!колір\.)[^/]+|підфід|жнива_[^/]+|кадри_групи|чистка_каталогу|"
+ВИРОБНИК = re.compile(r"^(zhnyvarka/(?!кадри_маніфест\.py$).+\.py|джерела/(фід_(?!колір\.)[^/]+|підфід|жнива_[^/]+|кадри_групи|чистка_каталогу|"
                       r"таблиця_каталогу)\.py)$")
 # `фід_колір` — вимірювач принту (результат вимірювання, не запис таблиці); `каталог_розбір*` — розбір моделлю, до фіду не
 # під'єднаний (його докстрінг): це читачі/похідне, їхні записи лічаться у «поза записом».
+# `кадри_маніфест` — маніфест кадрів (адреса → байти, хеш, статус), кадр виміру з маніфестом — Річ-колір-вимір п.5 (рішення
+# 30.10, без перетину коренів): він не пише кадр речі чи варіанта, а його читання (`читати_все`) — читач (11458; вибірка 13.11).
 ЇЇ_РІЧ = re.compile(r"^джерела/річ_з_фото\.py$")      # речі користувачки: крамниці й варіацій нема, клас не діє
 
 # ---- РОЛІ -----------------------------------------------------------------------------------------------------
@@ -335,6 +337,26 @@ def частин_ключа(в):
     return 1
 
 
+def адреса_як_є(вираз):
+    """Частина складеного ключа — адреса, прочитана без перетворення (`з.get("url")`, `з["url"]`, `url`): запит із
+    параметром варіації в ній лишається. Адреса через виклик (`норм_адреса(url)`) доказом не є — він міг зрізати запит."""
+    частини = вираз.elts if isinstance(вираз, ast.Tuple) else [ч.value for ч in вираз.values
+                                                               if isinstance(ч, ast.FormattedValue)] if isinstance(вираз, ast.JoinedStr) else []
+    for ч in частини:
+        if isinstance(ч, ast.Call) and isinstance(ч.func, ast.Attribute) and ч.func.attr == "get" and ч.args \
+                and isinstance(ч.args[0], ast.Constant):
+            назва = ч.args[0].value
+        elif isinstance(ч, ast.Subscript) and isinstance(ч.slice, ast.Constant):
+            назва = ч.slice.value
+        elif isinstance(ч, ast.Name):
+            назва = ч.id
+        else:
+            continue
+        if isinstance(назва, str) and re.fullmatch(r"url|адреса|href|link", назва.lower()):
+            return True
+    return False
+
+
 def суд_ключа(рядок, ім, вираз):
     """Суд п.3 для ключа: (порушує, чому) або None, якщо вираз не ключ запису речі."""
     лекс = текст_виразу(вираз)
@@ -345,10 +367,73 @@ def суд_ключа(рядок, ім, вираз):
     запит_збережено = bool(re.search(r"urlencode|parse_qsl?|\.query\b|^query$", лекс, re.M))
     if чи_адреса and відкинуто and not запит_збережено and not параметр:
         return True, "ключ — адреса без запиту: параметр варіації відкинуто (`%s`)" % ім
+    if частин >= 2 and ПРОДУКТ_ЧАСТИНА.search(лекс) and not відкинуто and not параметр and адреса_як_є(вираз):
+        return False, "ключ несе адресу як є: запит із параметром варіації не відкинуто (`%s`)" % ім
     if частин >= 2 and ПРОДУКТ_ЧАСТИНА.search(лекс) and not параметр:
         return True, "складений ключ (%d частин) без кольору, варіанта, артикула чи параметра (`%s`)" % (частин, ім)
     if частин >= 2 and ПРОДУКТ_ЧАСТИНА.search(лекс):
         return False, "ключ несе параметр варіації (`%s`)" % ім
+    return None
+
+
+КЕШ = re.compile(r"кеш|cache|memo", re.I)
+
+
+def ключ_кешу(ім, одиниця):
+    """Ключ лише кешу похідного (`if ключ in КЕШ: return КЕШ[ключ]` … `КЕШ[ключ] = результат`), а кешоване й повернене
+    функцією не має ролі кадру, кольору чи наявності: такий ключ не ключ двійника чи запису за п.3 — сестри з тим самим
+    ключем ділять лише похідне без ролі (вид речі за назвою), а не поле варіанта. Кеш, що тримає роль, — далі суд п.3."""
+    if ім.startswith("<") or одиниця is None:
+        return False
+
+    def кеш(в):
+        return isinstance(в, (ast.Name, ast.Attribute)) and bool(КЕШ.search(ім_виклику(в) or ""))
+
+    вжитків, кешоване = 0, []
+    for н in ast.walk(одиниця):
+        if isinstance(н, ast.Name) and н.id == ім and isinstance(н.ctx, ast.Load):
+            вжитків += 1
+    кешових = 0
+    for н in ast.walk(одиниця):
+        if isinstance(н, ast.Compare) and isinstance(н.left, ast.Name) and н.left.id == ім and len(н.ops) == 1 \
+                and isinstance(н.ops[0], (ast.In, ast.NotIn)) and кеш(н.comparators[0]):
+            кешових += 1
+        elif isinstance(н, ast.Subscript) and isinstance(н.slice, ast.Name) and н.slice.id == ім and кеш(н.value):
+            кешових += 1
+            if isinstance(н.ctx, ast.Store):
+                кешоване.append(батько_присвоєння(одиниця, н))
+        elif isinstance(н, ast.Call) and isinstance(н.func, ast.Attribute) and н.func.attr == "get" and кеш(н.func.value) \
+                and н.args and isinstance(н.args[0], ast.Name) and н.args[0].id == ім:
+            кешових += 1
+    if not вжитків or кешових != вжитків or not кешоване or None in кешоване:
+        return False
+    присвоєння = {}
+    for н in ast.walk(одиниця):
+        if isinstance(н, ast.Assign):
+            for ц in н.targets:
+                for в in ast.walk(ц):
+                    if isinstance(в, ast.Name):
+                        присвоєння.setdefault(в.id, []).append(н.value)
+    повернене = [н.value for н in ast.walk(одиниця) if isinstance(н, ast.Return) and н.value is not None]
+    черга, бачено = list(кешоване) + повернене, set()
+    while черга:
+        в = черга.pop()
+        for н in ast.walk(в):
+            if isinstance(н, ast.Name) and н.id not in бачено:
+                бачено.add(н.id)
+                черга.extend(присвоєння.get(н.id, []))
+            elif isinstance(н, ast.Constant) and isinstance(н.value, str) and роль(н.value):
+                return False
+            elif isinstance(н, ast.keyword) and роль(н.arg):
+                return False
+    return not any(роль(і) for і in бачено if і != ім)
+
+
+def батько_присвоєння(одиниця, ціль):
+    """Значення присвоєння, чия ціль — `ціль`; None, якщо ціль не в простому присвоєнні."""
+    for н in ast.walk(одиниця):
+        if isinstance(н, ast.Assign) and any(ц is ціль for ц in н.targets):
+            return н.value
     return None
 
 
@@ -387,6 +472,246 @@ def вибір(вузли_одиниці, лекс):
     return в
 
 
+# ---- ДОКАЗ ВЛАСНИКА КАДРУ (уточнення класу 13.11, паспорт «Рішення») ----------------------------------------------
+# Колір, виміряний із кадру, чий власник-варіант доведено даними крамниці, — не місце за п.2, коли запис несе цього
+# власника, а кадр виміру збережено з маніфестом; той самий запис кольору без доведеного власника — місце. Запис самого
+# доказу власності (власник із даних крамниці або «невідомо») — не місце за п.1. Доказ — значення виклику `доказ…`
+# (`фід_власник_кадру.доказ_варіанта`, `жнива_запис.доказ_кадру`) і все, що з нього присвоєно; назва поля чи змінної
+# доказом не є.
+ДОКАЗ_ВИКЛИК = re.compile(r"^_?доказ\w*$")
+КАДР_ВИМІРУ = re.compile(r"^кадр_виміру$")
+МАНІФЕСТ = frozenset(("sha256",))
+
+
+def заперечення(тест):
+    """Чи гілка `if тест` — гілка БЕЗ доказу: `not д`, `д is None`, `д == "невідомо"`."""
+    if isinstance(тест, ast.UnaryOp) and isinstance(тест.op, ast.Not):
+        return True
+    if isinstance(тест, ast.Compare) and len(тест.ops) == 1 and isinstance(тест.comparators[0], ast.Constant) \
+            and тест.comparators[0].value in (None, ЗВ_НЕВІДОМО):
+        return isinstance(тест.ops[0], (ast.Is, ast.Eq))
+    return False
+
+
+def нейтральне(вираз):
+    """Значення без кольору: None чи «невідомо» (гілка без доказу так не пише колір варіанта)."""
+    return вираз is None or (isinstance(вираз, ast.Constant) and вираз.value in (None, ЗВ_НЕВІДОМО)) or (
+        isinstance(вираз, (ast.Dict, ast.Call)) and any(isinstance(з, ast.Constant) and з.value == ЗВ_НЕВІДОМО
+                                                       for з in поля(вираз).values()))
+
+
+class Доказ:
+    """Змінні й поля одиниці, що несуть доказ власника-варіанта кадру з даних крамниці."""
+
+    def __init__(self, охоплення, функції):
+        self.вузли = list(власні_вузли(охоплення))
+        self.функції = функції or {}
+        self.імена, self.ключі = set(), set()
+        змінилось = True
+        while змінилось:
+            змінилось = False
+            for н in self.вузли:
+                if isinstance(н, ast.Assign):
+                    цілі, значення = н.targets, н.value
+                elif isinstance(н, (ast.AnnAssign, ast.AugAssign)) and н.value is not None:
+                    цілі, значення = [н.target], н.value
+                elif isinstance(н, (ast.comprehension, ast.For, ast.AsyncFor)):
+                    цілі, значення = [н.target], н.iter
+                else:
+                    continue
+                if not self.є_доказом(значення):
+                    continue
+                for ц in цілі:
+                    for е in (ц.elts if isinstance(ц, (ast.Tuple, ast.List)) else [ц]):
+                        if isinstance(е, ast.Name) and е.id not in self.імена:
+                            self.імена.add(е.id)
+                            змінилось = True
+                        elif isinstance(е, ast.Subscript) and isinstance(е.value, ast.Name) \
+                                and isinstance(е.slice, ast.Constant) and (е.value.id, е.slice.value) not in self.ключі:
+                            self.ключі.add((е.value.id, е.slice.value))
+                            змінилось = True
+
+    def є_доказом(self, вираз):
+        """Значення — сам доказ чи його проєкція (`д["варіант"]`, `д if д else "невідомо"`, `[доказ(…)]`), а не запис,
+        у якому доказ — одне з багатьох полів: інакше доказом ставав би кожен запис поруч."""
+        if isinstance(вираз, ast.Call):
+            if ДОКАЗ_ВИКЛИК.match(ім_виклику(вираз.func).rsplit(".", 1)[-1] or ""):
+                return True
+            return isinstance(вираз.func, ast.Attribute) and вираз.func.attr == "get" and self.є_доказом(вираз.func.value)
+        if isinstance(вираз, ast.Name):
+            return вираз.id in self.імена
+        if isinstance(вираз, ast.Subscript):
+            if isinstance(вираз.value, ast.Name) and isinstance(вираз.slice, ast.Constant) \
+                    and (вираз.value.id, вираз.slice.value) in self.ключі:
+                return True
+            return self.є_доказом(вираз.value)
+        if isinstance(вираз, ast.Attribute):
+            return self.є_доказом(вираз.value)
+        if isinstance(вираз, ast.IfExp):
+            гілки = [вираз.body, вираз.orelse]
+            return any(self.є_доказом(г) for г in гілки) and all(self.є_доказом(г) or нейтральне(г) for г in гілки)
+        if isinstance(вираз, ast.BoolOp):
+            return any(self.є_доказом(з) for з in вираз.values) and all(
+                self.є_доказом(з) or нейтральне(з) for з in вираз.values)
+        if isinstance(вираз, (ast.List, ast.Tuple)) and вираз.elts:
+            return all(self.є_доказом(е) for е in вираз.elts)
+        return False
+
+    def несе(self, вираз):
+        """Умова читає доказ: виклик `доказ…`, змінну з доказом чи поле, записане з доказу."""
+        if вираз is None:
+            return False
+        for н in ast.walk(вираз):
+            if isinstance(н, ast.Call) and ДОКАЗ_ВИКЛИК.match(ім_виклику(н.func).rsplit(".", 1)[-1] or ""):
+                return True
+            if isinstance(н, ast.Name) and isinstance(н.ctx, ast.Load) and н.id in self.імена:
+                return True
+            if isinstance(н, ast.Subscript) and isinstance(н.value, ast.Name) and isinstance(н.slice, ast.Constant) \
+                    and (н.value.id, н.slice.value) in self.ключі:
+                return True
+        return False
+
+    def поля_запису(self, вузол):
+        """Поля запису: літерал чи конструктор — його ключі; `база["поле"] = …` — усі такі присвоєння бази в одиниці."""
+        if isinstance(вузол, (ast.Dict, ast.Call)):
+            return поля(вузол)
+        if isinstance(вузол, ast.Subscript) and isinstance(вузол.value, ast.Name):
+            база, п = вузол.value.id, {}
+            for н in self.вузли:
+                if isinstance(н, ast.Assign):
+                    for ц in н.targets:
+                        for е in (ц.elts if isinstance(ц, (ast.Tuple, ast.List)) else [ц]):
+                            if isinstance(е, ast.Subscript) and isinstance(е.value, ast.Name) and е.value.id == база \
+                                    and isinstance(е.slice, ast.Constant) and isinstance(е.slice.value, str):
+                                п.setdefault(е.slice.value, н.value)
+            return п
+        return {}
+
+    def маніфест(self, значення, граф, шлях=frozenset()):
+        """Кадр виміру з маніфестом: значення походить із запису з `sha256` (байти кадру виміру), а не лише з адреси."""
+        if значення is None:
+            return False
+        for н in ast.walk(значення):
+            if isinstance(н, (ast.Dict, ast.Call)) and МАНІФЕСТ & set(поля(н)):
+                return True
+            if isinstance(н, ast.Call) and isinstance(н.func, ast.Name) and н.func.id in self.функції \
+                    and any(isinstance(х, ast.Constant) and х.value in МАНІФЕСТ or isinstance(х, ast.keyword) and х.arg in МАНІФЕСТ
+                            for х in ast.walk(self.функції[н.func.id])):
+                return True
+            if isinstance(н, ast.Name) and н.id not in шлях:
+                if any(self.маніфест(з, граф, шлях | {н.id}) for з in граф.визначення(н.id, getattr(н, "lineno", 10 ** 9))):
+                    return True
+        return False
+
+    def під_доказом(self, вузол, значення, батьки, межа):
+        """Колір пишеться лише з доказом: гілка `if <доказ>` чи `… if <доказ> else None/«невідомо»`."""
+        if isinstance(значення, ast.IfExp) and self.несе(значення.test):
+            return нейтральне(значення.body if заперечення(значення.test) else значення.orelse)
+        cur = вузол
+        while cur in батьки and cur is not межа:
+            р = батьки[cur]
+            if isinstance(р, (ast.If, ast.IfExp)) and cur is not р.test and self.несе(р.test):
+                у_тілі = any(х is cur for х in р.body) if isinstance(р, ast.If) else cur is р.body
+                return у_тілі != заперечення(р.test) or нейтральне(значення)
+            cur = р
+        return False
+
+    def власник_у_записі(self, п):
+        """Запис несе власника з доказу: поле власника з доказу чи кадр виміру, у якого поле власника записано з доказу."""
+        if any(ПОЛЕ_ВЛАСНИКА.match(к) and self.є_доказом(з) for к, з in п.items() if isinstance(к, str)):
+            return True
+        return any(isinstance(з, ast.Name) and any(б == з.id and ПОЛЕ_ВЛАСНИКА.match(к) for б, к in self.ключі)
+                   for к, з in п.items() if isinstance(к, str) and КАДР_ВИМІРУ.match(к))
+
+    def колір_доведеного(self, вузол, значення, батьки, межа, граф):
+        """(дотримує, чому): колір кадру з доведеним власником; None — запис без власника й кадру виміру з маніфестом."""
+        п = self.поля_запису(вузол)
+        кадр = [з for к, з in п.items() if isinstance(к, str) and КАДР_ВИМІРУ.match(к)]
+        if not (self.власник_у_записі(п) and кадр and any(self.маніфест(з, граф) for з in кадр)):
+            return None
+        if self.під_доказом(вузол, значення, батьки, межа):
+            return True, "колір кадру з доведеним власником-варіантом: запис несе власника, кадр виміру з маніфестом"
+        return False, ("запис несе власника й кадр виміру з маніфестом, але колір пишеться й без доказу власника "
+                       "(гілка «невідомо» дає колір варіанта)")
+
+    def запис_доказу(self, вузол, значення, граф):
+        """Запис самого доказу власності: у записі кадру поле власника з даних крамниці, а кадр — ключ звірки з прив'язкою
+        платформи (`прив'язка.get(кадр)` у перевірці перед записом)."""
+        п = self.поля_запису(вузол)
+        власник = [з for к, з in п.items() if isinstance(к, str) and ПОЛЕ_ВЛАСНИКА.match(к)
+                   and not isinstance(з, ast.Constant)]
+        if not власник or not any("вхід" in граф.теги(з) for з in власник):
+            return False
+        імена = {н.id for н in ast.walk(значення) if isinstance(н, ast.Name)} if значення is not None else set()
+        пошук = set()
+        for н in self.вузли:
+            if isinstance(н, ast.Assign) and len(н.targets) == 1 and isinstance(н.targets[0], ast.Name):
+                в = н.value
+                ключ = (в.args[0] if isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr == "get"
+                        and в.args else в.slice if isinstance(в, ast.Subscript) else None)
+                if isinstance(ключ, ast.Name) and ключ.id in імена:
+                    пошук.add(н.targets[0].id)
+        if not пошук:
+            return False
+        return any(isinstance(н, ast.If) and any(isinstance(х, ast.Name) and х.id in пошук for х in ast.walk(н.test))
+                   for н in self.вузли)
+
+
+def діагностика(вузол, батьки):
+    """Літерал чи конструктор запису, присвоєний змінній діагностики (`діаг = dict(…)`): журнал прогону, не таблиця
+    (те саме правило, що `діаг["поле"] = …` у `Збирач._запис`)."""
+    б = батьки.get(вузол)
+    return isinstance(вузол, (ast.Dict, ast.Call)) and isinstance(б, ast.Assign) and б.value is вузол and any(
+        isinstance(ц, ast.Name) and ЗВІТ_СУБ.match(ц.id) for ц in б.targets)
+
+
+ЧИТАЧ_ТАБЛИЦІ = re.compile(r"^_?(читати|прочитати|read)_\w+$")
+
+
+def таблиця_цілою(значення, одиниця, функції):
+    """Значення — ім'я, кожне присвоєння якого — виклик функції модуля-читача (`читати_кадри()`), що відкриває файл:
+    поле несе всю таблицю каталогу як контекст читача, а не кадр, колір чи наявність однієї речі (клас: читачі каталогу —
+    не місця)."""
+    if not isinstance(значення, ast.Name) or одиниця is None:
+        return False
+    присвоєно = [н.value for н in ast.walk(одиниця) if isinstance(н, ast.Assign)
+                 and any(isinstance(ц, ast.Name) and ц.id == значення.id for ц in н.targets)]
+    if not присвоєно:
+        return False
+    for в in присвоєно:
+        if not (isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and ЧИТАЧ_ТАБЛИЦІ.match(в.func.id)
+                and в.func.id in функції):
+            return False
+        if not any(isinstance(н, ast.Call) and ім_виклику(н.func) in ("open", "load")
+                   for н in ast.walk(функції[в.func.id])):
+            return False
+    return True
+
+
+def копія_запису(вузол, значення, батьки, граф, доказ, рядок, ключ):
+    """Похідне без нового входу: значення читає лише сам запис, у який пишеться, а це поле вже записано в ньому вище
+    (`r["colors"] = [dict(lab=точка_кольору(r))]` після `r["lab"] = …`)."""
+    cur = вузол
+    while cur in батьки and not isinstance(cur, ast.stmt):
+        cur = батьки[cur]
+    ціль = cur.targets[0] if isinstance(cur, ast.Assign) and len(cur.targets) == 1 else None
+    while isinstance(ціль, (ast.Subscript, ast.Attribute)):
+        ціль = ціль.value
+    if not isinstance(ціль, ast.Name) or значення is None:
+        return False
+    корені = граф.корені(значення)
+    if not корені or not корені <= {ціль.id}:
+        return False
+    for н in доказ.вузли:
+        if isinstance(н, ast.Assign) and н.lineno < рядок:
+            for ц in н.targets:
+                for е in (ц.elts if isinstance(ц, (ast.Tuple, ast.List)) else [ц]):
+                    if isinstance(е, ast.Subscript) and isinstance(е.value, ast.Name) and е.value.id == ціль.id \
+                            and isinstance(е.slice, ast.Constant) and е.slice.value == ключ:
+                        return True
+    return False
+
+
 ПОПЕРЕДНІХ = 8       # оператори блоку перед місцем, що ще вважаються його контекстом
 
 
@@ -422,6 +747,7 @@ def суд_місць(файл, од_ім, вузол, тіло_вузли, зб
     результат = []
     охоплення = вузол if вузол is not None else ast.Module(body=тіло_вузли, type_ignores=[])
     граф = Походження(охоплення, батьки, getattr(збирач, "функції", {}))
+    доказ = Доказ(охоплення, getattr(збирач, "функції", {}))
 
     def пояснення(вузол_запису, значення, назва):
         контекст = локальний_контекст(вузол_запису, значення, батьки, межа)
@@ -444,6 +770,12 @@ def суд_місць(файл, од_ім, вузол, тіло_вузли, зб
             if isinstance(присв, (ast.Assign, ast.AnnAssign)):
                 значення = присв.value
         причина = граф.причина_виключення(вузол_запису, ключ, р, значення)
+        if not причина and діагностика(вузол_запису, батьки):
+            причина = "діагностика прогону, не запис таблиці"
+        if not причина and таблиця_цілою(значення, охоплення, getattr(збирач, "функції", {})):
+            причина = "таблиця каталогу, прочитана цілою: контекст читача, не поле запису"
+        if not причина and копія_запису(вузол_запису, значення, батьки, граф, доказ, рядок, ключ):
+            причина = "копія вже записаного поля того самого запису без нового входу"
         if причина and not її_річ:
             результат.append(Місце(файл, рядок, 1 if р == "кадр" else 2, "поза класом", причина, ключ, р))
             continue
@@ -459,16 +791,23 @@ def суд_місць(файл, од_ім, вузол, тіло_вузли, зб
                 м = Місце(файл, рядок, 1, "дотримує", "кадр із даних своєї оферти/варіації", ключ, р)
             elif невідомо:
                 м = Місце(файл, рядок, 1, "дотримує", "власник невідомий записано словом «невідомо»", ключ, р)
+            elif доказ.запис_доказу(вузол_запису, значення, граф):
+                м = Місце(файл, рядок, 1, "дотримує", "запис доказу власності: власник із даних крамниці, кадр звірено з "
+                          "прив'язкою платформи (уточнення 13.11)", ключ, р)
             else:
                 хвіст = ("власник — товар (`власник_кадру`), `[\"варіант\"]` не читано: варіант «невідомо» (9686)"
                          if власник_виклик and not збирач.читання_варіант else
                          "власника-варіанта з даних крамниці нема, «невідомо» не записано")
                 м = Місце(файл, рядок, 1, "порушує", пояс + "; " + хвіст, ключ, р)
         else:
+            доведений = доказ.колір_доведеного(вузол_запису, значення, батьки, межа, граф) if р == "колір" else None
             if граф.свій_варіант(вузол_запису, значення):
                 м = Місце(файл, рядок, 2, "дотримує", "поле з даних своєї оферти/варіації (id і наявність або вхід циклу)", ключ, р)
+            elif доведений and доведений[0]:
+                м = Місце(файл, рядок, 2, "дотримує", доведений[1] + " (уточнення 13.11)", ключ, р)
             else:
-                хвіст = ("записано полем товару; варіації у функції: " + ", ".join(варіації) if варіації else
+                хвіст = (доведений[1] if доведений else
+                         "записано полем товару; варіації у функції: " + ", ".join(варіації) if варіації else
                          "записано полем товару; варіацій у функції нема — вхід бере готовий запис товару")
                 м = Місце(файл, рядок, 2, "порушує", пояс + "; " + хвіст, ключ, р)
         if м.статус == "порушує" and "вхід" not in граф.теги(значення):
@@ -477,6 +816,11 @@ def суд_місць(файл, од_ім, вузол, тіло_вузли, зб
     for рядок, ім, вираз in sorted(збирач.ключі, key=lambda х: (х[0], х[1])):
         с = суд_ключа(рядок, ім, вираз)
         if с is None:
+            continue
+        if ключ_кешу(ім, охоплення):
+            результат.append(Місце(файл, рядок, 3, "поза класом", "ключ кешу похідного: у кешованому й поверненому "
+                                   "нема поля з роллю кадру, кольору чи наявності — не ключ двійника чи запису (`%s`)"
+                                   % ім, ім, "ключ"))
             continue
         результат.append(Місце(файл, рядок, 3, "порушує" if с[0] else "дотримує", с[1], ім, "ключ"))
     return результат
