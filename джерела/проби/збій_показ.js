@@ -103,7 +103,7 @@ const факт = (назва, умова) => { assert(умова, назва); �
   const редактор = w.document.createElement('div'); редактор.id = 'проба-редактор';
   const кнопка = w.document.createElement('button'); редактор.appendChild(кнопка);
   w.document.body.appendChild(редактор);
-  e(`відкритиАркуш('Проба', $('проба-редактор')); збійЖінціП($('збій-стан'), 'not_saved', 'проба');`);
+  e(`відкритиАркуш($('проба-редактор')); збійЖінціП($('збій-стан'), 'not_saved', 'проба');`);
   факт('сповіщення доступне всередині відкритого редактора', !!w.document.querySelector('#аркуш #збій-панель') && !w.document.getElementById('збій-стан').closest('[inert]'));
   e('закритиАркуш()');
   факт('закриття редактора не ховає сповіщення', w.document.getElementById('збій-панель').parentNode === w.document.body);
