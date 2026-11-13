@@ -1008,6 +1008,7 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
         $r = Invoke-Claude $Exe $a $prompt $runDir $statePath "STARTED $id" $M.Name ([string]$Job.slot)
     } catch {
         Write-Log "claude: $($_.Exception.Message)"
+        Add-CrashNote (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" (Get-FailReason $_)
         return (Complete-Task $M $statePath $id 'CRASH')
     }
     if ($r.Kind) { return (Complete-Task $M $statePath $id $r.Kind) }
@@ -1058,9 +1059,12 @@ function Enter-ClaudeNetworkWait($M, [string]$Id) {
 }
 
 # Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
-function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
-    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
-    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
+# $Reason — причина цієї спроби (Get-FailReason), між спробами її несе стан чекання; на межі вона йде в blocked-reasons.json.
+function Close-FailedStart($M, [string]$Id, [string]$StatePath, [string]$Reason = '') {
+    $why = Get-StartFailReason $StatePath $Reason
+    if ((Step-FailedStart $M $StatePath $why) -ne 'LIMIT') { return }
+    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH ($why)"
+    Add-CrashNote (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" $why ($script:MaxRetakes + 1)
     Complete-Task $M $StatePath $Id 'CRASH'
 }
 
@@ -1360,7 +1364,7 @@ function Start-Markers($Workers) {
             [void]$Workers.Add($worker)
         } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
-            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
+            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m)) (Get-FailReason $_)
             continue
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
@@ -1388,6 +1392,7 @@ function Invoke-Worker {
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
     $gpu = $false
+    $failReason = ''
     $info = Join-Path $script:SlotDir "$($job.slot).json"
     try {
         if ($job.gpu) {
@@ -1405,12 +1410,13 @@ function Invoke-Worker {
         0
     } catch {
         Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
+        $failReason = Get-FailReason $_
         1
     } finally {
         if ($gpu) { Exit-GpuLease $job }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
-        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath
+        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath $failReason
         $slotLock.Dispose()
     }
 }
