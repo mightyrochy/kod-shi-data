@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Стенд обгортки М.2, 11 сценаріїв черги й публікації: повтор, позначка зникла, не ff, збій claude, доробка, ізоляція,
-# стара й крива позначка, перерваний прогін, засипання станами, відхилений пуш, підроблений стан (8940). pwsh — PWSH.
+# Стенд обгортки М.2, 16 сценаріїв черги й публікації: повтор, позначка зникла, не ff, збій claude, доробка, ізоляція,
+# стара й крива позначка, перерваний прогін, засипання станами, відхилений пуш, підроблений стан (8940), черга — правда: зняття виконаної, ЗНЯТО до й під час прогону, підроблений кінець не знімає позначки, JSON раніше за DONE — зняття відкладено. pwsh — PWSH.
 H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 SLUG='М.2-проба-обгортки'; M=gemini-3.8-flash-high; BAD=0
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x
@@ -58,5 +58,51 @@ echo "=== 11 підроблений стан (8940): ранній id на ту �
   pub; show
   if grep -q -E 'vlasnyk|ignore-rules' "$W/claude.log"; then BAD=1; echo "  ✗ слово зі стану в рядку"; else echo "  ✓ у рядках нема жодного слова зі стану"; fi
   if git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini/$SLUG" >/dev/null; then echo "  ✓ справжній результат опубліковано"; else BAD=1; echo "  ✗ справжню публікацію забрано"; fi
+
+# Черга — єдина правда (09.11: 10 давніх позначок після перенесення стану стали NEW і доїли квоту agy).
+has() { git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini-queue/$1" 2>/dev/null; }
+runs() { grep -cE 'наряд .*->' "$W/runs/wrapper.log" 2>/dev/null; }
+# Зняття диспетчером: коміт «ЗНЯТО…» поверх позначки (видаляти гілку він не може).
+zn() { O=$(has "$1"); C=$(git -C "$W/seed" commit-tree "$O^{tree}" -p "$O" -m "ЗНЯТО: $2"); git -C "$W/seed" push -q origin "$C:refs/heads/gemini-queue/$1" 2>/dev/null; }
+ok() { if eval "$2"; then echo "  ✓ $1"; else BAD=1; echo "  ✗ $1"; fi; }
+echo "=== 12 виконану позначку знято з origin після публікації; втрата стану не воскрешає; перепушену не чіпаємо"
+setup r12; mark "$SLUG/$M/1"; gem; pub
+ok "після першої публікації позначка ще є (запис новіший за fetch)" '[ -n "$(has "$SLUG/$M/1")" ]'
+pub; ok "наступний прохід публікатора зняв позначку" '[ -z "$(has "$SLUG/$M/1")" ]'
+rm -f "$W"/out/marker-state/*.txt; gem
+ok "стан смуги втрачено — наряд не йде вдруге (прогонів $(runs))" '[ "$(runs)" = 1 ]'
+setup r12b; mark "$SLUG/$M/1"; gem; pub
+(cd "$W/seed"; git commit -q --allow-empty -m нова-робота; git push -q origin main 2>/dev/null); mark "$SLUG/$M/1"; NEW=$(has "$SLUG/$M/1"); pub
+ok "перепушена позначка (нова робота) лишилась на новому SHA" '[ -n "$NEW" ] && [ "$(has "$SLUG/$M/1")" = "$NEW" ] && grep -q "перепушено — не чіпаю" "$W/pub/publish.log"'
+echo "=== 13 ЗНЯТО до узяття: прогону нема, CANCELLED з причиною, тихий рядок, позначку знято"
+setup r13; mark "$SLUG/$M/1"; zn "$SLUG/$M/1" 'наряд застарів'; gem; pub; pub
+ok "agy не запущено, результат CANCELLED з причиною" '[ "$(runs)" = 0 ] && grep -l "\"code\":\"CANCELLED\"" "$W"/out/2*.json | xargs grep -q "\"reason\":\"наряд застарів\""'
+# Тихість CANCELLED (зведення, не пробудження) міряє сценарії_тихі_пробудження.ps1; side.ps1 доставляє все.
+ok "рядок ЗАБЛОКОВАНО gemini/<наряд> CANCELLED, позначки на origin нема" 'delivered "$W/claude.log" | grep -qx "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$SLUG CANCELLED" && [ -z "$(has "$SLUG/$M/1")" ]'
+echo "=== 14 ЗНЯТО під час прогону: планувальник зупиняє дерево наряду, обидва стани — CANCELLED"
+setup r14; mark "$SLUG/$M/1"; export FAKE_SCENARIO=hang; T0=$(date +%s)
+timeout -s KILL 120 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$WW/clone\",\"RunsDir\":\"$WW/runs\",\"OutDir\":\"$WW/out\",\"RepoUrl\":\"$WW/origin.git\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":5,\"TotalMinutes\":10,\"MaxNudges\":3,\"PollMinutes\":0.05}" & GP=$!
+for i in $(seq 60); do grep -qs '"start":"[0-9a-f]\{40\}"' "$W"/out/marker-state/*.txt && break; sleep 1; done
+zn "$SLUG/$M/1" 'інший рушій'; wait "$GP"; T1=$(date +%s); pkill -f 'fake_ag[y]\.' 2>/dev/null
+ok "прохід зупинив прогін за $((T1 - T0)) с (agy спав би 60 с)" '[ $((T1 - T0)) -lt 50 ] && grep -q "зупинено — CANCELLED" "$W/runs/wrapper.log"'
+ok "стан узятого прогону й знятої позначки — DONE … CANCELLED" '[ "$(grep -l "^DONE .* CANCELLED$" "$W"/out/marker-state/*.txt | wc -l)" = 2 ] && [ "$(grep -l "\"code\":\"CANCELLED\"" "$W"/out/2*.json | wc -l)" = 1 ]'
+unset FAKE_SCENARIO
+
+echo "=== 15 підроблений кінець не знімає позначки: справжній результат після двох проходів публікується, тоді позначку знято"
+setup r15; mark "$SLUG/$M/1"; gem; mkdir -p "$W/held"; J=$(ls "$W"/out/2*.json | head -1); mv "$J" "$W/held/"; MK=$(has "$SLUG/$M/1")
+printf '{"v":1,"id":"20000101-000000-aaaaaaaaaaaa","slug":"%s","model":"%s","n":1,"marker":"%s","start":"","head":"","code":"NO_REPORT","report":"NONE","ahead":0,"turns":1,"minutes":0,"bundle":""}' "$SLUG" "$M" "$MK" > "$W/out/20000101-000000-aaaaaaaaaaaa.json"
+pub; pub; pub
+ok "три проходи з підробленим JSON: позначка на origin, відмова в журналі" '[ -n "$(has "$SLUG/$M/1")" ] && grep -q "не знімаю — стан позначки ще не підтверджує" "$W/pub/publish.log" && ! grep -q "знято — кінцевий стан" "$W/pub/publish.log"'
+mv "$W/held/$(basename "$J")" "$W/out/"; pub
+ok "справжній результат опубліковано після підробленого" 'git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini/$SLUG" >/dev/null'
+pub; ok "справжній кінцевий стан підтверджено станом позначки — гілку знято" '[ -z "$(has "$SLUG/$M/1")" ] && grep -q "знято — кінцевий стан опубліковано" "$W/pub/publish.log"'
+ok "відкладених кінців не лишилось (підроблений id забуто, справжній знято)" '[ -z "$(ls "$W"/pub/finish-pending/*.txt 2>/dev/null)" ]'
+
+echo "=== 16 JSON раніше за DONE у marker-state: перший прохід не знімає, коли DONE з'явився — зняття не губиться"
+setup r16; mark "$SLUG/$M/1"; gem; S=$(grep -l '^DONE ' "$W"/out/marker-state/*.txt | head -1); mkdir -p "$W/held"; mv "$S" "$W/held/state.txt"
+pub; ok "без DONE у стані: публікація є, позначка на origin, зняття відкладено" 'git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini/$SLUG" >/dev/null && [ -n "$(has "$SLUG/$M/1")" ] && [ -n "$(ls "$W"/pub/finish-pending/*.txt 2>/dev/null)" ]'
+pub; ok "другий прохід без DONE: позначка досі на origin" '[ -n "$(has "$SLUG/$M/1")" ]'
+mv "$W/held/state.txt" "$S"; pub; pub
+ok "після появи DONE зняття доведено: позначки нема, відкладеного нема" '[ -z "$(has "$SLUG/$M/1")" ] && [ -z "$(ls "$W"/pub/finish-pending/*.txt 2>/dev/null)" ] && grep -q "підтверджено станом позначки" "$W/pub/publish.log"'
 
 [ "$BAD" = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit "$BAD"
