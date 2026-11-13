@@ -123,6 +123,32 @@ try {
     Write-FileAtomic "$OutDir/$legacyId.json" ((@{slug="автоперевірка-10-$reviewHead"}) | ConvertTo-Json)
     Write-FileAtomic "$WorkDir/state/o-$legacyId.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-10-$reviewHead $reviewHead"}) | ConvertTo-Json)
     Check 'старий стан Codex/agy відновлює позначку за id' (Test-ChainReviewDone '10' $reviewHead)
+    # Відкладений кінець: DONE з'являється у стані позначки між двома зверненнями до нього — зняття не губиться (стан читається раз).
+    & {
+        $q = 'gemini-queue/гонка/cc-test/1'; $m = 'c' * 40; $rid = '20261101-230002-0123456789ab'; $key = "refs/remotes/origin/$q $m"
+        $script:StateReads = 0; $orig = ${function:Get-Sha256Hex}
+        $sd = Join-Path $OutDir 'marker-state'; [void][IO.Directory]::CreateDirectory($sd)
+        $sf = Join-Path $sd ((& $orig $key) + '.txt')
+        $pending = Join-Path (Join-Path $WorkDir 'finish-pending') ((& $orig "$q $m $rid") + '.txt')
+        function Get-RefSha { param($Ref) $m }
+        function Get-Sha256Hex([string]$Text) {
+            if ($Text -ceq $key) {
+                $script:StateReads++
+                if ($script:StateReads -eq 2) { Write-FileAtomic $sf "DONE $rid DONE" }
+            }
+            & $orig $Text
+        }
+        function Test-Finished { @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'finished') -Filter '*.txt' -File -ErrorAction SilentlyContinue | Where-Object { ([IO.File]::ReadAllText($_.FullName, $utf)).Trim() -ceq "$q $m" }).Count -gt 0 }
+        Write-FileAtomic $sf 'STARTED {}'
+        Add-PublishedMarker $q $m $rid 'DONE'
+        Check 'JSON раніше за DONE: кінець відкладено, позначки до зняття ще нема' ((Test-Path -LiteralPath $pending) -and -not (Test-Finished))
+        $script:StateReads = 0
+        Confirm-PendingMarkers
+        Check 'стан позначки читається раз за запис, а DONE між читаннями не відкидає відкладеного' ($script:StateReads -eq 1 -and (Test-Path -LiteralPath $pending) -and -not (Test-Finished))
+        Write-FileAtomic $sf "DONE $rid DONE"
+        Confirm-PendingMarkers
+        Check 'після появи DONE відкладений кінець дає запис на зняття' ((Test-Finished) -and -not (Test-Path -LiteralPath $pending))
+    }
     $script:RemoteFailure = $false
     function Invoke-Git { [pscustomobject]@{Code=1;Out='';Err='стенд мережі'} }
     try { [void](Get-LiveCompletion ([pscustomobject]@{stamp=('e'*40);published=$true})) } catch { $script:RemoteFailure = $_.Exception.Message -ceq 'CHAIN_REMOTE' }

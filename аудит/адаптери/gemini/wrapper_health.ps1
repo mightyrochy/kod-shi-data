@@ -75,6 +75,15 @@ function Invoke-HealthBeat {
     finally { $script:HeartbeatBusy = $false }
 }
 
+function Add-FinishedMarker([string]$Dir, [string]$Name, [string]$Sha) {
+    <# Позначка дійшла кінцевого стану, її рядок опубліковано: запис «<позначка> <SHA>» для публікатора
+    (`gemini_publish.ps1`, Remove-FinishedMarkers), який знімає гілку з черги під lease на цей SHA. Пишуть процеси
+    власника (публікатор, claude-run) — у gemini прав пушу нема. #>
+    if ($Name -cnotmatch '^gemini-queue/\S+$' -or $Name.Contains('..') -or $Sha -cnotmatch '^[0-9a-f]{40}$') { return }
+    [void][IO.Directory]::CreateDirectory($Dir)
+    Write-FileAtomic (Join-Path $Dir ((Get-Sha256Hex "$Name $Sha") + '.txt')) "$Name $Sha"
+}
+
 function Test-OldChainMarker($M) {
     <# Позначка автоперевірки в тій формі, яку ставив ланцюг обгортки (`/p2` без `gpu` і строку, `Add-ChainMarker`): ланцюг її
     більше не ставить (слово власника 08.11 15:47) — лишилися давні, і їх смуги не беруть. Позначка диспетчера має іншу умову

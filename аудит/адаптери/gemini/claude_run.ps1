@@ -904,7 +904,9 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $res
 }
 
-function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [string]$Branch = '', [string]$Sha = '') {
+# Кінець позначки: результат, рядок у вихідних і стан DONE; позначка з прийнятим рядком — у перелік публікатора на зняття з
+# черги (Add-FinishedMarker): кінець живе на origin, а не лише в локальному стані. Reason — причина зняття (ЗНЯТО).
+function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [string]$Branch = '', [string]$Sha = '', [string]$Reason = '') {
     if ($Code -eq 'AUTH') { Add-HealthAlert 'AUTH' 'CLAUDE' }
     if ($Code -eq 'ENGINE_MISSING') { Add-HealthAlert 'ENGINE' 'CLAUDE' }
     $line = $(if ($Code -eq 'DONE') { "GEMINI ОБГОРТКА: ГОТОВО $Branch $Sha МОДЕЛЬ $($M.Model)" }
@@ -912,15 +914,28 @@ function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [stri
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $Id
     [void][IO.Directory]::CreateDirectory($runDir)
     $result = [ordered]@{ marker = $M.Name; sha = $M.Sha; code = $Code; branch = $Branch; head = $Sha; end = (Get-Date).ToString('s') }
+    if ($Reason) { $result.reason = ConvertTo-NoteText $Reason }
     # Ідентичність наряду доступна публікаторові до появи рядка у вихідних, зокрема при ранній відмові.
     Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
-    if (-not (Add-Line $line)) {
+    $sent = [bool](Add-Line $line)
+    if (-not $sent) {
         $Code = 'LINE_REJECTED'; $result.code = $Code
         Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
     }
     Write-FileAtomic $StatePath "DONE $Id $Code"
     Remove-Claim $StatePath
     Write-Log "позначка $($M.Name): $Code"
+    if ($sent) {
+        try { Add-FinishedMarker (Join-Path $WorkDir 'finished') $M.Name $M.Sha }
+        catch { Write-Log "позначка $($M.Name): запис на зняття з черги не зроблено — $($_.Exception.Message)" }
+    }
+}
+
+# Позначку знято комітом «ЗНЯТО…» (ConvertTo-Marker): прогін, що вже йде, зупиняється; сама позначка — кінець CANCELLED
+# з причиною в результаті й рядком, а публікатор знімає гілку з черги.
+function Close-CancelledMarker($M, $Workers) {
+    Stop-CancelledRuns $M $Workers
+    Complete-Task $M (Get-StatePath (Get-MarkerKey $M)) (New-Id) 'CANCELLED' -Reason $M.Reason
 }
 
 # Відмова за квотою: позначка чекає скидання (resetsAt останньої `rate_limit_event` зі status rejected; інакше час
@@ -1008,6 +1023,7 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
         $r = Invoke-Claude $Exe $a $prompt $runDir $statePath "STARTED $id" $M.Name ([string]$Job.slot)
     } catch {
         Write-Log "claude: $($_.Exception.Message)"
+        Add-CrashNote (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" (Get-FailReason $_)
         return (Complete-Task $M $statePath $id 'CRASH')
     }
     if ($r.Kind) { return (Complete-Task $M $statePath $id $r.Kind) }
@@ -1058,9 +1074,12 @@ function Enter-ClaudeNetworkWait($M, [string]$Id) {
 }
 
 # Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
-function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
-    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
-    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
+# $Reason — причина цієї спроби (Get-FailReason), між спробами її несе стан чекання; на межі вона йде в blocked-reasons.json.
+function Close-FailedStart($M, [string]$Id, [string]$StatePath, [string]$Reason = '') {
+    $why = Get-StartFailReason $StatePath $Reason
+    if ((Step-FailedStart $M $StatePath $why) -ne 'LIMIT') { return }
+    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH ($why)"
+    Add-CrashNote (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" $why ($script:MaxRetakes + 1)
     Complete-Task $M $StatePath $Id 'CRASH'
 }
 
@@ -1324,11 +1343,12 @@ function Start-Markers($Workers) {
     if ($mine.Count -eq 0) { Save-Skips $skipFile; return @(0, $null) }
     $gpuWhy = $null
     $ordered = @(Get-OrderedMarkers $mine)
-    foreach ($m in @($ordered | Where-Object { $_.Off })) { if ((Test-OffMarker $m) -and $null -eq $off) { $off = $m } }
+    foreach ($m in @($ordered | Where-Object { $_.Off -and -not (Test-MarkerCancelled $_) })) { if ((Test-OffMarker $m) -and $null -eq $off) { $off = $m } }
     if ($null -ne $off) { return @(0, $off) }
-    foreach ($m in @($ordered | Where-Object { -not $_.Off })) {
+    foreach ($m in @($ordered | Where-Object { -not $_.Off -or (Test-MarkerCancelled $_) })) {
         $st = Get-MarkerState $m
         if (-not (Test-MarkerReady $st)) { continue }
+        if (Test-MarkerCancelled $m) { Close-CancelledMarker $m $Workers; continue }
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
             Write-Log "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
@@ -1360,7 +1380,7 @@ function Start-Markers($Workers) {
             [void]$Workers.Add($worker)
         } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
-            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
+            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m)) (Get-FailReason $_)
             continue
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
@@ -1388,6 +1408,7 @@ function Invoke-Worker {
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
     $gpu = $false
+    $failReason = ''
     $info = Join-Path $script:SlotDir "$($job.slot).json"
     try {
         if ($job.gpu) {
@@ -1405,12 +1426,13 @@ function Invoke-Worker {
         0
     } catch {
         Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
+        $failReason = Get-FailReason $_
         1
     } finally {
         if ($gpu) { Exit-GpuLease $job }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
-        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath
+        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath $failReason
         $slotLock.Dispose()
     }
 }

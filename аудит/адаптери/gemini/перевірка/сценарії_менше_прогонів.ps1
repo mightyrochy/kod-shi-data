@@ -10,6 +10,11 @@ function Check([string]$Name, [bool]$Ok) {
     <# Кожен провал мірила лишається червоним і впливає на код завершення. #>
     if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
 }
+function Write-Log([string]$Text) {
+    <# queue_lanes.ps1 вимагає від хазяїна функцію журналу (шапка файлу): без неї збій прив'язки процесу до задачі Windows у Start-Tree
+    (процес git устиг вийти) обривав би сам виклик git замість рядка в журналі. Сценарії, що міряють журнал, задають свою. #>
+    Write-Host "  журнал обгортки: $Text"
+}
 function Scenario([string]$Name, [scriptblock]$Body) {
     <# Незалежні правила виконуються до кінця й при відсутній функції базової версії. #>
     try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
