@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured blouse with a tailored fit, mid-length hemline at the hip, color #deb295, cotton blend with a subtle texture.\\nRelaxed straight-leg trousers, full length reaching the ankle, color #d8a98c, lightweight wool crepe.\\nMinimalist structured blazer, cropped length ending above the waist, color #e2ba9f, fine-gauge merino knit.\\nPointed-toe ballet flats, mid-heel height for comfort and polish, color #deb295, soft leather upper.\\nDelicate gold bar necklace and small hoop earrings, neutral metallic tones, polished brass and lightweight metal.\\nThis outfit embodies a polished yet approachable workwear aesthetic suitable for an autumn office day. The monochromatic earth-tone palette creates a cohesive visual flow that feels professional without being rigid or stiff. Choosing a knit blazer over a heavy wool suit adapts perfectly to cooler seasonal weather while maintaining the requested neat dress code. The relaxed trouser cut balances the structured top layers, ensuring all-day comfort during long meetings or walks between floors.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Blouse\\\",\\n      \\\"details\\\": \\\"Structured with a tailored fit and mid-length hemline at the hip, cotton blend with a subtle texture\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#deb295\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Trousers\\\",\\n      \\\"details\\\": \\\"Relaxed straight-leg cut, full length reaching the ankle, lightweight wool crepe\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#d8a98c\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Blazer\\\",\\n      \\\"details\\\": \\\"Minimalist structured design, cropped length ending above the waist, fine-gauge merino knit\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#e2ba9f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Ballet flats\\\",\\n      \\\"details\\\": \\\"Pointed toe, mid-heel height for comfort and polish, soft leather upper\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#deb295\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Necklace\\\",\\n      \\\"details\\\": \\\"Delicate gold bar necklace with neutral metallic tones and polished brass\\\",\\n      \\\"slot\\\": \\\"collar_necklace\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Earrings\\\",\\n      \\\"details\\\": \\\"Small hoop earrings in lightweight metal\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":574,\"output_tokens\":411},\"stop_reason\":\"end_turn\"}"
+ }
+}

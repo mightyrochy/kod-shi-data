@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"her_words\\\" — what she asked for in her own words; meet every point\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"event\": \"презентація нашої нової книжки\", \"occasion\": \"Зустріч з подругами у старовинній бібліотеці після презентації нашої нової книжки\", \"movement\": \"Сидітиму біля відчиненого вікна\", \"temperature_c\": \"завжди холодно\", \"weather_feel\": \"завжди холодно\"}, \"formality_reason\": \"norm\", \"event\": \"презентація нашої нової книжки\", \"movement\": \"sit\", \"temperature_c\": 15, \"goal\": \"express\", \"wishes\": [\"впізнати себе на фото\"], \"mood\": [\"радісна\", \"весела\"], \"occasion\": \"celebration\", \"her_words\": \"Її слова: «Зустріч з подругами у старовинній бібліотеці після презентації нашої нової книжки\\nУ залі завжди холодно\\nДовго стоятиму в черзі\\nПотім зайду до подруги\\nПоїду громадським транспортом\\nВізьму з собою книжку\\nПісля вечері буде фотосесія\\nСидітиму біля відчиненого вікна\\nХочу впізнати себе на фото\\nМаю встигнути на останній потяг»\", \"formality\": [\"smart\"], \"season\": \"autumn\", \"part_of_day\": \"evening\", \"light\": \"artificial\", \"weather_feel\": \"cold\", \"activity\": \"photoshoot\", \"surface\": \"parquet\"}, \"person\": {\"skin_hex\": [\"#d9b48f\", \"#d1ab86\", \"#e0bd9a\"], \"hair_hex\": [\"#745a3b\", \"#664f34\"], \"eyes_hex\": \"#7a7a4c\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Structured wool-blend blazer in charcoal grey (#3a3f45), tailored fit with a single button and notch lapels.  \\nSilk-and-cotton blend blouse in ivory cream (#fdfbf7), relaxed collar with subtle gathered shoulders.  \\nHigh-waisted wide-leg trousers in dark denim wash (#2b2f38), straight leg with a clean hemline.  \\nLeather ankle boots in oxblood red (#6c1e24), rounded toe with a 5 cm heel and low block sole.  \\nGold-toned hoop earrings in polished metal (#d4af37) and a delicate pearl pendant necklace in white (#ffffff).  \\n\\nThis outfit strikes the perfect balance between celebratory elegance and practical warmth for an evening book launch in a historic library. The structured blazer provides necessary protection against the consistently cold indoor temperature while maintaining a smart, sophisticated silhouette ideal for photoshoots. Deep jewel tones in the denim and boots complement her warm skin undertones, ensuring she feels radiant and recognizable in every shot. Finally, the mix of textures—wool, silk, denim, and leather—adds visual depth that shines under artificial lighting, perfectly supporting her desire to be seen as joyful and confident.\"}],\"usage\":{\"input_tokens\":945,\"output_tokens\":251},\"stop_reason\":\"end_turn\"}"
+ }
+}
