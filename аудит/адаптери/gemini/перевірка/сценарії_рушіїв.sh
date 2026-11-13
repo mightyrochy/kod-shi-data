@@ -18,6 +18,18 @@ EXTRA='{"EnableCodex":true,"CodexFallbackModel":"gpt-6.1-sol-high"}' case_ fallb
 case_ no-fallback-zero "FAKE_USAGE=flash0" abandon_then_done gemini-3.5-flash 'QUOTA0_GEMINI35FLASH'
 case_ codex-429        "X=1"             quota429          gpt-6.1-sol 'ЗАБЛОКОВАНО gemini/М.2-проба-обгортки QUOTA'
 case_ codex-auth       "X=1"             auth              gpt-6.1-sol 'AUTH'
+E="${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-auth/out"
+grep -q 'Not logged in' "$E"/*.tail.txt 2>/dev/null && echo "ok   codex-auth-tail" || { echo "FAIL codex-auth-tail: текст відмови рушія не в <id>.tail.txt"; bad=1; }
+# Збій Codex без класу (AGY_ERROR, звіту нема): текст помилки доходить до результату. Повний хвіст — <id>.tail.txt; рядок `reason` результату
+# і примітка в blocked-reasons.json (#1856) — останній рядок без шляху профілю й ключа. До правки: ні tail.txt, ні reason, ні примітки.
+case_ codex-engine-fail "X=1" engine_fail gpt-6.1-sol 'ЗАБЛОКОВАНО gemini/М.2-проба-обгортки AGY_ERROR'
+E="${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-engine-fail/out"
+S=$(grep -l '"code":"AGY_ERROR"' "$E"/*.json 2>/dev/null | head -1)
+T=$(cat "$E"/*.tail.txt 2>/dev/null)
+[[ "$T" == *'panic: stream disconnected'* && "$T" == *Alice* && "$T" == *'rushij-error-end'* ]] && echo "ok   engine-fail-tail-full" || { echo "FAIL engine-fail-tail-full: «$T»"; bad=1; }
+[[ -n "$S" ]] && grep -q '"reason":".*rushij-error-end' "$S" && ! grep -qE 'Alice|abcdefghijklmnop' "$S" && echo "ok   engine-fail-reason-clean" || { echo "FAIL engine-fail-reason-clean: $(cat "$S" 2>/dev/null)"; bad=1; }
+N=$(cat "$E/blocked-reasons.json" 2>/dev/null)
+[[ "$N" == *'AGY_ERROR: '*'rushij-error-end'* && "$N" != *Alice* && "$N" != *abcdefghijklmnop* ]] && echo "ok   engine-fail-note-clean" || { echo "FAIL engine-fail-note-clean: «$N»"; bad=1; }
 case_ agy-unchanged    "X=1"             abandon_then_done gemini-3.8-flash-high 'КВОТА GEMINI35FLASH 34'
 # Codex вимкнений за замовчуванням (9738): без -EnableCodex він не кличеться ні за позначкою, ні каскадом
 EXTRA='{}' case_ codex-off-label "X=1" abandon_then_done gpt-6.1-sol 'ENGINE_MISSING'
