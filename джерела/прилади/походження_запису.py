@@ -15,7 +15,7 @@ import re
 СИРІ_ПОЛЯ = frozenset(("variants", "variations", "hasVariant", "offers", "@type", "productGroupID",
                        "inProductGroupWithID", "option1", "featured_image", "variant_ids"))
 ІД = frozenset(("id", "ід", "offer_id", "variant_id"))
-ДОСТУП = frozenset(("available", "availability", "наявність", "in_stock"))
+ДОСТУП = frozenset(("available", "availability", "наявність", "in_stock", "є"))
 ВАРІАНТИ = frozenset(("variants", "variations", "hasVariant", "offer"))
 АГРЕГАТ = frozenset(("any", "all", "sum", "min", "max", "len", "Counter"))
 НЕ_КАДР = re.compile(r"(^[.#\[]|\[.*(?:itemprop|class|src)|::| > |^shopify:|^json-ld$|^og:image$)")
@@ -367,11 +367,50 @@ class Походження:
                 return "числове зведення, не кадр речі"
         return None
 
+    def після_відсіву_сестер(self, вузол):
+        """Запис у циклі за варіаціями стоїть після відсіву: `if not <виклик>(<елемент>, …): continue` — оферти сестер
+        відкинуто до запису, тож зведення (`any`) йде лише по офертах самої сторінки, а не по всіх (рішення 13.11, кв3).
+        Відсів — оператор того самого тіла циклу перед записом; не ім'я виклику."""
+        cur, дитина = вузол, None
+        while cur in self.батьки:
+            дитина, cur = cur, self.батьки[cur]
+            if isinstance(cur, (ast.For, ast.AsyncFor)) and self.із_варіацій(cur.iter):
+                цілі = {н.id for н in ast.walk(cur.target) if isinstance(н, ast.Name)}
+                for о in cur.body:
+                    if о is дитина or getattr(о, "lineno", 0) >= getattr(вузол, "lineno", 0):
+                        break
+                    тест = о.test if isinstance(о, ast.If) else None
+                    if тест is None or len(о.body) != 1 or not isinstance(о.body[0], ast.Continue):
+                        continue
+                    if any(isinstance(н, ast.Call) and any(isinstance(а, ast.Name) and а.id in цілі for а in н.args)
+                           for н in ast.walk(тест)):
+                        return True
+        return False
+
+    def елемент_варіації_з_батьком(self, вузол, поля_запису):
+        """id і наявність записано з одного елемента циклу, що читає в нього посилання на батька (`parent`): елемент
+        списку варіацій Store API — сам і власник, і наявність (id Product батька не має). Клас: поля запису беруться
+        від змінної циклу, а цикл читає її `parent`; не ім'я змінної й не рядок файлу."""
+        cur = вузол
+        while cur in self.батьки:
+            cur = self.батьки[cur]
+            if not isinstance(cur, (ast.For, ast.AsyncFor)):
+                continue
+            цілі = {н.id for н in ast.walk(cur.target) if isinstance(н, ast.Name)}
+            if not all(цілі & {н.id for н in ast.walk(з) if isinstance(н, ast.Name)} for з in поля_запису):
+                continue
+            for н in ast.walk(cur):
+                основа = н.func.value if isinstance(н, ast.Call) and isinstance(н.func, ast.Attribute) \
+                    and н.func.attr == "get" else н.value if isinstance(н, ast.Subscript) else None
+                if поле(н) == "parent" and isinstance(основа, ast.Name) and основа.id in цілі:
+                    return True
+        return False
+
     def свій_варіант(self, вузол, значення):
         """Доводить спільне джерело id, наявності й поля оферти, а не ім'я змінної."""
         п = поля(вузол)
         if значення is not None and any(isinstance(н, ast.Call) and ім_виклику(н.func) in ("any", "all", "sum")
-                                       for н in ast.walk(значення)):
+                                       for н in ast.walk(значення)) and not self.після_відсіву_сестер(вузол):
             return False
         ід = [з for к, з in п.items() if к in ІД]
         наявність = [з for к, з in п.items() if к in ДОСТУП]
@@ -381,6 +420,8 @@ class Походження:
             # id і наявність бувають і на Product: самі ці два поля не доводять
             # варіацію. Корінь має походити з елемента offer/variants/variations.
             if свої and дж and дж <= свої and any(к.startswith("вхід-елемента:") for к in свої):
+                return True
+            if self.елемент_варіації_з_батьком(вузол, ід + наявність):
                 return True
         cur = вузол
         while cur in self.батьки:
