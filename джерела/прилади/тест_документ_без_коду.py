@@ -13,6 +13,9 @@ python3 -I джерела/прилади/тест_документ_без_код
 шляхи `obhortka.yml` (єдиний робочий процес PR з фільтром шляхів) — «ні».
 Черга (наряд CI-самозлиття-черга): група concurrency з `samozlyttia.yml` у моделі черги GitHub — ДО відтворює запуски
 12.11 22:02–22:32 (#3594 не обійдено), ПІСЛЯ кожне завершення CI на PR доводить запуск від PR до старту.
+Витіснений (наряд CI-самозлиття-скасований): записані запуски й check runs голів #3564 84816add і #3596 8e16269f
+(`документ_без_коду_скасований.json`) — скасований попередник поруч із новішим `success` того самого процесу не
+заважає; скасований чи червоний останній запуск — «не зливати».
 """
 import copy
 import json
@@ -326,6 +329,77 @@ class Рішення(unittest.TestCase):
         так, чому = self.рішення(self.свій_крок, свій_запуск="778")
         self.assertFalse(так, чому)
         self.assertIn("ще йде", чому)
+
+
+class Витіснений(unittest.TestCase):
+    """Скасований попередник на тій самій голові: check runs кожного запуску — свій suite, `filter=latest` їх лишає."""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(ТУТ, "документ_без_коду_скасований.json"), encoding="utf-8") as ф:
+            cls.голови = json.load(ф)
+
+    def перевірки(self, номер, зміна=None):
+        г = copy.deepcopy(self.голови[номер])
+        if зміна:
+            зміна(г)
+        return д.перевірки_голови(г["голова"], г["запуски"], г["check_runs"], г["статуси"])
+
+    @staticmethod
+    def запуск(г, ід):
+        return next(з for з in г["запуски"] if з["id"] == ід)
+
+    @staticmethod
+    def check_runs_запуску(г, ід):
+        return [к for к in г["check_runs"] if f"/actions/runs/{ід}/" in к["details_url"]]
+
+    def test_записані_голови_мають_скасований_check_run(self):
+        # Умова випадку — з даних: на кожній голові є і cancelled, і success «рядок ЖИВИЙ ПІСЛЯ розбирається».
+        for номер in ("3564", "3596"):
+            стани = {к["conclusion"] for к in self.голови[номер]["check_runs"]
+                     if к["name"] == "рядок ЖИВИЙ ПІСЛЯ розбирається"}
+            self.assertEqual(стани, {"cancelled", "success"}, номер)
+
+    def test_витіснений_скасований_зливати(self):
+        for номер in ("3564", "3596"):
+            так, чому = self.перевірки(номер)
+            self.assertTrue(так, f"#{номер}: {чому}")
+
+    def test_останній_запуск_скасований_не_зливати(self):
+        # #3564: новіший запуск ЖИВИЙ ПІСЛЯ 43342649116 скасовано (і його check run) — «не зливати».
+        def з(г):
+            self.запуск(г, 43342649116).update(conclusion="cancelled")
+            for к in self.check_runs_запуску(г, 43342649116):
+                к.update(conclusion="cancelled")
+        так, чому = self.перевірки("3564", з)
+        self.assertFalse(так, чому)
+        self.assertIn("cancelled", чому)
+
+    def test_останній_запуск_червоний_не_зливати(self):
+        # #3596: найновіший запуск ЖИВИЙ ПІСЛЯ 43333158237 червоний — «не зливати».
+        def з(г):
+            self.запуск(г, 43333158237).update(conclusion="failure")
+            for к in self.check_runs_запуску(г, 43333158237):
+                к.update(conclusion="failure")
+        так, чому = self.перевірки("3596", з)
+        self.assertFalse(так, чому)
+        self.assertIn("failure", чому)
+
+    def test_червоний_check_run_останнього_запуску_не_зливати(self):
+        # Запуск зелений, а його check run червоний (рахуємо check runs останнього запуску, як і раніше).
+        def з(г):
+            self.check_runs_запуску(г, 43342649116)[1].update(conclusion="failure")
+        так, чому = self.перевірки("3564", з)
+        self.assertFalse(так, чому)
+        self.assertIn("рядок ЖИВИЙ ПІСЛЯ розбирається", чому)
+
+    def test_check_run_без_запуску_голови_рахується(self):
+        # Скасований check run запуску, якого нема серед запусків голови від PR, — «не зливати», як і раніше.
+        def з(г):
+            г["запуски"] = [з_ for з_ in г["запуски"] if з_["id"] != 43342612064]
+        так, чому = self.перевірки("3564", з)
+        self.assertFalse(так, чому)
+        self.assertIn("cancelled", чому)
 
 
 # ---------- черга concurrency (наряд CI-самозлиття-черга) ----------
