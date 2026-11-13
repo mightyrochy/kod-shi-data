@@ -1891,7 +1891,8 @@ function Get-AutoRanPairs($Reports, [datetimeoffset]$Since) {
     foreach ($report in @($Reports)) {
         if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { continue }
         $dir = 'аудит/проби/' + $Matches[1]
-        $head = [string]$report.head.sha
+        # Під StrictMode крапка на відсутньому полі падає: head — об'єкт GitHub або словник стенда.
+        $head = [string]$(if ($report.head -is [Collections.IDictionary]) { $report.head['sha'] } else { Get-JsonProp $report.head 'sha' })
         if ($head -cnotmatch '^[0-9a-f]{40}$') { continue }
         $created = $report.PSObject.Properties['created_at']
         if ($Since -ne [datetimeoffset]::MinValue -and $null -ne $created -and $null -ne $created.Value -and
