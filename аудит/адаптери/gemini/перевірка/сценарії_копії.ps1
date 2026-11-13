@@ -234,6 +234,59 @@ try {
         }
     }
 
+    Scenario 'агент у копії пише файли з CRLF — у коміті LF, як у репозиторії' {
+        # Прогін 03d38720: агент на Windows переписав паспорти текстовим записом (`\n` → `\r\n`), клон ноутбука тримає
+        # core.autocrlf=false — git add поклав CRLF у блоби: +5421/−5351 замість +70. Агент-підставка — окремий процес за
+        # тим самим New-StartInfo, що й справжній рушій: пише файли з CRLF і сам кличе git add/commit (PowerShell і Git Bash).
+        $origin = Join-Path $tmp 'o6.git'; $clone = Join-Path $tmp 'c6'
+        & git init -q --bare $origin; & git init -q -b main $clone
+        & git -C $clone config user.name 'стенд'; & git -C $clone config user.email 'stend@example.invalid'
+        & git -C $clone config core.autocrlf false; & git -C $clone config core.safecrlf false
+        & git -C $clone remote add origin $origin
+        [IO.File]::WriteAllText("$clone/p.md", "a`nb`nc`n", $utf)
+        [IO.File]::WriteAllText("$clone/q.md", "a`nb`nc`n", $utf)
+        [IO.File]::WriteAllText("$clone/k.csv", "x;y`r`n1;2`r`n", $utf)
+        [IO.File]::WriteAllBytes("$clone/b.dat", [byte[]](0, 1, 13, 10, 0, 2))
+        & git -C $clone add -A; & git -C $clone commit -q -m 'початкова'; & git -C $clone push -q origin main
+        & git -C $clone fetch -q origin
+        $script:RepoDir = $clone
+        $repo = New-TaskCopy (Join-Path (Join-Path $tmp 'w6') 'run-1') 'refs/remotes/origin/main' ''
+        $ps = (Get-Process -Id $PID).Path
+        $agent = Join-Path $tmp 'agent.ps1'
+        [IO.File]::WriteAllText($agent, @'
+param([string]$Repo)
+$u = New-Object Text.UTF8Encoding($false)
+[IO.File]::WriteAllText("$Repo/p.md", "a`r`nb`r`nc`r`nd`r`n", $u)
+[IO.File]::WriteAllText("$Repo/k.csv", "x;y`r`n1;2`r`n3;4`r`n", $u)
+[IO.File]::WriteAllText("$Repo/new.md", "n1`r`nn2`r`n", $u)
+& git -C $Repo add -A
+& git -C $Repo commit -q -m 'agent: PowerShell'
+'@, $utf)
+        $r = Invoke-Native $ps @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $agent, $repo) $repo
+        $r1 = (Invoke-Git @('rev-parse', 'HEAD')).Out.Trim()
+        $blob = { param($Rev, $Path) (Invoke-Git @('show', "${Rev}:$Path")).Out }
+        Check "PowerShell-агент: p.md і new.md у коміті без CR (код $($r.Code))" ($r.Code -eq 0 -and -not (& $blob 'HEAD' 'p.md').Contains("`r") -and -not (& $blob 'HEAD' 'new.md').Contains("`r"))
+        Check 'PowerShell-агент: дифф p.md — один доданий рядок, а не весь файл' ((Invoke-Git @('diff', '--numstat', 'HEAD~1', 'HEAD', '--', 'p.md')).Out.Trim() -match '^1\s+0\s+p\.md$')
+        Check 'навмисний CRLF у репозиторії (k.csv) лишається CRLF' ((& $blob 'HEAD' 'k.csv').Contains("`r"))
+        $git = (Get-Command git).Source; $root = Split-Path -Parent (Split-Path -Parent $git)
+        $bash = @('bin/bash.exe', 'usr/bin/bash.exe') | ForEach-Object { Join-Path $root $_ } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+        if ($bash) {
+            $script = "printf 'a\r\nb\r\nc\r\nd\r\ne\r\n' > p.md; printf 'a\r\nb\r\nc\r\nd\r\n' > q.md; printf '\000\001\r\n\000\002' > b.dat; git add -A; git commit -q -m 'agent: Git Bash'"
+            $r = Invoke-Native $bash @('-c', $script) $repo
+            Check "Git Bash-агент: p.md і q.md у коміті без CR (код $($r.Code))" ($r.Code -eq 0 -and -not (& $blob 'HEAD' 'p.md').Contains("`r") -and -not (& $blob 'HEAD' 'q.md').Contains("`r"))
+            Check 'Git Bash-агент: бінарний файл не чіпано (6 байтів)' ((Invoke-Git @('cat-file', '-s', 'HEAD:b.dat')).Out.Trim() -ceq '6')
+        } else { "  Git Bash не знайдено — Git Bash-агента не перевірено" }
+        $head = (Invoke-Git @('rev-parse', 'HEAD')).Out.Trim()
+        [void](Close-TaskCopy @('--remotes', $head))
+        Check 'середовище обгортки не забруднене налаштуванням git' (-not [Environment]::GetEnvironmentVariable('GIT_CONFIG_COUNT'))
+        $keep = @{}; foreach ($k in 'GIT_CONFIG_COUNT', 'GIT_CONFIG_KEY_0', 'GIT_CONFIG_VALUE_0') { $keep[$k] = [Environment]::GetEnvironmentVariable($k) }
+        try {
+            $env:GIT_CONFIG_COUNT = '1'; $env:GIT_CONFIG_KEY_0 = 'a.b'; $env:GIT_CONFIG_VALUE_0 = 'c'
+            $psi = New-StartInfo $git @('--version') ''
+            Check 'чуже GIT_CONFIG_* середовища лишається, наше дописується після нього' ($psi.EnvironmentVariables['GIT_CONFIG_KEY_0'] -ceq 'a.b' -and $psi.EnvironmentVariables['GIT_CONFIG_COUNT'] -ceq '3' -and $psi.EnvironmentVariables['GIT_CONFIG_KEY_1'] -ceq 'core.autocrlf')
+        } finally { foreach ($k in $keep.Keys) { [Environment]::SetEnvironmentVariable($k, $keep[$k]) } }
+    }
+
     Scenario 'розбивка розміру: діти першого рівня й діти теки копій — тим самим обходом' {
         $p = Join-Path $tmp 'prof'
         foreach ($f in @(@('a/x.bin', 3000), @('b/x.bin', 500), @('runs/w/c1/x.bin', 7000), @('runs/w/c1/sub/y.bin', 100), @('runs/w/c2/x.bin', 200), @('root.bin', 10))) {
