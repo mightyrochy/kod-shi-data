@@ -1384,7 +1384,7 @@ function Invoke-Worker {
     $lim = @{}
     foreach ($p in $job.limits.PSObject.Properties) { $lim[$p.Name] = $p.Value }
     $script:Limits = $lim
-    $statePath = Get-StatePath "$($job.ref) $($job.sha)"
+    $statePath = Get-StatePath (Get-MarkerKey @{ Name = $job.name; Sha = $job.sha })
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
     $gpu = $false

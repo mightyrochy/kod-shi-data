@@ -51,6 +51,21 @@ try {
     Write-FileAtomic (Get-StatePath "refs/claude-run/gemini-queue/узята/cc-x/1 $sha") 'DONE 20261112-100000-eeeeeeeeeeee OK'
     Write-FileAtomic ((Get-StatePath (Get-MarkerKey $taken)) -replace '\.txt$', '.claim') '20261112-100000-ffffffffffff'
     Check 'канонічне .claim є: стан не переноситься' ((Move-LegacyMarkerState @($taken)) -eq 0)
+    # Процес наряду (Invoke-Worker): шлях стану з job (name, sha), а не з job.ref (refs/claude-run) — той самий, що в планувальника.
+    foreach ($f in @('claude_run.ps1', 'gemini_run.ps1')) {
+        $src = [IO.File]::ReadAllText((Join-Path $SourceDir $f), $utf)
+        Check "$f : шлях стану не рахується від ref/sha напряму" ($src -cnotmatch 'Get-StatePath\s+"[^"]*\.ref\b')
+    }
+    $fw = Mk 'refs/claude-run' 'gemini-queue/воркер/cc-x/1'; $jb = @{ ref = $fw.Ref; name = $fw.Name; sha = $fw.Sha }
+    $wp = Get-StatePath (Get-MarkerKey @{ Name = $jb.name; Sha = $jb.sha })
+    Check 'воркер: шлях стану збігається з планувальниковим' ($wp -ceq (Get-StatePath (Get-MarkerKey $fw)))
+    Check 'воркер: шлях не від refs/claude-run' ($wp -cne (Get-StatePath "$($jb.ref) $($jb.sha)"))
+    Check 'узяття планувальником лишає .claim під шляхом воркера' ((New-Claim $fw '20261113-100000-aaaaaaaaaaaa') -and [IO.File]::Exists((Get-ClaimPath $wp)) -and (Get-MarkerState $fw).Kind -ceq 'TAKEN')
+    Remove-Claim $wp
+    Check 'Remove-Claim воркера звільняє узяття планувальника' (-not [IO.File]::Exists((Get-ClaimPath $wp)) -and (Get-MarkerState $fw).Kind -ceq 'NEW')
+    [void](New-Claim $fw '20261113-100001-bbbbbbbbbbbb')
+    Close-FailedStart ([pscustomobject]@{ Ref = $jb.ref; Name = $jb.name; Sha = $jb.sha; Slug = 'воркер'; Model = 'cc-x' }) '20261113-100001-bbbbbbbbbbbb' $wp
+    Check 'Close-FailedStart воркера знімає .claim і повертає позначку в чергу (WAIT)' (-not [IO.File]::Exists((Get-ClaimPath $wp)) -and (Get-MarkerState $fw).Kind -ceq 'WAIT' -and (Get-Retakes $wp) -eq 1)
     # Простір gemini (refs/remotes/origin): ключ той самий, що й раніше, перенесення — ні-що.
     Set-RemoteRoot 'refs/remotes/origin'
     Check 'gemini: ключ = "<Ref> <sha>", як до правки' ((Get-MarkerKey $og) -ceq "$($og.Ref) $($og.Sha)")
