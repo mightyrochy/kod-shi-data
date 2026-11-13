@@ -550,7 +550,7 @@ function Get-ChainMarkerState([string]$Ref, [string]$Sha, [string]$Model) {
     if ($Model -cnotmatch '^cc-' -and -not (Test-Path -LiteralPath (Join-Path $dir 'ready'))) {
         return [pscustomobject]@{ Kind = 'UNKNOWN'; Wait = $null }
     }
-    $marker = [pscustomobject]@{ Ref = "refs/remotes/origin/$Ref"; Sha = $Sha }
+    $marker = [pscustomobject]@{ Ref = "refs/remotes/origin/$Ref"; Name = $Ref; Sha = $Sha }
     try { Get-MarkerState $marker $dir }
     catch {
         if (-not (Get-StateFailurePath $_)) { $_.Exception.Data['StatePath'] = [IO.Path]::GetFullPath((Get-StatePath (Get-MarkerKey $marker) $dir)) }
