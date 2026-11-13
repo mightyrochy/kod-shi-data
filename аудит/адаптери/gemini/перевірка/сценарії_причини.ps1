@@ -15,6 +15,7 @@ try {
     . (Join-Path $SourceDir 'gemini_run.ps1') -RepoDir "$tmp/repo" -RunsDir "$tmp/runs" -OutDir "$tmp/out" -LaneDir "$tmp/lanes"
     $past = [datetime]::UtcNow.AddYears(-5).ToString('o')
     $future = [datetime]::UtcNow.AddMinutes(5).ToString('o')
+    # порожній код Complete-Status читає як INTERRUPTED (вимкнення зупинило конвеєр).
     # код кінця, хвіст звіту, причина догонки, старт → очікуваний клас і початок тексту
     $cases = @(
         @('QUOTA', '', '', $future, 'квота', 'QUOTA'),
@@ -28,7 +29,7 @@ try {
         @('INTERRUPTED', '', '', $future, 'ноутбук і обгортка', 'INTERRUPTED: процес наряду зник без'),
         @('NO_REPORT', '', 'mismatch', $future, 'ноутбук і обгортка', 'NO_REPORT: звіт не прийнято'),
         @('AGY_ERROR', '', '', $future, 'невідомо', 'AGY_ERROR'),
-        @('', '', '', $future, 'ноутбук і обгортка', 'код кінця порожній: процес наряду зупинено'),
+        @('', '', '', $future, 'ноутбук і обгортка', 'INTERRUPTED: процес наряду зник без'),
         @('DONE', '', '', $future, '', ''))
     $i = 0
     foreach ($c in $cases) {
@@ -40,7 +41,7 @@ try {
         Complete-Status $s "$tmp/runs/state-$i.txt" $c[1] ([datetime]::MinValue) $c[2]
         $f = "$tmp/runs/$id/cause.json"
         $j = $(if (Test-Path -LiteralPath $f) { [IO.File]::ReadAllText($f) | ConvertFrom-Json } else { $null })
-        $ok = $null -ne $j -and $j.class -ceq $c[4] -and ([string]$j.text).StartsWith($c[5]) -and $j.code -ceq $c[0]
+        $ok = $null -ne $j -and $j.class -ceq $c[4] -and ([string]$j.text).StartsWith($c[5]) -and $j.code -ceq $(if ($c[0]) { $c[0] } else { 'INTERRUPTED' })
         Check "$($c[0]) ($($c[2])) → «$($c[4])»: $(if ($j) { "$($j.class) | $($j.text)" } else { 'cause.json нема' })" $ok
     }
     # Обрамлення не потрапляє в текст причини, а Test-Report і пошук причини читають рядок однаково.

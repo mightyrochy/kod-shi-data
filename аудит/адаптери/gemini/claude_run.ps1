@@ -173,6 +173,38 @@ function Add-ClaudeFields($M) {
     $M
 }
 
+# Стан позначок claude-run до того, як ключ перейшов на канонічну назву (Get-MarkerKey), лежав під ключем від
+# `$script:RemoteRoot/<назва> <sha>` (refs/claude-run/…). Копіює його під канонічний ключ: `.txt` (виконане, WAIT, OFF),
+# `.seen` (перша поява — порядок черги) і `.owner` (рядок OWNER не повторюється). Раз на файл і без перезапису: є канонічний —
+# лишається він; старі файли не видаляються. `.claim` не переносимо: це живе узяття процесом наряду, що сам його знімає за
+# своїм ключем, — знімок лишився б хибним TAKEN, а мертве узяття без стану прибирає Clear-OrphanClaims. `STARTED` теж: наряд
+# іще йде чи перерваний — його кінець запише старий ключ, а знімок Resume-Interrupted помилково закрив би як INTERRUPTED;
+# коли наряд допише DONE, наступний прохід перенесе його.
+function Copy-StateOnce([string]$From, [string]$To) {
+    if (-not [IO.File]::Exists($From) -or [IO.File]::Exists($To)) { return 0 }
+    if ($From.EndsWith('.txt') -and [IO.File]::ReadAllText($From, $script:Utf8).StartsWith('STARTED ')) { return 0 }
+    $tmp = $To + '.' + [guid]::NewGuid().ToString('N') + '.part'
+    try { [IO.File]::Copy($From, $tmp); [IO.File]::Move($tmp, $To); 1 }
+    catch { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; 0 }
+}
+
+function Move-LegacyMarkerState($Markers) {
+    if ($script:RemoteRoot -ceq 'refs/remotes/origin') { return 0 }
+    $moved = 0
+    foreach ($m in $Markers) {
+        $new = Get-StatePath (Get-MarkerKey $m)
+        $old = Get-StatePath "$script:RemoteRoot/$($m.Name) $($m.Sha)"
+        if ($new -ceq $old -or [IO.File]::Exists((Get-ClaimPath $new))) { continue }
+        try {
+            foreach ($ext in @('.txt', '.seen', '.owner')) {
+                $moved += Copy-StateOnce ($old -replace '\.txt$', $ext) ($new -replace '\.txt$', $ext)
+            }
+        } catch { Write-Log "перенесення стану $($m.Name): $($_.Exception.Message)" }
+    }
+    if ($moved) { Write-Log "стан позначок: перенесено файлів зі старого ключа $moved" }
+    $moved
+}
+
 # --- ноутбук (перекривається на стенді) ----------------------------------------------------------------------------
 
 function Get-BootStamp {
@@ -872,7 +904,9 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $res
 }
 
-function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [string]$Branch = '', [string]$Sha = '') {
+# Кінець позначки: результат, рядок у вихідних і стан DONE; позначка з прийнятим рядком — у перелік публікатора на зняття з
+# черги (Add-FinishedMarker): кінець живе на origin, а не лише в локальному стані. Reason — причина зняття (ЗНЯТО).
+function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [string]$Branch = '', [string]$Sha = '', [string]$Reason = '') {
     if ($Code -eq 'AUTH') { Add-HealthAlert 'AUTH' 'CLAUDE' }
     if ($Code -eq 'ENGINE_MISSING') { Add-HealthAlert 'ENGINE' 'CLAUDE' }
     $line = $(if ($Code -eq 'DONE') { "GEMINI ОБГОРТКА: ГОТОВО $Branch $Sha МОДЕЛЬ $($M.Model)" }
@@ -880,15 +914,28 @@ function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [stri
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $Id
     [void][IO.Directory]::CreateDirectory($runDir)
     $result = [ordered]@{ marker = $M.Name; sha = $M.Sha; code = $Code; branch = $Branch; head = $Sha; end = (Get-Date).ToString('s') }
+    if ($Reason) { $result.reason = ConvertTo-NoteText $Reason }
     # Ідентичність наряду доступна публікаторові до появи рядка у вихідних, зокрема при ранній відмові.
     Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
-    if (-not (Add-Line $line)) {
+    $sent = [bool](Add-Line $line)
+    if (-not $sent) {
         $Code = 'LINE_REJECTED'; $result.code = $Code
         Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
     }
     Write-FileAtomic $StatePath "DONE $Id $Code"
     Remove-Claim $StatePath
     Write-Log "позначка $($M.Name): $Code"
+    if ($sent) {
+        try { Add-FinishedMarker (Join-Path $WorkDir 'finished') $M.Name $M.Sha }
+        catch { Write-Log "позначка $($M.Name): запис на зняття з черги не зроблено — $($_.Exception.Message)" }
+    }
+}
+
+# Позначку знято комітом «ЗНЯТО…» (ConvertTo-Marker): прогін, що вже йде, зупиняється; сама позначка — кінець CANCELLED
+# з причиною в результаті й рядком, а публікатор знімає гілку з черги.
+function Close-CancelledMarker($M, $Workers) {
+    Stop-CancelledRuns $M $Workers
+    Complete-Task $M (Get-StatePath (Get-MarkerKey $M)) (New-Id) 'CANCELLED' -Reason $M.Reason
 }
 
 # Відмова за квотою: позначка чекає скидання (resetsAt останньої `rate_limit_event` зі status rejected; інакше час
@@ -1287,15 +1334,17 @@ function Start-Markers($Workers) {
     $script:Held = @{}
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $mine = @(Get-Markers | Where-Object { $_.Valid -and $_.Lane -eq 'claude' } | ForEach-Object { Add-ClaudeFields $_ })
+    [void](Move-LegacyMarkerState $mine)
     $skipFile = Join-Path $WorkDir 'skipped.json'
     if ($mine.Count -eq 0) { Save-Skips $skipFile; return @(0, $null) }
     $gpuWhy = $null
     $ordered = @(Get-OrderedMarkers $mine)
-    foreach ($m in @($ordered | Where-Object { $_.Off })) { if ((Test-OffMarker $m) -and $null -eq $off) { $off = $m } }
+    foreach ($m in @($ordered | Where-Object { $_.Off -and -not (Test-MarkerCancelled $_) })) { if ((Test-OffMarker $m) -and $null -eq $off) { $off = $m } }
     if ($null -ne $off) { return @(0, $off) }
-    foreach ($m in @($ordered | Where-Object { -not $_.Off })) {
+    foreach ($m in @($ordered | Where-Object { -not $_.Off -or (Test-MarkerCancelled $_) })) {
         $st = Get-MarkerState $m
         if (-not (Test-MarkerReady $st)) { continue }
+        if (Test-MarkerCancelled $m) { Close-CancelledMarker $m $Workers; continue }
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
             Write-Log "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
@@ -1351,7 +1400,7 @@ function Invoke-Worker {
     $lim = @{}
     foreach ($p in $job.limits.PSObject.Properties) { $lim[$p.Name] = $p.Value }
     $script:Limits = $lim
-    $statePath = Get-StatePath "$($job.ref) $($job.sha)"
+    $statePath = Get-StatePath (Get-MarkerKey @{ Name = $job.name; Sha = $job.sha })
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
     $gpu = $false

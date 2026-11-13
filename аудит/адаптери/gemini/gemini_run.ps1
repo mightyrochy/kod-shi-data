@@ -983,7 +983,7 @@ function Get-RunCause([string]$Code, [string]$Tail = '', [string]$Why = '', [str
             elseif ($boot -gt $from.ToUniversalTime()) { "INTERRUPTED: перезавантаження ОС, старт $(Get-UtcStamp $boot)" }
             else { 'INTERRUPTED: процес наряду зник без перезавантаження ОС' })
     }
-    [pscustomobject]@{ Class = $class; Text = (Get-NoteText $text) }
+    [pscustomobject]@{ Class = $class; Text = (ConvertTo-NoteText $text) }
 }
 
 function Write-RunCause([string]$Id, [string]$Code, $Cause) {
@@ -997,7 +997,11 @@ function Write-RunCause([string]$Id, [string]$Code, $Cause) {
 
 # Кінець прогону: факти гілки, бандл (коли є нові коміти), стан у теці обміну. Спільне для звичайного кінця й
 # для прогону, перерваного вимкненням чи сном ноутбука (тоді стан — `STARTED` із JSON).
+# Порожній код — тіло Invoke-Task обірвано до кінця агента: вимкнення Windows зупиняє конвеєр, і виконується лише
+# finally. Це той самий кінець, що й STARTED без живого процесу (Resume-Interrupted): INTERRUPTED, бандл зробленого й
+# повтор після вимкнення в публікатора, а не «невідомий код» без назви наряду.
 function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$T0, [string]$Why = '') {
+    if (-not $Status.code) { $Status.code = 'INTERRUPTED' }
     try {
         if ($Status.start) {
             $slugObj = [pscustomobject]@{ Slug = $Status.slug }
@@ -1016,7 +1020,7 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
         }
     } catch {
         Write-Log "бандл: $($_.Exception.Message)"
-        if ($Status.code -in @('DONE', 'BLOCKED', '')) { $Status.code = 'CRASH' }
+        if ($Status.code -in @('DONE', 'BLOCKED')) { $Status.code = 'CRASH' }
     }
     if ($T0 -ne [datetime]::MinValue) { $Status.minutes = [int][Math]::Round(((Get-Date) - $T0).TotalMinutes) }
     if ($Tail) { [System.IO.File]::WriteAllText((Join-Path $OutDir ($Status.id + '.tail.txt')), $Tail, $script:Utf8) }
@@ -1259,6 +1263,16 @@ function Enter-StartQuotaWait($M, $Q, $State) {
     if ($State.Kind -eq 'NEW') { Write-QuotaStatus $M (New-RunId (Get-MarkerKey $M)) $Q.Group $until @{} }
 }
 
+# Позначку знято комітом «ЗНЯТО…» (ConvertTo-Marker): її прогін, що вже йде, зупиняється, а сама позначка закривається
+# кінцевим CANCELLED з причиною (тема коміту) у результаті; публікатор дає рядок і знімає гілку позначки з черги.
+function Close-CancelledMarker($M, $Workers) {
+    Stop-CancelledRuns $M $Workers
+    $status = [ordered]@{ v = 1; id = (New-RunId (Get-MarkerKey $M)); slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = ''
+        start = ''; head = ''; code = 'CANCELLED'; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = $M.Lane; reason = (ConvertTo-NoteText $M.Reason) }
+    Write-Log "позначка $($M.Name): ЗНЯТО — CANCELLED"
+    Complete-Status $status (Get-StatePath (Get-MarkerKey $M)) '' ([datetime]::MinValue)
+}
+
 # Один прохід: позначки смуг codex і agy за порядком черги — у вільні слоти, кожна окремим процесом. Повертає число
 # запущених.
 function Start-Markers($Workers) {
@@ -1287,6 +1301,7 @@ function Start-Markers($Workers) {
     foreach ($m in $ordered) {
         $st = Get-MarkerState $m
         if (-not (Test-MarkerReady $st)) { continue }
+        if (Test-MarkerCancelled $m) { Close-CancelledMarker $m $Workers; continue }
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
             Write-Log "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
@@ -1423,7 +1438,7 @@ function Invoke-Worker {
     if (-not $script:Bound.ContainsKey('TurnMinutes')) { $script:TurnMinutes = [double]$lim['agy_turn_minutes'] }
     if (-not $script:Bound.ContainsKey('TotalMinutes')) { $script:TotalMinutes = [double]$lim['agy_total_minutes'] }
     if (-not $script:Bound.ContainsKey('CodexStallMinutes')) { $script:CodexStallMinutes = [double]$lim['codex_stall_minutes'] }
-    $statePath = Get-StatePath "$($job.ref) $($job.sha)"
+    $statePath = Get-StatePath (Get-MarkerKey @{ Name = $job.name; Sha = $job.sha })
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
     $gpu = $false
