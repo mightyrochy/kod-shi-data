@@ -66,7 +66,7 @@ $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
 # План живого (Get-AutoLivePlan, автоживий й Е1-нічний-живий). Вимір 07.11: `pulls?state=all` — 33 сторінки по 100 PR,
 # сторінка до 2,36 млн знаків (3273 PR); повне читання на спробу — 33 запити з 60/год без входу. Тепер сторінки по 50,
-# читання стоїть, щойно сторінка старіша за збірку останнього звіту (запити — з бюджету review-api.json, як у
+# читання стоїть, щойно сторінка старіша за межу плану (Get-AutoPlanBoundary; запити — з бюджету review-api.json, як у
 # Get-AutoReviewState), а більше AutoPlanMaxPages сторінок на спробу — AUTO_PAGES, не мовчазне повторення.
 $script:AutoPlanPerPage = 50
 $script:AutoPlanMaxPages = 20
@@ -1875,8 +1875,9 @@ function ConvertTo-AutoTime($Value) {
 
 function Get-AutoCheckedBuild($Pulls, $History) {
     <# Збірка, яку перевірив найновіший звіт (`автоживий-<штамп>` чи `Е1-нічний-живий-<дата>`): найближча до голови в історії.
-    Звіт з кількома `ПЕРЕВІРЕНО ЗБІРКУ` не береться; старий нічний звіт без SHA нічого не відсікає. #>
-    $checked = ''
+    Звіт з кількома `ПЕРЕВІРЕНО ЗБІРКУ` не береться; старий нічний звіт без SHA нічого не відсікає.
+    Повертає @{sha; pr} — збірку й номер звіту, що її назвав (нема — порожні рядки). #>
+    $checked = @{sha=''; pr=''}
     foreach ($report in $Pulls) {
         if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') { continue }
         $stamp = [string]$Matches[1]
@@ -1885,9 +1886,82 @@ function Get-AutoCheckedBuild($Pulls, $History) {
         $candidate = if ($declared.Count -eq 1) { $declared[0].Groups[1].Value } else { $stamp }
         # Старий нічний звіт без SHA не може відсікти неперевірений код.
         if ($candidate -and $History.ContainsKey($candidate) -and
-            (-not $checked -or $History[$candidate] -lt $History[$checked])) { $checked = $candidate }
+            (-not $checked.sha -or $History[$candidate] -lt $History[$checked.sha])) { $checked = @{sha=$candidate; pr=[string]$report.number} }
     }
     $checked
+}
+
+function Read-AutoCarryPlan($Report, $History, $Cache) {
+    <# План звіту автоживого чи Е1 (`аудит/проби/<наряд>/ПЛАН.json` у голові звіту), яким план живого заміняє читання
+    давніх PR. Годиться лише план, складений `Get-AutoLivePlan` з полями `build` (збірка того плану — предок нинішньої),
+    `since_sha` (порожня чи предок; непорожня — з номером звіту `since_pr`) і `merge` (злиття кожного PR плану).
+    Повертає @{build; since; since_pr; merge; lines; report}, де lines — «PR» → рядки `ЖИВИЙ ПІСЛЯ` плану (питання
+    сцени чи вадний рядок), щоб їх розібрав той самий `Get-LiveAfterLines` проти нинішнього реєстру. Нема голови, файла,
+    поля чи злиття хоч одного PR плану — $null: такий звіт межі читання не зсуває. Cache — «номер|голова» → план чи $false. #>
+    if ([string]$Report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { return $null }
+    $dir = 'аудит/проби/' + $Matches[1]
+    # Під StrictMode крапка на відсутньому полі падає: head — об'єкт GitHub або словник стенда.
+    $head = [string]$(if ($Report.head -is [Collections.IDictionary]) { $Report.head['sha'] } else { Get-JsonProp $Report.head 'sha' })
+    if ($head -cnotmatch '^[0-9a-f]{40}$') { return $null }
+    $key = [string]$Report.number + '|' + $head
+    if ($Cache.ContainsKey($key)) { if ($Cache[$key]) { return $Cache[$key] }; return $null }
+    $Cache[$key] = $false
+    if ((Invoke-Git @('cat-file','-e',"$head^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','--no-tags','origin',$head) -AllowFail) }
+    $text = Invoke-Git @('show', "${head}:$dir/ПЛАН.json") -AllowFail
+    if ($text.Code -ne 0) { return $null }
+    try { $plan = ConvertFrom-Json $text.Out.TrimStart([char]0xFEFF) } catch { return $null }
+    $build = [string](Get-JsonProp $plan 'build')
+    $since = [string](Get-JsonProp $plan 'since_sha')
+    $sincePr = [string](Get-JsonProp $plan 'since_pr')
+    $mergeData = Get-JsonProp $plan 'merge'
+    if ($build -cnotmatch '^[0-9a-f]{40}$' -or -not $History.ContainsKey($build) -or $null -eq $mergeData -or
+        $null -eq (Get-JsonProp $plan 'scenes') -or $null -eq (Get-JsonProp $plan 'cloud')) { return $null }
+    if ($since -and (-not $History.ContainsKey($since) -or $sincePr -cnotmatch '^[1-9][0-9]*$')) { return $null }
+    $merge = @{}
+    foreach ($property in @($mergeData.PSObject.Properties)) {
+        if ([string]$property.Value -cmatch '^[0-9a-f]{40}$') { $merge[$property.Name] = [string]$property.Value }
+    }
+    $lines = [ordered]@{}
+    foreach ($kind in @('scenes','cloud')) {
+        foreach ($scene in @((Get-JsonProp $plan $kind).PSObject.Properties)) {
+            foreach ($question in @($scene.Value)) {
+                $pr = [string](Get-JsonProp $question 'pr')
+                $lines[$pr] = @($lines[$pr] | Where-Object { $_ }) + @("ЖИВИЙ ПІСЛЯ: $($scene.Name) — $([string](Get-JsonProp $question 'question'))")
+            }
+        }
+    }
+    foreach ($entry in @(Get-JsonProp $plan 'bad')) {
+        if ($null -eq $entry) { continue }
+        $pr = [string](Get-JsonProp $entry 'pr')
+        $lines[$pr] = @($lines[$pr] | Where-Object { $_ }) + @([string](Get-JsonProp $entry 'line'))
+    }
+    foreach ($pr in @($lines.Keys)) { if (-not $merge.ContainsKey($pr)) { return $null } }
+    $Cache[$key] = @{build=$build; since=$since; since_pr=$sincePr; merge=$merge; lines=$lines; report=[string]$Report.number}
+    $Cache[$key]
+}
+
+function Get-AutoPlanBoundary($Reports, $History, $Read, $Cache) {
+    <# Межа плану живого з прочитаних звітів: перевірена збірка (sha, pr), план-джерело давніх PR (carry) і збірка, до якої
+    треба читати `pulls` (bound) — ближча до голови з перевіреної й збірки джерела. Джерело — звіт, чий план
+    (Read-AutoCarryPlan) складено для найближчої до голови збірки. Його план містить усі непрогнані на той час питання
+    злитих до його збірки PR, рахуючи від його межі. Ця межа чинна, коли звіт, що її назвав, не прочитано (його тіло
+    відтоді не мінялося, бо зміна підняла б його в читання), або прочитана межа не старша; інакше план джерела міг
+    пропустити питання між межами — такий звіт не джерело. Read — номери всіх прочитаних PR. #>
+    $checked = Get-AutoCheckedBuild $Reports $History
+    $carry = $null
+    foreach ($report in @($Reports)) {
+        $candidate = Read-AutoCarryPlan $report $History $Cache
+        if (-not $candidate) { continue }
+        if ($candidate.since -and $Read.ContainsKey($candidate.since_pr) -and
+            (-not $checked.sha -or $History[$checked.sha] -gt $History[$candidate.since])) { continue }
+        if (-not $carry -or $History[$candidate.build] -lt $History[$carry.build]) { $carry = $candidate }
+    }
+    if ($carry -and $carry.since -and (-not $checked.sha -or $History[$carry.since] -lt $History[$checked.sha])) {
+        $checked = @{sha=$carry.since; pr=$carry.since_pr}
+    }
+    $bound = $checked.sha
+    if ($carry -and (-not $bound -or $History[$carry.build] -lt $History[$bound])) { $bound = $carry.build }
+    @{sha=$checked.sha; pr=$checked.pr; carry=$carry; bound=$bound}
 }
 
 function Get-AutoRanPairs($Reports, [datetimeoffset]$Since) {
@@ -1971,8 +2045,13 @@ function Get-AutoLivePlan([string]$BuildMain) {
     <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR.
     Список `pulls` іде за оновленням від найновішого й читається лише до доведеної межі: звіт не може згадати збірку,
     що старша за його оновлення, а злиття, якого збірка звіту ще не містить, не старше за неї — тож, коли остання
-    прочитана сторінка старіша за збірку найновішого звіту (мінус запас), решта PR плану не змінить. Те саме, що читати
-    всі сторінки, але ~7 запитів замість 33. Не дійшли до межі за AutoPlanMaxPages сторінок — AUTO_PAGES, плану нема. #>
+    прочитана сторінка старіша за межу (мінус запас), решта PR плану не змінить. Межа — ближча до голови з двох збірок:
+    перевіреної (`ПЕРЕВІРЕНО ЗБІРКУ`) і збірки, для якої складено план звіту-джерела (Get-AutoPlanBoundary): питання
+    давніших PR, яких читання не дійшло, — з плану джерела, бо він уже має всі непрогнані на той час питання злитих до
+    його збірки PR; рядки розбирає той самий `Get-LiveAfterLines` проти нинішнього реєстру, а межа, склад збірки й
+    записи прогонів відсікають їх так само, як рядки тіла. PR, оновлений після джерела, читається з тіла.
+    Не дійшли до межі за AutoPlanMaxPages сторінок — AUTO_PAGES, плану нема. План несе `build`, `since_pr` і `merge`
+    (PR → злиття), щоб наступний план міг узяти його за джерело. #>
     $calls0 = $script:AutoApiCalls
     $until = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$BuildMain)).Out.Trim())
     # Час звіту не визначає склад прогону: PR міг злитися, поки модель ще працювала.
@@ -1981,22 +2060,29 @@ function Get-AutoLivePlan([string]$BuildMain) {
     foreach ($commit in ((Invoke-Git @('rev-list','--topo-order',$BuildMain,'--')).Out -split "`n")) {
         if ($commit.Trim()) { $history[$commit.Trim()] = $rank; $rank++ }
     }
-    $planScan = @{ Seen = (New-Object System.Collections.ArrayList); Dates = @{}; Pages = 0 }
+    $planScan = @{ Seen = (New-Object System.Collections.ArrayList); Read = @{}; Carry = @{}; Dates = @{}; Pages = 0 }
     $planStop = {
         param($pagePulls)
         $planScan.Pages++
-        foreach ($one in @($pagePulls)) { if (Test-AutoTrustedPull $one) { [void]$planScan.Seen.Add($one) } }
-        $reportBuild = Get-AutoCheckedBuild $planScan.Seen $history
-        if (-not $reportBuild) { return $false }
-        if (-not $planScan.Dates.ContainsKey($reportBuild)) {
-            $planScan.Dates[$reportBuild] = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$reportBuild)).Out.Trim())
+        foreach ($one in @($pagePulls)) {
+            $planScan.Read[[string]$one.number] = $true
+            if (Test-AutoTrustedPull $one) { [void]$planScan.Seen.Add($one) }
+        }
+        $bound = (Get-AutoPlanBoundary $planScan.Seen $history $planScan.Read $planScan.Carry).bound
+        if (-not $bound) { return $false }
+        if (-not $planScan.Dates.ContainsKey($bound)) {
+            $planScan.Dates[$bound] = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$bound)).Out.Trim())
         }
         $lastUpdate = @($pagePulls)[-1].PSObject.Properties['updated_at']
         if ($null -eq $lastUpdate -or $null -eq $lastUpdate.Value) { return $false }
-        (ConvertTo-AutoTime $lastUpdate.Value) -lt $planScan.Dates[$reportBuild].AddHours(-$script:AutoPlanMarginHours)
+        (ConvertTo-AutoTime $lastUpdate.Value) -lt $planScan.Dates[$bound].AddHours(-$script:AutoPlanMarginHours)
     }
-    $pulls = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' -PerPage $script:AutoPlanPerPage -MaxPages $script:AutoPlanMaxPages -StopAfterPage $planStop -Budgeted | Where-Object { Test-AutoTrustedPull $_ })
-    $checked = Get-AutoCheckedBuild $pulls $history
+    $read = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' -PerPage $script:AutoPlanPerPage -MaxPages $script:AutoPlanMaxPages -StopAfterPage $planStop -Budgeted)
+    $readNumbers = @{}
+    foreach ($one in $read) { $readNumbers[[string]$one.number] = $true }
+    $pulls = @($read | Where-Object { Test-AutoTrustedPull $_ })
+    $boundary = Get-AutoPlanBoundary $pulls $history $readNumbers $planScan.Carry
+    $checked = [string]$boundary.sha
     $since = [datetimeoffset]::MinValue
     $covered = @{}
     if ($checked) {
@@ -2014,13 +2100,28 @@ function Get-AutoLivePlan([string]$BuildMain) {
     $scenes = [ordered]@{}
     $cloud = [ordered]@{}
     $bad = @()
+    $merges = [ordered]@{}
+    # Джерела рядків: давні PR, яких читання не дійшло, — з плану звіту-джерела; прочитані злиті — з тіла.
+    $sources = @()
+    $carry = $boundary.carry
+    if ($carry) {
+        foreach ($number in @($carry.lines.Keys)) {
+            if ($readNumbers.ContainsKey($number)) { continue }
+            $items = @(); foreach ($line in @($carry.lines[$number])) { $items += @(Get-LiveAfterLines $line $registry) }
+            $sources += @(@{number=[long]$number; merge=$carry.merge[$number]; found=$items})
+        }
+    }
     foreach ($pr in @($pulls | Sort-Object merged_at,number)) {
         if (-not $pr.merged_at) { continue }
         $merge = [string]$pr.merge_commit_sha
         if ($merge -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_MERGE' }
+        $sources += @(@{number=$pr.number; merge=$merge; found=@(Get-LiveAfterLines ([string]$pr.body) $registry)})
+    }
+    foreach ($pr in $sources) {
+        $merge = $pr.merge
         if (-not $history.ContainsKey($merge) -or $covered.ContainsKey($merge)) { continue }
-        foreach ($item in @(Get-LiveAfterLines ([string]$pr.body) $registry)) {
-            if ($item.error) { $bad += @(@{pr=$pr.number;line=$item.line;reason=$item.error}); continue }
+        foreach ($item in @($pr.found)) {
+            if ($item.error) { $bad += @(@{pr=$pr.number;line=$item.line;reason=$item.error}); $merges[[string]$pr.number] = $merge; continue }
             # Сцена режиму «функція» — код без моделі: її ставить хмарна сесія, не ноутбук.
             $inCloud = $item.mode -cmatch '^функція'
             $target = if ($inCloud) { $cloud } else { $scenes }
@@ -2037,9 +2138,10 @@ function Get-AutoLivePlan([string]$BuildMain) {
             if ($by) { $ranBy[$by] = 1 + $(if ($ranBy.Contains($by)) { $ranBy[$by] } else { 0 }); continue }
             if (-not $target.Contains($item.id)) { $target[$item.id] = @() }
             $target[$item.id] = @($target[$item.id]) + @(@{pr=$pr.number;question=$item.question})
+            $merges[[string]$pr.number] = $merge
         }
     }
-    ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes;cloud=$cloud;bad=$bad;ran=$ranBy} -Depth 8 -Compress
+    ConvertTo-Json -InputObject @{since_sha=$checked;since_pr=[string]$boundary.pr;since=$since.ToString('o');until=$until.ToString('o');build=$BuildMain;scenes=$scenes;cloud=$cloud;bad=$bad;ran=$ranBy;merge=$merges} -Depth 8 -Compress
 }
 
 function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '', [string]$Model = '') {
