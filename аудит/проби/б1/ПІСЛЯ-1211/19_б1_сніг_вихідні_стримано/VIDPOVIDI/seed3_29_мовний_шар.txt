@@ -1,0 +1,49 @@
+── ПРОМПТ (6395 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: two_piece_set · colour code: camel · about it: text н=1
+2 — kind code: boots · colour code: brown · about it: text н=2
+3 — kind code: crossbody_bag · colour code: red · about it: text н=3
+4 — kind code: coat · colour code: black · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; camel — кемел; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "A structured two-piece set featuring a bold yellow, dark blue and grey check pattern. The jacket has a classic lapel, double-breasted buttons with metal rings, and is worn open here over a solid black turtleneck. It is paired with matching straight-leg trousers that sit at the ankle.",
+"2": "A tall pair of brown suede knee-high boots. They have a comfortable mid-block heel and a soft, matte texture that adds warmth for the frosty weather while maintaining a sleek silhouette under your coat.",
+"3": "A bright red leather crossbody bag with a textured finish and gold-tone hardware. It features a dual top handle and a detachable shoulder strap.",
+"4": "An elegant black long wool coat featuring a sharp lapel, deep pockets, and an included self-fabric belt that cinches at the waist for a defined shape.",
+"5": "This look is built on your request to keep it restrained and classic even as you walk through the snow this Saturday. The bold check suit adds a modern edge without breaking the rule of simplicity, while the sleek black turtleneck grounds the pattern in a neutral base. You wear the long black coat open to show off the plaid underneath, which keeps the look light and interesting despite the heavy winter air. The brown suede boots are practical for frosty ground but add a rich texture that ties the outfit together. A pop of red from your crossbody bag provides just enough brightness against the yellow and black checks without overwhelming the silhouette.",
+"6": "Layer the plaid set under the long coat, letting the coat hang open to show the pattern until you reach warmer indoor spaces or stop for coffee.",
+"7": "Tuck your hands into the jacket pockets or rest one hand in a pocket for a relaxed posture that suits an evening stroll.",
+"8": "Wear the crossbody across your body so the strap stays visible when walking and you have your hands free for cold weather."
+}
+
+── ВІДПОВІДЬ (1973 симв., 23.5 с, HTTP 200) ──
+```json
+{
+  "1": "Структурований двобортний комплект, що вирізняється сміливим жовтим, темно-синім і сірим картатим візерунком. Піджак має класичний лацкан, подвійні ґудзики з металевими кільцями та тут носиться розстебнутим поверх однотонного чорного гольфу. Він поєднаний із відповідними прямими брюками довжиною до щиколотки.",
+  "2": "Високі коричневі замшеві чоботи до коліна. Вони мають зручний середній каблук і м’яку, матову текстуру, яка додає тепла в морозну погоду, зберігаючи при цьому елегантний силует під твоїм пальтом.",
+  "3": "Яскраво-червона шкіряна сумка через плече з рельєфною обробкою та золотистими деталями. Вона має подвійну ручку зверху і знімний регульований плечовий ремінь.",
+  "4": "Елегантне чорне довге вовняне пальто, що вирізняється чітким лацканом, глибокими кишенями та вхідним поясом із тканини самої моделі, який підкреслює талію для виразної форми.",
+  "5": "Цей образ створений на твоє прохання зберегти стриманість і класику навіть у суботу, коли ти йтимеш снігом. Сміливий картатий костюм додає сучасного акценту без порушення правила простоти, а елегантний чорний гольф підкреслює візерунок нейтральною основою. Ти носиш довге чорне пальто розстебнутим, щоб показати картатий комплект знизу, що робить образ легким і цікавим попри морозне повітря. Коричневі замшеві чоботи практичні для засніженої землі, але додають багату текстуру, яка гармонійно завершує вбрання. Яскравий відтінок червоного на твоїй сумці через плече надає достатньо світла проти жовто-чорних клітин без перевантаження силуету.",
+  "6": "Одягни картатий комплект під довге пальто, дозволяючи йому звисати розстебнутим до тих пір, поки ти не потрапиш у тепліші приміщення або не зупинишся випити каву.",
+  "7": "Поклади руки в кишені піджака або поклади одну руку в кишеню для невимушеної пози, яка пасує до вечірньої прогулянки.",
+  "8": "Носи сумку через плече навскіс так, щоб ремінь був помітним під час ходьби і твої руки були вільними від холоду."
+}
+```
