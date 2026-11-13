@@ -1016,7 +1016,9 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
         if ($reason.Count -eq 0) { $reason = @($Tail -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) }
         try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($Status.slug)" ([string]$reason[0]) } catch { Write-Log "причина BLOCKED не записана: $($_.Exception.Message)" }
     }
-    Write-RunCause ([string]$Status.id) ([string]$Status.code) (Get-RunCause ([string]$Status.code) $Tail $Why ([string]$Status.started_utc))
+    # Стан без started_utc (відмова до старту, старі записи) — під StrictMode крапка на відсутньому ключі падає.
+    $started = $(if ($Status -is [Collections.IDictionary]) { [string]$Status['started_utc'] } else { [string](Get-JsonProp $Status 'started_utc') })
+    Write-RunCause ([string]$Status.id) ([string]$Status.code) (Get-RunCause ([string]$Status.code) $Tail $Why $started)
     $Status.ended_utc = [datetime]::UtcNow.ToString('o')
     Write-FileAtomic (Join-Path $OutDir ($Status.id + '.json')) ($Status | ConvertTo-Json -Compress)
     Write-FileAtomic $StatePath "DONE $($Status.id) $($Status.code)"
