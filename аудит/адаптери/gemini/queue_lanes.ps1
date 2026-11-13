@@ -1890,6 +1890,83 @@ function Get-AutoCheckedBuild($Pulls, $History) {
     $checked
 }
 
+function Get-AutoRanPairs($Reports, [datetimeoffset]$Since) {
+    <# Питання (PR, сцена), які звіти автоживого й Е1 справді прогнали, — за записами приладів у голові звіту, а не за
+    рядком `ПЕРЕВІРЕНО ЗБІРКУ`: його агент ставить лише після всього плану, і план, де хоч одне питання не виконується
+    (режим, який прилад відхиляє, сцена «у хмарі», обрив стенда), не звужував жоден прогін.
+    Пара прогнана, коли вона є в `ПЛАН.json` звіту (`аудит/проби/<наряд>/`), журнал `done.txt` приладу `записати_план.py`
+    не має відмови цієї сцени чи цього питання, а запис сцени завершено так, як його бере за базу `нова_база.js`:
+    `результат.json` з rc 0 чи 1 і SHA живого коду, `повтор.json`, `лог.txt`, `знімки/доказ.json`, `VIDPOVIDI/обмін`.
+    Запис — у теці наряду або перенесений `нова_база.js` у `аудит/проби/нічні/` (`походження.json` називає теку запису).
+    Повертає «PR|сцена» → список @{sha; report}; що злиття PR — предок SHA запису, перевіряє план. Звіт, створений раніше
+    за межу плану (мінус запас годинників), злиттів після неї не містить — не читається. Нема голови, плану, журналу чи
+    завершеного запису, журнал не розбирається — пари не прогнані: непрогнане лишається в плані. #>
+    $ran = @{}
+    foreach ($report in @($Reports)) {
+        if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { continue }
+        $dir = 'аудит/проби/' + $Matches[1]
+        # Під StrictMode крапка на відсутньому полі падає: head — об'єкт GitHub або словник стенда.
+        $head = [string]$(if ($report.head -is [Collections.IDictionary]) { $report.head['sha'] } else { Get-JsonProp $report.head 'sha' })
+        if ($head -cnotmatch '^[0-9a-f]{40}$') { continue }
+        $created = $report.PSObject.Properties['created_at']
+        if ($Since -ne [datetimeoffset]::MinValue -and $null -ne $created -and $null -ne $created.Value -and
+            (ConvertTo-AutoTime $created.Value) -lt $Since.AddHours(-$script:AutoPlanMarginHours)) { continue }
+        if ((Invoke-Git @('cat-file','-e',"$head^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','--no-tags','origin',$head) -AllowFail) }
+        $planText = Invoke-Git @('show', "${head}:$dir/ПЛАН.json") -AllowFail
+        $doneText = Invoke-Git @('show', "${head}:$dir/done.txt") -AllowFail
+        if ($planText.Code -ne 0 -or $doneText.Code -ne 0) { continue }
+        try {
+            $plan = ConvertFrom-Json $planText.Out.TrimStart([char]0xFEFF)
+            $refused = @{}
+            foreach ($line in ($doneText.Out -split "`n")) {
+                if (-not $line.Trim()) { continue }
+                $entry = ConvertFrom-Json $line.TrimStart([char]0xFEFF)
+                $scene = [string](Get-JsonProp $entry 'сцена')
+                if ($null -ne (Get-JsonProp $entry 'відмова_питання')) { $refused[[string](Get-JsonProp $entry 'pr') + '|' + $scene] = $true }
+                elseif ($null -ne (Get-JsonProp $entry 'відмова')) { $refused['*|' + $scene] = $true }
+            }
+        } catch { continue }
+        $scenes = Get-JsonProp $plan 'scenes'
+        if ($null -eq $scenes) { continue }
+        # Один прохід дерева: файли, теки записів з обміном моделі й перенесені `нова_база.js` записи за сценою.
+        $files = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+        $exchange = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+        $moved = @{}
+        foreach ($path in ((Invoke-Git @('ls-tree','-r','--name-only',$head,'--',$dir,'аудит/проби/нічні') -AllowFail).Out -split "`n")) {
+            $path = $path.TrimEnd("`r")
+            if (-not $path) { continue }
+            [void]$files.Add($path)
+            $at = $path.IndexOf('/VIDPOVIDI/обмін/', [StringComparison]::Ordinal)
+            if ($at -gt 0) { [void]$exchange.Add($path.Substring(0, $at)) }
+            if ($path -cmatch '^(аудит/проби/нічні/[^/]+/([^/]+))/походження\.json$') { $moved[$Matches[2]] = @($moved[$Matches[2]]) + @($Matches[1]) }
+        }
+        foreach ($property in @($scenes.PSObject.Properties)) {
+            $scene = $property.Name
+            $records = @("$dir/$scene")
+            foreach ($base in @($moved[$scene] | Where-Object { $_ })) {
+                try { $origin = ConvertFrom-Json (Invoke-Git @('show', "${head}:$base/походження.json")).Out } catch { continue }
+                if (([string](Get-JsonProp $origin 'шлях_запису')).Replace('\', '/') -ceq "$dir/$scene") { $records += $base }
+            }
+            $code = ''
+            foreach ($record in $records) {
+                if (-not $exchange.Contains($record)) { continue }
+                if (@('результат.json','повтор.json','лог.txt','знімки/доказ.json' | Where-Object { -not $files.Contains("$record/$_") }).Count) { continue }
+                try { $result = ConvertFrom-Json (Invoke-Git @('show', "${head}:$record/результат.json")).Out.TrimStart([char]0xFEFF) } catch { continue }
+                $rc = Get-JsonProp $result 'rc'; $sha = [string](Get-JsonProp $result 'sha')
+                if (($rc -is [int] -or $rc -is [long]) -and $rc -ge 0 -and $rc -le 1 -and $sha -cmatch '^[0-9a-f]{40}$') { $code = $sha; break }
+            }
+            if (-not $code -or $refused.ContainsKey("*|$scene")) { continue }
+            foreach ($question in @($property.Value)) {
+                $key = [string](Get-JsonProp $question 'pr') + '|' + $scene
+                if ($refused.ContainsKey($key)) { continue }
+                if (-not $ran.ContainsKey($key)) { $ran[$key] = @() }
+                $ran[$key] = @($ran[$key]) + @(@{sha=$code;report=[string]$report.number})
+            }
+        }
+    }
+    $ran
+}
+
 function Get-AutoLivePlan([string]$BuildMain) {
     <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR.
     Список `pulls` іде за оновленням від найновішого й читається лише до доведеної межі: звіт не може згадати збірку,
@@ -1931,6 +2008,9 @@ function Get-AutoLivePlan([string]$BuildMain) {
     $registryText = (Invoke-Git @('cat-file','blob',"${BuildMain}:аудит/проби/живі_сцени.txt")).Out
     $registry = Get-LiveSceneRegistry $registryText
     if (-not $registry.Count) { throw 'AUTO_REGISTRY' }
+    $ranPairs = Get-AutoRanPairs $pulls $since
+    $codeHistory = @{}
+    $ranBy = [ordered]@{}
     $scenes = [ordered]@{}
     $cloud = [ordered]@{}
     $bad = @()
@@ -1942,12 +2022,24 @@ function Get-AutoLivePlan([string]$BuildMain) {
         foreach ($item in @(Get-LiveAfterLines ([string]$pr.body) $registry)) {
             if ($item.error) { $bad += @(@{pr=$pr.number;line=$item.line;reason=$item.error}); continue }
             # Сцена режиму «функція» — код без моделі: її ставить хмарна сесія, не ноутбук.
-            $target = if ($item.mode -cmatch '^функція') { $cloud } else { $scenes }
+            $inCloud = $item.mode -cmatch '^функція'
+            $target = if ($inCloud) { $cloud } else { $scenes }
+            # Питання, яке звіт уже прогнав на коді з цим злиттям (завершений запис сцени), план не повторює.
+            $by = ''
+            foreach ($run in @($ranPairs["$($pr.number)|$($item.id)"] | Where-Object { $_ -and -not $inCloud })) {
+                if (-not $codeHistory.ContainsKey($run.sha)) {
+                    $codeHistory[$run.sha] = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+                    $list = Invoke-Git @('rev-list',$run.sha,'--') -AllowFail
+                    if ($list.Code -eq 0) { foreach ($commit in ($list.Out -split "`n")) { if ($commit.Trim()) { [void]$codeHistory[$run.sha].Add($commit.Trim()) } } }
+                }
+                if ($codeHistory[$run.sha].Contains($merge)) { $by = $run.report; break }
+            }
+            if ($by) { $ranBy[$by] = 1 + $(if ($ranBy.Contains($by)) { $ranBy[$by] } else { 0 }); continue }
             if (-not $target.Contains($item.id)) { $target[$item.id] = @() }
             $target[$item.id] = @($target[$item.id]) + @(@{pr=$pr.number;question=$item.question})
         }
     }
-    ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes;cloud=$cloud;bad=$bad} -Depth 8 -Compress
+    ConvertTo-Json -InputObject @{since_sha=$checked;since=$since.ToString('o');until=$until.ToString('o');scenes=$scenes;cloud=$cloud;bad=$bad;ran=$ranBy} -Depth 8 -Compress
 }
 
 function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '', [string]$Model = '') {
