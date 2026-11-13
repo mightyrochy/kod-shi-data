@@ -1,0 +1,62 @@
+── ПРОМПТ (7337 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: navy · about it: text н=1
+2 — kind code: skirt · colour code: blue · about it: text н=2
+3 — kind code: blouse · colour code: navy · about it: text н=3
+4 — kind code: ring · colour code: golden · about it: text н=4
+5 — kind code: bracelet · colour code: golden · about it: text н=5
+6 — kind code: ankle_boots · colour code: camel · about it: text н=6
+7 — kind code: backpack · colour code: black · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; blue — синій; camel — кемел; golden — золотий; navy — темно-синій.
+
+ТЕКСТИ:
+{
+"1": "A tailored navy blazer with a fitted silhouette that hugs your frame without feeling restrictive, perfect for defining your shoulders and waist.",
+"2": "The straight-cut skirt in blue flows cleanly from your waist, offering balance and movement without excess volume.",
+"3": "This sleek navy blouse features a close-fitting cut that complements the blazer while adding subtle texture with its refined fabric finish.",
+"4": "Stacked golden rings that catch the light effortlessly, adding a warm metallic accent to your hands and wrists.",
+"5": "A delicate bracelet adorned with floral motifs that brings organic detail to your wrist and softens the look’s formality.",
+"6": "Elegant camel ankle boots with a subtle heel that elongate your legs and bridge the gap between daywear and evening polish.",
+"7": "A minimalist black backpack designed for easy wear, carrying essentials securely while maintaining a sleek profile.",
+"8": "I have chosen a navy blue blazer and a matching fitted blouse to create a polished, cohesive look for your evening gathering. The straight-cut skirt in a slightly softer blue tone adds structure while keeping the silhouette clean and elegant. Your golden rings and floral bracelet add a touch of warmth that softens the outfit’s formality, while the camel ankle boots ground the ensemble with their rich, autumnal hue. The black backpack offers both style and practicality as you move through the night.",
+"9": "Wear the blazer slightly open to let the blouse peek through, softening the shoulder line and drawing attention to your neckline.",
+"10": "Keep your bracelet on your dominant hand so it catches the light naturally when you gesture or hold your drink.",
+"11": "Спідниця міні джинсова, синя — I swapped your navy suit bottom with this mini blue denim skirt to lower the formality slightly, matching the 'everyday' target while keeping it festive enough for a party.",
+"12": "Темно-синя віскозна блуза з ланцюжком Алайн — This navy viscose blouse matches your denim skirt and jacket, creating a cohesive 'navy' family that dominates the look and avoids conflicting registers.",
+"13": "Темно-синя віскозна блуза з ланцюжком Алайн — This navy viscose blouse adds a second cool-toned family to balance the turquoise cardigan, preventing the outfit from feeling too one-note."
+}
+
+── ВІДПОВІДЬ (2234 симв., 36.5 с, HTTP 200) ──
+```json
+{
+"1": "Я підібрала приталений темно-синій блейзер з силуетом, що облягає твою фігуру без відчуття обмеження — ідеальний варіант для виділення плечей та талії.",
+"2": "Пряма спідниця синього кольору плавно спадає від твоєї талії, пропонуючи баланс та рух без зайвого об’єму.",
+"3": "Ця елегантна темно-синя блуза має приталений крій, який доповнює блейзер, водночас додаючи ледь помітну текстуру завдяки вишуканій тканині.",
+"4": "Золоті каблучки в стопці, які легко ловлять світло, додають теплий металевий акцент твоїм рукам та зап’ястям.",
+"5": "Делікатний браслет з квітковими мотивами, який приносить органічні деталі на твоє зап’ястя і пом’якшує формальність образу.",
+"6": "Елегантні кемелові черевики на підборах, які видовжують твої ноги та створюють перехід між повсякденним стилем та вечірнім шиком.",
+"7": "Мінімалістичний чорний рюкзак для зручного носіння, який безпечно зберігає необхідні речі, водночас підтримуючи елегантний силует.",
+"8": "Я обрала темно-синій блейзер та відповідну приталену блузу, щоб створити вишуканий і гармонійний образ для твоєї вечірньої зустрічі. Пряма спідниця в трохи м’якшому синьому відтінку додає структури, зберігаючи силует чистим та елегантним. Твої золоті каблучки та квітковий браслет додають тепла, яке пом’якшує формальність образу, а кемелові черевики завершують ансамбль своїм насиченим осіннім відтінком. Чорний рюкзак пропонує стиль і практичність протягом усієї ночі.",
+"9": "Застебни блейзер трохи навстіж, щоб показати блузу та пом’якшити лінію плечей, привертаючи увагу до твоєї лінії шиї.",
+"10": "Одягни браслет на провідну руку, щоб він природно ловив світло під час жесту чи тримання напою.",
+"11": "Я замінила твої темно-сині брюки спідницею міні з синього деніму, щоб трохи знизити формальність, відповідаючи цілі «повсякденний» образ, водночас зберігаючи святковий вигляд для вечірки.",
+"12": "Ця темно-синя віскозна блуза з ланцюжком Алайн доповнює твою джинсову спідницю та піджак, створюючи гармонійну «темно-синю» родину, яка переважає в образі і уникає конфлікту стилів.",
+"13": "Ця темно-синя віскозна блуза з ланцюжком Алайн додає другий прохолодний відтінок до образу, щоб збалансувати кардиган бірюзового кольору та запобігти монотонності."
+}
+```

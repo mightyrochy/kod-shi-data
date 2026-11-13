@@ -1,0 +1,44 @@
+── ПРОМПТ (2191 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Heavy wool blazer, structured fit, knee-length hem, charcoal gray (#3b424c), tweed weave\nCashmere turtleneck sweater, slim silhouette, hip-length body, navy blue (#0a1f45), soft knit\nStraight-leg dark denim trousers, ankle-grazing length, black wash (#0d0e10), rigid cotton denim\nLeather ankle boots with a low heel, straight shaft, black color (#1a1816), smooth grain finish\nSatin studded belt, thin waistband, black leather (#2c2420), metallic hardware accents\nThis outfit works because it balances the professionalism required for a business meeting with the warmth needed against -10°C temperatures and snow. The wool blazer provides essential insulation while maintaining a sharp silhouette suitable for an autumn daywalk to work. Darker tones like navy and black offer both practicality against the elements and a polished look appropriate for formal daytime settings, ensuring you stay dry and composed without sacrificing style."}
+
+── ВІДПОВІДЬ (984 симв., 5.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool blazer",
+      "details": "structured fit, knee-length hem, tweed weave",
+      "slot": "outerwear",
+      "color_hex": "#3b424c",
+      "worn": true
+    },
+    {
+      "name": "cashmere turtleneck sweater",
+      "details": "slim silhouette, hip-length body, soft knit",
+      "slot": "top",
+      "color_hex": "#0a1f45",
+      "worn": true
+    },
+    {
+      "name": "dark denim trousers",
+      "details": "straight-leg, ankle-grazing length, rigid cotton denim",
+      "slot": "bottom",
+      "color_hex": "#0d0e10",
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "low heel, straight shaft, smooth grain finish",
+      "slot": "shoes",
+      "color_hex": "#1a1816",
+      "worn": true
+    },
+    {
+      "name": "satin studded belt",
+      "details": "thin waistband, metallic hardware accents",
+      "slot": "belt",
+      "color_hex": "#2c2420",
+      "worn": true
+    }
+  ]
+}

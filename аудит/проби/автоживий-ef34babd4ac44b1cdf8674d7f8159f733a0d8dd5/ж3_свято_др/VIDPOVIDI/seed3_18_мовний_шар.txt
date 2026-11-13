@@ -1,0 +1,41 @@
+── ПРОМПТ (5949 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: burgundy — бордовий.
+
+ТЕКСТИ:
+{
+"1": "Velvet blazer in midnight blue, tailored fit with a single-button front and notched lapels.\nSilk-blend midi slip dress in emerald green, fluid silhouette that drapes from the shoulders to mid-calf length.\nLeather ankle boots in polished oxblood [colour: burgundy], pointed toe with a moderate stiletto heel.\nDelicate gold bar necklace in 18k vermeil with a matte finish and matching stud earrings in brushed gold.\nThis outfit strikes the perfect balance between casual elegance and festive polish for a bachelorette party on an autumn evening. The velvet blazer provides sophisticated warmth without feeling too formal, while the emerald slip dress introduces a pop of rich color that complements her warm skin tones. The pointed-toe boots extend the leg line visually, creating a streamlined silhouette appropriate for dancing and socializing in low artificial light. Overall, the combination of textures and deep jewel tones ensures she looks both relaxed and intentionally dressed-up for the celebration.",
+"2": "Velvet blazer",
+"3": "Silk-blend midi slip dress",
+"4": "Leather ankle boots",
+"5": "Delicate gold bar necklace"
+}
+
+── ВІДПОВІДЬ (1131 симв., 27.4 с, HTTP 200) ──
+{
+"1": "Оксамитовий блейзер кольору нічної синяви, приталеного крою з однобортною застібкою та лацканами.\nСередня шовкова сукня-комбінація смарагдового [colour: burgundy] відтінку, що струмує від плечей до середини литки.\nШкіряні черевики на підборах кольору бордо [colour: burgundy], загострений носок і помірний стійкий каблук.\nНіжна золота ланцюжкова підвіска з 18-каратного позолоченого металу матової обробки та відповідні сережки-гвоздики в матовій позолоті.\nЦей образ ідеально поєднує невимушену елегантність із святковим шиком для дівич-вечора восени. Оксамитовий блейзер дарує вишуканий теплий затишок, не відчуваючись надмірно офіційним, а шовкова сукня додає яскравого насиченого кольору, який гармонійно доповнює твій тон шкіри. Черевики візуально видовжують ноги, створюючи стрункий силует для танців і спілкування в приглушеному світлі. Загалом, поєднання фактур та глибоких відтінків забезпечує тобі розслаблений вигляд з відчуттям продуманого святкового образу.",
+"2": "Оксамитовий блейзер",
+"3": "Середня шовкова сукня-комбінація",
+"4": "Шкіряні черевики на підборах",
+"5": "Ніжна золота ланцюжкова підвіска"
+}
