@@ -19,7 +19,15 @@
 
 . (Join-Path $PSScriptRoot 'wrapper_health.ps1')
 
-$script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
+# Де лежать посилання, які пише fetch цього рушія. gemini-run і gemini-publish мають власні клони й лишають origin;
+# claude-run працює в клоні власника, де fetch сесій і виконавців рухає refs/remotes/origin/* без його відома («cannot
+# lock ref … is at X but expected Y»), тож бере власний простір (Set-RemoteRoot 'refs/claude-run') і fetch з `--refmap=`:
+# без нього git заодно оновлює refs/remotes/origin/* за налаштуванням remote.origin.fetch і ловить той самий збій.
+function Set-RemoteRoot([string]$Root) {
+    $script:RemoteRoot = $Root
+    $script:QueuePrefix = "$Root/gemini-queue/"
+}
+Set-RemoteRoot 'refs/remotes/origin'
 $script:TaskDir = 'аудит/наряди/'
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
@@ -353,7 +361,7 @@ function Get-Limits {
     $prev = $null
     if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { try { $prev = [System.IO.File]::ReadAllText($prevPath, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     $doc = $null
-    $r = Invoke-Git @('cat-file', 'blob', "refs/remotes/origin/main:$script:LanesPath") -AllowFail
+    $r = Invoke-Git @('cat-file', 'blob', "$script:RemoteRoot/main:$script:LanesPath") -AllowFail
     if ($r.Code -eq 0 -and $r.Out.Length -le 8192) {
         try { $doc = $r.Out | ConvertFrom-Json } catch { Write-Log 'смуги.json не читається як JSON — попередні межі' }
     }
@@ -422,7 +430,7 @@ function Get-CascadePlan([string]$Model, [string]$CodexModel = '') {
 function ConvertTo-Marker([string]$Line) {
     <# Рядок for-each-ref (посилання, SHA, час коміту) -> позначка; Valid=$false — назва не за форматом. #>
     $f = $Line -split "`t"
-    $rest = $f[0].Substring($script:QueuePrefix.Length)
+    $rest = $f[0].Substring($f[0].IndexOf('gemini-queue/') + 'gemini-queue/'.Length)
     $parts = @($rest -split '/')
     $m = [pscustomobject]@{ Ref = $f[0]; Name = 'gemini-queue/' + $rest; Sha = $f[1]; Time = [long]$f[2]
         Slug = ''; Model = ''; N = ''; Cond = ''; Prio = 5; Deadline = ''; Gpu = $false; Lane = ''; Seen = [long]0; Valid = $false }
@@ -479,7 +487,7 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     if ($OpenOnly) { return $true }
     $date = $utc.ToString('yyyyMMdd')
     $head = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/'
-    $main = Get-RefSha 'refs/remotes/origin/main'
+    $main = Get-RefSha "$script:RemoteRoot/main"
     if ($main -cnotmatch '^[0-9a-f]{40}$') { return }
     $tries = @(foreach ($name in ((Invoke-Git @('for-each-ref', '--format=%(refname)', $head)).Out -split "`n")) {
         if ($name.Trim() -cmatch ('^' + [regex]::Escape($head) + '([1-9][0-9]{0,2})/gpu-p8$')) { [pscustomobject]@{ N = [int]$Matches[1]; Ref = $name.Trim() } }
@@ -765,22 +773,82 @@ function Get-WaitingMarkers {
 
 # --- здоров'я машини (лише показ, узяття не гейтить) ----------------------------------------------------------------
 
-function Measure-DirBytes([string]$Path) {
-    <# Розмір названої теки без переходу за точками з'єднання (профіль має петлі); недоступні теки — лічбою Skipped. #>
+function Measure-DirBytes([string]$Path, [string]$Under = '', [switch]$Breakdown) {
+    <# Розмір названої теки без переходу за точками з'єднання (профіль має петлі); недоступні теки — лічбою Skipped.
+    -Breakdown у тому самому обході додає суми за дітьми першого рівня (Top) і за дітьми теки $Under, що лежить усередині
+    $Path (Under): усі пари Name/Bytes з вагою понад нуль за спаданням; файли просто в корені — під іменем «(файли)». #>
     if (-not $Path -or -not (Test-Path -LiteralPath $Path -PathType Container)) { return $null }
     $bytes = 0L; $skipped = 0
+    $kids = @{}; $sub = @{}
+    $underFull = $(if ($Under) { [IO.Path]::GetFullPath($Under).TrimEnd('\', '/') } else { '' })
     $stack = New-Object System.Collections.Stack
-    $stack.Push((New-Object System.IO.DirectoryInfo $Path))
+    $stack.Push(@((New-Object System.IO.DirectoryInfo $Path), '', ''))
     while ($stack.Count -gt 0) {
-        $d = $stack.Pop()
+        $it = $stack.Pop(); $d = $it[0]
         try {
             foreach ($e in $d.EnumerateFileSystemInfos()) {
                 if ($e.Attributes -band [System.IO.FileAttributes]::ReparsePoint) { continue }
-                if ($e -is [System.IO.DirectoryInfo]) { $stack.Push($e) } else { $bytes += $e.Length }
+                $tk = $it[1]; $uk = $it[2]
+                if ($Breakdown -and $e -is [System.IO.DirectoryInfo]) {
+                    if ($tk -eq '') { $tk = $e.Name }
+                    if ($underFull -and $d.FullName.TrimEnd('\', '/') -ieq $underFull) { $uk = $e.Name }
+                }
+                if ($e -is [System.IO.DirectoryInfo]) { $stack.Push(@($e, $tk, $uk)); continue }
+                $bytes += $e.Length
+                if ($Breakdown) {
+                    $k = $(if ($tk -eq '') { '(файли)' } else { $tk })
+                    $kids[$k] = [long]$kids[$k] + $e.Length
+                    if ($uk) { $sub[$uk] = [long]$sub[$uk] + $e.Length }
+                }
             }
         } catch { $skipped++ }
     }
-    [pscustomobject]@{ Bytes = $bytes; Skipped = $skipped }
+    $largest = { param($h) @($h.GetEnumerator() | Where-Object { $_.Value -gt 0 } | Sort-Object Value -Descending | ForEach-Object { [pscustomobject]@{ Name = [string]$_.Key; Bytes = [long]$_.Value } }) }
+    [pscustomobject]@{ Bytes = $bytes; Skipped = $skipped; Top = @(& $largest $kids); Under = @(& $largest $sub) }
+}
+
+function ConvertTo-SizeList($Rows) {
+    <# Пари Name/Bytes — рядок «назва=байти;…» для heartbeat; назви без службових знаків: рядок читає розбір недовіреного файла. #>
+    @(foreach ($r in @($Rows)) {
+        $n = [regex]::Replace([string]$r.Name, '[^\p{L}\p{N}._ -]', '_')
+        "$n=$([long]$r.Bytes)"
+    }) -join ';'
+}
+
+function ConvertFrom-SizeList([string]$Text) {
+    <# Обернене до ConvertTo-SizeList: пари Name/Bytes лише за форматом, решта відкидається. #>
+    @(($Text -split ';') | Where-Object { $_ -cmatch '^[\p{L}\p{N}._ -]+=[0-9]{1,15}$' } | ForEach-Object {
+        $i = $_.LastIndexOf('='); [pscustomobject]@{ Name = $_.Substring(0, $i); Bytes = [long]$_.Substring($i + 1) } })
+}
+
+function Get-MeasureCache([string]$Dir, [string]$Name, [string[]]$MeasureArgs, [double]$MaxAge, [string]$Need = '') {
+    <# Кеш обходу тек `$Dir\$Name.json`: повертає його (чи $null). Нема кешу чи від кінця попереднього обходу минуло $MaxAge с,
+    а замок `$Name.lock` вільний — окремий процес цього скрипта ($MeasureArgs) міряє й пише кеш (Save-MeasureCache); його
+    не чекають: обхід тек іде хвилини, а прохід стану чи heartbeat не можуть стояти. Процес — $script:MeasureProc. #>
+    $path = Join-Path $Dir "$Name.json"
+    $c = $null
+    if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    # Кеш без потрібного поля $Need (запис до його появи) — застарілий: міряється наново.
+    if ($null -eq $c -or ($Need -and $null -eq $c.PSObject.Properties[$Need]) -or $now - [long]$c.time -ge $MaxAge) {
+        if (Test-LockFree (Join-Path $Dir "$Name.lock")) {
+            $script:MeasureProc = [System.Diagnostics.Process]::Start((New-StartInfo (Get-Process -Id $PID).Path (@('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $script:SelfPath) + $MeasureArgs) '' -NoRedirect))
+        }
+    }
+    $c
+}
+
+function Save-MeasureCache([string]$Dir, [string]$Name, [scriptblock]$Measure) {
+    <# Тіло процесу-виміру: під замком `$Name.lock` (один обхід водночас) $Measure повертає впорядковану таблицю, до неї
+    дописуються `time` (кінець обходу, від нього рахує Get-MeasureCache) і `read` (UTC) — кеш `$Name.json`. #>
+    $lock = Open-Lock (Join-Path $Dir "$Name.lock")
+    if ($null -eq $lock) { return 0 }
+    try {
+        $c = & $Measure
+        $c['time'] = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); $c['read'] = Get-UtcStamp (Get-Date)
+        Write-FileAtomic (Join-Path $Dir "$Name.json") ($c | ConvertTo-Json -Compress -Depth 4)
+    } finally { $lock.Dispose() }
+    0
 }
 
 function Get-Unsourced($Limits) {
@@ -1087,9 +1155,9 @@ function Start-GpuModels($Job) {
 function Enter-GpuLease($Job) {
     <# Допуск GPU-наряду в процесі наряду; '' — допущено, інакше причина, і позначка лишається в черзі.
 
-    Ворота `gpu.lock` тримаються лише на час рішення, а не весь прогін: наряд, що готується, качає чи думає хмарною
-    моделлю, карти не займає й інших GPU-нарядів не тримає. Під воротами — прибирання мертвих оренд, карта без моделей
-    живих GPU-нарядів (Get-GpuSessionReason), вільна пам'ять (Test-ExternalGpuFree), приєднання до сесії. #>
+    Ворота `gpu.lock` тримаються лише на час рішення; весь прогін карту тримає замок оренди (Start-GpuModels). Під
+    воротами — прибирання мертвих оренд, жодної живої оренди (Get-GpuSessionReason), вільна пам'ять
+    (Test-ExternalGpuFree), приєднання до сесії. #>
     $gate = Open-Lock (Get-GpuLockPath)
     if ($null -eq $gate) { return 'замок GPU' }
     try {
@@ -1329,9 +1397,11 @@ function Merge-MainIntoCopy([string]$Main, [string]$Branch) {
     ''
 }
 
-function Get-MergeStepText([string]$Branch) {
-    <# Крок промпту, коли обгортка не влила main сама (конфлікт) чи гілку веде агент: він вливає main першим кроком. #>
-    "Перший крок: влий свіжий ``origin/main`` у ``$Branch`` (``git merge origin/main``), конфлікти розв'язуй за змістом ``main``: гілка " +
+function Get-MergeStepText([string]$Branch, [string]$Main = 'origin/main') {
+    <# Крок промпту, коли обгортка не влила main сама (конфлікт) чи гілку веде агент: він вливає main першим кроком. $Main —
+    що влити: gemini — origin/main свого клону; claude-run освіжає лише свій простір посилань, а origin/main у спільному
+    клоні може бути старим, тож передає SHA main, отриманого в цьому проході. #>
+    "Перший крок: влий свіжий ``main`` у ``$Branch`` (``git merge $Main``), конфлікти розв'язуй за змістом ``main``: гілка " +
     "відстала від ``main``, тож код, який у ``main`` уже змінено чи прибрано, не лагодь і не відновлюй. Далі — наряд."
 }
 
@@ -1354,9 +1424,24 @@ function Close-TaskCopy([string[]]$Delivered) {
     Remove-TaskCopy $c.Dir $Delivered
 }
 
+function Reset-TreeAcl([string]$Dir) {
+    <# Знімає з дерева заборони, що лишив обірваний прогін: deny на читання теки робить дерево непрохідним навіть для
+    власника, і `Remove-Item` падає щоразу. Усі ACL дерева стають успадкованими від батька (`icacls /reset`: власнику
+    вистачає неявних READ_CONTROL і WRITE_DAC, прав адміністратора не треба); поза Windows — `chmod -R u+rwX`.
+    Повертає, чи команда відпрацювала. #>
+    try {
+        $r = $(if ($env:OS -eq 'Windows_NT') { Invoke-Native 'icacls.exe' @($Dir, '/reset', '/T', '/C', '/L', '/Q') }
+               else { Invoke-Native 'chmod' @('-R', 'u+rwX', '--', $Dir) })
+        $r.Code -eq 0
+    } catch { $false }
+}
+
 function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
     <# Тека задачі чи давня робоча копія слота — геть, коли голова не несе комітів поза $Delivered (`rev-list --not`).
-    Несе — тека лишається з `kept.txt`, гілку звільнено, повертає шлях теки; інакше ''. #>
+    Несе — тека лишається з `kept.txt`, гілку звільнено, повертає шлях теки; інакше ''.
+    Прибирання не залежить від заборон у копії: тека, яку не можна перелічити (вимір дав недоступні теки), чи видалення
+    з UnauthorizedAccess — спершу Reset-TreeAcl, тоді ще раз; зайнятий іншим процесом файл — тимчасовий стан, його лишає
+    наступне прибирання. У журнал — звільнені байти (вимір до видалення, після скидання ACL — повний). #>
     $repo = $(if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { $Dir } else { Join-Path $Dir 'repo' })
     if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
         $n = 0
@@ -1367,11 +1452,24 @@ function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
             Write-Log "копія задачі $Dir лишається: недоставлених комітів голови $n"
             return $Dir
         }
-        [void](Invoke-Git @('worktree', 'remove', '-f', '-f', $repo) -AllowFail)
     }
+    $freed = 0L; $reset = $false; $existed = Test-Path -LiteralPath $Dir
+    $m = Measure-DirBytes $Dir
+    if ($null -ne $m -and $m.Skipped -gt 0) { $reset = Reset-TreeAcl $Dir; $m = Measure-DirBytes $Dir }
+    if ($null -ne $m) { $freed = $m.Bytes }
+    if (Test-Path -LiteralPath (Join-Path $repo '.git')) { [void](Invoke-Git @('worktree', 'remove', '-f', '-f', $repo) -AllowFail) }
     if (Test-Path -LiteralPath $Dir) {
-        try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { Write-Log "копія задачі $Dir не прибрана: $($_.Exception.Message)" }
+        try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop }
+        catch {
+            $first = $_.Exception
+            if ($first.GetBaseException() -is [UnauthorizedAccessException] -and -not $reset) {
+                $reset = Reset-TreeAcl $Dir
+                try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { $first = $_.Exception }
+            }
+            if (Test-Path -LiteralPath $Dir) { Write-Log "копія задачі $Dir не прибрана: $($first.Message)" }
+        }
     }
+    if ($existed -and -not (Test-Path -LiteralPath $Dir)) { Write-Log "копія задачі $Dir прибрана: звільнено $freed байт$(if ($reset) { ' (ACL скинуто)' })" }
     [void](Invoke-Git @('worktree', 'prune') -AllowFail)
     ''
 }
@@ -1577,7 +1675,7 @@ function Get-HeadLivePublication([string]$Head, [string]$ExistingBody = '') {
     if (($body + "`n" + $ExistingBody) -cnotmatch '(?m)^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') {
         return (ConvertTo-LivePublicationBody $body @{})
     }
-    $registryText = (Invoke-Git @('show', 'refs/remotes/origin/main:аудит/проби/живі_сцени.txt')).Out
+    $registryText = (Invoke-Git @('show', "$script:RemoteRoot/main:аудит/проби/живі_сцени.txt")).Out
     $registry = Get-LiveSceneRegistry $registryText
     if (-not $registry.Count) { throw 'LIVE_AFTER_REGISTRY' }
     # Повний рядок сцени — стільки полів, скільки в шапці реєстру «# Поля: …»; коротший рядок гілки не додаємо.
@@ -1585,7 +1683,7 @@ function Get-HeadLivePublication([string]$Head, [string]$ExistingBody = '') {
     if (-not $header.Count) { throw 'LIVE_AFTER_REGISTRY' }
     $width = $header[0].TrimEnd("`r").Split('|').Count
     # Лише додані рядки від спільної бази: зміни й видалення сцен main не змінюють їхній режим.
-    $base = (Invoke-Git @('merge-base', 'refs/remotes/origin/main', $Head)).Out.Trim()
+    $base = (Invoke-Git @('merge-base', "$script:RemoteRoot/main", $Head)).Out.Trim()
     if (-not $base) { throw 'LIVE_AFTER_MERGE_BASE' }
     $baseRegistry = Get-LiveSceneRegistry ((Invoke-Git @('show', ($base + ':аудит/проби/живі_сцени.txt'))).Out)
     $diff = (Invoke-Git @('diff', '--no-ext-diff', '--unified=0', $base, $Head, '--', 'аудит/проби/живі_сцени.txt')).Out
@@ -1886,26 +1984,22 @@ function Test-ExternalGpuFree([switch]$LogAcquisition) {
 }
 
 function Get-GpuSessionReason {
-    <# Чи тримають карту GPU-наряди: живий наряд обох облікових записів має на ній модель, завантажену після початку сесії
-    (екземпляр LM Studio поза before), — зайнята; запис без живих оренд чи пошкоджений — прибирання ще не відбулось.
-    Оренда без моделі карти не тримає: така карта ділиться за пам'яттю (Get-GpuLoad). '' — сесія не заважає. #>
+    <# Чи тримають карту GPU-наряди: жива оренда будь-якого облікового запису — зайнята, хоч би яка модель на карті цієї миті;
+    запис без живих оренд чи пошкоджений — прибирання ще не відбулось. '' — сесії нема.
+
+    Карту тримає оренда, а не знімок LM Studio: живий прогін вантажить і вивантажує моделі між кроками, і знімок у
+    проміжку порожній — так допуск пустив другий GPU-наряд поруч із живим, і обидва ділили :1234 і стенд. Оренда живе,
+    доки процес наряду тримає її замок: сон і пауза (призупинений процес) його не відпускають, перезапуск планувальника
+    не чіпає процесу наряду, а смерть наряду відпускає замок — мертву оренду прибирає наступний прохід. #>
     try { $s = Read-GpuSession } catch { $s = $false }
     if ($null -eq $s) { return '' }
-    if ($false -eq $s -or @(Get-LiveGpuLeases $s).Count -eq 0) {
+    $live = @(if ($false -ne $s) { Get-LiveGpuLeases $s })
+    if ($live.Count -eq 0) {
         $script:GpuHoldReason = 'незакритий знімок моделей GPU'
         return 'GPU: незакритий знімок моделей попереднього наряду (lanes/gpu-models.json)'
     }
-    $before = @($s.Before | ForEach-Object { [string]$_.id })
-    try { $new = @(Get-LmsInstances | Where-Object { $before -cnotcontains $_.id }) }
-    catch {
-        $script:GpuHoldReason = 'LM Studio недоступний на :1234'
-        return 'GPU: LM Studio недоступний на :1234 — неможливо перевірити моделі живих GPU-нарядів'
-    }
-    if ($new.Count) {
-        $script:GpuHoldReason = 'модель GPU-наряду на карті'
-        return "GPU: модель GPU-наряду на карті ($(@($new | ForEach-Object { $_.model }) -join ', '))"
-    }
-    ''
+    $script:GpuHoldReason = 'замок GPU іншого наряду'
+    "GPU: її тримає живий GPU-наряд ($(@($live | ForEach-Object { $_.marker }) -join ', '))"
 }
 
 $script:GpuHoldReason = ''
@@ -1914,7 +2008,7 @@ function Get-GpuBusyReason([switch]$LockHeld) {
     <# Чому GPU не віддати наряду зараз; '' — вільна. Єдине місце для планувальників обох облікових записів.
     GpuHoldReason — причина для рядка сигналу (Update-HoldSignals порівнює її без числових показників). LockHeld — ворота GPU
     тримає сам викликач (процес наряду в Enter-GpuLease): причина — сторонній процес, а не «замок тримає інший процес».
-    Свій живий GPU-наряд сам по собі карти не тримає — лише його модель на карті (Get-GpuSessionReason) чи пам'ять. #>
+    Живий GPU-наряд будь-якого облікового запису тримає карту весь прогін (Get-GpuSessionReason). #>
     $script:GpuHoldReason = ''
     if (-not $LockHeld -and -not (Test-LockFree (Get-GpuLockPath))) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return "GPU: замок $(Get-GpuLockPath) тримає інший процес" }
     $why = Get-GpuSessionReason

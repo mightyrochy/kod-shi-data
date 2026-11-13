@@ -2,6 +2,7 @@
 const fs = require('fs'), path = require('path'), os = require('os');
 const assert = require('node:assert/strict');
 const процеси = require('child_process');
+const {створитиЗразок} = require('./зразок_приймання.js');
 
 // Підставляються лише відповіді GitHub та виходи дочірнього браузера; приймання виконується цілим.
 if (process.env.E1_2041_FIXTURE) {
@@ -17,8 +18,9 @@ if (process.env.E1_2041_FIXTURE) {
   };
 } else if (require.main === module) {
   const корінь = path.resolve(process.argv[2] || path.join(__dirname, '../..'));
-  const проби = path.join(корінь, 'аудит/проби');
+  const пробиДжерела = path.join(корінь, 'аудит/проби');
   const тека = fs.mkdtempSync(path.join(os.tmpdir(), 'Е1-2041-'));
+  let проби;
   const результати = [];
   function виконати(назва, файл, аргументи, дані, подія, очікувано) {
     const місце = path.join(тека, String(результати.length));
@@ -41,6 +43,8 @@ if (process.env.E1_2041_FIXTURE) {
       ...(результат.status !== очікувано ? {помилка: результат.stderr.trim()} : {})});
   }
   try {
+    const база = JSON.parse(fs.readFileSync(path.join(пробиДжерела, 'нічні/20261027/б1_концерт_стримано/база.json'), 'utf8'));
+    проби = створитиЗразок(тека, [{id: 'концерт', база}], пробиДжерела);
     const sha = 'a'.repeat(40), інший = 'b'.repeat(40);
     const рядок = 'ЖИВИЙ ПІСЛЯ: б1_концерт_стримано — перезаписати вхід моделі';
     const push = {ref: 'refs/heads/main', after: sha, repository: {full_name: 'mightyrochy/kod-shi-data'},
@@ -62,7 +66,7 @@ if (process.env.E1_2041_FIXTURE) {
       ['push: точний запис без погодження', push, {підсумок: [{стан: 'без регресу'}]}, 0],
     ]) виконати(назва, 'живий_після_CI.js', в => [в], дані, подія, rc);
 
-    const лог = fs.readFileSync(path.join(проби, 'нічні/20261027/б1_концерт_стримано/лог.txt'), 'utf8');
+    const лог = fs.readFileSync(path.join(пробиДжерела, 'нічні/20261027/б1_концерт_стримано/лог.txt'), 'utf8');
     const зелений = лог + '\n  ✔ с1.нова_звірка\n';
     const червоний = лог.replace(/^ВПАЛО 1 ·/m, 'ВПАЛО 2 ·') + '\n  ✗ с1.нова_звірка  →  не виконано\n';
     const посилений = лог.replace(/^  ✔ /m, '  ✗ ').replace(/^ВПАЛО 1 ·/m, 'ВПАЛО 2 ·');

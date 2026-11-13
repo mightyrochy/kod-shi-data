@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-knit turtleneck, slim fit, hip length, deep burgundy #6D1F3A, merino wool\\nMidi skirt, A-line with soft pleats, mid-calf length, emerald green #046A4D, jacquard-textured crepe\\nTailored coat, single-breasted, straight cut, knee length, camel #C19A6B, wool-cashmere blend\\nAnkle boots, pointed toe, mid block heel, black #1A1A1A, smooth leather\\nSheer tights, black #1C1C1C, fine nylon\\nSculptural drop earrings, antique gold #C9A24B, brushed metal\\nSmall structured clutch, gold #B8893A, textured leather\\n\\nThis outfit works because the burgundy and emerald pairing is rich and unexpected, which makes you stand out in a theatre foyer while the pieces stay refined and neat. The jacquard texture of the skirt catches the warm artificial light and gives movement as you walk. The camel coat adds a calm, polished frame for the bold colors and keeps you warm on an autumn evening. Heeled ankle boots and gold accents make the look feel evening-ready and comfortable through a 19:00 performance.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Turtleneck\\\",\\\"details\\\":\\\"Fine-knit, slim fit, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#6D1F3A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Midi skirt\\\",\\\"details\\\":\\\"A-line with soft pleats, mid-calf length, jacquard-textured crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#046A4D\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tailored coat\\\",\\\"details\\\":\\\"Single-breasted, straight cut, knee length, wool-cashmere blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#C19A6B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"Pointed toe, mid block heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sheer tights\\\",\\\"details\\\":\\\"Fine nylon\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#1C1C1C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sculptural drop earrings\\\",\\\"details\\\":\\\"Brushed metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A24B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small structured clutch\\\",\\\"details\\\":\\\"Textured leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#B8893A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2064,\"output_tokens\":423},\"stop_reason\":\"end_turn\"}"
+ }
+}

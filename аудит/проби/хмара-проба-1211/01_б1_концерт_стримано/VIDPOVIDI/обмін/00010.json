@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-knit crew-neck sweater, slim fit, hip length, deep burgundy (#6D1F2F), merino wool\\nStraight-leg trousers, mid-rise, full ankle length, black (#1C1C1E), wool-blend crepe\\nFitted biker-style jacket, hip length, black (#111111), soft lambskin leather\\nAnkle boots, round toe, low block heel, black (#141414), smooth leather with a grippy sole\\nSmall crossbody bag, worn across the body, black (#1A1A1A), grained leather\\nSmall hoop earrings, silver (#C0C0C0), sterling silver\\n\\nThis outfit keeps the classic, restrained look you asked for, with a neat knit and tailored trousers in a clean, dark palette. The leather jacket gives it a quiet rock edge that suits a club concert and keeps you warm on an autumn evening. Low block-heeled boots and stretch-free, easy-moving trousers make standing in a crowd comfortable for hours. A crossbody bag keeps your hands free and your things safe in the crush, and the burgundy adds a touch of colour under the club lighting.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Crew-neck sweater\\\",\\\"details\\\":\\\"Fine-knit, slim fit, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#6D1F2F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg trousers\\\",\\\"details\\\":\\\"Mid-rise, full ankle length, wool-blend crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#1C1C1E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Biker-style jacket\\\",\\\"details\\\":\\\"Fitted, hip length, soft lambskin leather\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#111111\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"Round toe, low block heel, smooth leather with a grippy sole\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#141414\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Crossbody bag\\\",\\\"details\\\":\\\"Small, worn across the body, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Hoop earrings\\\",\\\"details\\\":\\\"Small, sterling silver\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2050,\"output_tokens\":378},\"stop_reason\":\"end_turn\"}"
+ }
+}

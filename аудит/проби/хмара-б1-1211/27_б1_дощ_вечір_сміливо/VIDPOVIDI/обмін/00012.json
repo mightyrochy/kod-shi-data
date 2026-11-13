@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-gauge turtleneck knit, relaxed fit, hip length, saffron mustard #D9A22B, extra-fine merino wool\\nHigh-waisted wide-leg trousers, straight drape, ankle length, deep aubergine #3E1B3F, wool crepe\\nWaterproof trench coat, belted, hooded, A-line flare, just below the knee, emerald green #0B6E4F, matte technical cotton-blend with a waterproof finish\\nAnkle boots, block heel, rounded toe, side zip, black #1A1A1A, waterproof smooth leather\\nStructured crossbody bag, medium size, with a short strap, cognac #8B4A2B, grained leather\\nStatement hoop earrings, large and slightly chunky, polished gold #C9A227, gold-plated metal\\nCompact folding umbrella, black #111111, water-repellent nylon\\n\\nThis outfit is built for a cold, wet, windy evening, so the hooded waterproof trench and the boots with a grippy block heel keep you dry and steady from the cinema to dinner. The emerald coat over a saffron knit and aubergine trousers is a bold jewel-tone mix that stands out in the dark and looks rich against your deep skin tone and dark hair. The turtleneck and the long, fluid trousers cover you well against the wind while still looking neat and polished for a dinner out. The gold hoops and the cognac bag add a warm finishing touch that makes the look feel deliberate and confident.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Turtleneck knit\\\",\\\"details\\\":\\\"Fine-gauge, relaxed fit, hip length, extra-fine merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#D9A22B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wide-leg trousers\\\",\\\"details\\\":\\\"High-waisted, straight drape, ankle length, wool crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3E1B3F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Waterproof trench coat\\\",\\\"details\\\":\\\"Belted, hooded, A-line flare, just below the knee, matte technical cotton-blend with a waterproof finish\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#0B6E4F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"Block heel, rounded toe, side zip, waterproof smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Structured crossbody bag\\\",\\\"details\\\":\\\"Medium size, short strap, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#8B4A2B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Statement hoop earrings\\\",\\\"details\\\":\\\"Large and slightly chunky, gold-plated metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A227\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Compact folding umbrella\\\",\\\"details\\\":\\\"Water-repellent nylon\\\",\\\"slot\\\":\\\"accessory\\\",\\\"color_hex\\\":\\\"#111111\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2163,\"output_tokens\":478},\"stop_reason\":\"end_turn\"}"
+ }
+}

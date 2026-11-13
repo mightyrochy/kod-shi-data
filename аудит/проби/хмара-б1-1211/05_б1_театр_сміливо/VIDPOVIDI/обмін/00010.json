@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-knit top: fitted turtleneck, hip length, deep burgundy #7B1E3A, extra-fine merino wool\\n\\nSkirt: pleated midi, A-line, mid-calf length, vivid emerald #0B7A57, satin-finish crepe\\n\\nTights: sheer, ankle length, black #1A1A1A, 20-denier nylon\\n\\nCoat: long straight-cut, single-breasted, below the knee, warm cream #E8DCC8, soft wool-cashmere blend\\n\\nShoes: ankle boots, almond toe, 5 cm block heel, black #1A1A1A, smooth leather\\n\\nEarrings: sculptural drop earrings, 5 cm long, gold #C9A227, polished brass\\n\\nClutch: small structured envelope clutch, black #1A1A1A, patent leather\\n\\nThis outfit stands out through colour rather than fuss. Emerald against burgundy is a rich, confident pairing that reads as bold under theatre foyer lighting and stays elegant. The refined knit, pleated midi skirt and ankle boots fit a neat evening look, and the satin-finish pleats catch the light as she moves. The cream coat gives a clean, bright frame for the jewel tones on a cool autumn evening, and the black tights, boots and clutch ground the colours. The gold earrings are the only shiny accent, so the look feels intentional and comfortable through a 19:00 performance.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Turtleneck top\\\",\\\"details\\\":\\\"fitted, hip length, extra-fine merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#7B1E3A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Pleated midi skirt\\\",\\\"details\\\":\\\"A-line, mid-calf length, satin-finish crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#0B7A57\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tights\\\",\\\"details\\\":\\\"sheer, ankle length, 20-denier nylon\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Coat\\\",\\\"details\\\":\\\"long straight-cut, single-breasted, below the knee, soft wool-cashmere blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#E8DCC8\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"almond toe, 5 cm block heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"sculptural, 5 cm long, polished brass\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A227\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Envelope clutch\\\",\\\"details\\\":\\\"small, structured, patent leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2148,\"output_tokens\":439},\"stop_reason\":\"end_turn\"}"
+ }
+}

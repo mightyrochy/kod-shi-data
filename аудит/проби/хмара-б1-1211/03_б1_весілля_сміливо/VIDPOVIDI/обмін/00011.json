@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Floor-length wrap-style gown, V-neckline, short flutter sleeves, A-line skirt falling from a defined waist with a soft sash tie, emerald #0B6B4F, silk-satin crepe\\nBlock-heeled sandals, 7 cm heel, ankle strap, antique gold #C9A24B, metallic leather\\nStructured envelope clutch, gold chain strap tucked away, brushed gold #B8892E, metallic leather\\nSculptural drop earrings, long and angular, polished gold #D4AF37, gilded brass\\nWide open cuff bracelet, smooth and slightly curved, polished gold #D4AF37, gilded brass\\n\\nThis formal gown in a jewel-toned emerald stands out among the pastels and neutrals at most summer weddings, and it glows against your deep skin, dark hair and eyes. The wrap bodice and sash shape the waist, while the fluid skirt moves beautifully during the outdoor ceremony and stays elegant into the restaurant. Block heels keep you steady on grass, and the gold accents add warmth and a festive finish without competing with the dress. The silk-satin crepe is light enough for an August afternoon, so no outer layer is needed, and the color suits a close family member without echoing bridal white.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Wrap-style gown\\\",\\\"details\\\":\\\"Floor-length, V-neckline, short flutter sleeves, A-line skirt falling from a defined waist with a soft sash tie, silk-satin crepe\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#0B6B4F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Block-heeled sandals\\\",\\\"details\\\":\\\"7 cm heel, ankle strap, metallic leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#C9A24B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Envelope clutch\\\",\\\"details\\\":\\\"Structured, gold chain strap tucked away, metallic leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#B8892E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sculptural drop earrings\\\",\\\"details\\\":\\\"Long and angular, gilded brass\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#D4AF37\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Open cuff bracelet\\\",\\\"details\\\":\\\"Wide, smooth and slightly curved, gilded brass\\\",\\\"slot\\\":\\\"bracelet\\\",\\\"color_hex\\\":\\\"#D4AF37\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2089,\"output_tokens\":361},\"stop_reason\":\"end_turn\"}"
+ }
+}

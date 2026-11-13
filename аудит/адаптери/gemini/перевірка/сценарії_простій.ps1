@@ -245,11 +245,29 @@ Scenario 'в heartbeat gemini-run' {
     Remove-Item "$runs/health.json" -Force
     $sw = [Diagnostics.Stopwatch]::StartNew(); Write-Heartbeat ''; $sw.Stop()
     Check "14587 heartbeat не чекає обходу профілю: $([int]$sw.Elapsed.TotalSeconds) с, повільний обхід у процесі heartbeat — $($script:Slow) раз" ($script:Slow -eq 0 -and $sw.Elapsed.TotalSeconds -lt 10)
-    $p = Get-Variable -Scope Script -Name ProfileMeasure -ValueOnly -ErrorAction SilentlyContinue
+    $p = Get-Variable -Scope Script -Name MeasureProc -ValueOnly -ErrorAction SilentlyContinue
     Check '14587 обхід пішов окремим процесом і завершився' ($null -ne $p -and $p.WaitForExit(60000) -and $p.ExitCode -eq 0)
     Write-Heartbeat ''
     $h = (& $hb).health
     Check "14587 наступний heartbeat несе розмір профілю з кешу процесу-виміру: $($h.profile) байт, $($h.read)" ($h.profile -ceq '4321' -and $h.read -cmatch '^20\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ$' -and $script:Slow -eq 0)
+}
+
+# --- 14593: обхід C:\tmp і claude-run (~8 ГБ) не стоїть у проході стану claude-run ----------------------------------------
+Scenario 'г обхід тек здоров''я claude-run' {
+    $work = Join-Path $tmp 'g-cr'; $ctmp = Join-Path $tmp 'g-ctmp'
+    . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir "$tmp/g-box" -PublishDir "$tmp/g-pub" -GeminiOutDir "$tmp/g-gout" -GeminiStateDir "$tmp/g-gstate" -LaneDir "$tmp/g-lanes" -TmpDir $ctmp -NoStatus
+    foreach ($d in @($work, "$work/state", "$work/slots", $ctmp)) { [void][IO.Directory]::CreateDirectory($d) }
+    $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"; $script:Limits = $null
+    [IO.File]::WriteAllBytes("$ctmp/f.bin", (New-Object byte[] 1234))
+    $script:Slow = 0
+    function Measure-DirBytes([string]$Path) { $script:Slow++; Start-Sleep -Seconds 20; [pscustomobject]@{ Bytes = 1; Skipped = 0 } }
+    $sw = [Diagnostics.Stopwatch]::StartNew(); $h = Update-Health; $sw.Stop()
+    Check "14593 прохід стану не чекає обходу тек: $([int]$sw.Elapsed.TotalSeconds) с, повільний обхід у процесі проходу — $($script:Slow) раз" ($script:Slow -eq 0 -and $sw.Elapsed.TotalSeconds -lt 10)
+    $p = Get-Variable -Scope Script -Name MeasureProc -ValueOnly -ErrorAction SilentlyContinue
+    Check '14593 обхід пішов окремим процесом і завершився' ($null -ne $p -and $p.WaitForExit(120000) -and $p.ExitCode -eq 0)
+    $h = Update-Health
+    $d = @($h.dirs | Where-Object { $_.name -ceq 'C:\tmp' })
+    Check "14593 наступний прохід несе розмір з кешу процесу-виміру: C:\tmp $($d.bytes) байт" ($d.Count -eq 1 -and [long]$d[0].bytes -ge 1234 -and $script:Slow -eq 0)
 }
 
 "ПІДСУМОК: ✗ $bad"

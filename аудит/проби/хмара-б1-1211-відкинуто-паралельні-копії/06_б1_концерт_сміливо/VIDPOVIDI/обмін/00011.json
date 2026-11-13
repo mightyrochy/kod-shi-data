@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Top: fitted fine-knit crew-neck jumper, cropped at the waist, long sleeves, ruby red #B0123A, merino-wool blend\\nTrousers: high-waisted straight-leg trousers, full length to the ankle bone, black #121212, stretch faux leather with a matte finish\\nOuter layer: cropped moto jacket, hip-skimming, black #1A1A1A, grained leather\\nShoes: pointed-toe ankle boots with a low block heel, black #111111, polished leather\\nAccessory: chunky chain necklace, sits at the collarbone, silver #C0C0C0, stainless steel\\nAccessory: small crossbody bag, worn close to the body, black #141414, smooth leather\\n\\nWhy this outfit works: The saturated ruby red is the one bold note, and it flatters your warm skin, dark hair and deep brown eyes. It stands out under club lighting while the rest of the look stays black and rock-appropriate. The cropped jacket, the high waist and the unbroken black line from trousers to boots make your legs look longer and keep the proportions balanced. The look stays neat, with a refined knit, tailored trousers and ankle boots. The low block heel, stretch fabric and hands-free crossbody bag let you stand and move comfortably in the crowd all night.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Crew-neck jumper\\\",\\\"details\\\":\\\"fitted, fine-knit, cropped at the waist, long sleeves, merino-wool blend\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#B0123A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Trousers\\\",\\\"details\\\":\\\"high-waisted, straight-leg, full length to the ankle bone, stretch faux leather with a matte finish\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#121212\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Moto jacket\\\",\\\"details\\\":\\\"cropped, hip-skimming, grained leather\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"pointed-toe, low block heel, polished leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#111111\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Chain necklace\\\",\\\"details\\\":\\\"chunky, sits at the collarbone, stainless steel\\\",\\\"slot\\\":\\\"necklace\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Crossbody bag\\\",\\\"details\\\":\\\"small, worn close to the body, smooth leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#141414\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2099,\"output_tokens\":392},\"stop_reason\":\"end_turn\"}"
+ }
+}
