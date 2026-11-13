@@ -71,6 +71,50 @@ try {
         for ($i = 1; $i -le $script:MaxRetakes; $i++) { [void](Fail $mc 'відмова' $case.sel) }
         Check "engine $($case.model) / вибір '$($case.sel)' → $($case.want)" ((Status (Fail $mc 'відмова' $case.sel)).engine -ceq $case.want)
     }
+
+    # Квота Codex (quota-codex.json): вимір після ходу й відмова квоти пишуть той самий файл — під одним замком, без втрат.
+    $qf = Join-Path $RunsDir 'quota-codex.json'
+    $ch = Join-Path $tmp 'codexhome'; $env:CODEX_HOME = $ch
+    $day = Join-Path $ch 'sessions/2026/11/13'; [void][IO.Directory]::CreateDirectory($day)
+    $at = [datetime]::UtcNow.AddMinutes(-2)
+    # Рядок журналу Codex у звичайному (з пробілами) JSON — читач не залежить від компактного друку serde.
+    $line = '{ "timestamp": "' + $at.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'") + '", "type": "event_msg", "payload": { "type": "token_count", "info": null, "rate_limits": { "limit_id": "codex", "primary": { "used_percent": 12.5, "window_minutes": 300, "resets_at": ' + [DateTimeOffset]::UtcNow.AddHours(1).ToUnixTimeSeconds() + ' }, "secondary": { "used_percent": 49, "window_minutes": 10080, "resets_at": null } } } }'
+    [IO.File]::WriteAllText((Join-Path $day 'rollout-a.jsonl'), ('{ "token_count" "rate_limits" обірвано' + "`n$line`n"), $utf)
+    $snap = @(Read-CodexRateLimits ([datetime]::UtcNow.AddHours(-1)))
+    Check 'вимір Codex: журнал із пробілами в JSON читається (id codex, два вікна, 88 і 51 %)' ($snap.Count -eq 1 -and $snap[0].Id -ceq 'codex' -and @($snap[0].Windows).Count -eq 2 -and $snap[0].Windows[0].left -eq 88 -and $snap[0].Windows[1].left -eq 51 -and $snap[0].Windows[1].m -eq 10080)
+
+    # Замок зайнятий: зміна не чекає довше за -CodexStallMinutes, файл лишається цілим; після звільнення обидва шляхи доходять.
+    [IO.File]::WriteAllText($qf, '{"refused":"2026-11-13T09:00:00Z","reset":""}', $utf)
+    $held = Open-Lock (Join-Path $RunsDir 'quota-codex.lock')
+    $keepStall = $CodexStallMinutes; $CodexStallMinutes = 0
+    $threw = $false; try { Update-CodexQuota { param($q) $q.refused = 'ПОРУШЕНО' } } catch { $threw = $_.Exception.Message -match 'зайнятий' }
+    $CodexStallMinutes = $keepStall
+    Check 'замок quota-codex.lock зайнятий: зміна відмовляється після -CodexStallMinutes, файл цілий' ($threw -and [IO.File]::ReadAllText($qf, $utf) -ceq '{"refused":"2026-11-13T09:00:00Z","reset":""}')
+    $held.Dispose()
+    Save-CodexRateLimits ([datetime]::UtcNow.AddHours(-1))
+    Update-CodexQuota { param($q) $q.refused = '2026-11-13T09:30:00Z'; $q.reset = '' }
+    $now = Read-CodexQuota
+    Check 'після звільнення замка вимір і відмова в одному файлі: refused лишився, limits і read з''явились' ($now.refused -ceq '2026-11-13T09:30:00Z' -and $now.read -match '^20' -and @($now.limits).Count -eq 1)
+    # Старіший знімок паралельного слота не затирає новішого виміру.
+    $newer = $now.read
+    $old = Get-Content -LiteralPath (Join-Path $day 'rollout-a.jsonl') -Raw
+    [IO.File]::WriteAllText((Join-Path $day 'rollout-a.jsonl'), ($old -replace '"timestamp": "[^"]*"', ('"timestamp": "' + [datetime]::UtcNow.AddMinutes(-90).ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'") + '"')), $utf)
+    Save-CodexRateLimits ([datetime]::UtcNow.AddHours(-1))
+    Check 'старіший вимір не затирає новішого в quota-codex.json' ((Read-CodexQuota).read -ceq $newer)
+
+    # Поле часу з ConvertFrom-Json буває [datetime] (PowerShell 7 для кожного ISO-рядка, 5.1 — для `\/Date(мс)\/`): порівняння й
+    # повторний запис мають бачити UTC-рядок з Z, а не формат культури чи місцевий час. Обидва типи — і напряму, і крізь файл.
+    $inst = [datetime]::UtcNow.AddMinutes(-10)
+    $iso = Get-UtcStamp $inst
+    Check 'ConvertTo-PlainJson: [datetime] будь-якого виду й рядок дають той самий UTC-рядок з Z, вкладені масиви й об''єкти — теж' ((ConvertTo-PlainJson $inst) -ceq $iso -and (ConvertTo-PlainJson ([datetime]::SpecifyKind($inst, 'Utc'))) -ceq $iso -and (ConvertTo-PlainJson $inst.ToLocalTime()) -ceq $iso -and (ConvertTo-PlainJson $iso) -ceq $iso -and (ConvertTo-PlainJson ([pscustomobject]@{ w = @([pscustomobject]@{ reset = $inst }) })).w[0].reset -ceq $iso)
+    $ms = [DateTimeOffset]::new($inst).ToUnixTimeMilliseconds()
+    [IO.File]::WriteAllText($qf, ('{"refused":"\/Date(' + $ms + ')\/","read":"\/Date(' + $ms + ')\/","limits":[{"id":"codex","windows":[{"m":300,"used":1,"left":99,"reset":"\/Date(' + $ms + ')\/"}]}]}'), $utf)
+    $d = Read-CodexQuota
+    Check 'quota-codex.json із датами як [datetime]: read, refused і reset вкладеного вікна читаються UTC-рядками' ($d.read -ceq $iso -and $d.refused -ceq $iso -and $d.limits[0].windows[0].reset -ceq $iso)
+    # Старіший знімок (−90 хв) не затирає цей вимір (−10 хв), а запис повертає ISO UTC, не формат культури чи місцевий час.
+    Save-CodexRateLimits ([datetime]::UtcNow.AddHours(-1))
+    $raw = [IO.File]::ReadAllText($qf, $utf)
+    Check 'вимір-дата: старіший знімок не затирає новішого, у файлі ISO UTC' ($raw.Contains('"read":"' + $iso + '"') -and $raw.Contains('"refused":"' + $iso + '"') -and $raw.Contains('"reset":"' + $iso + '"') -and -not $raw.Contains('/Date('))
 } catch { "✗ збій сценарію: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
 "ПІДСУМОК: ✗ $bad"
 Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
