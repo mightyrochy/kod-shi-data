@@ -1188,6 +1188,16 @@ function Enter-StartQuotaWait($M, $Q, $State) {
     if ($State.Kind -eq 'NEW') { Write-QuotaStatus $M (New-RunId (Get-MarkerKey $M)) $Q.Group $until @{} }
 }
 
+# Позначку знято комітом «ЗНЯТО…» (ConvertTo-Marker): її прогін, що вже йде, зупиняється, а сама позначка закривається
+# кінцевим CANCELLED з причиною (тема коміту) у результаті; публікатор дає рядок і знімає гілку позначки з черги.
+function Close-CancelledMarker($M, $Workers) {
+    Stop-CancelledRuns $M $Workers
+    $status = [ordered]@{ v = 1; id = (New-RunId (Get-MarkerKey $M)); slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = ''
+        start = ''; head = ''; code = 'CANCELLED'; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = $M.Lane; reason = (ConvertTo-NoteText $M.Reason) }
+    Write-Log "позначка $($M.Name): ЗНЯТО — CANCELLED"
+    Complete-Status $status (Get-StatePath (Get-MarkerKey $M)) '' ([datetime]::MinValue)
+}
+
 # Один прохід: позначки смуг codex і agy за порядком черги — у вільні слоти, кожна окремим процесом. Повертає число
 # запущених.
 function Start-Markers($Workers) {
@@ -1216,6 +1226,7 @@ function Start-Markers($Workers) {
     foreach ($m in $ordered) {
         $st = Get-MarkerState $m
         if (-not (Test-MarkerReady $st)) { continue }
+        if (Test-MarkerCancelled $m) { Close-CancelledMarker $m $Workers; continue }
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
             Write-Log "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
