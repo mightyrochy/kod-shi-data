@@ -173,6 +173,38 @@ function Add-ClaudeFields($M) {
     $M
 }
 
+# Стан позначок claude-run до того, як ключ перейшов на канонічну назву (Get-MarkerKey), лежав під ключем від
+# `$script:RemoteRoot/<назва> <sha>` (refs/claude-run/…). Копіює його під канонічний ключ: `.txt` (виконане, WAIT, OFF),
+# `.seen` (перша поява — порядок черги) і `.owner` (рядок OWNER не повторюється). Раз на файл і без перезапису: є канонічний —
+# лишається він; старі файли не видаляються. `.claim` не переносимо: це живе узяття процесом наряду, що сам його знімає за
+# своїм ключем, — знімок лишився б хибним TAKEN, а мертве узяття без стану прибирає Clear-OrphanClaims. `STARTED` теж: наряд
+# іще йде чи перерваний — його кінець запише старий ключ, а знімок Resume-Interrupted помилково закрив би як INTERRUPTED;
+# коли наряд допише DONE, наступний прохід перенесе його.
+function Copy-StateOnce([string]$From, [string]$To) {
+    if (-not [IO.File]::Exists($From) -or [IO.File]::Exists($To)) { return 0 }
+    if ($From.EndsWith('.txt') -and [IO.File]::ReadAllText($From, $script:Utf8).StartsWith('STARTED ')) { return 0 }
+    $tmp = $To + '.' + [guid]::NewGuid().ToString('N') + '.part'
+    try { [IO.File]::Copy($From, $tmp); [IO.File]::Move($tmp, $To); 1 }
+    catch { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; 0 }
+}
+
+function Move-LegacyMarkerState($Markers) {
+    if ($script:RemoteRoot -ceq 'refs/remotes/origin') { return 0 }
+    $moved = 0
+    foreach ($m in $Markers) {
+        $new = Get-StatePath (Get-MarkerKey $m)
+        $old = Get-StatePath "$script:RemoteRoot/$($m.Name) $($m.Sha)"
+        if ($new -ceq $old -or [IO.File]::Exists((Get-ClaimPath $new))) { continue }
+        try {
+            foreach ($ext in @('.txt', '.seen', '.owner')) {
+                $moved += Copy-StateOnce ($old -replace '\.txt$', $ext) ($new -replace '\.txt$', $ext)
+            }
+        } catch { Write-Log "перенесення стану $($m.Name): $($_.Exception.Message)" }
+    }
+    if ($moved) { Write-Log "стан позначок: перенесено файлів зі старого ключа $moved" }
+    $moved
+}
+
 # --- ноутбук (перекривається на стенді) ----------------------------------------------------------------------------
 
 function Get-BootStamp {
@@ -1302,6 +1334,7 @@ function Start-Markers($Workers) {
     $script:Held = @{}
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $mine = @(Get-Markers | Where-Object { $_.Valid -and $_.Lane -eq 'claude' } | ForEach-Object { Add-ClaudeFields $_ })
+    [void](Move-LegacyMarkerState $mine)
     $skipFile = Join-Path $WorkDir 'skipped.json'
     if ($mine.Count -eq 0) { Save-Skips $skipFile; return @(0, $null) }
     $gpuWhy = $null
@@ -1367,7 +1400,7 @@ function Invoke-Worker {
     $lim = @{}
     foreach ($p in $job.limits.PSObject.Properties) { $lim[$p.Name] = $p.Value }
     $script:Limits = $lim
-    $statePath = Get-StatePath "$($job.ref) $($job.sha)"
+    $statePath = Get-StatePath (Get-MarkerKey @{ Name = $job.name; Sha = $job.sha })
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
     $gpu = $false

@@ -539,7 +539,9 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     ConvertTo-Marker ($ref + "`t" + $saved.sha + "`t" + $saved.time)
 }
 
-function Get-MarkerKey($M) { "$($M.Ref) $($M.Sha)" }
+# Ключ стану — від канонічної назви, а не від $M.Ref: Ref залежить від простору посилань рушія (Set-RemoteRoot), і ключі
+# позначок claude-run змінилися б разом із ним (13.11, #3527: давні виконані позначки стали новими). Назва — `gemini-queue/…`.
+function Get-MarkerKey($M) { "refs/remotes/origin/$($M.Name) $($M.Sha)" }
 
 function Get-StatePath([string]$Key, [string]$StateDir = $script:StateDir) { Join-Path $StateDir ((Get-Sha256Hex $Key) + '.txt') }
 
