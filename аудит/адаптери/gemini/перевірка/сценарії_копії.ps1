@@ -234,6 +234,31 @@ try {
         }
     }
 
+    Scenario 'спільний конфіг клону не робить копію голою чи чужою' {
+        # Агент у копії пише `git config` без `--worktree` — у спільний конфіг клону; worktreeConfig увімкнув sparse-checkout.
+        $origin = Join-Path $tmp 'o5.git'; $clone = Join-Path $tmp 'c5'
+        & git init -q --bare $origin; & git init -q -b main $clone
+        & git -C $clone config user.name 'стенд'; & git -C $clone config user.email 'stend@example.invalid'
+        & git -C $clone remote add origin $origin
+        [IO.File]::WriteAllText("$clone/a.txt", '1', $utf)
+        & git -C $clone add -A; & git -C $clone commit -q -m 'початкова'; & git -C $clone push -q origin main
+        & git -C $clone fetch -q origin
+        $script:RepoDir = $clone; $root = Join-Path $tmp 'w5'
+        $first = New-TaskCopy (Join-Path $root 'run-1') 'refs/remotes/origin/main' ''
+        & git -C $first config core.bare true
+        [void](Close-TaskCopy @('--remotes'))
+        $cfg = Join-Path $clone '.git/config'
+        "  спільний конфіг клону: extensions.worktreeConfig=$(& git config --file $cfg --get extensions.worktreeConfig), core.bare=$(& git config --file $cfg --get core.bare)"
+        $repo = New-TaskCopy (Join-Path $root 'run-2') 'refs/remotes/origin/main' ''
+        Check 'core.bare=true у спільному конфігу: копія — робоче дерево, викладена й чиста' ((& git -C $repo rev-parse --is-inside-work-tree) -ceq 'true' -and (Test-Path -LiteralPath (Join-Path $repo 'a.txt')) -and (Invoke-Git @('status', '--porcelain')).Out.Trim() -eq '')
+        [void](Close-TaskCopy @('--remotes'))
+        & git config --file $cfg core.worktree $clone
+        [IO.File]::WriteAllText("$clone/a.txt", 'клон', $utf)
+        $repo = New-TaskCopy (Join-Path $root 'run-3') 'refs/remotes/origin/main' ''
+        Check 'core.worktree клону у спільному конфігу: копія викладена у своїй теці, клон не скинуто' ((Test-Path -LiteralPath (Join-Path $repo 'a.txt')) -and [IO.File]::ReadAllText("$clone/a.txt") -ceq 'клон')
+        [void](Close-TaskCopy @('--remotes'))
+    }
+
     Scenario 'розбивка розміру: діти першого рівня й діти теки копій — тим самим обходом' {
         $p = Join-Path $tmp 'prof'
         foreach ($f in @(@('a/x.bin', 3000), @('b/x.bin', 500), @('runs/w/c1/x.bin', 7000), @('runs/w/c1/sub/y.bin', 100), @('runs/w/c2/x.bin', 200), @('root.bin', 10))) {
