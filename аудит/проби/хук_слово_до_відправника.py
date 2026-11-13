@@ -22,12 +22,16 @@ import tempfile
     ("2026-11-06T09:20:00Z", "Ти знову не відповів мені сам."),
     ("2026-11-06T09:30:00Z", "Стилістка має пропонувати теплі тканини взимку."),
     ("2026-11-06T09:40:00Z", "Скільки коштує один прогін на ноутбуці?"),
+    ("2026-11-06T09:50:00Z", "PS> git status --short --branch\n## main\nпомилка виконання"),
 ]
 
 
 def запуск(т, кому, текст, повтор):
     with open(os.path.join(т, "транскрипт.jsonl"), "w", encoding="utf-8") as ф:
         for коли, слово in СЛОВА:
+            if коли.endswith("09:50:00Z"):
+                ф.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
+                    {"type": "text", "text": "Виконай:\ngit status --short --branch"}]}}, ensure_ascii=False) + "\n")
             ф.write(json.dumps({"type": "user", "timestamp": коли, "origin": {"kind": "human"},
                                 "message": {"role": "user", "content": слово}}, ensure_ascii=False) + "\n")
     вхід = {"tool_name": "mcp__claude-code-remote__send_message", "tool_input": {"session_id": кому, "message": текст},
@@ -49,6 +53,7 @@ def main():
         повтор = os.path.join(т, "повтор")
         лист_1 = 'СЛОВО ВЛАСНИКА 09:10 UTC: «"Чекаю на вільний слот" - чому чекаєш? Роби на іншій моделі.»'
         випадки = [
+            ("вивід команди сесії", МЕНЕДЖЕР, "СЛОВО ВЛАСНИКА 09:50 UTC: «PS> git status --short --branch\n## main\nпомилка виконання»", повтор, "слово"),
             ("відповідь на рядок у лапках", МЕНЕДЖЕР, лист_1, повтор, "слово"),
             ("той самий лист удруге", МЕНЕДЖЕР, лист_1, повтор, "відходить"),
             ("звертання на «ти»", МЕНЕДЖЕР, "СЛОВО ВЛАСНИКА 09:20 UTC: «Ти знову не відповів мені сам.»", повтор,
