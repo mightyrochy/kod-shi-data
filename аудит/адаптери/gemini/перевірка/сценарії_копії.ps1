@@ -268,8 +268,11 @@ $u = New-Object Text.UTF8Encoding($false)
         Check "PowerShell-агент: p.md і new.md у коміті без CR (код $($r.Code))" ($r.Code -eq 0 -and -not (& $blob 'HEAD' 'p.md').Contains("`r") -and -not (& $blob 'HEAD' 'new.md').Contains("`r"))
         Check 'PowerShell-агент: дифф p.md — один доданий рядок, а не весь файл' ((Invoke-Git @('diff', '--numstat', 'HEAD~1', 'HEAD', '--', 'p.md')).Out.Trim() -match '^1\s+0\s+p\.md$')
         Check 'навмисний CRLF у репозиторії (k.csv) лишається CRLF' ((& $blob 'HEAD' 'k.csv').Contains("`r"))
-        $git = (Get-Command git).Source; $root = Split-Path -Parent (Split-Path -Parent $git)
-        $bash = @('bin/bash.exe', 'usr/bin/bash.exe') | ForEach-Object { Join-Path $root $_ } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+        # Git Bash — оболонка, якою агент кличе git; шукаємо bash.exe вгору від git.exe (cmd\, bin\ чи mingw64\bin\ Git for Windows).
+        $git = (Get-Command git).Source; $bash = $null
+        for ($d = Split-Path -Parent $git; $d -and -not $bash; $d = Split-Path -Parent $d) {
+            $bash = @('bin/bash.exe', 'usr/bin/bash.exe') | ForEach-Object { Join-Path $d $_ } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+        }
         if ($bash) {
             $script = "printf 'a\r\nb\r\nc\r\nd\r\ne\r\n' > p.md; printf 'a\r\nb\r\nc\r\nd\r\n' > q.md; printf '\000\001\r\n\000\002' > b.dat; git add -A; git commit -q -m 'agent: Git Bash'"
             $r = Invoke-Native $bash @('-c', $script) $repo
