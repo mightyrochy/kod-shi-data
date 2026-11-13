@@ -111,7 +111,8 @@ if os.environ.get('FAKE_CODEX_RATE'):
             'payload': {'type': 'token_count', 'info': None, 'rate_limits': rl}}
     with open(os.path.join(d, 'rollout-%d-%d.jsonl' % (time.time_ns(), n)), 'w', encoding='utf-8') as rf:
         meta = {'timestamp': line['timestamp'], 'type': 'session_meta', 'payload': {}}
-        rf.write(json.dumps(meta) + '\n' + json.dumps(line) + '\n')
+        # компактний JSON, як пише serde у справжньому журналі
+        rf.write(json.dumps(meta, separators=(',', ':')) + '\n' + json.dumps(line, separators=(',', ':')) + '\n')
 
 if SC != 'slow_done':
     print(json.dumps({'type': 'turn.started'}))

@@ -555,7 +555,7 @@ function Read-CodexRateLimits([datetime]$Since) {
             while ($null -ne ($line = $sr.ReadLine())) {
                 if (-not $line.Contains('"token_count"') -or -not $line.Contains('"rate_limits"')) { continue }
                 $at = [datetime]::MinValue
-                if ($line -cmatch '"timestamp":"([0-9T:.Z+-]+)"') { $stamp = $Matches[1] } else { continue }
+                if ($line -cmatch '"timestamp"\s*:\s*"([0-9T:.Z+-]+)"') { $stamp = $Matches[1] } else { continue }
                 if (-not [datetime]::TryParse($stamp, [cultureinfo]::InvariantCulture, 'AssumeUniversal,AdjustToUniversal', [ref]$at)) { continue }
                 $rl = Get-JsonProp (Get-JsonProp ($line | ConvertFrom-Json) 'payload') 'rate_limits'
                 if ($null -eq $rl) { continue }

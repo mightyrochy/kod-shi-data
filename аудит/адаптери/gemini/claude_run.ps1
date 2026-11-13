@@ -431,16 +431,19 @@ function Get-CodexSuccessAfter([string]$Since) {
 # Стан квоти Codex: відмова діє (Zero), доки не скинуто (Reset) чи не минув quota_wait_minutes від неї, а пізніша відповідь Codex
 # (Success) її скасовує; вимір теж дає нуль, коли вікно використано повністю й скидання попереду чи невідоме.
 function Get-CodexState($Codex) {
-    $s = [pscustomobject]@{ Refused = ''; Reset = ''; Success = ''; Zero = $false }
+    $s = [pscustomobject]@{ Refused = ''; Reset = ''; Success = ''; Zero = $false; Read = ''; Limits = @() }
     if ($null -eq $Codex) { return $s }
+    # Запис Codex буває без вимірних полів (старий heartbeat, стенди): читаємо їх лише коли вони є.
     $s.Refused = [string]$Codex.Refused; $s.Reset = [string]$Codex.Reset
+    if ($null -ne $Codex.PSObject.Properties['Read']) { $s.Read = [string]$Codex.Read }
+    if ($null -ne $Codex.PSObject.Properties['Limits']) { $s.Limits = @($Codex.Limits) }
     if ($s.Refused -cmatch $script:UtcRx) {
         $s.Success = Get-CodexSuccessAfter $s.Refused
         if (-not $s.Success) {
             $s.Zero = $(if ($s.Reset -cmatch $script:UtcRx) { [int](Get-Minutes $s.Reset) -lt 0 } else { [int](Get-Minutes $s.Refused) -lt (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') })
         }
     }
-    foreach ($l in @($Codex.Limits)) {
+    foreach ($l in $s.Limits) {
         foreach ($w in @($l.Windows)) { if ((100 - [double]$w.Used) -le 0 -and (-not $w.Reset -or (Test-FutureUtc ([string]$w.Reset)))) { $s.Zero = $true } }
     }
     $s
@@ -601,10 +604,10 @@ function Get-StatusBody {
     $cx = Get-CodexState $g.Codex
     $measured = 0
     if ($null -ne $g.Codex) {
-        foreach ($l in @($g.Codex.Limits)) {
+        foreach ($l in $cx.Limits) {
             foreach ($w in @($l.Windows)) {
                 $measured++
-                $lines += "| codex · $($l.Id) | $(Format-WindowLabel $w.M) | $($w.Left) % (використано $($w.Used) %) | $(if ($w.Reset) { $w.Reset } else { '?' }) | $(if ($g.Codex.Read) { $g.Codex.Read } else { '?' }) |"
+                $lines += "| codex · $($l.Id) | $(Format-WindowLabel $w.M) | $($w.Left) % (використано $($w.Used) %) | $(if ($w.Reset) { $w.Reset } else { '?' }) | $(if ($cx.Read) { $cx.Read } else { '?' }) |"
             }
         }
     }
