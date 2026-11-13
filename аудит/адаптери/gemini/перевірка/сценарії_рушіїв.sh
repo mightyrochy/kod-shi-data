@@ -104,4 +104,12 @@ case_ codex-429-reset "X=1" quota_reset_at gpt-6.1-sol 'QUOTA0_CODEX_M2'
 R="${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-429-reset"
 grep -q '"reset":"20' "$R/runs/quota-codex.json" 2>/dev/null && echo "ok   codex-429-reset-heartbeat" || { echo "FAIL codex-429-reset-heartbeat: $(cat "$R/runs/quota-codex.json" 2>/dev/null)"; bad=1; }
 grep -qE '^WAIT .*"retakes":1' "$R"/out/marker-state/*.txt 2>/dev/null && echo "ok   codex-429-reset-wait" || { echo "FAIL codex-429-reset-wait"; bad=1; }
+# вимір квоти Codex (квота-codex-1856): рядок token_count із rate_limits у журналі сесії -> quota-codex.json із числами Codex;
+# відмова після виміру лишає і вимір, і відмову
+case_ codex-rate "FAKE_CODEX_RATE=12.5,49" abandon_then_done gpt-6.1-sol 'ГОТОВО gemini/М.2-проба-обгортки'
+Q="$(cat "${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-rate/runs/quota-codex.json" 2>/dev/null)"
+[[ "$Q" == *'"id":"codex"'* && "$Q" == *'"m":300,"used":12.5,"left":88'* && "$Q" == *'"m":10080,"used":49,"left":51'* && "$Q" == *'"read":"20'* && "$Q" != *'"refused"'* ]] && echo "ok   codex-rate-measured" || { echo "FAIL codex-rate-measured: $Q"; bad=1; }
+case_ codex-rate-429 "FAKE_CODEX_RATE=100,60" quota_reset_at gpt-6.1-sol 'QUOTA0_CODEX_M2'
+Q="$(cat "${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-rate-429/runs/quota-codex.json" 2>/dev/null)"
+[[ "$Q" == *'"refused":"20'* && "$Q" == *'"reset":"20'* && "$Q" == *'"used":100,"left":0'* && "$Q" == *'"left":40'* ]] && echo "ok   codex-rate-429-keeps-both" || { echo "FAIL codex-rate-429-keeps-both: $Q"; bad=1; }
 exit $bad

@@ -318,7 +318,20 @@ function Read-GeminiBeat {
     $cf = & $get $j 'codex_fallback'
     if ($cf -in @('True', 'False')) { $b.CodexFallback = ($cf -eq 'True') }
     $c = Get-JsonProp $j 'codex'
-    if ($null -ne $c) { $b.Codex = [pscustomobject]@{ Refused = (& $utc (& $get $c 'refused')); Reset = (& $utc (& $get $c 'reset')) } }
+    if ($null -ne $c) {
+        # Вимір квоти Codex (пише gemini-run із журналу сесії Codex): за формою — id, вікна {хвилини, використано, залишок, скидання}.
+        $lims = @(foreach ($l in @(Get-JsonProp $c 'limits')) {
+            $id = & $get $l 'id'
+            if ($id -cnotmatch '^[A-Za-z0-9_.-]{1,40}$') { continue }
+            $ws = @(foreach ($w in @(Get-JsonProp $l 'windows')) {
+                $m = & $get $w 'm'; $us = & $get $w 'used'; $lf = & $get $w 'left'
+                if ($m -notmatch '^[0-9]{1,9}$' -or $us -notmatch '^(?:100|[1-9]?[0-9])(?:\.[0-9]{1,3})?$' -or $lf -notmatch '^(?:100|[1-9]?[0-9])$') { continue }
+                [pscustomobject]@{ M = [long]$m; Used = $us; Left = [int]$lf; Reset = (& $utc (& $get $w 'reset')) }
+            })
+            if ($ws.Count -gt 0) { [pscustomobject]@{ Id = $id; Windows = $ws } }
+        })
+        $b.Codex = [pscustomobject]@{ Refused = (& $utc (& $get $c 'refused')); Reset = (& $utc (& $get $c 'reset')); Read = (& $utc (& $get $c 'read')); Limits = $lims }
+    }
     $b.Wait = @(foreach ($w in @(Get-JsonProp $j 'wait' | Select-Object -First 12)) {
         $m = & $get $w 'marker'; $g = & $get $w 'g'
         if ($m -cnotmatch $script:MarkerRx -or $m.Contains('..')) { continue }
@@ -378,6 +391,61 @@ function Update-Health {
     [pscustomobject]@{ time = $now; samples = $samples; dirs = $dirs }
 }
 
+# Вікно квоти за довжиною в хвилинах (window_minutes): «5 год», «7 д».
+function Format-WindowLabel([long]$Minutes) {
+    if ($Minutes -le 0) { return '?' }
+    if ($Minutes % 1440 -eq 0) { return "$($Minutes / 1440) д" }
+    if ($Minutes % 60 -eq 0) { return "$($Minutes / 60) год" }
+    "$Minutes хв"
+}
+
+# Вік UTC-часу словами: «3 д 4 год», «2 год 5 хв», «7 хв».
+function Format-Age([string]$Utc) {
+    if ($Utc -notmatch $script:UtcRx) { return '?' }
+    $m = [long](Get-Minutes $Utc)
+    if ($m -lt 0) { return '?' }
+    $d = [long][Math]::Floor($m / 1440); $h = [long][Math]::Floor(($m % 1440) / 60)
+    if ($d -gt 0) { return "$d д $h год" }
+    if ($h -gt 0) { return "$h год $($m % 60) хв" }
+    "$m хв"
+}
+
+# Остання відповідь Codex після $Since (UTC): запис кінця наряду в спільному out з engine codex, ended_utc пізніше за $Since і кодом,
+# що не є відмовою квоти (QUOTA, QUOTA_ZERO) чи збоєм рушія без відповіді (AGY_ERROR, AUTH тощо). '' — такої нема.
+function Get-CodexSuccessAfter([string]$Since) {
+    if ($Since -cnotmatch $script:UtcRx) { return '' }
+    $from = [datetime]::ParseExact($Since, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
+    $failed = @('', 'QUOTA', 'QUOTA_ZERO', 'AGY_ERROR', 'AUTH', 'EFFORT_INVALID', 'MODEL_INVALID', 'TIMEOUT', 'ENGINE_MISSING', 'CRASH', 'COPY_FAILED')
+    $best = ''
+    foreach ($f in @(Get-ChildItem -LiteralPath $GeminiOutDir -Filter '*.json' -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -cmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json$' -and $_.LastWriteTimeUtc -ge $from })) {
+        try { $t = [System.IO.File]::ReadAllText($f.FullName, $script:Utf8) } catch { continue }
+        if ($t -cnotmatch '"engine":"codex"') { continue }
+        if ($t -cmatch '"code":"([A-Z0-9_]*)"') { $code = $Matches[1] } else { continue }
+        if ($failed -ccontains $code) { continue }
+        if ($t -cmatch '"ended_utc":"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})') { $end = $Matches[1] + 'Z' } else { continue }
+        if ([string]::CompareOrdinal($end, $Since) -gt 0 -and [string]::CompareOrdinal($end, $best) -gt 0) { $best = $end }
+    }
+    $best
+}
+
+# Стан квоти Codex: відмова діє (Zero), доки не скинуто (Reset) чи не минув quota_wait_minutes від неї, а пізніша відповідь Codex
+# (Success) її скасовує; вимір теж дає нуль, коли вікно використано повністю й скидання попереду чи невідоме.
+function Get-CodexState($Codex) {
+    $s = [pscustomobject]@{ Refused = ''; Reset = ''; Success = ''; Zero = $false }
+    if ($null -eq $Codex) { return $s }
+    $s.Refused = [string]$Codex.Refused; $s.Reset = [string]$Codex.Reset
+    if ($s.Refused -cmatch $script:UtcRx) {
+        $s.Success = Get-CodexSuccessAfter $s.Refused
+        if (-not $s.Success) {
+            $s.Zero = $(if ($s.Reset -cmatch $script:UtcRx) { [int](Get-Minutes $s.Reset) -lt 0 } else { [int](Get-Minutes $s.Refused) -lt (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') })
+        }
+    }
+    foreach ($l in @($Codex.Limits)) {
+        foreach ($w in @($l.Windows)) { if ((100 - [double]$w.Used) -le 0 -and (-not $w.Reset -or (Test-FutureUtc ([string]$w.Reset)))) { $s.Zero = $true } }
+    }
+    $s
+}
+
 function Get-HealthLines($G, $Cq) {
     $h = Update-Health
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
@@ -422,7 +490,7 @@ function Get-HealthLines($G, $Cq) {
         if ($Reset -match $script:UtcRx) { return [int](Get-Minutes $Reset) -lt 0 }
         [int](Get-Minutes $Refused) -lt (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') }
     $cz = $(if ($null -ne $Cq -and (& $zero ([string](Get-JsonProp $Cq 'refused')) ([string](Get-JsonProp $Cq 'reset')))) { @($ms | Where-Object { $_.Lane -eq 'claude' }).Count } else { 0 })
-    $xz = $(if ($null -ne $G.Codex -and (& $zero $G.Codex.Refused $G.Codex.Reset)) { @($ms | Where-Object { $_.Lane -eq 'codex' }).Count } else { 0 })
+    $xz = $(if ((Get-CodexState $G.Codex).Zero) { @($ms | Where-Object { $_.Lane -eq 'codex' }).Count } else { 0 })
     $lines += @('', "Позначки на рушії з нульовою квотою: claude $cz · codex $xz · agy $(if ($G.Zero) { $G.Zero } else { '?' })")
     $lines
 }
@@ -530,8 +598,21 @@ function Get-StatusBody {
         }
         if ([string](Get-JsonProp $cq 'refused')) { $lines += "| claude · остання відмова | — | 0 % | $(if ($cq.reset) { [string]$cq.reset } else { 'CLI не дав' }) | $([string]$cq.refused) |" }
     } else { $lines += '| claude | — | невідомо (ще не було прогону) | — | — |' }
-    if ($null -ne $g.Codex -and $g.Codex.Refused) { $lines += "| codex · остання відмова | — | 0 % | $(if ($g.Codex.Reset) { $g.Codex.Reset } else { 'CLI не дав — чекання quota_wait_minutes' }) | $($g.Codex.Refused) |" }
-    else { $lines += '| codex | — | невідомо (CLI без ходу не дає; відмов не було) | — | — |' }
+    $cx = Get-CodexState $g.Codex
+    $measured = 0
+    if ($null -ne $g.Codex) {
+        foreach ($l in @($g.Codex.Limits)) {
+            foreach ($w in @($l.Windows)) {
+                $measured++
+                $lines += "| codex · $($l.Id) | $(Format-WindowLabel $w.M) | $($w.Left) % (використано $($w.Used) %) | $(if ($w.Reset) { $w.Reset } else { '?' }) | $(if ($g.Codex.Read) { $g.Codex.Read } else { '?' }) |"
+            }
+        }
+    }
+    if ($measured -eq 0) { $lines += '| codex | — | невідомо (виміру ще нема: його пише gemini-run після ходу Codex) | — | — |' }
+    if ($cx.Refused) {
+        $left = $(if ($cx.Zero) { '0 %' } elseif ($cx.Success) { "— (пізніше був успішний запуск, $($cx.Success))" } else { '— (чекання минуло)' })
+        $lines += "| codex · остання відмова | відмова $(Format-Age $cx.Refused) тому | $left | $(if ($cx.Reset) { $cx.Reset } else { 'CLI не дав — чекання quota_wait_minutes' }) | $($cx.Refused) |"
+    }
     $wait = @(Get-WaitingMarkers) + @($g.Wait)
     if ($wait.Count -gt 0) {
         $lines += @('', '### Чекають скидання квоти', '', '| позначка | до (UTC) | група |', '|---|---|---|')
@@ -1215,7 +1296,8 @@ function Test-IdleBusy($G) {
     if (Test-ClaudeBusy) { return $true }
     if (Test-GeminiBusy) { return $true }
     $claudeReset = Get-ClaudeZeroReset
-    $codexReset = $(if ($null -ne $G.Codex -and (Test-FutureUtc ([string]$G.Codex.Reset))) { [string]$G.Codex.Reset } else { '' })
+    $cxs = Get-CodexState $G.Codex
+    $codexReset = $(if ($cxs.Refused -and -not $cxs.Success -and (Test-FutureUtc $cxs.Reset)) { $cxs.Reset } else { '' })
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $today = [datetime]::UtcNow.ToString('yyyyMMdd')
     $zero = @()

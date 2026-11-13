@@ -102,6 +102,39 @@ try {
         [void](Get-StatusBody)
         Check '2 показник 5: повторний вимір раніше за usage_minutes не міряє' ([IO.File]::ReadAllText("$tmp/cr/health.json", $utf) -ceq $h1)
         Check '2 узяття не гейтить: Start-Markers і Get-FreeSlot без здоров''я' (-not ((Get-Command Start-Markers).Definition -match 'Health|Здоров') -and -not ((Get-Command Get-FreeSlot).Definition -match 'Health|Здоров'))
+
+        # --- квота Codex у #1856: виміряний залишок замість давньої відмови як «0 %» ---------------------------------
+        # codex у heartbeat — те, що пише gemini-run у quota-codex.json: відмова (refused/reset) і вимір (read, limits з вікнами
+        # {m — window_minutes, used, left, reset}); успішний запуск — запис кінця наряду з engine codex у спільному out.
+        $base = [IO.File]::ReadAllText("$tmp/gout/heartbeat.json", $utf) | ConvertFrom-Json
+        $win = { param($m, $used, $left, $reset) @{ m = $m; used = $used; left = $left; reset = (& $stamp $reset) } }
+        $beat = { param($codex) $base | Add-Member -NotePropertyName codex -NotePropertyValue $codex -Force
+            [IO.File]::WriteAllText("$tmp/gout/heartbeat.json", ($base | ConvertTo-Json -Compress -Depth 8), $utf); Get-StatusBody }
+        $measure = @{ read = (& $stamp -60); limits = @(@{ id = 'codex'; windows = @((& $win 300 12.5 88 10800), (& $win 10080 49 51 345600)) }) }
+
+        # ДО: давня відмова (3 доби) показувалась «0 %» і рахувала три позначки codex у нульовій квоті; ПІСЛЯ — рядок з віком, залишок виміряний.
+        $body = & $beat (@{ refused = (& $stamp -259800); reset = '' } + $measure)
+        Check '2 квота Codex: 5-годинне вікно — залишок 88 %, використано 12.5 %, скидання, час зчитування' ($body.Contains("| codex · codex | 5 год | 88 % (використано 12.5 %) | $(& $stamp 10800) | $(& $stamp -60) |"))
+        Check '2 квота Codex: тижневе вікно — залишок 51 %, використано 49 %' ($body.Contains("| codex · codex | 7 д | 51 % (використано 49 %) | $(& $stamp 345600) | $(& $stamp -60) |"))
+        Check '2 давня відмова Codex — окремий рядок із віком, не «0 %»' ($body -cmatch '\| codex · остання відмова \| відмова 3 д 0 год тому \| — \(чекання минуло\) \|' -and $body -cnotmatch '\| codex · остання відмова \|[^\n]*\| 0 % \|')
+        Check '2 давня відмова Codex не рахує позначки в нульовій квоті (codex 0)' ($body.Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 0 · agy 4'))
+
+        # Свіжа відмова без пізнішого успіху лишається нулем; відмова квоти й збій рушія в out успіхом не є; відповідь Codex після відмови — є.
+        $fresh = @{ refused = (& $stamp -600); reset = '' }
+        $body = & $beat $fresh
+        Check '2 свіжа відмова Codex без виміру: «0 %», codex 3, виміру ще нема' ($body.Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4') -and $body -cmatch '\| codex · остання відмова \| відмова 1[0-9] хв тому \| 0 % \|' -and $body.Contains('| codex | — | невідомо (виміру ще нема'))
+        $put = { param($name, $code, $secs) [IO.File]::WriteAllText("$tmp/gout/$name.json", ('{"v":1,"engine":"codex","code":"' + $code + '","started_utc":"' + (& $stamp ($secs - 60)) + '","ended_utc":"' + (& $stamp $secs) + '"}'), $utf) }
+        & $put '20261113-120000-aaaaaaaaaaaa' 'QUOTA' -300
+        & $put '20261113-120100-bbbbbbbbbbbb' 'AGY_ERROR' -200
+        Check '2 відмова квоти й збій рушія в out — не успіх: codex 3' ((& $beat $fresh).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
+        & $put '20261113-120200-cccccccccccc' 'DONE' -100
+        $body = & $beat $fresh
+        Check '2 успішний запуск Codex після відмови: codex 0, відмова — окремим рядком із датою запуску' ($body.Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 0 · agy 4') -and $body.Contains("— (пізніше був успішний запуск, $(& $stamp -100)) |") -and $body -cnotmatch '\| codex · остання відмова \|[^\n]*\| 0 % \|')
+
+        # Виміряне вікно, використане повністю, зі скиданням попереду — нуль і без відмови.
+        $full = @{ read = (& $stamp -60); limits = @(@{ id = 'codex'; windows = @((& $win 300 100 0 7200)) }) }
+        Check '2 вікно Codex використано на 100 %, скидання попереду: codex 3 без відмови' ((& $beat $full).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
+        Check '2 вікно Codex не зіпсоване чужими полями: id із зайвими знаками й залишок поза 0–100 відкинуто' ((& $beat @{ read = (& $stamp -60); limits = @(@{ id = 'x|y'; windows = @((& $win 300 5 90 60)) }, @{ id = 'ok'; windows = @((& $win 300 5 900 60)) }) }).Contains('| codex | — | невідомо (виміру ще нема'))
     }
 
     # --- 3: аварії однієї причини (gemini_publish.ps1) --------------------------------------------------------------
