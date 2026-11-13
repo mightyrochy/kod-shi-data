@@ -202,7 +202,7 @@ try {
             [pscustomobject]@{Name='підроблений OutDir з кодом STALL теж не відкриває повтор';Ok=((Get-MarkerState $script:M).Kind -eq 'DONE' -and -not (Test-Path ($state+'.sleep.json')))}
             Write-FileAtomic $state "DONE $parent DONE"
             [pscustomobject]@{Name='справжня перевірка ACL відхиляє файл і корінь, доступні агенту для запису';Ok=(-not (Test-SleepRetryPath $forgedPath))}
-            # Стенд однієї особи не може створити канал іншого власника: далі підмінено
+            # Стенд однієї особи не може створити канал іншого owner: далі підмінено
             # тільки ACL-межу. Вибір теки, розбір, кінцеві коди й планувальник справжні.
             function script:Test-SleepRetryPath { $true }
             Write-FileAtomic $permitPath $permit
@@ -321,6 +321,59 @@ try {
         Export-ModuleMember -Function Run
     }
     foreach ($check in @(& $targets {Run})) {Check $check.Name $check.Ok}
+    $free = New-Module -ArgumentList $SourceDir,$tmp -ScriptBlock {
+        param($src,$tmp)
+        . (Join-Path $src 'gemini_run.ps1') -RunsDir "$tmp/runs-f" -OutDir "$tmp/out-f" -LaneDir "$tmp/lanes-f" -UpdateRoot "$tmp/trusted-f"
+        [void][IO.Directory]::CreateDirectory($LaneDir)
+        $script:Calls = New-Object Collections.ArrayList
+        function Test-OnBattery { $b = $script:Battery[0]; $script:Battery = @($script:Battery | Select-Object -Skip 1); $b }
+        function Start-Sleep { }
+        function Invoke-HealthBeat { }
+        function Write-Log([string]$Text) { }
+        function Get-PauseTargets { @(11) }
+        function Set-ProcessPause([int]$Id, [bool]$On) { [void]$script:Calls.Add("пауза $Id $On"); $true }
+        function Get-LmsInstances { [pscustomobject]@{ id = 'owner'; model = 'm1' }; [pscustomobject]@{ id = 'job'; model = 'm2' } }
+        function Invoke-RestMethod {
+            <# Підробні LM Studio і ComfyUI: :8188 вимкнено, решта відповідає. #>
+            [CmdletBinding()] param([Parameter(Position=0)][string]$Uri, $Method, $ContentType, $Body, $TimeoutSec)
+            [void]$script:Calls.Add("$Uri $Body")
+            if ($Uri -like '*:8188/*') { throw 'зʼєднання відхилено' }
+            [pscustomobject]@{ status = 'unloaded' }
+        }
+        function Invoke-Outage([string]$Session) {
+            <# Одна пауза зі світлом, що повертається; $Session — вміст gpu-models.json ('' — запису нема). #>
+            $p = Join-Path $LaneDir 'gpu-models.json'
+            if ($Session) { [IO.File]::WriteAllText($p, $Session) } else { Remove-Item -LiteralPath $p -Force -ErrorAction SilentlyContinue }
+            $script:Calls.Clear(); $script:Battery = @($true, $true, $false)
+            Wait-PowerPause
+            $script:Calls -join ' | '
+        }
+        function Run {
+            <# Звільнення карти: до заморожування; модель живої оренди лишається; збій сервера паузи не зриває. #>
+            $script:PauseMachine = $true
+            $session = '{"v":2,"before":[{"id":"owner","model":"m1"}],"leases":[{"run":"r1","marker":"наряд-1","join":["owner"],"done":false}],"dirty":false}'
+            $unloadOwner = 'http://127.0.0.1:1234/api/v1/models/unload {"instance_id":"owner"}'
+            $unloadJob = 'http://127.0.0.1:1234/api/v1/models/unload {"instance_id":"job"}'
+            $comfy = 'http://127.0.0.1:8000/free {"unload_models":true,"free_memory":true} | http://127.0.0.1:8188/free {"unload_models":true,"free_memory":true}'
+            $lease = Open-Lock (Get-GpuLeaseLockPath 'r1')
+            $got = Invoke-Outage $session
+            [pscustomobject]@{Name='живий GPU-наряд: вивантажено лише чуже, його модель лишилась; ComfyUI звільнено; усе до заморожування';Ok=($got -ceq "$unloadOwner | $comfy | пауза 11 True | пауза 11 False")}
+            $lease.Dispose()
+            $got = Invoke-Outage ''
+            [pscustomobject]@{Name='без GPU-нарядів: вивантажено всі екземпляри LM Studio';Ok=($got -ceq "$unloadOwner | $unloadJob | $comfy | пауза 11 True | пауза 11 False")}
+            $got = Invoke-Outage '{"v":2}'
+            [pscustomobject]@{Name='неповний запис GPU: LM Studio не чіпається, ComfyUI звільнено, пауза йде';Ok=($got -ceq "$comfy | пауза 11 True | пауза 11 False")}
+            $gate = Open-Lock (Get-GpuLockPath)
+            $got = Invoke-Outage ''
+            $gate.Dispose()
+            [pscustomobject]@{Name='ворота GPU зайняті: LM Studio не чіпається, пауза йде';Ok=($got -ceq "$comfy | пауза 11 True | пауза 11 False")}
+            $script:PauseMachine = $false
+            $got = Invoke-Outage ''
+            [pscustomobject]@{Name='без планувальника claude-run карту не звільняє';Ok=($got -ceq 'пауза 11 True | пауза 11 False')}
+        }
+        Export-ModuleMember -Function Run
+    }
+    foreach ($check in @(& $free {Run})) {Check $check.Name $check.Ok}
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
 # Артефакти лишаються в TEMP стенда; він не торкається робочих обгорток і станів ноутбука.
 "провалів: $bad"
