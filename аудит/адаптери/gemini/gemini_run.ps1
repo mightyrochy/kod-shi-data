@@ -777,6 +777,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
     $why = ''
     $liveCorrection = $false
     $code = ''
+    $engineErr = ''
     $report = 'NONE'
     try {
         while ($true) {
@@ -798,6 +799,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                     $err = ''
                     if ($r.Result.PSObject.Properties['error']) { $err = [string]$r.Result.error }
                     $code = Get-ErrorCode $err $run.Engine.Name $run.Engine.Effort
+                    $engineErr = $err
                     Write-Log "agy: статус $status ($code)"
                     break
                 }
@@ -841,7 +843,28 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         Close-StreamRun $run
     }
     $tail = (($run.Responses -join "`n") -split "`r?`n" | Select-Object -Last 60) -join "`n"
-    [pscustomobject]@{ Code = $code; Report = $report; Turns = $turns; Tail = $tail; Why = [string]$why }
+    [pscustomobject]@{ Code = $code; Report = $report; Turns = $turns; Tail = $tail; Why = [string]$why; EngineErr = $engineErr; ErrLog = $run.ErrLog }
+}
+
+# Коди кінця без звіту агента, чию причину знає лише рушій: його текст помилки (stderr, остання подія `error`) інакше
+# лишається в теці прогону користувача gemini, якої ніхто, крім нього, не читає.
+$script:EngineErrorCodes = @('AGY_ERROR', 'TIMEOUT', 'QUOTA', 'AUTH', 'EFFORT_INVALID', 'MODEL_INVALID')
+
+# Хвіст тексту помилки рушія для кінця без звіту: текст статусу result, а нема його (процес упав, eof, межа часу) — stderr
+# з теки прогону; рядків — стільки ж, скільки в хвості відповідей агента. Для інших кодів порожньо.
+function Get-EngineError($Res) {
+    if ($Res.Code -notin $script:EngineErrorCodes) { return '' }
+    $text = [string]$Res.EngineErr
+    if (-not $text.Trim()) { try { $text = [System.IO.File]::ReadAllText($Res.ErrLog, $script:Utf8) } catch { $text = '' } }
+    (($text -split "`r?`n") | Select-Object -Last 60) -join "`n"
+}
+
+# Причина помилки рушія для #1856 і результату: останній непорожній рядок тексту, пропущений крізь Get-FailReason
+# (шляхи профілю, облікові дані в URL і ключі прибрано; один рядок, межа приміток). Репозиторій відкритий, тож у публічний
+# запис іде лише цей рядок, а повний хвіст лежить у <id>.tail.txt теки обміну.
+function Get-EngineErrorReason([string]$ErrorTail) {
+    $line = @((Expand-JsonEscapes $ErrorTail) -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1)
+    if ($line.Count) { Get-FailReason $line[0] } else { '' }
 }
 
 # Назви моделей з `agy models` (лише назви за шаблоном): диспетчер обере робочу без руки власника.
@@ -1007,7 +1030,7 @@ function Write-RunCause([string]$Id, [string]$Code, $Cause) {
 # Порожній код — тіло Invoke-Task обірвано до кінця агента: вимкнення Windows зупиняє конвеєр, і виконується лише
 # finally. Це той самий кінець, що й STARTED без живого процесу (Resume-Interrupted): INTERRUPTED, бандл зробленого й
 # повтор після вимкнення в публікатора, а не «невідомий код» без назви наряду.
-function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$T0, [string]$Why = '') {
+function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$T0, [string]$Why = '', [string]$EngineError = '') {
     if (-not $Status.code) { $Status.code = 'INTERRUPTED' }
     try {
         if ($Status.start) {
@@ -1034,6 +1057,17 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
     }
     if ($T0 -ne [datetime]::MinValue) { $Status.minutes = [int][Math]::Round(((Get-Date) - $T0).TotalMinutes) }
     if ($Tail) { [System.IO.File]::WriteAllText((Join-Path $OutDir ($Status.id + '.tail.txt')), $Tail, $script:Utf8) }
+    # Кінець без звіту агента (AGY_ERROR, TIMEOUT, QUOTA, AUTH, EFFORT_INVALID, MODEL_INVALID): текст помилки рушія — рядок `reason`
+    # результату й, коли гілки нема, примітка в #1856 (blocked-reasons.json); повний хвіст уже в <id>.tail.txt.
+    if ($EngineError -and $Status.code -in $script:EngineErrorCodes) {
+        $engineReason = Get-EngineErrorReason $EngineError
+        if ($engineReason) {
+            $Status.reason = $engineReason
+            if ([int]$Status.ahead -eq 0) {
+                try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($Status.slug)" ($Status.code + ': ' + $engineReason) } catch { Write-Log "причина $($Status.code) не записана: $($_.Exception.Message)" }
+            }
+        }
+    }
     # BLOCKED без гілки: причину знає лише останній рядок агента — він іде в #1856 (blocked-reasons.json), інакше диспетчер бачить код без причини.
     if ($Status.code -eq 'BLOCKED' -and [int]$Status.ahead -eq 0 -and $Tail) {
         $reason = @(Get-BlockedLine $Tail)
@@ -1106,6 +1140,7 @@ function Invoke-Task($M, $Job) {
     $dir = [string]$Job.dir
     $t0 = Get-Date
     $tail = ''
+    $engineError = ''
     $waiting = $false
     $waitCode = ''
     $why = ''
@@ -1179,6 +1214,8 @@ function Invoke-Task($M, $Job) {
         [IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
         $res = Invoke-Agent $MA $start $prompt $dir $sel
         $tail = $res.Tail
+        $engineError = Get-EngineError $res
+        if ($engineError) { $tail = (@($tail, "----- помилка рушія ($($sel.Engine.Name)) -----", $engineError) | Where-Object { $_ }) -join "`n" }
         $why = $res.Why
         $status.code = $res.Code
         $status.report = $res.Report
@@ -1201,7 +1238,7 @@ function Invoke-Task($M, $Job) {
             Add-CrashNote (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($M.Slug)" (Get-FailReason $_)
         }
     } finally {
-        if (-not $waiting) { Complete-Status $status $statePath $tail $t0 $why }
+        if (-not $waiting) { Complete-Status $status $statePath $tail $t0 $why $engineError }
         else {
             # Позначка чекає в черзі (квота, стан PR, план, копія): цей прогін без кінця в теці обміну — причина лише в теці прогону.
             $waitCode = $(if ($copyFailed) { 'COPY_FAILED' } elseif ($status.code) { [string]$status.code } else { $waitCode })

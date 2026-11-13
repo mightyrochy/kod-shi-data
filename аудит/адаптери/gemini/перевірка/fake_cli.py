@@ -78,6 +78,10 @@ elif SC == 'quota_reset_at':
     resp, err = '', "You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at %s." % when
 elif SC == 'auth':
     resp, err = '', 'Not logged in. Please log in'
+elif SC == 'engine_fail':
+    # збій рушія без класу (не квота, не вхід, не зусилля) з текстом, який має дійти до результату: шлях профілю й ключ — приватне
+    sys.stderr.write('panic: stream disconnected before completion\n')
+    resp, err = '', 'Internal error at C:\\Users\\Alice\\codex\\x.rs api_key=abcdefghijklmnop12345 rushij-error-end'
 elif SC == 'blocked':
     commit('робота/б.txt'); resp = 'ЗАБЛОКОВАНО: чекаю рішення'
 elif SC == 'slow_done':
