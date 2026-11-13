@@ -424,6 +424,14 @@ def не_несе_металу_прикраси(річ):
     return _ВМ.СЛОТ_ТИПУ.get(_ЗН.тип_кодом(річ)) in КАТЕГОРІЇ_БЕЗ_МЕТАЛУ_ПРИКРАС
 
 
+def _факт_без_металу_за_типом(річ):
+    """Факт «металу прикраси нема» з відомого типу речі (те саме знання, що `не_несе_металу_прикраси`); тип поза ним
+    — None: «невідомо» не стає відповіддю."""
+    if не_несе_металу_прикраси(річ):
+        return _ЗН.факт("measured", "absent", "mourning_item_type")
+    return None
+
+
 def стан_металу_біля_обличчя(річ, запис=None):
     """Відомо / невідомо, чи річ несе металеву прикрасу біля обличчя.
 
@@ -439,10 +447,9 @@ def стан_металу_біля_обличчя(річ, запис=None):
         if метал["status"] in ("measured", "range"):
             return _ЗН.факт("measured", "present", метал["source"])
         return метал
-    if біля is None and не_несе_металу_прикраси(річ):
-        return _ЗН.факт("measured", "absent", "mourning_item_type")
     if біля is None:
-        return _ЗН.факт("unknown", None, "jewelry_position_unknown" if тип or слот else "item_type_missing")
+        return _факт_без_металу_за_типом(річ) or _ЗН.факт(
+            "unknown", None, "jewelry_position_unknown" if тип or слот else "item_type_missing")
     return _ЗН.факт("measured", "absent", "mourning_place_record")
 
 
@@ -549,9 +556,10 @@ def траурне_відсічення(r, тр):
     if біля is not False:
         св = свідки_блиску(r)
         if (св["клас"] or 0) >= поріг:
-            if біля:
+            if біля is None:
+                невідоме = невідоме or "mourning_place_unknown:sheen_by_shop"
+            else:
                 return "mourning_sheen_near_face_by_shop:shine_class_%d" % св["клас"]
-            невідоме = невідоме or "mourning_place_unknown:sheen_by_shop"
     # метал біля обличчя, якого вона не обирала (`ПРИКРАСИ_МЕТАЛ_ОБРАНО`) —
     # останньою причиною, як і свідок блиску: лічба `відсічено` показує лише нове. Її явний вибір металу
     # сильніший за ворота. Чи може річ нести метал прикраси — те саме одне знання, що в `стан_металу_біля_обличчя`.
@@ -559,8 +567,9 @@ def траурне_відсічення(r, тр):
         метал_тут = метал_біля_обличчя(r)
         if метал_тут:
             return "mourning_metal_near_face_not_chosen"
-        if метал_тут is None and r.get("метал") and не_несе_металу_прикраси(r) is False:
-            невідоме = невідоме or "mourning_place_unknown:metal"
+        if метал_тут is None:
+            if r.get("метал") and не_несе_металу_прикраси(r) is False:
+                невідоме = невідоме or "mourning_place_unknown:metal"
     if невідоме:
         return невідоме
     return None
