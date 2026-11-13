@@ -1917,8 +1917,9 @@ function Read-AutoCarryPlan($Report, $History, $Cache) {
     <# План звіту автоживого чи Е1 (`аудит/проби/<наряд>/ПЛАН.json` у голові звіту), яким план живого заміняє читання
     давніх PR. Годиться лише план, складений `Get-AutoLivePlan` з полями `build` (збірка того плану — предок нинішньої),
     `since_sha` (порожня чи предок; непорожня — з номером звіту `since_pr`) і `merge` (злиття кожного PR плану).
-    Повертає @{build; since; since_pr; merge; lines; report}, де lines — «PR» → рядки `ЖИВИЙ ПІСЛЯ` плану (питання
-    сцени чи вадний рядок), щоб їх розібрав той самий `Get-LiveAfterLines` проти нинішнього реєстру. Нема голови, файла,
+    Повертає @{build; since; since_pr; merge; lines; reports; report}, де lines — «PR» → рядки `ЖИВИЙ ПІСЛЯ` плану (питання
+    сцени чи вадний рядок), щоб їх розібрав той самий `Get-LiveAfterLines` проти нинішнього реєстру, а reports — звіти
+    (номер, гілка, голова, час створення), чиї записи той план визнав прогнаними. Нема голови, файла,
     поля чи злиття хоч одного PR плану — $null: такий звіт межі читання не зсуває. Cache — «номер|голова» → план чи $false. #>
     if ([string]$Report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { return $null }
     $dir = 'аудит/проби/' + $Matches[1]
@@ -1958,7 +1959,19 @@ function Read-AutoCarryPlan($Report, $History, $Cache) {
         $lines[$pr] = @($lines[$pr] | Where-Object { $_ }) + @([string](Get-JsonProp $entry 'line'))
     }
     foreach ($pr in @($lines.Keys)) { if (-not $merge.ContainsKey($pr)) { return $null } }
-    $Cache[$key] = @{build=$build; since=$since; since_pr=$sincePr; merge=$merge; lines=$lines; report=[string]$Report.number}
+    # Звіти, чиї записи план визнав прогнаними (`reports`): не довіра до списку пар, а адреси голів — записи
+    # Get-AutoRanPairs перевіряє з git заново. Вадний запис списку відкидається: пара лишається в плані.
+    $reports = @()
+    foreach ($entry in @(Get-JsonProp $plan 'reports')) {
+        if ($null -eq $entry) { continue }
+        $number = [string](Get-JsonProp $entry 'number'); $ref = [string](Get-JsonProp $entry 'ref')
+        # Час — як дав ConvertFrom-Json (рядок у 5.1, DateTime у 7): його читає ConvertTo-AutoTime у Get-AutoRanPairs.
+        $sha = [string](Get-JsonProp $entry 'sha'); $created = Get-JsonProp $entry 'created_at'
+        if ($number -cnotmatch '^[1-9][0-9]*$' -or $sha -cnotmatch '^[0-9a-f]{40}$' -or -not [string]$created -or
+            $ref -cnotmatch '^(?:gemini|claude|codex)/(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { continue }
+        $reports += @([pscustomobject]@{number=[long]$number; head=@{ref=$ref; sha=$sha}; created_at=$created})
+    }
+    $Cache[$key] = @{build=$build; since=$since; since_pr=$sincePr; merge=$merge; lines=$lines; reports=$reports; report=[string]$Report.number}
     $Cache[$key]
 }
 
@@ -2072,8 +2085,9 @@ function Get-AutoLivePlan([string]$BuildMain) {
     давніших PR, яких читання не дійшло, — з плану джерела, бо він уже має всі непрогнані на той час питання злитих до
     його збірки PR; рядки розбирає той самий `Get-LiveAfterLines` проти нинішнього реєстру, а межа, склад збірки й
     записи прогонів відсікають їх так само, як рядки тіла. PR, оновлений після джерела, читається з тіла.
-    Не дійшли до межі за AutoPlanMaxPages сторінок — AUTO_PAGES, плану нема. План несе `build`, `since_pr` і `merge`
-    (PR → злиття), щоб наступний план міг узяти його за джерело. #>
+    Не дійшли до межі за AutoPlanMaxPages сторінок — AUTO_PAGES, плану нема. План несе `build`, `since_pr`, `merge`
+    (PR → злиття) і `reports` (звіти, чиї записи визнано прогнаними), щоб наступний план міг узяти його за джерело
+    й перевірити ті самі записи, не читаючи давніх звітів. #>
     $calls0 = $script:AutoApiCalls
     $until = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$BuildMain)).Out.Trim())
     # Час звіту не визначає склад прогону: PR міг злитися, поки модель ще працювала.
@@ -2116,7 +2130,25 @@ function Get-AutoLivePlan([string]$BuildMain) {
     $registryText = (Invoke-Git @('cat-file','blob',"${BuildMain}:аудит/проби/живі_сцени.txt")).Out
     $registry = Get-LiveSceneRegistry $registryText
     if (-not $registry.Count) { throw 'AUTO_REGISTRY' }
-    $ranPairs = Get-AutoRanPairs $pulls $since
+    $carry = $boundary.carry
+    # Записи прогонів — з прочитаних звітів і зі звітів, які переніс план джерела (поза читанням): інакше давній PR,
+    # що піднявся в читання лише коментарем, повернув би пару, прогнану звітом, якого читання вже не дістає.
+    $ranReports = @($pulls)
+    if ($carry) { foreach ($old in @($carry.reports)) { if (-not $readNumbers.ContainsKey([string]$old.number)) { $ranReports += @($old) } } }
+    $ranPairs = Get-AutoRanPairs $ranReports $since
+    $usedReports = @{}
+    foreach ($runs in @($ranPairs.Values)) { foreach ($run in @($runs)) { $usedReports[[string]$run.report] = $true } }
+    $reportsOut = @()
+    foreach ($report in $ranReports) {
+        if (-not $usedReports.ContainsKey([string]$report.number)) { continue }
+        $usedReports.Remove([string]$report.number)
+        $created = $report.PSObject.Properties['created_at']
+        # Без часу створення наступний план не відсік би звіт за межею — такий звіт не переноситься.
+        if ($null -eq $created -or $null -eq $created.Value) { continue }
+        $reportsOut +=@([ordered]@{number=[string]$report.number; ref=[string]$report.head.ref
+            sha=[string]$(if ($report.head -is [Collections.IDictionary]) { $report.head['sha'] } else { Get-JsonProp $report.head 'sha' })
+            created_at=(ConvertTo-AutoTime $created.Value).ToString('o')})
+    }
     $codeHistory = @{}
     $ranBy = [ordered]@{}
     $scenes = [ordered]@{}
@@ -2125,7 +2157,6 @@ function Get-AutoLivePlan([string]$BuildMain) {
     $merges = [ordered]@{}
     # Джерела рядків: давні PR, яких читання не дійшло, — з плану звіту-джерела; прочитані злиті — з тіла.
     $sources = @()
-    $carry = $boundary.carry
     if ($carry) {
         foreach ($number in @($carry.lines.Keys)) {
             if ($readNumbers.ContainsKey($number)) { continue }
@@ -2163,7 +2194,7 @@ function Get-AutoLivePlan([string]$BuildMain) {
             $merges[[string]$pr.number] = $merge
         }
     }
-    ConvertTo-Json -InputObject @{since_sha=$checked;since_pr=[string]$boundary.pr;since=$since.ToString('o');until=$until.ToString('o');build=$BuildMain;scenes=$scenes;cloud=$cloud;bad=$bad;ran=$ranBy;merge=$merges} -Depth 8 -Compress
+    ConvertTo-Json -InputObject @{since_sha=$checked;since_pr=[string]$boundary.pr;since=$since.ToString('o');until=$until.ToString('o');build=$BuildMain;scenes=$scenes;cloud=$cloud;bad=$bad;ran=$ranBy;merge=$merges;reports=@($reportsOut)} -Depth 8 -Compress
 }
 
 function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '', [string]$Model = '') {

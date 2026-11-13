@@ -56,8 +56,10 @@ try {
     $merge = @{}
     $merge[10] = Commit '2026-01-01T12:00:00Z' 'Злиття #10 до повної межі'
     $checked = Commit '2026-01-02T00:00:00Z' 'Збірка повної межі'
-    $scene = @{10 = $A; 11 = $A; 12 = $B; 13 = $C; 14 = $E; 15 = $Z; 16 = $C; 17 = $A; 18 = $D}
+    $scene = @{10 = $A; 11 = $A; 12 = $B; 13 = $C; 14 = $E; 15 = $Z; 16 = $C; 17 = $A; 18 = $D; 19 = $D}
     foreach ($n in 11..16) { $merge[$n] = Commit ('2026-01-02T0' + ($n - 10) + ':00:00Z') "Злиття #$n" }
+    $merge[19] = Commit '2026-01-02T07:00:00Z' 'Злиття #19'
+    $build0 = Commit '2026-01-02T08:00:00Z' 'Збірка давнього звіту Е1'
     $build1 = Commit '2026-01-04T00:00:00Z' 'Збірка звіту Е1'
     $merge[17] = Commit '2026-01-05T01:00:00Z' 'Злиття #17 після звіту'
     $merge[18] = Commit '2026-01-05T02:00:00Z' 'Злиття #18 після звіту'
@@ -76,6 +78,7 @@ try {
     [void]$base.Add((Merged 10 '2026-01-01T12:00:00Z' "ЖИВИЙ ПІСЛЯ: $A — q10"))
     foreach ($n in 11..16) { [void]$base.Add((Merged $n ('2026-01-02T0' + ($n - 10) + ':00:00Z') "ЖИВИЙ ПІСЛЯ: $($scene[$n]) — q$n")) }
     $boundary = Pull 900 'gemini/Е1-нічний-живий-20260101' '2026-01-02T06:00:00Z' $null $null "ПЕРЕВІРЕНО ЗБІРКУ: $checked"
+    [void]$base.Add((Merged 19 '2026-01-02T07:00:00Z' "ЖИВИЙ ПІСЛЯ: $D — q19"))
     [void]$base.Add($boundary)
     function Serve($Items, [string]$Until) {
         $script:Served = @(@($Items) | Where-Object { $_.updated_at -le $Until } | Sort-Object @{Expression = { $_.updated_at }; Descending = $true }, @{Expression = { $_.number }})
@@ -100,6 +103,16 @@ try {
         $s = @(@('scenes', 'cloud') | ForEach-Object { $kind = $_; @($Plan.$kind.PSObject.Properties) | ForEach-Object { $id = $_.Name; @($_.Value) | ForEach-Object { "$kind|$($_.pr)|$id|$($_.question)" } } })
         @($s + @(@($Plan.bad) | Where-Object { $_ } | ForEach-Object { "bad|$($_.pr)|$($_.line)" }) | Sort-Object)
     }
+    # Давній звіт Е1 (#902) на збірці 0 прогнав #19: його план, порожній журнал і завершений запис сцени.
+    & git -C $repo checkout -q -b report0 $build0
+    $dir0 = 'аудит/проби/Е1-нічний-живий-20260102'
+    Put "$dir0/ПЛАН.json" ('{"scenes":{"' + $D + '":[{"pr":19,"question":"q19"}]},"cloud":{},"bad":[]}')
+    Put "$dir0/done.txt" ''
+    Put "$dir0/$D/результат.json" ('{"rc": 0, "sha": "' + $build0 + '"}')
+    foreach ($f in @('повтор.json', 'знімки/доказ.json', 'VIDPOVIDI/обмін/00001.json', 'лог.txt')) { Put "$dir0/$D/$f" '{}' }
+    $headR0 = Commit '2026-01-02T09:00:00Z' 'Давній звіт Е1'
+    & git -C $repo checkout -q main
+    [void]$base.Add((Pull 902 'gemini/Е1-нічний-живий-20260102' '2026-01-02T09:00:00Z' $null $null 'Давній звіт: план виконано не весь' $headR0))
     # План звіту Е1 на збірці 1 — як його склала обгортка й агент зберіг дослівно.
     Serve $base '2026-01-04T00:00:00Z'
     $plan1 = Get-AutoLivePlan $build1
@@ -118,6 +131,10 @@ try {
     $noMerge.merge.PSObject.Properties.Remove('13')
     Put "$dir/ПЛАН.json" (ConvertTo-Json -InputObject $noMerge -Depth 8 -Compress)
     $headNoMerge = Commit '2026-01-04T12:10:00Z' 'Звіт Е1: план без злиття #13'
+    $noReports = ConvertFrom-Json $plan1
+    $noReports.PSObject.Properties.Remove('reports')
+    Put "$dir/ПЛАН.json" (ConvertTo-Json -InputObject $noReports -Depth 8 -Compress)
+    $headNoReports = Commit '2026-01-04T12:15:00Z' 'Звіт Е1: план без звітів записів (як до правки)'
     & git -C $repo checkout -q main
     $report = Pull 901 "gemini/$slug" '2026-01-04T12:00:00Z' $null $null 'Звіт: план виконано не весь, рядка межі нема' $headNew
     $now = (New-Object System.Collections.ArrayList); foreach ($one in $base) { [void]$now.Add($one) }
@@ -127,12 +144,15 @@ try {
     # #16 після звіту переписав питання: оновлення піднімає його в читання.
     $edited = @($now | Where-Object { $_.number -eq 16 })[0]
     $edited.body = "ЖИВИЙ ПІСЛЯ: $D — q16 нове"; $edited.updated_at = '2026-01-05T10:00:00Z'
+    # #19 після звіту отримав лише коментар: тіло те саме, оновлення піднімає його в читання.
+    @($now | Where-Object { $_.number -eq 19 })[0].updated_at = '2026-01-05T11:00:00Z'
     Serve $now '2026-01-06T00:00:00Z'
 
     Scenario '0 план звіту несе build, since_pr і merge' {
         $p = ConvertFrom-Json $plan1
         Check '0 build — збірка плану, межа — з номером звіту' ($p.build -ceq $build1 -and $p.since_sha -ceq $checked -and $p.since_pr -ceq '900')
         Check '0 merge — злиття кожного PR плану' ((@($p.merge.PSObject.Properties.Name) | Sort-Object) -join ',' -ceq '11,12,13,14,15,16' -and $p.merge.'13' -ceq $merge[13])
+        Check '0 reports — звіт #902, що прогнав #19, з головою й часом' ((@($p.reports | ForEach-Object { $_.number }) -join ',') -ceq '902' -and @($p.reports)[0].sha -ceq $headR0 -and [bool]@($p.reports)[0].created_at -and $p.ran.'902' -eq 1)
         $script:FullPairs = Pairs (Plan-Run $build2 -Full)
         "ПОВНЕ ЧИТАННЯ: $($script:AutoApiCalls) запитів; $($script:FullPairs -join '; ')"
         Check '0 повне читання дало план' ($script:FullPairs.Count -gt 0)
@@ -172,6 +192,17 @@ try {
         try { $plan = Plan-Run $build2; $fullNoBoundary = Pairs (Plan-Run $build2 -Full) }
         finally { $boundary.body, $boundary.updated_at = $keep; Serve $now '2026-01-06T00:00:00Z' }
         Check '4 без межі #10 повертається, склад як після повного читання' ("scenes|10|$A|q10" -in (Pairs $plan) -and ((Pairs $plan) -join ';') -ceq ($fullNoBoundary -join ';') -and -not $plan.since_sha)
+    }
+    Scenario '5 давній PR, піднятий коментарем: пара, прогнана звітом поза читанням, не повертається' {
+        $report.head.sha = $headNoReports
+        try { $before = Pairs (Plan-Run $build2) } finally { $report.head.sha = $headNew }
+        $plan = Plan-Run $build2
+        $after = Pairs $plan
+        "ДО (план джерела без reports): #19 — $(@($before | Where-Object { $_ -clike 'scenes|19|*' }) -join ', ')"
+        Check '5 звіт #902 поза читанням, #19 прочитано з тіла' (902 -notin $script:Asked -and 19 -in $script:Asked)
+        Check '5 ДО: пара #19 повертається в план' ("scenes|19|$D|q19" -in $before)
+        Check '5 ПІСЛЯ: пара #19 не повертається, склад як після повного читання' ("scenes|19|$D|q19" -notin $after -and ($after -join ';') -ceq ($script:FullPairs -join ';') -and $plan.ran.'902' -eq 1)
+        Check '5 новий план переносить звіти записів далі (#901, #902)' ((@($plan.reports | ForEach-Object { $_.number }) | Sort-Object) -join ',' -ceq '901,902')
     }
 } finally {
     if ((Split-Path -Parent $tmp) -eq [IO.Path]::GetTempPath().TrimEnd('\', '/') -and (Split-Path -Leaf $tmp) -cmatch '^mezha-chyt-[0-9a-f]{32}$') { Remove-Item -LiteralPath $tmp -Recurse -Force }
