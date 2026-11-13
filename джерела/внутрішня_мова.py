@@ -689,7 +689,7 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
                                              "item_type": _перелік("item_type", "вид її речі з фото"),
                                              "verdict": {"$ref": "#/$defs/screen_message"}},
                               "required": ["verdict"]},
-                             "вердикт про кожну її річ з фото: заяви кодами"),
+                             "вердикт про кожну річ: заяви кодами"),
     # ДОДАНЕ ДО СЦЕНАРІЮ — КОДАМИ (М-1, аудит/ПРОДУКТ.md п.12): доти показ писав це фразою
     # («Додала до сценарію: «…» — твоя річ, вона стане в кожен образ.»)
     "added": {"description": "що додано до сценарію з її слів, сказаних поза екраном сценарію: "
@@ -766,6 +766,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     # функціональна модель українською, і показ ставив її рядком як є.
     "portrait_unreadable": "рядок під портретом на першому кроці знайомства: чому стилістка не "
                            "прочитала кольори з цього фото",
+    # наряд Річ-ознаки-обличчя-вимір-портрета: кольори прочитано, та кадр не пройшов воріт виміру кодом
+    # (`портрет_вимір.ПРИЧИНИ_ВИМІРУ`) — профіль лишається оцінкою моделі, а жінці сказано, який портрет надіслати
+    "portrait_unmeasured": "рядок під портретом на першому кроці знайомства: кольори з цього фото — оцінка на "
+                           "око, бо виміряти їх з кадру не вдалося; який портрет надіслати, щоб їх виміряти",
     "palette_scheme_note": "пояснення властивостей цієї схеми; автор вибору й ранг задані лише полями заяви",
     # П-7: схему, основу й гаму, які вона лишила «хай обере стилістка», обирає
     # функціональна модель (`вибір_палітри`); слова «код» у цих рядках для неї нема (Ш-1 — теж).
@@ -785,6 +789,7 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                            "радимо, але можна», і під кольором губ, який вона назвала сама. Вибору "
                            "не блокує ніколи — рамку «вибір лишається твій» дописує сам екран",
     "her_item_verdict": "вердикт про її власну річ: чи підійде вона під цей вихід",
+    "catalogue_search": "що код знайшов у каталозі на її опис речі і котру з знайдених радить першою",
     "her_item_softening": "рядок під її річчю на картці: річ стоїть у кожному образі, і чим решта "
                           "образу її пом'якшує",
     "no_photo_reason": "рядок біля речі на картці: чому в неї нема знімка",
@@ -882,6 +887,15 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "portrait_eyes_hidden": "the eyes are covered by glasses or hair, or squinted",
     "portrait_coloured_light": "the photo has coloured light (stage, neon) that tints the skin",
     "portrait_overexposed": "the photo is overexposed: the skin is blown out to white",
+    # ── портрет, з якого кольорів не виміряно (`портрет_вимір.ПРИЧИНИ_ВИМІРУ`): що надіслати ─────
+    "portrait_uneven_light": "the light falls on one side of the face: one cheek is lit and the other in shadow; "
+                             "a portrait facing a window, in even daylight, lets the colours be measured",
+    "portrait_skin_unmeasured": "both cheeks are not visible in clear skin (turned head, hair, hands, shadow); a "
+                                "portrait facing the camera with both cheeks open lets the skin be measured",
+    "portrait_hair_unmeasured": "no clear patch of hair is visible (covered, cropped, or against a similar "
+                                "background); a portrait with the hair visible lets it be measured",
+    "portrait_eyes_unmeasured": "the irises are not visible clearly enough (small, closed, glasses, glare); a "
+                                "closer portrait with open eyes and no glasses lets the eyes be measured",
     # ── схеми палітри: що це за хід ──────────────────────────────────────────
     "scheme_tonal": "one tone on all items, with small steps of lightness",
     "scheme_analogous": "neighbouring hues of the colour wheel",
@@ -1098,6 +1112,64 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "colour_unknown_not_checked": "this item's colour is unknown, as neither a photo measured it nor a "
                                   "colour was named, so the item was not checked against her palette; a colour in words "
                                   "makes the check possible",
+    # ── РІЧ НА ПОКУПКУ: СУД ОДНІЄЇ РЕЧІ ТИМИ САМИМИ ПРАВИЛАМИ, ЩО Й ОБРАЗ (`суд_покупки`) ──
+    "figure_needs_measurements": "how the item sits on her body is not judged: she has not named her height and at "
+                                 "least three girths (shoulders, chest, waist, hips); with them it can be judged",
+    "maxi_holds": "on her height the hem of this skirt falls to maxi, and maxi holds here: of the three supports "
+                  "maxi needs (height, lift of the shoes or the skirt's own volume) it has one (values: by — volume)",
+    "hem_on_her_body": "where the item's hem falls on her body at her height (values: level — body level code: "
+                       "waist, mini, knee, calf, maxi; measured_from — garment_length when the shop's length in cm was "
+                       "laid on her height, shop_word when only the shop's length word is known); the level "
+                       "heights are shares of her height, not measured on her",
+    "hem_not_judged": "where the hem falls on her body is not judged (values: missing — garment_length: the shop "
+                      "card's length in cm or a photo of the item on a person makes it possible)",
+    "skirt_cut_reading": "how the knowledge base reads this skirt cut (values: cut — cut code; reading — the "
+                         "knowledge base's reading as free text, retell its content rather than quoting it)",
+    "rise_of_item": "the item's rise (values: rise — high, mid or low): the waistband sets where the eye starts "
+                    "her legs; whether it shows is decided by the top worn with it",
+    "rise_not_named": "the item's rise is not named by the shop card or the photo, so its effect on her leg line "
+                      "is not judged; the rise from the card or a side photo makes it possible",
+    "cut_vs_figure_not_judged": "the cut is not judged against her figure (values: missing — cut: the cut is not "
+                                "named; measurement_error: which half of her figure is wider is not proven beyond "
+                                "the error of measuring oneself with a tape)",
+    "colour_role_base": "the item's colour is a neutral: in an outfit it is the base, and the colour comes from "
+                        "other pieces",
+    "colour_role_accent": "the item's colour is a colour, not a neutral: in an outfit it is the accent, with "
+                          "neutrals around it (values: loud — true when the colour is loud, so one such accent "
+                          "per outfit)",
+    "pairs_with_colours": "colours from her palette that make a scheme with this item (values: colours — colour "
+                          "names; scheme — neutral_plus_accent: a neutral with one accent)",
+    "pairs_with_role_palette_unknown": "the item makes a scheme with the opposite role (values: partner — "
+                                       "neutrals or accent); which colours are hers needs her colours from a "
+                                       "portrait",
+    "draws_eye_enlarges": "light, bright and shiny surfaces advance: the item draws the eye to the part of her "
+                          "figure it covers and makes that part look larger (values: by — light, bright, shiny)",
+    "recedes_zone": "dark, muted and matte surfaces recede: the item does not draw the eye to the part of her "
+                    "figure it covers",
+    "colour_profile_needs_portrait": "her colours were not read, so the item's colour is not checked against her "
+                                     "palette or her face: a portrait in daylight, face at least a quarter of the "
+                                     "frame, makes it possible (values: reason — why the photo was not read, when "
+                                     "it was refused)",
+    "her_item_candidate_to_buy": "she is deciding whether to buy this item: it is compared with the others she "
+                                 "is choosing between, not put into her outfits",
+    "buy_first": "of the items she is choosing between, this one — or these, when several came out equal at the "
+                 "top — is advised first (values: reasons — statement codes that set it apart from the others; "
+                 "avoids — risks the corpus names that the others carry and it does not; then — the others in "
+                 "order)",
+    "buy_order_tie": "these items she is choosing between came out equal in the code's judgement: the choice "
+                     "between them is hers",
+    "colour_role_not_judged": "whether the item's colour is a neutral base or an accent was not judged (values: "
+                              "missing — colour_measure: neither a measurement nor a shop colour word places it "
+                              "on one side; a photo of the item in daylight lets it be judged)",
+    # ── «ЗНАЙДИ МЕНІ ТАКУ»: ПОШУК У КАТАЛОЗІ (`пошук_речі`) ──
+    "catalogue_variants_found": "the catalogue has items that match every code of her description; each is shown "
+                                "with the code's judgement for her (values: count — how many; asked — the codes "
+                                "of her description)",
+    "catalogue_has_none": "the catalogue has no item that matches every code of her description; nothing similar "
+                          "is offered in its place (values: asked — the codes of her description)",
+    "catalogue_records_without_code": "some catalogue items of this kind do not state this feature, so the code "
+                                      "cannot tell whether they match and does not show them (values: field — the "
+                                      "feature; count — how many items)",
     # ── ЇЇ РІЧ НА КАРТЦІ: ЧИМ РЕШТА ОБРАЗУ ЇЇ ПОМʼЯКШУЄ (`річ_з_фото.помʼякшення`) ──
     "her_item_in_every_look": "she chose this item herself, so it stands in every outfit",
     "colour_unknown_rest_not_matched": "this item's colour is unknown, as neither a photo measured it nor "
