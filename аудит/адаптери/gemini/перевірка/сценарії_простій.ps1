@@ -227,8 +227,8 @@ Scenario 'в heartbeat gemini-run' {
     foreach ($d in @($runs, "$runs/state", "$runs/slots", $out, $prof)) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$runs/state"; $script:SlotDir = "$runs/slots"
     [IO.File]::WriteAllBytes("$prof/f.bin", (New-Object byte[] 4321))
-    Write-FileAtomic "$runs/health.json" ('{"time":' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + ',"read":"2026-11-11T20:00:00Z","profile":"7","skipped":"0"}')
-    $script:Limits = @{ slots = @{ agy = 2; codex = 2 }; source = 'код' }
+    Write-FileAtomic "$runs/health.json" ('{"time":' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + ',"read":"2026-11-11T20:00:00Z","profile":"7","skipped":"0","top":"","copies":""}')
+    $script:Limits = @{ slots = @{ agy = 2; codex = 2 }; usage_minutes = $script:Defaults['usage_minutes']; source = 'код' }
     Write-Heartbeat ''
     $hb = { [IO.File]::ReadAllText("$out/heartbeat.json", $utf) | ConvertFrom-Json }
     Check 'в повний heartbeat має смуги' (@((& $hb).lanes).Count -eq 2)
@@ -237,9 +237,12 @@ Scenario 'в heartbeat gemini-run' {
     Check '14586 до Get-Limits heartbeat неповним не переписано — смуги на місці' ($null -ne (& $hb).PSObject.Properties['lanes'] -and @((& $hb).lanes).Count -eq 2)
     Write-Heartbeat 'TEST_ISOLATION'
     Check 'в ізоляція до Get-Limits — heartbeat пишеться (isolation, без смуг)' ((& $hb).isolation -ceq 'TEST_ISOLATION')
+    # Свіжий кеш з усіма полями (Get-GeminiHealth вимагає 'copies') і межа віку кешу (usage_minutes) обходу не запускають:
+    # інакше процес-вимір кожного heartbeat тримав би health.lock і писав health.json навперегін із перевіркою 14587 нижче.
+    Check 'в свіжий повний кеш — процесу-виміру нема' ($null -eq (Get-Variable -Scope Script -Name MeasureProc -ValueOnly -ErrorAction SilentlyContinue))
 
     # --- 14587: повільний обхід профілю (заглушка 20 с) не тримає heartbeat ---------------------------------------------
-    $script:Limits = @{ slots = @{ agy = 2; codex = 2 }; source = 'код' }
+    $script:Limits = @{ slots = @{ agy = 2; codex = 2 }; usage_minutes = $script:Defaults['usage_minutes']; source = 'код' }
     $script:Slow = 0
     function Measure-DirBytes([string]$Path) { $script:Slow++; Start-Sleep -Seconds 20; [pscustomobject]@{ Bytes = 1; Skipped = 0 } }
     Remove-Item "$runs/health.json" -Force
