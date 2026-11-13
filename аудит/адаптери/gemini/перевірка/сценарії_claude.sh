@@ -33,6 +33,8 @@ argv() { $PY -c "import json
 for l in open('$(wp "$W/cc.log")', encoding='utf-8'): print(' '.join(json.loads(l)['argv']))" 2>/dev/null | tail -1; }
 prompt() { $PY -c "import json
 print([json.loads(l) for l in open('$(wp "$W/cc.log")', encoding='utf-8')][-1]['stdin'])" 2>/dev/null; }
+bgc() { $PY -c "import json
+print([json.loads(l) for l in open('$(wp "$W/cc.log")', encoding='utf-8')][-1]['bg_ceiling'])" 2>/dev/null; }
 # Тека сесії: cwd — cr/w/<прогін>/repo, TEMP і TMP — cr/w/<прогін>/tmp (з FAKE_CC_LOG).
 copydir() { $PY -c "import json, os, sys
 e = [json.loads(l) for l in open(sys.argv[1], encoding='utf-8')][-1]
@@ -51,6 +53,7 @@ setup k1; mark "$SLUG/$M/1"; cr
 SHA=$(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null)
 chk "рядок ГОТОВО claude/<наряд> <SHA origin> МОДЕЛЬ $M" '[ -n "$SHA" ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $SHA МОДЕЛЬ $M" ]'
 chk "argv: -p --model claude-sonnet-5-5 --effort medium --permission-mode auto stream-json" '[ "$(argv)" = "-p --model claude-sonnet-5-5 --effort medium --permission-mode auto --output-format stream-json --verbose" ]'
+chk "claude -p запущено зі змінною CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 (є: $(bgc))" '[ "$(bgc)" = 0 ]'
 chk "промпт: НОУТБУК.md, наряд дослівно, вимикає лише обгортка, без «Продовжуй»" 'P=$(prompt); [[ "$P" == *"аудит/НОУТБУК.md"* && "$P" == *"Підніми й зупини LM Studio."* && "$P" == *"вимикає лише обгортка за позначкою"* && "$P" != *"Продовжуй"* && "$P" != *"запускач —"* ]]'
 # Наряд 08.11 велів «НОУТБУК ГОТОВО #PR <SHA>» — BAD_BRANCH: формат звіту повторено після наряду, у рядку, що сильніший.
 chk "промпт: після наряду — формат звіту з гілкою, не номером PR" '[[ "$(prompt | sed -n "/КІНЕЦЬ НАРЯДУ/,\$p")" == *"НОУТБУК ГОТОВО <гілка claude/…>"*"не номер PR"*"формат звіту вище"* ]]'
@@ -207,5 +210,13 @@ for i in $(seq 60); do grep -qs '^STARTED [0-9]' "$W"/claude-run/state/*.txt && 
 zn "$SLUG/$M/1" 'інша смуга'; wait "$CP"; T1=$(date +%s)
 chk "під час прогону: claude зупинено за $((T1 - T0)) с (HANG — за 5 хв), один рядок CANCELLED" '[ $((T1 - T0)) -lt 90 ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG CANCELLED" ] && [ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
 chk "стан узятого прогону й знятої позначки — DONE … CANCELLED" '[ "$(grep -l "^DONE .* CANCELLED$" "$W"/claude-run/state/*.txt | wc -l)" = 2 ]'
+
+echo "=== К14 фонові завдання агента: claude -p без власної межі очікування, обмежує лише завислість"
+# Власна межа claude -p (зупинити фон і вийти через 10 хв після останнього ходу, за годинником стіни) обривала прогін без
+# звіту; змінна 0 знімає її, і мовчазне очікування фону лишається під порогом завислості обгортки.
+setup k14; mark "$SLUG/$M/1"; T0=$(date +%s); CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=600000 FAKE_CC_SCENARIO=bg_wait cr; T1=$(date +%s)
+chk "змінна середовища сесії обгортку не обходить: у claude — 0, не 600000 (є: $(bgc))" '[ "$(bgc)" = 0 ]'
+chk "фон ще йде, claude мовчить → HANG за ≤ 60 с, не NO_REPORT (є: $((T1 - T0)) с, $(lines))" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG HANG" ] && [ $((T1 - T0)) -le 60 ]'
+chk "процес після HANG зупинено" '[ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
 
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD
