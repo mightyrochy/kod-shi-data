@@ -569,11 +569,21 @@ function Get-Facts($M, [string]$Start) {
     [pscustomobject]@{ Head = $head; OnBranch = ($cur -eq $branchRef); Dirty = $dirty; Ahead = $ahead }
 }
 
+# Рядок звіту без Markdown-обрамлення (`**…**`, зворотні лапки): єдине правило приймання звіту й пошуку його
+# ЗАБЛОКОВАНО в причині кінця; його повторює `рядок_звіту` у аудит/витрати/…/вивантажити.py.
+function Get-ReportLine([string]$Line) { $Line.Trim().Trim('`', '*', ' ') }
+
+# Останній рядок ЗАБЛОКОВАНО хвоста звіту (за нормалізацією приймання) чи $null.
+function Get-BlockedLine([string]$Tail) {
+    $line = @($Tail -split "`n" | ForEach-Object { Get-ReportLine $_ } | Where-Object { $_ -cmatch '^ЗАБЛОКОВАНО' } | Select-Object -Last 1)
+    if ($line.Count) { [string]$line[0] } else { $null }
+}
+
 # Звіт агента -> DONE, BLOCKED або NONE; приймається лише те, що збіглося з гілкою.
 function Test-Report($M, [string]$Start, [string]$Response) {
     $lines = @($Response -split "`r?`n" | Where-Object { $_.Trim() })
     $last = ''
-    if ($lines.Count -gt 0) { $last = $lines[-1].Trim().Trim('`', '*', ' ') }
+    if ($lines.Count -gt 0) { $last = Get-ReportLine $lines[-1] }
     $f = Get-Facts $M $Start
     $kind = 'NONE'
     $claimed = ''
@@ -958,8 +968,8 @@ function Get-RunCause([string]$Code, [string]$Tail = '', [string]$Why = '', [str
     if (-not $Code) { $class = 'ноутбук і обгортка' }
     $text = $(if ($Code) { $Code } else { 'код кінця порожній: процес наряду зупинено ззовні' })
     if ($Code -eq 'BLOCKED') {
-        $line = @($Tail -split "`n" | Where-Object { $_.Trim() -cmatch '^ЗАБЛОКОВАНО' } | Select-Object -Last 1)
-        if ($line.Count) { $text = [string]$line[0] } else { $class = 'невідомо'; $text = 'BLOCKED без рядка ЗАБЛОКОВАНО' }
+        $line = Get-BlockedLine $Tail
+        if ($null -ne $line) { $text = $line } else { $class = 'невідомо'; $text = 'BLOCKED без рядка ЗАБЛОКОВАНО' }
         if ($text -cmatch '^\s*ЗАБЛОКОВАНО: LIVE_AFTER_INVALID') { $class = 'модель' }
     }
     if ($Code -eq 'NO_REPORT') {
@@ -1012,8 +1022,8 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
     if ($Tail) { [System.IO.File]::WriteAllText((Join-Path $OutDir ($Status.id + '.tail.txt')), $Tail, $script:Utf8) }
     # BLOCKED без гілки: причину знає лише останній рядок агента — він іде в #1856 (blocked-reasons.json), інакше диспетчер бачить код без причини.
     if ($Status.code -eq 'BLOCKED' -and [int]$Status.ahead -eq 0 -and $Tail) {
-        $reason = @($Tail -split "`n" | Where-Object { $_.Trim() -cmatch '^ЗАБЛОКОВАНО' } | Select-Object -Last 1)
-        if ($reason.Count -eq 0) { $reason = @($Tail -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) }
+        $reason = @(Get-BlockedLine $Tail)
+        if ($null -eq $reason[0]) { $reason = @($Tail -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) }
         try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($Status.slug)" ([string]$reason[0]) } catch { Write-Log "причина BLOCKED не записана: $($_.Exception.Message)" }
     }
     # Стан без started_utc (відмова до старту, старі записи) — під StrictMode крапка на відсутньому ключі падає.
