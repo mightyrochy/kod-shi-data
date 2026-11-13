@@ -1,0 +1,41 @@
+── ПРОМПТ (5560 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+8 — назва в тексті н=9
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Fine merino sweater, fitted crew neck, hip length, long sleeves, emerald green, extra-fine merino wool\nPleated midi skirt, A-line, mid-calf length, burgundy, wool crepe\nOpaque tights, 60 denier, black, matte knit\nSingle-breasted coat, tailored fit, knee length, camel, soft brushed wool\nAnkle boots, almond toe, 5 cm block heel, cognac, smooth leather\nSilk scarf, square, loosely knotted at the neck, gold and emerald print on a cream ground, twill silk\nDrop earrings, small and sculptural, warm gold, brushed metal\nStructured top-handle bag, medium size, black, grained leather\n\nEmerald and burgundy side by side make a rich, confident colour pairing, so you will stand out in the pews without anything flashy. The mid-calf skirt, long sleeves and closed neckline keep the look respectful for a church service. The same outfit also suits a relaxed lunch with your parents afterwards. The camel coat and cognac boots add warmth for an autumn day, and the silk scarf and gold earrings give a polished finish.",
+"2": "Fine merino sweater",
+"3": "Pleated midi skirt",
+"4": "Opaque tights",
+"5": "Single-breasted coat",
+"6": "Ankle boots",
+"7": "Silk scarf",
+"8": "Drop earrings",
+"9": "Structured top-handle bag"
+}
+
+── ВІДПОВІДЬ (1431 симв., 15.0 с, HTTP 200) ──
+{"1":"Тонкий мериносовий светр, приталений, круглий виріз, довжина до стегон, довгі рукави, смарагдово-зелений, надтонка мериносова вовна\nПлісирована спідниця міді, А-подібного силуету, довжина до середини литки, бордова, вовняний креп\nНепрозорі колготи, 60 den, чорні, матовий трикотаж\nОднобортне пальто, приталеного крою, довжина до коліна, кольору кемел, м'яка начесана вовна\nБотильйони, мигдалеподібний носок, блоковий підбор 5 см, коньячного кольору, гладка шкіра\nШовкова хустка, квадратна, вільно зав'язана на шиї, золотисто-смарагдовий принт на кремовому тлі, шовковий твіл\nСережки-краплі, невеликі та скульптурні, теплого золотого кольору, матований метал\nСтруктурована сумка з верхньою ручкою, середнього розміру, чорна, зерниста шкіра\n\nСмарагдовий і бордовий поруч — насичене, впевнене поєднання кольорів, тож ти виділятимешся серед людей у церкві, не вдаючись до нічого кричущого. Спідниця до середини литки, довгі рукави та закритий виріз роблять образ доречним для церковної служби. Цей самий образ підійде й для невимушеного обіду з батьками після служби. Пальто кольору кемел і коньячні ботильйони додають тепла в осінній день, а шовкова хустка та золоті сережки надають образу завершеності.","2":"Тонкий мериносовий светр","3":"Плісирована спідниця міді","4":"Непрозорі колготи","5":"Однобортне пальто","6":"Ботильйони","7":"Шовкова хустка","8":"Сережки-краплі","9":"Структурована сумка з верхньою ручкою"}

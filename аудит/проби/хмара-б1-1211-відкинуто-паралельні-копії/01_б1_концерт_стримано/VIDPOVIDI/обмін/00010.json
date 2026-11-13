@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-knit crew-neck sweater, slim cut, hip length, deep burgundy #5B1F2A, merino wool\\nStraight-leg trousers, mid-rise, full length to the ankle bone, black #1C1C1E, stretch wool-blend crepe\\nClassic jacket with a small collar, cropped at the hip, black #141414, smooth lambskin leather\\nAnkle boots, low stacked block heel, round toe, black #111111, matte leather with a grippy rubber sole\\nSmall crossbody bag, compact rectangular shape, worn across the body, black #1A1A1A, grained leather\\nSmall round stud earrings, silver #C0C0C0, polished sterling silver\\n\\nThis outfit sits at a neat, restrained level while still nodding to the rock-concert setting. The burgundy knit adds depth and warmth against the black, and the leather jacket gives a classic rock edge without looking like a costume. For standing in a crowd for hours, the trousers keep you covered, the low block heel is stable, and the crossbody bag leaves your hands free and stays safe in a crush. The jacket is enough for a cool autumn evening outside and is easy to take off once the club warms up.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Crew-neck sweater\\\",\\\"details\\\":\\\"Fine-knit, slim cut, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#5B1F2A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg trousers\\\",\\\"details\\\":\\\"Mid-rise, full length to the ankle bone, stretch wool-blend crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#1C1C1E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Classic jacket\\\",\\\"details\\\":\\\"Small collar, cropped at the hip, smooth lambskin leather\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#141414\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"Low stacked block heel, round toe, matte leather with a grippy rubber sole\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#111111\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small crossbody bag\\\",\\\"details\\\":\\\"Compact rectangular shape, worn across the body, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small round stud earrings\\\",\\\"details\\\":\\\"Polished sterling silver\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2065,\"output_tokens\":402},\"stop_reason\":\"end_turn\"}"
+ }
+}

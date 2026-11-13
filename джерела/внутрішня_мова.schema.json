@@ -2119,7 +2119,7 @@
      "type": "object"
     },
     "item_verdicts": {
-     "description": "вердикт про кожну її річ з фото: заяви кодами",
+     "description": "вердикт про кожну річ: заяви кодами",
      "type": "array",
      "items": {
       "type": "object",
@@ -4093,7 +4093,7 @@
          "properties": {
           "as_new": {
            "type": "boolean",
-           "description": "true — as one more saved case; else the open one is updated"
+           "description": "true — a new saved case; else the open one is updated"
           }
          }
         }
@@ -4126,7 +4126,7 @@
           "id": {
            "type": "string",
            "minLength": 1,
-           "description": "the \"id\" of one of saved_cases"
+           "description": "from saved_cases"
           }
          }
         }
@@ -4147,7 +4147,7 @@
           "id": {
            "type": "string",
            "minLength": 1,
-           "description": "the \"id\" of one of saved_cases"
+           "description": "from saved_cases"
           }
          }
         }
@@ -4180,7 +4180,7 @@
           "id": {
            "type": "string",
            "minLength": 1,
-           "description": "the \"id\" of one of profiles"
+           "description": "from profiles"
           }
          }
         }
@@ -4226,6 +4226,272 @@
          }
         }
        }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "find_item"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "item_type"
+         ],
+         "properties": {
+          "item_type": {
+           "type": "string",
+           "enum": [
+            "ankle_boots",
+            "anorak",
+            "backpack",
+            "bactus_scarf",
+            "bag_generic",
+            "baguette_bag",
+            "ballet_flats",
+            "beanie",
+            "belt",
+            "belt_bag",
+            "beret",
+            "blazer",
+            "blouse",
+            "bodysuit",
+            "bomber",
+            "boots",
+            "bow",
+            "bracelet",
+            "briefcase",
+            "brooch",
+            "bucket_bag",
+            "cap",
+            "cardigan",
+            "casual_suit",
+            "chelsea_boots",
+            "clutch",
+            "coat",
+            "cocktail_dress",
+            "collar_necklace",
+            "crossbody_bag",
+            "down_jacket",
+            "dress_generic",
+            "dress_shoes",
+            "earrings",
+            "espadrilles",
+            "evening_dress",
+            "fur_coat",
+            "glasses",
+            "gloves",
+            "hair_clip",
+            "hair_tie",
+            "half_coat",
+            "hat",
+            "headband",
+            "heeled_sandals",
+            "hobo_bag",
+            "hoodie",
+            "jacket",
+            "jeans",
+            "jewelry_generic",
+            "jumpsuit",
+            "kerchief",
+            "knitwear",
+            "leggings",
+            "lingerie",
+            "loafers",
+            "longsleeve",
+            "loungewear",
+            "moccasins",
+            "mules",
+            "necklace",
+            "over_knee_boots",
+            "parka",
+            "plimsolls",
+            "poncho",
+            "pumps",
+            "rain_cape",
+            "raincoat",
+            "ring",
+            "saddle_bag",
+            "sandals",
+            "scarf_generic",
+            "shawl",
+            "sheath_dress",
+            "sheepskin_coat",
+            "shirt",
+            "shorts",
+            "skirt",
+            "sneakers",
+            "snood",
+            "socks",
+            "sportswear",
+            "stole",
+            "suit",
+            "sundress",
+            "sweater",
+            "swimsuit",
+            "t_shirt",
+            "tights",
+            "top_garment",
+            "tote",
+            "trench_coat",
+            "trousers",
+            "twilly",
+            "two_piece_set",
+            "ugg_boots",
+            "vest",
+            "watch",
+            "windbreaker"
+           ],
+           "description": "kind of item"
+          },
+          "colour": {
+           "type": "string",
+           "enum": [
+            "beige",
+            "black",
+            "blue",
+            "brick",
+            "brown",
+            "burgundy",
+            "camel",
+            "cappuccino",
+            "cherry",
+            "chocolate",
+            "cocoa",
+            "coral",
+            "cream",
+            "creamy",
+            "denim_blue",
+            "electric_blue",
+            "emerald",
+            "fuchsia",
+            "ginger",
+            "golden",
+            "graphite",
+            "green",
+            "grey",
+            "khaki",
+            "latte",
+            "lemon",
+            "light_blue",
+            "lilac",
+            "magenta",
+            "milky",
+            "mint",
+            "mocha",
+            "mustard",
+            "navy",
+            "olive",
+            "orange",
+            "peach",
+            "pearly",
+            "petrol",
+            "pine_green",
+            "pink",
+            "plum",
+            "powder",
+            "powder_pink",
+            "purple",
+            "raspberry",
+            "red",
+            "rose",
+            "sand",
+            "silvery",
+            "soft_pink",
+            "taupe",
+            "terracotta",
+            "turquoise",
+            "white",
+            "yellow"
+           ],
+           "description": "colour she named"
+          },
+          "length": {
+           "type": "string",
+           "enum": [
+            "knee",
+            "maxi",
+            "mid_thigh",
+            "midi",
+            "mini",
+            "waist"
+           ],
+           "description": "length she named"
+          },
+          "cut": {
+           "type": "string",
+           "enum": [
+            "skinny",
+            "straight",
+            "tapered",
+            "wide",
+            "flared",
+            "culottes",
+            "pencil",
+            "a-line",
+            "full",
+            "pleated",
+            "bias-slip",
+            "bodycon",
+            "fitted",
+            "regular",
+            "relaxed",
+            "oversized",
+            "belted",
+            "wrap",
+            "peplum",
+            "shift",
+            "sheath",
+            "empire",
+            "double-breasted"
+           ],
+           "description": "cut she named"
+          },
+          "pattern": {
+           "type": "string",
+           "enum": [
+            "abstract",
+            "animal_print",
+            "camouflage",
+            "check",
+            "embroidery",
+            "floral",
+            "geometric",
+            "lace_motif",
+            "polka_dot",
+            "print_generic",
+            "solid",
+            "stripes"
+           ],
+           "description": "pattern she named"
+          },
+          "texture": {
+           "type": "string",
+           "enum": [
+            "denim",
+            "knit_fine",
+            "leather",
+            "patent",
+            "satin",
+            "silk_shine",
+            "smooth_matte",
+            "tweed_boucle"
+           ],
+           "description": "fabric surface she named (leather, satin, denim…)"
+          },
+          "shine": {
+           "type": "string",
+           "enum": [
+            "matte",
+            "soft_lustre",
+            "gloss",
+            "sequins_rhinestones"
+           ],
+           "description": "shine she named; sequins or rhinestones — sequins_rhinestones"
+          }
+         }
+        }
+       }
       }
      ],
      "properties": {
@@ -4238,7 +4504,8 @@
         "new_scenario",
         "switch_profile",
         "confirm_case",
-        "set_weather_feel"
+        "set_weather_feel",
+        "find_item"
        ]
       },
       "args": {
@@ -4258,6 +4525,10 @@
       {
        "const": "portrait_unreadable",
        "description": "рядок під портретом на першому кроці знайомства: чому стилістка не прочитала кольори з цього фото"
+      },
+      {
+       "const": "portrait_unmeasured",
+       "description": "рядок під портретом на першому кроці знайомства: кольори з цього фото — оцінка на око, бо виміряти їх з кадру не вдалося; який портрет надіслати, щоб їх виміряти"
       },
       {
        "const": "palette_scheme_note",
@@ -4302,6 +4573,10 @@
       {
        "const": "her_item_verdict",
        "description": "вердикт про її власну річ: чи підійде вона під цей вихід"
+      },
+      {
+       "const": "catalogue_search",
+       "description": "що код знайшов у каталозі на її опис речі і котру з знайдених радить першою"
       },
       {
        "const": "her_item_softening",
@@ -4421,6 +4696,22 @@
          {
           "const": "portrait_overexposed",
           "description": "the photo is overexposed: the skin is blown out to white"
+         },
+         {
+          "const": "portrait_uneven_light",
+          "description": "the light falls on one side of the face: one cheek is lit and the other in shadow; a portrait facing a window, in even daylight, lets the colours be measured"
+         },
+         {
+          "const": "portrait_skin_unmeasured",
+          "description": "both cheeks are not visible in clear skin (turned head, hair, hands, shadow); a portrait facing the camera with both cheeks open lets the skin be measured"
+         },
+         {
+          "const": "portrait_hair_unmeasured",
+          "description": "no clear patch of hair is visible (covered, cropped, or against a similar background); a portrait with the hair visible lets it be measured"
+         },
+         {
+          "const": "portrait_eyes_unmeasured",
+          "description": "the irises are not visible clearly enough (small, closed, glasses, glare); a closer portrait with open eyes and no glasses lets the eyes be measured"
          },
          {
           "const": "scheme_tonal",
@@ -4869,6 +5160,94 @@
          {
           "const": "colour_unknown_not_checked",
           "description": "this item's colour is unknown, as neither a photo measured it nor a colour was named, so the item was not checked against her palette; a colour in words makes the check possible"
+         },
+         {
+          "const": "figure_needs_measurements",
+          "description": "how the item sits on her body is not judged: she has not named her height and at least three girths (shoulders, chest, waist, hips); with them it can be judged"
+         },
+         {
+          "const": "maxi_holds",
+          "description": "on her height the hem of this skirt falls to maxi, and maxi holds here: of the three supports maxi needs (height, lift of the shoes or the skirt's own volume) it has one (values: by — volume)"
+         },
+         {
+          "const": "hem_on_her_body",
+          "description": "where the item's hem falls on her body at her height (values: level — body level code: waist, mini, knee, calf, maxi; measured_from — garment_length when the shop's length in cm was laid on her height, shop_word when only the shop's length word is known); the level heights are shares of her height, not measured on her"
+         },
+         {
+          "const": "hem_not_judged",
+          "description": "where the hem falls on her body is not judged (values: missing — garment_length: the shop card's length in cm or a photo of the item on a person makes it possible)"
+         },
+         {
+          "const": "skirt_cut_reading",
+          "description": "how the knowledge base reads this skirt cut (values: cut — cut code; reading — the knowledge base's reading as free text, retell its content rather than quoting it)"
+         },
+         {
+          "const": "rise_of_item",
+          "description": "the item's rise (values: rise — high, mid or low): the waistband sets where the eye starts her legs; whether it shows is decided by the top worn with it"
+         },
+         {
+          "const": "rise_not_named",
+          "description": "the item's rise is not named by the shop card or the photo, so its effect on her leg line is not judged; the rise from the card or a side photo makes it possible"
+         },
+         {
+          "const": "cut_vs_figure_not_judged",
+          "description": "the cut is not judged against her figure (values: missing — cut: the cut is not named; measurement_error: which half of her figure is wider is not proven beyond the error of measuring oneself with a tape)"
+         },
+         {
+          "const": "colour_role_base",
+          "description": "the item's colour is a neutral: in an outfit it is the base, and the colour comes from other pieces"
+         },
+         {
+          "const": "colour_role_accent",
+          "description": "the item's colour is a colour, not a neutral: in an outfit it is the accent, with neutrals around it (values: loud — true when the colour is loud, so one such accent per outfit)"
+         },
+         {
+          "const": "pairs_with_colours",
+          "description": "colours from her palette that make a scheme with this item (values: colours — colour names; scheme — neutral_plus_accent: a neutral with one accent)"
+         },
+         {
+          "const": "pairs_with_role_palette_unknown",
+          "description": "the item makes a scheme with the opposite role (values: partner — neutrals or accent); which colours are hers needs her colours from a portrait"
+         },
+         {
+          "const": "draws_eye_enlarges",
+          "description": "light, bright and shiny surfaces advance: the item draws the eye to the part of her figure it covers and makes that part look larger (values: by — light, bright, shiny)"
+         },
+         {
+          "const": "recedes_zone",
+          "description": "dark, muted and matte surfaces recede: the item does not draw the eye to the part of her figure it covers"
+         },
+         {
+          "const": "colour_profile_needs_portrait",
+          "description": "her colours were not read, so the item's colour is not checked against her palette or her face: a portrait in daylight, face at least a quarter of the frame, makes it possible (values: reason — why the photo was not read, when it was refused)"
+         },
+         {
+          "const": "her_item_candidate_to_buy",
+          "description": "she is deciding whether to buy this item: it is compared with the others she is choosing between, not put into her outfits"
+         },
+         {
+          "const": "buy_first",
+          "description": "of the items she is choosing between, this one — or these, when several came out equal at the top — is advised first (values: reasons — statement codes that set it apart from the others; avoids — risks the corpus names that the others carry and it does not; then — the others in order)"
+         },
+         {
+          "const": "buy_order_tie",
+          "description": "these items she is choosing between came out equal in the code's judgement: the choice between them is hers"
+         },
+         {
+          "const": "colour_role_not_judged",
+          "description": "whether the item's colour is a neutral base or an accent was not judged (values: missing — colour_measure: neither a measurement nor a shop colour word places it on one side; a photo of the item in daylight lets it be judged)"
+         },
+         {
+          "const": "catalogue_variants_found",
+          "description": "the catalogue has items that match every code of her description; each is shown with the code's judgement for her (values: count — how many; asked — the codes of her description)"
+         },
+         {
+          "const": "catalogue_has_none",
+          "description": "the catalogue has no item that matches every code of her description; nothing similar is offered in its place (values: asked — the codes of her description)"
+         },
+         {
+          "const": "catalogue_records_without_code",
+          "description": "some catalogue items of this kind do not state this feature, so the code cannot tell whether they match and does not show them (values: field — the feature; count — how many items)"
          },
          {
           "const": "her_item_in_every_look",
@@ -6557,6 +6936,10 @@
          {
           "const": "one_register_leads_other_one_quote",
           "description": "one register leads, another gives one quote item, or declare the break"
+         },
+         {
+          "const": "declare_register_mix_break",
+          "description": "keep the outfit as it is and declare the mix of registers a deliberate break"
          },
          {
           "const": "conflicting_register_pair",

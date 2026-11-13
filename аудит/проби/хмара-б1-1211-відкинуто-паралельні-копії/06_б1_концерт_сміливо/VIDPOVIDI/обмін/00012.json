@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Emerald ribbed knit top, slim fit, long sleeves, hip length, #0B6E4F, fine merino-blend wool\\nBlack straight-leg trousers, high waist, ankle length, #1A1A1A, stretch wool-blend crepe\\nBlack cropped biker jacket, fitted, hip-skimming, #111111, grained leather with silver zips\\nBlack ankle boots, low block heel, almond toe, #1C1C1C, smooth leather with a grippy rubber sole\\nChunky chain necklace, short length, silver tone #C0C0C0, polished metal\\nMedium silver hoop earrings, #C0C0C0, polished metal\\nSmall crossbody bag, compact, worn across the body, #1A1A1A, matte leather\\n\\nThis outfit stands out through the vivid emerald knit, which cuts through the dark club lighting and the black clothes around you. The leather jacket and silver hardware give it a rock feel while keeping the neat, polished look of a refined knit with tailored trousers and ankle boots. The low block heel and sturdy sole make standing in a crowd for hours comfortable. The crossbody bag keeps your hands free, and the jacket gives you warmth for the autumn walk to the club and a layer to take off once it heats up inside.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Emerald ribbed knit top\\\",\\\"details\\\":\\\"slim fit, long sleeves, hip length, fine merino-blend wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#0B6E4F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Black straight-leg trousers\\\",\\\"details\\\":\\\"high waist, ankle length, stretch wool-blend crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Black cropped biker jacket\\\",\\\"details\\\":\\\"fitted, hip-skimming, grained leather with silver zips\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#111111\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Black ankle boots\\\",\\\"details\\\":\\\"low block heel, almond toe, smooth leather with a grippy rubber sole\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1C1C1C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Chunky chain necklace\\\",\\\"details\\\":\\\"short length, polished metal, silver tone\\\",\\\"slot\\\":\\\"necklace\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Medium silver hoop earrings\\\",\\\"details\\\":\\\"polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small crossbody bag\\\",\\\"details\\\":\\\"compact, worn across the body, matte leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2094,\"output_tokens\":456},\"stop_reason\":\"end_turn\"}"
+ }
+}
