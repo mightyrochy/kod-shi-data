@@ -519,7 +519,9 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     ConvertTo-Marker ($ref + "`t" + $saved.sha + "`t" + $saved.time)
 }
 
-function Get-MarkerKey($M) { "$($M.Ref) $($M.Sha)" }
+# Ключ стану — від канонічної назви, а не від $M.Ref: Ref залежить від простору посилань рушія (Set-RemoteRoot), і ключі
+# позначок claude-run змінилися б разом із ним (13.11, #3527: давні виконані позначки стали новими). Назва — `gemini-queue/…`.
+function Get-MarkerKey($M) { "refs/remotes/origin/$($M.Name) $($M.Sha)" }
 
 function Get-StatePath([string]$Key, [string]$StateDir = $script:StateDir) { Join-Path $StateDir ((Get-Sha256Hex $Key) + '.txt') }
 
@@ -998,16 +1000,51 @@ function Set-ProcessPause([int]$Id, [bool]$On) {
     [GeminiWrapper.Power]::Pause($Id, $On)
 }
 
+function Clear-GpuForPause {
+    <# Планувальник claude-run без світла звільняє відеокарту до заморожування: заморожений сервер не відповідає, а модель
+    у пам'яті карти не дає їй заснути (власник 13.11). LM Studio вивантажує екземпляри REST-ом під воротами GPU, крім тих,
+    що могла завантажити жива оренда наряду (як Complete-GpuModels): вивантажена посеред виклику модель зірвала б виклик
+    живого прогону. ComfyUI на 8000 і 8188 — POST /free; моделі він сам підтягує наступним запитом. Заново нічого не
+    вантажить. Збій чи вимкнений сервер — рядок журналу, пауза йде далі. #>
+    if (-not $script:PauseMachine) { return }
+    $gate = Open-Lock (Get-GpuLockPath)
+    if ($null -eq $gate) { Write-Log 'пауза: LM Studio не звільнено — ворота GPU зайняті' }
+    else {
+        try {
+            $s = Read-GpuSession
+            $live = @(if ($null -ne $s) { Get-LiveGpuLeases $s })
+            $done = 0; $kept = 0
+            foreach ($i in @(Get-LmsInstances)) {
+                if (@($live | Where-Object { $_.join -cnotcontains $i.id }).Count) { $kept++; continue }
+                $body = @{ instance_id = $i.id } | ConvertTo-Json -Compress
+                $v = Invoke-RestMethod 'http://127.0.0.1:1234/api/v1/models/unload' -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 120 -ErrorAction Stop
+                if (Get-JsonProp $v 'error') { throw "відмова вивантаження $($i.id)" }
+                $done++
+            }
+            Write-Log "пауза: LM Studio вивантажено екземплярів $done, лишено живим GPU-нарядам $kept"
+        } catch { Write-Log "пауза: LM Studio не звільнено: $($_.Exception.Message)" }
+        finally { $gate.Dispose() }
+    }
+    foreach ($port in 8000, 8188) {
+        try {
+            $null = Invoke-RestMethod "http://127.0.0.1:$port/free" -Method Post -ContentType 'application/json' -Body '{"unload_models":true,"free_memory":true}' -TimeoutSec 15 -ErrorAction Stop
+            Write-Log "пауза: ComfyUI :$port звільнено"
+        } catch { Write-Log "пауза: ComfyUI :$port не звільнено: $($_.Exception.Message)" }
+    }
+}
+
 function Wait-PowerPause {
     <# Світла нема — робота стоїть (власник 09.11): процеси Get-PauseTargets призупинено, а цикл, що кличе паузу, далі
     не йде (нові позначки не стартують), доки не повернеться мережа; тоді процеси продовжують з того самого місця.
     Без роботи ноутбук на батареї спить у Modern Standby й сам бачить, що світло повернулось: будильник із гібернації
-    08.11 кожним пробудженням відновлював роботу на відеокарті й коштував 2–3 % батареї. Час паузи не йде в межі. #>
+    08.11 кожним пробудженням відновлював роботу на відеокарті й коштував 2–3 % батареї. Перед заморожуванням
+    планувальник звільняє відеокарту (Clear-GpuForPause). Час паузи не йде в межі. #>
     # Серцебиття всередині паузи може дійти до Invoke-Native — друга пауза всередині першої нічого не робить.
     if ($script:Pausing -or -not (Test-OnBattery)) { return }
     $script:Pausing = $true
+    Clear-GpuForPause
     $from = Get-UnbiasedTime
-    $paused = @(foreach ($i in Get-PauseTargets) { if (Set-ProcessPause $i $true) { $i } })
+    $paused =@(foreach ($i in Get-PauseTargets) { if (Set-ProcessPause $i $true) { $i } })
     Write-Log "пауза: світла нема (живлення від батареї), призупинено процесів $($paused.Count)"
     try {
         # Світло перевіряється раз на інтервал опитування черги: у паузі нема роботи, яку треба будити частіше.
