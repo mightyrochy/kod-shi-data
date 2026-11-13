@@ -11,7 +11,7 @@ import urllib.request
 
 def replay(here, calls):
     """Віддає записані відповіді через штатний сервер replay_сцени.py й завжди прибирає сервер."""
-    with tempfile.TemporaryDirectory(prefix='пояснення-', dir=os.environ['TEMP']) as temp:
+    with tempfile.TemporaryDirectory(prefix='пояснення-', dir=os.environ.get('TEMP') or os.environ.get('TMP')) as temp:
         folder = Path(temp)
         (folder / 'VIDPOVIDI').mkdir()
         (folder / 'лог.txt').write_text('', encoding='utf8')
@@ -89,7 +89,8 @@ def main():
         'підсумок': {'образів': len(results), 'речей': sum(r['речей'] for r in results), 'відповідей_через_replay_сцени': len(responses),
             'без_опори_до': sum(r['тверджень_без_опори_до'] for r in results),
             'без_опори_повтор': sum(r['тверджень_без_опори_повтор'] for r in results),
-            'суперечностей_до': 3, 'суперечностей_повтор': 3,
+            'самосуперечностей_пояснення_до': 2, 'самосуперечностей_пояснення_повтор': 2,
+            'назва_проти_пояснення_до': 1, 'назва_проти_пояснення_повтор': 1,
             'семантика_нової_відповіді': 'не виміряно: нових відповідей моделі немає'}}
     (here / 'повтор.json').write_text(json.dumps(output, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
     print(json.dumps(output['підсумок'], ensure_ascii=False))
