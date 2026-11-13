@@ -142,8 +142,18 @@ function ConvertTo-ArgString([string[]]$Items) {
     $parts -join ' '
 }
 
+# Кінці рядків у репозиторії — LF (файли, що мають CRLF в індексі, — CSV, давні скрипти — лишаються як є). Агент на
+# Windows пише файли текстовим записом (Python `write_text`, PowerShell) — `\r\n`; копія задачі — worktree клону, чий
+# спільний `.git/config` на ноутбуці тримає `core.autocrlf=false`, тож `git add` клав CRLF у блоби, а дифф паспорта
+# виходив «увесь файл» (прогін 03d38720: +5421/−5351 замість +70). `core.autocrlf=input` перетворює CRLF на LF під час
+# `git add` і нічого не робить під час checkout; файл, що вже має CRLF в індексі, git не чіпає. `core.safecrlf=false` —
+# без попереджень на кожен файл у виводі агента. Йде середовищем процесу (`GIT_CONFIG_COUNT`, git від 2.31), а не
+# `-c` чи конфігом клону: так його мають і git обгортки, і весь git агента та його нащадків (Git Bash, PowerShell, Python).
+$script:GitProcessConfig = [ordered]@{ 'core.autocrlf' = 'input'; 'core.safecrlf' = 'false' }
+
 function New-StartInfo([string]$Exe, [string[]]$Arguments, [string]$Dir, [switch]$NoRedirect) {
-    <# Процес без вікна, UTF-8, git без питань про вхід; -NoRedirect — потоки успадковано (процес наряду). #>
+    <# Процес без вікна, UTF-8, git без питань про вхід і з LF у комітах (GitProcessConfig); -NoRedirect — потоки
+    успадковано (процес наряду). Чуже `GIT_CONFIG_*` середовища лишається, наші ключі дописуються після нього. #>
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = $Exe
     $psi.Arguments = ConvertTo-ArgString $Arguments
@@ -158,6 +168,14 @@ function New-StartInfo([string]$Exe, [string[]]$Arguments, [string]$Dir, [switch
     if ($Dir) { $psi.WorkingDirectory = $Dir }
     $psi.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'
     $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
+    $n = 0
+    [void][int]::TryParse([string]$psi.EnvironmentVariables['GIT_CONFIG_COUNT'], [ref]$n)
+    foreach ($key in $script:GitProcessConfig.Keys) {
+        $psi.EnvironmentVariables["GIT_CONFIG_KEY_$n"] = $key
+        $psi.EnvironmentVariables["GIT_CONFIG_VALUE_$n"] = $script:GitProcessConfig[$key]
+        $n++
+    }
+    $psi.EnvironmentVariables['GIT_CONFIG_COUNT'] = [string]$n
     $psi
 }
 
