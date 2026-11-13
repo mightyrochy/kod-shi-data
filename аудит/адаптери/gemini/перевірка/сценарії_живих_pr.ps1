@@ -19,7 +19,7 @@ try {
         & git -C $seed remote add origin $remote
         foreach ($d in @('аудит/наряди','аудит/адаптери/gemini')) { [void][IO.Directory]::CreateDirectory((Join-Path $seed $d)) }
         Copy-Item -LiteralPath (Join-Path $SourceDir 'ланцюг.json') -Destination "$seed/аудит/адаптери/gemini/ланцюг.json"
-        foreach ($task in @('автоперевірка','автоживий')) { [IO.File]::WriteAllText("$seed/аудит/наряди/$task.md", 'Наряд стенда', $utf) }
+        foreach ($task in @('автоперевірка','автоживий','перевірка-1','перевірка-5')) { [IO.File]::WriteAllText("$seed/аудит/наряди/$task.md", 'Наряд стенда', $utf) }
         & git -C $seed add -A; & git -C $seed commit -q -m 'стенд'; & git -C $seed push -q origin main
         $head = (& git -C $seed rev-parse HEAD).Trim(); $other = 'a' * 40
         $bare = Join-Path $case 'repo.git'; & git clone -q --bare $remote $bare
@@ -71,7 +71,7 @@ try {
         $script:StateDir = Join-Path $case 'state'; $script:SlotDir = Join-Path $case 'slots'
         $script:NoHooks = Join-Path $case 'no-hooks'; $script:Limits = @{slots=@{codex=4;agy=4;claude=4}}
         # Смуга Claude бере наряд без GPU лише з переліку ноутбука; тут міряється звірка голови, тож позначки — у переліку.
-        $script:Limits.claude_laptop = @(1..6 | ForEach-Object { "автоперевірка-$_-$head" })
+        $script:Limits.claude_laptop = @(1..6 | ForEach-Object { "автоперевірка-$_-$head" }) + @('перевірка-1','перевірка-5')
         foreach ($d in @($script:StateDir,$script:SlotDir,$RunsDir,$OutDir,$LaneDir)) { if ($d) { [void][IO.Directory]::CreateDirectory($d) } }
         [void](Invoke-Git @('fetch','-q','origin',"+refs/heads/main:$script:RemoteRoot/main","+refs/heads/gemini-queue/*:$($script:QueuePrefix)*"))
         $script:Jobs = New-Object Collections.ArrayList
@@ -122,7 +122,7 @@ try {
             } else {
                 $WorkDir = $pubWork
                 $sent = 0; $duplicates = 0
-                foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' | Where-Object { $_.Name -ne 'skipped.json' })) {
+                foreach ($file in @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' | Where-Object { $_.Name -match '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json$' })) {
                     $result = ConvertFrom-Json ([IO.File]::ReadAllText($file.FullName))
                     if ($result.code -ne 'STALE') { continue }
                     $line = Get-Line $file.BaseName
@@ -151,6 +151,17 @@ try {
             function Get-ReviewTime { [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 121 }
             $null = Invoke-Task $m $job
             Check "$lane : після відновлення API та сама позначка запускає модель" ($script:Models -eq ($priorModels + 1))
+            # `перевірка-<PR>` несе лише номер PR (09.11: перевірки злитих PR доїли квоту agy): закритий PR — STALE без моделі.
+            foreach ($n in @(1, 5)) { [void](Invoke-Git @('push','-q','origin',"${head}:refs/heads/gemini-queue/перевірка-$n/$script:CaseModel/1")) }
+            [void](Invoke-Git @('fetch','-q','origin',"+refs/heads/gemini-queue/*:$($script:QueuePrefix)*"))
+            $script:Jobs.Clear(); $null = Start-Markers $workers; $priorModels = $script:Models
+            foreach ($job in @($script:Jobs)) {
+                $m = @(Get-Markers | Where-Object { $_.Slug -ceq $job.slug })[0]
+                if ($lane -eq 'claude') { $m = Add-ClaudeFields $m }
+                $null = Invoke-Task $m $job
+            }
+            $closed = [IO.File]::ReadAllText((Get-StatePath (Get-MarkerKey @(Get-Markers | Where-Object { $_.Slug -ceq 'перевірка-1' })[0])))
+            Check "$lane : перевірка-<PR> закритого PR — STALE без моделі, відкритого — модель ($($script:Models - $priorModels) з 2)" ($script:Jobs.Count -eq 2 -and $closed -cmatch ' STALE$' -and $script:Models -eq ($priorModels + 1))
             Remove-Item Function:Get-ReviewTime
             . (Join-Path $SourceDir 'queue_lanes.ps1')
         }

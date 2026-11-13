@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tie-neck blouse, relaxed cut, long sleeves, hip length, cobalt blue (#1F4FBF), satin-finish crepe\\n\\nWide-leg trousers, high rise, full length to the ankle bone, camel (#B88A5A), wool-blend twill\\n\\nTextured blazer, single-breasted, slightly tailored, hip length, charcoal herringbone (#3A3D45), wool tweed\\n\\nCoat, single-breasted, straight cut, knee length, deep burgundy (#6D1F2F), brushed wool\\n\\nLoafers, almond toe, low block heel, black (#1C1C1C), polished leather with gold-tone hardware\\n\\nBelt, slim, cognac (#8B5A2B), smooth leather with a small gold buckle\\n\\nStructured tote, medium size, cognac (#8B5A2B), grained leather\\n\\nFine chain necklace, short length, gold tone (#C9A227), metal\\n\\nWhy this outfit works: The cobalt blouse against warm camel trousers is a confident color pairing that gets you noticed while the silhouette stays office-appropriate. The herringbone blazer adds texture and structure, so the look reads as neat and professional rather than loud. The burgundy coat suits the autumn chill and adds a rich, deliberate accent. Cognac accents on the belt and bag tie the warm tones together, and the polished loafers keep you comfortable through a full day.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Tie-neck blouse\\\",\\\"details\\\":\\\"relaxed cut, long sleeves, hip length, satin-finish crepe\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#1F4FBF\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wide-leg trousers\\\",\\\"details\\\":\\\"high rise, full length to the ankle bone, wool-blend twill\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#B88A5A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Textured blazer\\\",\\\"details\\\":\\\"single-breasted, slightly tailored, hip length, wool tweed\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#3A3D45\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Coat\\\",\\\"details\\\":\\\"single-breasted, straight cut, knee length, brushed wool\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#6D1F2F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Loafers\\\",\\\"details\\\":\\\"almond toe, low block heel, polished leather with gold-tone hardware\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1C1C1C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Belt\\\",\\\"details\\\":\\\"slim, smooth leather with a small gold buckle\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#8B5A2B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Structured tote\\\",\\\"details\\\":\\\"medium size, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#8B5A2B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Fine chain necklace\\\",\\\"details\\\":\\\"short length, metal\\\",\\\"slot\\\":\\\"necklace\\\",\\\"color_hex\\\":\\\"#C9A227\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2148,\"output_tokens\":496},\"stop_reason\":\"end_turn\"}"
+ }
+}

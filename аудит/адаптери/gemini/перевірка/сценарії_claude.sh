@@ -33,6 +33,8 @@ argv() { $PY -c "import json
 for l in open('$(wp "$W/cc.log")', encoding='utf-8'): print(' '.join(json.loads(l)['argv']))" 2>/dev/null | tail -1; }
 prompt() { $PY -c "import json
 print([json.loads(l) for l in open('$(wp "$W/cc.log")', encoding='utf-8')][-1]['stdin'])" 2>/dev/null; }
+bgc() { $PY -c "import json
+print([json.loads(l) for l in open('$(wp "$W/cc.log")', encoding='utf-8')][-1]['bg_ceiling'])" 2>/dev/null; }
 # Тека сесії: cwd — cr/w/<прогін>/repo, TEMP і TMP — cr/w/<прогін>/tmp (з FAKE_CC_LOG).
 copydir() { $PY -c "import json, os, sys
 e = [json.loads(l) for l in open(sys.argv[1], encoding='utf-8')][-1]
@@ -51,6 +53,7 @@ setup k1; mark "$SLUG/$M/1"; cr
 SHA=$(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null)
 chk "рядок ГОТОВО claude/<наряд> <SHA origin> МОДЕЛЬ $M" '[ -n "$SHA" ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $SHA МОДЕЛЬ $M" ]'
 chk "argv: -p --model claude-sonnet-5-5 --effort medium --permission-mode auto stream-json" '[ "$(argv)" = "-p --model claude-sonnet-5-5 --effort medium --permission-mode auto --output-format stream-json --verbose" ]'
+chk "claude -p запущено зі змінною CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 (є: $(bgc))" '[ "$(bgc)" = 0 ]'
 chk "промпт: НОУТБУК.md, наряд дослівно, вимикає лише обгортка, без «Продовжуй»" 'P=$(prompt); [[ "$P" == *"аудит/НОУТБУК.md"* && "$P" == *"Підніми й зупини LM Studio."* && "$P" == *"вимикає лише обгортка за позначкою"* && "$P" != *"Продовжуй"* && "$P" != *"запускач —"* ]]'
 # Наряд 08.11 велів «НОУТБУК ГОТОВО #PR <SHA>» — BAD_BRANCH: формат звіту повторено після наряду, у рядку, що сильніший.
 chk "промпт: після наряду — формат звіту з гілкою, не номером PR" '[[ "$(prompt | sed -n "/КІНЕЦЬ НАРЯДУ/,\$p")" == *"НОУТБУК ГОТОВО <гілка claude/…>"*"не номер PR"*"формат звіту вище"* ]]'
@@ -192,5 +195,28 @@ STALE=$(git -C "$W/clone" rev-parse refs/remotes/origin/main)
 mark "$SLUG/cc-claude-opus-5-5/2"; cr
 chk "origin/main клону не освіжено (стара голова $(git -C "$W/clone" rev-parse --short refs/remotes/origin/main))" '[ "$(git -C "$W/clone" rev-parse refs/remotes/origin/main)" = "$STALE" ] && [ "$STALE" != "$NEXT" ]'
 chk "промпт відстала гілка: «git merge $NEXT» (свіжий main), без origin/main" 'P=$(prompt); [[ "$P" == *"Перший крок: влий свіжий"* && "$P" == *"git merge $NEXT"* && "$P" != *"origin/main"* ]]'
+echo "=== К13 ЗНЯТО (коміт поверх позначки): CANCELLED з причиною; прогін, що йде, зупинено; публікатор знімає позначку"
+has() { git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini-queue/$1" 2>/dev/null; }
+zn() { O=$(has "$1"); C=$(git -C "$W/seed" commit-tree "$O^{tree}" -p "$O" -m "ЗНЯТО: $2"); git -C "$W/seed" push -q origin "$C:refs/heads/gemini-queue/$1" 2>/dev/null; }
+# claude-run поруч із теки публікатора (як на ноутбуці): публікатор читає її записи на зняття.
+CRW() { mkdir -p "$W/claude-run"; cp "$W/cr/boot.txt" "$W/claude-run/"; printf '{"WorkDir":"%s"%s}' "$(wp "$W/claude-run")" "$1"; }
+pub() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_publish.ps1")" -ArgsJson "{\"WorkDir\":\"$(wp "$W/pub")\",\"OutDir\":\"$(wp "$W/gem")\",\"OutboxDir\":\"$(wp "$W/out")\",\"RepoUrl\":\"$(wp "$W/origin.git")\",\"ClaudeExe\":\"$(stub fake_claude)\",\"SendRetryDelaySeconds\":0}" >/dev/null 2>&1; }
+setup k13; mark "$SLUG/$M/1"; zn "$SLUG/$M/1" 'інша смуга'; cr "$(CRW '')"
+chk "до узяття: рядок CANCELLED, claude не кликано, причина в результаті" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG CANCELLED" ] && [ ! -e "$W/cc.log" ] && grep -q "\"reason\":\"інша смуга\"" "$W"/claude-run/runs/*/result.json'
+chk "запис на зняття з черги — у claude-run/finished" '[ "$(cat "$W"/claude-run/finished/*.txt)" = "gemini-queue/$SLUG/$M/1 $(has "$SLUG/$M/1")" ]'
+pub; pub; chk "публікатор зняв позначку з origin" '[ -z "$(has "$SLUG/$M/1")" ] && [ -z "$(ls "$W/claude-run/finished")" ]'
+setup k13b; mark "$SLUG/$M/1"; T0=$(date +%s); FAKE_CC_SCENARIO=hang cr "$(CRW ',"PollMinutes":0.05,"HangMinutes":5')" & CP=$!
+for i in $(seq 60); do grep -qs '^STARTED [0-9]' "$W"/claude-run/state/*.txt && break; sleep 1; done
+zn "$SLUG/$M/1" 'інша смуга'; wait "$CP"; T1=$(date +%s)
+chk "під час прогону: claude зупинено за $((T1 - T0)) с (HANG — за 5 хв), один рядок CANCELLED" '[ $((T1 - T0)) -lt 90 ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG CANCELLED" ] && [ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
+chk "стан узятого прогону й знятої позначки — DONE … CANCELLED" '[ "$(grep -l "^DONE .* CANCELLED$" "$W"/claude-run/state/*.txt | wc -l)" = 2 ]'
+
+echo "=== К14 фонові завдання агента: claude -p без власної межі очікування, обмежує лише завислість"
+# Власна межа claude -p (зупинити фон і вийти через 10 хв після останнього ходу, за годинником стіни) обривала прогін без
+# звіту; змінна 0 знімає її, і мовчазне очікування фону лишається під порогом завислості обгортки.
+setup k14; mark "$SLUG/$M/1"; T0=$(date +%s); CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=600000 FAKE_CC_SCENARIO=bg_wait cr; T1=$(date +%s)
+chk "змінна середовища сесії обгортку не обходить: у claude — 0, не 600000 (є: $(bgc))" '[ "$(bgc)" = 0 ]'
+chk "фон ще йде, claude мовчить → HANG за ≤ 60 с, не NO_REPORT (є: $((T1 - T0)) с, $(lines))" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG HANG" ] && [ $((T1 - T0)) -le 60 ]'
+chk "процес після HANG зупинено" '[ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
 
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD

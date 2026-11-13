@@ -19,7 +19,8 @@
      ЗАБЛОКОВАНО з кодом (MODEL_INVALID, EFFORT_INVALID), без підміни. Дозволи — `--permission-mode auto`.
   3. Промпт — перший і останній рядки запускача (`аудит/ЗАПУСКАЧ.md`) без його id і з вимкненням «лише обгортка за
      позначкою»; нова спроба при наявній гілці наряду — ще «продовжуй з гілки». Гілку й PR-чернетку сесія пушить сама.
-  4. Межі часу всього нема: зупиняє лише завислість — жодної події stream-json довше за поріг (HANG).
+  4. Межі часу всього нема: зупиняє лише завислість — жодної події stream-json довше за поріг (HANG). Очікування фонових
+     завдань агента — без власної межі `claude -p` (CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0): його тоді обмежує лише HANG.
   5. Кінець — рядок теки вихідних (доставляє `gemini-publish`): ГОТОВО <гілка> <SHA40>, лише коли `origin` має
      саме цей SHA на гілці зі звіту, або ЗАБЛОКОВАНО claude/<наряд> <КОД>; копія з незапушеними комітами лишається — ще рядок COPY_KEPT. Відмова за квотою — не кінець: позначка
      чекає скидання (час — з події `rate_limit_event` stream-json) і рядок QUOTA0_CLAUDE_M<хв>; потім її бере ця ж смуга.
@@ -171,6 +172,38 @@ function Add-ClaudeFields($M) {
     $M | Add-Member -NotePropertyName Effort -NotePropertyValue $effort -Force
     $M | Add-Member -NotePropertyName Off -NotePropertyValue ($M.Slug -ceq $script:OffSlug -and $M.Model -ceq $script:OffModel) -Force
     $M
+}
+
+# Стан позначок claude-run до того, як ключ перейшов на канонічну назву (Get-MarkerKey), лежав під ключем від
+# `$script:RemoteRoot/<назва> <sha>` (refs/claude-run/…). Копіює його під канонічний ключ: `.txt` (виконане, WAIT, OFF),
+# `.seen` (перша поява — порядок черги) і `.owner` (рядок OWNER не повторюється). Раз на файл і без перезапису: є канонічний —
+# лишається він; старі файли не видаляються. `.claim` не переносимо: це живе узяття процесом наряду, що сам його знімає за
+# своїм ключем, — знімок лишився б хибним TAKEN, а мертве узяття без стану прибирає Clear-OrphanClaims. `STARTED` теж: наряд
+# іще йде чи перерваний — його кінець запише старий ключ, а знімок Resume-Interrupted помилково закрив би як INTERRUPTED;
+# коли наряд допише DONE, наступний прохід перенесе його.
+function Copy-StateOnce([string]$From, [string]$To) {
+    if (-not [IO.File]::Exists($From) -or [IO.File]::Exists($To)) { return 0 }
+    if ($From.EndsWith('.txt') -and [IO.File]::ReadAllText($From, $script:Utf8).StartsWith('STARTED ')) { return 0 }
+    $tmp = $To + '.' + [guid]::NewGuid().ToString('N') + '.part'
+    try { [IO.File]::Copy($From, $tmp); [IO.File]::Move($tmp, $To); 1 }
+    catch { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; 0 }
+}
+
+function Move-LegacyMarkerState($Markers) {
+    if ($script:RemoteRoot -ceq 'refs/remotes/origin') { return 0 }
+    $moved = 0
+    foreach ($m in $Markers) {
+        $new = Get-StatePath (Get-MarkerKey $m)
+        $old = Get-StatePath "$script:RemoteRoot/$($m.Name) $($m.Sha)"
+        if ($new -ceq $old -or [IO.File]::Exists((Get-ClaimPath $new))) { continue }
+        try {
+            foreach ($ext in @('.txt', '.seen', '.owner')) {
+                $moved += Copy-StateOnce ($old -replace '\.txt$', $ext) ($new -replace '\.txt$', $ext)
+            }
+        } catch { Write-Log "перенесення стану $($m.Name): $($_.Exception.Message)" }
+    }
+    if ($moved) { Write-Log "стан позначок: перенесено файлів зі старого ключа $moved" }
+    $moved
 }
 
 # --- ноутбук (перекривається на стенді) ----------------------------------------------------------------------------
@@ -803,6 +836,11 @@ function Save-ClaudeQuota($Info) {
 function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [string]$RunDir, [string]$StatePath, [string]$StateHead, [string]$Marker, [string]$Slot) {
     $hang = Get-Limit $script:Limits 'HangMinutes' 'claude_hang_minutes'
     $psi = New-StartInfo $Exe $ArgList $RepoDir
+    # `claude -p` сам зупиняє фонові завдання агента (монітор, вимір) і виходить, коли після останнього ходу минуло
+    # 10 хв за годинником стіни; 0 — чекати без цієї межі (назва й значення — з тексту stderr самого claude). Той годинник
+    # іде й під час паузи живлення (Wait-PowerPause призупиняє процеси наряду), тож після паузи межа вже минула, хоч
+    # агент не мовчав. Межа часу прогону — лише завислість нижче (час неспання, `Stop-Tree` прибирає дерево).
+    $psi.EnvironmentVariables['CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'] = '0'
     $psi.RedirectStandardInput = $true
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
     $p = Invoke-WithStdinUtf8 { Start-Tree $psi }
@@ -872,7 +910,9 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $res
 }
 
-function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [string]$Branch = '', [string]$Sha = '') {
+# Кінець позначки: результат, рядок у вихідних і стан DONE; позначка з прийнятим рядком — у перелік публікатора на зняття з
+# черги (Add-FinishedMarker): кінець живе на origin, а не лише в локальному стані. Reason — причина зняття (ЗНЯТО).
+function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [string]$Branch = '', [string]$Sha = '', [string]$Reason = '') {
     if ($Code -eq 'AUTH') { Add-HealthAlert 'AUTH' 'CLAUDE' }
     if ($Code -eq 'ENGINE_MISSING') { Add-HealthAlert 'ENGINE' 'CLAUDE' }
     $line = $(if ($Code -eq 'DONE') { "GEMINI ОБГОРТКА: ГОТОВО $Branch $Sha МОДЕЛЬ $($M.Model)" }
@@ -880,15 +920,28 @@ function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [stri
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $Id
     [void][IO.Directory]::CreateDirectory($runDir)
     $result = [ordered]@{ marker = $M.Name; sha = $M.Sha; code = $Code; branch = $Branch; head = $Sha; end = (Get-Date).ToString('s') }
+    if ($Reason) { $result.reason = ConvertTo-NoteText $Reason }
     # Ідентичність наряду доступна публікаторові до появи рядка у вихідних, зокрема при ранній відмові.
     Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
-    if (-not (Add-Line $line)) {
+    $sent = [bool](Add-Line $line)
+    if (-not $sent) {
         $Code = 'LINE_REJECTED'; $result.code = $Code
         Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
     }
     Write-FileAtomic $StatePath "DONE $Id $Code"
     Remove-Claim $StatePath
     Write-Log "позначка $($M.Name): $Code"
+    if ($sent) {
+        try { Add-FinishedMarker (Join-Path $WorkDir 'finished') $M.Name $M.Sha }
+        catch { Write-Log "позначка $($M.Name): запис на зняття з черги не зроблено — $($_.Exception.Message)" }
+    }
+}
+
+# Позначку знято комітом «ЗНЯТО…» (ConvertTo-Marker): прогін, що вже йде, зупиняється; сама позначка — кінець CANCELLED
+# з причиною в результаті й рядком, а публікатор знімає гілку з черги.
+function Close-CancelledMarker($M, $Workers) {
+    Stop-CancelledRuns $M $Workers
+    Complete-Task $M (Get-StatePath (Get-MarkerKey $M)) (New-Id) 'CANCELLED' -Reason $M.Reason
 }
 
 # Відмова за квотою: позначка чекає скидання (resetsAt останньої `rate_limit_event` зі status rejected; інакше час
@@ -976,6 +1029,7 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
         $r = Invoke-Claude $Exe $a $prompt $runDir $statePath "STARTED $id" $M.Name ([string]$Job.slot)
     } catch {
         Write-Log "claude: $($_.Exception.Message)"
+        Add-CrashNote (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" (Get-FailReason $_)
         return (Complete-Task $M $statePath $id 'CRASH')
     }
     if ($r.Kind) { return (Complete-Task $M $statePath $id $r.Kind) }
@@ -1026,9 +1080,12 @@ function Enter-ClaudeNetworkWait($M, [string]$Id) {
 }
 
 # Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
-function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
-    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
-    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
+# $Reason — причина цієї спроби (Get-FailReason), між спробами її несе стан чекання; на межі вона йде в blocked-reasons.json.
+function Close-FailedStart($M, [string]$Id, [string]$StatePath, [string]$Reason = '') {
+    $why = Get-StartFailReason $StatePath $Reason
+    if ((Step-FailedStart $M $StatePath $why) -ne 'LIMIT') { return }
+    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH ($why)"
+    Add-CrashNote (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" $why ($script:MaxRetakes + 1)
     Complete-Task $M $StatePath $Id 'CRASH'
 }
 
@@ -1287,15 +1344,17 @@ function Start-Markers($Workers) {
     $script:Held = @{}
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $mine = @(Get-Markers | Where-Object { $_.Valid -and $_.Lane -eq 'claude' } | ForEach-Object { Add-ClaudeFields $_ })
+    [void](Move-LegacyMarkerState $mine)
     $skipFile = Join-Path $WorkDir 'skipped.json'
     if ($mine.Count -eq 0) { Save-Skips $skipFile; return @(0, $null) }
     $gpuWhy = $null
     $ordered = @(Get-OrderedMarkers $mine)
-    foreach ($m in @($ordered | Where-Object { $_.Off })) { if ((Test-OffMarker $m) -and $null -eq $off) { $off = $m } }
+    foreach ($m in @($ordered | Where-Object { $_.Off -and -not (Test-MarkerCancelled $_) })) { if ((Test-OffMarker $m) -and $null -eq $off) { $off = $m } }
     if ($null -ne $off) { return @(0, $off) }
-    foreach ($m in @($ordered | Where-Object { -not $_.Off })) {
+    foreach ($m in @($ordered | Where-Object { -not $_.Off -or (Test-MarkerCancelled $_) })) {
         $st = Get-MarkerState $m
         if (-not (Test-MarkerReady $st)) { continue }
+        if (Test-MarkerCancelled $m) { Close-CancelledMarker $m $Workers; continue }
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
             Write-Log "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
@@ -1327,7 +1386,7 @@ function Start-Markers($Workers) {
             [void]$Workers.Add($worker)
         } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
-            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
+            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m)) (Get-FailReason $_)
             continue
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
@@ -1351,10 +1410,11 @@ function Invoke-Worker {
     $lim = @{}
     foreach ($p in $job.limits.PSObject.Properties) { $lim[$p.Name] = $p.Value }
     $script:Limits = $lim
-    $statePath = Get-StatePath "$($job.ref) $($job.sha)"
+    $statePath = Get-StatePath (Get-MarkerKey @{ Name = $job.name; Sha = $job.sha })
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
     $gpu = $false
+    $failReason = ''
     $info = Join-Path $script:SlotDir "$($job.slot).json"
     try {
         if ($job.gpu) {
@@ -1372,12 +1432,13 @@ function Invoke-Worker {
         0
     } catch {
         Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
+        $failReason = Get-FailReason $_
         1
     } finally {
         if ($gpu) { Exit-GpuLease $job }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
-        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath
+        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath $failReason
         $slotLock.Dispose()
     }
 }
