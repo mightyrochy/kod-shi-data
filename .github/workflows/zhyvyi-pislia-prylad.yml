@@ -1,0 +1,44 @@
+# Прилад «ЖИВИЙ ПІСЛЯ: прогнано N з M» (`джерела/прилади/живий_після_прогнано.py`) розбирає рядок у Python так само, як
+# `Get-LiveAfterLines` обгортки (`аудит/адаптери/gemini/queue_lanes.ps1`): розбирач рядка один — Python лише повторює
+# його. Тест приладу звіряє обидва розбори через `pwsh` (є на ubuntu-latest) на реєстрі сцен, тілах комітів `main` і
+# файлах `аудит/` з рядком; червоний — розбори розійшлися: правиться повтор у Python, а не обгортка. Число N з M сам
+# прилад не гейтує: це інструмент такту диспетчера (`аудит/ДИСПЕТЧЕР.md`, «Прогони»).
+name: прилад ЖИВИЙ ПІСЛЯ прогнано
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'джерела/прилади/живий_після_прогнано.py'
+      - 'джерела/прилади/тест_живий_після_прогнано.py'
+      - 'аудит/адаптери/gemini/queue_lanes.ps1'
+      - '.github/workflows/zhyvyi-pislia-prylad.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: живий-після-прилад-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: тест і паритет розбору з обгорткою
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          fetch-depth: 500
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: тест приладу й паритет з Get-LiveAfterLines
+        run: |
+          git config --global user.name "CI" && git config --global user.email "ci@example.invalid"
+          pwsh -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
+          python3 джерела/прилади/тест_живий_після_прогнано.py | tee -a "$GITHUB_STEP_SUMMARY"
+          exit "${PIPESTATUS[0]}"
