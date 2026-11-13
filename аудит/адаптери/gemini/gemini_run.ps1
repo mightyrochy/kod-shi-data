@@ -521,6 +521,106 @@ function Get-CodexReset([string]$Text) {
     0
 }
 
+# Каталог даних Codex: `CODEX_HOME`, інакше `.codex` профілю (так його шукає сам Codex).
+function Get-CodexHome {
+    if ($env:CODEX_HOME) { return $env:CODEX_HOME }
+    Join-Path ([Environment]::GetFolderPath('UserProfile')) '.codex'
+}
+
+# Квота Codex, записана раніше (refused/reset — відмова, read/limits — вимір): файл читає й пише лише цей планувальник.
+function Read-CodexQuota {
+    $q = [ordered]@{}
+    try {
+        $o = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json
+        foreach ($p in $o.PSObject.Properties) { $q[$p.Name] = ConvertTo-PlainJson $p.Value }
+    } catch { $null = $_ }
+    $q
+}
+
+# Залишок квоти Codex: `codex exec --json` його не друкує (події — лише turn.completed.usage), але кожен хід дописує в журнал
+# сесії `<CODEX_HOME>\sessions\<рік>\<міс>\<день>\rollout-*.jsonl` рядок {"timestamp", "type":"event_msg", "payload":{"type":
+# "token_count", "info", "rate_limits":{"limit_id", "primary", "secondary", "plan_type"}}}, де вікно — {"used_percent" (0-100),
+# "window_minutes", "resets_at" (unix, секунди)} (codex-rs: protocol.rs RateLimitSnapshot/RateLimitWindow). Беремо найновіший
+# такий рядок на `limit_id` із журналів, дописаних не раніше $Since (UTC); числа — як їх дав Codex, без підстановок.
+function Read-CodexRateLimits([datetime]$Since) {
+    $found = @{}
+    $root = Join-Path (Get-CodexHome) 'sessions'
+    if (-not (Test-Path -LiteralPath $root)) { return @() }
+    foreach ($f in @(Get-ChildItem -LiteralPath $root -Recurse -Filter 'rollout-*.jsonl' -File | Where-Object { $_.LastWriteTimeUtc -ge $Since })) {
+        $fs = $null; $sr = $null
+        try {
+            # Журнал може ще дописуватись іншим ходом: відкриваємо з FileShare.ReadWrite.
+            $fs = New-Object System.IO.FileStream($f.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+            $sr = New-Object System.IO.StreamReader($fs, $script:Utf8)
+            while ($null -ne ($line = $sr.ReadLine())) {
+                if (-not $line.Contains('"token_count"') -or -not $line.Contains('"rate_limits"')) { continue }
+                # Рядок — JSON будь-якого виду (serde друкує компактно, але від пробілів читач не залежить); обірваний рядок
+                # дописуваного журналу пропускаємо. PowerShell 7 віддає ISO-час уже як [datetime], 5.1 — рядком.
+                try { $ev = $line | ConvertFrom-Json } catch { continue }
+                $ts = Get-JsonProp $ev 'timestamp'
+                $at = [datetime]::MinValue
+                if ($ts -is [datetime]) { $at = $ts.ToUniversalTime() }
+                elseif (-not [datetime]::TryParse([string]$ts, [cultureinfo]::InvariantCulture, 'AssumeUniversal,AdjustToUniversal', [ref]$at)) { continue }
+                $rl = Get-JsonProp (Get-JsonProp $ev 'payload') 'rate_limits'
+                if ($null -eq $rl) { continue }
+                $id = [string](Get-JsonProp $rl 'limit_id')
+                if ($id -cnotmatch '^[A-Za-z0-9_.-]{1,40}$') { $id = 'codex' }
+                if ($found.ContainsKey($id) -and $found[$id].At -ge $at) { continue }
+                $wins = @(foreach ($name in @('primary', 'secondary')) {
+                    $w = Get-JsonProp $rl $name
+                    # Windows PowerShell 5.1 віддає дробове число з JSON десятковим, PowerShell 7 — double: розбираємо рядок.
+                    $used = 0.0
+                    if ($null -eq $w -or -not [double]::TryParse([string](Get-JsonProp $w 'used_percent'), 'Float', [cultureinfo]::InvariantCulture, [ref]$used)) { continue }
+                    $min = Get-JsonProp $w 'window_minutes'; $ra = Get-JsonProp $w 'resets_at'
+                    [ordered]@{ m = $(if ($min -is [int] -or $min -is [long]) { [long]$min } else { 0 }); used = [Math]::Round($used, 1)
+                        left = [int][Math]::Max(0, [Math]::Round(100 - $used))
+                        reset = $(if ($ra -is [int] -or $ra -is [long]) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds([long]$ra).UtcDateTime) } else { '' }) }
+                })
+                if ($wins.Count -gt 0) { $found[$id] = [pscustomobject]@{ At = $at; Id = $id; Windows = $wins } }
+            }
+        } catch { Write-Log "журнал Codex $($f.Name): $($_.Exception.Message)" }
+        finally { if ($null -ne $sr) { $sr.Dispose() } elseif ($null -ne $fs) { $fs.Dispose() } }
+    }
+    @($found.Values | Sort-Object Id)
+}
+
+# Вимір після ходу Codex (і успішного, і відмовленого): у quota-codex.json — вікна кожного `limit_id` і час запису Codex;
+# відмова (refused/reset) там лишається. Збій читання журналу ходу не ламає.
+function Save-CodexRateLimits([datetime]$Since) {
+    try {
+        $snap = @(Read-CodexRateLimits $Since)
+        if ($snap.Count -eq 0) { return }
+        $read = Get-UtcStamp (($snap | Sort-Object At -Descending | Select-Object -First 1).At)
+        $limits = @(foreach ($s in $snap) { [ordered]@{ id = $s.Id; windows = $s.Windows } })
+        Update-CodexQuota {
+            param($q)
+            # Паралельний слот міг уже записати новіший вимір: старішого поверх нього не кладемо.
+            if ($q.Contains('read') -and [string]::CompareOrdinal([string]$q.read, $read) -gt 0) { return }
+            $q.read = $read; $q.limits = $limits
+        }
+    } catch { Write-Log "квота codex: $($_.Exception.Message)" }
+}
+
+# Зміна quota-codex.json під міжпроцесним замком: файл пишуть наряди всіх слотів Codex (вимір після ходу й відмова квоти),
+# а Write-FileAtomic береже лише цілість заміни, не читання-зміну-запис. Той самий замок-файл (Open-Lock, FileShare None),
+# що й інші замки обгортки; зайнятий — чекаємо, але не довше за завислість Codex (-CodexStallMinutes: власник замка, що
+# мовчить стільки, завис); замок звільняє й ОС, коли власник помер.
+function Update-CodexQuota([scriptblock]$Change) {
+    if (-not (Test-Path -LiteralPath $RunsDir)) { throw "нема теки $RunsDir" }
+    $until = [datetime]::UtcNow.AddMinutes($CodexStallMinutes)
+    $lock = Open-Lock (Join-Path $RunsDir 'quota-codex.lock')
+    while ($null -eq $lock) {
+        if ([datetime]::UtcNow -ge $until) { throw "замок quota-codex.lock зайнятий понад $CodexStallMinutes хв" }
+        Start-Sleep -Milliseconds 1
+        $lock = Open-Lock (Join-Path $RunsDir 'quota-codex.lock')
+    }
+    try {
+        $q = Read-CodexQuota
+        & $Change $q
+        Write-FileAtomic (Join-Path $RunsDir 'quota-codex.json') ($q | ConvertTo-Json -Compress -Depth 5)
+    } finally { $lock.Dispose() }
+}
+
 # --- прогін agy ---------------------------------------------------------------------------------------------------
 
 # Роль агента Codex — з рядка «Роль — …» наряду (перший, з першої колонки): ПЕРЕВІРКА за `аудит/ПЕРЕВІРКА.md`;
@@ -716,7 +816,12 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     $a = @('exec', '-C', $RepoDir, '-m', $Run.Engine.Model)
     if ($Run.Engine.Effort) { $a += @('-c', "model_reasoning_effort=$($Run.Engine.Effort)") }
     $a += @('--json', '-o', $outFile, '--dangerously-bypass-approvals-and-sandbox', $short)
+    $began = [datetime]::UtcNow
     $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $CodexStallMinutes $Run.Log (Join-Path $Run.Dir 'codex.events.tsv')
+    # Час, коли процес Codex віддав відповідь: з ним claude-run порівнює відмову іншого слота (не з ended_utc наряду, що ставиться
+    # після фактів, збірки й супровідних файлів).
+    $answered = Get-UtcStamp (Get-Date)
+    Save-CodexRateLimits $began
     [System.IO.File]::AppendAllText($Run.ErrLog, $r.Err, $script:Utf8)
     if ($r.Stalled) {
         Write-Log "codex: нових подій нема понад $CodexStallMinutes хв — завислість, зупинено"
@@ -726,7 +831,7 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     if (Test-Path -LiteralPath $outFile) { $resp = [System.IO.File]::ReadAllText($outFile, $script:Utf8) }
     if ($r.Code -ne 0) { $err = ($r.Err + "`n" + $r.Out.Substring([Math]::Max(0, $r.Out.Length - 2000))).Trim() }
     if ($r.Code -ne 0 -and -not $err) { $err = "код виходу $($r.Code)" }
-    $res = [pscustomobject]@{ status = $(if ($err) { 'ERROR' } else { 'SUCCESS' }); response = $resp; error = $err }
+    $res = [pscustomobject]@{ status = $(if ($err) { 'ERROR' } else { 'SUCCESS' }); response = $resp; error = $err; answered = $(if ($err) { '' } else { $answered }) }
     [pscustomobject]@{ Kind = 'result'; Result = $res }
 }
 
@@ -773,6 +878,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
     $deadline = $(if ($unlimited) { [timespan]::MaxValue } else { (Get-AwakeTime) + [timespan]::FromMinutes($TotalMinutes) })
     $text = $Prompt
     $turns = 0
+    $answered = ''
     $nudges = 0
     $why = ''
     $liveCorrection = $false
@@ -795,6 +901,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                 $resp = ''
                 if ($r.Result.PSObject.Properties['response']) { $resp = [string]$r.Result.response }
                 $run.Responses.Add($resp)
+                if ($r.Result.PSObject.Properties['answered'] -and $r.Result.answered) { $answered = [string]$r.Result.answered }
                 if ($status -in @('ERROR', 'INVALID', 'CANCELED')) {
                     $err = ''
                     if ($r.Result.PSObject.Properties['error']) { $err = [string]$r.Result.error }
@@ -843,7 +950,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         Close-StreamRun $run
     }
     $tail = (($run.Responses -join "`n") -split "`r?`n" | Select-Object -Last 60) -join "`n"
-    [pscustomobject]@{ Code = $code; Report = $report; Turns = $turns; Tail = $tail; Why = [string]$why; EngineErr = $engineErr; ErrLog = $run.ErrLog }
+    [pscustomobject]@{ Code = $code; Report = $report; Turns = $turns; Answer = $answered; Tail = $tail; Why = [string]$why; EngineErr = $engineErr; ErrLog = $run.ErrLog }
 }
 
 # Коди кінця без звіту агента, чию причину знає лише рушій: його текст помилки (stderr, остання подія `error`) інакше
@@ -1132,7 +1239,7 @@ function Invoke-Task($M, $Job) {
     $id = [string]$Job.id
     $statePath = Get-StatePath $key
     $status = [ordered]@{ v = 1; id = $id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = [string]$Job.slot
-        start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''
+        start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; engine_answer_utc = ''; minutes = 0; bundle = ''
         engine = (Get-StartEngine $M.Model ([string](Get-JsonProp (Get-JsonProp $Job 'sel') 'engine')))
         retakes = (Get-Retakes $statePath); started_utc = [datetime]::UtcNow.ToString('o'); ended_utc = ''; sleep_parent = (Get-SleepParent $statePath) }
     $prev = $(if (Test-Path -LiteralPath $statePath) { [IO.File]::ReadAllText($statePath, $script:Utf8) } else { $null })
@@ -1220,6 +1327,7 @@ function Invoke-Task($M, $Job) {
         $status.code = $res.Code
         $status.report = $res.Report
         $status.turns = $res.Turns
+        $status.engine_answer_utc = [string](Get-JsonProp $res 'Answer')
         if ($res.Code -eq 'MODEL_INVALID') { $status.models = @(Get-AgyModels) }
         if ($res.Code -eq 'QUOTA') { $waiting = Enter-RunQuotaWait $M $sel $status $res $dir }
         # Залишок квоти після прогону — для рядка кінця наряду.
@@ -1270,8 +1378,9 @@ function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
                 Where-Object { $_ -match '(?i)usage[ _]limit|try again|resets?_(?:at|in_seconds)' } | Select-Object -Last 1) -join '')
         } catch { $null = $_ }
         $until = Get-CodexReset ($Res.Tail + "`n" + $err + "`n" + $ev)
-        $cq = [ordered]@{ refused = (Get-UtcStamp (Get-Date)); reset = $(if ($until -gt 0) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($until).UtcDateTime) } else { '' }) }
-        try { Write-FileAtomic (Join-Path $RunsDir 'quota-codex.json') ($cq | ConvertTo-Json -Compress) } catch { $null = $_ }
+        $refused = Get-UtcStamp (Get-Date)
+        $reset = $(if ($until -gt 0) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($until).UtcDateTime) } else { '' })
+        try { Update-CodexQuota { param($cq) $cq.refused = $refused; $cq.reset = $reset } } catch { Write-Log "квота codex: $($_.Exception.Message)" }
     }
     $known = $until -gt 0
     if (-not $known) { $until = $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) }
@@ -1475,7 +1584,7 @@ function Write-Heartbeat([string]$Iso) {
                     [ordered]@{ g = (ConvertTo-GroupCode $w.Name); w = $w.Window; left = $w.Left; reset = $(if ($null -ne $w.Reset) { Get-UtcStamp $w.Reset.UtcDateTime } else { '' }) }
                 }) }
         } catch { $null = $_ }
-        try { $hb.codex = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+        try { $hb.codex = ConvertTo-PlainJson ([System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json) } catch { $null = $_ }
         $hb.codex_fallback = (Test-CodexFallback)
         $hb.wait = @(foreach ($w in @(Get-WaitingMarkers | Select-Object -First 12)) { [ordered]@{ marker = $w.Marker; until = $w.Until; g = $w.Group } })
         try { $hb.health = Get-GeminiHealth } catch { Write-Log "здоров'я: $($_.Exception.Message)" }

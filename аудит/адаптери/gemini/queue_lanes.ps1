@@ -2534,6 +2534,15 @@ function Get-UtcProp($Obj, [string]$Name) {
     [string]$v
 }
 
+# Значення з ConvertFrom-Json без дат: PowerShell 7 (і `\/Date()\/` у 5.1) віддає ISO-рядок як [datetime], а за ним і порівняння
+# рядків, і повторний запис у JSON дають не ISO UTC (місцевий час чи формат культури). Дату повертаємо UTC-рядком з Z, як її писали.
+function ConvertTo-PlainJson($Value) {
+    if ($Value -is [datetime]) { return Get-UtcStamp $Value }
+    if ($Value -is [pscustomobject]) { foreach ($p in $Value.PSObject.Properties) { $p.Value = ConvertTo-PlainJson $p.Value }; return $Value }
+    if ($Value -is [array]) { return , @(foreach ($v in $Value) { ConvertTo-PlainJson $v }) }
+    $Value
+}
+
 function Update-Idle([bool]$Busy, [scriptblock]$Send, [bool]$Reset = $false, [string]$Why = '') {
     <# idle.json у теці стану: busy_utc — останній прохід із роботою; since — початок простою (порожній, доки є робота);
     sent — рядок ПРОСТІЙ цього простою доставлено в теку вихідних. Новий рядок — лише після нової роботи. $Why — причина
