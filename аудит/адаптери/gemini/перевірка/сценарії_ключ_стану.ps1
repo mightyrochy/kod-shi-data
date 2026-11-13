@@ -66,6 +66,20 @@ try {
     [void](New-Claim $fw '20261113-100001-bbbbbbbbbbbb')
     Close-FailedStart ([pscustomobject]@{ Ref = $jb.ref; Name = $jb.name; Sha = $jb.sha; Slug = 'воркер'; Model = 'cc-x' }) '20261113-100001-bbbbbbbbbbbb' $wp
     Check 'Close-FailedStart воркера знімає .claim і повертає позначку в чергу (WAIT)' (-not [IO.File]::Exists((Get-ClaimPath $wp)) -and (Get-MarkerState $fw).Kind -ceq 'WAIT' -and (Get-Retakes $wp) -eq 1)
+    # Відмова до старту × (MaxRetakes+1): кінцевий CRASH несе причину останньої відмови в blocked-reasons.json (#1856).
+    foreach ($d in @("$tmp/box", "$tmp/gout")) { [void][IO.Directory]::CreateDirectory($d) }
+    $wj = [IO.File]::ReadAllText($wp, $utf).Substring(5) | ConvertFrom-Json
+    Check 'відмова до старту: причина між спробами — у стані чекання (група START)' ($wj.group -ceq 'START' -and $wj.PSObject.Properties['reason'])
+    for ($i = 2; $i -le $script:MaxRetakes; $i++) {
+        [void](New-Claim $fw '20261113-100002-cccccccccccc')
+        Close-FailedStart ([pscustomobject]@{ Ref = $jb.ref; Name = $jb.name; Sha = $jb.sha; Slug = 'воркер'; Model = 'cc-x' }) '20261113-100002-cccccccccccc' $wp "відмова $i"
+    }
+    Check 'відмова до старту: до межі приміток CRASH нема' (-not [IO.File]::Exists("$tmp/gout/blocked-reasons.json") -and (Get-Retakes $wp) -eq $script:MaxRetakes)
+    [void](New-Claim $fw '20261113-100003-dddddddddddd')
+    Close-FailedStart ([pscustomobject]@{ Ref = $jb.ref; Name = $jb.name; Sha = $jb.sha; Slug = 'воркер'; Model = 'cc-x' }) '20261113-100003-dddddddddddd' $wp (Get-FailReason ([IO.IOException]::new('не відкрилось C:\Users\Тест\claude-run\w\x')))
+    $crash = @(Read-NoteRows "$tmp/gout/blocked-reasons.json" @('utc', 'marker', 'text'))
+    Check 'відмова до старту: кінцевий стан CRASH' ([IO.File]::ReadAllText($wp, $utf).StartsWith('DONE 20261113-100003-dddddddddddd CRASH'))
+    Check 'відмова до старту: нотатка «CRASH до запуску (6 спроб): <причина>» без шляху профілю, в розділі #1856' ($crash.Count -eq 1 -and $crash[0][1] -ceq 'claude/воркер' -and $crash[0][2] -ceq 'CRASH до запуску (6 спроб): IOException: не відкрилось ~\claude-run\w\x')
     # Простір gemini (refs/remotes/origin): ключ той самий, що й раніше, перенесення — ні-що.
     Set-RemoteRoot 'refs/remotes/origin'
     Check 'gemini: ключ = "<Ref> <sha>", як до правки' ((Get-MarkerKey $og) -ceq "$($og.Ref) $($og.Sha)")
