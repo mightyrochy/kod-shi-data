@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Refined knit top: fitted crew-neck pullover, hip length, long sleeves, deep burgundy #6D2434, fine merino wool\\nMidi skirt: A-line, mid-calf length, softly pleated, charcoal grey #3B3F46, wool-blend crepe\\nSheer tights: opaque-matte, skin-close, dark grey #4A4D54, nylon with a touch of elastane\\nCoat: straight single-breasted, knee length, camel #B08D63, wool-blend with a soft brushed texture\\nAnkle boots: low block heel, rounded toe, dark brown #4B3326, smooth leather\\nShoulder bag: structured medium size, top handle with a flap closure, dark brown #4B3326, matte leather\\nScarf: lightweight, long rectangle, soft beige with a muted burgundy pattern #D9C7B0, fine wool-silk blend\\nSmall stud earrings: round, antique gold #B8963E, metal\\n\\nThis outfit keeps to a neat, modest church look: the shoulders and knees are covered, and the burgundy and charcoal are calm and respectful rather than flashy. The textured knit and the pleated skirt feel polished enough for the service. The block-heeled boots are comfortable through a long standing service and then a family lunch. The camel coat and scarf add warmth for an autumn Sunday, and the scarf can also be draped over the shoulders or head if she wishes.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Knit top\\\",\\\"details\\\":\\\"fitted crew-neck pullover, hip length, long sleeves, fine merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#6D2434\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Midi skirt\\\",\\\"details\\\":\\\"A-line, mid-calf length, softly pleated, wool-blend crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3B3F46\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sheer tights\\\",\\\"details\\\":\\\"opaque-matte, skin-close, nylon with a touch of elastane\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#4A4D54\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Coat\\\",\\\"details\\\":\\\"straight single-breasted, knee length, wool-blend with a soft brushed texture\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B08D63\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"low block heel, rounded toe, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#4B3326\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Shoulder bag\\\",\\\"details\\\":\\\"structured medium size, top handle with a flap closure, matte leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#4B3326\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"lightweight, long rectangle, soft beige with a muted burgundy pattern, fine wool-silk blend\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#D9C7B0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small stud earrings\\\",\\\"details\\\":\\\"round, antique gold, metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#B8963E\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2144,\"output_tokens\":526},\"stop_reason\":\"end_turn\"}"
+ }
+}

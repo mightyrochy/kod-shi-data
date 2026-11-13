@@ -168,4 +168,29 @@ setup k10b; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO=unpushed cr
 chk "незапушений коміт: BLOCKED і COPY_KEPT, тека з kept.txt лишається" '[ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG BLOCKED" "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG COPY_KEPT" | LC_ALL=C sort)" ] && ls "$W"/cr/w/*/kept.txt >/dev/null 2>&1'
 cr; chk "перший прохід нового запуску лишену копію не прибирає" 'ls "$W"/cr/w/*/kept.txt >/dev/null 2>&1 && [ "$(git -C "$W/clone" worktree list | wc -l)" = 2 ]'
 
+echo "=== К11 fetch сусіднього процесу між читанням посилань і записом не рухає посилань claude-run (14592)"
+# Клон спільний із сесіями й виконавцями, а їхній fetch пише refs/remotes/origin/*. Fetch claude-run стоїть у польоті на
+# отриманні пакета (посилання вже прочитано), сусідній fetch у тому ж клоні посуває origin/main — до: «cannot lock ref».
+setup k11; mark "$SLUG/$M/1"; HOLD="$W/hold"; mkdir -p "$HOLD"
+printf '#!/bin/sh\nif mkdir "$HOLD_DIR/once" 2>/dev/null; then : > "$HOLD_DIR/blocked"; i=0; while [ ! -e "$HOLD_DIR/release" ] && [ $i -lt 600 ]; do sleep 0.1; i=$((i+1)); done; fi\nexec "$@"\n' > "$W/hold.sh"
+(cd "$W/seed"; git commit -q --allow-empty -m next; git push -q origin main 2>/dev/null); NEXT=$(git -C "$W/seed" rev-parse HEAD)
+# packObjectsHook git слухає лише з глобального файла налаштувань: свій файл — лише процесу claude-run.
+printf '[uploadpack]\n\tpackObjectsHook = sh %s\n' "$(wp "$W/hold.sh")" > "$W/hold.cfg"
+( export HOLD_DIR="$(wp "$HOLD")" GIT_CONFIG_GLOBAL="$(wp "$W/hold.cfg")"; cr ) & CRP=$!
+for i in $(seq 1 300); do [ -e "$HOLD/blocked" ] && break; sleep 0.1; done
+git -C "$W/clone" fetch -q origin main 2>/dev/null; : > "$HOLD/release"; wait $CRP
+SHA=$(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null)
+chk "fetch сусіда в полёті: origin/main клону посунуто ($(git -C "$W/clone" rev-parse --short refs/remotes/origin/main))" '[ "$(git -C "$W/clone" rev-parse refs/remotes/origin/main)" = "$NEXT" ]'
+chk "claude-run.log без «cannot lock ref»: $(grep -c 'cannot lock ref' "$W/cr/claude-run.log" 2>/dev/null || true) разів" '! grep -q "cannot lock ref" "$W/cr/claude-run.log" 2>/dev/null'
+chk "прохід дійшов до наряду: ГОТОВО з SHA origin (є: $(lines))" '[ -n "$SHA" ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $SHA МОДЕЛЬ $M" ]'
+echo "=== К12 відстала гілка: крок «влий main» несе SHA, отриманий claude-run, а не origin/main спільного клону (14592)"
+# claude-run освіжає лише refs/claude-run/*; refs/remotes/origin/main клону лишається таким, яким його лишили сусіди, — до:
+# у промпті «git merge origin/main», тобто стара голова.
+setup k12; mark "$SLUG/$M/1"; cr
+(cd "$W/seed"; git commit -q --allow-empty -m next; git push -q origin main 2>/dev/null); NEXT=$(git -C "$W/seed" rev-parse HEAD)
+STALE=$(git -C "$W/clone" rev-parse refs/remotes/origin/main)
+mark "$SLUG/cc-claude-opus-5-5/2"; cr
+chk "origin/main клону не освіжено (стара голова $(git -C "$W/clone" rev-parse --short refs/remotes/origin/main))" '[ "$(git -C "$W/clone" rev-parse refs/remotes/origin/main)" = "$STALE" ] && [ "$STALE" != "$NEXT" ]'
+chk "промпт відстала гілка: «git merge $NEXT» (свіжий main), без origin/main" 'P=$(prompt); [[ "$P" == *"Перший крок: влий свіжий"* && "$P" == *"git merge $NEXT"* && "$P" != *"origin/main"* ]]'
+
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD

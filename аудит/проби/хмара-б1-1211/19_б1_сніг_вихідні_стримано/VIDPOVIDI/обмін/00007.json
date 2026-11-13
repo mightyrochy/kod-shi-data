@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"гуляємо з подругою центром\", \"place\": \"гуляємо з подругою центром\", \"setting\": \"гуляємо з подругою центром до вечора, заходимо в кав'ярні\", \"movement\": \"гуляємо\", \"weather_band\": \"мінус три\", \"registers\": \"стримано й класично\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"гуляємо з подругою центром\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"гуляємо з подругою центром\"}, \"mood\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"her\", \"quote\": \"сніг\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"her_registers\": {\"kind\": \"reading\", \"quote\": \"стримано й класично\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"стримано й класично\"}]}, \"movement\": {\"kind\": \"reading\", \"quote\": \"гуляємо\"}, \"weather_band\": {\"kind\": \"reading\", \"quote\": \"мінус три\"}, \"setting\": {\"kind\": \"reading\", \"quote\": \"гуляємо з подругою центром до вечора, заходимо в кав'ярні\"}}, \"event\": \"субота, гуляємо з подругою центром до вечора, заходимо в кав'ярні\", \"movement\": \"walk\", \"weather_band\": \"frost\", \"precipitation\": \"snow\", \"her_registers\": [\"classic\"], \"mood\": [\"стримано\", \"класично\"], \"occasion\": \"walk\", \"place\": \"walk\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"road_salt\": true}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Dark indigo straight-leg jeans, full length with a mid rise, color navy #1F2A44, heavy cotton denim with a little stretch\\nFine-knit turtleneck sweater, slim fit, hip length, color cream #EDE6D6, merino wool\\nLong wool coat, single-breasted, tailored, knee-to-mid-calf length, color camel #B98B5E, wool-cashmere blend\\nWaterproof ankle boots, lug-sole, round toe, color dark brown #3B2A20, smooth leather with a grippy rubber outsole\\nWide scarf, color charcoal grey #4A4D52, soft lambswool\\nKnit beanie, snug fit, color dark brown #3B2A20, merino wool\\nLined gloves, color dark brown #3B2A20, soft leather with a warm lining\\nStructured shoulder bag, medium size, color dark brown #3B2A20, grained leather\\n\\nThis outfit suits a snowy Saturday of walking at -3 °C because the merino layer and the wool coat keep you warm through the afternoon and the cafés, and you can take the coat off indoors. The dark denim and sturdy waterproof boots cope with snow and salted pavements, and the lug sole gives you grip when walking on slippery streets. The cream, camel and brown palette is calm and classic, which matches your wish for something restrained, and the charcoal scarf adds a bit of depth. Everything is simple and polished enough for the city centre, yet comfortable for hours of walking.\"}],\"usage\":{\"input_tokens\":2425,\"output_tokens\":499},\"stop_reason\":\"end_turn\"}"
+ }
+}
