@@ -1024,10 +1024,13 @@ function Get-CopyState {
         $wts = Join-Path (Join-Path $c.Clone '.git') 'worktrees'
         $listed = $(if (Test-Path -LiteralPath $wts -PathType Container) { @(Get-ChildItem -LiteralPath $wts -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.Name }) } else { @() })
         $out.Add("клон $($c.Clone)\.git\worktrees`: $(if ($listed.Count) { $listed -join ', ' } else { 'порожньо чи нема' })")
+    } catch { $out.Add("стан копії не прочитано: $($_.Exception.Message)") }
+    # Окрема спроба: збій читання файлів не ховає git worktree list, а збій git не ховає прочитаного вище.
+    try {
         $wl = Invoke-Git @('worktree', 'list', '--porcelain') -AllowFail -Dir $c.Clone
         $out.Add("git worktree list --porcelain (код $($wl.Code)):")
         $out.Add(([string]$wl.Out + [string]$wl.Err).TrimEnd())
-    } catch { $out.Add("стан копії не прочитано: $($_.Exception.Message)") }
+    } catch { $out.Add("git worktree list --porcelain не виконано: $($_.Exception.Message)") }
     $out.ToArray()
 }
 

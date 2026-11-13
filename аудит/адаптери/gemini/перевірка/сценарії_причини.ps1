@@ -134,7 +134,9 @@ try {
         else {
             $svcState = $(if ($case[2]) { "$($case[1]): є, вміст — " } else { "$($case[1]): нема" })
             Check "CRASH ($($case[0])): стан копії — рядок gitdir і службова тека" ($ev.Contains('.git — файл: gitdir:') -and $ev.Contains($svcState))
-            Check "CRASH ($($case[0])): службові теки клону й git worktree list" ($ev.Contains('.git\worktrees: ') -and $ev.Contains('other') -and $ev.Contains('git worktree list --porcelain'))
+            $wtOk = $ev.Contains('.git\worktrees: ') -and $ev.Contains('other') -and $ev.Contains('git worktree list --porcelain (код ')
+            Check "CRASH ($($case[0])): службові теки клону й git worktree list" $wtOk
+            if (-not $wtOk) { "--- хвіст ($($case[0])) ---"; $ev; '--- кінець хвоста ---' }
             if ($case[2]) { Check 'CRASH (службова тека є): названо файли верхнього рівня' ($ev.Contains('HEAD') -and $ev.Contains('commondir')) }
         }
     }
