@@ -996,7 +996,7 @@ function Receive-RunState([string]$Id) {
         Write-WrapperLog "стан ${Id}: $($_.Exception.Message)"
         Add-HealthException $_.Exception
         $bad = Get-BadLine $Id 'не обробився — повтор наступним проходом' $_
-        if ($null -ne $bad) { Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "bad $Id").Substring(0, 12) + '.txt') $bad.Outbox }
+        if ($null -ne $bad) { Add-ChainLine "bad $Id" $bad.Outbox }
         return
     }
     if ($line -is [string] -and $line -eq 'RETRY') { return }
