@@ -2195,22 +2195,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                             "(values: count — how many tones, metals — metal codes)",
     "metal_variant_unsettled": "which metal is on this item's frame is unsettled: the shop names several "
                                "metals for the same listing, or contradicts itself, alloy against name "
-                               "(values: items — list of {slot, variants — the shop's metal codes, named "
-                               "— the metal the code took, frame_tone — the tone the item's colour reads "
-                               "as})",
-    "named_metal_is_detail_not_surface": "the metal is named, yet the measurement found no cluster of its "
-                                         "tone on the surface of the outfit's items: on the frame the metal "
-                                         "is a detail — a trim, a charm, a setting — not the surface "
-                                         "(values: metal — metal code, items — how many metal items in the "
-                                         "outfit)",
-    "named_metal_reads_other_tone_on_frame": "the metal is named, yet the frame reads the item as ANOTHER "
-                                             "metal: the photo model's colour code and the measured colour "
-                                             "agree on a different metal tone, so the name, not the surface, "
-                                             "is in question (values: metal — the named metal code, "
-                                             "frame_tone — the metal tone the frame reads, items — how many "
-                                             "metal items of the outfit read so)",
-    "put_solid_metal_near_face": "if metal is to lead the outfit, put a piece that IS metal near the face, "
-                                 "not fabric with a metal trim",
+                               "(values: items — list of {item_id, slot, variants — the shop's metal "
+                               "codes})",
     "reduce_to_two_metal_tones": "reduce it to two tones: remove the third or replace it with a two-tone "
                                  "item, or leave it in one small item far from the face",
     "she_asked_no_jewellery": "she asked for no jewellery, yet the outfit has some",
@@ -2951,6 +2937,11 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                           "removed or locked, gold is simply the less usual choice for a cool "
                                           "palette, and she may take it (values: gold_items — how many pool "
                                           "items entered through the gold row)",
+    "jewellery_silver_less_usual_for_warm": "silver items stand in this kind next to the gold ones although her "
+                                            "palette reads warm, where gold is the usual metal: nothing was "
+                                            "removed or locked, silver is simply the less usual choice for a warm "
+                                            "palette, and she may take it (values: silver_items — how many pool "
+                                            "items entered through the silver row)",
     "jewellery_without_metal_word_first": "items with no metal word were put ahead of the ones that name a "
                                           "metal; beyond that the code sees no metal here (values: jewellery "
                                           "— her jewellery code; without_metal_word, with_metal_word)",
@@ -3535,7 +3526,8 @@ if _спільні:
     'jewelry_kind': 'The check needs jewelry kind, distinct from its metal; a named metal does not establish pearls, wood, bone or beads.',
     'accent_pair': 'The check needs at least two non-neutral accent surfaces in different slots.',
     'day_weather': 'The check needs scenario temperature or precipitation.',
-    'metal_surface_share': 'The check needs measured metal surface share from enrichment v2; named metal is not coverage.',
+    'metal_surface_share': 'The check needs the share of the item surface that is metal; the photo model names the '
+                           'item colour, not metal apart from a stone or enamel insert, so the share is not known.',
     'shared_photo': 'The named item fields are unknown because the shop photo is shared with other products (R-FEED-06).',
     'item_surface': 'Texture and fibre are unknown for the listed items; known counts cannot establish equal surfaces.',
     'colour_measure': 'The colour of the listed items is a word window, not a measurement; their chroma may lie on either side of the interest threshold.',
