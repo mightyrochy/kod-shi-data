@@ -101,12 +101,45 @@ class Походження:
             return any(self.із_варіацій(з, шлях | {вираз.id}) for з in self.визначення(вираз.id, вираз.lineno))
         if isinstance(вираз, ast.BoolOp):
             return any(self.із_варіацій(з, шлях) for з in вираз.values)
+        if isinstance(вираз, ast.Subscript) and isinstance(вираз.slice, ast.Constant) and вираз.slice.value == 1:
+            вираз = вираз.value      # `for ключ, група in групи.items()`: група — та сама колекція
+        if isinstance(вираз, ast.Call) and isinstance(вираз.func, ast.Attribute) and вираз.func.attr == "items" \
+                and not вираз.args:
+            return self.групи_варіацій(вираз.func.value, шлях)
         if isinstance(вираз, ast.Call) and вираз.args:
             if isinstance(вираз.args[0], ast.Constant) and вираз.args[0].value in ВАРІАНТИ:
                 return True
             if ім_виклику(вираз.func) in ("enumerate", "sorted", "iter", "list", "tuple") or self.обгортка(вираз.func):
                 return self.із_варіацій(вираз.args[0], шлях)
         return False
+
+    def групи_варіацій(self, словник, шлях):
+        """Словник груп (`групи.setdefault(колір, []).append(в)`), куди кладуть лише елементи колекції варіацій, а сам
+        він — порожній словник: група за власною опцією — ті самі варіації, не новий вибір."""
+        if not isinstance(словник, ast.Name) or словник.id in шлях:
+            return False
+        визначення = self.присвоєння.get(словник.id, ())
+        if not визначення or not all(isinstance(в, ast.Dict) and not в.keys or isinstance(в, ast.Call)
+                                     and ім_виклику(в.func).split(".")[-1] in ("dict", "OrderedDict", "defaultdict") and not
+                                     any(not isinstance(а, ast.Name) or а.id != "list" for а in в.args)
+                                     for в in визначення):
+            return False
+        покладено = []
+        for н in self.вузли:
+            if isinstance(н, ast.Call) and isinstance(н.func, ast.Attribute) and н.func.attr == "append":
+                ціль = н.func.value
+                if isinstance(ціль, ast.Call) and isinstance(ціль.func, ast.Attribute) and ціль.func.attr == "setdefault":
+                    ціль = ціль.func.value
+                elif isinstance(ціль, ast.Subscript):
+                    ціль = ціль.value
+                if isinstance(ціль, ast.Name) and ціль.id == словник.id:
+                    покладено.extend(н.args)
+            elif isinstance(н, (ast.Assign, ast.AugAssign)):
+                for ц in (н.targets if isinstance(н, ast.Assign) else [н.target]):
+                    if isinstance(ц, ast.Subscript) and isinstance(ц.value, ast.Name) and ц.value.id == словник.id:
+                        return False
+        return bool(покладено) and all(isinstance(е, ast.Name) and self.із_варіацій(е, шлях | {словник.id})
+                                       for е in покладено)
 
     def обгортка(self, функція):
         """Функція модуля, що лише нормалізує аргумент до списку (`_список(x)`: `[]`, `x` чи `[x]`), — не новий вибір."""
@@ -360,7 +393,30 @@ class Походження:
                 імена = {н.id for н in ast.walk(значення) if isinstance(н, ast.Name)} if значення else set()
                 if є and (імена & цілі or self.корені(значення) & self.корені(cur.target, cur.lineno + 1)):
                     return True
+                власні_імена = {і for і in імена if і in self.присвоєння}
+                if є and власні_імена and all(self.накопичувач(і, cur) for і in власні_імена):
+                    return True
         return False
+
+    def накопичувач(self, ім, цикл):
+        """Список, початково порожній, який поповнюють лише в циклі по елементах групи-варіацій усередині `цикл`
+        значеннями з самого елемента (`for в in вв: if в.get("available"): є.append(р)`), — дані тих самих варіацій."""
+        if not all(isinstance(в, ast.List) and not в.elts for в in self.присвоєння.get(ім, ())):
+            return False
+        додано = [н for н in self.вузли if isinstance(н, ast.Call) and isinstance(н.func, ast.Attribute)
+                  and н.func.attr == "append" and isinstance(н.func.value, ast.Name) and н.func.value.id == ім]
+        if not додано:
+            return False
+        for н in додано:
+            cur, свій = н, False
+            while cur in self.батьки and cur is not цикл:
+                cur = self.батьки[cur]
+                if isinstance(cur, (ast.For, ast.AsyncFor)) and cur is not цикл and self.із_варіацій(cur.iter) \
+                        and any(self.корені(а) & self.корені(cur.target, cur.lineno + 1) for а in н.args):
+                    свій = True
+            if cur is not цикл or not свій:
+                return False
+        return True
 
 
 def константи_імпортів(дерево, тека, читати):

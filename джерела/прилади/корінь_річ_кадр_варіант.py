@@ -665,6 +665,62 @@ def діагностика(вузол, батьки):
         isinstance(ц, ast.Name) and ЗВІТ_СУБ.match(ц.id) for ц in б.targets)
 
 
+def єдиний_збіг(ф):
+    """Функція модуля, що падає на кількох збігах: `if len(…) > 1: raise`."""
+    for н in ast.walk(ф):
+        if isinstance(н, ast.If) and any(isinstance(х, ast.Raise) for х in н.body) and isinstance(н.test, ast.Compare) \
+                and isinstance(н.test.left, ast.Call) and ім_виклику(н.test.left.func) == "len" \
+                and isinstance(н.test.ops[0], ast.Gt) and isinstance(н.test.comparators[0], ast.Constant) \
+                and н.test.comparators[0].value == 1:
+            return True
+    return False
+
+
+def сторінка_варіації(значення, одиниця, функції):
+    """Колір чи наявність зі сторінки однієї варіації (уточнення 13.11, кв3): активний свотч чи кнопка на власній
+    сторінці варіації — дані її варіанта, коли запис — ця сторінка (одиниця падає, якщо канонічна адреса сторінки не
+    адреса запису), а поле — єдиний збіг (помічник падає на кількох). Значення складено лише з таких збігів, локальних
+    імен і сталих: наявність оферти, приписана всім розмірам (список усіх кнопок), — не єдиний збіг, лишається місцем.
+    Що активний елемент і є ця сторінка, кажуть дані крамниці, а не код: прилад цього не бачить (у PR — гіпотезою)."""
+    if значення is None or одиниця is None:
+        return False
+    канонічна = any(isinstance(н, ast.If) and any(isinstance(х, ast.Raise) for х in н.body)
+                    and any(isinstance(к, ast.Constant) and isinstance(к.value, str) and "canonical" in к.value
+                            for к in ast.walk(н.test)) for н in ast.walk(одиниця))
+    if not канонічна:
+        return False
+    присвоєно = {}
+    for н in ast.walk(одиниця):
+        if isinstance(н, ast.Assign) and len(н.targets) == 1 and isinstance(н.targets[0], ast.Name):
+            присвоєно.setdefault(н.targets[0].id, []).append(н.value)
+    збігів, черга, бачено = 0, [значення], set()
+    while черга:
+        в = черга.pop()
+        if isinstance(в, ast.Call):
+            if isinstance(в.func, ast.Name) and в.func.id in функції and єдиний_збіг(функції[в.func.id]):
+                збігів += 1
+                continue
+            if isinstance(в.func, ast.Attribute) and в.func.attr == "get" and isinstance(в.func.value, ast.Name) \
+                    and в.func.value.id.isupper():
+                черга.extend(в.args)
+                continue
+            return False
+        if isinstance(в, ast.Name):
+            if в.id in бачено:
+                continue
+            бачено.add(в.id)
+            if в.id not in присвоєно:
+                return False
+            черга.extend(присвоєно[в.id])
+        elif isinstance(в, ast.IfExp):
+            черга.extend((в.test, в.body, в.orelse))
+        elif isinstance(в, ast.Compare):
+            черга.extend([в.left] + в.comparators)
+        elif not isinstance(в, ast.Constant):
+            return False
+    return збігів > 0
+
+
 ЧИТАЧ_ТАБЛИЦІ = re.compile(r"^_?(читати|прочитати|read)_\w+$")
 
 
@@ -805,6 +861,9 @@ def суд_місць(файл, од_ім, вузол, тіло_вузли, зб
                 м = Місце(файл, рядок, 2, "дотримує", "поле з даних своєї оферти/варіації (id і наявність або вхід циклу)", ключ, р)
             elif доведений and доведений[0]:
                 м = Місце(файл, рядок, 2, "дотримує", доведений[1] + " (уточнення 13.11)", ключ, р)
+            elif сторінка_варіації(значення, охоплення, getattr(збирач, "функції", {})):
+                м = Місце(файл, рядок, 2, "дотримує", "сторінка однієї варіації: адресу запису звірено з канонічною, "
+                          "поле — єдиний збіг сторінки (уточнення 13.11, кв3)", ключ, р)
             else:
                 хвіст = (доведений[1] if доведений else
                          "записано полем товару; варіації у функції: " + ", ".join(варіації) if варіації else
