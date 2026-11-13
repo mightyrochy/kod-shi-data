@@ -252,6 +252,26 @@ def збирати(r, за_ід, база):
         без = код.replace('if в.get("parent") in за_ід:', "if в:").replace('за_ід[в["parent"]]', "за_ід[0]")
         self.assertNotEqual([м.статус for м in місця(без) if м.ключ == "кадри"], ["дотримує"])
 
+    def test_зведення_наявності_після_відсіву_сестер(self):
+        """Наявність, зведена `any` з оферт сторінки після відсіву `if not f(в, …): continue`, — дані її варіанта
+        (рішення 13.11, 14952); без відсіву зведення йде по чужих оферт — місце."""
+        код = '''
+def картка(ld, url):
+    варіації = ld.get("hasVariant") or ld.get("offers") or []
+    к = {"наявність": None}
+    for в in варіації:
+        if not _варіація_сторінки(в, url):
+            continue
+        оф = в.get("offers") if "offers" in в else в
+        оф = [x for x in (оф if isinstance(оф, list) else [оф]) if isinstance(x, dict) and x.get("availability")]
+        if оф:
+            к["наявність"] = any("InStock" in str(x["availability"]) for x in оф)
+    return к
+'''
+        self.assertEqual([м.статус for м in місця(код) if м.ключ == "наявність"], ["дотримує"])
+        без = код.replace("        if not _варіація_сторінки(в, url):\n            continue\n", "")
+        self.assertNotEqual([м.статус for м in місця(без) if м.ключ == "наявність"], ["дотримує"])
+
     def test_варіант_поруч_не_доказ(self):
         """Поле варіанта поруч із першим кадром галереї власника кадру не доводить."""
         код = '''
