@@ -93,11 +93,6 @@ def зсув_волосся(labs, ціль_L):
 # Фізичний вимір має назвати власне джерело явно.
 ДЖЕРЕЛО_ТИПОВЕ = "model_hex"
 
-ЗОВНІШНІ_ВХОДИ = {
-    "портрет_вимір": "вхід із показу (`КОЛІР.вимір` у будівниках входу): вимір кадру портрета кодом "
-                     "(`портрет_вимір.виміряти`) — лише коли ворота пройдено; є — риси беруться з нього (`вимір_портрета`)",
-}
-
 
 def _джерело_кольору(d):
     """Перевіряє походження кольору; без поля це оцінка моделі портрета."""
@@ -585,35 +580,30 @@ def індекс_гілки(розвилка, гілка, схема):
     роль="You read a woman's own colours — skin, hair and eyes — from her portrait photo.",
     вхід=(_ЗП.Поле("photo_of_her", "her portrait photo, attached as an image", треба=True),),
     правила=(
-        "First decide whether the photo is usable. It is not when it is black-and-white or heavily "
-        "filtered, the face takes less than a quarter of the frame, the eyes are covered by glasses "
-        "or hair or narrowed, the light is coloured (stage or neon), or it is so overexposed that "
-        "the skin turns white. Then give only the reason in \"photo\" and no colours.",
+        "If the photo is unusable — black-and-white or heavily filtered, the face under a quarter of the frame, "
+        "eyes hidden by glasses, hair or squinting, coloured light (stage, neon), skin blown white — give only "
+        "the reason in \"photo\" and no colours.",
         "Skin: three points — cheek, forehead, jaw — each free of shadow, highlight, blush and foundation.",
         "Hair: each visible tone (highlights, balayage, roots, grey) as its own entry, even for single-tone hair.",
-        "Eyes: the body of the iris. A clearly darker ring along the edge of the iris goes to "
-        "\"limbal_ring\".",
+        "Eyes: the iris body; a clearly darker rim along the iris edge goes to \"limbal_ring\".",
         "Take the colours from her, not from the background or her clothes.",
-        "If the light makes the photo yellow or blue, correct the colours to neutral daylight and "
-        "record the correction.",
-        "Zones: boxes where the code measures her colours itself, in thousandths of the photo — [left, top, right, "
-        "bottom], 0–1000 from the top-left corner. \"cheek_left\", \"cheek_right\" and \"forehead\" — clear skin "
-        "only; \"hair\" — a patch fully inside the hair, in its largest-area tone; \"iris_left\" and "
-        "\"iris_right\" — a box tight around each iris. A zone you cannot see is null.",
+        "If the light tints the photo yellow or blue, correct the colours to neutral daylight and record it.",
+        # рамки зон, з яких код міряє її кольори сам (`портрет_вимір`); промпт не довший за ДО (Е2-промпти п.5)
+        "Zones: boxes [left, top, right, bottom] in thousandths of the photo — cheeks and forehead on clear skin, "
+        "hair in its main tone, each iris tightly; null if unseen.",
     ),
     вихід="PORTRAIT_COLOURS",
     скелет={"photo": "|".join((ПОРТРЕТ_ПРИДАТНИЙ,) + ПРИЧИНИ_ПОРТРЕТА),
             "skin": ["<hex>"], "hair": ["<hex>"], "eyes": "<hex>", "limbal_ring": "<hex>",
             "light_cast": "none|yellow|blue", "light_correction": "none|slight|strong",
-            "zones": {к: ["<left>", "<top>", "<right>", "<bottom>"] for к in _ПВ.ЗОНИ}},
+            "zones": {к: "<box>" for к in _ПВ.ЗОНИ}},
     поля_виходу={"photo": "usable, or why it is not",
                  "skin": "#rrggbb at each point",
                  "hair": "#rrggbb, the largest-area tone first",
                  "eyes": "#rrggbb of the iris body",
                  "limbal_ring": "#rrggbb, or null",
                  "light_cast": "the cast you corrected",
-                 "light_correction": "how much you corrected it",
-                 **{"zones." + к: "four numbers: left, top, right, bottom in thousandths of the photo; null if you cannot see it" for к in _ПВ.ЗОНИ}},
+                 "light_correction": "how much you corrected it"},
     межі=("лише_вхід", "невідомо"),
     мова_промпту="en",
 )
