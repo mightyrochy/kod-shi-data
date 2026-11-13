@@ -44,7 +44,7 @@ try {
     $sp = Get-StatePath (Get-MarkerKey $m)
     for ($i = 1; $i -le $script:MaxRetakes; $i++) {
         $id = Fail $m "відмова $i"
-        Check "спроба $i з $limit: позначка в чекання, кінцевого стану нема" ((Get-MarkerState $m).Kind -ceq 'WAIT' -and (Get-Retakes $sp) -eq $i -and -not (Test-Path (Join-Path $OutDir "$id.json")))
+        Check "спроба $i з ${limit}: позначка в чекання, кінцевого стану нема" ((Get-MarkerState $m).Kind -ceq 'WAIT' -and (Get-Retakes $sp) -eq $i -and -not (Test-Path (Join-Path $OutDir "$id.json")))
         Check "спроба ${i}: причина лежить у стані чекання (група START)" ((WaitJson $m).group -ceq 'START' -and (WaitJson $m).reason -ceq "відмова $i")
     }
     Check 'до межі приміток CRASH нема' (@(Notes).Count -eq 0)
