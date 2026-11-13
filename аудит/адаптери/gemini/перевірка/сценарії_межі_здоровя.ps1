@@ -123,17 +123,22 @@ try {
         $fresh = @{ refused = (& $stamp -600); reset = '' }
         $body = & $beat $fresh
         Check '2 свіжа відмова Codex без виміру: «0 %», codex 3, виміру ще нема' ($body.Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4') -and $body -cmatch '\| codex · остання відмова \| відмова 1[0-9] хв тому \| 0 % \|' -and $body.Contains('| codex | — | невідомо (виміру ще нема'))
-        $put = { param($name, $code, $secs, $turns = 1) [IO.File]::WriteAllText("$tmp/gout/$name.json", ('{"v":1,"engine":"codex","code":"' + $code + '","turns":' + $turns + ',"started_utc":"' + (& $stamp ($secs - 60)) + '","ended_utc":"' + (& $stamp $secs) + '"}'), $utf) }
+        # engine_answer_utc — час відповіді рушія (його ставить gemini-run одразу після ходу); $ans '' — поля нема (рушія не кликали).
+        $put = { param($name, $code, $secs, $ans = 'за-кінцем') $f = $(if ("$ans" -ceq '') { '' } else { ',"engine_answer_utc":"' + (& $stamp $(if ("$ans" -ceq 'за-кінцем') { $secs } else { [int]$ans })) + '"' })
+            [IO.File]::WriteAllText("$tmp/gout/$name.json", ('{"v":1,"engine":"codex","code":"' + $code + '","turns":1' + $f + ',"started_utc":"' + (& $stamp ($secs - 60)) + '","ended_utc":"' + (& $stamp $secs) + '"}'), $utf) }
         & $put '20261113-120000-aaaaaaaaaaaa' 'QUOTA' -300
         & $put '20261113-120100-bbbbbbbbbbbb' 'AGY_ERROR' -200
         Check '2 відмова квоти й збій рушія в out — не успіх: codex 3' ((& $beat $fresh).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
-        # Виходи до запуску рушія (NOT_ON_MAIN, NO_TASK_FILE) мають engine codex, але рушія не кликали (turns 0) — відповіддю Codex не є.
-        & $put '20261113-120120-dddddddddddd' 'NOT_ON_MAIN' -150 0
-        & $put '20261113-120130-eeeeeeeeeeee' 'NO_TASK_FILE' -140 0
-        Check '2 виходи без виклику рушія (NOT_ON_MAIN, NO_TASK_FILE; turns 0) відмови не скасовують: codex 3' ((& $beat $fresh).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
+        # Виходи до запуску рушія (NOT_ON_MAIN, NO_TASK_FILE) мають engine codex, але рушія не кликали (поля engine_answer_utc нема) — відповіддю Codex не є.
+        & $put '20261113-120120-dddddddddddd' 'NOT_ON_MAIN' -150 ''
+        & $put '20261113-120130-eeeeeeeeeeee' 'NO_TASK_FILE' -140 ''
+        Check '2 виходи без виклику рушія (NOT_ON_MAIN, NO_TASK_FILE; без engine_answer_utc) відмови не скасовують: codex 3' ((& $beat $fresh).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
         # Вимір, зроблений до відмови, її не скасовує; зроблений після — скасовує без запису в out.
         Check '2 вимір раніший за відмову її не скасовує: codex 3' ((& $beat (@{ refused = (& $stamp -600); reset = '' } + @{ read = (& $stamp -900); limits = $measure.limits })).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
         Check '2 вимір пізніший за відмову її скасовує: codex 0' ((& $beat (@{ refused = (& $stamp -600); reset = '' } + @{ read = (& $stamp -300); limits = $measure.limits })).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 0 · agy 4'))
+        # Відповідь Codex раніше за відмову іншого слота, а кінець наряду (ended_utc) пізніше — відмова лишається: порівнюється час відповіді.
+        & $put '20261113-120140-ffffffffffff' 'DONE' -100 -700
+        Check '2 відповідь Codex раніше за відмову, ended_utc пізніше: відмова лишається, codex 3' ((& $beat $fresh).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
         & $put '20261113-120200-cccccccccccc' 'DONE' -100
         $body = & $beat $fresh
         Check '2 успішний запуск Codex після відмови: codex 0, відмова — окремим рядком із датою запуску' ($body.Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 0 · agy 4') -and $body.Contains("— (пізніше був успішний запуск, $(& $stamp -100)) |") -and $body -cnotmatch '\| codex · остання відмова \|[^\n]*\| 0 % \|')

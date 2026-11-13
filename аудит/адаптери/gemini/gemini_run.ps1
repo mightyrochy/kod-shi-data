@@ -527,12 +527,21 @@ function Get-CodexHome {
     Join-Path ([Environment]::GetFolderPath('UserProfile')) '.codex'
 }
 
+# Значення з ConvertFrom-Json без дат: PowerShell 7 (і `\/Date()\/` у 5.1) віддає ISO-рядок як [datetime], а за ним і порівняння
+# рядків, і повторний запис у JSON дають не ISO UTC (місцевий час чи формат культури). Дату повертаємо UTC-рядком з Z, як її писали.
+function ConvertTo-PlainJson($Value) {
+    if ($Value -is [datetime]) { return Get-UtcStamp $Value }
+    if ($Value -is [pscustomobject]) { foreach ($p in $Value.PSObject.Properties) { $p.Value = ConvertTo-PlainJson $p.Value }; return $Value }
+    if ($Value -is [array]) { return , @(foreach ($v in $Value) { ConvertTo-PlainJson $v }) }
+    $Value
+}
+
 # Квота Codex, записана раніше (refused/reset — відмова, read/limits — вимір): файл читає й пише лише цей планувальник.
 function Read-CodexQuota {
     $q = [ordered]@{}
     try {
         $o = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json
-        foreach ($p in $o.PSObject.Properties) { $q[$p.Name] = $p.Value }
+        foreach ($p in $o.PSObject.Properties) { $q[$p.Name] = ConvertTo-PlainJson $p.Value }
     } catch { $null = $_ }
     $q
 }
@@ -818,6 +827,9 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     $a += @('--json', '-o', $outFile, '--dangerously-bypass-approvals-and-sandbox', $short)
     $began = [datetime]::UtcNow
     $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $CodexStallMinutes $Run.Log (Join-Path $Run.Dir 'codex.events.tsv')
+    # Час, коли процес Codex віддав відповідь: з ним claude-run порівнює відмову іншого слота (не з ended_utc наряду, що ставиться
+    # після фактів, збірки й супровідних файлів).
+    $answered = Get-UtcStamp (Get-Date)
     Save-CodexRateLimits $began
     [System.IO.File]::AppendAllText($Run.ErrLog, $r.Err, $script:Utf8)
     if ($r.Stalled) {
@@ -828,7 +840,7 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     if (Test-Path -LiteralPath $outFile) { $resp = [System.IO.File]::ReadAllText($outFile, $script:Utf8) }
     if ($r.Code -ne 0) { $err = ($r.Err + "`n" + $r.Out.Substring([Math]::Max(0, $r.Out.Length - 2000))).Trim() }
     if ($r.Code -ne 0 -and -not $err) { $err = "код виходу $($r.Code)" }
-    $res = [pscustomobject]@{ status = $(if ($err) { 'ERROR' } else { 'SUCCESS' }); response = $resp; error = $err }
+    $res = [pscustomobject]@{ status = $(if ($err) { 'ERROR' } else { 'SUCCESS' }); response = $resp; error = $err; answered = $(if ($err) { '' } else { $answered }) }
     [pscustomobject]@{ Kind = 'result'; Result = $res }
 }
 
@@ -875,6 +887,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
     $deadline = $(if ($unlimited) { [timespan]::MaxValue } else { (Get-AwakeTime) + [timespan]::FromMinutes($TotalMinutes) })
     $text = $Prompt
     $turns = 0
+    $answered = ''
     $nudges = 0
     $why = ''
     $liveCorrection = $false
@@ -897,6 +910,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                 $resp = ''
                 if ($r.Result.PSObject.Properties['response']) { $resp = [string]$r.Result.response }
                 $run.Responses.Add($resp)
+                if ($r.Result.PSObject.Properties['answered'] -and $r.Result.answered) { $answered = [string]$r.Result.answered }
                 if ($status -in @('ERROR', 'INVALID', 'CANCELED')) {
                     $err = ''
                     if ($r.Result.PSObject.Properties['error']) { $err = [string]$r.Result.error }
@@ -945,7 +959,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         Close-StreamRun $run
     }
     $tail = (($run.Responses -join "`n") -split "`r?`n" | Select-Object -Last 60) -join "`n"
-    [pscustomobject]@{ Code = $code; Report = $report; Turns = $turns; Tail = $tail; Why = [string]$why; EngineErr = $engineErr; ErrLog = $run.ErrLog }
+    [pscustomobject]@{ Code = $code; Report = $report; Turns = $turns; Answer = $answered; Tail = $tail; Why = [string]$why; EngineErr = $engineErr; ErrLog = $run.ErrLog }
 }
 
 # Коди кінця без звіту агента, чию причину знає лише рушій: його текст помилки (stderr, остання подія `error`) інакше
@@ -1234,7 +1248,7 @@ function Invoke-Task($M, $Job) {
     $id = [string]$Job.id
     $statePath = Get-StatePath $key
     $status = [ordered]@{ v = 1; id = $id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = [string]$Job.slot
-        start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''
+        start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; engine_answer_utc = ''; minutes = 0; bundle = ''
         engine = (Get-StartEngine $M.Model ([string](Get-JsonProp (Get-JsonProp $Job 'sel') 'engine')))
         retakes = (Get-Retakes $statePath); started_utc = [datetime]::UtcNow.ToString('o'); ended_utc = ''; sleep_parent = (Get-SleepParent $statePath) }
     $prev = $(if (Test-Path -LiteralPath $statePath) { [IO.File]::ReadAllText($statePath, $script:Utf8) } else { $null })
@@ -1322,6 +1336,7 @@ function Invoke-Task($M, $Job) {
         $status.code = $res.Code
         $status.report = $res.Report
         $status.turns = $res.Turns
+        $status.engine_answer_utc = [string](Get-JsonProp $res 'Answer')
         if ($res.Code -eq 'MODEL_INVALID') { $status.models = @(Get-AgyModels) }
         if ($res.Code -eq 'QUOTA') { $waiting = Enter-RunQuotaWait $M $sel $status $res $dir }
         # Залишок квоти після прогону — для рядка кінця наряду.
@@ -1578,7 +1593,7 @@ function Write-Heartbeat([string]$Iso) {
                     [ordered]@{ g = (ConvertTo-GroupCode $w.Name); w = $w.Window; left = $w.Left; reset = $(if ($null -ne $w.Reset) { Get-UtcStamp $w.Reset.UtcDateTime } else { '' }) }
                 }) }
         } catch { $null = $_ }
-        try { $hb.codex = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+        try { $hb.codex = ConvertTo-PlainJson ([System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json) } catch { $null = $_ }
         $hb.codex_fallback = (Test-CodexFallback)
         $hb.wait = @(foreach ($w in @(Get-WaitingMarkers | Select-Object -First 12)) { [ordered]@{ marker = $w.Marker; until = $w.Until; g = $w.Group } })
         try { $hb.health = Get-GeminiHealth } catch { Write-Log "здоров'я: $($_.Exception.Message)" }

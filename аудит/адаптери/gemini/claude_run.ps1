@@ -410,10 +410,11 @@ function Format-Age([string]$Utc) {
     "$m хв"
 }
 
-# Остання відповідь Codex після $Since (UTC): запис кінця наряду в спільному out з engine codex, ended_utc пізніше за $Since,
-# turns >= 1 (рушій справді кликано: engine у записі стоїть уже зі створення статусу, а виходи до запуску — NOT_ON_MAIN,
-# NO_TASK_FILE, ISOLATION — лишають turns 0) і кодом, що не є відмовою квоти (QUOTA, QUOTA_ZERO) чи збоєм рушія без
-# відповіді (AGY_ERROR, AUTH тощо). '' — такої нема.
+# Остання відповідь Codex після $Since (UTC): запис кінця наряду в спільному out з engine codex і engine_answer_utc — часом, коли
+# процес Codex віддав відповідь (його ставить gemini-run одразу після ходу). Його, а не ended_utc, порівнюємо з відмовою: ended_utc
+# ставиться вже після фактів, збірки й супровідних файлів, тож відповідь раніше за відмову іншого слота виглядала б пізнішою.
+# Порожній engine_answer_utc — рушія не кликали (NOT_ON_MAIN, NO_TASK_FILE, ISOLATION) чи він не відповів; код, що є відмовою
+# квоти (QUOTA, QUOTA_ZERO) чи збоєм рушія (AGY_ERROR, AUTH тощо), теж не успіх. '' — такої відповіді нема.
 function Get-CodexSuccessAfter([string]$Since) {
     if ($Since -cnotmatch $script:UtcRx) { return '' }
     $from = [datetime]::ParseExact($Since, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
@@ -424,8 +425,7 @@ function Get-CodexSuccessAfter([string]$Since) {
         if ($t -cnotmatch '"engine":"codex"') { continue }
         if ($t -cmatch '"code":"([A-Z0-9_]*)"') { $code = $Matches[1] } else { continue }
         if ($failed -ccontains $code) { continue }
-        if ($t -cmatch '"turns":([0-9]+)') { if ([int]$Matches[1] -lt 1) { continue } } else { continue }
-        if ($t -cmatch '"ended_utc":"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})') { $end = $Matches[1] + 'Z' } else { continue }
+        if ($t -cmatch '"engine_answer_utc":"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)"') { $end = $Matches[1] } else { continue }
         if ([string]::CompareOrdinal($end, $Since) -gt 0 -and [string]::CompareOrdinal($end, $best) -gt 0) { $best = $end }
     }
     $best
