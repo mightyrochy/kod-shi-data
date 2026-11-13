@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"кіно, потім вечеря\", \"weather_band\": \"+9 °C\", \"intent\": \"хочу стримано й класично\", \"registers\": \"стримано й класично\", \"mood\": \"стримано й класично\", \"part_of_day\": \"ввечері\"}, \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"кіно, потім вечеря\"}, \"intent\": {\"kind\": \"reading\", \"quote\": \"хочу стримано й класично\"}, \"intent_quote\": {\"kind\": \"default\"}, \"mood\": {\"kind\": \"reading\", \"quote\": \"стримано й класично\"}, \"precipitation\": {\"kind\": \"reading\", \"quote\": \"злива й вітер\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\", \"quote\": \"ввечері\"}, \"her_registers\": {\"kind\": \"reading\", \"quote\": \"стримано й класично\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"стримано й класично\"}]}, \"weather_band\": {\"kind\": \"reading\", \"quote\": \"+9 °C\"}}, \"event\": \"кіно, потім вечеря\", \"part_of_day\": \"evening\", \"weather_band\": \"cold\", \"precipitation\": \"rain\", \"her_registers\": [\"classic\"], \"mood\": [\"спокійно\"], \"occasion\": \"date\", \"intent_quote\": \"хочу стримано й класично\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A structured navy blue wool-blend blazer with notch lapels, cut in a tailored fit to the hip and falling just above the knee, color #000080, fabric: heavy woven wool. Matching navy blue pleated trousers with a mid-rise waist, cut straight through the leg for a clean silhouette, color #000080, fabric: fine virgin wool. A crisp white cotton-poplin button-down shirt underneath with a classic collar and French cuffs, cut standard and slightly relaxed at the hem, color #FFFFFF, fabric: 100% cotton. Polished black leather loafers with a low block heel, cut sleek with a slight square toe, color #000000, fabric: full-grain calfskin leather. A pair of small gold hoop earrings and a slim leather belt in matching black to define the waist, color #D4AF37 (gold) and #000000 (belt), fabric: gold-filled metal and smooth leather. This outfit works by blending structured tailoring with timeless separates to honor your wish for a restrained and classic look suitable for an evening transition from cinema to dinner. The monochromatic navy base keeps the silhouette elongated and elegant under artificial lighting, while the crisp white shirt provides a necessary point of contrast that feels polished yet understated. Choosing wool textures ensures warmth against the rain and wind without appearing bulky, maintaining your preference for simplicity and sophistication throughout the night.\"}],\"usage\":{\"input_tokens\":842,\"output_tokens\":302},\"stop_reason\":\"end_turn\"}"
+ }
+}
