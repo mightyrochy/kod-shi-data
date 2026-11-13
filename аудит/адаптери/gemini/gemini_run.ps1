@@ -757,6 +757,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
     $text = $Prompt
     $turns = 0
     $nudges = 0
+    $why = ''
     $liveCorrection = $false
     $code = ''
     $report = 'NONE'
@@ -823,7 +824,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
         Close-StreamRun $run
     }
     $tail = (($run.Responses -join "`n") -split "`r?`n" | Select-Object -Last 60) -join "`n"
-    [pscustomobject]@{ Code = $code; Report = $report; Turns = $turns; Tail = $tail }
+    [pscustomobject]@{ Code = $code; Report = $report; Turns = $turns; Tail = $tail; Why = [string]$why }
 }
 
 # Назви моделей з `agy models` (лише назви за шаблоном): диспетчер обере робочу без руки власника.
@@ -931,9 +932,62 @@ function Get-SleepParent([string]$StatePath) {
 
 # --- один наряд ---------------------------------------------------------------------------------------------------
 
+# Клас причини запуску без результату за кодом кінця — для тижневого розкладу витрат (`cause.json` теки прогону читає
+# аудит/витрати/…/вивантажити.py). Класи: ноутбук і обгортка, умови наряду, модель, квота; код, що причини не визначає, — «невідомо».
+$script:CauseOfCode = @{
+    QUOTA = 'квота'; QUOTA_ZERO = 'квота'
+    STALL = 'модель'; TIMEOUT = 'модель'; NO_REPORT = 'модель'
+    BLOCKED = 'умови наряду'; STALE = 'умови наряду'; NOT_ON_MAIN = 'умови наряду'; NO_TASK_FILE = 'умови наряду'
+    TASK_TOO_LONG = 'умови наряду'; PLAN_FAILED = 'умови наряду'; EMPTY_PLAN = 'умови наряду'
+    MODEL_INVALID = 'умови наряду'; EFFORT_INVALID = 'умови наряду'; PLAN_WAIT = 'умови наряду'
+    INTERRUPTED = 'ноутбук і обгортка'; CRASH = 'ноутбук і обгортка'; ENGINE_MISSING = 'ноутбук і обгортка'
+    AUTH = 'ноутбук і обгортка'; REVIEW_API = 'ноутбук і обгортка'; COPY_FAILED = 'ноутбук і обгортка'
+}
+
+function Get-BootUtc {
+    <# Час старту ОС (UTC) чи $null: перерваний прогін, що почався до нього, обірвало перезавантаження. #>
+    try { (Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).LastBootUpTime.ToUniversalTime() } catch { $null }
+}
+
+function Get-RunCause([string]$Code, [string]$Tail = '', [string]$Why = '', [string]$Started = '') {
+    <# Клас і текст причини кінця. BLOCKED — рядок «ЗАБЛОКОВАНО» звіту ролі (LIVE_AFTER_INVALID пише обгортка за
+    невалідний живий рядок агента — це модель); NO_REPORT після звіту, що не збігся з гілкою, — звіт не прийнято. #>
+    if ($Code -eq 'DONE') { return [pscustomobject]@{ Class = ''; Text = '' } }
+    $class = $(if ($script:CauseOfCode.ContainsKey($Code)) { $script:CauseOfCode[$Code] } else { 'невідомо' })
+    # Порожній код дає лише зупинка конвеєра ззовні (catch не біжить, finally — так): процес наряду зупинили.
+    if (-not $Code) { $class = 'ноутбук і обгортка' }
+    $text = $(if ($Code) { $Code } else { 'код кінця порожній: процес наряду зупинено ззовні' })
+    if ($Code -eq 'BLOCKED') {
+        $line = @($Tail -split "`n" | Where-Object { $_.Trim() -cmatch '^ЗАБЛОКОВАНО' } | Select-Object -Last 1)
+        if ($line.Count) { $text = [string]$line[0] } else { $class = 'невідомо'; $text = 'BLOCKED без рядка ЗАБЛОКОВАНО' }
+        if ($text -cmatch '^\s*ЗАБЛОКОВАНО: LIVE_AFTER_INVALID') { $class = 'модель' }
+    }
+    if ($Code -eq 'NO_REPORT') {
+        if ($Why -eq 'mismatch') { $class = 'ноутбук і обгортка'; $text = 'NO_REPORT: звіт не прийнято — не збігся з гілкою' }
+        else { $text = 'NO_REPORT: нема звіту за формою після догонок' }
+    }
+    if ($Code -eq 'INTERRUPTED') {
+        $boot = Get-BootUtc
+        $from = [datetime]::MinValue
+        $text = $(if (-not $boot -or -not [datetime]::TryParse($Started, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind, [ref]$from)) { 'INTERRUPTED: процес наряду зник; старт ОС не прочитано' }
+            elseif ($boot -gt $from.ToUniversalTime()) { "INTERRUPTED: перезавантаження ОС, старт $(Get-UtcStamp $boot)" }
+            else { 'INTERRUPTED: процес наряду зник без перезавантаження ОС' })
+    }
+    [pscustomobject]@{ Class = $class; Text = (Get-NoteText $text) }
+}
+
+function Write-RunCause([string]$Id, [string]$Code, $Cause) {
+    <# Причина в теці прогону `<id>\cause.json`; прогону без теки (відмова до старту) у вивантаженні нема. Збій запису
+    лише в журнал: кінець наряду від причини не залежить. #>
+    $dir = Join-Path $RunsDir $Id
+    if (-not $Id -or -not (Test-Path -LiteralPath $dir -PathType Container)) { return }
+    $c = [ordered]@{ code = $Code; class = $Cause.Class; text = $Cause.Text; utc = (Get-UtcStamp (Get-Date)) }
+    try { Write-FileAtomic (Join-Path $dir 'cause.json') ($c | ConvertTo-Json -Compress) } catch { Write-Log "причина $Id не записана: $($_.Exception.Message)" }
+}
+
 # Кінець прогону: факти гілки, бандл (коли є нові коміти), стан у теці обміну. Спільне для звичайного кінця й
 # для прогону, перерваного вимкненням чи сном ноутбука (тоді стан — `STARTED` із JSON).
-function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$T0) {
+function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$T0, [string]$Why = '') {
     try {
         if ($Status.start) {
             $slugObj = [pscustomobject]@{ Slug = $Status.slug }
@@ -962,6 +1016,7 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
         if ($reason.Count -eq 0) { $reason = @($Tail -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) }
         try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($Status.slug)" ([string]$reason[0]) } catch { Write-Log "причина BLOCKED не записана: $($_.Exception.Message)" }
     }
+    Write-RunCause ([string]$Status.id) ([string]$Status.code) (Get-RunCause ([string]$Status.code) $Tail $Why ([string]$Status.started_utc))
     $Status.ended_utc = [datetime]::UtcNow.ToString('o')
     Write-FileAtomic (Join-Path $OutDir ($Status.id + '.json')) ($Status | ConvertTo-Json -Compress)
     Write-FileAtomic $StatePath "DONE $($Status.id) $($Status.code)"
@@ -1021,6 +1076,8 @@ function Invoke-Task($M, $Job) {
     $t0 = Get-Date
     $tail = ''
     $waiting = $false
+    $waitCode = ''
+    $why = ''
     $copyFailed = $false
     Write-Log "наряд $($M.Name) $($M.Sha) -> $id (слот $($Job.slot))"
     try {
@@ -1060,14 +1117,14 @@ function Invoke-Task($M, $Job) {
         $review = Get-AutoReviewState $M.Slug
         if ($review -eq 'REVIEW_API') {
             Enter-ReviewWait $M ([string]$Job.head)
-            $waiting = $true
+            $waiting = $true; $waitCode = 'REVIEW_API'
             return
         }
         if ($review -ne 'LIVE') { $status.code = $review; return }
         try { $taskText = Add-AutoTaskContext $M.Slug $taskText $M.Sha $M.Model }
         catch {
             # Збій контексту (план живого, вхід автоперевірки): чекання з лічильником; на межі — PLAN_FAILED, що будить диспетчера.
-            if (Enter-PlanWait $M $_.Exception.Message ([string]$Job.head)) { $waiting = $true }
+            if (Enter-PlanWait $M $_.Exception.Message ([string]$Job.head)) { $waiting = $true; $waitCode = 'PLAN_WAIT' }
             else {
                 $status.code = 'PLAN_FAILED'
                 try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($M.Slug)" ('PLAN_FAILED: ' + (Get-PlanFailReason $_.Exception.Message)) } catch { Write-Log "причина PLAN_FAILED не записана: $($_.Exception.Message)" }
@@ -1091,6 +1148,7 @@ function Invoke-Task($M, $Job) {
         [IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
         $res = Invoke-Agent $MA $start $prompt $dir $sel
         $tail = $res.Tail
+        $why = $res.Why
         $status.code = $res.Code
         $status.report = $res.Report
         $status.turns = $res.Turns
@@ -1110,7 +1168,12 @@ function Invoke-Task($M, $Job) {
             Write-Log "збій: $($_.Exception.Message)"
         }
     } finally {
-        if (-not $waiting) { Complete-Status $status $statePath $tail $t0 }
+        if (-not $waiting) { Complete-Status $status $statePath $tail $t0 $why }
+        else {
+            # Позначка чекає в черзі (квота, стан PR, план, копія): цей прогін без кінця в теці обміну — причина лише в теці прогону.
+            $waitCode = $(if ($copyFailed) { 'COPY_FAILED' } elseif ($status.code) { [string]$status.code } else { $waitCode })
+            Write-RunCause $id $waitCode (Get-RunCause $waitCode)
+        }
         # Зроблене — у гілці gemini/<наряд> клону (і в бандлі): копія задачі геть, лишається лише з комітами поза гілками.
         $kept = Close-TaskCopy @('--branches', '--remotes')
         if ($kept) { Write-Log "наряд $($M.Name): копія $kept лишається — коміти поза гілками" }

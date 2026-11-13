@@ -2059,11 +2059,17 @@ function Save-Skips([string]$Path) {
     Write-FileAtomic $Path (ConvertTo-Json -InputObject $rows -Compress)
 }
 
-function Add-Note([string]$Path, [string]$Marker, [string]$Text) {
-    <# Останні 12 приміток до #1856 (причина BLOCKED без гілки): один рядок, без керівних символів, до 240 знаків. #>
-    $rows = @(Read-JsonArray $Path)
+function Get-NoteText([string]$Text) {
+    <# Текст примітки чи причини запуску: один рядок, без керівних символів, до 240 знаків (межа рядка #1856). #>
     $clean = ([regex]::Replace($Text, '[\x00-\x1f\x7f]+', ' ')).Trim()
     if ($clean.Length -gt 240) { $clean = $clean.Substring(0, 240) }
+    $clean
+}
+
+function Add-Note([string]$Path, [string]$Marker, [string]$Text) {
+    <# Останні 12 приміток до #1856 (причина BLOCKED без гілки). #>
+    $rows = @(Read-JsonArray $Path)
+    $clean = Get-NoteText $Text
     $rows = @($rows | Select-Object -Last 11) + @([pscustomobject]@{ utc = (Get-UtcStamp (Get-Date)); marker = $Marker; text = $clean })
     Write-FileAtomic $Path (ConvertTo-Json -InputObject $rows -Compress)
 }
