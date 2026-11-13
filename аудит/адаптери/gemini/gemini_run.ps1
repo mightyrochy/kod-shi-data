@@ -187,6 +187,13 @@ function Get-Engine([string]$Model) {
     [pscustomobject]@{ Name = 'agy'; Model = $Model; Effort = '' }
 }
 
+# Рушій наряду, що не дійшов до вибору в Invoke-Task: той, що вибрав планувальник ($Job.sel.engine), інакше за назвою
+# моделі з позначки (Get-Engine: gpt-* — Codex). Стала `agy` у стані відмови до запуску брехала про gpt-*.
+function Get-StartEngine([string]$Model, [string]$Selected = '') {
+    if ($Selected -cin @('codex', 'agy')) { return $Selected }
+    (Get-Engine $Model).Name
+}
+
 # Codex за замовчуванням вимкнений (9738: акаунт ChatGPT для користувача gemini ще не вибрано): рушій вмикає лише явний
 # -EnableCodex у задачі gemini-run; без нього Codex не кличеться ні за позначкою gpt-*, ні каскадом.
 function Find-CodexExe {
@@ -956,7 +963,10 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
         }
     } catch {
         Write-Log "бандл: $($_.Exception.Message)"
-        if ($Status.code -in @('DONE', 'BLOCKED')) { $Status.code = 'CRASH' }
+        if ($Status.code -in @('DONE', 'BLOCKED')) {
+            $Status.code = 'CRASH'
+            Add-CrashNote (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($Status.slug)" ('бандл: ' + (Get-FailReason $_))
+        }
     }
     if ($T0 -ne [datetime]::MinValue) { $Status.minutes = [int][Math]::Round(((Get-Date) - $T0).TotalMinutes) }
     if ($Tail) { [System.IO.File]::WriteAllText((Join-Path $OutDir ($Status.id + '.tail.txt')), $Tail, $script:Utf8) }
@@ -985,11 +995,15 @@ function Write-QuotaStatus($M, [string]$Id, [string]$Group, [long]$Until, [hasht
 }
 
 # Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
-function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
-    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
+# $Reason — причина цієї спроби (Get-FailReason), між спробами її несе стан чекання; на межі вона йде в blocked-reasons.json
+# (рядок диспетчерові — лише код CRASH). $Engine — рушій, який вибрав планувальник; нема — за назвою моделі.
+function Close-FailedStart($M, [string]$Id, [string]$StatePath, [string]$Reason = '', [string]$Engine = '') {
+    $why = Get-StartFailReason $StatePath $Reason
+    if ((Step-FailedStart $M $StatePath $why) -ne 'LIMIT') { return }
     $status = [ordered]@{ v = 1; id = $Id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = ''
-        start = ''; head = ''; code = 'CRASH'; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy' }
-    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
+        start = ''; head = ''; code = 'CRASH'; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = (Get-StartEngine $M.Model $Engine) }
+    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH ($why)"
+    Add-CrashNote (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($M.Slug)" $why ($script:MaxRetakes + 1)
     Complete-Status $status $StatePath '' ([datetime]::MinValue)
 }
 
@@ -1017,7 +1031,8 @@ function Invoke-Task($M, $Job) {
     $id = [string]$Job.id
     $statePath = Get-StatePath $key
     $status = [ordered]@{ v = 1; id = $id; slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = [string]$Job.slot
-        start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = 'agy'
+        start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''
+        engine = (Get-StartEngine $M.Model ([string](Get-JsonProp (Get-JsonProp $Job 'sel') 'engine')))
         retakes = (Get-Retakes $statePath); started_utc = [datetime]::UtcNow.ToString('o'); ended_utc = ''; sleep_parent = (Get-SleepParent $statePath) }
     $prev = $(if (Test-Path -LiteralPath $statePath) { [IO.File]::ReadAllText($statePath, $script:Utf8) } else { $null })
     Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
@@ -1109,9 +1124,11 @@ function Invoke-Task($M, $Job) {
             Write-Log "копія задачі: $($_.Exception.Message)"
             if ($null -eq $prev) { Remove-Item -LiteralPath $statePath -Force } else { Write-FileAtomic $statePath $prev }
             $waiting = $true
+            Close-FailedStart $M $id $statePath (Get-FailReason $_) $status.engine
         } else {
             $status.code = 'CRASH'
             Write-Log "збій: $($_.Exception.Message)"
+            Add-CrashNote (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($M.Slug)" (Get-FailReason $_)
         }
     } finally {
         if (-not $waiting) { Complete-Status $status $statePath $tail $t0 }
@@ -1261,7 +1278,7 @@ function Start-Markers($Workers) {
             [void]$Workers.Add($worker)
         } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
-            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
+            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m)) (Get-FailReason $_) $sel.Engine.Name
             continue
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
@@ -1367,6 +1384,7 @@ function Invoke-Worker {
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
     $gpu = $false
+    $failReason = ''
     $info = Join-Path $script:SlotDir "$($job.slot).json"
     try {
         if ($job.gpu) {
@@ -1384,13 +1402,14 @@ function Invoke-Worker {
         0
     } catch {
         Add-HealthException $_.Exception; Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
+        $failReason = Get-FailReason $_
         1
     } finally {
         if ($gpu) { Exit-GpuLease $job }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
         Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model
-                N = [string]$job.n; Cond = [string]$job.cond }) ([string]$job.id) $statePath
+                N = [string]$job.n; Cond = [string]$job.cond }) ([string]$job.id) $statePath $failReason ([string](Get-JsonProp (Get-JsonProp $job 'sel') 'engine'))
         $slotLock.Dispose()
     }
 }
