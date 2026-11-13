@@ -22,3 +22,6 @@ print("woo 2 варіації кольору:", в.картка_з_woo("https://
 print("dom, 2 оферти (A є, B нема), сторінка B:", дом(два))
 print("dom, 1 оферта:", дом(о("B", "InStock")))
 print("dom, опції Чорний/Білий без рядка кольору:", дом(о("B", "InStock"), ["Чорний", "Білий"]))
+три_розміри = [{"price": "1", "availability": "https://schema.org/" + x} for x in ("InStock", "OutOfStock", "InStock")]
+_к = в.картка_з_dom("https://s.test/p/1", '<script type="application/ld+json">%s</script>' % ld(три_розміри), {"rows": [["Колір", "Чорний"]]}, {"назва": "Сукня", "артикул": "B"})
+print("dom, 3 оферти розмірів без sku/url, рядок «Колір: Чорний»:", (_к["колір"], _к["колір_джерело"], _к["наявність"]))

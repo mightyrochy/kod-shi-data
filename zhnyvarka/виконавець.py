@@ -364,6 +364,8 @@ def картка_з_dom(url, html, dom, факти=None):
     варіації = ld.get("hasVariant") or ld.get("offers") or []
     if isinstance(варіації, dict):
         варіації = [варіації]
+    if not ld.get("hasVariant") and not any(isinstance(x, dict) and (x.get("sku") or x.get("url")) for x in варіації):
+        варіації = []                                  # оферти без hasVariant і без sku/url — розміри чи ціни самої сторінки, не варіації
     варіації = [в for в in варіації if isinstance(в, dict)] or [{"offers": None}]   # без варіацій у ld — сторінка сама
     if len(варіації) == 1:                             # єдина варіація — це сторінка: її колір — колір сторінки
         варіації = [dict(варіації[0], з_сторінки=колір_сторінки)]
@@ -378,8 +380,11 @@ def картка_з_dom(url, html, dom, факти=None):
             к["колір_hex"] = hex_в
             к["колір_джерело"] = джерело
         оф = в.get("offers") if "offers" in в else в
-        if isinstance(оф, dict) and оф.get("availability"):
-            к["наявність"] = "InStock" in str(оф["availability"])
+        if оф is None:
+            оф = ld.get("offers")                      # сторінка без hasVariant: наявність — з її ж офер
+        оф = [x for x in (оф if isinstance(оф, list) else [оф]) if isinstance(x, dict) and x.get("availability")]
+        if оф:
+            к["наявність"] = any("InStock" in str(x["availability"]) for x in оф)
     return к
 
 
