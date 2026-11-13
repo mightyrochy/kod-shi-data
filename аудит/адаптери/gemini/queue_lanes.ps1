@@ -1475,6 +1475,18 @@ function ConvertTo-SparseSkip([string]$Dir) {
     '!/' + ($Dir -replace '([\\*?\[])', '\$1') + '/'
 }
 
+function Set-CopyWorkTree([string]$Repo) {
+    <# Копія — робоче дерево за власним конфігом: `core.bare=false` і `core.worktree` = вона сама в її `config.worktree`.
+    З `extensions.worktreeConfig` (вмикає sparse-checkout) прив'язане дерево читає `core.bare`/`core.worktree` спільного
+    конфігу клону, а туди пише будь-яке `git config` без `--worktree` у будь-якій копії: `core.bare=true` робить голими
+    всі наступні копії (`reset` — 128 «must be run in a work tree»), `core.worktree` веде їх git у клон. Без розширення
+    ці ключі спільного конфігу копія не читає, а `--worktree` писав би в спільний конфіг — тоді нічого не робить;
+    New-TaskCopy кличе двічі: до sparse-checkout (розширення вже є) і після (sparse-checkout щойно його ввімкнув). #>
+    if ((Invoke-Git @('config', '--get', '--bool', 'extensions.worktreeConfig') -AllowFail -Dir $Repo).Out.Trim() -cne 'true') { return }
+    [void](Invoke-Git @('config', '--worktree', 'core.bare', 'false') -Dir $Repo)
+    [void](Invoke-Git @('config', '--worktree', 'core.worktree', $Repo) -Dir $Repo)
+}
+
 function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
     <# Тека задачі: `repo` — git worktree клону (спільні об'єкти й посилання) без тек-архівів, `tmp` — TEMP і TMP процесу
     наряду та його нащадків. Далі git і рушій працюють у копії ($RepoDir); повертає її шлях, закриває Close-TaskCopy. #>
@@ -1483,6 +1495,7 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
     $script:TaskCopy = @{ Dir = $Dir; Clone = $RepoDir; Temp = $env:TEMP; Tmp = $env:TMP }
     [void](Invoke-Git @('worktree', 'prune') -AllowFail)
     [void](Invoke-Git @('worktree', 'add', '-q', '-f', '--no-checkout', '--detach', $repo, $Commit))
+    Set-CopyWorkTree $repo
     # sparse-checkout у worktree лише з git 2.36: раніший писав `core.sparseCheckout` у спільний конфіг клону, а
     # `--no-cone` з'явився в 2.35. Старіший git — копія повна, але так само прибирається після доставки.
     $v = [regex]::Match([string](Invoke-Git @('version') -AllowFail).Out, '([0-9]+)\.([0-9]+)')
@@ -1496,6 +1509,7 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
             $skip = @()
         }
     } else { Write-Log "копія задачі: git до 2.36 — повна ($([string]$v.Value))" }
+    Set-CopyWorkTree $repo
     [void](Invoke-Git @('reset', '-q', '--hard') -Dir $repo)
     Set-Variable -Scope Script -Name RepoDir -Value $repo
     $env:TEMP = $tmp; $env:TMP = $tmp
