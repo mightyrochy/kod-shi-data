@@ -1321,6 +1321,12 @@ def _наявність_ld(зн):
     return None
 
 
+def _адреса_варіанта_збігається(адреса_ld, url):
+    """Адреса варіанта з JSON-LD (`url`, `@id`) — адреса самої сторінки: це її власний варіант."""
+    return isinstance(адреса_ld, str) and bool(адреса_ld.strip()) and \
+           канонічна_з_запитом(адреса_ld.strip(), url) == канонічна_з_запитом(url)
+
+
 def _список(x):
     if x is None:
         return []
@@ -1541,7 +1547,10 @@ def факти_з_картки(html_текст, url, селектори=None):
              available=None, наявність=None, фото=[], фото_джерело=None, крихти=[], характеристики={},
              характеристики_сирі=[], розміри=[], розміри_в_наявності=[], розміри_джерело=None, бренд=None,
              артикул=None, id_магазину=None, колір_ld=None, мова_альт=None, group_id=None, варіанти=[],
-             свотчі=[], таблиця_мірок=None, склад_джерело=None)
+             свотчі=[], таблиця_мірок=None, склад_джерело=None,
+             власник_кадру=json.dumps("невідомо", ensure_ascii=False))
+    # Сторінка не дає зв'язку «варіант → кадр» платформи (сирі id варіацій, галерея варіанта), тож кадри цього шляху — власник
+    # «невідомо», а не здогад; варіант платформи доводять лише `факти_shopify` і `факти_woo` (рішення 05.11).
     т = html_текст or ""
     # ── JSON-LD Product / ProductGroup / BreadcrumbList ─────────────────────────
     вузли = json_ld(т)
@@ -1563,10 +1572,8 @@ def факти_з_картки(html_текст, url, селектори=None):
     if продукт:
         p = продукт
         ф["фото"] = _ld_картинки(p.get("image")); ф["фото_джерело"] = "json-ld" if ф["фото"] else None
-        кол = p.get("color")
-        ф["колір_ld"] = розекранувати(кол) if isinstance(кол, str) else None
         офери = _список(p.get("offers"))
-        ціни, наявн = [], []
+        ціни = []
         for о in офери:
             if not isinstance(о, dict):
                 continue
@@ -1576,19 +1583,15 @@ def факти_з_картки(html_текст, url, селектори=None):
                     ціни.append(v)
             if о.get("priceCurrency"):
                 ф["валюта"] = str(о["priceCurrency"]).upper()
-            н = _наявність_ld(о.get("availability"))
-            if н is not None:
-                наявн.append(н)
-            ст = _стан_наявності(о.get("availability"))
-            if ст and not ф["наявність"]:
-                ф["наявність"] = ст
             ps = о.get("priceSpecification")
             for спец in _список(ps):
                 if isinstance(спец, dict):
                     v = _ціна_число(спец.get("price"))
                     if v:
                         ціни.append(v)
-        варіанти = _список(p.get("hasVariant"))
+        варіанти = p.get("hasVariant") or []
+        if isinstance(варіанти, dict):
+            варіанти = [варіанти]
         for в in варіанти:
             if not isinstance(в, dict):
                 continue
@@ -1600,13 +1603,29 @@ def факти_з_картки(html_текст, url, селектори=None):
                     вар["ціна"] = _ціна_число(о.get("price")); ф["валюта"] = ф["валюта"] or str(о.get("priceCurrency") or "").upper() or None
                     if вар["ціна"]:
                         ціни.append(вар["ціна"])
-                    if вар["available"] is not None:
-                        наявн.append(вар["available"])
             ф["варіанти"].append(вар)
+        # Колір і наявність сторінки — з даних її власного варіанта: Product без hasVariant — єдиний варіант, у ProductGroup —
+        # єдиний чи той, чия адреса збігається з адресою сторінки. Голова списку кольорів моделі й оферти сестер — не дані
+        # цього варіанта: сторінка без власного варіанта колір і наявність з JSON-LD лишає порожніми.
+        власні = варіанти or [p]
+        for в in власні:
+            if not isinstance(в, dict):
+                continue
+            if в is not p and len(власні) > 1 and not _адреса_варіанта_збігається(в.get("url") or в.get("@id"), url):
+                continue
+            кол = в.get("color")
+            ф["колір_ld"] = розекранувати(кол) if isinstance(кол, str) else None
+            for о in _список(в.get("offers")):
+                if not isinstance(о, dict):
+                    continue
+                н = _наявність_ld(о.get("availability"))
+                if н is not None:
+                    ф["available"] = bool(ф["available"]) or н
+                ст = _стан_наявності(о.get("availability"))
+                if ст and not ф["наявність"]:
+                    ф["наявність"] = ст
         if ціни:
             ф["ціна"] = min(ціни); ф["ціна_джерело"] = "json-ld offers"
-        if наявн:
-            ф["available"] = any(наявн)
     # ── meta / OpenGraph ───────────────────────────────────────────────────────
     мета = мета_теги(т)
 
