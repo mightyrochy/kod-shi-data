@@ -108,7 +108,7 @@ try {
             Check 'питання з метасимволами лишається даними' ((ConvertTo-LivePublicationBody $foreign $registry).Body -ceq $foreign)
         }
         Scenario '3 один хід тому самому виконавцю' {
-            Import-Functions 'gemini_run.ps1' @('Invoke-Agent','Test-Report')
+            Import-Functions 'gemini_run.ps1' @('Invoke-Agent','Test-Report','Get-ReportLine')
             $script:MaxNudges = 0; $script:TurnMinutes = 5; $script:TotalMinutes = 10
             function Write-Log([string]$Text) { }
             function Close-StreamRun($Run) { }
