@@ -8,7 +8,8 @@ open(os.environ['FAKE_CC_LOG'] + '.pid', 'w').write(str(os.getpid()))
 prompt = sys.stdin.read()
 with open(os.environ['FAKE_CC_LOG'], 'a', encoding='utf-8') as f:
     f.write(json.dumps({'argv': sys.argv[1:], 'stdin': prompt, 'cwd': os.getcwd(), 'temp': os.environ.get('TEMP', ''),
-                        'tmp': os.environ.get('TMP', '')}, ensure_ascii=False) + '\n')
+                        'tmp': os.environ.get('TMP', ''),
+                        'bg_ceiling': os.environ.get('CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS')}, ensure_ascii=False) + '\n')
 slug = re.search(r'аудит/наряди/(.+?)\.md', prompt).group(1)
 branch = 'claude/' + slug
 from fake_timeline import тримати as hold
@@ -109,6 +110,15 @@ if sc == 'noise':
     for i in range(40):
         sys.stdout.write('шум %d\n' % i); sys.stdout.flush(); time.sleep(0.5)
     result('НОУТБУК ГОТОВО %s %s' % (branch, push()))
+if sc == 'bg_wait':
+    # Агент закінчив хід («—»), а його фонове завдання ще йде. Справжній claude -p без межі очікування (змінна 0) чекає
+    # мовчки, інакше зупиняє фон і виходить кодом 0 із цим рядком у stderr (текст — з живого прогону).
+    emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': '—'})
+    if os.environ.get('CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS') == '0':
+        time.sleep(600)
+    sys.stderr.write('Background tasks still running 10m after the last turn (monitor "m"); stopping them. '
+                     'Set CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 to wait indefinitely.\n')
+    sys.exit(0)
 if sc == 'pause':
     # Справжні події частіше за поріг, хоч усього довше: не завислість.
     for i in range(10):

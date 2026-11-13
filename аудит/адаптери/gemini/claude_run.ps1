@@ -19,7 +19,8 @@
      ЗАБЛОКОВАНО з кодом (MODEL_INVALID, EFFORT_INVALID), без підміни. Дозволи — `--permission-mode auto`.
   3. Промпт — перший і останній рядки запускача (`аудит/ЗАПУСКАЧ.md`) без його id і з вимкненням «лише обгортка за
      позначкою»; нова спроба при наявній гілці наряду — ще «продовжуй з гілки». Гілку й PR-чернетку сесія пушить сама.
-  4. Межі часу всього нема: зупиняє лише завислість — жодної події stream-json довше за поріг (HANG).
+  4. Межі часу всього нема: зупиняє лише завислість — жодної події stream-json довше за поріг (HANG). Очікування фонових
+     завдань агента — без власної межі `claude -p` (CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0): його тоді обмежує лише HANG.
   5. Кінець — рядок теки вихідних (доставляє `gemini-publish`): ГОТОВО <гілка> <SHA40>, лише коли `origin` має
      саме цей SHA на гілці зі звіту, або ЗАБЛОКОВАНО claude/<наряд> <КОД>; копія з незапушеними комітами лишається — ще рядок COPY_KEPT. Відмова за квотою — не кінець: позначка
      чекає скидання (час — з події `rate_limit_event` stream-json) і рядок QUOTA0_CLAUDE_M<хв>; потім її бере ця ж смуга.
@@ -835,6 +836,11 @@ function Save-ClaudeQuota($Info) {
 function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [string]$RunDir, [string]$StatePath, [string]$StateHead, [string]$Marker, [string]$Slot) {
     $hang = Get-Limit $script:Limits 'HangMinutes' 'claude_hang_minutes'
     $psi = New-StartInfo $Exe $ArgList $RepoDir
+    # `claude -p` сам зупиняє фонові завдання агента (монітор, вимір) і виходить, коли після останнього ходу минуло
+    # 10 хв за годинником стіни; 0 — чекати без цієї межі (назва й значення — з тексту stderr самого claude). Той годинник
+    # іде й під час паузи живлення (Wait-PowerPause призупиняє процеси наряду), тож після паузи межа вже минула, хоч
+    # агент не мовчав. Межа часу прогону — лише завислість нижче (час неспання, `Stop-Tree` прибирає дерево).
+    $psi.EnvironmentVariables['CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'] = '0'
     $psi.RedirectStandardInput = $true
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
     $p = Invoke-WithStdinUtf8 { Start-Tree $psi }
