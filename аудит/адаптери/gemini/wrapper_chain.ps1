@@ -91,6 +91,12 @@ function Get-ChainBuildStamp([string]$Commit) {
     $stamp
 }
 
+# Функції, які ланцюг бере з queue_lanes.ps1 через AST (Get-HeadLivePublication, Get-NightlyMarker), читають
+# $script:RemoteRoot і $script:QueuePrefix, а їх задає лише верхній код queue_lanes.ps1, якого публікатор не вантажить.
+# Клон публікатора — origin, тож корінь той самий, що за замовчуванням у queue_lanes.ps1 (Set-RemoteRoot).
+$script:RemoteRoot = 'refs/remotes/origin'
+$script:QueuePrefix = "$script:RemoteRoot/gemini-queue/"
+
 function Get-EngineLivePublication([string]$Head, [string]$ExistingBody = '') {
     <# Бере лише функції читання з довіреної копії queue_lanes, без побічних дій планувальника. #>
     $errors = $null

@@ -19,7 +19,15 @@
 
 . (Join-Path $PSScriptRoot 'wrapper_health.ps1')
 
-$script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
+# Де лежать посилання, які пише fetch цього рушія. gemini-run і gemini-publish мають власні клони й лишають origin;
+# claude-run працює в клоні власника, де fetch сесій і виконавців рухає refs/remotes/origin/* без його відома («cannot
+# lock ref … is at X but expected Y»), тож бере власний простір (Set-RemoteRoot 'refs/claude-run') і fetch з `--refmap=`:
+# без нього git заодно оновлює refs/remotes/origin/* за налаштуванням remote.origin.fetch і ловить той самий збій.
+function Set-RemoteRoot([string]$Root) {
+    $script:RemoteRoot = $Root
+    $script:QueuePrefix = "$Root/gemini-queue/"
+}
+Set-RemoteRoot 'refs/remotes/origin'
 $script:TaskDir = 'аудит/наряди/'
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}\z'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
@@ -353,7 +361,7 @@ function Get-Limits {
     $prev = $null
     if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { try { $prev = [System.IO.File]::ReadAllText($prevPath, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     $doc = $null
-    $r = Invoke-Git @('cat-file', 'blob', "refs/remotes/origin/main:$script:LanesPath") -AllowFail
+    $r = Invoke-Git @('cat-file', 'blob', "$script:RemoteRoot/main:$script:LanesPath") -AllowFail
     if ($r.Code -eq 0 -and $r.Out.Length -le 8192) {
         try { $doc = $r.Out | ConvertFrom-Json } catch { Write-Log 'смуги.json не читається як JSON — попередні межі' }
     }
@@ -425,7 +433,7 @@ function ConvertTo-Marker([string]$Line) {
     Cancel — голова позначки є комітом «ЗНЯТО…» диспетчера: він може пушити в гілку позначки, але не видаляти її, тож
     зняття — новий коміт поверх; Reason — решта теми. #>
     $f = $Line -split "`t", 4
-    $rest = $f[0].Substring($script:QueuePrefix.Length)
+    $rest = $f[0].Substring($f[0].IndexOf('gemini-queue/') + 'gemini-queue/'.Length)
     $parts = @($rest -split '/')
     $subject = $(if ($f.Count -eq 4) { $f[3] } else { '' })
     # Тема без сталої скрипта: стенди імпортують ConvertTo-Marker окремо від решти файла.
@@ -493,7 +501,7 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     if ($OpenOnly) { return $true }
     $date = $utc.ToString('yyyyMMdd')
     $head = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/'
-    $main = Get-RefSha 'refs/remotes/origin/main'
+    $main = Get-RefSha "$script:RemoteRoot/main"
     if ($main -cnotmatch '^[0-9a-f]{40}$') { return }
     $tries = @(foreach ($name in ((Invoke-Git @('for-each-ref', '--format=%(refname)', $head)).Out -split "`n")) {
         if ($name.Trim() -cmatch ('^' + [regex]::Escape($head) + '([1-9][0-9]{0,2})/gpu-p8$')) { [pscustomobject]@{ N = [int]$Matches[1]; Ref = $name.Trim() } }
@@ -835,6 +843,36 @@ function ConvertFrom-SizeList([string]$Text) {
     <# Обернене до ConvertTo-SizeList: пари Name/Bytes лише за форматом, решта відкидається. #>
     @(($Text -split ';') | Where-Object { $_ -cmatch '^[\p{L}\p{N}._ -]+=[0-9]{1,15}$' } | ForEach-Object {
         $i = $_.LastIndexOf('='); [pscustomobject]@{ Name = $_.Substring(0, $i); Bytes = [long]$_.Substring($i + 1) } })
+}
+
+function Get-MeasureCache([string]$Dir, [string]$Name, [string[]]$MeasureArgs, [double]$MaxAge, [string]$Need = '') {
+    <# Кеш обходу тек `$Dir\$Name.json`: повертає його (чи $null). Нема кешу чи від кінця попереднього обходу минуло $MaxAge с,
+    а замок `$Name.lock` вільний — окремий процес цього скрипта ($MeasureArgs) міряє й пише кеш (Save-MeasureCache); його
+    не чекають: обхід тек іде хвилини, а прохід стану чи heartbeat не можуть стояти. Процес — $script:MeasureProc. #>
+    $path = Join-Path $Dir "$Name.json"
+    $c = $null
+    if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    # Кеш без потрібного поля $Need (запис до його появи) — застарілий: міряється наново.
+    if ($null -eq $c -or ($Need -and $null -eq $c.PSObject.Properties[$Need]) -or $now - [long]$c.time -ge $MaxAge) {
+        if (Test-LockFree (Join-Path $Dir "$Name.lock")) {
+            $script:MeasureProc = [System.Diagnostics.Process]::Start((New-StartInfo (Get-Process -Id $PID).Path (@('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', $script:SelfPath) + $MeasureArgs) '' -NoRedirect))
+        }
+    }
+    $c
+}
+
+function Save-MeasureCache([string]$Dir, [string]$Name, [scriptblock]$Measure) {
+    <# Тіло процесу-виміру: під замком `$Name.lock` (один обхід водночас) $Measure повертає впорядковану таблицю, до неї
+    дописуються `time` (кінець обходу, від нього рахує Get-MeasureCache) і `read` (UTC) — кеш `$Name.json`. #>
+    $lock = Open-Lock (Join-Path $Dir "$Name.lock")
+    if ($null -eq $lock) { return 0 }
+    try {
+        $c = & $Measure
+        $c['time'] = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); $c['read'] = Get-UtcStamp (Get-Date)
+        Write-FileAtomic (Join-Path $Dir "$Name.json") ($c | ConvertTo-Json -Compress -Depth 4)
+    } finally { $lock.Dispose() }
+    0
 }
 
 function Get-Unsourced($Limits) {
@@ -1414,9 +1452,11 @@ function Merge-MainIntoCopy([string]$Main, [string]$Branch) {
     ''
 }
 
-function Get-MergeStepText([string]$Branch) {
-    <# Крок промпту, коли обгортка не влила main сама (конфлікт) чи гілку веде агент: він вливає main першим кроком. #>
-    "Перший крок: влий свіжий ``origin/main`` у ``$Branch`` (``git merge origin/main``), конфлікти розв'язуй за змістом ``main``: гілка " +
+function Get-MergeStepText([string]$Branch, [string]$Main = 'origin/main') {
+    <# Крок промпту, коли обгортка не влила main сама (конфлікт) чи гілку веде агент: він вливає main першим кроком. $Main —
+    що влити: gemini — origin/main свого клону; claude-run освіжає лише свій простір посилань, а origin/main у спільному
+    клоні може бути старим, тож передає SHA main, отриманого в цьому проході. #>
+    "Перший крок: влий свіжий ``main`` у ``$Branch`` (``git merge $Main``), конфлікти розв'язуй за змістом ``main``: гілка " +
     "відстала від ``main``, тож код, який у ``main`` уже змінено чи прибрано, не лагодь і не відновлюй. Далі — наряд."
 }
 
@@ -1690,7 +1730,7 @@ function Get-HeadLivePublication([string]$Head, [string]$ExistingBody = '') {
     if (($body + "`n" + $ExistingBody) -cnotmatch '(?m)^[-*+>#_\s]*ЖИВИЙ ПІСЛЯ') {
         return (ConvertTo-LivePublicationBody $body @{})
     }
-    $registryText = (Invoke-Git @('show', 'refs/remotes/origin/main:аудит/проби/живі_сцени.txt')).Out
+    $registryText = (Invoke-Git @('show', "$script:RemoteRoot/main:аудит/проби/живі_сцени.txt")).Out
     $registry = Get-LiveSceneRegistry $registryText
     if (-not $registry.Count) { throw 'LIVE_AFTER_REGISTRY' }
     # Повний рядок сцени — стільки полів, скільки в шапці реєстру «# Поля: …»; коротший рядок гілки не додаємо.
@@ -1698,7 +1738,7 @@ function Get-HeadLivePublication([string]$Head, [string]$ExistingBody = '') {
     if (-not $header.Count) { throw 'LIVE_AFTER_REGISTRY' }
     $width = $header[0].TrimEnd("`r").Split('|').Count
     # Лише додані рядки від спільної бази: зміни й видалення сцен main не змінюють їхній режим.
-    $base = (Invoke-Git @('merge-base', 'refs/remotes/origin/main', $Head)).Out.Trim()
+    $base = (Invoke-Git @('merge-base', "$script:RemoteRoot/main", $Head)).Out.Trim()
     if (-not $base) { throw 'LIVE_AFTER_MERGE_BASE' }
     $baseRegistry = Get-LiveSceneRegistry ((Invoke-Git @('show', ($base + ':аудит/проби/живі_сцени.txt'))).Out)
     $diff = (Invoke-Git @('diff', '--no-ext-diff', '--unified=0', $base, $Head, '--', 'аудит/проби/живі_сцени.txt')).Out

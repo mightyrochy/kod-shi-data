@@ -73,7 +73,7 @@ try {
         # Смуга Claude бере наряд без GPU лише з переліку ноутбука; тут міряється звірка голови, тож позначки — у переліку.
         $script:Limits.claude_laptop = @(1..6 | ForEach-Object { "автоперевірка-$_-$head" }) + @('перевірка-1','перевірка-5')
         foreach ($d in @($script:StateDir,$script:SlotDir,$RunsDir,$OutDir,$LaneDir)) { if ($d) { [void][IO.Directory]::CreateDirectory($d) } }
-        [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+        [void](Invoke-Git @('fetch','-q','origin',"+refs/heads/main:$script:RemoteRoot/main","+refs/heads/gemini-queue/*:$($script:QueuePrefix)*"))
         $script:Jobs = New-Object Collections.ArrayList
         $script:ApiFail = $false
         function Invoke-RestMethod {
@@ -138,7 +138,7 @@ try {
             # API-відмова до старту не перетворює невідоме на LIVE чи на STALE.
             $slug = "автоперевірка-6-$head"
             [void](Invoke-Git @('push','-q','origin',"${head}:refs/heads/gemini-queue/$slug/$script:CaseModel/1"))
-            [void](Invoke-Git @('fetch','-q','origin','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+            [void](Invoke-Git @('fetch','-q','origin',"+refs/heads/gemini-queue/*:$($script:QueuePrefix)*"))
             $script:Cases['6'] = Pull 6 'claude/після-збою' $head
             $script:ApiFail = $true; $null = Start-Markers $workers
             $m = @(Get-Markers | Where-Object { $_.Slug -eq $slug })[0]
