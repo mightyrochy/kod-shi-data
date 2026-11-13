@@ -1022,7 +1022,7 @@ function Get-CopyState {
         } elseif (Test-Path -LiteralPath $dotGit -PathType Container) { $out.Add('.git — тека, не файл worktree') }
         else { $out.Add('.git: нема') }
         $wts = Join-Path (Join-Path $c.Clone '.git') 'worktrees'
-        $listed = $(if (Test-Path -LiteralPath $wts -PathType Container) { @(Get-ChildItem -LiteralPath $wts -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.Name }) } else { @() })
+        $listed = @($(if (Test-Path -LiteralPath $wts -PathType Container) { Get-ChildItem -LiteralPath $wts -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.Name } }))
         $out.Add("клон $($c.Clone)\.git\worktrees`: $(if ($listed.Count) { $listed -join ', ' } else { 'порожньо чи нема' })")
     } catch { $out.Add("стан копії не прочитано: $($_.Exception.Message)") }
     # Окрема спроба: збій читання файлів не ховає git worktree list, а збій git не ховає прочитаного вище.
