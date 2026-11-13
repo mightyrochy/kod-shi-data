@@ -410,8 +410,10 @@ function Format-Age([string]$Utc) {
     "$m хв"
 }
 
-# Остання відповідь Codex після $Since (UTC): запис кінця наряду в спільному out з engine codex, ended_utc пізніше за $Since і кодом,
-# що не є відмовою квоти (QUOTA, QUOTA_ZERO) чи збоєм рушія без відповіді (AGY_ERROR, AUTH тощо). '' — такої нема.
+# Остання відповідь Codex після $Since (UTC): запис кінця наряду в спільному out з engine codex, ended_utc пізніше за $Since,
+# turns >= 1 (рушій справді кликано: engine у записі стоїть уже зі створення статусу, а виходи до запуску — NOT_ON_MAIN,
+# NO_TASK_FILE, ISOLATION — лишають turns 0) і кодом, що не є відмовою квоти (QUOTA, QUOTA_ZERO) чи збоєм рушія без
+# відповіді (AGY_ERROR, AUTH тощо). '' — такої нема.
 function Get-CodexSuccessAfter([string]$Since) {
     if ($Since -cnotmatch $script:UtcRx) { return '' }
     $from = [datetime]::ParseExact($Since, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
@@ -422,6 +424,7 @@ function Get-CodexSuccessAfter([string]$Since) {
         if ($t -cnotmatch '"engine":"codex"') { continue }
         if ($t -cmatch '"code":"([A-Z0-9_]*)"') { $code = $Matches[1] } else { continue }
         if ($failed -ccontains $code) { continue }
+        if ($t -cmatch '"turns":([0-9]+)') { if ([int]$Matches[1] -lt 1) { continue } } else { continue }
         if ($t -cmatch '"ended_utc":"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})') { $end = $Matches[1] + 'Z' } else { continue }
         if ([string]::CompareOrdinal($end, $Since) -gt 0 -and [string]::CompareOrdinal($end, $best) -gt 0) { $best = $end }
     }
@@ -439,6 +442,8 @@ function Get-CodexState($Codex) {
     if ($null -ne $Codex.PSObject.Properties['Limits']) { $s.Limits = @($Codex.Limits) }
     if ($s.Refused -cmatch $script:UtcRx) {
         $s.Success = Get-CodexSuccessAfter $s.Refused
+        # Вимір пізніший за відмову — ходу Codex після неї знято залишок із журналу (відмовлений хід пише вимір до відмови).
+        if (-not $s.Success -and $s.Read -cmatch $script:UtcRx -and [string]::CompareOrdinal($s.Read, $s.Refused) -gt 0) { $s.Success = $s.Read }
         if (-not $s.Success) {
             $s.Zero = $(if ($s.Reset -cmatch $script:UtcRx) { [int](Get-Minutes $s.Reset) -lt 0 } else { [int](Get-Minutes $s.Refused) -lt (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') })
         }

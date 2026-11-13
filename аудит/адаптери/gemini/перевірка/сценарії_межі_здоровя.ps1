@@ -116,17 +116,24 @@ try {
         $body = & $beat (@{ refused = (& $stamp -259800); reset = '' } + $measure)
         Check '2 квота Codex: 5-годинне вікно — залишок 88 %, використано 12.5 %, скидання, час зчитування' ($body.Contains("| codex · codex | 5 год | 88 % (використано 12.5 %) | $(& $stamp 10800) | $(& $stamp -60) |"))
         Check '2 квота Codex: тижневе вікно — залишок 51 %, використано 49 %' ($body.Contains("| codex · codex | 7 д | 51 % (використано 49 %) | $(& $stamp 345600) | $(& $stamp -60) |"))
-        Check '2 давня відмова Codex — окремий рядок із віком, не «0 %»' ($body -cmatch '\| codex · остання відмова \| відмова 3 д 0 год тому \| — \(чекання минуло\) \|' -and $body -cnotmatch '\| codex · остання відмова \|[^\n]*\| 0 % \|')
+        Check '2 давня відмова Codex — окремий рядок із віком, не «0 %»' ($body -cmatch '\| codex · остання відмова \| відмова 3 д 0 год тому \| — \(пізніше був' -and $body -cnotmatch '\| codex · остання відмова \|[^\n]*\| 0 % \|')
         Check '2 давня відмова Codex не рахує позначки в нульовій квоті (codex 0)' ($body.Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 0 · agy 4'))
 
         # Свіжа відмова без пізнішого успіху лишається нулем; відмова квоти й збій рушія в out успіхом не є; відповідь Codex після відмови — є.
         $fresh = @{ refused = (& $stamp -600); reset = '' }
         $body = & $beat $fresh
         Check '2 свіжа відмова Codex без виміру: «0 %», codex 3, виміру ще нема' ($body.Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4') -and $body -cmatch '\| codex · остання відмова \| відмова 1[0-9] хв тому \| 0 % \|' -and $body.Contains('| codex | — | невідомо (виміру ще нема'))
-        $put = { param($name, $code, $secs) [IO.File]::WriteAllText("$tmp/gout/$name.json", ('{"v":1,"engine":"codex","code":"' + $code + '","started_utc":"' + (& $stamp ($secs - 60)) + '","ended_utc":"' + (& $stamp $secs) + '"}'), $utf) }
+        $put = { param($name, $code, $secs, $turns = 1) [IO.File]::WriteAllText("$tmp/gout/$name.json", ('{"v":1,"engine":"codex","code":"' + $code + '","turns":' + $turns + ',"started_utc":"' + (& $stamp ($secs - 60)) + '","ended_utc":"' + (& $stamp $secs) + '"}'), $utf) }
         & $put '20261113-120000-aaaaaaaaaaaa' 'QUOTA' -300
         & $put '20261113-120100-bbbbbbbbbbbb' 'AGY_ERROR' -200
         Check '2 відмова квоти й збій рушія в out — не успіх: codex 3' ((& $beat $fresh).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
+        # Виходи до запуску рушія (NOT_ON_MAIN, NO_TASK_FILE) мають engine codex, але рушія не кликали (turns 0) — відповіддю Codex не є.
+        & $put '20261113-120120-dddddddddddd' 'NOT_ON_MAIN' -150 0
+        & $put '20261113-120130-eeeeeeeeeeee' 'NO_TASK_FILE' -140 0
+        Check '2 виходи без виклику рушія (NOT_ON_MAIN, NO_TASK_FILE; turns 0) відмови не скасовують: codex 3' ((& $beat $fresh).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
+        # Вимір, зроблений до відмови, її не скасовує; зроблений після — скасовує без запису в out.
+        Check '2 вимір раніший за відмову її не скасовує: codex 3' ((& $beat (@{ refused = (& $stamp -600); reset = '' } + @{ read = (& $stamp -900); limits = $measure.limits })).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 3 · agy 4'))
+        Check '2 вимір пізніший за відмову її скасовує: codex 0' ((& $beat (@{ refused = (& $stamp -600); reset = '' } + @{ read = (& $stamp -300); limits = $measure.limits })).Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 0 · agy 4'))
         & $put '20261113-120200-cccccccccccc' 'DONE' -100
         $body = & $beat $fresh
         Check '2 успішний запуск Codex після відмови: codex 0, відмова — окремим рядком із датою запуску' ($body.Contains('Позначки на рушії з нульовою квотою: claude 1 · codex 0 · agy 4') -and $body.Contains("— (пізніше був успішний запуск, $(& $stamp -100)) |") -and $body -cnotmatch '\| codex · остання відмова \|[^\n]*\| 0 % \|')

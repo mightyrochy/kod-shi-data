@@ -554,10 +554,14 @@ function Read-CodexRateLimits([datetime]$Since) {
             $sr = New-Object System.IO.StreamReader($fs, $script:Utf8)
             while ($null -ne ($line = $sr.ReadLine())) {
                 if (-not $line.Contains('"token_count"') -or -not $line.Contains('"rate_limits"')) { continue }
+                # Рядок — JSON будь-якого виду (serde друкує компактно, але від пробілів читач не залежить); обірваний рядок
+                # дописуваного журналу пропускаємо. PowerShell 7 віддає ISO-час уже як [datetime], 5.1 — рядком.
+                try { $ev = $line | ConvertFrom-Json } catch { continue }
+                $ts = Get-JsonProp $ev 'timestamp'
                 $at = [datetime]::MinValue
-                if ($line -cmatch '"timestamp"\s*:\s*"([0-9T:.Z+-]+)"') { $stamp = $Matches[1] } else { continue }
-                if (-not [datetime]::TryParse($stamp, [cultureinfo]::InvariantCulture, 'AssumeUniversal,AdjustToUniversal', [ref]$at)) { continue }
-                $rl = Get-JsonProp (Get-JsonProp ($line | ConvertFrom-Json) 'payload') 'rate_limits'
+                if ($ts -is [datetime]) { $at = $ts.ToUniversalTime() }
+                elseif (-not [datetime]::TryParse([string]$ts, [cultureinfo]::InvariantCulture, 'AssumeUniversal,AdjustToUniversal', [ref]$at)) { continue }
+                $rl = Get-JsonProp (Get-JsonProp $ev 'payload') 'rate_limits'
                 if ($null -eq $rl) { continue }
                 $id = [string](Get-JsonProp $rl 'limit_id')
                 if ($id -cnotmatch '^[A-Za-z0-9_.-]{1,40}$') { $id = 'codex' }
@@ -586,11 +590,35 @@ function Save-CodexRateLimits([datetime]$Since) {
     try {
         $snap = @(Read-CodexRateLimits $Since)
         if ($snap.Count -eq 0) { return }
-        $q = Read-CodexQuota
-        $q.read = Get-UtcStamp (($snap | Sort-Object At -Descending | Select-Object -First 1).At)
-        $q.limits = @(foreach ($s in $snap) { [ordered]@{ id = $s.Id; windows = $s.Windows } })
-        Write-FileAtomic (Join-Path $RunsDir 'quota-codex.json') ($q | ConvertTo-Json -Compress -Depth 5)
+        $read = Get-UtcStamp (($snap | Sort-Object At -Descending | Select-Object -First 1).At)
+        $limits = @(foreach ($s in $snap) { [ordered]@{ id = $s.Id; windows = $s.Windows } })
+        Update-CodexQuota {
+            param($q)
+            # Паралельний слот міг уже записати новіший вимір: старішого поверх нього не кладемо.
+            if ($q.Contains('read') -and [string]::CompareOrdinal([string]$q.read, $read) -gt 0) { return }
+            $q.read = $read; $q.limits = $limits
+        }
     } catch { Write-Log "квота codex: $($_.Exception.Message)" }
+}
+
+# Зміна quota-codex.json під міжпроцесним замком: файл пишуть наряди всіх слотів Codex (вимір після ходу й відмова квоти),
+# а Write-FileAtomic береже лише цілість заміни, не читання-зміну-запис. Той самий замок-файл (Open-Lock, FileShare None),
+# що й інші замки обгортки; зайнятий — чекаємо, але не довше за завислість Codex (-CodexStallMinutes: власник замка, що
+# мовчить стільки, завис); замок звільняє й ОС, коли власник помер.
+function Update-CodexQuota([scriptblock]$Change) {
+    if (-not (Test-Path -LiteralPath $RunsDir)) { throw "нема теки $RunsDir" }
+    $until = [datetime]::UtcNow.AddMinutes($CodexStallMinutes)
+    $lock = Open-Lock (Join-Path $RunsDir 'quota-codex.lock')
+    while ($null -eq $lock) {
+        if ([datetime]::UtcNow -ge $until) { throw "замок quota-codex.lock зайнятий понад $CodexStallMinutes хв" }
+        Start-Sleep -Milliseconds 1
+        $lock = Open-Lock (Join-Path $RunsDir 'quota-codex.lock')
+    }
+    try {
+        $q = Read-CodexQuota
+        & $Change $q
+        Write-FileAtomic (Join-Path $RunsDir 'quota-codex.json') ($q | ConvertTo-Json -Compress -Depth 5)
+    } finally { $lock.Dispose() }
 }
 
 # --- прогін agy ---------------------------------------------------------------------------------------------------
@@ -1344,10 +1372,9 @@ function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
                 Where-Object { $_ -match '(?i)usage[ _]limit|try again|resets?_(?:at|in_seconds)' } | Select-Object -Last 1) -join '')
         } catch { $null = $_ }
         $until = Get-CodexReset ($Res.Tail + "`n" + $err + "`n" + $ev)
-        $cq = Read-CodexQuota
-        $cq.refused = Get-UtcStamp (Get-Date)
-        $cq.reset = $(if ($until -gt 0) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($until).UtcDateTime) } else { '' })
-        try { Write-FileAtomic (Join-Path $RunsDir 'quota-codex.json') ($cq | ConvertTo-Json -Compress -Depth 5) } catch { $null = $_ }
+        $refused = Get-UtcStamp (Get-Date)
+        $reset = $(if ($until -gt 0) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($until).UtcDateTime) } else { '' })
+        try { Update-CodexQuota { param($cq) $cq.refused = $refused; $cq.reset = $reset } } catch { Write-Log "квота codex: $($_.Exception.Message)" }
     }
     $known = $until -gt 0
     if (-not $known) { $until = $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) }
