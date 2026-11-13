@@ -182,7 +182,9 @@ def історія():
 
 # --- 3. паритет з PowerShell ----------------------------------------------------------------------------------------
 PS = r"""
-param([string]$Source, [string]$Registry, [string]$Bodies, [string]$Out)
+# Імена змінних PowerShell нечутливі до регістру: параметр шляху реєстру не може зватися `$Registry`, бо `$registry`
+# нижче — таблиця, і `[string]` параметра перетворив би її на рядок «System.Collections.Hashtable».
+param([string]$Source, [string]$RegistryPath, [string]$BodiesPath, [string]$OutPath)
 $ErrorActionPreference = 'Stop'
 $utf = New-Object Text.UTF8Encoding($false)
 $errors = $null
@@ -192,15 +194,15 @@ $names = @('Get-LiveSceneRegistry', 'Get-LiveAfterLines')
 $found = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $names -ccontains $n.Name }, $true))
 if ($found.Count -ne $names.Count) { throw 'нема функцій розбору' }
 foreach ($function in $found) { . ([scriptblock]::Create($function.Extent.Text)) }
-$registry = Get-LiveSceneRegistry ([IO.File]::ReadAllText($Registry, $utf))
+$registry = Get-LiveSceneRegistry ([IO.File]::ReadAllText($RegistryPath, $utf))
 $lines = New-Object 'System.Collections.Generic.List[string]'
 $lines.Add((ConvertTo-Json -InputObject $registry -Compress))
-foreach ($body in @(ConvertFrom-Json ([IO.File]::ReadAllText($Bodies, $utf)))) {
+foreach ($body in @(ConvertFrom-Json ([IO.File]::ReadAllText($BodiesPath, $utf)))) {
     $items = @(Get-LiveAfterLines ([string]$body) $registry | ForEach-Object {
         [ordered]@{line=$_.line;first=$_.first;last=$_.last;id=$_.id;question=$_.question;mode=$_.mode;error=$_.error} })
     $lines.Add((ConvertTo-Json -InputObject @($items) -Compress -Depth 4))
 }
-[IO.File]::WriteAllLines($Out, $lines, $utf)
+[IO.File]::WriteAllLines($OutPath, $lines, $utf)
 """
 
 
@@ -241,13 +243,14 @@ def паритет():
         with open(вхід, "w", encoding="utf-8") as ф:
             json.dump(тіла, ф, ensure_ascii=False)
         готово = subprocess.run([pwsh, "-NoProfile", "-NonInteractive", "-File", скрипт, "-Source",
-                                 os.path.join(КОРІНЬ, "аудит/адаптери/gemini/queue_lanes.ps1"), "-Registry", реєстр_шлях,
-                                 "-Bodies", вхід, "-Out", вихід], capture_output=True, text=True)
+                                 os.path.join(КОРІНЬ, "аудит/адаптери/gemini/queue_lanes.ps1"), "-RegistryPath", реєстр_шлях,
+                                 "-BodiesPath", вхід, "-OutPath", вихід], capture_output=True, text=True)
         if готово.returncode:
             перевірити("pwsh виконав розбір: " + готово.stderr[-500:], False)
             return
         with open(вихід, encoding="utf-8") as ф:
-            рядки = ф.read().splitlines()
+            # Лише «\n» (WriteAllLines на Linux): splitlines різав би й на U+2028, U+0085 у JSON без екранування.
+            рядки = ф.read().rstrip("\n").split("\n")
         перевірити("паритет реєстру сцен (" + str(len(реєстр)) + " id)", json.loads(рядки[0]) == реєстр)
         розбіжних = []
         пунктів = 0
