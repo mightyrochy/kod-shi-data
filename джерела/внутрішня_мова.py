@@ -3757,6 +3757,9 @@ def визначення_заяв(коди):
     # образ. ПРОДУКТ п.9: входу, якого нема в системі, жінці не ставлять — лише у звіті власника. Лишаються
     # їй: свідки кольору її речей («колір знаю лише зі слів крамниці»), спосіб носіння, підошва на льоду,
     # її виміри, крій без назви, доречність нагоді й погоді — те, що вона бачить на своїй речі чи дасть сама.
+    # «Яку структуру світлого й темного несе образ» і «чи річ нейтральна, тож правила про нейтралі її не судили» —
+    # теж наслідки теорії: колір речі на картці вже названо свідком («знаю лише зі слова»), а слова «структура
+    # світлоти» й «правила» жінці нічого не кажуть (перевірка #3665).
     **{к: dict(recipient="journal") for к in (
         "rule_input_missing", "edge_not_judged_error_unknown", "outer_edges_gap_not_judged",
         "skin_band_not_judged", "waistline_hidden_by_top_not_judged", "dividing_line_within_error",
@@ -3775,7 +3778,7 @@ def визначення_заяв(коди):
         "accessory_spends_chroma", "two_accent_surfaces_match", "colour_families_over_limit", "prints_share_colour",
         "print_motif_value_difference", "two_loud_colours_clash", "coordination_rank", "shoes_cut_leg_line",
         "shoe_edge_contrast", "item_side_near_face", "neutral_near_face_temperature", "face_contrast_matches_hers",
-        "colour_holds_attention")},
+        "colour_holds_attention", "lightness_structure", "item_is_neutral")},
     **{к: dict(choice="her") for к in ("scheme_chosen_by_her", "her_own_choice_kept_as_is")},
     **{к: dict(choice="stylist", source="model") for к in ("scheme_chosen_by_stylist",
         "stylist_chose_scheme", "stylist_chose_base", "stylist_chose_saturation", "stylist_declared_on_purpose")},

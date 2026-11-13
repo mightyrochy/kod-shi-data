@@ -1,6 +1,6 @@
 const fs=require('fs'),path=require('path'),http=require('http');
 const корінь='/home/user/kod-shi-data';
-const лінії=JSON.parse(fs.readFileSync('/tmp/пр/лінії.json','utf8'));
+const лінії=JSON.parse(fs.readFileSync(path.join(__dirname,'лінії.json'),'utf8'));
 const {зібратиШаблонПоказу,прочитатиДовідникJSON,підставитиШаблон}=require(path.join(корінь,'джерела','показ_шаблон.js'));
 const html=підставитиШаблон(зібратиШаблонПоказу(path.join(корінь,'джерела','показ.html')),{
   __МОДУЛІ_ПОКАЗУ__:'ЗАГЛУШКА',__ЗБІРКА_ПОКАЗУ__:'проба ДО/ПІСЛЯ',__ВІДБИТОК__:'проба',

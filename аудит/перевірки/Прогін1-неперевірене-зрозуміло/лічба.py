@@ -1,21 +1,27 @@
-"""Лічба пунктів картки з виміру мосту: рядків жінці, заяв жінці, повторів, кодів."""
+"""Лічба «неперевіреного» по РЯДКАХ картки (пункт без `для_всіх` = рядок, який бачить жінка).
+Факт рядка — (клас заяви, річ): колір речі — один клас, хоч яким кодом сказано (`міст_відповіді._ФАКТ_ЗАЯВИ`).
+Повтор — рядок, усі факти якого вже стояли в рядках вище; «факт удруге» — скільки разів факт про річ
+стоїть у другому й далі рядку; заяви журналу (`recipient=journal`) жінці не показують і тут не лічать."""
 import json, sys, collections
-д = json.load(open(sys.argv[1]))
-РЕЧ = ("колір", )
-def заяви_жінці(п):
-    return [з for з in (п.get("повідомлення") or {}).get("statements") or [] if з.get("recipient") != "journal"]
-разом = collections.Counter(); коди = collections.Counter()
+КОЛІР = {"colour_word_shop", "colour_word_shop_photo_other", "colour_word_model", "colour_word_not_photo",
+         "colour_partly_measured", "photo_shows_other_colour"}
+def факти(з):
+    к = "колір_речі" if з.get("code") in КОЛІР else з.get("code")
+    в = з.get("values") or {}
+    р = [х.get("item_id") for х in в.get("items") or [] if isinstance(х, dict) and х.get("item_id")]
+    р += [і for і in [в.get("item_id"), (в.get("item") or {}).get("item_id") if isinstance(в.get("item"), dict) else None] if і]
+    return {(к, і) for і in р} if р else {(к, json.dumps(в, sort_keys=True, ensure_ascii=False))}
+д = json.load(open(sys.argv[1])); разом = collections.Counter()
 for ім, вм in д.items():
-    картки = [вм] + [о for о in (вм.get("образи") or []) if isinstance(о, dict) and "пункти" in о]
-    for н, в in enumerate(картки[:1] if len(картки) == 1 else картки):
-        пп = [п for п in в.get("пункти") or [] if not п.get("для_всіх") and п.get("повідомлення")]
-        зз = [з for п in пп for з in заяви_жінці(п)]
-        ключі = [json.dumps(з, sort_keys=True, ensure_ascii=False) for з in зз]
-        повт = len(ключі) - len(set(ключі))
-        кв = collections.Counter(з["code"] for з in зз)
-        повт_коду = sum(н - 1 for н in кв.values() if н > 1)
-        print("%-22s картка %d: рядків %2d, заяв жінці %3d, однакових заяв %2d, той самий код удруге %2d"
-              % (ім, н, len(пп), len(зз), повт, повт_коду))
-        разом.update(рядків=len(пп), заяв=len(зз), однакових=повт, код_удруге=повт_коду, карток=1); коди.update(кв)
+    рядки = [п for п in вм.get("пункти") or [] if not п.get("для_всіх") and п.get("повідомлення")]
+    бачено, повт, удруге, заяв = set(), 0, 0, 0
+    for п in рядки:
+        зз = [з for з in п["повідомлення"]["statements"] if з.get("recipient") != "journal"]
+        заяв += len(зз)
+        ф = set().union(*[факти(з) for з in зз]) if зз else set()
+        повт += bool(ф) and ф <= бачено
+        удруге += len(ф & бачено)
+        бачено |= ф
+    print("%-22s рядків %2d, рядків-повторів %2d, факт про річ удруге %2d, заяв жінці %3d" % (ім, len(рядки), повт, удруге, заяв))
+    разом.update(рядків=len(рядки), повторів=повт, факт_удруге=удруге, заяв=заяв)
 print("РАЗОМ", dict(разом))
-print("КОДИ", коди.most_common())
