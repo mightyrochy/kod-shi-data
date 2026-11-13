@@ -1324,14 +1324,30 @@ def _наявність_ld(зн):
 _ПОЛЕ_КОЛЬОРУ = re.compile(r"(?:^|[_\[])(?:pa_)?(?:colou?r|tsvet|cvet|kolir|kolor|колір)\w*\]?$", re.I)
 
 
-def _кольори_вибору(кор):
-    """Кольори, які сторінка пропонує сама: значення select/radio з полем кольору в імені та значення поля кольору в
-    запиті посилань блоку (`?attribute_pa_color=…`, `_ПОЛЕ_У_ЗАПИТІ`). Порожнє значення — підказка, не колір."""
+_ФІЛЬТР_КАТАЛОГУ = re.compile(r"woof|filter|facet|sidebar|widget", re.I)
+
+
+def _інша_сторінка(href, url):
+    """Посилання веде на іншу сторінку, ніж ця (сестринський товар, розділ каталогу): шлях відмінний від шляху `url`."""
+    href = (href or "").strip()
+    if not href or href.startswith(("#", "javascript:")) or not url:
+        return False
+    return urlparse(urljoin(url, href)).path.rstrip("/") != urlparse(url).path.rstrip("/")
+
+
+def _кольори_вибору(кор, url=None):
+    """Кольори, які сторінка пропонує сама для цього товару: значення select/radio з полем кольору в імені та значення
+    поля кольору в запиті посилань блоку (`?attribute_pa_color=…`, `_ПОЛЕ_У_ЗАПИТІ`). Порожнє значення — підказка, не
+    колір; радіо фільтра каталогу (`woof_…`, `filter`, `sidebar`) і посилання на інші сторінки — не варіації цього товару."""
+    def у_фільтрі(ел):
+        return any(_ФІЛЬТР_КАТАЛОГУ.search(" ".join(х.get("class") or []) + " " + str(х.get("id") or "")) for х in ел.parents)
     знач = set()
     for ел in кор.select("select[name], input[type=radio][name]"):
-        if _ПОЛЕ_КОЛЬОРУ.search(ел.get("name") or ""):
+        if _ПОЛЕ_КОЛЬОРУ.search(ел.get("name") or "") and not у_фільтрі(ел):
             знач |= {str(о.get("value") or "").strip().lower() for о in (ел.find_all("option") or [ел])}
     for а in кор.select("a[href]"):
+        if _інша_сторінка(а["href"], url) or у_фільтрі(а):
+            continue
         for к, в in parse_qsl(urlparse(а["href"]).query):
             if _ПОЛЕ_КОЛЬОРУ.search(к):
                 знач.add(в.strip().lower())
@@ -1363,7 +1379,8 @@ def колір_голова_списку(ф):
     if ф.get("колір_ld") or ф.get("власник_кадру") != json.dumps("невідомо", ensure_ascii=False):
         return False
     переліки = [{str(в.get("колір")).strip().lower() for в in ф.get("варіанти") or [] if в.get("колір")},
-                {(x.get("назва") or x.get("hex") or x.get("фото") or "").strip().lower() for x in ф.get("свотчі") or []},
+                {(x.get("назва") or x.get("hex") or x.get("фото") or "").strip().lower() for x in ф.get("свотчі") or []
+                 if not x.get("сестра")},
                 set(ф.get("кольори_вибору") or [])]
     return any(len(п) > 1 for п in переліки)
 
@@ -1869,9 +1886,11 @@ def факти_з_картки(html_текст, url, селектори=None):
         підпис = розекранувати(ел.get("title") or ел.get("aria-label") or ел.get("data-title") or ел.get("data-value") or
                               (img.get("alt") if img else "") or _текст(ел, 30))[:40]
         активний = bool(re.search(r"active|selected|checked|current", " ".join(ел.get("class") or []) + " " + str(ел.get("aria-checked") or ""), re.I))
+        посилання = ел if ел.name == "a" else (ел.find_parent("a") or ел.find("a"))
+        сестра = bool(посилання is not None and _інша_сторінка(посилання.get("href"), url))     # свотч іншого товару, не варіація цього
         if len(ф["свотчі"]) < 20:
-            ф["свотчі"].append(dict(назва=підпис or None, hex=hex_, фото=кар, активний=активний))
-    ф["кольори_вибору"] = _кольори_вибору(кор)
+            ф["свотчі"].append(dict(назва=підпис or None, hex=hex_, фото=кар, активний=активний, сестра=сестра))
+    ф["кольори_вибору"] = _кольори_вибору(кор, url)
     # склад з блоку, який рецепт крамниці назвав селектором, — сильніше за пари; з довільного тексту сторінки не беремо
     if селектори.get("склад"):
         try:

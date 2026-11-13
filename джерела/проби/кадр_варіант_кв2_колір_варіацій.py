@@ -13,10 +13,14 @@ def колір(назва, html, ld=""):
 
 опц = lambda *к: '<select name="attribute_pa_color">%s</select>' % "".join('<option value="%s">%s</option>' % (х, х) for х in к)
 ld_кол = '<script type="application/ld+json">{"@type":"Product","name":"Сукня","color":"червоний"}</script>'
+сестри = "".join('<a href="/other-%d/"><span class="swatch" style="background:#%d%d%d"></span></a>' % (i, i, i, i) for i in (1, 2, 3))
+фільтр = '<div class="woof_container_pa_color">%s</div>' % "".join('<input type="radio" name="pa_color" value="%d">' % i for i in (1, 2, 3))
 випадки = [("три кольори в опції, колір у назві", колір("Сукня чорна", опц("black", "white", "red"))[0], None),
            ("три кольори в опції, без слова", колір("Сукня", опц("black", "white", "red"))[0], None),
            ("без варіацій, колір у назві", колір("Сукня чорна", "")[0], "чорний"),
            ("одне значення в опції", колір("Сукня чорна", опц("black"))[0], "чорний"),
+           ("свотчі-посилання на сестринські товари", колір("Сукня чорна", сестри)[0], "чорний"),
+           ("радіо фільтра каталогу", колір("Сукня чорна", фільтр)[0], "чорний"),
            ("власний варіант (колір JSON-LD) на сторінці з опцією", колір("Сукня", опц("black", "red"), ld_кол)[0], "червоний")]
 for ім, факт, чекаю in випадки:
     print(("ОК " if факт == чекаю else "НЕ ") + ім + ": " + repr(факт))
