@@ -77,6 +77,55 @@ Scenario 'б стенди' {
     }
 }
 
+# --- (б2) стенд не працює над живим станом ноутбука ----------------------------------------------------------------------
+# 13.11 (05:25Z): стенд без -OutDir/-RunsDir/-RepoDir лишив їх справжніми і записав живим нарядам INTERRUPTED.
+Scenario 'б2 ізоляція стендів' {
+    $iso = Join-Path $tmp 'iso'; [void][IO.Directory]::CreateDirectory($iso)
+    $ps = (Get-Process -Id $PID).Path
+    $own = $env:USERPROFILE
+    $live = 'C:\Users\Public\gemini'
+    # Заглушки з іменем справжніх скриптів і живими значеннями за замовчуванням; Main друкує, що побачив.
+    $stubs = @{
+        'side.ps1' = @('gemini_run.ps1', @"
+param([string]`$RepoDir = '$live\repo', [string]`$RunsDir = '$live\runs', [string]`$OutDir = '$live\out', [string]`$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data')
+function Main { [Console]::Out.WriteLine("SEEN `$RepoDir|`$RunsDir|`$OutDir"); 0 }
+"@, 'OutDir', 'RunsDir')
+        'side_claude.ps1' = @('claude_run.ps1', @"
+param([string]`$WorkDir = '$live\work', [string]`$RepoDir = '$live\repo', [string]`$OutboxDir = '$live\outbox', [string]`$PublishDir = '$live\pub', [string]`$GeminiOutDir = '$live\out', [string]`$GeminiStateDir = (Join-Path `$GeminiOutDir 'marker-state'), [string]`$LaneDir = '$live\lanes', [string]`$RepoUrl = 'https://github.com/mightyrochy/kod-shi-data')
+function Main { [Console]::Out.WriteLine("SEEN `$WorkDir|`$RepoDir|`$OutboxDir|`$PublishDir|`$GeminiOutDir|`$GeminiStateDir|`$LaneDir"); 0 }
+"@, 'GeminiOutDir', 'WorkDir')
+    }
+    function Invoke-Side([string]$Side, [string]$Stub, $Args2) {
+        $argList = @('-NoProfile', '-NonInteractive')
+        if ($env:OS -eq 'Windows_NT') { $argList += @('-ExecutionPolicy', 'Bypass') }
+        $argList += @('-File', (Join-Path $sideDir $Side), '-Script', $Stub, '-ArgsJson', ($Args2 | ConvertTo-Json -Compress))
+        $argList = @($argList | ForEach-Object { '"' + ([string]$_ -replace '"', '\"') + '"' })
+        $o = Join-Path $iso 'o.txt'; $e = Join-Path $iso 'e.txt'
+        $pr = Start-Process -FilePath $ps -ArgumentList $argList -NoNewWindow -Wait -PassThru -RedirectStandardError $e -RedirectStandardOutput $o
+        [pscustomobject]@{ Code = $pr.ExitCode; Out = [IO.File]::ReadAllText($o, $utf); Err = [IO.File]::ReadAllText($e, $utf) }
+    }
+    foreach ($side in @('side.ps1', 'side_claude.ps1')) {
+        $name, $text, $outName, $runsName = $stubs[$side]
+        $dir = Join-Path $iso ($side -replace '\.ps1$', ''); [void][IO.Directory]::CreateDirectory($dir)
+        $stub = Join-Path $dir $name
+        [IO.File]::WriteAllText($stub, $text, $utf)
+        $url = "$dir/origin.git"
+        $r = Invoke-Side $side $stub @{ RepoUrl = $url }
+        $parts = @(($r.Out.Trim() -replace '^SEEN ', '') -split '\|')
+        Check "б2 $side без шляхів — усі в Temp, живого немає: «$($r.Out.Trim())»" ($r.Code -eq 0 -and $r.Out.StartsWith('SEEN ') -and -not $r.Out.Contains($live) -and $parts.Count -ge 3 -and -not ($parts | Where-Object { -not $_.StartsWith([IO.Path]::GetTempPath()) }))
+        $r = Invoke-Side $side $stub @{ RepoUrl = $url; $outName = "$live\out" }
+        Check "б2 $side -$outName у спільній теці ноутбука — відмова, Main не викликано, код $($r.Code)" ($r.Code -eq 2 -and $r.Err.Contains('відмова') -and -not $r.Out.Contains('SEEN'))
+        $r = Invoke-Side $side $stub @{}
+        Check "б2 $side справжній RepoUrl — відмова, код $($r.Code)" ($r.Code -eq 2 -and $r.Err.Contains('справжній репозиторій') -and -not $r.Out.Contains('SEEN'))
+        if ($own) {
+            $r = Invoke-Side $side $stub @{ RepoUrl = $url; $runsName = (Join-Path $own $(if ($side -eq 'side.ps1') { 'gemini-runs' } else { 'claude-run' })) }
+            Check "б2 $side -$runsName у теці стану ноутбука — відмова, код $($r.Code)" ($r.Code -eq 2 -and $r.Err.Contains('відмова') -and -not $r.Out.Contains('SEEN'))
+            $r = Invoke-Side $side $stub @{ RepoUrl = $url; RepoDir = (Join-Path $own 'kod-shi-data') }
+            Check "б2 $side -RepoDir справжнього клону — відмова, код $($r.Code)" ($r.Code -eq 2 -and $r.Err.Contains('справжній клон') -and -not $r.Out.Contains('SEEN'))
+        }
+    }
+}
+
 # --- (в) запобіжник, що тримає позначки, сам пише один рядок -----------------------------------------------------------
 Scenario 'в сигнал' {
     $work = Join-Path $tmp 'cr'; $box = Join-Path $tmp 'box'
