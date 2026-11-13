@@ -44,5 +44,5 @@ for row in rows:
         if row['помилка']:
             text += ['', '```text', row['помилка'], '```']
         text.append('')
-(OUT / 'ЗВЕДЕННЯ.md').write_text('\n'.join(text) + '\n', encoding='utf-8')
+(OUT / 'ЗВЕДЕННЯ.md').write_text('\n'.join(text).rstrip() + '\n', encoding='utf-8')
 print('Сцени:', len(rows), 'rc:', dict(Counter(str(row['rc']) for row in rows)))
