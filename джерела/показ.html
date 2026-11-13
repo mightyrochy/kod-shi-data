@@ -897,7 +897,7 @@
     к.setAttribute('aria-label', т === 'темна' ? 'Світла тема' : 'Темна тема');
     const тт = document.getElementById('тема-текст'); if (тт) тт.textContent = т === 'темна' ? 'День' : 'Ніч';
     const бт = document.getElementById('бік-тема-текст'); if (бт) бт.textContent = т === 'темна' ? 'День' : 'Ніч';
-    if (typeof малюватиОгляд === 'function'){ try{ малюватиОгляд(); }catch(e){} }
+    if (typeof Екран === 'object'){ try{ Екран.перемалювати('огляд'); }catch(e){} }
     if (мета) мета.setAttribute('content', т === 'темна' ? '#141517' : '#F4F0E8');
   };
   к.onclick = () => {
@@ -996,6 +996,7 @@
 <script src="показ/збирання_образів.js"></script>
 <script src="показ/палітра.js"></script>
 <script src="показ/екран/навігація.js"></script>
+<script src="показ/екран/профіль.js"></script>
 <script src="показ/екран/перехід.js"></script>
 <script src="показ/старт.js"></script>
 </body>
