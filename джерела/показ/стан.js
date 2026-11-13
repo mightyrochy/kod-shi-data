@@ -3,16 +3,6 @@ const ДОВІДНИК = __ДОВІДНИК_ПОКАЗУ__;
 let П = null;                 // поточний прогін ПОКАЗ-V1: пишуть шов збирання й відкриття з бібліотеки
 const В = {};                 // відповіді за позицією: {річ,верд,коментар,ок,ні,записано}
 let пристрій = 'невідомо';
-const $ = id => document.getElementById(id);
-const ел = (тег, кл, текст) => { const е = document.createElement(тег);
-  if (кл) е.className = кл; if (текст != null) текстЖінціП(е, текст); return е; };   // текст елемента — теж крізь точку виходу
-function іконка(ід, кл){
-  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  s.setAttribute('class', 'і' + (кл ? ' ' + кл : ''));
-  const u = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-  u.setAttribute('href', '#і-' + ід); s.appendChild(u);
-  return s;
-}
 function ініціали(назва){
   const ч = String(назва||'').trim().split(/\s+/).filter(Boolean);
   if (!ч.length) return '·';
