@@ -12,13 +12,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import areas, похибка_вимірів_тіла as П  # noqa: E402
 
 ОРІЄНТИРИ = {  # рівень → (файл 2|1, стовпець висоти, стовпець зросту)
-    "плечі": (2, "acromialheight", "stature"), "груди": (2, "chestheight", "stature"),
+    "лінія_плеча": (2, "acromialheight", "stature"), "груди": (2, "chestheight", "stature"),
     "талія": (1, "WAIST_HT_NATURAL", "STATURE"), "стегна": (2, "buttockheight", "stature"),
     "пах": (2, "crotchheight", "stature"), "коліно": (2, "kneeheightmidpatella", "stature"),
     "литка": (1, "CALF_HT", "STATURE"),
 }
 НИЖНІ_МЕЖІ = {"щиколотка": (2, "lateralmalleolusheight", "stature"),
-              "підборіддя": (2, "cervicaleheight", "stature")}  # рівень → поле `нижня_межа` запису
+              "підборіддя": (2, "cervicaleheight", "stature"),
+              "плечі": (2, "axillaheight", "stature")}  # рівень → поле `нижня_межа` запису
 ІНШІ = [(2, "талія (пупок)", "waistheightomphalion", "stature"),
         (2, "коліно (epicondyle)", "lateralfemoralepicondyleheight", "stature")]
 
@@ -54,6 +55,15 @@ def main(шлях2, шлях1):
     for к, назва, в, з in ІНШІ:
         n, м, s = відношення(файли[к], в, з)
         print("  %s, %s: %.4f ± %.4f (n %d)" % (назва, в, м, s, n))
+    # рівень обхвату плечей (рядок дошки 14884): середина дельтоподібного м'яза, що вкриває верхню третину плеча
+    # (глосарій TR-11/017, с. 178), — близько acromionradialelength / 6 під акроміоном; пахва — acromial − axilla
+    ж = файли[2]
+    до_пахви = [(float(р["acromialheight"]) - float(р["axillaheight"])) / 10 for р in ж]
+    до_середини = [float(р["acromionradialelength"]) / 60 for р in ж]
+    запас = [п - с for п, с in zip(до_пахви, до_середини)]
+    print("  плечі: акроміон − пахва %.2f ± %.2f см; ~середина м'яза (L/6) %.2f ± %.2f см; пахва нижче в %d із %d, "
+          "найменший запас %.2f см" % (statistics.mean(до_пахви), statistics.stdev(до_пахви), statistics.mean(до_середини),
+                                        statistics.stdev(до_середини), sum(з > 0 for з in запас), len(запас), min(запас)))
     print("\nзаписів, що розходяться з перерахунком: %d" % збої)
     return 1 if збої else 0
 
