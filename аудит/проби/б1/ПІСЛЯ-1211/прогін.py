@@ -179,7 +179,7 @@ def main():
         print(f'{now()} ГОТОВО {number:02}/30 rc={rc} карток={cards} впало={result["впало"]}', flush=True)
         if rc >= 2 and not cards:
             print('Потрібен розбір збою перед продовженням; автоматичного повтору немає.', flush=True)
-            return rc
+            continue
     return 0
 
 
