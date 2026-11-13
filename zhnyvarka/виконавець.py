@@ -286,17 +286,19 @@ def бал_інформації(к):
 
 
 def _колір_із(рядки, назва, opts):
-    """→ (назва кольору, hex). Порядок: рядок «Колір» → слово в назві → опція, якщо це слово-колір або hex."""
-    hex_ = next((o for o in opts or [] if re.fullmatch(r"#?[0-9a-fA-F]{6}", o)), "")
+    """→ (назва кольору, hex). Порядок: рядок «Колір» → слово в назві → опція. Опції — свотчі всіх варіантів сторінки,
+    тож колір чи hex береться з них лише тоді, коли опція одна (одноколірний товар); кілька — «невідомо» (порожньо)."""
+    hexи = {o for o in opts or [] if re.fullmatch(r"#?[0-9a-fA-F]{6}", o)}
+    hex_ = next(iter(hexи)) if len(hexи) == 1 else ""
     for м, з in рядки:
         if re.search(r"(^|\s)(колір|кольор|color|colour)", (м or "").strip(), re.I) and з and not _ШУМ_РЯДКА.search(з):
             return з.strip()[:60], hex_
     м = _КОЛІР_СЛОВО.search(назва or "")
     if м:
         return м.group(0), hex_
-    for o in opts or []:
-        if _КОЛІР_СЛОВО.search(o):
-            return o[:60], hex_
+    слова = {o[:60] for o in opts or [] if _КОЛІР_СЛОВО.search(o)}
+    if len(слова) == 1:
+        return next(iter(слова)), hex_
     return "", hex_
 
 
@@ -347,22 +349,46 @@ def картка_з_dom(url, html, dom, факти=None):
         колір, колір_джерело = ld["color"][:60], "ld"
     if not колір:
         колір = _колір_зі_slug(url); колір_джерело = "slug" if колір else ""
+    колір_сторінки = (колір, колір_hex, колір_джерело)   # колір самої сторінки: власний лише для єдиної варіації
     if ld.get("offers"):
         of0 = ld["offers"] if isinstance(ld["offers"], dict) else (ld["offers"] or [{}])[0]
         if isinstance(of0, dict) and of0.get("price"):
             ціна = f"{of0['price']} {of0.get('priceCurrency', '')}".strip()
     к = {"url": url, "назва": назва[:200], "слот_шлях": " > ".join(dict.fromkeys(dom.get("crumbs") or факти.get("крихти") or []))[:200],
-         "колір": колір, "колір_hex": колір_hex, "колір_джерело": колір_джерело, "склад": склад, "розміри": розміри, "наявність": None,
+         "колір": "", "колір_hex": "", "колір_джерело": "", "склад": склад, "розміри": розміри, "наявність": None,
          "ціна": ціна, "опис": опис[:4000], "характеристики": рядки2[:120], "фото": фото[:24],
          "артикул": (факти.get("артикул") or next((з for м, з in рядки2 if re.search(r"артикул|код товару|sku|модель", м, re.I)), ""))[:60],
          "бренд": факти.get("бренд") or "",
          "ld": ld, "og": o, "текст": текст[:12000], "опції_кольору": dom.get("opts") or [], "має_таблицю": bool(dom.get("has_table")),
          "назва_російська": bool(_РОСІЙСЬКА.search(назва))}
-    if ld.get("offers"):
-        of = ld["offers"] if isinstance(ld["offers"], dict) else (ld["offers"] or [{}])[0]
-        if isinstance(of, dict) and of.get("availability"):
-            к["наявність"] = "InStock" in str(of["availability"])
+    варіації = ld.get("hasVariant") or ld.get("offers") or []
+    if isinstance(варіації, dict):
+        варіації = [варіації]
+    варіації = [в for в in варіації if isinstance(в, dict)] or [{"offers": None}]   # без варіацій у ld — сторінка сама
+    if len(варіації) == 1:                             # єдина варіація — це сторінка: її колір — колір сторінки
+        варіації = [dict(варіації[0], з_сторінки=колір_сторінки)]
+    for в in варіації:
+        if not _варіація_сторінки(в, url, к["артикул"], len(варіації)):
+            continue                                   # варіація сестри: ні колір, ні наявність сторінці не дає
+        власний, hex_в, джерело = в.get("color") if isinstance(в.get("color"), str) else "", "", "ld"
+        if not власний and в.get("з_сторінки"):
+            власний, hex_в, джерело = в["з_сторінки"]
+        if власний:
+            к["колір"] = власний[:60]
+            к["колір_hex"] = hex_в
+            к["колір_джерело"] = джерело
+        оф = в.get("offers") if "offers" in в else в
+        if isinstance(оф, dict) and оф.get("availability"):
+            к["наявність"] = "InStock" in str(оф["availability"])
     return к
+
+
+def _варіація_сторінки(в, url, артикул, всього):
+    """Варіація з JSON-LD, що є цією сторінкою: збіг sku з артикулом чи адреси сторінки; єдина — вона. Інакше —
+    варіація сестри: голови списку ніхто не бере."""
+    sku = str(в.get("sku") or "").strip()
+    адреса = str(в.get("url") or "").split("#")[0]
+    return всього == 1 or bool((sku and артикул and sku == артикул) or (адреса and адреса == url.split("#")[0]))
 
 
 def картка_з_shopify(база, p):
@@ -371,33 +397,60 @@ def картка_з_shopify(база, p):
     варіанти = p.get("variants") or []
     опції = {о.get("name", "").lower(): о.get("values") or [] for о in p.get("options") or []}
     розміри = [str(v.get("option1") or v.get("title")) + ("" if v.get("available", True) else " нема") for v in варіанти]
-    колір = ""
-    for ім, зн in опції.items():
-        if re.search(r"колір|color|colour", ім): колір = ", ".join(зн)[:60]
+    ключ_кольору = next(("option%d" % (о.get("position") or і + 1) for і, о in enumerate(p.get("options") or [])
+                         if re.search(r"колір|color|colour", (о.get("name") or "").lower())), None)
+    кольори = {(в.get(ключ_кольору) or "").strip() for в in варіанти} - {""} if ключ_кольору else set()
     ряд = [("Тип", p.get("product_type") or ""), ("Бренд", p.get("vendor") or ""), ("Теги", ", ".join(p.get("tags") or []) if isinstance(p.get("tags"), list) else str(p.get("tags") or ""))]
     ряд += [(ім, ", ".join(зн)) for ім, зн in опції.items()]
-    return {"url": f"{база}/products/{p.get('handle')}", "назва": p.get("title") or "", "слот_шлях": p.get("product_type") or "",
-            "колір": колір or _колір_із([], p.get("title"), [])[0], "склад": sorted({x.strip() for x in _СКЛАД.findall(опис)})[:12],
-            "розміри": sorted(set(розміри)), "наявність": any(v.get("available", True) for v in варіанти) if варіанти else None,
+    к = {"url": f"{база}/products/{p.get('handle')}", "назва": p.get("title") or "", "слот_шлях": p.get("product_type") or "",
+            "колір": "", "склад": sorted({x.strip() for x in _СКЛАД.findall(опис)})[:12],
+            "розміри": sorted(set(розміри)), "наявність": None,
             "ціна": (варіанти[0].get("price") if варіанти else ""), "опис": опис[:4000], "характеристики": [(м, з) for м, з in ряд if з],
             "фото": [i.get("src") for i in p.get("images") or [] if i.get("src")][:24], "артикул": (варіанти[0].get("sku") if варіанти else "") or "",
             "бренд": p.get("vendor") or "", "ld": {}, "og": {}, "текст": опис[:12000], "сире_json": p, "має_таблицю": True,
             "назва_російська": bool(_РОСІЙСЬКА.search(p.get("title") or ""))}
+    # Картка — запис товару: колір і наявність їй дає лише власний варіант. Один колір серед варіантів (чи товар без
+    # опції кольору) — колір усіх; один варіант — його наявність; інакше «невідомо» (порожньо), а опції й розміри з
+    # «нема» лишаються в характеристиках і розмірах.
+    for в in варіанти:
+        if ключ_кольору and len(кольори) == 1:
+            к["колір"] = (в.get(ключ_кольору) or "").strip()[:60]
+        elif not ключ_кольору:
+            к["колір"] = _колір_із([], " ".join((p.get("title") or "", в.get("title") or "")), [])[0]
+        if len(варіанти) == 1:
+            к["наявність"] = bool(в.get("available", True))
+    return к
 
 
 def картка_з_woo(база, p):
     опис = re.sub(r"<[^>]+>", " ", (p.get("description") or "") + " " + (p.get("short_description") or ""))
     опис = re.sub(r"\s+", " ", опис).strip()
     атр = [(a.get("name", ""), ", ".join(t.get("name", "") for t in a.get("terms") or [])) for a in p.get("attributes") or []]
-    колір = next((з for м, з in атр if re.search(r"колір|color|colour", м, re.I)), "")
+    варіації = p.get("variations") or [p]             # товар без варіацій — сам власний варіант
+    кольори = {х for в in варіації for х in _кольори_woo(в)}
     розміри = next(([x.strip() for x in з.split(",")] for м, з in атр if re.search(r"розмір|size", м, re.I)), [])
     ряд = атр + [("Категорії", ", ".join(c.get("name", "") for c in p.get("categories") or [])), ("Теги", ", ".join(t.get("name", "") for t in p.get("tags") or []))]
-    return {"url": p.get("permalink") or f"{база}/?p={p.get('id')}", "назва": p.get("name") or "", "слот_шлях": " > ".join(c.get("name", "") for c in p.get("categories") or []),
-            "колір": колір or _колір_із([], p.get("name"), [])[0], "склад": sorted({x.strip() for x in _СКЛАД.findall(опис)})[:12],
+    к = {"url": p.get("permalink") or f"{база}/?p={p.get('id')}", "назва": p.get("name") or "", "слот_шлях": " > ".join(c.get("name", "") for c in p.get("categories") or []),
+            "колір": "", "склад": sorted({x.strip() for x in _СКЛАД.findall(опис)})[:12],
             "розміри": sorted(set(розміри)), "наявність": p.get("is_in_stock"), "ціна": ((p.get("prices") or {}).get("price") or ""),
             "опис": опис[:4000], "характеристики": [(м, з) for м, з in ряд if з], "фото": [i.get("src") for i in p.get("images") or [] if i.get("src")][:24],
             "артикул": p.get("sku") or "", "бренд": "", "ld": {}, "og": {}, "текст": опис[:12000], "сире_json": p, "має_таблицю": True,
             "назва_російська": bool(_РОСІЙСЬКА.search(p.get("name") or ""))}
+    for в in варіації:                                # колір — з даних своєї варіації; кілька кольорів — «невідомо»
+        if len(кольори) == 1 and _кольори_woo(в):
+            к["колір"] = _кольори_woo(в)[0][:60]
+        elif not кольори:
+            к["колір"] = _колір_із([], в.get("name") or p.get("name"), [])[0]
+    return к
+
+
+def _кольори_woo(в):
+    """Значення кольору з атрибутів варіації (`value`) чи товару без варіацій (`terms`)."""
+    рез = []
+    for а in в.get("attributes") or []:
+        if re.search(r"колір|color|colour", а.get("name") or "", re.I):
+            рез += [а["value"]] if а.get("value") else [т.get("name", "") for т in а.get("terms") or []]
+    return [х for х in рез if х]
 
 
 def завершити(к):
