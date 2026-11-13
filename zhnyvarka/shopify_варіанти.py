@@ -130,13 +130,7 @@ def варіанти_shopify(т, рецепт, нормувати_кадр=None)
             власні[next(iter(кольори))][адреса] = sorted(str(і) for і in ід)
     вих = []
     for колір, вв in групи.items():
-        усі, є = [], []
-        for в in вв:
-            р = (в.get(ключ_р) or "").strip() if ключ_р else ""
-            if р:
-                усі.append(р.upper())
-                if в.get("available"):
-                    є.append(р.upper())
+        усі = [(в.get(ключ_р) or "").strip().upper() for в in вв if ключ_р and (в.get(ключ_р) or "").strip()]
         ціни = [float(в["price"]) for в in вв if в.get("price")]
         старі = [float(в["compare_at_price"]) for в in вв if в.get("compare_at_price")]
         кадри = list(власні[колір]) if багато else list(dict.fromkeys(з["src"] for з in зображення))
@@ -145,8 +139,14 @@ def варіанти_shopify(т, рецепт, нормувати_кадр=None)
                         артикул=next((в.get("sku") for в in вв if в.get("sku")), None), зв_язки=власні[колір],
                         кадри_джерело=("shopify:variant_ids" if багато else "shopify:images") if кадри else None,
                         ціна_стара=max(старі) if старі else None, розміри=list(dict.fromkeys(усі)),
-                        розміри_в_наявності=list(dict.fromkeys(є)), розміри_джерело="shopify:variants" if усі else None,
+                        розміри_в_наявності=[], розміри_джерело="shopify:variants" if усі else None,
                         є=any(в.get("available") for в in вв), ід_варіацій=[в["id"] for в in вв], кольорів_у_товарі=len(групи)))
+    місце = {к: і for і, к in enumerate(групи)}
+    for в in варіації:      # наявність розміру — з даних самої варіації, а не зі списку розмірів кольору
+        р = (в.get(ключ_р) or "").strip().upper() if ключ_р else ""
+        if р and в.get("available"):
+            запис = вих[місце[колір_варіації[в["id"]]]]
+            запис["розміри_в_наявності"] = list(dict.fromkeys(запис["розміри_в_наявності"] + [р]))
     return вих
 
 
