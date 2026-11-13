@@ -60,7 +60,7 @@ import colorspace as _cs
         _ЗП.Поле("outfit", "the chosen outfit: its items with number «n» and what the code knows of each as codes — "
                            "«kind» and «type», its cut, fabric, material, length, sleeve, pattern and details when "
                            "known, and its color («color» as a code, «hex» measured) — a hint for reading the photo, "
-                           "and the item itself when it has no photo",
+                           "and the known facts about the item when it has no photo; missing properties are unknown",
                  треба=True),
         _ЗП.Поле("outfit.items[].photos",
                  "the numbers of this item's photos: every photo stands under its own label «Photo N — …:» "
@@ -117,7 +117,8 @@ import colorspace as _cs
         # «the choice is hers» про БУДЬ-ЩО, що сперечається з днем, модель ставила в кінець більшості
         # карток — про речі, які обрала сама («сітка… наскільки це важливо в церкві, вирішуєш ти»).
         # Своє рішення стилістка не віддає жінці назад.
-        _ВИМ.поле("day", як="in the last part of «text» say how this outfit lives through her day; when something "
+        _ВИМ.поле("day", як="when the known item properties support it, in the last part of «text» say how this outfit "
+                    "lives through her day; when something "
                     "you chose argues with the day (weather, hours on her feet, the place), say in one plain "
                     "sentence why you still chose it and what that means for her day; describe the chosen "
                     "items without proposing a different composition; never hand that decision back to her"),
@@ -139,7 +140,7 @@ import colorspace as _cs
         _ЗП.Поле("body", "her figure as the code measured it: height, shape code, zones, and statements — the cuts "
                          "that sit best on her, where a voluminous outfit takes its anchor, where most conditions "
                          "meet on her body",
-                 як="in the last part of «text» say in one or two sentences what this outfit does for her "
+                 як="only where the known cut and length support it, in the last part of «text» say what this outfit does for her "
                     "figure — which line it draws, where it sets the eye (shoulders, waist, hips, legs, "
                     "height), with the items that do it; speak of what the outfit does, never of what her "
                     "body lacks or what should be hidden; when an item of the outfit works against these "
@@ -154,7 +155,8 @@ import colorspace as _cs
         _ЗП.Поле("ways_to_wear", "ways the items can be worn: «item» — «n» of the item of «outfit» (none — the "
                                  "whole outfit); each statement is one way — its place, and its effect when the "
                                  "code knows one",
-                 як="in «how_to_wear» name a way only when it changes something for this outfit — its effect "
+                 як="these are alternatives, not a list of instructions to combine: choose one coherent way "
+                    "for each item; in «how_to_wear» name a way only when it changes something for this outfit — its effect "
                     "matters here (a line across the torso that already has many, a hem it lands on); a way "
                     "that changes nothing is left out"),
         # «against a condition» без умови — сумку, яку стилістка ДОДАЛА, опис
@@ -192,9 +194,17 @@ import colorspace as _cs
         "Describe only the items of «outfit»: no suggestions to buy or add more, no items it does not contain — "
         "no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or "
         "she may own it.",
-        "Do not change the outfit yourself. Describe each item as its photo shows it: a clearly different item or "
-        "colour goes only into «wrong_photos» or «swap».",
-        "Say each thing about an item once, and do not state a quality and then doubt it.",
+        "Do not change the outfit yourself. A clearly different item or colour goes into «wrong_photos» or «swap»; "
+        "do not invent the expected item behind that mismatch.",
+        # Поля опису не зобов'язують добудовувати невідомі властивості за категорією речі.
+        "Every factual property in «about_items», «text», «named» and «how_to_wear» needs support in that item's "
+        "own codes or in a clearly visible feature on its own delivered photo. A photo supports visible shape, "
+        "colour and texture, not fibre composition, manufacturing method, feel, comfort or weather protection. "
+        "Do not infer an absent property from the item category, her body, weather or a way to wear it; "
+        "omit it instead. A code and a photo that disagree are not evidence for combining their properties.",
+        "Say each thing about an item once. Keep the same properties throughout the answer and one coherent "
+        "wearing plan; an alternative is a choice, not another simultaneous instruction. Explain the outfit "
+        "using supported properties, without filling a sentence or attribute quota.",
         # ПРОЗА-КАРТОК-2: «На фото є ще й підібрані сірі штани, але до цього образу належить
         # лише жакет», «Фото я не бачу, тому орієнтуюся на назву», «як сказано в назві» — службова мова
         # про кадр у картці; чого бракує на фото, картка вже каже під річчю (п.9).
@@ -226,15 +236,17 @@ import colorspace as _cs
         # «styled here with matching wide-leg trousers» при бомбері без штанів, кардиган «поверх
         # в'язаного комплекту» з його фото при сукні — запис речі описував увесь кадр. Код прози не читає (п.12),
         # тож межа — тут: запис має лише свою річ, а як речі поєднуються — «text» (речі образу, звірені «named»)
-        "про_речі[].текст": "prose for her about this one item alone: what it is, cut, length, color in words, fabric, "
-                            "in one or two sentences, as its photo and data show; it is in her outfit — never say it "
+        "про_речі[].текст": "brief prose for her about this one item alone: what it is and the properties actually "
+                            "supported by its own data or delivered photo; there is no required list of attributes "
+                            "and no minimum length — an item with little evidence gets a short description; "
+                            "it is in her outfit — never say it "
                             "is not included; no other garment, shoe, bag or accessory — neither one its photo shows "
                             "it with nor another item of «outfit»: how the items go together belongs to «text»; her "
                             "figure, if at all, only in words of the line and the cut — never the shape code or an "
                             "«…-shape»",
         "текст": "prose for her after the items: (1) optional, only when it adds something — how the "
                  "shoes, the outer layer and the accessories go with the rest, in one or two sentences; "
-                 "(2) why it works — 3–4 sentences, taking from «day», «palette», «makeup» and «missing» "
+                 "(2) why it works, briefly and only where supported, taking from «day», «palette», «makeup» and «missing» "
                  "only what matters most for this outfit and her occasion",
         # «Tuck the blazer in slightly» без адресата — переклад дописав «у штани»
         # при спідниці; порада, що кладе річ у, під чи на іншу, називає й ту, і обидві — речі образу
