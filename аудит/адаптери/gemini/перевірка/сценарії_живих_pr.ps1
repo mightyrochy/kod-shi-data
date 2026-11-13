@@ -153,7 +153,7 @@ try {
             Check "$lane : після відновлення API та сама позначка запускає модель" ($script:Models -eq ($priorModels + 1))
             # `перевірка-<PR>` несе лише номер PR (09.11: перевірки злитих PR доїли квоту agy): закритий PR — STALE без моделі.
             foreach ($n in @(1, 5)) { [void](Invoke-Git @('push','-q','origin',"${head}:refs/heads/gemini-queue/перевірка-$n/$script:CaseModel/1")) }
-            [void](Invoke-Git @('fetch','-q','origin','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+            [void](Invoke-Git @('fetch','-q','origin',"+refs/heads/gemini-queue/*:$($script:QueuePrefix)*"))
             $script:Jobs.Clear(); $null = Start-Markers $workers; $priorModels = $script:Models
             foreach ($job in @($script:Jobs)) {
                 $m = @(Get-Markers | Where-Object { $_.Slug -ceq $job.slug })[0]
