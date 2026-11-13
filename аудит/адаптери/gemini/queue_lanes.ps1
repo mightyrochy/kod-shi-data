@@ -783,6 +783,10 @@ function Get-FailReason($Err) {
     $text = [regex]::Replace($text, '(?i)(?:[a-z]:)?[\\/]+(?:users|home)[\\/]+(?!public\b)[^\\/\s''"]+', '~')
     $text = [regex]::Replace($text, '(?<=://)[^/@\s]+@', '')
     $text = [regex]::Replace($text, '\b(?:gh[pousr]_|github_pat_|sk-)[A-Za-z0-9_-]{8,}', '***')
+    # Текст помилки рушія (AGY_ERROR, QUOTA, AUTH…) може нести заголовок авторизації, JWT чи секретне поле у відповіді API.
+    $text = [regex]::Replace($text, '(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}', 'Bearer ***')
+    $text = [regex]::Replace($text, ('\bey' + 'J[A-Za-z0-9_-]{10,}'), '***')
+    $text = [regex]::Replace($text, ('(?i)([A-Za-z0-9_.-]*(?:to' + 'ken|sec' + 'ret|pass' + 'w(?:or)?d|pwd|api[_-]?key|authori[sz]ation|credential|cookie)[A-Za-z0-9_.-]*[''"]?\s*[:=]\s*)(?:"[^"\s]{16,}"|''[^''\s]{16,}''|[^\s,;}"'']{16,})'), '$1***')
     ConvertTo-NoteText ([regex]::Replace($text, '\s+', ' '))
 }
 
