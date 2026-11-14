@@ -204,16 +204,45 @@ namespace GeminiWrapper {
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool IsProcessInJob(IntPtr process, IntPtr job, out bool result);
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool TerminateProcess(IntPtr process, uint code);
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool CloseHandle(IntPtr handle);
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)] static extern IntPtr OpenJobObject(uint access, bool inherit, string name);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool GetProcessTimes(IntPtr process, out long creation, out long exit, out long kernel, out long user);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool DuplicateHandle(IntPtr sourceProcess, IntPtr source, IntPtr targetProcess, out IntPtr target, uint access, bool inherit, uint options);
+        [DllImport("kernel32.dll")] static extern IntPtr GetCurrentProcess();
 
-        public static IntPtr Create(IntPtr process) {
-            IntPtr job = CreateJobObject(IntPtr.Zero, null);
+        // Ім'я задачі — з pid і часу старту її кореня: будь-який процес того самого користувача й сеансу (простір Local\)
+        // обчислює те саме ім'я з самого pid, а повторно виданий pid дає інший час старту, тож чужої задачі не відкриє.
+        static string Name(IntPtr process, int id) {
+            long creation, exit, kernel, user;
+            if (!GetProcessTimes(process, out creation, out exit, out kernel, out user)) return null;
+            return "Local\\GeminiWrapper.TreeJob." + id + "." + creation;
+        }
+
+        // shared — копію дескриптора задачі вкладено в сам корінь. Ім'я об'єкта ядра живе, поки відкритий хоч один його
+        // дескриптор; без копії його тримав би лише творець (процес наряду), і після його смерті задача з відірваними
+        // нащадками жила б далі без імені — недосяжна жодному процесу. З копією вона досяжна, поки живий творець або корінь.
+        public static IntPtr Create(IntPtr process, int id, out bool shared) {
+            shared = false;
+            string name = Name(process, id);
+            if (name == null) throw new Win32Exception();
+            IntPtr job = CreateJobObject(IntPtr.Zero, name);
             if (job == IntPtr.Zero) throw new Win32Exception();
             var info = new ExtendedLimit();
             info.Basic.Flags = 0x800;  // BREAKAWAY_OK: явний вихід із задачі (CREATE_BREAKAWAY_FROM_JOB) не ламає старту нащадка
             if (!SetInformationJobObject(job, 9, ref info, Marshal.SizeOf(typeof(ExtendedLimit))) || !AssignProcessToJobObject(job, process)) {
                 var e = new Win32Exception(); CloseHandle(job); throw e;
             }
+            IntPtr copy;
+            shared = DuplicateHandle(GetCurrentProcess(), job, process, out copy, 0, false, 2);  // DUPLICATE_SAME_ACCESS
             return job;
+        }
+
+        // Задача, корінь якої — процес id, створена будь-яким процесом (Create); нема — IntPtr.Zero. Права — лише
+        // JOB_OBJECT_QUERY: перелік членів і IsProcessInJob; зупиняє Kill дескриптором самого процесу.
+        public static IntPtr Open(int id) {
+            IntPtr p = OpenProcess(0x1000, false, id);  // QUERY_LIMITED_INFORMATION
+            if (p == IntPtr.Zero) return IntPtr.Zero;
+            try { string name = Name(p, id); return name == null ? IntPtr.Zero : OpenJobObject(0x4, false, name); }
+            finally { CloseHandle(p); }
         }
 
         public static int[] Members(IntPtr job) {
@@ -250,40 +279,85 @@ function Start-Tree($Psi) {
     if ($script:OnWindows) { try { Add-TreeJobType; $typed = $true } catch { try { Write-Log "задача процесів: $($_.Exception.Message)" } catch { } } }
     $p = [System.Diagnostics.Process]::Start($Psi)
     if ($typed) {
-        try { $script:TreeJobs[$p.Id] = [GeminiWrapper.TreeJob]::Create($p.Handle) }
+        try {
+            $shared = $false
+            $script:TreeJobs[$p.Id] = [GeminiWrapper.TreeJob]::Create($p.Handle, $p.Id, [ref]$shared)
+            if (-not $shared) { try { Write-Log "задача процесів $($p.Id): копії в корені нема — після виходу цього процесу лишків не досягне інший" } catch { } }
+        }
         catch { $why = $_.Exception.Message; try { Write-Log "задача процесів $($p.Id): $why — лишки зупиняє лише дерево" } catch { } }
     }
     $p
 }
 
-function Stop-TreeJob([int]$Id) {
-    <# Зупиняє решту задачі Windows процесу; інструменти LM Studio лишає — це спільний сервер, а моделі наряду прибирає
-    Complete-GpuModels. #>
-    if (-not $script:TreeJobs.ContainsKey($Id)) { return }
-    $job = $script:TreeJobs[$Id]; $script:TreeJobs.Remove($Id)
+function Get-TreeIds([int]$Id) {
+    <# pid процесу й усіх його живих нащадків за батьком (Win32_Process). Нащадок, старший за батька, — чужий процес на
+    повторно виданому pid, його гілку не беремо. #>
+    $all = @(Get-CimInstance Win32_Process -Property ProcessId, ParentProcessId, CreationDate -ErrorAction Stop)
+    $byId = @{}; $kids = @{}
+    foreach ($x in $all) {
+        $byId[[int]$x.ProcessId] = $x
+        $k = [int]$x.ParentProcessId
+        if (-not $kids.ContainsKey($k)) { $kids[$k] = New-Object System.Collections.ArrayList }
+        [void]$kids[$k].Add($x)
+    }
+    $ids = New-Object System.Collections.Generic.List[int]; $ids.Add($Id)
+    for ($n = 0; $n -lt $ids.Count; $n++) {
+        $parent = $byId[$ids[$n]]
+        if ($null -eq $parent -or -not $kids.ContainsKey($ids[$n])) { continue }
+        foreach ($c in $kids[$ids[$n]]) {
+            if ($c.CreationDate -ge $parent.CreationDate -and -not $ids.Contains([int]$c.ProcessId)) { $ids.Add([int]$c.ProcessId) }
+        }
+    }
+    , $ids.ToArray()
+}
+
+function Stop-TreeJob([int]$Id, [IntPtr]$Job) {
+    <# Зупиняє решту задачі Windows кореня $Id і закриває її дескриптор; інструменти LM Studio лишає — це спільний сервер,
+    а моделі наряду прибирає Complete-GpuModels. #>
     try {
-        $gone = @(foreach ($i in [GeminiWrapper.TreeJob]::Members($job)) {
+        $gone = @(foreach ($i in [GeminiWrapper.TreeJob]::Members($Job)) {
                 $g = $null
                 try { $g = Get-Process -Id $i -ErrorAction Stop } catch { continue }
                 if (Test-GpuModelProcess $g.ProcessName ([string]$g.Path)) { continue }
-                if ([GeminiWrapper.TreeJob]::Kill($job, $i)) { "$($g.ProcessName) $i" }
+                if ([GeminiWrapper.TreeJob]::Kill($Job, $i)) { "$($g.ProcessName) $i" }
             })
         if ($gone.Count) { Write-Log "лишки дерева $Id зупинено: $($gone -join ', ')" }
     } catch { Write-Log "лишки дерева ${Id}: $($_.Exception.Message)" }
-    finally { [GeminiWrapper.TreeJob]::Close($job) }
+    finally { [GeminiWrapper.TreeJob]::Close($Job) }
 }
 
 function Stop-Tree($Proc) {
-    <# Зупинка процесу з усім деревом нащадків і рештою його задачі Windows (Start-Tree), також після його виходу. #>
+    <# Зупинка процесу з усім деревом нащадків і рештою задач Windows (Start-Tree) — своєї й тих, що створили інші процеси
+    (процес наряду, попередній планувальник), також після його виходу.
+
+    Чужу задачу (корінь — сам $Proc чи його живий нащадок) відкрито за іменем ДО taskkill: ім'я тримають лише дескриптори
+    творця задачі й її кореня, а taskkill /T зупиняє обох. Після нього задача з відірваними нащадками (батько вийшов,
+    taskkill за батьком їх не бачить) жила б далі без імені, і відкрити її було б нічим. Свого кореня не обходимо: задачі,
+    створені в його дереві, вкладені в його задачу, тож їхні члени — і її члени. #>
     if ($null -eq $Proc) { return }
+    $id = [int]$Proc.Id
+    $jobs = @{}
+    if ($script:OnWindows -and $id -gt 0 -and -not $script:TreeJobs.ContainsKey($id)) {
+        try {
+            if (-not $Proc.HasExited) {
+                Add-TreeJobType
+                foreach ($i in (Get-TreeIds $id)) {
+                    if ($script:TreeJobs.ContainsKey($i)) { continue }
+                    $j = [GeminiWrapper.TreeJob]::Open($i)
+                    if ($j -ne [IntPtr]::Zero) { $jobs[$i] = $j }
+                }
+            }
+        } catch { Write-Log "задачі дерева ${id}: $($_.Exception.Message)" }
+    }
     try {
         if (-not $Proc.HasExited) {
-            if ($script:OnWindows) { & taskkill.exe /PID $Proc.Id /T /F *> $null }
+            if ($script:OnWindows) { & taskkill.exe /PID $id /T /F *> $null }
             else { $Proc.Kill($true) }
         }
         [void]$Proc.WaitForExit(15000)
     } catch { Write-Log "зупинка процесу: $($_.Exception.Message)" }
-    Stop-TreeJob $Proc.Id
+    if ($script:TreeJobs.ContainsKey($id)) { $jobs[$id] = $script:TreeJobs[$id]; $script:TreeJobs.Remove($id) }
+    foreach ($i in @($jobs.Keys)) { Stop-TreeJob $i $jobs[$i] }
 }
 
 function Set-ConsoleInputEncoding($Encoding) { [Console]::InputEncoding = $Encoding }
