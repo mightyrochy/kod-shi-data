@@ -66,7 +66,7 @@ import colorspace as _cs
                  "«not delivered» or «not available» means no image",
                  як="describe only this item's «kind» in its own numbered photos: a belt shown on a blouse is "
                     "the belt, not the blouse. If none of its photos arrived, use its codes",
-                 без="No photos: use item codes; leave «wrong_photos» empty."),
+                 без="No photos: describe the items by their codes; leave «wrong_photos» empty."),
         # «Пасок Базовий блакитний» описувався блузою з фото пояса — опис йшов за кадром, а не за
         # річчю; рід речі кодом каже, ЩО на кадрі описувати
         # цілий комплект — родом «set» (від «top, blazer» опис звав його «не включеним»)
