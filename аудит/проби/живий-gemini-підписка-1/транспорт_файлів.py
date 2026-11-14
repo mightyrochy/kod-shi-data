@@ -12,9 +12,10 @@ import time
 import urllib.request
 
 ROOT = Path(__file__).resolve().parent
-OUT = ROOT / "вимір_транспорту" / "спроба_2"
+СПРОБА = os.environ.get("SPROBA", "спроба_2")
+OUT = ROOT / "вимір_транспорту" / СПРОБА
 PHOTOS = OUT / "файли"
-WORK = Path(os.environ["TEMP"]) / "agy-транспорт-2"
+WORK = Path(os.environ["TEMP"]) / ("agy-транспорт-" + СПРОБА)
 AGY = shutil.which("agy")
 MODEL = "gemini-3.8-flash-high"
 QUESTION = (
@@ -146,7 +147,7 @@ if __name__ == "__main__":
     elif mode == "вхід_claude":
         run("вхід_claude", ["auth", "status"], executable="claude")
     elif mode in {"контроль_без_фото", "контроль_фото"}:
-        WORK = Path(os.environ["TEMP"]) / "agy-транспорт-контроль"
+        WORK = Path(os.environ["TEMP"]) / ("agy-транспорт-контроль-" + СПРОБА)
         WORK.mkdir(exist_ok=True)
         if mode == "контроль_без_фото":
             assert not any(WORK.iterdir()), "Контрольна тека має бути порожньою"
