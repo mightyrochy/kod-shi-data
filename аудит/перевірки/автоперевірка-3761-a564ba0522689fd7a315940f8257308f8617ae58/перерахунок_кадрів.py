@@ -3,7 +3,6 @@ import collections
 import gzip
 import json
 import pathlib
-import statistics
 import sys
 
 записи = json.load(gzip.open(sys.argv[1]))["записи"]
