@@ -58,8 +58,8 @@ const {прочитатиДовідникJSON, підставитиШаблон,
       window.__поле = document.getElementById('оц-слова-поле');
       window.SpeechRecognition = class {
         start(){ window.__мік = this; if (this.onstart) this.onstart(); }
-        stop(){ if (this.onend) this.onend(); }
-        abort(){ if (this.onend) this.onend(); }
+        stop(){ window.__зупинок = (window.__зупинок || 0) + 1; if (this.onend) this.onend(); }
+        abort(){ window.__зупинок = (window.__зупинок || 0) + 1; if (this.onend) this.onend(); }
       };
     });
     const знімок = async н => { if (пр){
@@ -121,7 +121,11 @@ const {прочитатиДовідникJSON, підставитиШаблон,
       ОЦ.результат = {картка: {відповідь: 'Тобі пасує.', вдало: [{текст: 'Гарні кольори.'}],
         не_знаю: [{текст: 'Не знаю нагоди.'}]}, сценарій: {}, суд: {образ: ['а'], речі: ОЦ.перелік.речі}, допит: []};
     });
+    await с.locator('#оц-слова-мік').click();
+    const зупинокДоТак = await с.evaluate(() => window.__зупинок || 0);
     await с.locator('#оц-так').click();
+    факти.мікрофонПісляТак = await с.evaluate(() => window.__зупинок || 0) - зупинокДоТак;
+    assert.equal(факти.мікрофонПісляТак, 1);
     assert.equal(await с.locator('#оц-речі').isVisible(), false);
     assert.equal(await с.locator('#оц-картка').count(), 1);
     await с.locator('#оц-допит-поле').fill('Яку сумку взяти?');
