@@ -108,6 +108,7 @@
   <div class="вступ">
     <h1 class="лише-старт">Люстерко покаже те, що тобі <em>пасує.</em></h1>
     <p class="лише-старт">Три кроки — і далі ти лише кажеш, куди йдеш.</p>
+    <p class="лише-старт"><button class="тихо" id="кол-без-портрета" type="button">Нема портрета під рукою? Є інший шлях до кольорів</button></p>
   </div>
   <div id="ф-блок-місце">
   <div id="ф-блок">
@@ -117,7 +118,7 @@
     <div class="слот-зріст" id="ф-зріст"></div>
   </div>
   <div class="підпис-фото"><span>На повний зріст — для приміряння</span><span>Портрет — для кольорів</span></div>
-  <p class="підказка">Щойно додаси портрет, кольори зчитаються самі.</p>
+  <p class="підказка">Щойно додаси портрет, кольори зчитаються самі.<span class="лише-старт"> Без портрета — інший шлях нижче, у «Твоїх кольорах».</span></p>
   </div>
   </div>
 
@@ -127,7 +128,7 @@
     <div id="кол-свотчі"></div>
     <div class="статус" id="кол-стан"></div>
     <div class="ряд"><button id="кол-зчитати" class="тихо" type="button">Зчитати кольори з портрета</button> <button id="кол-повтор" class="тихо" type="button" hidden>Повторити читання кольорів</button></div>
-    <details class="розкривач">
+    <details class="розкривач" id="кол-інший-шлях">
       <summary>Інший шлях — через будь-який чат-помічник</summary>
       <p class="підказка">Скопіюй запит, надішли його з фото обличчя в чат — і поверни відповідь сюди цілком.</p>
       <label class="поле" for="кол-запит"><span>Запит для чату</span></label>
@@ -189,12 +190,12 @@
   <div class="крокі" id="мір-блок">
     <svg id="вирізка" viewBox="0 0 360 380" aria-hidden="true"></svg>
     <div class="анотації">
-      <label class="ан" style="top:17.5%"><span>Плечі</span><input type="number" id="мр-плечі" inputmode="numeric" placeholder="96"><b>см</b></label>
-      <label class="ан" style="top:28%"><span>Груди</span><input type="number" id="мр-груди" inputmode="numeric" placeholder="94"><b>см</b></label>
-      <label class="ан" style="top:41%"><span>Талія</span><input type="number" id="мр-талія" inputmode="numeric" placeholder="76"><b>см</b></label>
-      <label class="ан" style="top:55%"><span>Стегна</span><input type="number" id="мр-стегна" inputmode="numeric" placeholder="100"><b>см</b></label>
-      <label class="ан" style="top:88%"><span>Зріст</span><input type="number" id="мр-зріст" inputmode="numeric"><b>см</b></label>
-    </div>
+      <label class="ан" style="top:6%"><span>Зріст</span><input type="number" id="мр-зріст" inputmode="numeric"><b>см</b></label>
+      <label class="ан" style="top:17.5%"><span>Плечі</span><input type="number" id="мр-плечі" inputmode="numeric"><b>см</b></label>
+      <label class="ан" style="top:28%"><span>Груди</span><input type="number" id="мр-груди" inputmode="numeric"><b>см</b></label>
+      <label class="ан" style="top:41%"><span>Талія</span><input type="number" id="мр-талія" inputmode="numeric"><b>см</b></label>
+      <label class="ан" style="top:55%"><span>Стегна</span><input type="number" id="мр-стегна" inputmode="numeric"><b>см</b></label>
+          </div>
   </div>
 
   <details class="розкривач лише-профіль" id="мр-розширені">
@@ -544,13 +545,13 @@
   </div>
   <div class="пейджер" id="пейджер" hidden>
     <button type="button" class="тихо" id="пж-назад" data-крок="-1" aria-label="Попередній образ">‹</button>
-    <span class="пж-лічба"><span class="пж-н">1 / 4</span><span class="пж-оц"></span></span>
+    <span class="пж-лічба"><span class="пж-н">1 / 4</span><span class="пж-оц"></span><span class="пж-запис" role="status"></span></span>
     <button type="button" class="тихо" id="пж-далі" data-крок="1" aria-label="Наступний образ">›</button>
   </div>
   <div id="картки"></div>
   <div class="пейджер" id="пейджер-низ" hidden>
     <button type="button" class="тихо" id="пж-низ-назад" data-крок="-1" aria-label="Попередній образ">‹ попередній</button>
-    <span class="пж-лічба"><span class="пж-н">1 / 4</span><span class="пж-оц"></span></span>
+    <span class="пж-лічба"><span class="пж-н">1 / 4</span><span class="пж-оц"></span><span class="пж-запис" role="status"></span></span>
     <button type="button" class="тихо" id="пж-низ-далі" data-крок="1" aria-label="Наступний образ">наступний ›</button>
   </div>
 </section>

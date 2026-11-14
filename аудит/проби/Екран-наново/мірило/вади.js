@@ -59,6 +59,15 @@ const ЖІНКА = JSON.parse(fs.readFileSync(path.join(__dirname, '../../жін
   /* вада 13: чи видно шлях без фото на першому екрані без гортання */
   факти.в13 = {інший_шлях: await уВікні('#кол-блок details summary'), підказка: await уВікні('#кол-блок .підказка, .підказка')};
   await знімок('13_старт');
+  /* кнопка шляху без портрета на першому екрані (після правки вади 13): дотик розкриває шлях і підводить до нього */
+  факти.в13.кнопка_вгорі = await уВікні('#кол-без-портрета');
+  if (факти.в13.кнопка_вгорі){
+    await с.locator('#кол-без-портрета').tap(); await тихо(800);
+    факти.в13.після_дотику = {інший_шлях: await уВікні('#кол-блок details summary'), запит: await уВікні('#кол-запит'),
+      розкрито: await с.evaluate(() => document.querySelector('#кол-блок details').open)};
+    await знімок('13_після_дотику');
+    await с.evaluate(() => scrollTo(0, 0)); await тихо(300);
+  }
   await с.locator('#н-далі').tap(); await тихо(1500);
   await знімок('крок_лице');
   await с.locator('#н-далі').tap(); await тихо(1500);
@@ -96,13 +105,22 @@ const ЖІНКА = JSON.parse(fs.readFileSync(path.join(__dirname, '../../жін
   await тихо(300); await знімок('1_вердикт_словами_одразу');
   факти.в1 = {статус: await уВікні('#вст-0'), записів: await с.evaluate(async () => (await усіВердикти()).length)};
   await тихо(3500);
-  факти.н2 = {статус_через_4с: await уВікні('#вст-0'), вгорі: await с.evaluate(() => scrollY),
+  факти.н2 = {статус_через_4с: await уВікні('#вст-0'), запис_у_пейджері: await уВікні('#пейджер .пж-запис'), вгорі: await с.evaluate(() => scrollY),
     поле_на_місці: await с.evaluate(() => document.getElementById('ком-0').value.length), видима_картка: await с.evaluate(() => { for (let і = 0; і < 4; і++){ const к = document.getElementById('к-' + і); if (к && getComputedStyle(к).display !== 'none' && !к.hidden && к.getBoundingClientRect().height > 0) return і; } return null; })};
   await знімок('1_вердикт_словами_через_4с');
   /* Н4, Н7: журнал вердиктів — скільки названо й скільки рядків видно */
   await с.evaluate(() => { const ж = document.getElementById('журнал'); if (ж){ ж.open = true; ж.scrollIntoView(); } }); await тихо(1500);
   факти.н4 = await с.evaluate(() => ({ліч: document.getElementById('ж-ліч').textContent, рядків: document.getElementById('ж-список').children.length, список: document.getElementById('ж-список').textContent.replace(/\s+/g, ' ').trim().slice(0, 400)}));
   await знімок('н4_журнал');
+  /* Н4 на восьми записах: той самий вердикт сім разів дописано в сховище під новими ключами; лічбу й рядки журналу
+     читає `відкрити` нижче — на сторінці старої збірки й нової */
+  await с.evaluate(async () => {
+    const б = await new Promise((так, ні) => { const з = indexedDB.open('показ'); з.onsuccess = () => так(з.result); з.onerror = () => ні(з.error); });
+    await new Promise((так, ні) => { const т = б.transaction('вердикти', 'readwrite'), с = т.objectStore('вердикти'), з = с.getAll();
+      з.onsuccess = () => { for (let і = 0; і < 7; і++) с.add(Object.assign({}, з.result[0])); };
+      т.oncomplete = так; т.onerror = () => ні(т.error); });
+    б.close();
+  });
   /* стара адреса мосту в localStorage — для проби «записати старою, відкрити новою» (маршрути глушать міст) */
   await с.evaluate(() => { localStorage.setItem('міст:адреса', 'https://mist.example/v1'); localStorage.setItem('міст:токен', 'токен-старої-збірки'); localStorage.setItem('міст:модель', 'gemini-стара');
     const т = document.getElementById('тема-кнопка'); if (т) т.click(); });
@@ -130,6 +148,7 @@ const ЖІНКА = JSON.parse(fs.readFileSync(path.join(__dirname, '../../жін
     await с.evaluate(() => { режим('бібліотека'); }); await тихо(2000);
     await с.evaluate(() => { const ж = document.getElementById('журнал'); if (ж){ ж.open = true; ж.scrollIntoView(); } }); await тихо(1500);
     ф.журнал = await с.evaluate(() => ({ліч: document.getElementById('ж-ліч').textContent, список: document.getElementById('ж-список').textContent.replace(/\s+/g, ' ').slice(0, 200),
+      рядків: document.getElementById('ж-список').textContent.split('\n').filter(р => р.trim()).length, останній_рядок: document.getElementById('ж-список').textContent.split('\n').filter(р => р.trim()).pop(),
       усі_образи: document.getElementById('біб-список').textContent.replace(/\s+/g, ' ').trim().slice(0, 200)}));
     await знімок('відкрито_' + мітка + '_усі_образи');
     await с.evaluate(() => { режим('профіль'); }); await тихо(2000);
