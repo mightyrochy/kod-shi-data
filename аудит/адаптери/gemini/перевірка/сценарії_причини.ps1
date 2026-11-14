@@ -100,6 +100,51 @@ try {
     }
     Write-RunCause '20261113-999999-cccccccccccc' 'CRASH' (Get-RunCause 'CRASH')
     Check 'прогін без теки — файла не створено' (-not (Test-Path -LiteralPath "$tmp/runs/20261113-999999-cccccccccccc"))
+    # Кінець CRASH несе в <id>.tail.txt доказ: журнал wrapper.log від старту прогону (свій PID, планувальник без тегу, чужі PID)
+    # і стан копії задачі на мить збою; приватне прибрано тим самим фільтром, що в причині. До правки CRASH з розбитою службовою
+    # текою копії лишав у теці обміну лише обрізаний рядок примітки.
+    $script:NoHooks = Join-Path $tmp 'no-hooks'; [void][IO.Directory]::CreateDirectory($script:NoHooks)
+    [void](Invoke-Git @('init', '-q', "$tmp/clone") -AllowFail -Dir $tmp)
+    [void][IO.Directory]::CreateDirectory("$tmp/clone/.git/worktrees/other")
+    $stamp = { param([int]$Min) (Get-Date).AddMinutes($Min).ToString('yyyy-MM-dd HH:mm:ss') }
+    $logRows = @("$(& $stamp (-60)) [111] давній рядок до старту прогону",
+        "$(& $stamp (-1)) [$PID] копія задачі: власний рядок процесу наряду",
+        "$(& $stamp (-1)) [4242] копія задачі C:\Users\Тест\gemini-runs\w\x прибрана: чужий процес; Authorization: Bearer abcdefghijkl1234",
+        "$(& $stamp (-1)) прибирання накопиченого: рядок планувальника без тегу")
+    [IO.File]::AppendAllText("$tmp/runs/wrapper.log", ($logRows -join "`n") + "`n", $script:Utf8)
+    foreach ($case in @(@('службова тека видалена', 'crash-нема', $false), @('службова тека є', 'crash-є', $true), @('копії нема', 'crash-без-копії', $null))) {
+        $i++
+        $id = '20261113-0000{0:00}-aaaaaaaaaa00' -f $i
+        if ($null -eq $case[2]) { $script:TaskCopy = $null }
+        else {
+            $copy = "$tmp/w/$($case[1])"; $svc = "$tmp/clone/.git/worktrees/$($case[1])"
+            [void][IO.Directory]::CreateDirectory("$copy/repo")
+            [IO.File]::WriteAllText("$copy/repo/.git", "gitdir: $svc`n", $script:Utf8)
+            if ($case[2]) { [void][IO.Directory]::CreateDirectory($svc); foreach ($n in @('HEAD', 'gitdir', 'commondir')) { [IO.File]::WriteAllText("$svc/$n", 'x', $script:Utf8) } }
+            $script:TaskCopy = @{ Dir = $copy; Clone = "$tmp/clone"; Temp = ''; Tmp = '' }
+        }
+        $s = [ordered]@{ v = 1; id = $id; slug = $case[1]; marker = ''; start = ''; head = ''; ahead = 0; bundle = ''; code = 'CRASH'
+            turns = 0; minutes = 0; started_utc = [datetime]::UtcNow.AddMinutes(-2).ToString('o'); ended_utc = '' }
+        Complete-Status $s "$tmp/runs/state-$i.txt" '' ([datetime]::MinValue)
+        $script:TaskCopy = $null
+        $ev = $(if (Test-Path -LiteralPath "$tmp/out/$id.tail.txt") { [IO.File]::ReadAllText("$tmp/out/$id.tail.txt") } else { '' })
+        Check "CRASH ($($case[0])): tail.txt — журнал від старту: свій PID, чужий PID, планувальник; давнього рядка нема" ($ev.Contains("[$PID] копія задачі: власний") -and $ev.Contains('[4242] копія задачі') -and $ev.Contains('рядок планувальника без тегу') -and -not $ev.Contains('давній рядок'))
+        Check "CRASH ($($case[0])): приватне прибрано (шлях профілю, Bearer)" ($ev.Contains('доказ кінця CRASH') -and $ev -notmatch 'Тест|abcdefghijkl' -and $ev.Contains('Bearer ***'))
+        if ($null -eq $case[2]) { Check 'CRASH (копії нема): стан копії називає це' ($ev.Contains('копії задачі нема')) }
+        else {
+            $svcState = $(if ($case[2]) { "$($case[1]): є, вміст — " } else { "$($case[1]): нема" })
+            Check "CRASH ($($case[0])): стан копії — рядок gitdir і службова тека" ($ev.Contains('.git — файл: gitdir:') -and $ev.Contains($svcState))
+            $wtOk = $ev.Contains('.git\worktrees: ') -and $ev.Contains('other') -and $ev.Contains('git worktree list --porcelain (код ')
+            Check "CRASH ($($case[0])): службові теки клону й git worktree list" $wtOk
+            if (-not $wtOk) { "--- хвіст ($($case[0])) ---"; $ev; '--- кінець хвоста ---' }
+            if ($case[2]) { Check 'CRASH (службова тека є): названо файли верхнього рівня' ($ev.Contains('HEAD') -and $ev.Contains('commondir')) }
+        }
+    }
+    $i++
+    $s = [ordered]@{ v = 1; id = ('20261113-0000{0:00}-aaaaaaaaaa11' -f $i); slug = 'без-крашу'; marker = ''; start = ''; head = ''; ahead = 0; bundle = ''; code = 'NOT_ON_MAIN'
+        turns = 0; minutes = 0; started_utc = [datetime]::UtcNow.AddMinutes(-2).ToString('o'); ended_utc = '' }
+    Complete-Status $s "$tmp/runs/state-$i.txt" '' ([datetime]::MinValue)
+    Check 'не CRASH: доказу в теці обміну нема' (-not (Test-Path -LiteralPath "$tmp/out/$($s.id).tail.txt"))
 } catch {
     "✗ збій стенда: $($_.Exception.Message)"; $bad++
 } finally {

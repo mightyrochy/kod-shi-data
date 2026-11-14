@@ -974,6 +974,79 @@ function Get-EngineErrorReason([string]$ErrorTail) {
     if ($line.Count) { Get-FailReason $line[0] } else { '' }
 }
 
+# Доказ кінця CRASH для <id>.tail.txt: журнал `wrapper.log` і копії задач користувача gemini для інших закриті, тож без
+# доказу в теці обміну причина падіння копії (прибирання чужим процесом, `git worktree prune`) лишалась невідомою.
+function Get-LogSince([datetime]$Since) {
+    <# Рядки wrapper.log від $Since (місцевий час) до кінця файла — усіх процесів: цього наряду (тег `[PID]`), планувальника
+    (без тегу) й інших нарядів, бо причина збою може бути в чужому процесі. Рядок-продовження без мітки часу йде з
+    попереднім. Файл читається без блокування записувачів. #>
+    $from = $Since.ToString('yyyy-MM-dd HH:mm:ss', [Globalization.CultureInfo]::InvariantCulture)
+    $rows = New-Object System.Collections.Generic.List[string]
+    $fs = $null
+    try {
+        $fs = [IO.File]::Open((Join-Path $RunsDir 'wrapper.log'), [IO.FileMode]::Open, [IO.FileAccess]::Read, ([IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete))
+        $sr = New-Object IO.StreamReader($fs, $script:Utf8)
+        $keep = $false
+        while ($null -ne ($line = $sr.ReadLine())) {
+            if ($line -match '^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d ') { $keep = [string]::CompareOrdinal($line, 0, $from, 0, $from.Length) -ge 0 }
+            if ($keep) { $rows.Add($line) }
+        }
+    } catch { $rows.Add("wrapper.log не прочитано: $($_.Exception.Message)") }
+    finally { if ($fs) { $fs.Dispose() } }
+    $rows.ToArray()
+}
+
+function Get-CopyState {
+    <# Стан копії задачі на мить збою (до її прибирання): чи є `<копія>\repo\.git`, його рядок `gitdir:`, чи існує тека, на
+    яку він указує, і що в ній лежить (імена верхнього рівня), службові теки клону `.git\worktrees` і
+    `git worktree list --porcelain` клону. Збій читання лишається рядком у доказі: доказ не маскує падіння. #>
+    $c = $script:TaskCopy
+    if ($null -eq $c) { return @('копії задачі нема: збій до New-TaskCopy або копію вже закрито') }
+    $out = New-Object System.Collections.Generic.List[string]
+    try {
+        $repo = Join-Path $c.Dir 'repo'
+        $out.Add("копія $repo`: тека $(if (Test-Path -LiteralPath $repo -PathType Container) { 'є' } else { 'нема' })")
+        $dotGit = Join-Path $repo '.git'
+        if (Test-Path -LiteralPath $dotGit -PathType Leaf) {
+            $text = [IO.File]::ReadAllText($dotGit, $script:Utf8).Trim()
+            $out.Add(".git — файл: $text")
+            $m = [regex]::Match($text, '^gitdir:\s*(.+)$')
+            if ($m.Success) {
+                $target = $m.Groups[1].Value.Trim()
+                if (-not [IO.Path]::IsPathRooted($target)) { $target = Join-Path $repo $target }
+                if (Test-Path -LiteralPath $target -PathType Container) {
+                    $names = @(Get-ChildItem -LiteralPath $target -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.Name })
+                    $out.Add("службова тека $target`: є, вміст — $(if ($names.Count) { $names -join ', ' } else { 'порожня' })")
+                } else { $out.Add("службова тека $target`: нема") }
+            }
+        } elseif (Test-Path -LiteralPath $dotGit -PathType Container) { $out.Add('.git — тека, не файл worktree') }
+        else { $out.Add('.git: нема') }
+        $wts = Join-Path (Join-Path $c.Clone '.git') 'worktrees'
+        $listed = @($(if (Test-Path -LiteralPath $wts -PathType Container) { Get-ChildItem -LiteralPath $wts -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.Name } }))
+        $out.Add("клон $($c.Clone)\.git\worktrees`: $(if ($listed.Count) { $listed -join ', ' } else { 'порожньо чи нема' })")
+    } catch { $out.Add("стан копії не прочитано: $($_.Exception.Message)") }
+    # Окрема спроба: збій читання файлів не ховає git worktree list, а збій git не ховає прочитаного вище.
+    try {
+        $wl = Invoke-Git @('worktree', 'list', '--porcelain') -AllowFail -Dir $c.Clone
+        $out.Add("git worktree list --porcelain (код $($wl.Code)):")
+        $out.Add(([string]$wl.Out + [string]$wl.Err).TrimEnd())
+    } catch { $out.Add("git worktree list --porcelain не виконано: $($_.Exception.Message)") }
+    $out.ToArray()
+}
+
+function Get-CrashEvidence([datetime]$Since) {
+    <# Доказ для `<id>.tail.txt`: журнал від старту прогону ($Since) і стан копії. Обсяг журналу — межа хвоста помилки
+    рушія (Get-EngineError): остання частина, найближча до падіння. Увесь текст — крізь Hide-Private, як причина в
+    #1856 (шляхи профілю — `~`, Bearer, JWT, ключі, облікові дані URL). Сам не падає. #>
+    try {
+        $log = @(Get-LogSince $Since) -join "`n"
+        $tail = Get-EngineError ([pscustomobject]@{ Code = $script:EngineErrorCodes[0]; EngineErr = $log; ErrLog = '' })
+        $text = @("----- доказ кінця CRASH: процес наряду PID $PID; журнал wrapper.log від $($Since.ToString('yyyy-MM-dd HH:mm:ss', [Globalization.CultureInfo]::InvariantCulture)), усі процеси -----",
+            $tail, '----- стан копії задачі на мить збою -----', ((Get-CopyState) -join "`n")) -join "`n"
+        Hide-Private $text
+    } catch { Hide-Private "----- доказ кінця CRASH не зібрано: $($_.Exception.Message)" }
+}
+
 # Назви моделей з `agy models` (лише назви за шаблоном): диспетчер обере робочу без руки власника.
 function Get-AgyModels {
     $r = Invoke-Native $script:Agy @('models') $RepoDir 2
@@ -1163,6 +1236,17 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
         }
     }
     if ($T0 -ne [datetime]::MinValue) { $Status.minutes = [int][Math]::Round(((Get-Date) - $T0).TotalMinutes) }
+    # Стан без started_utc (відмова до старту, старі записи) — під StrictMode крапка на відсутньому ключі падає.
+    $started = $(if ($Status -is [Collections.IDictionary]) { [string]$Status['started_utc'] } else { [string](Get-JsonProp $Status 'started_utc') })
+    if ($Status.code -eq 'CRASH') {
+        # Кінець CRASH (збій тіла наряду, копії задачі до межі спроб, бандла): причина — у журналі й стані копії, а вони закриті
+        # для інших користувачів; доказ іде в <id>.tail.txt після хвоста агента, коли він є. Проміжок — від старту прогону.
+        $since = [datetime]::MinValue
+        if ([datetime]::TryParse($started, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind, [ref]$since)) { $since = $since.ToLocalTime() }
+        elseif ($T0 -ne [datetime]::MinValue) { $since = $T0 }
+        else { $since = (Get-Process -Id $PID).StartTime }
+        $Tail = (@($Tail, (Get-CrashEvidence $since)) | Where-Object { $_ }) -join "`n"
+    }
     if ($Tail) { [System.IO.File]::WriteAllText((Join-Path $OutDir ($Status.id + '.tail.txt')), $Tail, $script:Utf8) }
     # Кінець без звіту агента (AGY_ERROR, TIMEOUT, QUOTA, AUTH, EFFORT_INVALID, MODEL_INVALID): текст помилки рушія — рядок `reason`
     # результату й, коли гілки нема, примітка в #1856 (blocked-reasons.json); повний хвіст уже в <id>.tail.txt.
@@ -1181,8 +1265,6 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
         if ($null -eq $reason[0]) { $reason = @($Tail -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 1) }
         try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($Status.slug)" ([string]$reason[0]) } catch { Write-Log "причина BLOCKED не записана: $($_.Exception.Message)" }
     }
-    # Стан без started_utc (відмова до старту, старі записи) — під StrictMode крапка на відсутньому ключі падає.
-    $started = $(if ($Status -is [Collections.IDictionary]) { [string]$Status['started_utc'] } else { [string](Get-JsonProp $Status 'started_utc') })
     Write-RunCause ([string]$Status.id) ([string]$Status.code) (Get-RunCause ([string]$Status.code) $Tail $Why $started)
     $Status.ended_utc = [datetime]::UtcNow.ToString('o')
     Write-FileAtomic (Join-Path $OutDir ($Status.id + '.json')) ($Status | ConvertTo-Json -Compress)
@@ -1307,7 +1389,7 @@ function Invoke-Task($M, $Job) {
         if (Test-AutoPlanEmpty $M.Slug $taskText) { $status.code = 'EMPTY_PLAN'; return }
         $taskDir = Join-Path (Join-Path $RunsDir 'w') $id
         try { [void](New-TaskCopy $taskDir $start $taskText) } catch { $copyFailed = $true; throw }
-        [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))
+        [void](Invoke-CopyGit @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))
         $mergeStep = ''
         if ($att -and $att.Mode -eq 'BEHIND') {
             # Старт — після злиття: його коміт не рахується за роботу агента (Get-Facts: $start..голова).
@@ -1337,6 +1419,8 @@ function Invoke-Task($M, $Job) {
         if ($copyFailed) {
             # Відмова до старту, як колись робочої копії (10162): стан — як до STARTED, позначку повертає Close-FailedStart.
             Write-Log "копія задачі: $($_.Exception.Message)"
+            # Доказ збою копії — зараз, поки її не прибрано: повтор іде новим прогоном, а кінцевий CRASH (межа спроб) допише свій.
+            try { [IO.File]::WriteAllText((Join-Path $OutDir ($id + '.tail.txt')), (Get-CrashEvidence $t0), $script:Utf8) } catch { Write-Log "доказ COPY_FAILED не записано: $($_.Exception.Message)" }
             if ($null -eq $prev) { Remove-Item -LiteralPath $statePath -Force } else { Write-FileAtomic $statePath $prev }
             $waiting = $true
             Close-FailedStart $M $id $statePath (Get-FailReason $_) $status.engine

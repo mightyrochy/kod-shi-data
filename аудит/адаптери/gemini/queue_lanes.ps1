@@ -86,6 +86,11 @@ $script:GpuStartPollMs = 500
 # Джерела й прогалини (пік каталогу, навантаження гри): аудит/корені/ПК-межа-без-джерела-gpu.md.
 # Це запасний бюджет за спостереженим максимумом, а не доведений пік будь-якої моделі.
 $script:GpuRunMiB = 8925
+# Межа зависання (хвилин) git, що викладає чи перемикає дерево копії задачі (`reset --hard`, `checkout -B`): процес, довший
+# за неї, Invoke-Native вбиває як завислий; типова межа Invoke-Git — 10.
+# Вимір 14.11: 5:44 без навантаження, двічі понад 10:00 під час прибирання worktree й виміру диска (Річ-колір-вимір-очима /1);
+# до виміру на 20 копіях, далі — найдовша виміряна тривалість із запасом.
+$script:CopyGitHangMinutes = 30
 
 # --- процеси й файли ----------------------------------------------------------------------------------------------
 
@@ -199,16 +204,45 @@ namespace GeminiWrapper {
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool IsProcessInJob(IntPtr process, IntPtr job, out bool result);
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool TerminateProcess(IntPtr process, uint code);
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool CloseHandle(IntPtr handle);
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)] static extern IntPtr OpenJobObject(uint access, bool inherit, string name);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool GetProcessTimes(IntPtr process, out long creation, out long exit, out long kernel, out long user);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool DuplicateHandle(IntPtr sourceProcess, IntPtr source, IntPtr targetProcess, out IntPtr target, uint access, bool inherit, uint options);
+        [DllImport("kernel32.dll")] static extern IntPtr GetCurrentProcess();
 
-        public static IntPtr Create(IntPtr process) {
-            IntPtr job = CreateJobObject(IntPtr.Zero, null);
+        // Ім'я задачі — з pid і часу старту її кореня: будь-який процес того самого користувача й сеансу (простір Local\)
+        // обчислює те саме ім'я з самого pid, а повторно виданий pid дає інший час старту, тож чужої задачі не відкриє.
+        static string Name(IntPtr process, int id) {
+            long creation, exit, kernel, user;
+            if (!GetProcessTimes(process, out creation, out exit, out kernel, out user)) return null;
+            return "Local\\GeminiWrapper.TreeJob." + id + "." + creation;
+        }
+
+        // shared — копію дескриптора задачі вкладено в сам корінь. Ім'я об'єкта ядра живе, поки відкритий хоч один його
+        // дескриптор; без копії його тримав би лише творець (процес наряду), і після його смерті задача з відірваними
+        // нащадками жила б далі без імені — недосяжна жодному процесу. З копією вона досяжна, поки живий творець або корінь.
+        public static IntPtr Create(IntPtr process, int id, out bool shared) {
+            shared = false;
+            string name = Name(process, id);
+            if (name == null) throw new Win32Exception();
+            IntPtr job = CreateJobObject(IntPtr.Zero, name);
             if (job == IntPtr.Zero) throw new Win32Exception();
             var info = new ExtendedLimit();
             info.Basic.Flags = 0x800;  // BREAKAWAY_OK: явний вихід із задачі (CREATE_BREAKAWAY_FROM_JOB) не ламає старту нащадка
             if (!SetInformationJobObject(job, 9, ref info, Marshal.SizeOf(typeof(ExtendedLimit))) || !AssignProcessToJobObject(job, process)) {
                 var e = new Win32Exception(); CloseHandle(job); throw e;
             }
+            IntPtr copy;
+            shared = DuplicateHandle(GetCurrentProcess(), job, process, out copy, 0, false, 2);  // DUPLICATE_SAME_ACCESS
             return job;
+        }
+
+        // Задача, корінь якої — процес id, створена будь-яким процесом (Create); нема — IntPtr.Zero. Права — лише
+        // JOB_OBJECT_QUERY: перелік членів і IsProcessInJob; зупиняє Kill дескриптором самого процесу.
+        public static IntPtr Open(int id) {
+            IntPtr p = OpenProcess(0x1000, false, id);  // QUERY_LIMITED_INFORMATION
+            if (p == IntPtr.Zero) return IntPtr.Zero;
+            try { string name = Name(p, id); return name == null ? IntPtr.Zero : OpenJobObject(0x4, false, name); }
+            finally { CloseHandle(p); }
         }
 
         public static int[] Members(IntPtr job) {
@@ -245,40 +279,85 @@ function Start-Tree($Psi) {
     if ($script:OnWindows) { try { Add-TreeJobType; $typed = $true } catch { try { Write-Log "задача процесів: $($_.Exception.Message)" } catch { } } }
     $p = [System.Diagnostics.Process]::Start($Psi)
     if ($typed) {
-        try { $script:TreeJobs[$p.Id] = [GeminiWrapper.TreeJob]::Create($p.Handle) }
+        try {
+            $shared = $false
+            $script:TreeJobs[$p.Id] = [GeminiWrapper.TreeJob]::Create($p.Handle, $p.Id, [ref]$shared)
+            if (-not $shared) { try { Write-Log "задача процесів $($p.Id): копії в корені нема — після виходу цього процесу лишків не досягне інший" } catch { } }
+        }
         catch { $why = $_.Exception.Message; try { Write-Log "задача процесів $($p.Id): $why — лишки зупиняє лише дерево" } catch { } }
     }
     $p
 }
 
-function Stop-TreeJob([int]$Id) {
-    <# Зупиняє решту задачі Windows процесу; інструменти LM Studio лишає — це спільний сервер, а моделі наряду прибирає
-    Complete-GpuModels. #>
-    if (-not $script:TreeJobs.ContainsKey($Id)) { return }
-    $job = $script:TreeJobs[$Id]; $script:TreeJobs.Remove($Id)
+function Get-TreeIds([int]$Id) {
+    <# pid процесу й усіх його живих нащадків за батьком (Win32_Process). Нащадок, старший за батька, — чужий процес на
+    повторно виданому pid, його гілку не беремо. #>
+    $all = @(Get-CimInstance Win32_Process -Property ProcessId, ParentProcessId, CreationDate -ErrorAction Stop)
+    $byId = @{}; $kids = @{}
+    foreach ($x in $all) {
+        $byId[[int]$x.ProcessId] = $x
+        $k = [int]$x.ParentProcessId
+        if (-not $kids.ContainsKey($k)) { $kids[$k] = New-Object System.Collections.ArrayList }
+        [void]$kids[$k].Add($x)
+    }
+    $ids = New-Object System.Collections.Generic.List[int]; $ids.Add($Id)
+    for ($n = 0; $n -lt $ids.Count; $n++) {
+        $parent = $byId[$ids[$n]]
+        if ($null -eq $parent -or -not $kids.ContainsKey($ids[$n])) { continue }
+        foreach ($c in $kids[$ids[$n]]) {
+            if ($c.CreationDate -ge $parent.CreationDate -and -not $ids.Contains([int]$c.ProcessId)) { $ids.Add([int]$c.ProcessId) }
+        }
+    }
+    , $ids.ToArray()
+}
+
+function Stop-TreeJob([int]$Id, [IntPtr]$Job) {
+    <# Зупиняє решту задачі Windows кореня $Id і закриває її дескриптор; інструменти LM Studio лишає — це спільний сервер,
+    а моделі наряду прибирає Complete-GpuModels. #>
     try {
-        $gone = @(foreach ($i in [GeminiWrapper.TreeJob]::Members($job)) {
+        $gone = @(foreach ($i in [GeminiWrapper.TreeJob]::Members($Job)) {
                 $g = $null
                 try { $g = Get-Process -Id $i -ErrorAction Stop } catch { continue }
                 if (Test-GpuModelProcess $g.ProcessName ([string]$g.Path)) { continue }
-                if ([GeminiWrapper.TreeJob]::Kill($job, $i)) { "$($g.ProcessName) $i" }
+                if ([GeminiWrapper.TreeJob]::Kill($Job, $i)) { "$($g.ProcessName) $i" }
             })
         if ($gone.Count) { Write-Log "лишки дерева $Id зупинено: $($gone -join ', ')" }
     } catch { Write-Log "лишки дерева ${Id}: $($_.Exception.Message)" }
-    finally { [GeminiWrapper.TreeJob]::Close($job) }
+    finally { [GeminiWrapper.TreeJob]::Close($Job) }
 }
 
 function Stop-Tree($Proc) {
-    <# Зупинка процесу з усім деревом нащадків і рештою його задачі Windows (Start-Tree), також після його виходу. #>
+    <# Зупинка процесу з усім деревом нащадків і рештою задач Windows (Start-Tree) — своєї й тих, що створили інші процеси
+    (процес наряду, попередній планувальник), також після його виходу.
+
+    Чужу задачу (корінь — сам $Proc чи його живий нащадок) відкрито за іменем ДО taskkill: ім'я тримають лише дескриптори
+    творця задачі й її кореня, а taskkill /T зупиняє обох. Після нього задача з відірваними нащадками (батько вийшов,
+    taskkill за батьком їх не бачить) жила б далі без імені, і відкрити її було б нічим. Свого кореня не обходимо: задачі,
+    створені в його дереві, вкладені в його задачу, тож їхні члени — і її члени. #>
     if ($null -eq $Proc) { return }
+    $id = [int]$Proc.Id
+    $jobs = @{}
+    if ($script:OnWindows -and $id -gt 0 -and -not $script:TreeJobs.ContainsKey($id)) {
+        try {
+            if (-not $Proc.HasExited) {
+                Add-TreeJobType
+                foreach ($i in (Get-TreeIds $id)) {
+                    if ($script:TreeJobs.ContainsKey($i)) { continue }
+                    $j = [GeminiWrapper.TreeJob]::Open($i)
+                    if ($j -ne [IntPtr]::Zero) { $jobs[$i] = $j }
+                }
+            }
+        } catch { Write-Log "задачі дерева ${id}: $($_.Exception.Message)" }
+    }
     try {
         if (-not $Proc.HasExited) {
-            if ($script:OnWindows) { & taskkill.exe /PID $Proc.Id /T /F *> $null }
+            if ($script:OnWindows) { & taskkill.exe /PID $id /T /F *> $null }
             else { $Proc.Kill($true) }
         }
         [void]$Proc.WaitForExit(15000)
     } catch { Write-Log "зупинка процесу: $($_.Exception.Message)" }
-    Stop-TreeJob $Proc.Id
+    if ($script:TreeJobs.ContainsKey($id)) { $jobs[$id] = $script:TreeJobs[$id]; $script:TreeJobs.Remove($id) }
+    foreach ($i in @($jobs.Keys)) { Stop-TreeJob $i $jobs[$i] }
 }
 
 function Set-ConsoleInputEncoding($Encoding) { [Console]::InputEncoding = $Encoding }
@@ -771,14 +850,22 @@ function Clear-UnstartedClaim([string]$StatePath) {
 
 function Get-FailReason($Err) {
     <# Причина збою одним рядком для стану чекання й примітки в #1856 (blocked-reasons.json): тип винятку, текст, місце
-    в скрипті (файл:рядок). Репозиторій відкритий, а примітка може піти в GitHub, тож шляхи профілю користувача
-    (`C:\Users\<ім'я>`, `/home/<ім'я>`, $env:USERPROFILE), облікові дані в URL і ключі замінено, а рядок скорочено до межі приміток (ConvertTo-NoteText). #>
+    в скрипті (файл:рядок), приватне прибрано (Hide-Private), рядок скорочено до межі приміток (ConvertTo-NoteText). #>
     $text = [string]$Err
     if ($Err -is [System.Management.Automation.ErrorRecord]) {
         $text = $Err.Exception.GetType().Name + ': ' + $Err.Exception.Message
         $info = $Err.InvocationInfo
         if ($null -ne $info -and $info.ScriptName) { $text += ' (' + [IO.Path]::GetFileName([string]$info.ScriptName) + ':' + $info.ScriptLineNumber + ')' }
     } elseif ($Err -is [Exception]) { $text = $Err.GetType().Name + ': ' + $Err.Message }
+    ConvertTo-NoteText ([regex]::Replace((Hide-Private $text), '\s+', ' '))
+}
+
+function Hide-Private([string]$Text) {
+    <# Приватне в тексті прибрано: шляхи профілю користувача (`C:\Users\<ім'я>`, `/home/<ім'я>`, $env:USERPROFILE) — `~`,
+    облікові дані в URL, ключі, `Bearer`, JWT і секретні поля — `***`. Репозиторій відкритий, а текст може піти в GitHub;
+    єдиний фільтр і для рядка причини (Get-FailReason), і для багаторядкового доказу в `<id>.tail.txt`. Рядків не склеює
+    й не скорочує. #>
+    $text = $Text
     if ($env:USERPROFILE -and $env:USERPROFILE -ne [IO.Path]::GetPathRoot($env:USERPROFILE)) { $text = [regex]::Replace($text, [regex]::Escape($env:USERPROFILE), '~', 'IgnoreCase') }
     $text = [regex]::Replace($text, '(?i)(?:[a-z]:)?[\\/]+(?:users|home)[\\/]+(?!public\b)[^\\/\s''"]+', '~')
     $text = [regex]::Replace($text, '(?<=://)[^/@\s]+@', '')
@@ -786,8 +873,7 @@ function Get-FailReason($Err) {
     # Текст помилки рушія (AGY_ERROR, QUOTA, AUTH…) може нести заголовок авторизації, JWT чи секретне поле у відповіді API.
     $text = [regex]::Replace($text, '(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}', 'Bearer ***')
     $text = [regex]::Replace($text, ('\bey' + 'J[A-Za-z0-9_-]{10,}'), '***')
-    $text = [regex]::Replace($text, ('(?i)([A-Za-z0-9_.-]*(?:to' + 'ken|sec' + 'ret|pass' + 'w(?:or)?d|pwd|api[_-]?key|authori[sz]ation|credential|cookie)[A-Za-z0-9_.-]*[''"]?\s*[:=]\s*)(?:"[^"\s]{16,}"|''[^''\s]{16,}''|[^\s,;}"'']{16,})'), '$1***')
-    ConvertTo-NoteText ([regex]::Replace($text, '\s+', ' '))
+    [regex]::Replace($text, ('(?i)([A-Za-z0-9_.-]*(?:to' + 'ken|sec' + 'ret|pass' + 'w(?:or)?d|pwd|api[_-]?key|authori[sz]ation|credential|cookie)[A-Za-z0-9_.-]*[''"]?\s*[:=]\s*)(?:"[^"\s]{16,}"|''[^''\s]{16,}''|[^\s,;}"'']{16,})'), '$1***')
 }
 
 function Get-StartFailReason([string]$StatePath, [string]$Reason = '') {
@@ -1497,6 +1583,18 @@ function ConvertTo-SparseSkip([string]$Dir) {
     '!/' + ($Dir -replace '([\\*?\[])', '\$1') + '/'
 }
 
+function Invoke-CopyGit([string[]]$GitArgs, [string]$Dir = '') {
+    <# git, що викладає чи перемикає дерево копії задачі (у $Dir чи в $RepoDir), під межею CopyGitHangMinutes. У журнал —
+    тривалість у секундах (машинного часу без пауз живлення), також коли git упав чи вийшов за межу: так видно, скільки
+    коштує викладення, а не лише що воно тривало довше за межу. #>
+    $t0 = Get-AwakeTime
+    try { Invoke-Git $GitArgs -TimeoutMinutes $script:CopyGitHangMinutes -Dir $Dir }
+    finally {
+        $sec = ((Get-AwakeTime) - $t0).TotalSeconds.ToString('0.0', [Globalization.CultureInfo]::InvariantCulture)
+        Write-Log "копія задачі $(if ($Dir) { $Dir } else { $RepoDir }): git $($GitArgs -join ' ') — $sec с"
+    }
+}
+
 function Set-CopyWorkTree([string]$Repo) {
     <# Копія — робоче дерево за власним конфігом: `core.bare=false` і `core.worktree` = вона сама в її `config.worktree`.
     З `extensions.worktreeConfig` (вмикає sparse-checkout) прив'язане дерево читає `core.bare`/`core.worktree` спільного
@@ -1515,8 +1613,15 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
     $repo = Join-Path $Dir 'repo'; $tmp = Join-Path $Dir 'tmp'
     [void][IO.Directory]::CreateDirectory($tmp)
     $script:TaskCopy = @{ Dir = $Dir; Clone = $RepoDir; Temp = $env:TEMP; Tmp = $env:TMP }
+    # id службової теки `.git\worktrees\<id>` — basename шляху, з яким worktree створено. З `repo` в усіх копіях id
+    # повторюються між процесами: `worktree remove` одного процесу хвилинами знімає дерево (першим `.git`), а свою
+    # службову теку стирає наприкінці; `worktree prune` іншого процесу в цей час уже вважає її осиротілою, новий `add`
+    # бере те саме id, і кінець чужого remove стирає службову теку нової копії. Тож копія створюється під id з імені
+    # своєї теки задачі (унікальне: час і випадковий хвіст) і лише тоді переноситься в `repo`: `move` лишає id.
+    $own = Join-Path $Dir ('repo-' + (Split-Path -Leaf $Dir))
     [void](Invoke-Git @('worktree', 'prune') -AllowFail)
-    [void](Invoke-Git @('worktree', 'add', '-q', '-f', '--no-checkout', '--detach', $repo, $Commit))
+    [void](Invoke-Git @('worktree', 'add', '-q', '-f', '--no-checkout', '--detach', $own, $Commit))
+    [void](Invoke-Git @('worktree', 'move', $own, $repo))
     Set-CopyWorkTree $repo
     # sparse-checkout у worktree лише з git 2.36: раніший писав `core.sparseCheckout` у спільний конфіг клону, а
     # `--no-cone` з'явився в 2.35. Старіший git — копія повна, але так само прибирається після доставки.
@@ -1532,7 +1637,7 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
         }
     } else { Write-Log "копія задачі: git до 2.36 — повна ($([string]$v.Value))" }
     Set-CopyWorkTree $repo
-    [void](Invoke-Git @('reset', '-q', '--hard') -Dir $repo)
+    [void](Invoke-CopyGit @('reset', '-q', '--hard') $repo)
     Set-Variable -Scope Script -Name RepoDir -Value $repo
     $env:TEMP = $tmp; $env:TMP = $tmp
     Write-Log "копія задачі $repo ($Commit): тек-архівів не викладено — $($skip.Count)"
@@ -1563,7 +1668,7 @@ function Merge-MainIntoCopy([string]$Main, [string]$Branch) {
     if ($r.Code -eq 0) { return (Get-RefSha 'HEAD') }
     Write-Log "злиття main у $Branch не вдалося — $(($r.Out + $r.Err).Trim() -replace '\s+', ' ')"
     [void](Invoke-Git @('merge', '--abort') -AllowFail)
-    if ((Get-RefSha 'HEAD') -cne $before) { [void](Invoke-Git @('reset', '-q', '--hard', $before)) }
+    if ((Get-RefSha 'HEAD') -cne $before) { [void](Invoke-CopyGit @('reset', '-q', '--hard', $before)) }
     ''
 }
 
