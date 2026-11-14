@@ -1,0 +1,63 @@
+── ПРОМПТ (8683 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: two_piece_set · colour code: orange · about it: text н=1
+2 — kind code: sweater · colour code: beige · about it: text н=2
+3 — kind code: headband · colour code: red · about it: text н=3
+4 — kind code: collar_necklace · colour code: silvery · about it: text н=4
+5 — kind code: scarf_generic · colour code: beige · about it: text н=5
+6 — kind code: bag_generic · colour code: brown · about it: text н=6
+7 — kind code: bracelet · colour code: black · about it: text н=7
+8 — kind code: moccasins · colour code: grey · about it: text н=8
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; grey — сірий; orange — помаранчевий; red — червоний; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This warm-toned two-piece set features a relaxed fit that provides all-day comfort without sacrificing style. The soft, earthy hue creates a cozy and inviting foundation for your outfit, perfect for a leisurely day out in the park while maintaining a polished look.",
+"2": "The beige sweater is crafted from a premium knit fabric with a comfortable, relaxed silhouette. Its soft texture adds a touch of elegance and warmth to your ensemble, making it an ideal choice for our autumn outing in the park while maintaining a chic, effortless style.",
+"3": "The red headband features luxurious satin ribbon adorned with sparkling crystal embellishments. Its vibrant color serves as a sophisticated statement piece that draws attention to your face and adds a playful yet elegant touch to your overall look.",
+"4": "This delicate silvery collar necklace adds a subtle touch of elegance to your ensemble. Its refined design complements the soft textures of your outfit while maintaining an understated charm that perfectly suits our casual yet stylish date.",
+"5": "The beige scarf is made from a soft, luxurious fabric with delicate fringed detailing along the edges. Its neutral tone harmonizes beautifully with the warm hues of your outfit while adding a touch of sophistication and warmth for our park walk.",
+"6": "This brown bag features a sleek, minimalist design that perfectly complements the earthy tones of your ensemble. Its spacious yet stylish silhouette allows you to carry essentials with ease while maintaining a polished, effortless look throughout our day.",
+"7": "The black bracelet adds a subtle touch of sophistication and contrast to your wrist. Its sleek design complements the overall aesthetic of your outfit while providing just the right amount of understated elegance for our date.",
+"8": "These grey moccasins are crafted from soft, supple leather with a comfortable fit. Their versatile design seamlessly blends comfort and style, making them perfect for walking around the park while maintaining an effortlessly chic appearance.",
+"9": "This look is a wonderful mix of cozy comfort and intentional polish, perfect for your first date. I chose the warm-toned two-piece set to give you a relaxed but put-together foundation for our walk in the park, while the beige sweater adds a soft, inviting layer that complements the autumn light. The red headband introduces the vibrant color you wanted near your face, acting as a playful yet sophisticated statement piece that draws attention to your features without overpowering them. Completing the ensemble with the silvery collar necklace and black bracelet strikes a delicate balance between elegance and understated charm, ensuring you feel confident and stylish for coffee and conversation.",
+"10": "Wrap the beige scarf loosely around your neck so it drapes elegantly over the sweater, adding warmth while keeping the neckline open and breathable for our park stroll.",
+"11": "Tuck the hem of the relaxed-fit set just slightly at the front to create a subtle waist definition that flatters your figure without restricting movement as we walk.",
+"12": "Let the red headband sit comfortably against your forehead to frame your face and add a pop of color that ties beautifully with the warm tones of the outfit.",
+"13": "Обруч Келлі зі стразами червоний — I kept this red headband as a deliberate break from your palette because it is a tiny item near the face that acts as a 'quote' to your request without dominating, rather than moving it away."
+}
+
+── ВІДПОВІДЬ (3571 симв., 28.5 с, HTTP 200) ──
+```json
+{
+"1": "Цей теплий двокомпонентний комплект має вільний крій, який забезпечує комфорт протягом усього дня без шкоди для стилю. М’який, землистий відтінок створює затишну та привабливу основу для твого образу, ідеально підходить для спокійного дня на природі, зберігаючи водночас вишуканий вигляд.",
+"2": "Бежевий светр пошитий з високоякісної в’язаної тканини з комфортним, розслабленим силуетом. Його м’яка текстура додає твоєму ансамблю нотку елегантності та тепла, роблячи його ідеальним вибором для нашої осінньої прогулянки парком, зберігаючи при цьому шикарний, безтурботний стиль.",
+"3": "Червоний обруч має розкішну атласну стрічку з блискучим оздобленням у вигляді кристалів. Його яскравий колір слугує вишуканим акцентним елементом, який привертає увагу до твого обличчя та додає грайливої, але водночас елегантної нотки твоєму загальному вигляду.",
+"4": "Цей ніжний сріблястий кулончик додає ледь помітну нотку вишуканості твоєму ансамблю. Його витончений дизайн доповнює м’які текстури твого вбрання, зберігаючи при цьому стриманий шарм, який ідеально підходить для нашого невимушеного, але стильного побачення.",
+"5": "Бежевий шарф зроблено з м’якої, розкішної тканини з ніжним бахромою по краях. Його нейтральний тон гармонійно поєднується з теплими відтінками твого вбрання, додаючи нотку вишуканості та затишку для нашої прогулянки парком.",
+"6": "Ця коричнева сумка має елегантний, мінімалістичний дизайн, який ідеально доповнює землисті тони твого ансамблю. Її просторий, але стильний силует дозволяє тобі легко носити необхідні речі, зберігаючи при цьому вишуканий та безтурботний вигляд протягом усього дня.",
+"7": "Чорний браслет додає ледь помітну нотку вишуканості та контрасту твоєму зап’ястю. Його елегантний дизайн доповнює загальну естетику твого вбрання, забезпечуючи при цьому саме ту кількість стриманої елегантності для нашого побачення.",
+"8": "Ці сірі мокасини виготовлені з м’якої та еластичної шкіри з комфортною посадкою. Їх універсальний дизайн бездоганно поєднує в собі зручність і стиль, роблячи їх ідеальними для прогулянок парком, зберігаючи при цьому невимушено шикарний вигляд.",
+"9": "Цей образ — чудове поєднання затишного комфорту та навмисної елегантності, ідеально підходить для твого першого побачення. Я обрала теплий двокомпонентний комплект, щоб дати тобі розслаблену, але охайну основу для нашої прогулянки парком, а бежевий светр додає м’який та привабливий шар, який доповнює осіннє світло. Червоний обруч вносить яскравий колір, якого ти хотіла біля свого обличчя, виступаючи як грайливий, але водночас елегантний акцентний елемент, що привертає увагу до твоїх рис без їхнього перевантаження. Завершення ансамблю сріблястим кулончиком та чорним браслетом створює ніжний баланс між вишуканістю та стриманою чарівністю, забезпечуючи тобі впевненість і стиль для кави та розмови.",
+"10": "Недбало обгорни бежевий шарф навколо шиї так, щоб він елегантно звисав над светром, додаючи тепла, зберігаючи при цьому відкритий та дихаючий виріз для нашої прогулянки парком.",
+"11": "Злегка заправ передній край вільного комплекту, щоб створити ледь помітний вигин у талії, який підкреслить твою фігуру без обмеження рухів під час ходьби.",
+"12": "Нехай червоний обруч зручно прилягає до чола, обрамлюючи твоє обличчя та додаючи нотку кольору, яка гармонійно поєднується з теплими тонами вбрання.",
+"13": "Обруч Келлі зі стразами червоний — Я залишила цей червоний обруч як навмисний відхід від твоєї палітри, тому що це невеличкий елемент біля обличчя, який виступає «цитатою» до твого прохання без домінування."
+}
+```

@@ -1,0 +1,58 @@
+── ПРОМПТ (7674 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: trousers · colour code: green · about it: text н=1
+2 — kind code: brooch · colour code: powder · about it: text н=2
+3 — kind code: belt · colour code: brown · about it: text н=3
+4 — kind code: kerchief · colour code: red · about it: text н=4
+5 — kind code: t_shirt · colour code: black · about it: text н=5
+6 — kind code: ankle_boots · colour code: black · about it: text н=6
+7 — kind code: bag_generic · colour code: pink · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; green — зелений; pink — рожевий; powder — пудра; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "The green trousers feature a subtle check pattern and a straight cut that elongates your legs. Their medium tone bridges the gap between the black top and the red accessories, creating a harmonious flow from shoulders to ankles.",
+"2": "This powder-colored brooch offers a delicate touch of jewelry without overpowering your look. Its soft hue coordinates beautifully with the pink bag and adds just enough sparkle to your neckline or lapel for a special occasion.",
+"3": "This brown belt adds warmth and definition to your waistline. Its leather texture complements the autumn setting, while the color grounds the bright red of the scarf and creates a sophisticated earthy tone.",
+"4": "The red kerchief is the vibrant focal point you asked for. Worn loosely around your neck or tied as a headband, it brings life and energy to the ensemble, perfectly suited for a first date in daylight.",
+"5": "This black tee is simple and sleek, offering a clean canvas for your outfit. Its solid color ensures it won't distract from the red kerchief, while its relaxed fit provides comfort for your walk through the park.",
+"6": "These black ankle boots provide sturdy support and a polished finish. Their slight heel enhances your height and posture, while the dark shade extends your leg line seamlessly into the trousers.",
+"7": "The pink bag brings a playful yet feminine element to the outfit. Its lighter color contrasts gently with the darker tones of your clothes, acting as a cheerful accessory that holds all your essentials for the day.",
+"8": "I chose a look where your red kerchief becomes the main star, exactly as you wished. The black tee provides a neutral base that lets that vibrant color pop without competing, while the brown belt cinches in at the waist to define your figure against the straight trousers. These black ankle boots add height and structure, balancing the volume of your legs, and the pink bag introduces a soft, romantic contrast that feels perfect for an autumn park date.",
+"9": "Tuck the tee into the trousers and loop the brown belt around your waist to create a defined silhouette.",
+"10": "В’язана троянда-брошка Ната пудрова — I replaced the pink scarf with this red brooch to directly answer your wish for red while keeping it far from the face as an accent.",
+"11": "Зелені твідові брюки-палаццо — I accept the gate about the green trousers' hue outside her palette arc because it serves as a deliberate edge choice: the tonal green reads quietly against skin, allowing the red brooch to pop as the only loud element near the face, which aligns with your specific wish for something red."
+}
+
+── ВІДПОВІДЬ (2565 симв., 16.8 с, HTTP 200) ──
+```json
+{
+"1": "Зелені штани мають ледь помітний картатий візерунок і прямий крій, який видовжує твої ноги. Їхній середній тон з’єднує чорний верх та червоні аксесуари, створюючи гармонійний перехід від плечей до щиколоток.",
+"2": "Ця пудрова брошка додає ніжний штрих ювелірних виробів без того, щоб затьмарити твій образ. Її м’який колір чудово поєднується з рожевою сумкою і просто доповнює виріз або лацкан для особливої нагоди.",
+"3": "Цей коричневий пояс підкреслює талію, додаючи тепла й виразності. Його шкіряна текстура гармонійно поєднується з осіннім настроєм, а колір приглушує яскраво-червоний шарф і створює елегантний природний тон.",
+"4": "Червоний хустинку — це саме той яскравий акцент, який ти хотіла. Носи його вільно на шиї або зав’яжи як обруч для голови: він додасть життя та енергії всьому ансамблю і чудово підійде для першого побачення при денному світлі.",
+"5": "Ця чорна футболка проста й елегантна, вона створює чисте полотно для твого образу. Її однотонний колір не відволікатиме увагу від червоного шарфа, а вільний крій забезпечить комфорт під час прогулянки парком.",
+"6": "Ці чорні черевики надійно підтримують і завершують образ. Невеликий каблук додає тобі зросту та постави, а темний колір плавно продовжує лінію ніг у штанах.",
+"7": "Рожева сумка приносить в образ грайливий, але жіночний елемент. Її світлий відтінок м’яко контрастує з більш темними тонами твого одягу і служить веселою деталлю для всіх необхідних речей на день.",
+"8": "Я підібрала образ, у якому червоний шарф стає головною зіркою, як ти й просила. Чорна футболка створює нейтральну основу, що дозволяє цьому яскравому кольору виділятися без конкуренції, а коричневий пояс підкреслює талію і форму твого тіла на фоні прямих штанів. Ці чорні черевики додають зросту й структури, збалансовуючи об’єм ніг, а рожева сумка вносить ніжний романтичний контраст, який здається ідеальним для осіннього побачення у парку.",
+"9": "Заправ футболку в штани та застебни коричневий пояс на талії — так ти створиш виразний силует.",
+"10": "В’язана троянда-підвіска Ната пудрова — Я замінила рожевий шарф цією червоною брошкою, щоб безпосередньо відповісти на твоє бажання мати щось червоне і при цьому тримати його подалі від обличчя як акцент.",
+"11": "Зелені твідові штани-палаццо — Я приймаю зауваження щодо тону зелених штанів поза її палітрою, оскільки це свідомий вибір: приглушений зелений колір спокійно поєднується зі шкірою, дозволяючи червоній брошці бути єдиним яскравим елементом біля обличчя, що відповідає твоєму конкретному бажанню мати щось червоне."
+}
+```
