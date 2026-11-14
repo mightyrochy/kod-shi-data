@@ -1,0 +1,231 @@
+{
+  "без_фото": {
+    "usage": {
+      "input_tokens": 26704,
+      "output_tokens": 8859,
+      "thinking_tokens": 8328,
+      "cache_read_tokens": 76076,
+      "total_tokens": 35563
+    },
+    "response": "У цьому запиті немає фотографій, і в поточній робочій теці прикріплені зображення також відсутні, тому я не можу їх побачити й не буду вгадувати.\n\n```json\n[]\n```\n",
+    "duration_seconds": 84.4292798,
+    "інструменти": [
+      {
+        "рядок": 5,
+        "стан": "ERROR",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-2"
+        },
+        "error": {
+          "type": "TOOL_ERROR",
+          "message": "path is a directory, not a file"
+        }
+      },
+      {
+        "рядок": 8,
+        "стан": "ERROR",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-2\\1.jpg"
+        },
+        "error": {
+          "type": "TOOL_ERROR",
+          "message": "file does not exist"
+        }
+      },
+      {
+        "рядок": 11,
+        "стан": "ERROR",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-2\\README.md"
+        },
+        "error": {
+          "type": "TOOL_ERROR",
+          "message": "file does not exist"
+        }
+      },
+      {
+        "рядок": 14,
+        "стан": "ERROR",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-2\\photo.jpg"
+        },
+        "error": {
+          "type": "TOOL_ERROR",
+          "message": "file does not exist"
+        }
+      },
+      {
+        "рядок": 17,
+        "стан": "ERROR",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-2\\image.png"
+        },
+        "error": {
+          "type": "TOOL_ERROR",
+          "message": "file does not exist"
+        }
+      },
+      {
+        "рядок": 20,
+        "стан": "ERROR",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-2\\.git"
+        },
+        "error": {
+          "type": "TOOL_ERROR",
+          "message": "file does not exist"
+        }
+      },
+      {
+        "рядок": 23,
+        "стан": "ERROR",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-2\\фото1.jpg"
+        },
+        "error": {
+          "type": "TOOL_ERROR",
+          "message": "file does not exist"
+        }
+      }
+    ],
+    "рядок_результату": 37
+  },
+  "посилання": {
+    "usage": {
+      "input_tokens": 17067,
+      "output_tokens": 1968,
+      "thinking_tokens": 1621,
+      "cache_read_tokens": 32353,
+      "total_tokens": 19035
+    },
+    "response": "```json\n[\n  {\n    \"файл\": \"01.jpg\",\n    \"вид\": \"сукня\",\n    \"колір\": \"білий\"\n  },\n  {\n    \"файл\": \"02.jpg\",\n    \"вид\": \"коротке пальто\",\n    \"колір\": \"темно-коричневий\"\n  },\n  {\n    \"файл\": \"03.webp\",\n    \"вид\": \"туфля на підборах\",\n    \"колір\": \"бордовий\"\n  }\n]\n```\n",
+    "duration_seconds": 22.6974419,
+    "інструменти": [
+      {
+        "рядок": 5,
+        "стан": "DONE",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-2\\01.jpg"
+        }
+      },
+      {
+        "рядок": 8,
+        "стан": "DONE",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-2\\02.jpg"
+        }
+      },
+      {
+        "рядок": 11,
+        "стан": "DONE",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-2\\03.webp"
+        }
+      }
+    ],
+    "рядок_результату": 30
+  },
+  "контроль_без_фото": {
+    "usage": {
+      "input_tokens": 12296,
+      "output_tokens": 5225,
+      "thinking_tokens": 4878,
+      "cache_read_tokens": 10034,
+      "total_tokens": 17521
+    },
+    "response": "```json\n[\n  {\n    \"файл\": \"01.jpg\",\n    \"вид\": \"немає фото\",\n    \"колір\": \"немає фото\"\n  },\n  {\n    \"файл\": \"02.jpg\",\n    \"вид\": \"немає фото\",\n    \"колір\": \"немає фото\"\n  },\n  {\n    \"файл\": \"03.webp\",\n    \"вид\": \"немає фото\",\n    \"колір\": \"немає фото\"\n  }\n]\n```\n",
+    "duration_seconds": 38.7433869,
+    "інструменти": [
+      {
+        "рядок": 5,
+        "стан": "ERROR",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-контроль\\01.jpg"
+        },
+        "error": {
+          "type": "TOOL_ERROR",
+          "message": "file does not exist"
+        }
+      },
+      {
+        "рядок": 7,
+        "стан": "ERROR",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-контроль\\02.jpg"
+        },
+        "error": {
+          "type": "TOOL_ERROR",
+          "message": "file does not exist"
+        }
+      },
+      {
+        "рядок": 9,
+        "стан": "ERROR",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:\\Users\\gemini\\gemini-runs\\w\\20261114-071207-011a97198ff3\\tmp\\agy-транспорт-контроль\\03.webp"
+        },
+        "error": {
+          "type": "TOOL_ERROR",
+          "message": "file does not exist"
+        }
+      }
+    ],
+    "рядок_результату": 26
+  },
+  "контроль_фото": {
+    "usage": {
+      "input_tokens": 15676,
+      "output_tokens": 4849,
+      "thinking_tokens": 4512,
+      "cache_read_tokens": 10043,
+      "total_tokens": 20525
+    },
+    "response": "[\n  {\n    \"файл\": \"01.jpg\",\n    \"вид\": \"сукня\",\n    \"колір\": \"бежевий\"\n  },\n  {\n    \"файл\": \"02.jpg\",\n    \"вид\": \"пальто\",\n    \"колір\": \"коричневий\"\n  },\n  {\n    \"файл\": \"03.webp\",\n    \"вид\": \"туфлі\",\n    \"колір\": \"бордовий\"\n  }\n]\n",
+    "duration_seconds": 34.2539913,
+    "інструменти": [
+      {
+        "рядок": 5,
+        "стан": "DONE",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:/Users/gemini/gemini-runs/w/20261114-071207-011a97198ff3/tmp/agy-транспорт-контроль/01.jpg"
+        }
+      },
+      {
+        "рядок": 7,
+        "стан": "DONE",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:/Users/gemini/gemini-runs/w/20261114-071207-011a97198ff3/tmp/agy-транспорт-контроль/02.jpg"
+        }
+      },
+      {
+        "рядок": 9,
+        "стан": "DONE",
+        "name": "read_file",
+        "parameters": {
+          "Path": "C:/Users/gemini/gemini-runs/w/20261114-071207-011a97198ff3/tmp/agy-транспорт-контроль/03.webp"
+        }
+      }
+    ],
+    "рядок_результату": 22
+  },
+  "контроль": {
+    "тексти_ідентичні": true,
+    "sha256_тексту": "7344f54f54d23e9651041ba36017fd7803e9176ae6f4bfcca6656885362346ab",
+    "приріст_input_tokens": 3380
+  }
+}
