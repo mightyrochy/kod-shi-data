@@ -37,16 +37,16 @@ const пауза = мс => new Promise(р => setTimeout(р, мс));
   });
   await с.goto(БАЗА + '/index.html#міст=' + БАЗА + '/міст&т=tok', { waitUntil: 'load', timeout: 180000 });
   await с.click('dialog button:has-text("Так, використовувати")', { timeout: 30000 }).catch(() => {});
-  await с.waitForFunction(() => typeof РЕЖИМ !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
+  await с.waitForFunction(() => typeof Екран !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
   await с.click('#кол-блок details.розкривач > summary');
   await с.fill('#кол-відповідь', 'шкіра 1 #d9a88f\nшкіра 2 #caa08b\nшкіра 3 #be8f7b\nволосся #d2b37c\nволосся #69513d\nочі #597d81\nкільце #30474c');
   await с.click('#кол-читати');
   await с.fill('[id="пр-імʼя"]', '1'); await с.check('#пр-згода');
-  await с.click('#н-далі'); await с.waitForFunction(() => ЕКРАН === 1, null, { timeout: 30000 });
-  await с.click('#н-далі'); await с.waitForFunction(() => ЕКРАН === 2, null, { timeout: 30000 });
+  await с.click('#н-далі'); await с.waitForFunction(() => Екран.стан.крок === 1, null, { timeout: 30000 });
+  await с.click('#н-далі'); await с.waitForFunction(() => Екран.стан.крок === 2, null, { timeout: 30000 });
   for (const [і, v] of [['мр-плечі', 108], ['мр-груди', 104], ['мр-талія', 78], ['мр-стегна', 106], ['мр-зріст', 167]]) await с.fill('#' + і, String(v));
   await с.click('#н-далі');
-  await с.waitForFunction(() => РЕЖИМ === 'сценарій' && ПРОФІЛЬ_СТВОРЕНО, null, { timeout: 60000 });
+  await с.waitForFunction(() => Екран.стан.режим === 'сценарій' && ПРОФІЛЬ_СТВОРЕНО, null, { timeout: 60000 });
   /* лічильники: виклики шару оцінки образу й записи викликів розмови */
   await с.evaluate(() => { window.__оцінка = 0; const о = оцінитиОбразП; window.оцінитиОбразП = (...а) => { window.__оцінка++; return о(...а); }; });
   if (SCEN === '1'){
@@ -62,7 +62,7 @@ const пауза = мс => new Promise(р => setTimeout(р, мс));
   } else await пауза(DIYA_MS);
   await с.evaluate(() => document.getElementById('сц-новий').onclick());
   await пауза(MDELAY * 3 + 1500);
-  const ст = await с.evaluate(() => ({ режим: РЕЖИМ, чат: ЧАТ_П.length, паспорт: !!ПАСПОРТ_П, оцінка_викликів: window.__оцінка,
+  const ст = await с.evaluate(() => ({ режим: Екран.стан.режим, чат: ЧАТ_П.length, паспорт: !!ПАСПОРТ_П, оцінка_викликів: window.__оцінка,
     оц_фото: (ОЦ.фото || []).length, виклики_розмови: ВИКЛИКИ_РОЗМОВИ_П.length,
     виклики_крок: ВИКЛИКИ_РОЗМОВИ_П.map(в => (в.запит || {}).чого || в.крок) }));
   console.log('СЦЕНА', SCEN, JSON.stringify(ст));

@@ -31,7 +31,7 @@ const БАЗА = 'http://127.0.0.1:8765';
   const t0 = Date.now();
   await стор.goto(БАЗА + '/index.html', {waitUntil: 'load', timeout: 180000});
   const тLoad = Date.now() - t0;
-  await стор.waitForFunction(() => typeof РЕЖИМ !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, {timeout: 180000});
+  await стор.waitForFunction(() => typeof Екран !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, {timeout: 180000});
   const тГотово = Date.now() - t0;
   const метрики = (await cdp.send('Performance.getMetrics')).metrics;
   await ВІ.післяЗавантаження(стор);

@@ -26,7 +26,7 @@ const ф = (що, добре, дані) => { if (!добре) збоїв++;
     const кон = await бр.newContext({viewport: вікно, deviceScaleFactor: 2});
     const стор = await кон.newPage();
     await стор.goto('file://' + path.join(КОРІНЬ, 'index.html') + '#міст=https://m.workers.dev&т=tok-a1&модель_мови=нема');
-    await стор.waitForFunction(() => typeof РЕЖИМ !== 'undefined', null, {timeout: 60000});
+    await стор.waitForFunction(() => typeof Екран !== 'undefined', null, {timeout: 60000});
     /* Шлях жінки: три кроки знайомства. Кольори кладемо як після зчитаного портрета —
        Pyodide тут не підіймається, а розкладці панелі портрет ні до чого. */
     await стор.evaluate(() => { КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}; });
@@ -40,7 +40,7 @@ const ф = (що, добре, дані) => { if (!добре) збоїв++;
       const м = await стор.evaluate(() => {
         const н = document.getElementById('вкладки');
         const кн = [...н.querySelectorAll('button')];
-        return {режим: РЕЖИМ, видно: !!н.offsetParent, смуга: Math.round(н.getBoundingClientRect().width),
+        return {режим: Екран.стан.режим, видно: !!н.offsetParent, смуга: Math.round(н.getBoundingClientRect().width),
                 вікно: window.innerWidth, обрізано_смугу: н.scrollWidth > н.clientWidth,
                 тут: кн.filter(б => б.classList.contains('тут')).map(б => б.id),
                 вкладки: кн.map(б => { const п = б.querySelector('span'), р = б.getBoundingClientRect();
