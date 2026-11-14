@@ -117,7 +117,7 @@ async function зібратиОбразиП(){
         (з.вигадки || []).forEach(в_ => ЗБ.діагноз.push('tiles · ' + в_));
       }
       застосуватиПаспортДоЕкрана(ПАСПОРТ_П);
-      показатиМежі(); малюватиНеЦяП();
+      показатиМежі(); показатиНеЦю();
     }catch(e){
       ЗБ.діагноз.push('passport · not_assembled: ' + String((e && e.message) || e) + ' · case_from=chosen_scenario');
     }
