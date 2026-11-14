@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A tailored wool-blend blazer in deep olive green (#4a5d4f), structured shoulder with a slightly relaxed fit through the waist to balance volume, cropped at hip length.\\nSilk-blend blouse in cream (#f5f1e8), soft drape front panel, V-neckline, long sleeves with subtle pintuck details, falling just past the hips when tucked or worn untucked.\\nHigh-waisted wide-leg trousers in matching deep olive wool-blend (#4a5d4f), fluid pleats at the waist, ankle-length hem that skims the floor without dragging.\\nStiletto pumps in glossy black leather (#0b0c10), pointed toe, moderate heel height for comfort during an evening celebration.\\nGold-plated pendant necklace with a small geometric charm to catch the artificial party lights.\\nSmall structured clutch bag in satin cream (#f5f1e8) with gold hardware to complement the jewelry and blouse.\\nThis outfit works because it strikes the perfect balance between sophisticated business smart attire and celebratory elegance suitable for an evening birthday party. The monochromatic base of olive green creates a sleek, elongated silhouette while the cream accents add warmth against her skin tone. The mix of structured wool and fluid silk textures adds depth that reads well under artificial lighting without looking overly stiff. She feels empowered yet effortlessly chic, honoring both the occasion's festive nature and her personal style preferences.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"structured shoulder with a slightly relaxed fit through the waist, cropped at hip length\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#4a5d4f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"soft drape front panel, V-neckline, long sleeves with subtle pintuck details, falling just past the hips\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#f5f1e8\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-waisted wide-leg with fluid pleats at the waist and ankle-length hem\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#4a5d4f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"shoes\\\",\\n      \\\"details\\\": \\\"stiletto pumps with pointed toe and moderate heel height\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#0b0c10\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"necklace\\\",\\n      \\\"details\\\": \\\"gold-plated pendant necklace with a small geometric charm\\\",\\n      \\\"slot\\\": \\\"collar_necklace\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"bag\\\",\\n      \\\"details\\\": \\\"small structured clutch in satin with gold hardware\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#f5f1e8\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":645,\"output_tokens\":413},\"stop_reason\":\"end_turn\"}"
+ }
+}

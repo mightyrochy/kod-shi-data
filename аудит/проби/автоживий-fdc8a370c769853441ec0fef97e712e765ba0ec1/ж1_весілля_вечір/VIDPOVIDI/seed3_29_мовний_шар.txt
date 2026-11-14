@@ -1,0 +1,67 @@
+── ПРОМПТ (8954 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: belt · colour code: golden
+2 — kind code: blazer · colour code: green
+3 — kind code: top · colour code: beige · about it: text н=1
+4 — kind code: kerchief · colour code: red · about it: text н=2
+5 — kind code: skirt · colour code: white · about it: text н=3
+6 — kind code: pumps · colour code: white · about it: text н=4
+7 — kind code: tote · colour code: camel · about it: text н=5
+8 — kind code: coat · colour code: brown · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; camel — кемел; golden — золотий; green — зелений; red — червоний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This is a cream-colored short-sleeve top featuring delicate embroidery details on the cuffs and a small motif on the chest. The relaxed but tailored fit drapes softly over your torso, providing a comfortable base for the evening.",
+"2": "A rich burgundy kerchief with intricate white and black patterns. It is versatile enough to be tied neatly at your waist as shown here, adding a pop of color and pattern that breaks up the neutral tones of the rest of the outfit.",
+"3": "A straight-cut white skirt with a clean, flowing silhouette. Its simple design ensures it looks polished without being too casual, making it perfect for an upscale restaurant setting.",
+"4": "Classic white pumps with a sleek profile and a subtle shine. They provide the height needed to elongate your legs while maintaining a delicate appearance that complements the formal atmosphere of the wedding.",
+"5": "A structured camel-colored tote bag. Its neutral tone bridges the gap between the warm burgundy accent and the cool whites and creams, offering a spacious yet elegant accessory for carrying your essentials.",
+"6": "A fitted coat with raglan sleeves in a dark, versatile shade. It offers necessary coverage for the autumn evening while its streamlined cut keeps the outfit looking sharp and intentional rather than bulky.",
+"7": "For your evening at the wedding, I have chosen a refined ensemble that balances comfort with the necessary elegance for the occasion. The cream-colored embroidered top serves as a soft, neutral anchor against your skin, while the straight white skirt provides a clean vertical line that elongates your figure beautifully. To add depth and texture without overwhelming the palette, I included the burgundy patterned kerchief tied at your waist, which introduces a touch of festive warmth, and the fitted coat for when you move between venues or need an extra layer. The white pumps keep the silhouette airy, and the camel tote offers practicality with a sophisticated shape.",
+"8": "Tuck the embroidered top fully into the skirt to define your waist and maintain the long vertical line essential for an evening event.",
+"9": "Wear the coat open over everything to let the white of the skirt and the cream of the top shine through, creating a layered but light look under artificial restaurant lights.",
+"10": "Пасок з камінням золото — I chose this gold belt to replace the removed coat because it is a large item in a tonal scheme that fits the formal occasion, answering the need for structure and warmth.",
+"11": "Вечірній жакет-сорочка жовто-зелена — This green blazer replaces the removed coat entirely in this outfit to satisfy the 'swap_large_item_to_scheme_tone' finding, bringing a festive tone that works under artificial evening lights.",
+"12": "Жіноча лляна бежева вишиванка “Віконця” з білою вишивкою — I kept this embroidered Ukrainian top because its texture near the face answers the 'interest_sources_below_floor' finding, and its high formality matches your wedding guest role.",
+"13": "Хустка \"День Незалежності\" — This red kerchief frames your face to answer the 'texture_near_face' and 'accent_colour_or_print_near_face' findings, providing necessary visual interest and contrast for the evening.",
+"14": "Вечірній жакет-сорочка жовто-зелена, Спідниця «Grass mini» біла, Слінгбеки шкіряні білі, Текстильний шопер Marcella, Пальто світло-коричневе реглан — I accept this gate about formality spread because the high-low mix of a fitted blazer with everyday items is a deliberate stylistic choice to keep you comfortable yet elegant, serving your goal of feeling authentic while honoring the event.",
+"15": "Хустка \"День Незалежності\" — The red kerchief's bold hue acts as the single focal point required by 'single_focus', ensuring you have enough sources of interest and preventing the face area from looking flat against artificial evening light."
+}
+
+── ВІДПОВІДЬ (4054 симв., 27.0 с, HTTP 200) ──
+```json
+{
+"1": "Це кремовий топ з короткими рукавами, прикрашений ніжним вишитим декором на манжетах і невеликим мотивом на грудях. Вільний, але добре пошитий крій м’яко облягає твій торс, створюючи комфортну основу для вечора.",
+"2": "Багряна хустка з витонченими білими та чорними візерунками. Вона досить універсальна, щоб її можна було елегантно зав’язати на талії, як показано тут, додавши яскравий колір і малюнок, які розбавляють нейтральні тони решти образу.",
+"3": "Пряма біла спідниця з чистим, струмуючим силуетом. Її простий дизайн гарантує, що вона виглядає охайно без надмірної недбалості, ідеально підходить для розкішного ресторану.",
+"4": "Класичні білі туфлі-човники з елегантним профілем і ледь помітним блиском. Вони додають необхідний зріст, щоб подовжити твої ноги, зберігаючи при цьому ніжний вигляд, який доповнює урочисту атмосферу весілля.",
+"5": "Структурована сумка-тоут кемел кольору. Її нейтральний тон заповнює прогалину між теплим багряним акцентом і холодними білими та кремовими відтінками, пропонуючи просторий, але елегантний аксесуар для твоїх необхідних речей.",
+"6": "Приталена куртка з реглановими рукавами в темному універсальному кольорі. Вона забезпечує необхідне покриття для осіннього вечора, а її обтічний крій зберігає образ гострим і продуманим, а не громіздким.",
+"7": "Для твого вечора на весіллі я підібрала вишуканий ансамбль, який поєднує комфорт з необхідною елегантністю для цієї події. Кремовий топ з вишивкою слугує м’яким нейтральним фоном біля твоєї шкіри, а пряма біла спідниця створює чисту вертикальну лінію, яка чудово подовжує твою фігуру. Щоб додати глибини та текстури без перевантаження палітри, я додала багряну хустку з візерунком, зав’язану на талії, що вносить нотку святкового тепла, і приталену куртку для тих випадків, коли ти будеш переходити між залами або потребуватимеш додатковий шар. Білі туфлі-човники зберігають силует легким, а сумка-тоут кемел кольору пропонує практичність з вишуканою формою.",
+"8": "Заправ топ з вишивкою повністю в спідницю, щоб підкреслити талію і зберегти довгу вертикальну лінію, яка необхідна для вечірньої події.",
+"9": "Одягни куртку відкритою поверх усього образу, щоб білий колір спідниці та кремовий топ сяяли крізь неї, створюючи багатошаровий, але легкий вигляд під штучним ресторанним світлом.",
+"10": "Пояс з камінням золотого кольору — Я обрала цей пояс із золотими каменями замість куртки, яку ти прибрала, тому що він є великим елементом у тональному вирішенні, який підходить для урочистої події, відповідаючи потребі в структурі та теплі.",
+"11": "Вечірній жакет-сорочка жовто-зеленого кольору — Цей зелений блейзер замінює куртку повністю у цьому образі, щоб задовольнити знахідку 'заміни великий елемент на тон схеми', додаючи святковий відтінок, який добре виглядає під штучним вечірнім світлом.",
+"12": "Жіноча лляна бежева вишиванка “Віконця” з білою вишивкою — Я залишила цю українську сорочку з вишивкою, тому що її текстура поблизу обличчя відповідає знахідці 'джерела інтересу нижче лінії підлоги', а високий рівень формальності відповідає твоїй ролі гості на весіллі.",
+"13": "Хустка \"День Незалежності\" — Ця червона хустка обрамлює твоє обличчя, щоб відповісти знахідкам 'текстура поблизу обличчя' та 'акцентний колір або малюнок поблизу обличчя', надаючи необхідний візуальний інтерес і контраст для вечора.",
+"14": "Вечірній жакет-сорочка жовто-зеленого кольору, Спідниця «Grass mini» біла, Слінгбеки шкіряні білі, Текстильний шопер Marcella, Пальто світло-коричневе реглан — Я приймаю цю знахідку про поширення формальності, тому що невимушений мікс приталеного блейзера з повсякденними речами є свідомим стилістичним вибором, щоб ти відчувала себе комфортно, але елегантно, і відповідала своїй меті — почуватися автентично, водночас шануючи подію.",
+"15": "Хустка \"День Незалежності\" — Сміливий відтінок червоної хустки слугує єдиним фокусом, необхідним для знахідки 'один фокус', забезпечуючи достатньо джерел інтересу і запобігаючи тому, щоб область обличчя виглядала плоско під штучним вечірнім світлом."
+}
+```

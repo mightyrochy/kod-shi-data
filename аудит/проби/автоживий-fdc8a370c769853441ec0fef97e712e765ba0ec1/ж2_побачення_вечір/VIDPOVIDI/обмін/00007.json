@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — the level of dress she named: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"побачення в ресторані ввечері, о 19:30\", \"hour\": \"о 19:30\", \"part_of_day\": \"ввечері\"}, \"formality_reason\": \"norm\", \"event\": \"побачення в ресторані ввечері, о 19:30\", \"occasion\": \"date\", \"formality\": [\"smart\"], \"season\": \"autumn\", \"part_of_day\": \"evening\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Silk blouse in a deep burgundy with a subtle sheen, cut to a relaxed fit that drapes softly from the shoulders, falling to mid-hip length, color #800020, fabric woven smooth and cool against the skin. Tailored wool-blend trousers in charcoal grey with a slight drape, cut straight through the leg for a modern silhouette, hitting just above the heel, color #36454F, fabric heavy enough to hold structure yet comfortable for an evening walk. Leather ankle boots in polished black with a low stacked heel, featuring a sleek pointed toe and a hidden zipper at the back, color #000000, smooth calfskin that complements the silk without competing. A delicate gold chain necklace resting just above the collarbone adds a touch of elegance appropriate for the restaurant setting while keeping the focus on the rich textures of the outfit. This ensemble perfectly balances smart casual sophistication with romantic warmth ideal for an autumn evening date, offering comfort and confidence under artificial lighting without being overly formal or stiff.\"}],\"usage\":{\"input_tokens\":559,\"output_tokens\":216},\"stop_reason\":\"end_turn\"}"
+ }
+}

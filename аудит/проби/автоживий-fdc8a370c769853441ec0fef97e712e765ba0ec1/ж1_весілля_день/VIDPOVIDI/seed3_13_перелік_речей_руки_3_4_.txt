@@ -1,0 +1,44 @@
+── ПРОМПТ (2119 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk chiffon sheath dress, midi length, blush pink #FFD1DC, fluid drape fabric.\nMatte finish tailored blazer, structured shoulder cut, knee length, charcoal gray #36454F, lightweight wool blend.\nStrappy nude leather pumps, stiletto heel, ankle strap, smooth calf skin.\nGold drop earrings and a delicate pearl necklace.\n\nThis outfit strikes the perfect balance for an upscale restaurant wedding ceremony held during autumn daylight. The blush silk dress provides the necessary elegance and noble fabric quality expected of formal wear without sacrificing comfort in a daytime setting. The tailored charcoal blazer adds a sophisticated layer that respects traditional formality while allowing for ease of movement during the service and meal. Finally, the nude pumps and gold jewelry elongate the silhouette and introduce subtle warmth to complement the fall season."}
+
+── ВІДПОВІДЬ (912 симв., 4.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "silk chiffon, midi length, fluid drape fabric",
+      "slot": "dress",
+      "color_hex": "#FFD1DC",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "matte finish tailored, structured shoulder cut, knee length, lightweight wool blend",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "strappy nude leather, stiletto heel, ankle strap, smooth calf skin",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "gold drop",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate pearl",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
