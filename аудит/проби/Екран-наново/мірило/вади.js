@@ -98,6 +98,21 @@ const ЖІНКА = JSON.parse(fs.readFileSync(path.join(__dirname, '../../жін
   await с.mouse.move(р.x + р.width / 2, Math.min(800, р.y + р.height / 2)); await с.mouse.wheel(0, 240); await тихо(500);
   факти.в12 = Object.assign(await с.evaluate(() => { const т = document.getElementById('ком-0'); return {висота_поля: т.clientHeight, висота_тексту: т.scrollHeight, після_жесту: {сторінка: scrollY, поле: т.scrollTop}}; }), {до_жесту: доГорт});
   await знімок('12_поле_вердикту');
+  /* вада 12 пальцем: жест дотику (CDP `Input.dispatchTouchEvent`: дотик, дванадцять рухів по 20 px, відпускання) починається посеред поля й тягне
+     вгору на 240 px, як палець жінки; до жесту сторінка й поле — там, де були до колеса */
+  await с.evaluate(д => { scrollTo(0, д.сторінка); document.getElementById('ком-0').scrollTop = 0; }, доГорт); await тихо(400);
+  const р2 = await с.locator('#ком-0').boundingBox(), cdp = await к.newCDPSession(с);
+  const деЖест = {x: Math.round(р2.x + р2.width / 2), y: Math.round(Math.max(р2.y + 20, Math.min(700, р2.y + р2.height / 2)))};
+  const станГорт = () => с.evaluate(() => { const т = document.getElementById('ком-0'); return {сторінка: Math.round(scrollY), поле: Math.round(т.scrollTop), висота_поля: т.clientHeight, висота_тексту: т.scrollHeight}; });
+  const пальцем = {жест: деЖест, до: await станГорт()};
+  for (const ім of ['після_першого', 'після_другого']){
+    await cdp.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [деЖест]});
+    for (let і = 1; і <= 12; і++){ await cdp.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [{x: деЖест.x, y: деЖест.y - і * 20}]}); await тихо(16); }
+    await cdp.send('Input.dispatchTouchEvent', {type: 'touchEnd', touchPoints: []}); await тихо(900);
+    пальцем[ім] = await станГорт();
+    if (ім === 'після_першого') await знімок('12_пальцем_після_першого_жесту');
+  }
+  факти.в12.пальцем = пальцем;
   await с.locator('#ком-0').evaluate(т => т.blur()); await тихо(1200);
   факти.в19 = await с.evaluate(() => ({поле_після_виходу: document.getElementById('ком-0').value.length, статус: document.getElementById('вст-0').textContent}));
   await с.locator('#зап-0').scrollIntoViewIfNeeded(); await с.locator('#зап-0').tap();
