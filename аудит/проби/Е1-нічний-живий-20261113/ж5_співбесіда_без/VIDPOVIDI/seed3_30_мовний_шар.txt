@@ -1,0 +1,53 @@
+── ПРОМПТ (7104 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: longsleeve · colour code: grey · about it: text н=1
+2 — kind code: two_piece_set · colour code: graphite · about it: text н=2
+3 — kind code: backpack · colour code: beige · about it: text н=3
+4 — kind code: ankle_boots · colour code: chocolate · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; chocolate — шоколадний; graphite — графіт; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This relaxed grey long-sleeve top offers a comfortable silhouette with a soft, neutral shade that pairs beautifully with darker bottoms. The relaxed cut provides ease of movement while maintaining a polished finish suitable for an office setting.",
+"2": "The two-piece set in graphite features a sharp straight cut and a subtle check pattern that adds texture without overwhelming the eye. This coordinated piece creates a streamlined, professional line from your shoulders to your ankles.",
+"3": "This practical backpack is designed to keep your belongings secure and accessible throughout your day, offering a modern alternative to traditional handbags while maintaining a sleek profile.",
+"4": "These chocolate ankle boots feature a heel that adds height and a sophisticated edge. Their rich brown tone complements the cooler greys of your top and set, grounding the outfit with warmth.",
+"5": "For your interview at the bank, I chose a sophisticated yet approachable look. The charcoal check set offers a structured, professional base that signals competence, while the grey relaxed top adds a softer layer to your shoulders without losing elegance. Your chocolate ankle boots ground the outfit in autumnal warmth, and the backpack keeps you hands-free for carrying your documents. This ensemble balances the formal requirements of an interview with the comfort you need for the morning commute. The tone-on-tone palette of graphite, grey, and chocolate feels serious but not stiff, perfectly suited for a banking environment while respecting your request to avoid black.",
+"6": "Wear the relaxed top untucked over the check set to soften the line of your waist.",
+"7": "Черевики шкіряні шоколадні — I replaced the high-cut sneakers with classic suede loafers to respect the leg line and match the formal interview context.",
+"8": "Рюкзак жіночий, ATTICO, шкіра, колір бежевий — I swapped the casual home backpack for a leather travel bag to fit the work setting, keeping the neutral tone.",
+"9": "Лонгслів вільного крою сірий, Картатий костюм куртка та спідниця, Рюкзак жіночий, ATTICO, шкіра, колір бежевий, Черевики шкіряні шоколадні — The classic register works here as a deliberate break for an analytical role, signaling stability and experience.",
+"10": "Лонгслів вільного крою сірий, Картатий костюм куртка та спідниця, Рюкзак жіночий, ATTICO, шкіра, колір бежевий, Черевики шкіряні шоколадні — I accept this classic register gate because it signals stability and experience, which aligns with your goal of appearing polished and capable for the banking interview."
+}
+
+── ВІДПОВІДЬ (2514 симв., 26.1 с, HTTP 200) ──
+```json
+{
+"1": "Ця сіра футболка з довгим рукавом пропонує комфортний силует із м’яким нейтральним відтінком, який чудово поєднується зі світлим низом. Вільний крій забезпечує свободу рухів і водночас зберігає елегантний вигляд, що підходить для офісу.",
+"2": "Двочастинний комплект графітового кольору має чіткий прямий крій та ледь помітний картатий візерунок, який додає текстури без надмірності. Цей гармонійний образ створює струнку професійну лінію від плечей до щиколоток.",
+"3": "Цей практичний рюкзак розроблено для того, щоб твої речі були в безпеці та легкодоступними протягом дня, пропонуючи сучасну альтернативу традиційним жіночим сумкам і зберігаючи при цьому елегантний вигляд.",
+"4": "Шоколадні черевики на підборах додають зросту й солідного вигляду. Їхній насичений коричневий колір доповнює холодні сірі відтінки твого верху та комплекту, зігріваючи образ теплом.",
+"5": "Для твоєї співбесіди в банку я обрала вишуканий і водночас доступний образ. Сірий картатий комплект пропонує структуровану професійну основу, що сигналізує про компетентність, а сіра футболка вільного крою додає м’якості твоїм плечам без втрати елегантності. Шоколадні черевики зігрівають образ осіннім теплом, а рюкзак залишає руки вільними для перенесення документів. Цей ансамбль поєднує формальні вимоги співбесіди з комфортом, який тобі потрібен під час ранкової дороги на роботу. Палітра відтінків графіту, сірого та шоколадного виглядає серйозно, але не надто офіційно — ідеально для банківського середовища, водночас поважаючи твоє прохання уникати чорного.",
+"6": "Одягни футболку вільного крою поверх комплекту з картатим низом, щоб пом’якшити лінію талії.",
+"7": "Я замінила високі кеди на класичні замшеві лофери, щоб зберегти лінію ніг і відповідати формальному контексту співбесіди.",
+"8": "Я замінила повсякденний домашній рюкзак на шкіряну дорожню сумку, щоби підійти до робочої обстановки, зберігаючи нейтральний колір.",
+"9": "Сіра футболка вільного крою, картатий костюм-піджак і спідниця, жіночий рюкзак ATTICO зі шкіри бежевого кольору, шоколадні черевики — класичний стиль тут працює як навмисний контраст для аналітичної посади, сигналізуючи про стабільність та досвід.",
+"10": "Сіра футболка вільного крою, картатий костюм-піджак і спідниця, жіночий рюкзак ATTICO зі шкіри бежевого кольору, шоколадні черевики — я приймаю цей класичний стиль як навмисний контраст, адже він сигналізує про стабільність та досвід, що відповідає твоїй меті виглядати охайно й компетентно на співбесіді в банку."
+}
+```

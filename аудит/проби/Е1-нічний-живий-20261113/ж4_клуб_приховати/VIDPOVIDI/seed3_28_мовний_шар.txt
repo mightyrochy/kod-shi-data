@@ -1,0 +1,47 @@
+── ПРОМПТ (6038 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: black · about it: text н=1
+2 — kind code: pumps · colour code: black · about it: text н=2
+3 — kind code: ring · colour code: golden · about it: text н=3
+4 — kind code: crossbody_bag · colour code: brown · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; golden — золотий.
+
+ТЕКСТИ:
+{
+"1": "This is a black dress with a generic cut that flows straight down the body. Its fabric appears smooth and unstructured, allowing it to hang effortlessly without adding volume or drawing the eye to any specific area.",
+"2": "These are black pumps featuring a heel that will elongate your legs while supporting you through the evening. The sleek finish matches the dress perfectly for an understated look.",
+"3": "This is a golden ring with a simple design that adds a hint of metallic shine without overwhelming your overall appearance.",
+"4": "This is a brown crossbody bag designed to be worn across the body for easy access. Its earthy tone provides a grounded contrast to the monochrome elements of your outfit.",
+"5": "You are going to wear the black dress which flows softly without any gathering at the waist, paired with the black pumps to keep your silhouette clean and elongated. The golden ring adds a subtle touch of warmth that catches the club lights without being flashy, while the brown crossbody bag provides practical freedom for your evening. This combination works perfectly because it respects your wish not to draw attention; by avoiding any cinching or contrasting colors, the outfit creates a quiet, cohesive look that lets you move through the night comfortably and confidently.",
+"6": "Wear the crossbody bag slightly lower on your torso so the fabric drapes naturally without emphasizing the waistline.",
+"7": "Let the dress fall straight from your shoulders to allow your body to move freely as you dance or mingle."
+}
+
+── ВІДПОВІДЬ (1560 симв., 17.0 с, HTTP 200) ──
+```json
+{
+  "1": "Це чорна сукня з універсальним кроєм, яка вільно спадає по тілу. Її тканина здається гладкою та неструктурованою, дозволяючи їй легко висіти без додавання об’єму чи привернення уваги до будь-якої конкретної ділянки.",
+  "2": "Це чорні туфлі-човники на підборах, які видовжать твої ноги та підтримають тебе протягом вечора. Їхній елегантний вигляд ідеально поєднується з сукнею для стриманого образу.",
+  "3": "Це золота каблучка зі простим дизайном, яка додає ледь помітний металевий блиск без перевантаження твого загального вигляду.",
+  "4": "Це коричнева сумка-кросбоді, призначена для носіння через тіло для зручного доступу. Її землистий відтінок створює стриманий контраст з монохромними елементами твого вбрання.",
+  "5": "Ти одягнеш чорну сукню, яка м’яко спадає без жодного зібраного стану на талії, у парі з чорними туфлями-човниками, щоб зберегти силует чистим і видовженим. Золота каблучка додасть ледь помітний теплий акцент, який ловитиме світло клубу без зайвої яскравості, а коричнева сумка-кросбоді забезпечить практичну свободу для твого вечора. Ця комбінація ідеально підходить, адже поважає твоє бажання не привертати до себе увагу; уникаючи будь-якого стягування чи контрастних кольорів, образ створить тихий, гармонійний вигляд, який дозволить тобі вільно та впевнено рухатися протягом ночі.",
+  "6": "Опусти сумку трохи нижче на тулуб, щоб тканина природно спадала без акцентування лінії талії.",
+  "7": "Дозволь сукні вільно звисати від плечей, щоб твоє тіло могло рухатися вільно під час танців чи спілкування."
+}
+```

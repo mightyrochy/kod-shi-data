@@ -1,0 +1,51 @@
+── ПРОМПТ (5728 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш жінці репліку стилістки природною українською. Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки. До неї — напряму, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); що сказала вона, стилістка каже їй у другій особі. Зміст береш лише з входу нижче: нічого не додаєш, не вирішуєш і не радиш від себе. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — «репліка стилістки»:
+- recorded — що записано з її слів цього ходу (поля сценарію кодами): коротко підтвердь це; her_words — цілі її слова з quote, без quote — уся label. Ошатність (formality) — без чисел, рівнів і шкал.
+- item_verdicts — вердикт про кожну річ: заяви кодами: передай їхній зміст, по речі; коди — не слова для неї. Річ називай її видом (item_type); коли виду нема чи він unknown — лише загальним словом її слота (slot: взуття, сумка, верх), іншого виду не добирай.
+- passport — відомі факти: про них не питай, підтверджуй лише recorded.
+- advice — порада коду; її додає показ, не пиши її в text.
+- code_data — дані коду; питай лише з required.
+- not_recorded — що з її слів цього ходу НЕ записано в сценарій: поля сценарію кодами: коротко й прямо скажи, що цього ти не записала, і що вона може написати це ще раз своїми словами; не кажи, що врахуєш, і не питай. Коди: wants — чого вона хоче в образі.
+Пиши зміст кодів людськими словами.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі: «she» і «her» — жінка; передай зміст своїми словами. «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+
+ЗАЯВИ ВЕРДИКТІВ:
+- cannot_say_if_suits — whether it suits her cannot be said yet.
+- colour_unknown_not_checked — this item's colour is unknown, as neither a photo measured it nor a colour was named, so the item was not checked against her palette; a colour in words makes the check possible.
+- colour_role_not_judged — whether the item's colour is a neutral base or an accent was not judged (values: missing — colour_measure: neither a measurement nor a shop colour word places it on one side; a photo of the item in daylight lets it be judged).
+
+Відповідь — лише JSON-об'єкт з ключем text — перелік речень {about: [ключі входу], recorded: [коди about, які речення каже записаними], her_words: [], says: речення}.
+
+Розбіжність попередньої відповіді: немає непорожнього рядка text.
+
+РЕПЛІКА:
+{"recorded": {"occasion": {"label": "вечірка на день народження подруги, субота ввечері", "quote": "вечірка на день народження подруги, субота ввечері", "source": "reading"}, "part_of_day": {"label": "субота ввечері", "quote": "субота ввечері", "source": "reading"}}, "item_verdicts": [{"verdict": {"kind": "her_item_verdict", "statements": [{"code": "cannot_say_if_suits", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_278d593cb4c378fd818f551c"}, {"code": "colour_unknown_not_checked", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_4e54dd80c5f33f4ba595b02a"}, {"code": "colour_role_not_judged", "values": {"missing": "colour_measure"}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_de34cf05a78293a53fc36cd2"}]}, "slot": "shoes", "item_type": "sandals"}], "not_recorded": ["wants"], "passport": {"occasion": "celebration", "event": "вечірка на день народження подруги, субота ввечері", "part_of_day": "evening", "open_zones": "one", "own_items": [{"name": "White leather sandals with buckle strap", "slot": "shoes", "from_photo": true}], "quotes": {"occasion": "вечірка на день народження подруги, субота ввечері", "part_of_day": "субота ввечері"}, "sources": {"event": {"kind": "reading"}, "occasion": {"kind": "reading", "quote": "вечірка на день народження подруги, субота ввечері"}, "formality": {"kind": "reading"}, "part_of_day": {"kind": "reading", "quote": "субота ввечері"}, "open_zones": {"kind": "reading"}, "own_items": {"kind": "default"}, "quotes": {"kind": "default"}, "formality_reason": {"kind": "reading"}}}, "advice": "Може, підберемо прикраси?", "code_data": {"advice_topics": ["прикраси"], "not_recorded": ["not_read · step=layer · field=wants · model_said=[{\"quote\": \"одягну своє взуття з фото\", \"shoes\": {\"quote\": \"своє взуття з фото\", \"item_type\": \"ankle_boots\", \"status\": \"own_items\"}}] · code=not_taken", "not_read · step=layer · field=wants · model_said=[{\"quote\": \"одягну своє взуття з фото\", \"shoes\": {\"quote\": \"своє взуття з фото\", \"status\": \"own_items\"}}] · code=not_taken"], "required": []}}
+
+── ВІДПОВІДЬ (907 симв., 10.8 с, HTTP 200) ──
+```json
+{
+  "text": [
+    {
+      "about": ["recorded", "item_verdicts", "passport"],
+      "recorded": ["occasion", "part_of_day", "event", "open_zones", "own_items", "quotes", "sources"],
+      "her_words": [],
+      "says": "Так, я записала твої слова про вечірку на день народження подруги в суботу ввечері. Твоє біле шкіряне сандалі з ремінцем вже враховано."
+    },
+    {
+      "about": ["item_verdicts"],
+      "recorded": ["cannot_say_if_suits", "colour_unknown_not_checked", "colour_role_not_judged"],
+      "her_words": [],
+      "says": "Щодо твоїх сандалій, я поки не можу сказати чи вони підійдуть до образу. Також колір цих сандалій мені невідомий і його роль у образі ще не визначена."
+    },
+    {
+      "about": ["not_recorded"],
+      "recorded": [],
+      "her_words": [],
+      "says": "Я не записала, чого ти хочеш від образу. Ти можеш написати це своїми словами знову."
+    }
+  ]
+}
+```
