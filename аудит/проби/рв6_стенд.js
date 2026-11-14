@@ -3207,7 +3207,7 @@ function підсумокМоделі(){
     console.log('KARTKA · до збору:', JSON.stringify(await стор.evaluate(КАРТКА_РЯДКИ)));
     console.log('KARTKA · число від ходу плиток (' + (Date.now() - тЧ) + ' мс):', JSON.stringify(await стор.evaluate(КАРТКА_РЯДКИ)));
     await знімок('plytka_stsenarii', null, true);
-    await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к && typeof к.onclick === 'function') к.onclick(); });
+    await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к) к.click(); });
     await збиранняСтартувало(стор, браузер, 'PLYTKA');
     await чекатиСтан(стор, 'збирання готове (ЗБ.готово) чи збій', "(typeof ЗБ !== 'undefined' && ЗБ && ЗБ.готово) || " + ВИРАЗ_ЗБОЮ, null, 900000);
     const р = await стор.evaluate(() => ({ошатність: (ПАСПОРТ_П || {}).ошатність, година: (ПАСПОРТ_П || {}).година,
@@ -3808,7 +3808,7 @@ function підсумокМоделі(){
     /* `PAL_DOTYK=перед` — дотик ДО екрана «Палітра» (як на 1551): екран питає стилістку на вході з дотиком, але з
        паспортом розмови; паспорт рук перезбирається вже при «Зібрати образи» */
     if (process.env.PAL_DOTYK === 'перед') await стор.evaluate(() => стилісткаОбираєП());
-    await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к && typeof к.onclick === 'function') к.onclick(); });
+    await стор.evaluate(() => { const к = document.getElementById('зб-зібрати'); if (к) к.click(); });
     await збиранняСтартувало(стор, браузер, 'DO=palitra');
     await чекатиСтан(стор, 'руки 1 і 2 зібрано чи збій', "(typeof ЗБ !== 'undefined' && ЗБ && Array.isArray(ЗБ.картки) && ['1','2'].every(р => "
         + "ЗБ.картки.some(к => к && к.рука === р))) || " + ВИРАЗ_ЗБОЮ, null, 900000);
