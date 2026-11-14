@@ -28,6 +28,8 @@ checks['43_унікальні_записи'] = set(locations) == set(plan['scene
 counts = Counter()
 missing = []
 raw_count = 0
+http_errors = []
+token_peaks = {}
 for scene, folder in locations.items():
     result = json.loads((folder / 'результат.json').read_text(encoding='utf-8'))
     checks['SHA_' + scene] = result['sha'] == result['дерево_стенда'] == 'c3d18d313e88a6199c3211d7984a492c4073a7a1'
@@ -38,6 +40,18 @@ for scene, folder in locations.items():
         data = json.loads(raw.read_text(encoding='utf-8'))
         assert data['версія'] == 1 and 'запит' in data and 'відповідь' in data, raw
         raw_count += 1
+        response = data['відповідь']
+        if response['status'] != 200:
+            http_errors.append({'сцена': scene, 'файл': str(raw.relative_to(repo)), 'HTTP': response['status'], 'тіло': response['body'][:600]})
+        try:
+            body = json.loads(response['body'])
+        except (TypeError, json.JSONDecodeError):
+            continue
+        usage = body.get('usage', {}) if isinstance(body, dict) else {}
+        tokens = usage.get('input_tokens')
+        model = data['запит'].get('model', 'не записано')
+        if isinstance(tokens, int) and tokens > token_peaks.get(model, {}).get('токенів', -1):
+            token_peaks[model] = {'токенів': tokens, 'сцена': scene, 'файл': str(raw.relative_to(repo)), 'max_tokens_запиту': data['запит'].get('max_tokens')}
 checks['повні_файли_доказів'] = not missing
 changes = subprocess.run(['git', '-c', 'core.quotepath=false', 'diff', '--name-only',
                           '06bfc0fd9fc6ba0b5887c0f08bf559be52cce9e4', '--'], cwd=repo, capture_output=True, text=True, encoding='utf-8', check=True).stdout.splitlines()
@@ -47,7 +61,9 @@ checks['змінено_лише_докази_наряду'] = not foreign
 checks['немає_маркера_перевіреної_збірки'] = not re.search(r'^ПЕРЕВІРЕНО ЗБІРКУ:', (out / 'ЗВІТ.md').read_text(encoding='utf-8'), re.M)
 summary = {'час_utc': datetime.now(timezone.utc).isoformat(), 'перевірки': checks,
            'план_sha256': hashlib.sha256(plan_bytes).hexdigest(), 'результатів': len(locations),
-           'коди': dict(counts), 'сирих_обмінів': raw_count, 'відсутні_файли': missing, 'зайві_зміни': foreign}
+           'коди': dict(counts), 'сирих_обмінів': raw_count, 'HTTP_не_200': http_errors,
+           'піки_записаних_input_tokens_не_весь_шлях': token_peaks,
+           'відсутні_файли': missing, 'зайві_зміни': foreign}
 (out / 'звірка_звіту.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 failed = [name for name, passed in checks.items() if not passed]
 print('Записів:', len(locations), 'обмінів:', raw_count, 'помилки цілісності:', failed)
