@@ -42,6 +42,11 @@ def quota(name):
 
 try:
     with socket.create_connection(('127.0.0.1', PORT), timeout=1):
+        (OUT / 'блокер.json').write_text(json.dumps({
+            'utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'причина': 'порт 8791 зайнято до запуску власного моста',
+            'міст_запущено': False, 'браузер_повтору_запущено': False,
+        }, ensure_ascii=False, indent=2), encoding='utf-8')
         raise SystemExit('ЗАБЛОКОВАНО: порт 8791 уже зайнято; чужого процесу не змінено')
 except (ConnectionRefusedError, TimeoutError):
     pass

@@ -34,7 +34,8 @@ async function кадр(опис){
 }
 async function спокій(){
   // Очікування визначається незавершеним запитом, а не записаними секундами іншої моделі.
-  while(активні || Date.now()-останнійВиклик<900){await сон(2000);if(активні)await кадр('чекає відповіді моделі');}
+  let кадрО=Date.now();
+  while(активні || Date.now()-останнійВиклик<900){await сон(2000);if(активні && Date.now()-кадрО>=15000){await кадр('чекає відповіді моделі');кадрО=Date.now();}}
 }
 function відповідність(рядок,мітка){
   const a=рядок.replace(/^\[\d+\] /,'').replace(/ · зараз:.*$/,'').replace(/\s+/g,' ').trim();
@@ -59,8 +60,9 @@ async function знайти(мітка){
   return null;
 }
 async function головна(){
-  браузер=await chromium.launch({headless:true});
-  const ctx=await браузер.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,locale:'uk-UA',timezoneId:'Europe/Kyiv',ignoreHTTPSErrors:true,acceptDownloads:true});
+  браузер=await chromium.launch({headless:true,proxy:process.env.HTTPS_PROXY?{server:process.env.HTTPS_PROXY,bypass:'localhost,127.0.0.1'}:undefined});
+  const ctx=await браузер.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,locale:'uk-UA',timezoneId:'Europe/Kyiv',ignoreHTTPSErrors:true,acceptDownloads:true,
+    userAgent:'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36'});
   стор=await ctx.newPage();стор.setDefaultTimeout(15000);
   стор.on('console',m=>{if(['warning','error'].includes(m.type()))fs.appendFileSync(path.join(службове,'консоль.txt'),new Date().toISOString()+' '+m.text()+'\n');});
   стор.on('pageerror',e=>fs.appendFileSync(path.join(службове,'консоль.txt'),String(e)+'\n'));
@@ -76,6 +78,9 @@ async function головна(){
   await стор.route('https://cdn.jsdelivr.net/pyodide/**',async r=>{
     const ім=new URL(r.request().url()).pathname.split('/').pop(),ф=path.join(process.env.PYODIDE,ім);
     await r.fulfill({status:fs.existsSync(ф)?200:404,contentType:ім.endsWith('.wasm')?'application/wasm':/\.m?js$/.test(ім)?'application/javascript':ім.endsWith('.json')?'application/json':'application/octet-stream',body:fs.existsSync(ф)?fs.readFileSync(ф):'нема '+ім});
+  });
+  await стор.route(u=>u.origin!==база && !/cdn\.jsdelivr\.net\/pyodide/.test(u.href),async r=>{
+    try{await r.fulfill({response:await r.fetch({timeout:15000})});}catch(_){await r.abort().catch(()=>{});}
   });
   await стор.route(u=>decodeURIComponent(u.pathname).endsWith('/міст'),async route=>{
     активні++;останнійВиклик=Date.now();const тіло=route.request().postData()||'{}',початок=new Date().toISOString();
