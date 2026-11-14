@@ -315,6 +315,51 @@ $u = New-Object Text.UTF8Encoding($false)
         [void](Close-TaskCopy @('--remotes'))
     }
 
+    Scenario 'id службової теки копії не повторюється: prune посеред чужого remove не губить нову копію' {
+        # Живий збій: remove копії A знімає `.git` першим, а свою службову теку `.git/worktrees/<id>` стирає наприкінці; prune
+        # копії B у цей час її вже стер, а `add` B узяв те саме id (`repo`) — кінець remove A стирає службову теку B.
+        $origin = Join-Path $tmp 'o7.git'; $clone = Join-Path $tmp 'c7'
+        & git init -q --bare $origin; & git init -q -b main $clone
+        & git -C $clone config user.name 'стенд'; & git -C $clone config user.email 'stend@example.invalid'
+        & git -C $clone remote add origin $origin
+        [IO.File]::WriteAllText("$clone/a.txt", '1', $utf)
+        & git -C $clone add -A; & git -C $clone commit -q -m 'початкова'; & git -C $clone push -q origin main
+        & git -C $clone fetch -q origin
+        $script:RepoDir = $clone; $root = Join-Path $tmp 'w7'; $main = 'refs/remotes/origin/main'
+        $head = (& git -C $clone rev-parse $main).Trim()
+        $adminA = Join-Path $clone '.git/worktrees/repo'
+        function Start-OldCopyRemove([string]$Name) {
+            <# Копія A за старою схемою (id `repo`) і середина її remove: `.git` знято, службова теку ще є, prune її стирає. #>
+            $a = Join-Path (Join-Path $root $Name) 'repo'
+            & git -C $clone worktree add -q -f --no-checkout --detach $a $main
+            Remove-Item -LiteralPath (Join-Path $a '.git') -Force
+            & git -C $clone worktree prune
+        }
+        # ДО: нова копія за старою схемою бере вільне id `repo`, кінець remove A стирає її службову теку.
+        Start-OldCopyRemove 'run-a0'
+        $b0 = Join-Path (Join-Path $root 'run-b0') 'repo'
+        & git -C $clone worktree add -q -f --no-checkout --detach $b0 $main
+        $idOld = ([IO.File]::ReadAllText((Join-Path $b0 '.git')).Trim() -split '[\/]')[-1]
+        Remove-Item -LiteralPath $adminA -Recurse -Force
+        $r0 = Invoke-Git @('rev-parse', 'HEAD') -AllowFail -Dir $b0
+        Check "ДО: копія B під id «$idOld» (як у A) втрачає службову теку, rev-parse — код $($r0.Code)" ($idOld -ceq 'repo' -and $r0.Code -ne 0)
+        Remove-Item -LiteralPath (Split-Path -Parent $b0) -Recurse -Force; & git -C $clone worktree prune
+        # ПІСЛЯ: New-TaskCopy дає копії id з імені її теки, кінець remove A її не зачіпає.
+        Start-OldCopyRemove 'run-a1'
+        $repoB = New-TaskCopy (Join-Path $root 'run-b1') $main ''
+        Remove-Item -LiteralPath $adminA -Recurse -Force -ErrorAction SilentlyContinue
+        $idNew = ([IO.File]::ReadAllText((Join-Path $repoB '.git')).Trim() -split '[\/]')[-1]
+        $r1 = Invoke-Git @('rev-parse', 'HEAD') -AllowFail -Dir $repoB
+        Check "ПІСЛЯ: копія B під id «$idNew», rev-parse HEAD працює (код $($r1.Code))" ($idNew -ceq 'repo-run-b1' -and $r1.Code -eq 0 -and $r1.Out.Trim() -ceq $head)
+        Check 'копія B лежить у <тека задачі>epo, чиста; проміжної теки під id нема' ((Split-Path -Leaf $repoB) -ceq 'repo' -and (Invoke-Git @('status', '--porcelain')).Out.Trim() -eq '' -and -not (Test-Path -LiteralPath (Join-Path (Join-Path $root 'run-b1') 'repo-run-b1')))
+        [void](Invoke-CopyGit @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', 'gemini/stend', $main))
+        $lines = @($script:Log | Where-Object { $_ -cmatch "^копія задачі $([regex]::Escape($repoB)): git (reset -q --hard|checkout -q -f .* -B gemini/stend .*) — [0-9]+\.[0-9] с$" })
+        Check "журнал: тривалість reset і checkout -B копії в секундах ($($lines.Count) рядки)" ($lines.Count -eq 2)
+        Check "reset і checkout копії — під межею $script:CopyTreeGitMinutes хв (типова Invoke-Git — 10); checkout обгортки йде тим самим викликом" ($script:CopyTreeGitMinutes -eq 30 -and (Get-FnText 'queue_lanes.ps1' 'Invoke-CopyGit').Contains('$script:CopyTreeGitMinutes') -and (Get-FnText 'queue_lanes.ps1' 'New-TaskCopy').Contains('Invoke-CopyGit @(''reset''') -and (Get-FnText 'gemini_run.ps1' 'Invoke-Task').Contains('Invoke-CopyGit @(''checkout'''))
+        [void](Close-TaskCopy @('--remotes'))
+        Check 'після доставки службова тека копії знята' (-not (Test-Path -LiteralPath (Join-Path $clone '.git/worktrees/repo-run-b1')))
+    }
+
     Scenario 'розбивка розміру: діти першого рівня й діти теки копій — тим самим обходом' {
         $p = Join-Path $tmp 'prof'
         foreach ($f in @(@('a/x.bin', 3000), @('b/x.bin', 500), @('runs/w/c1/x.bin', 7000), @('runs/w/c1/sub/y.bin', 100), @('runs/w/c2/x.bin', 200), @('root.bin', 10))) {
