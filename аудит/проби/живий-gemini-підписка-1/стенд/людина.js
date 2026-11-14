@@ -9,7 +9,7 @@
    Запуск: node людина.js <тека ситуації> <порт моста> [кроків, типово 320]
    Змінні: STOR=/tmp/стенд (index.html), PYODIDE=/tmp/pyodide, ZHINKA_MODEL (типово claude-sonnet-5-5). */
 const { chromium } = require('playwright');
-const fs = require('fs'), path = require('path'), { spawn } = require('child_process'), os = require('os');
+const http = require('http'), fs = require('fs'), path = require('path'), { spawn } = require('child_process'), os = require('os');
 const ТЕКА = path.resolve(process.argv[2]), ПОРТ = Number(process.argv[3] || 8791), КРОКІВ = Number(process.argv[4] || 320);
 const КОРІНЬ = process.env.STOR || '/tmp/стенд', ТЕКА_PYODIDE = process.env.PYODIDE || '/tmp/pyodide';
 const БАЗА = 'http://127.0.0.1:8765', БІН = process.env.ZHYVA_BIN || '/opt/node22/bin/claude';
@@ -210,10 +210,16 @@ async function головна(){
     const тіло = route.request().postData() || '{}';
     const т0 = Date.now();
     try {
-      const в = await fetch('http://127.0.0.1:' + ПОРТ + '/', {method: 'POST', body: тіло,
-        headers: {'content-type': 'application/json', 'x-prohid': encodeURIComponent(ПРОХІД)}, signal: AbortSignal.timeout(960000)});
-      const текст = await в.text(); const заг = {};
-      for (const к of ['x-model', 'x-images-dropped']) if (в.headers.get(к)) заг[к] = в.headers.get(к);
+      /* `http`, не глобальний `fetch`: undici обриває відповідь, що не дала заголовків за 300 с, а виклик Gemini із роздумами триває довше */
+      const в = await new Promise((рез, відх) => {
+        const з = http.request({host: '127.0.0.1', port: ПОРТ, method: 'POST', path: '/', timeout: 960000,
+          headers: {'content-type': 'application/json', 'x-prohid': encodeURIComponent(ПРОХІД), 'content-length': Buffer.byteLength(тіло)}}, о => {
+          const ч = []; о.on('data', х => ч.push(х)); о.on('end', () => рез({status: о.statusCode, headers: о.headers, текст: Buffer.concat(ч).toString('utf8')}));
+        });
+        з.on('timeout', () => з.destroy(new Error('міст не відповів за 960 с'))); з.on('error', відх); з.end(тіло);
+      });
+      const текст = в.текст; const заг = {};
+      for (const к of ['x-model', 'x-images-dropped']) if (в.headers[к]) заг[к] = в.headers[к];
       обміни.write(JSON.stringify({час: new Date(т0).toISOString(), с: (Date.now() - т0) / 1000, статус: в.status, запит: тіло, відповідь: текст}) + '\n');
       await route.fulfill({status: в.status, contentType: 'application/json', headers: заг, body: текст}).catch(() => {});
     } catch (е) {
