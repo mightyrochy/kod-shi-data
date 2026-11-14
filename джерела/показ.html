@@ -844,71 +844,6 @@
 </script>
 
 <div class="перегляд" id="перегляд" role="dialog" aria-modal="true" aria-label="Образ на весь екран" hidden><img alt="приміряний образ на весь екран"><button class="тихо" type="button" aria-label="Закрити">×</button></div>
-<script>
-/* Перегляд тримає фокус на єдиній кнопці й повертає його на відкривач.
-   Як і аркуш, дослівно відновлює попередній inert фону, а не вмикає його весь. */
-(function(){
-  const п = document.getElementById('перегляд'); if (!п) return; const і = п.querySelector('img');
-  const кнопка = п.querySelector('button'); let відкривач = null, фон = [], прокрутка = '';
-  const закрити = ()=>{
-    п.hidden = true; і.removeAttribute('src'); document.body.style.overflow = прокрутка;
-    for (const [в, було] of фон){
-      if (було === null) в.removeAttribute('inert'); else в.setAttribute('inert', було);
-    }
-    фон = [];
-    if (відкривач && відкривач.isConnected && !відкривач.closest('[inert]') && відкривач.getClientRects().length)
-      відкривач.focus({preventScroll:true});
-    відкривач = null;
-  };
-  document.addEventListener('click', е=>{
-    const т = е.target.closest && е.target.closest('.полотно .перегляд-відкрити');
-    if (т){
-      відкривач = т; і.src = т.querySelector('img').src; п.hidden = false;
-      прокрутка = document.body.style.overflow; document.body.style.overflow = 'hidden';
-      for (const в of document.body.children){
-        if (в === п || /^(SCRIPT|STYLE)$/.test(в.tagName)) continue;
-        фон.push([в, в.getAttribute('inert')]); в.setAttribute('inert', '');
-      }
-      кнопка.focus(); return;
-    }
-    if (!п.hidden && (е.target === п || е.target === і || е.target.closest('#перегляд button'))){
-      закрити(); }
-  });
-  document.addEventListener('keydown', е=>{
-    if (п.hidden) return;
-    if (е.key === 'Escape'){ е.preventDefault(); закрити(); }
-    else if (е.key === 'Tab'){ е.preventDefault(); кнопка.focus(); }
-  });
-})();
-</script>
-
-<script>
-/* ТЕМА: удень «полотно й нитка», уночі «музейне золото». Системну бере сама;
-   кнопка в шапці перемикає й запам'ятовує вибір на цьому телефоні. Окремо від
-   основного коду: до збирання образів це не має жодного стосунку. */
-(function(){
-  const к = document.getElementById('тема-кнопка'); if (!к) return;
-  const кр = document.documentElement, КЛЮЧ = 'люстерко-тема';
-  const мета = document.querySelector('meta[name="theme-color"]');
-  const системна = () => { try { return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'темна' : 'світла'; } catch(e){ return 'світла'; } };
-  const поточна = () => кр.dataset.тема || системна();
-  const показати = () => {
-    const т = поточна();
-    к.setAttribute('aria-label', т === 'темна' ? 'Світла тема' : 'Темна тема');
-    const тт = document.getElementById('тема-текст'); if (тт) тт.textContent = т === 'темна' ? 'День' : 'Ніч';
-    const бт = document.getElementById('бік-тема-текст'); if (бт) бт.textContent = т === 'темна' ? 'День' : 'Ніч';
-    if (typeof Екран === 'object'){ try{ Екран.перемалювати('огляд'); }catch(e){} }
-    if (мета) мета.setAttribute('content', т === 'темна' ? '#141517' : '#F4F0E8');
-  };
-  к.onclick = () => {
-    const н = поточна() === 'темна' ? 'світла' : 'темна';
-    кр.dataset.тема = н;
-    try { localStorage.setItem(КЛЮЧ, н); } catch(e){}
-    показати();
-  };
-  показати();
-})();
-</script>
 
 <!-- ── АРКУШ ЗНИЗУ (v5): одне вікно на всі правки — рядки картки сценарію, форма
      збереження, блоки профілю. Вузол переїжджає в `#аркуш-тіло` і повертається
@@ -1000,6 +935,8 @@
 <script src="показ/екран/фото.js"></script>
 <script src="показ/екран/драп.js"></script>
 <script src="показ/екран/кольори.js"></script>
+<script src="показ/екран/тема.js"></script>
+<script src="показ/екран/перегляд.js"></script>
 <script src="показ/екран/перехід.js"></script>
 <script src="показ/старт.js"></script>
 </body>
