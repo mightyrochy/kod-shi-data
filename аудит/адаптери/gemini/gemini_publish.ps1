@@ -57,8 +57,9 @@ $script:CondPattern = '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gp
 # Імена моделей у рядку ПУЛИ (9740): родини gemini/claude/gpt, до 6 імен — вільного тексту з pools.json (пише gemini) нема.
 $script:PoolModelPattern = '^(gemini|claude|gpt)-[a-z0-9.-]{1,36}$'
 # Шляхи й вміст, яких у гілці gemini/* бути не може (9739); вміст — ERE для `git log -G` по кожному коміту.
+# JWT — лише в формі заголовок.навантаження: base64 фото й файлів (алфавіт без крапки) випадково дає `eyJ` + 10 знаків.
 $script:SecretPathPattern = '(^|/)auth\.json$|(^|/)\.codex(/|$)|(^|/)\.config/gh(/|$)'
-$script:SecretContentPattern = 'eyJ[A-Za-z0-9_-]{10,}|sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|refresh_token|BEGIN [A-Z ]*PRIVATE KEY'
+$script:SecretContentPattern = 'eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]+|sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|refresh_token|BEGIN [A-Z ]*PRIVATE KEY'
 $script:IdPattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}$'
 $script:ShaPattern = '^[0-9a-f]{40}$'
 $script:Utf8Strict = New-Object System.Text.UTF8Encoding($false, $true)
@@ -246,7 +247,7 @@ function Publish-Bundle($S, [string]$Id) {
 $script:PublishCodes = @{
     BUNDLE_MISSING = 'бандла нема'; BUNDLE_TOO_BIG = 'бандл більший за межу'; BUNDLE_INVALID = 'бандл не проходить git bundle verify'
     REF_MISMATCH = 'гілка чи SHA бандла не ті, що в стані'; EMPTY = 'нових комітів до main нема'; NO_BASE = 'нема спільної бази з main'
-    SECRET = 'шлях чи вміст схожі на токен/секрет (auth.json, .codex/, .config/gh/, eyJ…, sk-, ghp_, refresh_token)'; GITHUB_DIR = 'зміни в .github/'; WRAPPER_FILES = 'зміни у файлах обгортки'; NOT_FF = 'не fast-forward до опублікованої гілки'
+    SECRET = 'шлях чи вміст схожі на токен/секрет (auth.json, .codex/, .config/gh/, JWT eyJ….…, sk-, ghp_, refresh_token)'; GITHUB_DIR = 'зміни в .github/'; WRAPPER_FILES = 'зміни у файлах обгортки'; NOT_FF = 'не fast-forward до опублікованої гілки'
     PUSH_FAILED = 'пуш не вдавався годину (журнал publish.log; після входу git — gemini_publish.ps1 -Retry <id>)'
 }
 
