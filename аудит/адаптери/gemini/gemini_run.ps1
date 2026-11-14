@@ -1389,7 +1389,7 @@ function Invoke-Task($M, $Job) {
         if (Test-AutoPlanEmpty $M.Slug $taskText) { $status.code = 'EMPTY_PLAN'; return }
         $taskDir = Join-Path (Join-Path $RunsDir 'w') $id
         try { [void](New-TaskCopy $taskDir $start $taskText) } catch { $copyFailed = $true; throw }
-        [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))
+        [void](Invoke-CopyGit @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))
         $mergeStep = ''
         if ($att -and $att.Mode -eq 'BEHIND') {
             # Старт — після злиття: його коміт не рахується за роботу агента (Get-Facts: $start..голова).
