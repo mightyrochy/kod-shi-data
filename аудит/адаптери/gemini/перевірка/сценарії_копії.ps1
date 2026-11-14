@@ -351,11 +351,11 @@ $u = New-Object Text.UTF8Encoding($false)
         $idNew = ([IO.File]::ReadAllText((Join-Path $repoB '.git')).Trim() -split '[\/]')[-1]
         $r1 = Invoke-Git @('rev-parse', 'HEAD') -AllowFail -Dir $repoB
         Check "ПІСЛЯ: копія B під id «$idNew», rev-parse HEAD працює (код $($r1.Code))" ($idNew -ceq 'repo-run-b1' -and $r1.Code -eq 0 -and $r1.Out.Trim() -ceq $head)
-        Check 'копія B лежить у <тека задачі>epo, чиста; проміжної теки під id нема' ((Split-Path -Leaf $repoB) -ceq 'repo' -and (Invoke-Git @('status', '--porcelain')).Out.Trim() -eq '' -and -not (Test-Path -LiteralPath (Join-Path (Join-Path $root 'run-b1') 'repo-run-b1')))
+        Check 'копія B лежить у <тека задачі>\repo, чиста; проміжної теки під id нема' ((Split-Path -Leaf $repoB) -ceq 'repo' -and (Invoke-Git @('status', '--porcelain')).Out.Trim() -eq '' -and -not (Test-Path -LiteralPath (Join-Path (Join-Path $root 'run-b1') 'repo-run-b1')))
         [void](Invoke-CopyGit @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', 'gemini/stend', $main))
         $lines = @($script:Log | Where-Object { $_ -cmatch "^копія задачі $([regex]::Escape($repoB)): git (reset -q --hard|checkout -q -f .* -B gemini/stend .*) — [0-9]+\.[0-9] с$" })
         Check "журнал: тривалість reset і checkout -B копії в секундах ($($lines.Count) рядки)" ($lines.Count -eq 2)
-        Check "reset і checkout копії — під межею $script:CopyTreeGitMinutes хв (типова Invoke-Git — 10); checkout обгортки йде тим самим викликом" ($script:CopyTreeGitMinutes -eq 30 -and (Get-FnText 'queue_lanes.ps1' 'Invoke-CopyGit').Contains('$script:CopyTreeGitMinutes') -and (Get-FnText 'queue_lanes.ps1' 'New-TaskCopy').Contains('Invoke-CopyGit @(''reset''') -and (Get-FnText 'gemini_run.ps1' 'Invoke-Task').Contains('Invoke-CopyGit @(''checkout'''))
+        Check "reset і checkout копії — під межею $script:CopyGitHangMinutes хв (типова Invoke-Git — 10); checkout обгортки йде тим самим викликом" ($script:CopyGitHangMinutes -eq 30 -and (Get-FnText 'queue_lanes.ps1' 'Invoke-CopyGit').Contains('$script:CopyGitHangMinutes') -and (Get-FnText 'queue_lanes.ps1' 'New-TaskCopy').Contains('Invoke-CopyGit @(''reset''') -and (Get-FnText 'gemini_run.ps1' 'Invoke-Task').Contains('Invoke-CopyGit @(''checkout'''))
         [void](Close-TaskCopy @('--remotes'))
         Check 'після доставки службова тека копії знята' (-not (Test-Path -LiteralPath (Join-Path $clone '.git/worktrees/repo-run-b1')))
     }

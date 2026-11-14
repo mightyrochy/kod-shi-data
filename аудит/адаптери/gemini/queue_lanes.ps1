@@ -86,10 +86,11 @@ $script:GpuStartPollMs = 500
 # Джерела й прогалини (пік каталогу, навантаження гри): аудит/корені/ПК-межа-без-джерела-gpu.md.
 # Це запасний бюджет за спостереженим максимумом, а не доведений пік будь-якої моделі.
 $script:GpuRunMiB = 8925
-# Межа (хвилин) git, що викладає чи перемикає дерево копії задачі: `reset --hard`, `checkout -B`; типова межа Invoke-Git — 10.
+# Межа зависання (хвилин) git, що викладає чи перемикає дерево копії задачі (`reset --hard`, `checkout -B`): процес, довший
+# за неї, Invoke-Native вбиває як завислий; типова межа Invoke-Git — 10.
 # Вимір 14.11: 5:44 без навантаження, двічі понад 10:00 під час прибирання worktree й виміру диска (Річ-колір-вимір-очима /1);
 # до виміру на 20 копіях, далі — найдовша виміряна тривалість із запасом.
-$script:CopyTreeGitMinutes = 30
+$script:CopyGitHangMinutes = 30
 
 # --- процеси й файли ----------------------------------------------------------------------------------------------
 
@@ -1509,11 +1510,11 @@ function ConvertTo-SparseSkip([string]$Dir) {
 }
 
 function Invoke-CopyGit([string[]]$GitArgs, [string]$Dir = '') {
-    <# git, що викладає чи перемикає дерево копії задачі (у $Dir чи в $RepoDir), під межею CopyTreeGitMinutes. У журнал —
+    <# git, що викладає чи перемикає дерево копії задачі (у $Dir чи в $RepoDir), під межею CopyGitHangMinutes. У журнал —
     тривалість у секундах (машинного часу без пауз живлення), також коли git упав чи вийшов за межу: так видно, скільки
     коштує викладення, а не лише що воно тривало довше за межу. #>
     $t0 = Get-AwakeTime
-    try { Invoke-Git $GitArgs -TimeoutMinutes $script:CopyTreeGitMinutes -Dir $Dir }
+    try { Invoke-Git $GitArgs -TimeoutMinutes $script:CopyGitHangMinutes -Dir $Dir }
     finally {
         $sec = ((Get-AwakeTime) - $t0).TotalSeconds.ToString('0.0', [Globalization.CultureInfo]::InvariantCulture)
         Write-Log "копія задачі $(if ($Dir) { $Dir } else { $RepoDir }): git $($GitArgs -join ' ') — $sec с"
