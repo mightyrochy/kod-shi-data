@@ -86,6 +86,11 @@ $script:GpuStartPollMs = 500
 # Джерела й прогалини (пік каталогу, навантаження гри): аудит/корені/ПК-межа-без-джерела-gpu.md.
 # Це запасний бюджет за спостереженим максимумом, а не доведений пік будь-якої моделі.
 $script:GpuRunMiB = 8925
+# Межа зависання (хвилин) git, що викладає чи перемикає дерево копії задачі (`reset --hard`, `checkout -B`): процес, довший
+# за неї, Invoke-Native вбиває як завислий; типова межа Invoke-Git — 10.
+# Вимір 14.11: 5:44 без навантаження, двічі понад 10:00 під час прибирання worktree й виміру диска (Річ-колір-вимір-очима /1);
+# до виміру на 20 копіях, далі — найдовша виміряна тривалість із запасом.
+$script:CopyGitHangMinutes = 30
 
 # --- процеси й файли ----------------------------------------------------------------------------------------------
 
@@ -1504,6 +1509,18 @@ function ConvertTo-SparseSkip([string]$Dir) {
     '!/' + ($Dir -replace '([\\*?\[])', '\$1') + '/'
 }
 
+function Invoke-CopyGit([string[]]$GitArgs, [string]$Dir = '') {
+    <# git, що викладає чи перемикає дерево копії задачі (у $Dir чи в $RepoDir), під межею CopyGitHangMinutes. У журнал —
+    тривалість у секундах (машинного часу без пауз живлення), також коли git упав чи вийшов за межу: так видно, скільки
+    коштує викладення, а не лише що воно тривало довше за межу. #>
+    $t0 = Get-AwakeTime
+    try { Invoke-Git $GitArgs -TimeoutMinutes $script:CopyGitHangMinutes -Dir $Dir }
+    finally {
+        $sec = ((Get-AwakeTime) - $t0).TotalSeconds.ToString('0.0', [Globalization.CultureInfo]::InvariantCulture)
+        Write-Log "копія задачі $(if ($Dir) { $Dir } else { $RepoDir }): git $($GitArgs -join ' ') — $sec с"
+    }
+}
+
 function Set-CopyWorkTree([string]$Repo) {
     <# Копія — робоче дерево за власним конфігом: `core.bare=false` і `core.worktree` = вона сама в її `config.worktree`.
     З `extensions.worktreeConfig` (вмикає sparse-checkout) прив'язане дерево читає `core.bare`/`core.worktree` спільного
@@ -1522,8 +1539,15 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
     $repo = Join-Path $Dir 'repo'; $tmp = Join-Path $Dir 'tmp'
     [void][IO.Directory]::CreateDirectory($tmp)
     $script:TaskCopy = @{ Dir = $Dir; Clone = $RepoDir; Temp = $env:TEMP; Tmp = $env:TMP }
+    # id службової теки `.git\worktrees\<id>` — basename шляху, з яким worktree створено. З `repo` в усіх копіях id
+    # повторюються між процесами: `worktree remove` одного процесу хвилинами знімає дерево (першим `.git`), а свою
+    # службову теку стирає наприкінці; `worktree prune` іншого процесу в цей час уже вважає її осиротілою, новий `add`
+    # бере те саме id, і кінець чужого remove стирає службову теку нової копії. Тож копія створюється під id з імені
+    # своєї теки задачі (унікальне: час і випадковий хвіст) і лише тоді переноситься в `repo`: `move` лишає id.
+    $own = Join-Path $Dir ('repo-' + (Split-Path -Leaf $Dir))
     [void](Invoke-Git @('worktree', 'prune') -AllowFail)
-    [void](Invoke-Git @('worktree', 'add', '-q', '-f', '--no-checkout', '--detach', $repo, $Commit))
+    [void](Invoke-Git @('worktree', 'add', '-q', '-f', '--no-checkout', '--detach', $own, $Commit))
+    [void](Invoke-Git @('worktree', 'move', $own, $repo))
     Set-CopyWorkTree $repo
     # sparse-checkout у worktree лише з git 2.36: раніший писав `core.sparseCheckout` у спільний конфіг клону, а
     # `--no-cone` з'явився в 2.35. Старіший git — копія повна, але так само прибирається після доставки.
@@ -1539,7 +1563,7 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
         }
     } else { Write-Log "копія задачі: git до 2.36 — повна ($([string]$v.Value))" }
     Set-CopyWorkTree $repo
-    [void](Invoke-Git @('reset', '-q', '--hard') -Dir $repo)
+    [void](Invoke-CopyGit @('reset', '-q', '--hard') $repo)
     Set-Variable -Scope Script -Name RepoDir -Value $repo
     $env:TEMP = $tmp; $env:TMP = $tmp
     Write-Log "копія задачі $repo ($Commit): тек-архівів не викладено — $($skip.Count)"
@@ -1570,7 +1594,7 @@ function Merge-MainIntoCopy([string]$Main, [string]$Branch) {
     if ($r.Code -eq 0) { return (Get-RefSha 'HEAD') }
     Write-Log "злиття main у $Branch не вдалося — $(($r.Out + $r.Err).Trim() -replace '\s+', ' ')"
     [void](Invoke-Git @('merge', '--abort') -AllowFail)
-    if ((Get-RefSha 'HEAD') -cne $before) { [void](Invoke-Git @('reset', '-q', '--hard', $before)) }
+    if ((Get-RefSha 'HEAD') -cne $before) { [void](Invoke-CopyGit @('reset', '-q', '--hard', $before)) }
     ''
 }
 

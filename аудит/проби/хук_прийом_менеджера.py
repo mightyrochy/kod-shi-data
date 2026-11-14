@@ -34,6 +34,11 @@ def запуск(вхід, я=МЕНЕДЖЕР, стан=СТАН):
         р = subprocess.run([sys.executable, ХУК], input=json.dumps(вхід, ensure_ascii=False), capture_output=True,
                            text=True, encoding="utf-8", env=env)
     нагадав = "Що доходить" in р.stdout and "additionalContext" in р.stdout
+    if нагадав:
+        нагадування = json.loads(р.stdout)["hookSpecificOutput"]["additionalContext"]
+        if ("правил не змінено" in нагадування or "запис у журнал" in нагадування
+                or "твоя ділянка" not in нагадування):
+            return "застаріле нагадування"
     return ("нагадує" if нагадав else "мовчить") + (" +stderr" if р.stderr.strip() else "")
 
 
