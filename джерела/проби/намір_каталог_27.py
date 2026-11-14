@@ -2,6 +2,9 @@
 Запуск: проба <джерела ДО/ПІСЛЯ> <каталог_таблиця.json.gz> <повний.xml>; це не оцінка краси образів."""
 import collections, gzip, hashlib, json, pathlib, sys
 sys.path.insert(0, str(pathlib.Path(sys.argv[1]).resolve()))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "прилади"))
+import сторож_таблиці        # таблиця тієї самої збірки, що й код у <джерела>, або зупинка з причиною (15018)
+сторож_таблиці.вимагати(sys.argv[1], таблиця=sys.argv[2], фід=sys.argv[3])
 import feed as Ф, таблиця_каталогу as Т, паспорт_нагоди as П
 import outfit as О, суд_образу as С, реєстр_правил as Р
 таблиця = pathlib.Path(sys.argv[2]); фід = sys.argv[3]
