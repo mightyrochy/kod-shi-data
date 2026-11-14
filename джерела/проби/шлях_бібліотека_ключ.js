@@ -34,7 +34,7 @@ const КАРТКА = підпис => ({рука: "1", ітерацій: 1, ви�
       w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder;
       w.CompressionStream = CompressionStream; w.DecompressionStream = DecompressionStream; }}).window;
   /* Пакет — вхід проби, а не хеш адреси (рішення 11824): `П` ставить проба тим шляхом, що й шов збирання. */
-  await чекатиНа(() => w.eval("typeof (document.getElementById('сцн-новий') || {}).onclick === 'function'"), "старт показу");
+  await чекатиНа(() => w.eval("typeof (document.getElementById('зб-пуск') || {}).onclick === 'function'"), "старт показу");
   w.__пакет = JSON.stringify(пакет);
   w.eval("П = JSON.parse(window.__пакет); П.прогін = новийІдПрогону(); рендер();");
   await чекатиНа(() => w.eval("typeof П !== 'undefined' && !!П && Array.isArray(П.картки) && П.картки.length === 1"),
