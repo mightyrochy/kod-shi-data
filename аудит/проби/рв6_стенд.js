@@ -3169,7 +3169,7 @@ function підсумокМоделі(){
     if (process.env.PLYTKA === 'всі'){
       const н = await стор.evaluate(async () => { const пл = () => [...document.querySelectorAll('#сц-нагода-плитки > *')];
         const слово = е => ((е.querySelector('.н') || {}).textContent || '');
-        try{ малюватиОцінкуП(); }catch(_){}   // список «Оціни» малюється, коли відкривають той екран
+        try{ показатиОцінку(); }catch(_){}   // список «Оціни» малюється, коли відкривають той екран
         const р = {аркуш: пл().map(слово), оціни: [...document.querySelectorAll('#оц-нагода option')].map(о => о.textContent),
                    підсвічено: пл().filter(е => е.classList.contains('вибр')).map(слово), ряди: []};
         for (const о of (ДОВІДНИК.нагоди || [])){
