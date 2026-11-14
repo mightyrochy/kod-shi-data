@@ -62,6 +62,9 @@ $script:SecretPathPattern = '(^|/)auth\.json$|(^|/)\.codex(/|$)|(^|/)\.config/gh
 $script:SecretContentPattern = 'eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]+|sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|refresh_token|BEGIN [A-Z ]*PRIVATE KEY'
 $script:IdPattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}$'
 $script:ShaPattern = '^[0-9a-f]{40}$'
+# Версія, з якої завантажено цей файл: встановлена лежить у versions\<sha>\ під UpdateRoot, куди gemini не пише; поза
+# встановленням (стенд, запуск із клону) — '-', і відмова такої версії повтору публікації не відкриває.
+$script:WrapperVersion = $(if ((Split-Path -Leaf $PSScriptRoot) -cmatch $script:ShaPattern -and (Split-Path -Leaf (Split-Path -Parent $PSScriptRoot)) -ceq 'versions') { Split-Path -Leaf $PSScriptRoot } else { '-' })
 $script:Utf8Strict = New-Object System.Text.UTF8Encoding($false, $true)
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
@@ -249,6 +252,7 @@ $script:PublishCodes = @{
     REF_MISMATCH = 'гілка чи SHA бандла не ті, що в стані'; EMPTY = 'нових комітів до main нема'; NO_BASE = 'нема спільної бази з main'
     SECRET = 'шлях чи вміст схожі на токен/секрет (auth.json, .codex/, .config/gh/, JWT eyJ….…, sk-, ghp_, refresh_token)'; GITHUB_DIR = 'зміни в .github/'; WRAPPER_FILES = 'зміни у файлах обгортки'; NOT_FF = 'не fast-forward до опублікованої гілки'
     PUSH_FAILED = 'пуш не вдавався годину (журнал publish.log; після входу git — gemini_publish.ps1 -Retry <id>)'
+    NO_REPUBLISH = 'позначку повернуто, а повтору нема: відмова вже чинної версії обгортки, повтор цієї версії вже був чи код не з повторюваних'
 }
 
 # Перший раз — $false і позначка; далі — $true. Тека gemini не може засипати диспетчера рядками: на позначку
@@ -567,9 +571,9 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
         return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $(if ($code -eq 'DONE') { 'NO_HEAD' } else { $code })_PUBLISHED" }
     }
     # Відмову пушу власник повторює рукою (-Retry): її позначка лишається, бо Get-Line публікує лише за наявною.
-    if ($pc -cne 'PUSH_FAILED') { Add-PublishedMarker $queue $marker $Id $code }
+    if ($pc -cne 'PUSH_FAILED') { Add-PublishedMarker $queue $marker $Id $code; Save-Refusal $queue $marker $Id $pc }
     if (Test-Seen "$queue $marker refused $pc") { return $null }
-    Write-WrapperLog "кінець $Id — НЕ ОПУБЛІКОВАНО $branch $head — $($script:PublishCodes[$pc]); $run; бандл $OutDir\$Id.bundle"
+    Write-WrapperLog "кінець $Id — НЕ ОПУБЛІКОВАНО $branch $head — $($script:PublishCodes[$pc]); $run; бандл $OutDir\$Id.bundle; версія $script:WrapperVersion"
     [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $pc" }
 }
 
@@ -649,6 +653,115 @@ function Remove-FinishedMarkers([datetime]$Since) {
         if ($d.Code -ne 0) { Write-WrapperLog "черга: $($p[0]) не знято ($($d.Err.Trim())) — повтор наступним проходом"; continue }
         Remove-Item -LiteralPath $f.FullName -Force
         Write-WrapperLog "черга: $($p[0]) знято — кінцевий стан опубліковано"
+    }
+}
+
+# Повтор відмовленої публікації. Відмову перевіркою вмісту чи шляхів вирішує код обгортки: хибний збіг виправляє нова
+# версія, а позначку відмова вже зняла. Решта кодів судить байти бандла й стану від gemini (BUNDLE_*, REF_MISMATCH),
+# історію main (NO_BASE, EMPTY) чи опубліковану гілку (NOT_FF) — ті самі байти нова версія судить так само; PUSH_FAILED
+# повторює -Retry.
+$script:RepublishCodes = @('SECRET', 'GITHUB_DIR', 'WRAPPER_FILES')
+
+function Get-RefusalPath([string]$Queue, [string]$Marker) {
+    <# Запис відмови позначки «<id> <код> <версія>» у WorkDir (gemini його не пише); ім'я — як у запису на зняття. #>
+    Join-Path (Join-Path $WorkDir 'refused') ((Get-Sha256Hex "$Queue $Marker") + '.txt')
+}
+
+function Save-Refusal([string]$Queue, [string]$Marker, [string]$Id, [string]$Code) {
+    <# Відмова з версією, що відмовила: повтор дозволяє лише інша версія (Reset-ReturnedRefusals). #>
+    if ($DryRun) { return }
+    $path = Get-RefusalPath $Queue $Marker
+    [void][IO.Directory]::CreateDirectory((Split-Path -Parent $path))
+    Write-FileAtomic $path "$Id $Code $script:WrapperVersion"
+}
+
+function Test-LegacyRefusalRemoved([string]$Id, [string]$Queue) {
+    <# Відмова, записана до записів відмови (лише ключ seen, без версії): чи знято позначку після неї.
+
+    Доказ — власний журнал публікатора: повернутою вважається лише знята позначка, а давню, яку не знімали, повтор не
+    публікує сам собою. #>
+    $log = Join-Path $WorkDir 'publish.log'
+    if (-not (Test-Path -LiteralPath $log)) { return $false }
+    # Читач ділить файл на запис і закривається до виходу: Write-WrapperLog дописує той самий журнал.
+    $reader = New-Object IO.StreamReader((New-Object IO.FileStream($log, 'Open', 'Read', 'ReadWrite')), $script:Utf8)
+    try {
+        $refused = $false
+        while ($null -ne ($line = $reader.ReadLine())) {
+            if (-not $refused) { $refused = $line.Contains("кінець $Id — НЕ ОПУБЛІКОВАНО "); continue }
+            if ($line.Contains("черга: $Queue знято — ")) { return $true }
+        }
+        $false
+    } finally { $reader.Dispose() }
+}
+
+function Get-RepublishOutboxName([string]$Id, [string]$Key) {
+    <# Ім'я файлу вихідних із часом id і власним хешем ключа (формат OutboxNamePattern): ім'я <id>.txt уже зайняте. #>
+    [regex]::Match($Id, '^[0-9]{8}-[0-9]{6}-').Value + [regex]::Match((Get-Sha256Hex $Key), '^[0-9a-f]{12}').Value + '.txt'
+}
+
+function Reset-ReturnedRefusals {
+    <# Позначки, які диспетчер повернув на origin після відмови публікації: один повтор чи рядок NO_REPUBLISH і зняття.
+
+    Повернута — відмову цього id публікатор обробив (стан у state\, запис відмови), а запису на зняття вже нема
+    (finished, finish-pending), тож позначку знято, і вона знову на origin; смуга її не бере (стан позначки DONE).
+    Повтор — код із RepublishCodes і відмова старшої версії: записана до записів відмови (без версії) чи версією, іншою
+    за чинну встановлену; версію міняє лише самооновлення з origin/main. Тоді стан id забуто, і Get-Line цього ж проходу
+    публікує наново через усі ворота. Один на версію: ключ «republish <позначка> <версія>» закриває й рядок NO_REPUBLISH —
+    повернення без оновлення дає один рядок, далі лише зняття. Відмова пушу (PUSH_FAILED) лишається руці -Retry. #>
+    if ($DryRun) { return }
+    $rows = (Invoke-Git @('for-each-ref', '--format=%(refname:lstrip=3) %(objectname)', 'refs/remotes/origin/gemini-queue/')).Out -split "`n"
+    foreach ($row in $rows) {
+        $p = @($row.Trim() -split ' ')
+        if ($p.Count -ne 2 -or $p[1] -cnotmatch $script:ShaPattern) { continue }
+        $queue = $p[0]; $marker = $p[1]; $key = "$queue $marker"
+        $record = Get-RefusalPath $queue $marker
+        $legacy = -not (Test-Path -LiteralPath $record)
+        $rid = ''; $version = '-'
+        if ($legacy) {
+            $code = @($script:RepublishCodes | Where-Object { Test-Path -LiteralPath (Get-SeenPath "$key refused $_") }) | Select-Object -First 1
+            $kept = "republish-kept $key"
+            if (-not $code -or (Test-Path -LiteralPath (Get-SeenPath $kept))) { continue }
+        } else {
+            $r = @(([IO.File]::ReadAllText($record, $script:Utf8)).Trim() -split ' ')
+            if ($r.Count -ne 3) { continue }
+            $rid = $r[0]; $code = $r[1]; $version = $r[2]
+        }
+        if ((Test-Path -LiteralPath (Join-Path (Join-Path $WorkDir 'finished') ((Get-Sha256Hex $key) + '.txt'))) -or
+            (Test-Path -LiteralPath (Get-SeenPath "$key refused PUSH_FAILED"))) { continue }
+        if ((Get-MarkerStateText $queue $marker) -cnotmatch '^DONE ([0-9]{8}-[0-9]{6}-[0-9a-f]{12}) [A-Z0-9_]{2,40}$') { continue }
+        $id = $Matches[1]
+        $statePath = Join-Path (Join-Path $WorkDir 'state') ($id + '.json')
+        if (($rid -and $rid -cne $id) -or -not (Test-Path -LiteralPath $statePath) -or
+            (Test-Path -LiteralPath (Join-Path (Join-Path $WorkDir 'finish-pending') ((Get-Sha256Hex "$key $id") + '.txt')))) { continue }
+        # Стан у теці виходу пише gemini: він лише має назвати ту саму позначку, дозволу з нього нема.
+        $s = Get-Line $id -StatusOnly
+        if ($null -eq $s) { continue }
+        $slug = [string](Get-Prop $s 'slug'); $cond = [string](Get-Prop $s 'cond')
+        if ($slug -cnotmatch $script:SlugPattern -or [string](Get-Prop $s 'marker') -cne $marker -or
+            "gemini-queue/$slug/$(Get-Prop $s 'model')/$(Get-Prop $s 'n')$(if ($cond) { '/' + $cond })" -cne $queue) { continue }
+        $publicationKey = Get-SleepPublicationKey $s $queue $marker
+        if (-not $publicationKey -or (Test-Path -LiteralPath (Get-SeenPath $publicationKey))) { continue }
+        # Для давньої незнятої позначки журнал читається раз: «republish-kept» закриває її для наступних проходів.
+        if ($legacy -and -not (Test-LegacyRefusalRemoved $id $queue)) { Write-FileAtomic (Get-SeenPath $kept) $kept; continue }
+        $guard = "republish $key $script:WrapperVersion"
+        $used = Test-Path -LiteralPath (Get-SeenPath $guard)
+        $older = $legacy -or ($script:WrapperVersion -cmatch $script:ShaPattern -and $version -cne $script:WrapperVersion)
+        $was = $(if ($legacy) { 'до записів відмови' } else { $version })
+        if (-not $used -and $older -and $code -cin $script:RepublishCodes) {
+            # Рядок повтору — під власним ім'ям: ім'я <id>.txt тека вихідних уже бачила й удруге не бере.
+            $dir = Join-Path $WorkDir 'republish'; [void][IO.Directory]::CreateDirectory($dir)
+            Write-FileAtomic (Join-Path $dir ($id + '.txt')) (Get-RepublishOutboxName $id "$guard $id")
+            Remove-Item -LiteralPath (Get-SeenPath "$key refused $code") -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $statePath -Force
+            Write-FileAtomic (Get-SeenPath $guard) $guard
+            Write-WrapperLog "повтор публікації ${id}: $queue повернуто, відмова $code версії $was, чинна $script:WrapperVersion"
+            continue
+        }
+        Add-FinishedMarker (Join-Path $WorkDir 'finished') $queue $marker
+        Write-WrapperLog "повтору публікації $id нема: $queue — $($script:PublishCodes['NO_REPUBLISH']); відмова $code версії $was, чинна $script:WrapperVersion"
+        if ($used) { continue }
+        Write-FileAtomic (Get-SeenPath $guard) $guard
+        Add-OutboxLine (Get-RepublishOutboxName $id "$guard $id NO_REPUBLISH") "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slug NO_REPUBLISH"
     }
 }
 
@@ -801,6 +914,10 @@ function Receive-Outbox {
         Write-WrapperLog "вихідні $($f.Name): $($r[0])"
         $slug = ''
         $source = Join-Path (Join-Path $WorkDir 'state') ($f.BaseName + '.json')
+        # Рядок повтору публікації названо не id стану: стан — за записом republish\<id>.txt з цим іменем.
+        foreach ($again in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'republish') -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+            if (([IO.File]::ReadAllText($again.FullName, $script:Utf8)).Trim() -ceq $f.Name) { $source = Join-Path (Join-Path $WorkDir 'state') ($again.BaseName + '.json') }
+        }
         if (Test-Path -LiteralPath $source) {
             $origin = ConvertFrom-Json ([IO.File]::ReadAllText($source, $script:Utf8))
             if ([string](Get-Prop $origin 'outbox') -ceq $f.Name) { $slug = [string](Get-Prop $origin 'slug') }
@@ -1086,9 +1203,13 @@ function Receive-RunState([string]$Id) {
     }
     if ($line -is [string] -and $line -eq 'RETRY') { return }
     if ($line -isnot [string] -and $null -ne $line) {
-        # Кінець прогону: рядок — у теку вихідних під id стану; доставка — з неї, як для рядків інших скриптів.
-        Add-OutboxLine ($Id + '.txt') $line.Outbox
-        Write-FileAtomic $statePath (([ordered]@{ line = ''; slug = [string](Get-Prop $line 'Slug'); sent = $true; attempts = 0; outbox = ($Id + '.txt') }) | ConvertTo-Json -Compress)
+        # Кінець прогону: рядок — у теку вихідних під id стану (повтор публікації — під іменем із republish\);
+        # доставка — з неї, як для рядків інших скриптів.
+        $outbox = $Id + '.txt'
+        $again = Join-Path (Join-Path $WorkDir 'republish') ($Id + '.txt')
+        if (Test-Path -LiteralPath $again) { $outbox = ([IO.File]::ReadAllText($again, $script:Utf8)).Trim() }
+        Add-OutboxLine $outbox $line.Outbox
+        Write-FileAtomic $statePath (([ordered]@{ line = ''; slug = [string](Get-Prop $line 'Slug'); sent = $true; attempts = 0; outbox = $outbox }) | ConvertTo-Json -Compress)
         return
     }
     if ($null -eq $line) {
@@ -1124,6 +1245,7 @@ function Main {
         Update-SleepEvents
         Invoke-WrapperChain
         if ($Retry) { Reset-State $Retry }
+        Reset-ReturnedRefusals
         $files = @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue | Sort-Object Name)
         foreach ($f in $files) {
             if ($f.BaseName -match $script:IdPattern) { Receive-RunState $f.BaseName }
