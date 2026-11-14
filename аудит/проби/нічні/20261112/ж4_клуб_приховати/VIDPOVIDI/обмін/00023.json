@@ -1,0 +1,127 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "Photo 1 — the shop's photo of #3·11 (top, bodysuit); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://feelyou.com.ua/wp-content/uploads/2025/03/bezymiannyj-kadr2974-scaled.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 2 — the shop's photo of #3·11 (top, bodysuit); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://feelyou.com.ua/wp-content/uploads/2025/03/bezymiannyj-kadr2950-scaled.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 3 — the shop's photo of #280·03 (outerwear, coat); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://bella-bicchi.com/upload/iblock/f19/kq3wqs05hjhsoadomt8wyse3um2zge38/plr4lgt1e0jhvuurini1sc5k4m283t1z.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 4 — the shop's photo of #280·03 (outerwear, coat); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://bella-bicchi.com/upload/iblock/d81/3rozowjn7tlpb11tq4c3704yf2op6xlt/1p7f1m1zgiry0u359ojkzlh8meoa8h05.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 5 — the shop's photo of #205·10 (shoes, loafers); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://favoriteshoes.com.ua/upload/catalog/24700/24601/s_img_0319.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 6 — the shop's photo of #205·10 (shoes, loafers); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://favoriteshoes.com.ua/upload/catalog/24700/24601/s_img_0318.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 7 — the shop's photo of #353·30 (bottom, trousers); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://skripka.com.ua/wp-content/uploads/2025/03/skripka4022.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 8 — the shop's photo of #353·30 (bottom, trousers); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://skripka.com.ua/wp-content/uploads/2025/03/skripka4050.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 9 — the shop's photo of #72·20 (bag, crossbody_bag); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://www.miraton.ua/upload/webp_cache/1740x2280q90-000211620_1_.webp"
+      }
+     },
+     {
+      "type": "text",
+      "text": "{\"version\": \"1\", \"task\": {\"role\": \"You are the stylist of the Lyusterko styling app. You describe to her the outfit you chose for her.\", \"rules\": [\"Describe only the items of «outfit»: no suggestions to buy or add more, no items it does not contain — no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or she may own it.\", \"Do not change the outfit yourself. Describe each item as its photo shows it: a clearly different item or colour goes only into «wrong_photos» or «swap».\", \"Say each thing about an item once, and do not state a quality and then doubt it.\", \"Talk to her about the items, never about what you were given: no word about photos, frames, what else a frame shows, a photo you could not see, or the codes and data you went by, and no comparison of a photo with them — the card already shows her the photos and says under an item when it has none.\", \"Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).\", \"Every item of «outfit» is your choice: stand behind it. Do not end a doubt with «the choice is yours», «it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a decision to her only about what she asked for herself: her words in «case», an item marked «hers».\", \"Only when a photo shows that an item is not what this outfit needs — a clearly different colour, another kind of item, or unfit for her occasion — and that matters for this outfit, name that one item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in doubt, leave «swap» out.\", \"Write the answer object itself: it begins with {\\\"version\\\" and ends with the brace that closes it. Do not wrap it in another object; after that brace the answer is over — write nothing more.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"Text for her. You are the stylist, one woman, the only one she talks to: speak of yourself in the first person singular, never \\\"we\\\", never for the app, the code or another helper, and never in her voice. Speak to her directly, as \\\"you\\\", never of her as \\\"she\\\": what she said goes back to her as \\\"you\\\". Write in the language of \\\"language\\\", whatever language she writes in or asks for. Plain human words, without item numbers, ids, hex codes or markdown.\", \"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \\\"on the scale\\\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer_schema\": {\"version\": \"1\", \"text\": \"<prose for her after the items: (1) optional, only when it adds something — how the shoes, the outer layer and the accessories go with the rest, in one or two sentences; (2) why it works — 3–4 sentences, taking from «day», «palette», «makeup» and «missing» only what matters most for this outfit and her occasion>\", \"how_to_wear\": [\"<one piece of advice per line, at most three, each changing how the outfit looks or lives through her day; advice that puts an item into, under or over another names that other item too, and both are items of «outfit»>\"], \"wrong_photos\": [\"<«n» of an item whose photo shows another item, a clearly different color, a placeholder or a logo; the same item on a person, from another angle, close up or with other clothes in the frame is no reason; when in doubt, leave it out>\"], \"swap\": {\"item\": \"<«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty reason — the usual case>\", \"why\": \"<why the photo warrants replacing this item: a clearly different colour, another kind of item or a mismatch with her occasion, one of: colour, kind, occasion>\", \"to\": \"<only with «swap_spares» in the input: «n» of the spare you choose; leave it out to keep the item>\"}, \"named\": [{\"n\": \"<«n» of the item of «outfit» that «text» or «how_to_wear» names; a thing that is not an item of «outfit» has no «n» — and should not be named at all>\", \"what\": \"<every garment, shoe, bag, jewelry or accessory that «text» or «how_to_wear» names — each once, in a few words>\"}], \"about_items\": [{\"n\": \"<«n» of the item of «outfit»: one entry for every item of «outfit», in its order>\", \"text\": \"<prose for her about this one item alone: what it is, cut, length, color in words, fabric, in one or two sentences, as its photo and data show; it is in her outfit — never say it is not included; no other garment, shoe, bag or accessory — neither one its photo shows it with nor another item of «outfit»: how the items go together belongs to «text»; her figure, if at all, only in words of the line and the cut — never the shape code or an «…-shape»>\"}]}, \"input\": [\"\\\"outfit\\\" — the chosen outfit: its items with number «n» and what the code knows of each as codes — «kind» and «type», its cut, fabric, material, length, sleeve, pattern and details when known, and its color («color» as a code, «hex» measured) — a hint for reading the photo, and the item itself when it has no photo\", \"\\\"photos\\\" — the numbers of this item's photos: every photo stands under its own label «Photo N — …:» among the blocks placed before this object, and the label names the item by its «n»; under a label with «not delivered» or «not available» there is no image; describe what you see on the photos; from each photo take only the item of its «kind» — a belt, a bag or jewelry is often shown worn with a blouse or a dress: describe the belt, not the blouse; never take for an item a photo under another number, and when all of its photos are not delivered, describe it by its codes: its «kind», «type», «color» and the rest\", \"\\\"kind\\\" — what the item is, as a code (belt, top, dress, shoes, bag…); «type» — its narrower type when the code knows it; «set» — a set sold as one item, its top and its bottom both in the outfit; «about_items» describes the item of this «kind» and nothing else from its photo\", \"\\\"case\\\" — her occasion: its fields as codes, her own words as quotes; «formality» is an internal 1–10 band, for you only\", \"\\\"goal_zones\\\" — the body zones she wants to draw the eye away from, with any goal; this comes before «body» and «ways_to_wear»: set the eye on none of these zones — no sentence or way to wear that marks, frames or accentuates them; with belly or hips: no tuck of any kind (not a front or half tuck, not a top tucked into the bottom, whatever it is said to avoid) and no belt at the waist, never «the narrowest part of the torso»; do not name them to her as something to hide; say where the outfit leads the eye instead\", \"\\\"day\\\" — day with source; in the last part of «text» say how this outfit lives through her day; when something you chose argues with the day (weather, hours on her feet, the place), say in one plain sentence why you still chose it and what that means for her day; describe the chosen items without proposing a different composition; never hand that decision back to her\", \"\\\"palette\\\" — her palette; in the third part, in your own words and only where it concerns the items of this outfit: the metal, when the outfit has jewelry or metal details; a colour «farthest» from her only when an item of this outfit carries it (call no other colour farthest from her); a combination she can put together — optional, and only from the items of this outfit, never by adding an item; not as a list\", \"\\\"body\\\" — her figure as the code measured it: height, shape code, zones, and statements — the cuts that sit best on her, where a voluminous outfit takes its anchor, where most conditions meet on her body; in the last part of «text» say in one or two sentences what this outfit does for her figure — which line it draws, where it sets the eye (shoulders, waist, hips, legs, height), with the items that do it; speak of what the outfit does, never of what her body lacks or what should be hidden; when an item of the outfit works against these statements, say so gently and say why you chose it anyway or what to do with it — only with the items of «outfit»; «cuts» are cuts of an item, not items to add («belted» — a top with its own belt, never a belt she puts on); her figure only in words of the line and the cut — her waist, hips, shoulders, legs — never as the shape code, a letter, an «…-shape», a body type or a number\", \"\\\"shape\\\" — figure route, not a verdict: A — hips wider than shoulders; V — shoulders wider than hips; X — a marked waist; H — straight, no marked waist; HX — waist undetermined by FFIT (waist_defined=null; waist_basis explains); O — FFIT Oval/Diamond, waist wider than hips: a vertical to the face and legs, quiet middle\", \"\\\"ways_to_wear\\\" — ways the items can be worn: «item» — «n» of the item of «outfit» (none — the whole outfit); each statement is one way — its place, and its effect when the code knows one; in «how_to_wear» name a way only when it changes something for this outfit — its effect matters here (a line across the torso that already has many, a hem it lands on); a way that changes nothing is left out\", \"\\\"statements\\\" — what the code found: each entry is {code, values, …}; codes are defined in \\\"statement_codes\\\"\"], \"statement_codes\": {\"pair_side_unknown\": \"her top and hip girths are measured once each, so the error of their difference is unknown and the code does not say which half is wider; the girths are facts (values: top_cm, hips_cm, difference_pct)\", \"volume_anchor\": \"a voluminous outfit keeps one anchor where the body shows: the waist (belt, wrap, tuck) or the ankle (a tapered or cropped bottom); volume without an anchor reads as \\\"the body shows nowhere\\\"\", \"body_knot\": \"most conditions meet at these zones of her body; conditions shared by both zones need ONE item for both, since a fix on one zone moves the other; the rest on the first zone is fixed separately (values: zones — per zone: conditions, tension 0 to 1; shared, own — condition codes, defined here too)\", \"one_line\": \"the contour leaves the body in ONE place below the shoulders: a voluminous top together with a voluminous bottom gives two lines, and neither reads\", \"raise_collar_free_state\": \"raising the collar is a free fourth state\", \"raise_collar\": \"raise the collar: it adds a vertical near the face and sharpens the silhouette\"}}, \"outfit\": {\"id\": \"o2\", \"items\": [{\"n\": \"#3·11\", \"kind\": \"top\", \"type\": \"bodysuit\", \"color\": \"chocolate\", \"hex\": \"#69443b\", \"photos\": [1, 2]}, {\"n\": \"#280·03\", \"kind\": \"outerwear\", \"type\": \"coat\", \"color\": \"camel\", \"hex\": \"#9a7a58\", \"photos\": [3, 4], \"cut\": \"wrap\", \"sleeve\": \"вшивний\", \"details\": [\"belt\"]}, {\"n\": \"#205·10\", \"kind\": \"shoes\", \"type\": \"loafers\", \"color\": \"brown\", \"hex\": \"#341f1a\", \"photos\": [5, 6]}, {\"n\": \"#353·30\", \"kind\": \"bottom\", \"type\": \"trousers\", \"color\": \"grey\", \"hex\": \"#6b6c68\", \"photos\": [7, 8], \"cut\": \"straight\", \"pattern\": \"stripes\"}, {\"n\": \"#72·20\", \"kind\": \"bag\", \"type\": \"crossbody_bag\", \"color\": \"red\", \"hex\": \"#ba4755\", \"photos\": [9], \"shine\": true}]}, \"case\": {\"field_quotes\": {\"event\": \"ввечері в клуб\", \"place\": \"ввечері в клуб\", \"goal\": \"не хочу привертати уваги\", \"goal_zones\": \"приховати живіт\", \"part_of_day\": \"ввечері\"}, \"formality_reason\": \"her_words\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"goal\": {\"kind\": \"reading\", \"quote\": \"не хочу привертати уваги\"}, \"goal_zones\": {\"kind\": \"her\", \"quote\": \"приховати живіт\"}, \"goal_quote\": {\"kind\": \"default\"}, \"place\": {\"kind\": \"her\", \"quote\": \"ввечері в клуб\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"her\", \"quote\": \"ввечері в клуб\"}, \"part_of_day\": {\"kind\": \"reading\", \"quote\": \"ввечері\"}}, \"event\": \"ввечері в клуб\", \"goal\": \"conceal\", \"goal_zones\": [\"belly\"], \"goal_quote\": \"не хочу привертати уваги\"}, \"day\": {\"place\": \"club\", \"season\": \"autumn\", \"season_source\": {\"kind\": \"default\"}, \"part_of_day\": \"evening\", \"light\": \"artificial\", \"formality\": {\"from\": \"smart\", \"to\": \"smart\"}, \"occasion_requirements\": {\"profile\": \"unknown\", \"light\": \"evening\", \"mourning\": false, \"lightness_range\": null, \"lightness_max\": null, \"chroma_max\": null, \"loudness_max\": null, \"loudness_source\": \"unknown\", \"near_white_veto\": false, \"shine_near_face_from\": null, \"festive_trim_shine_from\": null, \"decorated_headwear_or_nonmetal_jewelry\": [], \"loud_patterns_large_or_near_face\": []}}, \"palette\": {\"metal\": \"gold_and_silver\", \"combinations\": [{\"technique\": \"analogous\", \"colors\": [\"pink #8a6c76\", \"beige #bc9c97\", \"white #d4d4d4\"]}, {\"technique\": \"tone_on_tone\", \"colors\": [\"burgundy #682d29\", \"pink #a8655e\", \"beige #d2aba7\"]}, {\"technique\": \"tone_on_tone\", \"colors\": [\"chocolate #4b3c32\", \"brown #9c6d4b\", \"beige #cfae98\"]}]}, \"body\": {\"height_cm\": 165, \"shape\": \"HX\", \"zones\": {\"top_vs_bottom\": 0, \"waist_defined\": null, \"waist_basis\": \"body_error_unknown\"}, \"statements\": [{\"code\": \"pair_side_unknown\", \"values\": {\"top_cm\": 114.0, \"hips_cm\": 114.0, \"difference_pct\": 0}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_dcbec64fba38e848d9cf32aa\"}, {\"code\": \"volume_anchor\", \"values\": {}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_0e831db17272cc10db154708\"}, {\"code\": \"body_knot\", \"values\": {\"zones\": [{\"zone\": \"waist\", \"conditions\": 2, \"tension\": 1.0}, {\"zone\": \"ankle\", \"conditions\": 2, \"tension\": 1.0}], \"shared\": [\"volume_anchor\", \"one_line\"], \"own\": []}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_852890e7338362fdb0fba965\"}]}, \"ways_to_wear\": [{\"item\": \"#280·03\", \"statements\": [{\"code\": \"raise_collar_free_state\", \"values\": {}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_5646f456f06d28c4ebe2c962\"}, {\"code\": \"raise_collar\", \"values\": {}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_133a58884c4c98795f276577\"}]}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b",
+   "x-images-dropped": "9"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"version\\\": \\\"1\\\", \\\"text\\\": \\\"Your chocolate bodysuit creates a smooth, streamlined foundation that gently elongates your silhouette without any interruption at the waist. Layering the camel wrap coat with its soft belt over it maintains this clean vertical line while adding warmth for the evening air. The grey striped trousers add subtle texture to the look, grounding the rich tones of the top and outer layer. Finally, the vibrant red crossbody bag serves as a striking focal point that brings life to your ensemble without feeling overwhelming.\\\", \\\"how_to_wear\\\": [\\\"Leave the coat collar open to maintain an effortless, relaxed silhouette perfect for an evening out.\\\", \\\"Tuck the front of the bodysuit slightly into the coat belt only if you need to secure the outer layer, keeping the waist area smooth and unbroken.\\\"], \\\"wrong_photos\\\": [], \\\"swap\\\": {\\\"item\\\": \\\"#3·11\\\", \\\"why\\\": \\\"colour\\\", \\\"to\\\": \\\"\\\"}, \\\"named\\\": [{\\\"n\\\": \\\"#3·11\\\", \\\"what\\\": \\\"chocolate bodysuit\\\"}, {\\\"n\\\": \\\"#280·03\\\", \\\"what\\\": \\\"camel wrap coat with belt\\\"}, {\\\"n\\\": \\\"#205·10\\\", \\\"what\\\": \\\"brown loafers\\\"}, {\\\"n\\\": \\\"#353·30\\\", \\\"what\\\": \\\"grey striped trousers\\\"}, {\\\"n\\\": \\\"#72·20\\\", \\\"what\\\": \\\"red crossbody bag\\\"}], \\\"about_items\\\": [{\\\"n\\\": \\\"#3·11\\\", \\\"text\\\": \\\"This chocolate bodysuit features a sleek, continuous cut that flows from the neckline to the hem, offering a polished yet comfortable base for your evening look.\\\"}, {\\\"n\\\": \\\"#280·03\\\", \\\"text\\\": \\\"The camel wrap coat is designed with a flattering drape and includes a belt at the waist to define your silhouette while keeping the lines soft and elegant.\\\"}, {\\\"n\\\": \\\"#205·10\\\", \\\"text\\\": \\\"Your brown loafers offer a classic, comfortable shape that pairs seamlessly with the trousers, providing an effortless transition from day to night.\\\"}, {\\\"n\\\": \\\"#353·30\\\", \\\"text\\\": \\\"These grey striped trousers feature a straight leg cut that creates a clean line, adding subtle visual interest through their pattern while maintaining a sophisticated profile.\\\"}, {\\\"n\\\": \\\"#72·20\\\", \\\"text\\\": \\\"The red crossbody bag brings a vibrant pop of color to your outfit, serving as a stylish accent piece that balances the deeper tones of your top and coat.\\\"}]}\"}],\"usage\":{\"input_tokens\":4388,\"output_tokens\":524},\"stop_reason\":\"end_turn\"}"
+ }
+}

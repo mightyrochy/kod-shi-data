@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"own\": \"<id from her_items or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\", \"\\\"her_items\\\" — her own items; an item of the description that is one of them gets its id in \\\"own\\\"\"]}, \"description\": \"Linen sundress named Amora, relaxed fit, knee-length, terracotta #d67c5a, woven linen with a loose, airy weave.\\nFlat leather sandals in natural tan #e0cda8, rounded toe and low block heel for comfort on autumn paths.\\nSimple gold hoop earrings, medium gauge, polished finish to catch the daylight without overpowering the simple neckline.\\nThis outfit works because it honors her specific wish for a linen sundress named Amora while respecting the everyday formality of an afternoon walk. The terracotta hue harmonizes beautifully with her skin tones and hair under natural autumn lighting, creating a warm and approachable look. By keeping the silhouette relaxed and pairing it with comfortable sandals, the ensemble remains practical yet stylish for strolling outdoors without needing an outer layer in mild weather.\", \"her_items\": [{\"id\": \"її-с1\", \"name\": \"Амора\"}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Amora\\\",\\n      \\\"details\\\": \\\"relaxed fit, knee-length, woven linen with a loose airy weave\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#d67c5a\\\",\\n      \\\"own\\\": \\\"її-с1\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Flat leather sandals\\\",\\n      \\\"details\\\": \\\"natural tan, rounded toe and low block heel\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#e0cda8\\\",\\n      \\\"own\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Simple gold hoop earrings\\\",\\n      \\\"details\\\": \\\"medium gauge, polished finish\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"own\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":580,\"output_tokens\":229},\"stop_reason\":\"end_turn\"}"
+ }
+}

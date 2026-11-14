@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Black wool-blend blazer, tailored fit, hip length, deep obsidian, virgin wool with a subtle matte finish.\\nCrisp white cotton blouse, classic collar, cropped at the waist, pure white, breathable poplin.\\nHigh-waisted black straight-leg trousers, structured cut, ankle length, jet black, heavy twill.\\nBlack leather loafers, cap-toe design, low heel, solid black, smooth calfskin with a slight sheen.\\nThin black silk scarf, rectangular shape, 90cm x 90cm, midnight blue with faint silver geometric lines, lightweight chiffon.\\n\\nThis outfit honors your wish for restraint and classic style by sticking to a monochromatic palette of black and white, ensuring you look polished even while standing in the dense crowd at the club. The structured wool blazer and tailored trousers provide a strong, timeless silhouette that feels appropriate for an evening rock concert without appearing overly loud or flashy. The crisp white blouse underneath introduces a touch of clean elegance that balances the edgy atmosphere of the venue, while the leather loafers offer both sophistication and comfort for moving through the venue. Finally, the silk scarf adds a subtle layer of personal flair that reflects light softly under the artificial club lighting without drawing excessive attention.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"blazer\\\", \\\"details\\\": \\\"tailored fit, hip length, deep obsidian, virgin wool with a subtle matte finish\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"blouse\\\", \\\"details\\\": \\\"classic collar, cropped at the waist, pure white, breathable poplin\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#FFFFFF\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"trousers\\\", \\\"details\\\": \\\"high-waisted straight-leg, structured cut, ankle length, jet black, heavy twill\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"loafers\\\", \\\"details\\\": \\\"cap-toe design, low heel, solid black, smooth calfskin with a slight sheen\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"scarf\\\", \\\"details\\\": \\\"rectangular shape, 90cm x 90cm, midnight blue with faint silver geometric lines, lightweight chiffon\\\", \\\"slot\\\": \\\"scarf\\\", \\\"color_hex\\\": \\\"#191970\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":612,\"output_tokens\":289},\"stop_reason\":\"end_turn\"}"
+ }
+}

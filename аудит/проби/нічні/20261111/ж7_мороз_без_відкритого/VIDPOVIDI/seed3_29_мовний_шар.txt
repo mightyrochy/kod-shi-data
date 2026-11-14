@@ -1,0 +1,63 @@
+── ПРОМПТ (7826 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: coat · colour code: graphite · about it: text н=1
+2 — kind code: shirt · colour code: silvery · about it: text н=2
+3 — kind code: brooch · colour code: chocolate · about it: text н=3
+4 — kind code: ankle_boots · colour code: chocolate · about it: text н=4
+5 — kind code: trousers · colour code: black · about it: text н=5
+6 — kind code: bag_generic · colour code: yellow · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; chocolate — шоколадний; graphite — графіт; silvery — срібний; yellow — жовтий.
+
+ТЕКСТИ:
+{
+"1": "This is a regular-fit graphite coat featuring a classic double-breasted design. Its dark, neutral color shields you from the harsh winter light and keeps your silhouette sharp against the snowy backdrop.",
+"2": "You are wearing a regular-cut shirt with a subtle stripe pattern in silvery tones. The fabric feels structured yet comfortable, providing a clean layer under your coat that won't bunch up while you walk.",
+"3": "This is a delicate brooch finished in chocolate. Its rich, dark hue matches your boots and trousers to maintain the outfit's monochrome base, while the metallic sheen offers a subtle hint of luxury.",
+"4": "These are ankle boots in a deep chocolate shade with a tapered profile. They provide the necessary warmth and grip for a snowy walk to work, extending your leg line seamlessly into your wide trousers.",
+"5": "This is a pair of wide-leg trousers in solid black. Their generous cut creates a smooth, unbroken vertical line that makes you appear taller and more slender, which is perfect for the chilly autumn air.",
+"6": "This is a versatile bag generic type in a vibrant yellow. Its bright color serves as a joyful focal point that breaks the darkness of your coat and trousers, adding energy to your routine without being overwhelming.",
+"7": "You are dressed for a frosty morning commute in my graphite double-breasted coat, which will keep you warm while walking through the snow. Underneath, you wear your silvery striped shirt and wide black trousers to create a sleek, elongated line from your shoulders down to your ankles, ensuring you look tall despite the cold. My chocolate ankle boots ground this dark, elegant foundation perfectly, while your yellow bag adds a single, cheerful spark of color that lifts your mood without distracting from your neat work attire. The warm gold and silver tones of my brooch tie these cool neutrals together with a soft, personal touch.",
+"8": "Since it is minus fifteen degrees and you are walking to work, keep the coat zipped all the way up to protect against the wind and snow.",
+"9": "Walk with your chin up and shoulders back; the double-breasted cut naturally frames your face, making you look poised and ready for business as you move through the slush.",
+"10": "Черевики THEA з анатомічним мисом утеплені — Black leather ankle boots are essential for the frosty snowy walk and complete the outfit base.",
+"11": "В’язана троянда-брошка шоколад — Red brooch serves as a deliberate accent break to add interest sources, answering the blandness concern.",
+"12": "Armonelli Сумка жовта — I accept this finding because the second mention of suede reinforces the material's presence on the salted road, but the outfit serves your intent to break the palette with a red accent and walk safely in frost, so I hold my choice here.",
+"13": "В’язана троянда-брошка шоколад — This red brooch lies outside the neutrals_plus_accent palette arc (in_arc: false) but serves as a deliberate accent break.",
+"14": "Черевики THEA з анатомічним мисом утеплені — Black leather ankle boots are essential for the frosty snowy walk and complete the tonal palette without adding warmth metrics."
+}
+
+── ВІДПОВІДЬ (2772 симв., 20.0 с, HTTP 200) ──
+```json
+{
+  "1": "Це графітовий тренч вільного крою, виконаний у класичному подвійному дизайні. Його темний нейтральний колір захищає тебе від суворого зимового світла та зберігає твою фігуру чіткою на засніженому фоні.",
+  "2": "Ти одягла сорочку вільного крою з ледь помітним смугастим малюнком у сріблястих тонах. Тканина відчувається структурованою, але комфортною, забезпечуючи чистий шар під тренчем, який не помнеться, коли ти йтимеш.",
+  "3": "Це делікатна брошка шоколадного кольору. Її насичений темний відтінок поєднується з твоїми чобітьми та штанами, щоб зберегти монохромну основу вбрання, а металевий блиск пропонує ледь помітний натяк на розкіш.",
+  "4": "Це шоколадні черевики до щиколотки зі звуженим силуетом. Вони забезпечують необхідне тепло та зчеплення для сніжної прогулянки на роботу, плавно продовжуючи твої ноги в широких штанах.",
+  "5": "Ці чорні штани вільного крою створюють гладку вертикальну лінію, яка робить тебе вищою і стрункішою, що чудово підходить для холодної осінньої погоди.",
+  "6": "Це універсальна сумка жовтого кольору. Її яскравий колір слугує радісним акцентом, який розбиває темряву тренча та штанів, додаючи енергії твоєму повсякденному вигляду без надмірності.",
+  "7": "Ти одягнена для морозного ранкового шляху на роботу в мій графітовий подвійний тренч, який зігріє тебе під час прогулянки снігом. Під ним ти носиш свою сріблясту сорочку в смужку та широкі чорні штани, щоб створити елегантну видовжену лінію від плечей до щиколоток, забезпечуючи твій високий зріст навіть у холод.",
+  "8": "Оскільки на вулиці мінус п’ятнадцять градусів і ти йдеш на роботу, застебни тренч повністю, щоб захиститися від вітру та снігу.",
+  "9": "Тримай голову високо та плечі назад; подвійний крій природно обрамлює твоє обличчя, роблячи тебе впевненою та готовою до роботи під час руху по калюжах.",
+  "10": "Утеплені черевики THEA з анатомічним мисом — чорні шкіряні чобітки до щиколотки необхідні для морозної сніжної прогулянки та завершують основу вбрання.",
+  "11": "В’язана брошка-троянда шоколадного кольору слугує навмисним акцентним розривом, щоб додати інтересу, вирішуючи проблему монотонності.",
+  "12": "Сумка Armonelli жовтого кольору — я приймаю це рішення, оскільки друга згадка про замшу підкреслює її присутність на засоленій дорозі, але вбрання слугує твоєму задуму розбити палітру червоним акцентом і безпечно пройти крізь мороз, тому я залишаю свій вибір тут.",
+  "13": "В’язана брошка-троянда шоколадного кольору лежить поза межами нейтральної палітри з акцентом (in_arc: false), але слугує навмисним акцентним розривом.",
+  "14": "Утеплені черевики THEA з анатомічним мисом — чорні шкіряні чобітки до щиколотки необхідні для морозної сніжної прогулянки та завершують тональну палітру, не додаючи тепла."
+}
+```

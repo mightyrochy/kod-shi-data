@@ -1,0 +1,64 @@
+── ПРОМПТ (8190 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: beret · colour code: black · about it: text н=1
+2 — kind code: suit · colour code: camel · about it: text н=2
+3 — kind code: pumps · colour code: black
+4 — kind code: crossbody_bag · colour code: black · about it: text н=3
+5 — kind code: ring · colour code: silvery · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; camel — кемел; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This is a black beret with a soft, matte finish that sits comfortably on the crown of your head. Its simple, rounded shape offers a sleek silhouette that frames the face without adding extra volume or lines above the shoulders.",
+"2": "The set is a relaxed-fit two-piece suit in camel tones, featuring an unstructured jacket and matching trousers with a comfortable, loose cut. The fabric has a soft drape that allows the garment to fall freely over the body, creating clean vertical lines that elongate the figure.",
+"3": "A compact black crossbody bag with a structured shape and minimal hardware details. Its dark hue contrasts sharply against the camel suit, creating a clear visual boundary that keeps the focus on the upper body.",
+"4": "This is a silvery ring with a delicate band design, offering a touch of refined sparkle without overwhelming the hand. The metallic sheen complements the black accessories while maintaining a subtle presence throughout the outfit.",
+"5": "I chose this set to ground your look in the evening, with its relaxed cut and soft camel hue creating a quiet backdrop that lets your black accessories define the shape. The beret sits effortlessly on top, framing your face while keeping the lines above the shoulders clean and unstructured, which is exactly what helps carry the eye away from the midsection without effort. Your silvery ring adds a subtle sparkle at your fingertips, tying the metal details together without adding any visual weight to your torso or drawing attention where you wish to avoid it.",
+"6": "Leave the suit untucked to maintain a fluid line across your body, ensuring the relaxed hem flows naturally over your hips and legs without defining the waist.",
+"7": "Tuck your arms slightly into your jacket sleeves as you move through the club; this creates a slight visual break that softens the silhouette further.",
+"8": "Костюм: піджак прямого крою, з паском, рукава 3/4; штани з лампасами та косими кишенями, прямі, широкі, посадка висока (Max Mara) Max Mara — I added this camel viscose sheath dress to act as the missing 'bottom' piece, creating the full outfit foundation. The relaxed fit and mid-length cut are ideal for hiding the belly.",
+"9": "Чорні туфлі-човники на середній шпильці — I kept these black pumps to provide a sharp, formal base that anchors the lighter tones and meets the 'smart' formality requirement.",
+"10": "Крос-боді Hourglass — I added this black crossbody bag to satisfy the mandatory 'no_bag' constraint for a club evening.",
+"11": "Золота каблучка Ice Cube — I replaced the duplicate rings with one of these silver rings. It provides the necessary jewelry without creating the 'kind_twice' error, maintaining the metallic accent.",
+"12": "Крос-боді Hourglass, Костюм: піджак прямого крою, з паском, рукава 3/4; штани з лампасами та косими кишенями, прямі, широкі, посадка висока (Max Mara) Max Mara — This remark flags a formality spread between the 'smart' dress and the 'formal' black bag; I accept it because your goal is to remain unseen, so maintaining a unified, quiet tone across all pieces overrides the need for varied formality levels.",
+"13": "Берет з чорною вуаллю сірий — I chose this silvery beret as an outer layer to satisfy the rule of at least one accessory and to act as the anchor that draws attention upward from the concealed belly zone.",
+"14": "Крос-боді Hourglass — I added this black crossbody bag to resolve the 'no_bag' blocker for a club occasion. The black color keeps the palette unified and the size is practical.",
+"15": "Крос-боді Hourglass — I added this black crossbody bag to resolve the 'no_bag' blocker essential for a club outfit."
+}
+
+── ВІДПОВІДЬ (3663 симв., 32.6 с, HTTP 200) ──
+```json
+{
+  "1": "Це чорний берет з м’якою, матовою обробкою, який зручно сидить на твоїй голові. Його проста, округла форма створює елегантний силует, що обрамлює твоє обличчя без зайвого об’єму чи ліній над плечима.",
+  "2": "Костюм — це двобортний комплект вільного крою в кемел тонах, який складається з неструктурованого піджака та відповідних штанів із комфортним, вільним кроєм. Тканина має м’який спад, що дозволяє одягу вільно лежати по тілу, створюючи чисті вертикальні лінії, які видовжують фігуру.",
+  "3": "Компактна чорна сумка-кросбоді з чіткою формою та мінімальними деталями фурнітури. Її темний відтінок різко контрастує з кемел костюмом, створюючи чітку візуальну межу, яка зосереджує увагу на верхній частині тіла.",
+  "4": "Це срібне кільце з ніжним дизайном обідка, яке додає витончений блиск без перевантаження руки. Металевий відблиск доповнює чорні аксесуари, зберігаючи при цьому стриману присутність у всьому образі.",
+  "5": "Я підібрала цей комплект, щоб заземлити твій вечірній образ, адже його вільний крій та м’який кемел відтінок створюють тихий фон, який дозволяє чорним аксесуарам визначати форму. Берет зручно сидить на голові, обрамлюючи твоє обличчя, водночас зберігаючи лінії над плечима чистими та неструктурованими — саме це допомагає відвести погляд від середньої частини тіла без зусиль. Твоє срібне кільце додає ледь помітний блиск на кінчиках пальців, пов’язуючи металеві деталі разом, не створюючи жодної візуальної ваги у твоїй верхній частині тулуба чи привертаючи увагу до того місця, де ти цього хочеш уникнути.",
+  "6": "Залиш костюм розстебнутим, щоб підтримувати плавний силует по всьому тілу. Це забезпечить те, що вільний поділ природно спадатиме на стегна та ноги без визначення лінії талії.",
+  "7": "Злегка засунь руки у рукави жакета, коли рухаєшся клубом; це створює невеликий візуальний перерив, який ще більше пом’якшує силует.",
+  "8": "Костюм: піджак прямого крою з паском, рукава 3/4; штани з лампасами та косими кишенями, прямі, широкі, висока посадка (Max Mara) Max Mara — Я додала цю кемел сукню-футляр із віскози, щоб створити відсутній «низ», формуючи повну основу образу. Вільний крій і середня довжина ідеальні для приховування животика.",
+  "9": "Чорні туфлі-човники на середньому підборі — Я залишила ці чорні човники, щоб створити гостру, формальну базу, яка закріплює світліші тони та відповідає вимозі «розумної» урочистості.",
+  "10": "Крос-боді Hourglass — Я додала цю чорну сумку-кросбоді, щоб задовольнити обов’язкове обмеження «без_сумки» для вечора в клубі.",
+  "11": "Золота каблучка Ice Cube — Я замінила дублюючі кільця на одне з цих срібних кілець. Воно надає необхідні прикраси, не створюючи помилку «вид_двічі», зберігаючи металевий акцент.",
+  "12": "Крос-боді Hourglass, Костюм: піджак прямого крою з паском, рукава 3/4; штани з лампасами та косими кишенями, прямі, широкі, висока посадка (Max Mara) Max Mara — Ця ремарка вказує на розбіжність у формальності між «розумною» сукнею та «формальною» чорною сумкою; я приймаю її, адже твоя мета залишатися непоміченою, тому підтримка єдиного, тихого тону по всіх предметах переважає необхідність різноманітних рівнів формальності.",
+  "13": "Берет з чорною вуаллю сірий — Я обрала цей срібний берет як верхній шар для задоволення правила про принаймні один аксесуар і щоб він діяв як якір, який відводить увагу вгору від зони прихованого животика.",
+  "14": "Крос-боді Hourglass — Я додала цю чорну сумку-кросбоді, щоб вирішити проблему «без_сумки», яка є важливою для клубного образу.",
+  "15": "Крос-боді Hourglass — Я додала цю чорну сумку-кросбоді, щоб вирішити проблему «без_сумки», необхідну для клубного вбрання."
+}
+```

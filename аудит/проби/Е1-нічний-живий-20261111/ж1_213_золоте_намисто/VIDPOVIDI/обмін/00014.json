@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk blouse, relaxed fit, long tunic length, soft charcoal grey (#4F5D75), lightweight woven silk.\\nWide-leg trousers, straight cut, full ankle length, deep forest green (#1B3A2E), heavy crepe wool.\\nLeather ankle boots, low block heel, mid-calf height, classic black (#000000), smooth calfskin.\\n\\nThis outfit balances the request for a calm demeanor with the festive restaurant setting by choosing sophisticated neutral tones and rich autumnal green. The relaxed silk blouse and flowing wide-leg trousers create a fluid, easy-going silhouette that avoids looking too rigid or formal. Completing the look with sturdy ankle boots ensures comfort for an evening out while maintaining a polished, elevated aesthetic suitable for dinner.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Blouse\\\", \\\"details\\\": \\\"relaxed fit, long tunic length, lightweight woven silk\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#4F5D75\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Trousers\\\", \\\"details\\\": \\\"wide-leg, straight cut, full ankle length, heavy crepe wool\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#1B3A2E\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Boots\\\", \\\"details\\\": \\\"leather ankle boots, low block heel, mid-calf height, smooth calfskin\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":513,\"output_tokens\":167},\"stop_reason\":\"end_turn\"}"
+ }
+}

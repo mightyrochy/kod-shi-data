@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A classic black silk blouse with a subtle sheen, cut straight for ease of movement in the crowd, length hitting just at the hip to maintain elegance, color #000000, fabric smooth and fluid. High-waisted tailored trousers in charcoal wool crepe, cut wide-leg for comfort while standing, length ankle-skimming, color #36454F, fabric structured yet soft to the touch. Black leather loafers with a low block heel for stability, cut sleek and minimal, color #000000, fabric polished calf leather. A thin gold chain necklace as an accessory, cut delicate, length resting at the collarbone, color #FFD700, fabric lightweight metal. This outfit respects her wish for restrained and classic lines by avoiding flashy prints or overly trendy silhouettes, ensuring she feels grounded in a chaotic concert environment. The dark monochromatic palette fits the club atmosphere while the high-quality fabrics like silk and wool crepe guarantee comfort during long hours of standing. By choosing tailored pieces with natural textures rather than fast-fashion synthetics, the look achieves her goal of blending seamlessly yet elegantly into the evening context.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"Blouse\\\",\\n\\\"details\\\": \\\"straight cut for ease of movement, length hitting just at the hip, smooth and fluid silk fabric\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#000000\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Trousers\\\",\\n\\\"details\\\": \\\"high-waisted tailored wide-leg cut for comfort, length ankle-skimming, structured yet soft wool crepe fabric\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#36454F\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Loafers\\\",\\n\\\"details\\\": \\\"sleek and minimal cut, low block heel for stability, polished calf leather fabric\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#000000\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Necklace\\\",\\n\\\"details\\\": \\\"thin gold chain, delicate cut, resting at the collarbone, lightweight metal fabric\\\",\\n\\\"slot\\\": \\\"necklace\\\",\\n\\\"color_hex\\\": \\\"#FFD700\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":591,\"output_tokens\":266},\"stop_reason\":\"end_turn\"}"
+ }
+}

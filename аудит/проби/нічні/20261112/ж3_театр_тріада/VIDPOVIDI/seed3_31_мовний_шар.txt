@@ -1,0 +1,59 @@
+── ПРОМПТ (7323 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: casual_suit · colour code: brown · about it: text н=1
+2 — kind code: earrings · colour code: silvery · about it: text н=2
+3 — kind code: brooch · colour code: white · about it: text н=3
+4 — kind code: ring · colour code: silvery · about it: text н=4
+5 — kind code: pumps · colour code: black · about it: text н=5
+6 — kind code: tote · colour code: black · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; silvery — срібний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This brown fitted set features a tailored jacket and matching trousers in a rich, warm shade of brown. The cut is sleek and close-fitting, designed to follow the natural lines of your body while providing a polished look suitable for an evening event.",
+"2": "These silvery earrings possess a subtle metallic sheen that catches the light softly. Their understated elegance complements the formality of the theatre without distracting from your overall appearance.",
+"3": "This white brooch is a small, delicate accessory designed to be pinned onto fabric. Its crisp white color provides a gentle contrast against darker tones like brown or black, adding a touch of brightness to your ensemble.",
+"4": "This silvery ring features a refined metallic finish that glimmers softly under artificial lighting. Its design is simple enough to sit comfortably alongside other jewelry while maintaining a sense of occasion-appropriate style.",
+"5": "These black pumps are characterized by their classic pointed shape and elevated heel, offering both comfort and height. The smooth black material ensures they look sophisticated against your brown suit and pair seamlessly with the evening's lighting.",
+"6": "This black tote bag is spacious and structured, designed to hold all the essentials for an evening out. Its solid black color creates a seamless connection with your shoes, grounding the outfit and keeping the focus on your upper layers.",
+"7": "Your brown fitted set anchors your figure with a clean, vertical line that elongates your silhouette for the theatre evening. The silvery earrings and ring add a soft, reflective sparkle to your face without overpowering your look, while the white brooch offers a delicate focal point on your jacket lapel. Your black pumps give you the height and posture needed for standing in the stalls, and the black tote keeps you practical for carrying your program and evening bag.",
+"8": "Tuck the top of your set slightly at the waist to emphasize your natural shape before stepping out into the lobby.",
+"9": "Hold the brooch gently against the fabric of your jacket lapel; its white tone will catch the stage lights beautifully.",
+"10": "Тоут чорного кольору зі шкіри — I added a black leather tote to resolve the missing bag requirement for an elegant evening appearance.",
+"11": "Чорні туфлі-човники на шпильці зі шкіри — I added these classic black pumps to fix the missing shoes slot and ensure the midi skirt proportions are judged correctly against the leg line.",
+"12": "Чорні туфлі-човники на шпильці зі шкіри — I added black pumps to fix the missing shoes slot and ensure the midi skirt proportions are judged correctly against the leg line."
+}
+
+── ВІДПОВІДЬ (2585 симв., 28.3 с, HTTP 200) ──
+```json
+{
+"1": "Цей коричневий комплект, що облягає фігуру, складається з піджака приталеного крою та відповідних штанів у насиченому теплому відтінку коричневого. Крій елегантний і щільно прилягає до тіла, повторюючи його природні лінії, водночас створюючи вишуканий образ, який пасуватиме для вечірнього заходу.",
+"2": "Ці срібні сережки мають ледь помітне металеве сяйво, яке м’яко відбиває світло. Їхня стримана елегантність доповнює урочистість театру, не привертаючи зайвої уваги до твого загального вигляду.",
+"3": "Цю білу брошку створено як маленький і ніжний аксесуар для кріплення на тканину. Її чистий білий колір створює м’який контраст з темнішими тонами, такими як коричневий або чорний, додаючи твоєму вбранню нотку світла.",
+"4": "Цю срібну каблучку вирізняє витончений металевий блиск, який ледь помітно мерехтить під штучним освітленням. Її дизайн простий і лаконічний, щоб гармонійно поєднуватися з іншими прикрасами та зберігати відчуття стилю, відповідного для особливої події.",
+"5": "Ці чорні туфлі-човники мають класичну загострену форму й підбори середньої висоти, що забезпечують комфорт і зростання. Гладка чорна шкіра гарантує їхній вишуканий вигляд на твоїй коричневій сукні та бездоганне поєднання з вечірнім освітленням.",
+"6": "Ця чорна тоут-сумка простора й має чітку форму, розроблена для того, щоб вмістити всі необхідні речі на вечір. Її однотонний чорний колір створює бездоганне поєднання з твоїм взуттям і підкреслює верхній шар твоєї сукні.",
+"7": "Твій коричневий комплект, що облягає фігуру, витягує силует вертикальною лінією, роблячи тебе візуально вищою для вечора в театрі. Срібні сережки та каблучка додають м’яке сяйво твоєму обличчю без надмірності, а біла брошка створює ніжний акцент на лацкані піджака. Твої чорні туфлі дарують тобі необхідну висоту й поставу для перебування в партері, а чорна тоут-сумка дозволяє носити з собою програму та вечірню сумочку.",
+"8": "Злегка заправ твій комплект у талії, щоб підкреслити природні вигини фігури перед тим, як вирушиш до фоє.",
+"9": "Ніжно прикріпи брошку на лацкан свого піджака; її білий колір чудово відіб’ється в променях театральної сцени.",
+"10": "Я додала чорну шкіряну тоут-сумку, щоб заповнити порожній слот для сумки та створити елегантний вечірній образ.",
+"11": "Я додам чорні туфлі-човники на підборах зі шкіри, щоб виправити відсутність взуття й забезпечити правильні пропорції міді-спідниці щодо лінії ніг.",
+"12": "Я додала чорні туфлі-човники на підборах зі шкіри, щоб виправити відсутність взуття й забезпечити правильні пропорції міді-спідниці щодо лінії ніг."
+}
+```

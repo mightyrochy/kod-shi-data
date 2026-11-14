@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Charcoal wool-blend trench coat, straight cut, knee-length, #303030, heavy woven fabric.\\nClassic black trousers, tapered leg, full length, #000000, matte stretch cotton twill.\\nSimple white crew-neck blouse, relaxed fit, hip-length, #FFFFFF, lightweight poplin.\\nBlack leather ankle boots, block heel, mid-calf height, #1C1C1C, smooth calfskin.\\nMatte black ceramic stud earrings, small studs, earlobe length, #000000, ceramic.\\nThis outfit honors the solemnity of a grandfather's funeral while respecting the early morning timing and autumn weather. The dark, neutral tones reflect respect for the deceased without overshadowing the natural daylight of the service. Practical yet refined fabrics ensure comfort throughout the ceremony, avoiding any flashy elements that would be inappropriate for a close mourner. The lack of an outer layer is unnecessary due to the cool dawn air, so a trench coat provides essential warmth and modest coverage suitable for the occasion.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Trench coat\\\", \\\"details\\\": \\\"straight cut, knee-length, heavy woven fabric\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#303030\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Trousers\\\", \\\"details\\\": \\\"tapered leg, full length, matte stretch cotton twill\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Blouse\\\", \\\"details\\\": \\\"crew-neck, relaxed fit, hip-length, lightweight poplin\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#FFFFFF\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Ankle boots\\\", \\\"details\\\": \\\"block heel, mid-calf height, smooth calfskin\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#1C1C1C\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Stud earrings\\\", \\\"details\\\": \\\"small studs, earlobe length, ceramic\\\", \\\"slot\\\": \\\"earrings\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":571,\"output_tokens\":249},\"stop_reason\":\"end_turn\"}"
+ }
+}
