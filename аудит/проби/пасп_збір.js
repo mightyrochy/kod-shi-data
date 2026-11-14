@@ -13,7 +13,7 @@ const PAGE = process.env.PAGE || path.join(__dirname, '..', '..', 'index.html'),
   await с.route('https://cdn.jsdelivr.net/pyodide/**', r => { if (/asm\.wasm/.test(r.request().url())) wasm++; r.continue(); });
   await с.goto(БАЗА + '/index.html#міст=' + БАЗА + '/міст&т=tok', { waitUntil: 'load', timeout: 180000 });
   await с.click('dialog button:has-text("Так, використовувати")', { timeout: 30000 }).catch(() => {});
-  await с.waitForFunction(() => typeof РЕЖИМ !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
+  await с.waitForFunction(() => typeof Екран !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
   const ок = await с.evaluate(() => Promise.all([містП('довідник', {}), містП('довідник', {})]).then(р => р.every(х => х && !х.помилка)).catch(е => String(е).slice(0, 80)));
   console.log('(а) два холодні містП: ок =', ок, '· завантажень pyodide.asm.wasm =', wasm);
   await с.click('#кол-блок details.розкривач > summary');
@@ -22,7 +22,7 @@ const PAGE = process.env.PAGE || path.join(__dirname, '..', '..', 'index.html'),
   for (const _ of [0, 1]) { await с.click('#н-далі'); await пауза(300); }
   for (const [і, v] of [['мр-плечі', 108], ['мр-груди', 104], ['мр-талія', 78], ['мр-стегна', 106], ['мр-зріст', 167]]) await с.fill('#' + і, String(v));
   await с.click('#н-далі');
-  await с.waitForFunction(() => РЕЖИМ === 'сценарій' && ПРОФІЛЬ_СТВОРЕНО, null, { timeout: 60000 });
+  await с.waitForFunction(() => Екран.стан.режим === 'сценарій' && ПРОФІЛЬ_СТВОРЕНО, null, { timeout: 60000 });
   await с.evaluate(() => { window.__з = 0; const о = містП; window.містП = (ім, д, ...а) => { if (ім === 'запити') window.__з++; return о(ім, д, ...а); }; });
   const питання0 = await с.evaluate(() => { const е = document.getElementById('зб-питання'); return е ? !е.hidden : 'нема елемента'; });
   await с.evaluate(() => { document.getElementById('сц-картка').hidden = false; });
@@ -30,7 +30,7 @@ const PAGE = process.env.PAGE || path.join(__dirname, '..', '..', 'index.html'),
   await пауза(2500);
   console.log('(б) питання про нагоду видно до натиску:', питання0, '· викликів запити:', await с.evaluate(() => window.__з),
     '· статус збирання:', JSON.stringify(await с.evaluate(() => (document.getElementById('зб-статус').textContent || '').slice(0, 90))),
-    '· режим:', await с.evaluate(() => РЕЖИМ), '· кнопка відкрита:', await с.evaluate(() => !document.getElementById('зб-зібрати').disabled));
+    '· режим:', await с.evaluate(() => Екран.стан.режим), '· кнопка відкрита:', await с.evaluate(() => !document.getElementById('зб-зібрати').disabled));
   /* (в) слова є («на роботу»), полів нема — K-IO-01 доти приходив відмовою після натиску */
   await с.evaluate(() => { ЧАТ_П.push({ хто: 'людина', текст: 'Іду на роботу', тема: 'сценарій' }); window.__з = 0; малюватиКарткуСценарію(); });
   const п1 = await с.evaluate(() => (e => e ? !e.hidden : 'нема елемента')(document.getElementById('зб-питання')));

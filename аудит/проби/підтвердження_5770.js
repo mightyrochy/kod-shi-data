@@ -54,16 +54,16 @@ const РЕЧІ = [
     });
     await стор.route(u => u.origin !== new URL(БАЗА).origin && !/cdn\.jsdelivr\.net\/pyodide/.test(u.href), r => r.abort());
     await стор.goto(БАЗА + '/index.html#міст=' + БАЗА + '/міст&т=tok-5770', { waitUntil: 'load', timeout: 180000 });
-    await стор.waitForFunction(() => typeof РЕЖИМ !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
+    await стор.waitForFunction(() => typeof Екран !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
     /* знайомство — кнопками, як у стенда: кольори ручним шляхом, мірки, «Готово» */
     await стор.click('#кол-блок details.розкривач > summary');
     await стор.fill('#кол-відповідь', 'шкіра 1 #deb295\nшкіра 2 #d8a98c\nшкіра 3 #e2ba9f\nволосся #f1dbaa\nволосся #d9bf88\nочі #759087\nкільце #3f4f49');
     await стор.click('#кол-читати');
     await стор.fill('[id="пр-імʼя"]', 'Проба 5770'); await стор.check('#пр-згода');
-    await стор.click('#н-далі'); await стор.waitForFunction(() => ЕКРАН === 1, null, { timeout: 30000 });
-    await стор.click('#н-далі'); await стор.waitForFunction(() => ЕКРАН === 2, null, { timeout: 30000 });
+    await стор.click('#н-далі'); await стор.waitForFunction(() => Екран.стан.крок === 1, null, { timeout: 30000 });
+    await стор.click('#н-далі'); await стор.waitForFunction(() => Екран.стан.крок === 2, null, { timeout: 30000 });
     for (const [і, v] of [['мр-плечі', 98], ['мр-груди', 92], ['мр-талія', 74], ['мр-стегна', 99], ['мр-зріст', 168]]) await стор.fill('#' + і, String(v));
-    await стор.click('#н-далі'); await стор.waitForFunction(() => РЕЖИМ === 'сценарій' && ПРОФІЛЬ_СТВОРЕНО, null, { timeout: 60000 });
+    await стор.click('#н-далі'); await стор.waitForFunction(() => Екран.стан.режим === 'сценарій' && ПРОФІЛЬ_СТВОРЕНО, null, { timeout: 60000 });
     await стор.evaluate(() => режим('оцінка')); await с(300);
     const фото = [];
     for (const ід of ['ф1', 'ф2']){
