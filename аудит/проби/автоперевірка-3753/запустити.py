@@ -38,14 +38,19 @@ else:
 if len(sys.argv) > 4:
     завдання = [(ім, команда) for ім, команда in завдання if ім in sys.argv[4].split(",")]
 результати = []
+початок_пакета = time.monotonic()
 for ім, команда in завдання:
+    ліміт = 540 - (time.monotonic() - початок_пакета)
+    if ліміт <= 0:
+        print("Межа пакета 540 с; решту не запущено.", flush=True)
+        break
     початок = time.monotonic()
     try:
         процес = subprocess.run(команда, cwd=дерево / "джерела", env=оточення, capture_output=True,
-                                encoding="utf-8", errors="replace", timeout=540)
+                                encoding="utf-8", errors="replace", timeout=ліміт)
         код, журнал = процес.returncode, процес.stdout + процес.stderr
     except subprocess.TimeoutExpired as е:
-        код = "час 540 с"
+        код = "час %s с" % round(ліміт, 2)
         def текст(х):
             return х.decode("utf-8", "replace") if isinstance(х, bytes) else (х or "")
         журнал = текст(е.stdout) + текст(е.stderr)
