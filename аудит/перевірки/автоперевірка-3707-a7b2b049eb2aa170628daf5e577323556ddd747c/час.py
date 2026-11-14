@@ -6,7 +6,7 @@ def головна():
         raise SystemExit("Потрібна тека робочих дерев і кеш Pyodide")
     import os, sys, json, hashlib, subprocess, time, platform
     from pathlib import Path
-    
+
     root=Path(sys.argv[1]).resolve()
     head=root/'pr3707'
     helper=head/'джерела'/'прилади'/'знімок_мосту_pyodide.js'

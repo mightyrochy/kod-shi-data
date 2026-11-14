@@ -6,7 +6,7 @@ def головна():
         raise SystemExit("Потрібна тека робочих дерев")
     import importlib.util, sys, random, math, json, time
     from pathlib import Path
-    
+
     root=Path(sys.argv[1]).resolve()
     sys.path.insert(0, str(root / 'pr3707' / 'джерела'))
     def load(name, filename):
@@ -14,7 +14,7 @@ def головна():
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         return mod
-    
+
     import колір_тон as new
     old = load('тон_до', 'колір_тон.py')
     rng = random.Random(3707)
@@ -32,7 +32,7 @@ def головна():
             assert sorted(range(len(a[0])), key=lambda i:a[0][i]) == sorted(range(len(b[0])), key=lambda i:b[0][i]), (point,error,a,b)
             count += 1
     print(json.dumps({'ядра':count,'розбіжностей':0,'макс_похибка':delta},ensure_ascii=False),flush=True)
-    
+
     import фід_добір as fd
     before = load('добір_до', 'фід_добір.py')
     count = 0
@@ -53,7 +53,7 @@ def головна():
         assert b==fd.частка_вікна(window,q,ключі=(fd.ключ_вікна(window),fd.ключ_запиту(q)))
         count+=1
     print(json.dumps({'вікна':count,'розбіжностей':0},ensure_ascii=False),flush=True)
-    
+
     import selection_policy as sp
     bs=load('сорт_до','selection_policy.py')
     for seed in range(20):

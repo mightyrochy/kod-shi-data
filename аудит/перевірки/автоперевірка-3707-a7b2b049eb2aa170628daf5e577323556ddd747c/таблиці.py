@@ -16,6 +16,10 @@ def головна():
         print(name,table.keys(),flush=True)
         tables.append(table)
     print('Різні верхні поля:',[k for k in tables[0] if tables[0][k]!=tables[1][k]],flush=True)
+    native_path=root/'pr3707'/'джерела'/'каталог_таблиця.json.gz'
+    if native_path.exists():
+        native=json.loads(gzip.decompress(native_path.read_bytes()))
+        print('Відмінні поля таблиці джерел і вантажу:',[k for k in tables[1] if tables[1][k]!=native[k]],flush=True)
 
 
 if __name__=="__main__":

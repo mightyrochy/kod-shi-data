@@ -49,6 +49,7 @@ const base='http://127.0.0.1:8765';
       save();
       console.log(JSON.stringify(report.виклики[report.виклики.length-1]));
       await browser.close();
+      process.exitCode=2;
       return;
     }
     save();
