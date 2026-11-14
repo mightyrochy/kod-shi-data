@@ -43,9 +43,9 @@ const ЖІНКА = JSON.parse(fs.readFileSync(path.join(__dirname, '../../жін
   await с.locator('#кол-читати').scrollIntoViewIfNeeded(); await тихо(400);
   факти.до_дотику = {вгорі: await с.evaluate(() => Math.round(scrollY)), кнопка: await уВікні('#кол-читати')};
   await знімок('4_до_дотику');
-  /* Python зайнятий, як у перші десятки секунд після відкриття сторінки в живому прогоні: читання відповіді чекає 3 с.
+  /* Python зайнятий, як у перші десятки секунд після відкриття сторінки в живому прогоні: виклик моста «колір» чекає 3 с.
      Що жінка бачить біля кнопки, поки він читає, — знімок через 1,5 с після дотику */
-  await с.evaluate(() => { const було = читатиВідповідьКольоруП; читатиВідповідьКольоруП = async в => { await new Promise(д => setTimeout(д, 3000)); return було(в); }; });
+  await с.evaluate(() => { const було = window.містП; window.містП = async function(ім, ...решта){ if (ім === 'колір') await new Promise(д => setTimeout(д, 3000)); return було.call(this, ім, ...решта); }; });
   await с.locator('#кол-читати').tap();
   await тихо(1500);
   факти.в4_поки_читає = {стан_кольору: await с.evaluate(() => (typeof СТАН_КОЛЬОРУ_П !== 'undefined' && СТАН_КОЛЬОРУ_П && СТАН_КОЛЬОРУ_П.стан) || null),
