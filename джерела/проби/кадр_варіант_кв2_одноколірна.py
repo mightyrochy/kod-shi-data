@@ -14,12 +14,11 @@ def сторінка(колір="", варіанти="", блок=""):
     return '<script type="application/ld+json">%s</script><div itemscope itemtype="https://schema.org/Product"><h1>Сукня</h1>%s</div>' % (json.dumps(ld), блок)
 
 def доказ(html):
-    """Факти сторінки → запис → доказ кадру читачем (джерело картки додано в таблицю лише тут)."""
+    """Факти сторінки → запис → доказ кадру читачем."""
     url = "https://s.ua/dress-12345/"
     з = ж.канонічний_запис(dict(ж.факти_з_картки(html, url), url=url), {"домен": "s.ua"}, "картка")
     return json.loads(з["власник_кадру"]) != "невідомо", в.доказ_варіанта(dict(url=url, фото=з["фото"], параметри=dict(id_магазину=з["id_магазину"], власник_кадру=з["власник_кадру"])), з["фото"][0]) is not None
 
-в.ДЖЕРЕЛА_ДОКАЗУ["картка:один_колір"] = "картка"
 сві = '<span class="swatch" title="%s" style="background:%s"></span>'
 вибір = '<select name="attribute_pa_color"><option value="">Оберіть</option>%s</select>'
 опц = "".join('<option value="%s">%s</option>' % (к, к) for к in ("black", "white", "red"))
