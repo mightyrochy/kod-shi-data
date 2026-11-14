@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"похорон дідуся в четвер зранку\", \"part_of_day\": \"зранку\", \"role\": \"похорон дідуся\", \"wants\": \"прикраси хочу срібні\"}, \"wish_quotes\": [\"прикраси хочу срібні\"], \"formality_reason\": \"written\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"wish_quotes\": {\"kind\": \"default\"}, \"wishes\": {\"kind\": \"reading\", \"quote\": \"прикраси хочу срібні\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"прикраси хочу срібні\"}]}, \"refusals\": {\"kind\": \"reading\"}, \"reserved_colour\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"похорон дідуся в четвер зранку\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\", \"quote\": \"зранку\"}, \"role\": {\"kind\": \"reading\", \"quote\": \"похорон дідуся\"}}, \"event\": \"похорон дідуся в четвер зранку\", \"part_of_day\": \"morning\", \"wishes\": [\"jewelry_generic, silvery\"], \"occasion\": \"mourning\", \"role\": \"mourner_close\", \"formality\": [\"home\"], \"season\": \"autumn\", \"light\": \"daylight\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Charcoal wool crepe coat, knee-length, #2F3031, heavy wool blend for modesty and warmth\\nBlack tailored trousers, straight cut, #000000, fine virgin wool with a matte finish\\nWhite high-neck silk blouse, relaxed fit, #FFFFFF, smooth mulberry silk\\nSimple silver pearl pendant necklace, round shape, metallic silver tone (silver), sterling silver chain\\nMatching silver stud earrings, small circle shape, metallic silver tone (silver), oxidized silver\\nSilver signet ring, square face shape, metallic silver tone (silver), polished sterling silver with an engraved mourning motif\\nBlack leather ankle boots, low block heel, #0A0A0A, soft full-grain leather with a matte finish\\nMatte black clutch, rectangular shape, #1C1C1C, textured suede exterior\\n\\nThis ensemble honors the solemnity of your grandfather's funeral while strictly adhering to your wish for silver jewelry. The deep charcoal coat and black trousers provide a respectful, dark palette suitable for mourning during the autumn morning, ensuring you stay warm without drawing attention away from the ceremony. The silver accessories act as a subtle personal touch that celebrates his life rather than merely signaling grief, balancing tradition with your specific desires. Every element, from the matte textures to the understated elegance of the silver, creates a dignified presence appropriate for a close relative attending a burial service.\"}],\"usage\":{\"input_tokens\":790,\"output_tokens\":289},\"stop_reason\":\"end_turn\"}"
+ }
+}
