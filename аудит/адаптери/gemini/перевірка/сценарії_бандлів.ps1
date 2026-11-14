@@ -146,7 +146,7 @@ foreach ($case in $repubCases) {
             $fetched = [datetime]::UtcNow
             [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin', '+refs/heads/main:refs/remotes/origin/main',
                     '+refs/heads/gemini/*:refs/remotes/origin/gemini/*', '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
-            if (Get-Command Reset-ReturnedRefusals -ErrorAction SilentlyContinue) { Reset-ReturnedRefusals }
+            Reset-ReturnedRefusals
             Receive-RunState $id
             Confirm-PendingMarkers
             Remove-FinishedMarkers $fetched
