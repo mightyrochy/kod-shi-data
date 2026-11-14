@@ -24,7 +24,7 @@ const карт = (рука, н) => ({рука, ітерацій: 1, виклик
     const p = await ctx.newPage(); const пом = []; p.on('pageerror', e => пом.push(String(e)));
     await p.route(/^https?:/, r => r.abort()); await p.goto('file:///' + path.resolve(файл).replace(/\\/g, '/').replace(/^\//, ''));
     /* пакет — вхід проби, а не хеш адреси (рішення 11824): `П` ставить проба, як шов збирання */
-    await чекатиСтан(p, 'старт показу', () => typeof (document.getElementById('сцн-новий') || {}).onclick === 'function', null, 90000);
+    await чекатиСтан(p, 'старт показу', () => Екран.стан.запущено === true, null, 90000);
     await p.evaluate(пк => { П = пк; рендер(); }, пакет);
     await чекатиСтан(p, 'картка на екрані (#картки .картка)', ВИДНО_ЕЛЕМЕНТ, '#картки .картка', 90000);
     const т = await p.evaluate(() => [...document.querySelectorAll('#обр-випадок span')].map(s => s.textContent));
