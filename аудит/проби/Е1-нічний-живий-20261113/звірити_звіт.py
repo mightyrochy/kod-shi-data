@@ -19,7 +19,7 @@ locations = {p.parent.name: p.parent for p in out.glob('*/результат.jso
 base = out / 'НОВА_БАЗА.md'
 if base.exists():
     for name in re.findall(r'НОВА БАЗА: (\S+)', base.read_text(encoding='utf-8')):
-        folder = Path(name)
+        folder = Path(name).resolve()
         if (folder / 'результат.json').exists():
             result = json.loads((folder / 'результат.json').read_text(encoding='utf-8'))
             assert result['сцена'] not in locations, result['сцена']

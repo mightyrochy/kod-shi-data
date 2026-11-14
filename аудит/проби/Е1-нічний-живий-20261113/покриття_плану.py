@@ -30,6 +30,8 @@ for scope in ('scenes', 'cloud'):
             elif result.get('rc') in (0, 1): state = 'запис завершено; оцінює перевірка'
             else: state = 'обрив; питання не доведено'
             replay = out / 'повтор_обміну' / scene / 'результат.json'
+            if (out / 'повтор_обміну_1800' / scene / 'результат.json').exists():
+                replay = out / 'повтор_обміну_1800' / scene / 'результат.json'
             rows.append({'місце': scope, 'сцена': scene, 'PR': question['pr'], 'стан': state,
                          'rc': result.get('rc', ''), 'режим_запису': json.dumps(result.get('змінні', {}), ensure_ascii=False),
                          'доказ': os.path.relpath(folder, out).replace('\\', '/') + '/результат.json' if folder else '',
