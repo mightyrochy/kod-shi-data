@@ -139,7 +139,7 @@ let адресиМініатюр = [];
     читатиКв_(ключФото(вид)).then(б => {
       if (!б || typeof б === 'string' || !і.isConnected) return;
       const u = URL.createObjectURL(б); адресиМініатюр.push(u); і.style.backgroundImage = 'url("' + u + '")'; })
-      .catch(e => збійЖінціП($('збій-стан'), 'photo_unreadable', e)); });
+      .catch(e => показатиЗбійЗапису('photo_unreadable', e)); });
 });
 
 /* ── ВИТИНАНКА: отвір у формі її чисел ───────────────────────────────────

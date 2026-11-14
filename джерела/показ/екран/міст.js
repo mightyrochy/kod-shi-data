@@ -19,3 +19,24 @@ function показатиПідйомМосту(){ Екран.оновити({п
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') перевіритиНовішуЗбірку();
 });
+
+/* ── ПИТАННЯ ПРО АДРЕСУ МОСТА ── Посилання принесло адресу моста, якої сторінка ще не знає: жінка каже «так» чи
+   «ні» у вікні над усім. Логіка (`підтвердитиАдресуМостаП`, `міст.js`) питає на ім'я й дістає її відповідь;
+   вузлів вона не знає. Esc — «ні». */
+function запитатиПроАдресуМоста(адреса){
+  return new Promise(завершити => {
+    const в = document.createElement('dialog');
+    в.setAttribute('aria-labelledby', 'міст-питання');
+    в.style.cssText = 'max-width:min(34rem,calc(100% - 2rem));border:0;border-radius:18px;padding:24px;color:inherit;background:var(--фон,#fff);box-shadow:0 18px 60px #0008';
+    const з = document.createElement('h2'); з.id = 'міст-питання'; з.textContent = 'Використовувати цю адресу?';
+    const п = document.createElement('p'); текстЖінціП(п, підписЗНазвоюП(['Адреса: ', {назва: адреса}]));
+    п.style.cssText = 'overflow-wrap:anywhere;line-height:1.5';
+    const д = document.createElement('div'); д.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px';
+    const ні = document.createElement('button'); ні.type = 'button'; ні.textContent = 'Ні';
+    const так = document.createElement('button'); так.type = 'button'; так.textContent = 'Так, використовувати';
+    const відповісти = значення => { в.close(); в.remove(); завершити(значення); };
+    ні.onclick = () => відповісти(false); так.onclick = () => відповісти(true);
+    в.oncancel = подія => { подія.preventDefault(); відповісти(false); };
+    д.append(ні, так); в.append(з, п, д); document.body.appendChild(в); в.showModal();
+  });
+}

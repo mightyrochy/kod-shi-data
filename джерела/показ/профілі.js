@@ -91,7 +91,7 @@ function ключФото(вид){ return 'фото-' + вид + ':' + (АКТИ
 
 async function читатиКв_(к){
   try{ return await читатиКв(к); }
-  catch(e){ збійЖінціП($('збій-стан'), 'profile_unreadable', e); throw e; }
+  catch(e){ показатиЗбійЗапису('profile_unreadable', e); throw e; }
 }
 async function писатиКв(к, з){
   const d = await дб(); await tx(d, 'кв', 'readwrite', s=>s.put(з, к));

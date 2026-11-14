@@ -84,7 +84,7 @@ function почитиДіюП(ключ, назва){
     let збій = false;
     for (const ф of відкати.splice(0).reverse()){
       try { ф(); }
-      catch(e){ збій = true; збійЖінціП($('збій-стан'), 'cancel_failed', e); }
+      catch(e){ збій = true; показатиЗбійЗапису('cancel_failed', e); }
     }
     if (збій) дія.стан = 'збій_скасування';
     return !збій;
