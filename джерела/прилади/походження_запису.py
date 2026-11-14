@@ -15,7 +15,7 @@ import re
 СИРІ_ПОЛЯ = frozenset(("variants", "variations", "hasVariant", "offers", "@type", "productGroupID",
                        "inProductGroupWithID", "option1", "featured_image", "variant_ids"))
 ІД = frozenset(("id", "ід", "offer_id", "variant_id"))
-ДОСТУП = frozenset(("available", "availability", "наявність", "in_stock"))
+ДОСТУП = frozenset(("available", "availability", "наявність", "in_stock", "є"))
 ВАРІАНТИ = frozenset(("variants", "variations", "hasVariant", "offer"))
 АГРЕГАТ = frozenset(("any", "all", "sum", "min", "max", "len", "Counter"))
 НЕ_КАДР = re.compile(r"(^[.#\[]|\[.*(?:itemprop|class|src)|::| > |^shopify:|^json-ld$|^og:image$)")
@@ -101,12 +101,65 @@ class Походження:
             return any(self.із_варіацій(з, шлях | {вираз.id}) for з in self.визначення(вираз.id, вираз.lineno))
         if isinstance(вираз, ast.BoolOp):
             return any(self.із_варіацій(з, шлях) for з in вираз.values)
+        if isinstance(вираз, ast.Subscript) and isinstance(вираз.slice, ast.Constant) and вираз.slice.value == 1:
+            вираз = вираз.value      # `for ключ, група in групи.items()`: група — та сама колекція
+        if isinstance(вираз, ast.Call) and isinstance(вираз.func, ast.Attribute) and вираз.func.attr == "items" \
+                and not вираз.args:
+            return self.групи_варіацій(вираз.func.value, шлях)
         if isinstance(вираз, ast.Call) and вираз.args:
             if isinstance(вираз.args[0], ast.Constant) and вираз.args[0].value in ВАРІАНТИ:
                 return True
-            if ім_виклику(вираз.func) in ("enumerate", "sorted", "iter", "list", "tuple"):
+            if ім_виклику(вираз.func) in ("enumerate", "sorted", "iter", "list", "tuple") or self.обгортка(вираз.func):
                 return self.із_варіацій(вираз.args[0], шлях)
         return False
+
+    def групи_варіацій(self, словник, шлях):
+        """Словник груп (`групи.setdefault(колір, []).append(в)`), куди кладуть лише елементи колекції варіацій, а сам
+        він — порожній словник: група за власною опцією — ті самі варіації, не новий вибір."""
+        if not isinstance(словник, ast.Name) or словник.id in шлях:
+            return False
+        визначення = self.присвоєння.get(словник.id, ())
+        if not визначення or not all(isinstance(в, ast.Dict) and not в.keys or isinstance(в, ast.Call)
+                                     and ім_виклику(в.func).split(".")[-1] in ("dict", "OrderedDict", "defaultdict") and not
+                                     any(not isinstance(а, ast.Name) or а.id != "list" for а in в.args)
+                                     for в in визначення):
+            return False
+        покладено = []
+        for н in self.вузли:
+            if isinstance(н, ast.Call) and isinstance(н.func, ast.Attribute) and н.func.attr == "append":
+                ціль = н.func.value
+                if isinstance(ціль, ast.Call) and isinstance(ціль.func, ast.Attribute) and ціль.func.attr == "setdefault":
+                    ціль = ціль.func.value
+                elif isinstance(ціль, ast.Subscript):
+                    ціль = ціль.value
+                if isinstance(ціль, ast.Name) and ціль.id == словник.id:
+                    покладено.extend(н.args)
+            elif isinstance(н, (ast.Assign, ast.AugAssign)):
+                for ц in (н.targets if isinstance(н, ast.Assign) else [н.target]):
+                    if isinstance(ц, ast.Subscript) and isinstance(ц.value, ast.Name) and ц.value.id == словник.id:
+                        return False
+        return bool(покладено) and all(isinstance(е, ast.Name) and self.із_варіацій(е, шлях | {словник.id})
+                                       for е in покладено)
+
+    def обгортка(self, функція):
+        """Функція модуля, що лише нормалізує аргумент до списку (`_список(x)`: `[]`, `x` чи `[x]`), — не новий вибір."""
+        ф = self.функції.get(функція.id) if isinstance(функція, ast.Name) else None
+        if ф is None or not ф.args.args:
+            return False
+        перший = ф.args.args[0].arg
+
+        def свій(в):
+            if isinstance(в, ast.Name):
+                return в.id == перший
+            if isinstance(в, ast.Constant):
+                return в.value is None
+            if isinstance(в, (ast.List, ast.Tuple)):
+                return all(свій(е) for е in в.elts)
+            if isinstance(в, ast.IfExp):
+                return свій(в.body) and свій(в.orelse)
+            return False
+        повернення = [н.value for н in власні_вузли(ф) if isinstance(н, ast.Return)]
+        return bool(повернення) and all(в is not None and свій(в) for в in повернення)
 
     def _звязати(self, ціль, значення):
         """Зберігає також розпакування кортежів."""
@@ -314,11 +367,50 @@ class Походження:
                 return "числове зведення, не кадр речі"
         return None
 
+    def після_відсіву_сестер(self, вузол):
+        """Запис у циклі за варіаціями стоїть після відсіву: `if not <виклик>(<елемент>, …): continue` — оферти сестер
+        відкинуто до запису, тож зведення (`any`) йде лише по офертах самої сторінки, а не по всіх (рішення 13.11, кв3).
+        Відсів — оператор того самого тіла циклу перед записом; не ім'я виклику."""
+        cur, дитина = вузол, None
+        while cur in self.батьки:
+            дитина, cur = cur, self.батьки[cur]
+            if isinstance(cur, (ast.For, ast.AsyncFor)) and self.із_варіацій(cur.iter):
+                цілі = {н.id for н in ast.walk(cur.target) if isinstance(н, ast.Name)}
+                for о in cur.body:
+                    if о is дитина or getattr(о, "lineno", 0) >= getattr(вузол, "lineno", 0):
+                        break
+                    тест = о.test if isinstance(о, ast.If) else None
+                    if тест is None or len(о.body) != 1 or not isinstance(о.body[0], ast.Continue):
+                        continue
+                    if any(isinstance(н, ast.Call) and any(isinstance(а, ast.Name) and а.id in цілі for а in н.args)
+                           for н in ast.walk(тест)):
+                        return True
+        return False
+
+    def елемент_варіації_з_батьком(self, вузол, поля_запису):
+        """id і наявність записано з одного елемента циклу, що читає в нього посилання на батька (`parent`): елемент
+        списку варіацій Store API — сам і власник, і наявність (id Product батька не має). Клас: поля запису беруться
+        від змінної циклу, а цикл читає її `parent`; не ім'я змінної й не рядок файлу."""
+        cur = вузол
+        while cur in self.батьки:
+            cur = self.батьки[cur]
+            if not isinstance(cur, (ast.For, ast.AsyncFor)):
+                continue
+            цілі = {н.id for н in ast.walk(cur.target) if isinstance(н, ast.Name)}
+            if not all(цілі & {н.id for н in ast.walk(з) if isinstance(н, ast.Name)} for з in поля_запису):
+                continue
+            for н in ast.walk(cur):
+                основа = н.func.value if isinstance(н, ast.Call) and isinstance(н.func, ast.Attribute) \
+                    and н.func.attr == "get" else н.value if isinstance(н, ast.Subscript) else None
+                if поле(н) == "parent" and isinstance(основа, ast.Name) and основа.id in цілі:
+                    return True
+        return False
+
     def свій_варіант(self, вузол, значення):
         """Доводить спільне джерело id, наявності й поля оферти, а не ім'я змінної."""
         п = поля(вузол)
         if значення is not None and any(isinstance(н, ast.Call) and ім_виклику(н.func) in ("any", "all", "sum")
-                                       for н in ast.walk(значення)):
+                                       for н in ast.walk(значення)) and not self.після_відсіву_сестер(вузол):
             return False
         ід = [з for к, з in п.items() if к in ІД]
         наявність = [з for к, з in п.items() if к in ДОСТУП]
@@ -328,6 +420,8 @@ class Походження:
             # id і наявність бувають і на Product: самі ці два поля не доводять
             # варіацію. Корінь має походити з елемента offer/variants/variations.
             if свої and дж and дж <= свої and any(к.startswith("вхід-елемента:") for к in свої):
+                return True
+            if self.елемент_варіації_з_батьком(вузол, ід + наявність):
                 return True
         cur = вузол
         while cur in self.батьки:
@@ -340,7 +434,30 @@ class Походження:
                 імена = {н.id for н in ast.walk(значення) if isinstance(н, ast.Name)} if значення else set()
                 if є and (імена & цілі or self.корені(значення) & self.корені(cur.target, cur.lineno + 1)):
                     return True
+                власні_імена = {і for і in імена if і in self.присвоєння}
+                if є and власні_імена and all(self.накопичувач(і, cur) for і in власні_імена):
+                    return True
         return False
+
+    def накопичувач(self, ім, цикл):
+        """Список, початково порожній, який поповнюють лише в циклі по елементах групи-варіацій усередині `цикл`
+        значеннями з самого елемента (`for в in вв: if в.get("available"): є.append(р)`), — дані тих самих варіацій."""
+        if not all(isinstance(в, ast.List) and not в.elts for в in self.присвоєння.get(ім, ())):
+            return False
+        додано = [н for н in self.вузли if isinstance(н, ast.Call) and isinstance(н.func, ast.Attribute)
+                  and н.func.attr == "append" and isinstance(н.func.value, ast.Name) and н.func.value.id == ім]
+        if not додано:
+            return False
+        for н in додано:
+            cur, свій = н, False
+            while cur in self.батьки and cur is not цикл:
+                cur = self.батьки[cur]
+                if isinstance(cur, (ast.For, ast.AsyncFor)) and cur is not цикл and self.із_варіацій(cur.iter) \
+                        and any(self.корені(а) & self.корені(cur.target, cur.lineno + 1) for а in н.args):
+                    свій = True
+            if cur is not цикл or not свій:
+                return False
+        return True
 
 
 def константи_імпортів(дерево, тека, читати):

@@ -28,6 +28,8 @@ function Import-Functions([string]$File, [string[]]$Names) {
 }
 try {
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/out" -OutboxDir "$tmp/box"
+    # Змінні, які публікатор має сам, до того як стенд підвантажить чужі функції й задасть свої.
+    $publisherVars = @(Get-Variable -Scope Script | ForEach-Object { $_.Name })
     foreach ($dir in @($WorkDir,"$WorkDir/drafts","$WorkDir/seen",$OutDir,$OutboxDir)) { [void][IO.Directory]::CreateDirectory($dir) }
     $parserNames = @('Get-LiveSceneRegistry','Get-LiveAfterLines')
     if ($Phase -ne 'ДО') { $parserNames += @('ConvertTo-LivePublicationBody','Get-HeadLivePublication','Get-LiveCorrectionPrompt') }
@@ -106,12 +108,12 @@ try {
             Check 'питання з метасимволами лишається даними' ((ConvertTo-LivePublicationBody $foreign $registry).Body -ceq $foreign)
         }
         Scenario '3 один хід тому самому виконавцю' {
-            Import-Functions 'gemini_run.ps1' @('Invoke-Agent','Test-Report')
+            Import-Functions 'gemini_run.ps1' @('Invoke-Agent','Test-Report','Get-ReportLine')
             $script:MaxNudges = 0; $script:TurnMinutes = 5; $script:TotalMinutes = 10
             function Write-Log([string]$Text) { }
             function Close-StreamRun($Run) { }
             function Get-Facts { [pscustomobject]@{Head=$script:Head;OnBranch=$true;Dirty=0;Ahead=1} }
-            function Invoke-Turn($M, $Run, [string]$Text, [datetime]$Deadline) {
+            function Invoke-Turn($M, $Run, [string]$Text, $Deadline) {
                 $script:Turns++
                 if ($script:Turns -eq 2) {
                     $script:Correction = $Text
@@ -151,7 +153,8 @@ try {
             Check 'PR іншої бази не отримує PATCH' ($script:Calls.Count -eq 1 -and $script:Calls[0].Args[2] -ceq 'POST')
             $script:Existing=@(); $script:ApiFail=$true
             Save-DraftRequest 'gemini/проба' $script:Head
-            try { Complete-EngineDrafts; Check 'збій API не приймається' $false } catch { Check 'збій API лишає запит для повтору' (@(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1) }
+            Complete-EngineDrafts
+            Check 'збій API лишає запит для повтору' (@(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
             $script:ApiFail=$false; Complete-EngineDrafts
             Import-Functions 'queue_lanes.ps1' @('Add-AutoTaskContext','ConvertTo-Marker','Get-Lane')
             $script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
@@ -252,16 +255,34 @@ try {
             Check 'вада чинного PR також лишає оригінал і блокер без вадного префікса' ($merged.Bad.Count -eq 1 -and $merged.Body.Contains('оригінал: ЖИВИЙ ПІСЛЯ') -and $merged.Body.Contains('ЗАБЛОКОВАНО:') -and @(Get-LiveAfterLines $merged.Body $registry | Where-Object { $_.error }).Count -eq 0)
             $script:Calls=@(); $script:ReadFail=$true
             Save-DraftRequest 'gemini/перевірка-91' $script:Head
-            try { Complete-EngineDrafts; Check 'збій читання не приймається' $false } catch {
-                Check 'збій GET не стирає сцени: PATCH нема, запит лишається' ($script:Calls.Count -eq 0 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
-            }
+            # Збій одного завдання не рве проходу (ланцюг-порожній-pr): він іде в журнал, запит лишається на повтор.
+            Complete-EngineDrafts
+            Check 'збій GET не стирає сцени: PATCH нема, запит лишається' ($script:Calls.Count -eq 0 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
             $script:ReadFail=$false; $script:ApiFail=$true
-            try { Complete-EngineDrafts; Check 'збій PATCH не приймається' $false } catch {
-                Check 'збій PATCH лишає запит для повтору' (@(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
-            }
+            Complete-EngineDrafts
+            Check 'збій PATCH лишає запит для повтору' (@(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 1)
             $script:ApiFail=$false; $script:Calls=@(); $script:CurrentBody="$valid`n`n$other"
             Complete-EngineDrafts
             Check 'повтор після відмови API знову зберігає чинні сцени' (@(Get-LiveAfterLines $script:Calls[0].Payload.body $registry).Count -eq 2 -and @(Get-ChildItem "$WorkDir/drafts/*.json").Count -eq 0)
+        }
+        Scenario '8 змінні $script:, які читають імпортовані з queue_lanes функції, задано в публікаторі' {
+            # Публікатор не вантажить queue_lanes.ps1: змінна, яку імпортована функція читає поза значенням параметра, має бути в ньому.
+            $chain = [IO.File]::ReadAllText((Join-Path $SourceDir 'wrapper_chain.ps1'), $utf)
+            $names = @([regex]::Matches($chain, '\$names = @\(([^)]*)\)') | ForEach-Object { [regex]::Matches($_.Groups[1].Value, "'([^']+)'") | ForEach-Object { $_.Groups[1].Value } })
+            $lanes = [Management.Automation.Language.Parser]::ParseFile((Join-Path $SourceDir 'queue_lanes.ps1'), [ref]$null, [ref]$null)
+            $missing = @(); $read = 0
+            foreach ($name in $names) {
+                $fn = $lanes.Find({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -ceq $name }, $true)
+                foreach ($v in @($fn.FindAll({ param($n) $n -is [Management.Automation.Language.VariableExpressionAst] -and $n.VariablePath.UserPath -cmatch '^script:' }, $true))) {
+                    $up = $v.Parent; while ($up -and $up -isnot [Management.Automation.Language.ParameterAst] -and $up -isnot [Management.Automation.Language.FunctionDefinitionAst]) { $up = $up.Parent }
+                    if ($up -is [Management.Automation.Language.ParameterAst]) { continue }
+                    $read++; $var = $v.VariablePath.UserPath.Substring(7)
+                    if ($publisherVars -cnotcontains $var) { $missing += "$name→$var" }
+                }
+            }
+            Check "імпортовано $($names.Count) функцій, читань змінних $read, не задано в публікаторі: $($missing -join ', ')" ($names.Count -eq 11 -and $read -gt 0 -and -not $missing.Count)
+            $default = [regex]::Match([IO.File]::ReadAllText((Join-Path $SourceDir 'queue_lanes.ps1'), $utf), "(?m)^Set-RemoteRoot '([^']+)'").Groups[1].Value
+            Check 'корінь посилань публікатора — той самий, що за замовчуванням у queue_lanes.ps1' ($default -and $script:RemoteRoot -ceq $default -and $script:QueuePrefix -ceq "$default/gemini-queue/")
         }
     }
 } finally {

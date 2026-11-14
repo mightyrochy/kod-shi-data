@@ -79,6 +79,7 @@ $script:RunCodes = @{
     EMPTY_PLAN = 'у злитому з попереднього прогону нема рядків ЖИВИЙ ПІСЛЯ: прогону й PR нема'
     PLAN_FAILED = 'план живого не збудовано після всіх повторів (GitHub без входу, сторінки PR): потрібна людина'
     INTERRUPTED = 'прогін перервано (вимкнення чи сон ноутбука)'
+    CANCELLED = 'позначку знято комітом ЗНЯТО (причина — у результаті прогону)'
 }
 $script:IsolationChecks = @{
     WHOAMI = 'задача працює не під gemini'; NET_SESSION = 'gemini має права адміністратора'
@@ -118,6 +119,18 @@ function ConvertTo-ArgString([string[]]$Items) {
     $parts -join ' '
 }
 
+function Set-ConsoleInputEncoding($Encoding) { [Console]::InputEncoding = $Encoding }
+
+function Invoke-WithStdinUtf8([scriptblock]$Start) {
+    <# Запуск процесу з UTF-8 без BOM у кодуванні stdin консолі: .NET Framework пише BOM у StandardInput під час Start.
+    Консоль задачі планувальника буває розірваною — тоді сетер кидає (SetValueInvocationException) і валив би увесь
+    прохід. Це не помилка: stdin кодує власний StreamWriter UTF-8 без BOM поверх BaseStream, а кодування консолі
+    відновлюється лише коли його вдалося змінити. #>
+    $saved = $null
+    try { $saved = [Console]::InputEncoding; Set-ConsoleInputEncoding $script:Utf8 } catch { $saved = $null; $null = $_ }
+    try { & $Start } finally { if ($null -ne $saved) { try { Set-ConsoleInputEncoding $saved } catch { $null = $_ } } }
+}
+
 function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirectory = '', [double]$TimeoutMinutes = 10, [string]$StdIn = $null) {
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = $Exe
@@ -133,11 +146,7 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirector
     $psi.EnvironmentVariables['GCM_INTERACTIVE'] = 'never'
     $psi.RedirectStandardInput = ($null -ne $StdIn)
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
-    $stdinEncoding = [Console]::InputEncoding
-    try {
-        [Console]::InputEncoding = $script:Utf8
-        $p = [System.Diagnostics.Process]::Start($psi)
-    } finally { [Console]::InputEncoding = $stdinEncoding }
+    $p = Invoke-WithStdinUtf8 { [System.Diagnostics.Process]::Start($psi) }
     $out = $p.StandardOutput.ReadToEndAsync()
     $err = $p.StandardError.ReadToEndAsync()
     if ($null -ne $StdIn) {
@@ -266,7 +275,7 @@ function Get-Sha256Hex([string]$Text) {
 }
 
 function Get-BadLine([string]$Id, [string]$Why, $Failure = $null) {
-    # Єдиний викликач — Get-Line. Його режим читання не споживає повідомлення STATE_INVALID.
+    # Викликачі — Get-Line і Receive-RunState; режим читання Get-Line (-StatusOnly) не споживає повідомлення STATE_INVALID.
     $statusOnly = Get-Variable -Name StatusOnly -Scope 1 -ValueOnly -ErrorAction SilentlyContinue
     if ($statusOnly) { return $null }
     if ($null -eq $Failure) {
@@ -331,8 +340,12 @@ function Get-RunSleep($Status) {
         $before = $from -le $sleepFrom
         # За зміни завантаження початок прогону до boot доводить, що це ще попередня Windows,
         # навіть якщо новий наряд стартував між останнім heartbeat і втратою живлення.
-        if ([string](Get-Prop $event 'source') -ceq 'heartbeat/boot') { $before = $from -lt $sleepTo }
+        $boot = [string](Get-Prop $event 'source') -ceq 'heartbeat/boot'
+        if ($boot) { $before = $from -lt $sleepTo }
         if ($before -and $to -ge $sleepTo) { return $event }
+        # Вимкнення Windows зупиняє процес наряду, і його finally пише INTERRUPTED ще до нового завантаження: кінець — у
+        # вікні між останнім heartbeat і boot, а не після boot.
+        if ($boot -and $before -and [string](Get-Prop $Status 'code') -ceq 'INTERRUPTED' -and $to -ge $sleepFrom) { return $event }
     }
 }
 
@@ -483,14 +496,14 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
     $publicationKey = Get-SleepPublicationKey $s $queue $marker
     if (-not $publicationKey) { return Get-BadLine $Id 'без дозволу повтору після сну' }
     $publishedPath = Get-SeenPath $publicationKey
+    $resumed = $false
     if (Test-Path -LiteralPath $publishedPath) {
-        # Після збою між публікацією й запитом повтору той самий результат відновлює запит.
         # ID з власного стану не дозволяє чужому JSON відкрити вже закриту позначку.
-        if ([IO.File]::ReadAllText($publishedPath, $script:Utf8) -ceq ($publicationKey + "`n" + $Id) -and
-            $head -and (Get-RefSha "refs/remotes/origin/gemini/$slug") -ceq $head) {
-            [void](Request-SleepRetry $s $queue $marker $head)
-        }
-        return $null
+        if ([IO.File]::ReadAllText($publishedPath, $script:Utf8) -cne ($publicationKey + "`n" + $Id) -or
+            -not $head -or (Get-RefSha "refs/remotes/origin/gemini/$slug") -cne $head) { return $null }
+        # Той самий результат уже запушено, а обробку обірвав виняток (Receive-RunState лишає стан на повтор): кінець
+        # іде далі без другого пушу — запит повтору після сну й рядок диспетчерові не губляться.
+        $resumed = $true
     }
     $turns = Get-Int $s 'turns'; $minutes = Get-Int $s 'minutes'; $ahead = Get-Int $s 'ahead'
     # Лише слова цього файлу: поля стану поза переліками (зокрема `models`) у рядок не потрапляють.
@@ -511,12 +524,13 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
     }
     if (-not (Get-Prop $s 'bundle')) {
         if (Request-SleepRetry $s $queue $marker '') { return $null }
+        Add-PublishedMarker $queue $marker $Id $code
         if (Test-Seen "$queue $marker $code") { return $null }
         $tail = $(if (Test-Path -LiteralPath (Join-Path $OutDir ($Id + '.tail.txt'))) { "; кінець виводу агента — $OutDir\$Id.tail.txt" } else { '' })
         Write-WrapperLog "кінець $Id — НЕ ЗАВЕРШЕНО $branch — $run; комітів нема$tail"
         return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $code" }
     }
-    $res = Publish-Bundle $s $Id
+    $res = $(if ($resumed) { @('OK', '—') } else { Publish-Bundle $s $Id })
     $pc = $res[0]; $files = $res[1]
     if ($pc -eq 'PUSH_FAILED') {
         $retry = Join-Path (Join-Path $WorkDir 'seen') ((Get-Sha256Hex "retry $queue $marker") + '.txt')
@@ -533,6 +547,7 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
         $what = $(if ($DryRun) { 'ПЕРЕВІРЕНО (без пушу)' } else { 'ОПУБЛІКОВАНО' })
         Write-WrapperLog "кінець $Id — $what $branch $head; комітів $ahead, файлів до main $files; без .github/ і файлів обгортки; $run"
         if (Request-SleepRetry $s $queue $marker $head) { return $null }
+        Add-PublishedMarker $queue $marker $Id $code
         if ($head) { Save-DraftRequest $branch $head ([string](Get-Prop $s 'actual')) }
         if ($publication.Bad.Count) {
             Write-WrapperLog ('вада тіла PR: ' + (($publication.Bad | ForEach-Object { $_.error }) -join '; '))
@@ -550,9 +565,90 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
         }
         return [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $(if ($code -eq 'DONE') { 'NO_HEAD' } else { $code })_PUBLISHED" }
     }
+    # Відмову пушу власник повторює рукою (-Retry): її позначка лишається, бо Get-Line публікує лише за наявною.
+    if ($pc -cne 'PUSH_FAILED') { Add-PublishedMarker $queue $marker $Id $code }
     if (Test-Seen "$queue $marker refused $pc") { return $null }
     Write-WrapperLog "кінець $Id — НЕ ОПУБЛІКОВАНО $branch $head — $($script:PublishCodes[$pc]); $run; бандл $OutDir\$Id.bundle"
     [pscustomobject]@{ Slug = $slug; Outbox = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch $pc" }
+}
+
+# Кінець позначки підтверджує лише стан, який пише сама смуга (gemini_run.ps1): marker-state/<хеш ключа>.txt =
+# «DONE <id> <код>» з id і кодом цього результату. Файл у теці виходу пише gemini, тож сам нічого не підтверджує:
+# підроблений JSON (id, якого стан позначки не знає) позначки не знімає, а справжній результат ще може прийти.
+# Стан читається раз (Get-MarkerStateText), а підтвердження й невідповідність визначають з одного значення: смуга дописує DONE
+# будь-коли, і друге читання бачило б інше, ніж перше.
+function Get-MarkerStateText([string]$Queue, [string]$Marker) {
+    $path = Join-Path (Join-Path $OutDir 'marker-state') ((Get-Sha256Hex "refs/remotes/origin/$Queue $Marker") + '.txt')
+    if (-not (Test-Path -LiteralPath $path)) { return '' }
+    try { ([IO.File]::ReadAllText($path, $script:Utf8)).Trim() } catch { '' }
+}
+function Test-MarkerEndConfirmed([string]$State, [string]$Id, [string]$Code) { $State -ceq "DONE $Id $Code" }
+
+# Кінець позначки опубліковано (без DryRun — там пушу нема): запис на зняття з черги — лише за підтвердженим станом.
+# Результат обробляється раз (стан публікатора), а JSON з'являється раніше за DONE у marker-state: непідтверджений кінець
+# не губиться, а відкладається в finish-pending і пробується наступними проходами (Confirm-PendingMarkers).
+function Add-PublishedMarker([string]$Queue, [string]$Marker, [string]$Id, [string]$Code) {
+    if ($DryRun) { return }
+    if (Test-MarkerEndConfirmed (Get-MarkerStateText $Queue $Marker) $Id $Code) {
+        Add-FinishedMarker (Join-Path $WorkDir 'finished') $Queue $Marker
+        return
+    }
+    $dir = Join-Path $WorkDir 'finish-pending'; [void][IO.Directory]::CreateDirectory($dir)
+    Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "$Queue $Marker $Id") + '.txt')) "$Queue $Marker $Id $Code"
+    Write-WrapperLog "черга: $Queue не знімаю — стан позначки ще не підтверджує кінця $Id ($Code); перевірю наступним проходом"
+}
+
+# Відкладений кінець: підтверджено станом позначки — запис на зняття; стан позначки показує інший кінцевий результат
+# (DONE з іншим id — цей JSON не справжній) чи позначки на origin уже нема (знято, перепушено) — запис забуто;
+# узята чи чекає (STARTED, WAIT, нема файла) — лишається до наступного проходу.
+function Confirm-PendingMarkers {
+    if ($DryRun) { return }
+    $dir = Join-Path $WorkDir 'finish-pending'
+    foreach ($f in @(Get-ChildItem -LiteralPath $dir -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+        $p = @(([IO.File]::ReadAllText($f.FullName, $script:Utf8)).Trim() -split ' ')
+        if ($p.Count -ne 4 -or $p[0] -cnotmatch '^gemini-queue/\S+$' -or $p[0].Contains('..') -or $p[1] -cnotmatch $script:ShaPattern -or
+            $p[2] -cnotmatch $script:IdPattern -or $p[3] -cnotmatch '^[A-Z0-9_]{2,40}$') {
+            Remove-Item -LiteralPath $f.FullName -Force; continue
+        }
+        if ((Get-RefSha "refs/remotes/origin/$($p[0])") -cne $p[1]) { Remove-Item -LiteralPath $f.FullName -Force; continue }
+        $t = Get-MarkerStateText $p[0] $p[1]
+        if (Test-MarkerEndConfirmed $t $p[2] $p[3]) {
+            Add-FinishedMarker (Join-Path $WorkDir 'finished') $p[0] $p[1]
+            Remove-Item -LiteralPath $f.FullName -Force
+            Write-WrapperLog "черга: $($p[0]) — кінець $($p[2]) підтверджено станом позначки"
+            continue
+        }
+        if ($t.StartsWith('DONE ')) {
+            Write-WrapperLog "черга: $($p[0]) — результат $($p[2]) не збігся з кінцем у стані позначки; не знімаю"
+            Remove-Item -LiteralPath $f.FullName -Force
+        }
+    }
+}
+
+# Черга — єдина правда про роботу: позначка з кінцевим станом і опублікованим рядком (записи Add-FinishedMarker) знімається
+# з origin, тож втрата локального стану смуги (перенесення, переустановка, новий обліковий запис) не воскрешає виконаного.
+# Лише під lease на SHA кінця: перепушена позначка — нова робота, її запис знімається без пушу; невдалий пуш — повтор
+# наступним проходом. Запис, новіший за fetch цього проходу ($Since), чекає наступного: його позначки ще може не бути в
+# отриманих посиланнях. Записи — свої (смуги gemini) і claude-run (тека поруч, як у Get-ChainTaskResults).
+function Remove-FinishedMarkers([datetime]$Since) {
+    if ($DryRun) { return }
+    $dirs = @((Join-Path $WorkDir 'finished'), (Join-Path (Join-Path (Split-Path -Parent $WorkDir) 'claude-run') 'finished'))
+    foreach ($f in @(Get-ChildItem -LiteralPath $dirs -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+        if ($f.LastWriteTimeUtc -ge $Since) { continue }
+        $p = @(([IO.File]::ReadAllText($f.FullName, $script:Utf8)).Trim() -split ' ')
+        if ($p.Count -ne 2 -or $p[0] -cnotmatch '^gemini-queue/\S+$' -or $p[0].Contains('..') -or $p[1] -cnotmatch $script:ShaPattern) {
+            Remove-Item -LiteralPath $f.FullName -Force; continue
+        }
+        $ref = 'refs/heads/' + $p[0]
+        if ((Get-RefSha "refs/remotes/origin/$($p[0])") -cne $p[1]) {
+            Write-WrapperLog "черга: $($p[0]) уже знято чи перепушено — не чіпаю"
+            Remove-Item -LiteralPath $f.FullName -Force; continue
+        }
+        $d = Invoke-Git @('push', '-q', '--no-verify', "--force-with-lease=${ref}:$($p[1])", 'origin', ":$ref") -AllowFail
+        if ($d.Code -ne 0) { Write-WrapperLog "черга: $($p[0]) не знято ($($d.Err.Trim())) — повтор наступним проходом"; continue }
+        Remove-Item -LiteralPath $f.FullName -Force
+        Write-WrapperLog "черга: $($p[0]) знято — кінцевий стан опубліковано"
+    }
 }
 
 # Шлях до виконуваного: .NET із UseShellExecute=false дописує лише .exe, а CLI з npm — це .cmd.
@@ -588,6 +684,7 @@ $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
     '\AGEMINI ОБГОРТКА: (?:СОН|ВИМКНЕНО-СТАРТ) [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z → [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z, нарядів [0-9]{1,5}\z'
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}))?\z',
+    '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32} PR [1-9][0-9]{0,8} [0-9a-f]{40}\z',
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}) ШЛЯХ "(?:[A-Za-z]:\\\\|/)(?:[^"\\\x00-\x1f]|\\["\\]|\\u[0-9a-fA-F]{4}){1,4096}"\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕНО [0-9a-f]{40} СЕКУНД [0-9]{1,12}\z',
     '^GEMINI ОБГОРТКА: ОНОВЛЕННЯ [0-9a-f]{40} UPDATE_[A-Z_]{1,32}\z',
@@ -597,7 +694,7 @@ $script:OutboxTemplates = @(
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО [A-Z0-9_]{2,40} ×[0-9]{1,5}: (?:gemini|codex|claude)/$script:SlugCore(?:, (?:gemini|codex|claude)/$script:SlugCore){0,4}(?: …)?\z"
     '\AGEMINI ОБГОРТКА: ТРИВОГА (?:AUTH (?:AGY|CODEX|CLAUDE|CLOUD)|ISOLATION (?:WHOAMI|NET_SESSION|PROFILES|DRIVES|ENV)|DISK FULL|ENGINE (?:AGY|CODEX|CLAUDE))\z'
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z'
-    '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}\z'
+    '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_]+(?:,[A-Z0-9_]+)* (?:20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|-))?\z'
     $script:HoldLineTemplate
     '\AGEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #[1-9][0-9]{0,8} [0-9a-f]{40}\z'
     '\AGEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ [1-9][0-9]{0,5}\z'
@@ -727,7 +824,7 @@ function Get-DispatcherId {
 
 # Коди ЗАБЛОКОВАНО, після яких диспетчерові нічого робити: позначка вже даремна чи повтор іде в черзі.
 # Кожен інший код (зокрема невідомий) будить — безпечне за замовчуванням. Доказ — у тілі коміту «тихі пробудження».
-$script:QuietBlockedCodes = '^(?:STALE|REVIEW_API|EMPTY_PLAN|NETWORK_WAIT)$'
+$script:QuietBlockedCodes = '^(?:STALE|REVIEW_API|EMPTY_PLAN|NETWORK_WAIT|CANCELLED)$'
 $script:LocalLinesCap = 64
 # QUOTA0_<ГРУПА> будить раз на вікно квоти: нульова квота вимагає від диспетчера перенаправити наряд (слово власника 30.10).
 # Вікно — до скидання (хвилини з _M<хв>; нема — стеля), стан у теці стану обгортки переживає перезапуск процесу.
@@ -783,7 +880,7 @@ function Test-DispatcherAction([string]$Line) {
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО \S+ (\S+)$') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE ') { return $true }
     # Простій увімкненого ноутбука (власник 31.10): раз на простій — доцільна робота чи ВИМКНИ НОУТБУК.
-    if ($Line -cmatch '^GEMINI ОБГОРТКА: ПРОСТІЙ [0-9T:Z-]{20} [0-9]{1,6}$') { return $true }
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ПРОСТІЙ [0-9T:Z-]{20} [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_,]+ [0-9T:Z-]+)?$') { return $true }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ)(?: |$)') { return $true }
     if ($Line -cnotmatch '^GEMINI ОБГОРТКА: ГОТОВО ') { return $false }
     foreach ($result in @(Get-ChainTaskResults)) {
@@ -970,6 +1067,38 @@ function Write-DeliveryStatus {
     Write-FileAtomic (Join-Path $WorkDir 'delivery.json') (([ordered]@{ read_utc = [datetime]::UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"); pending = $pending; exhausted = $exhausted }) | ConvertTo-Json -Compress)
 }
 
+function Receive-RunState([string]$Id) {
+    <# Один стан прогону -> запис у state публікатора; лише записаний стан наступний прохід пропускає.
+
+    Виняток обробки (зламаний виклик процесу, пуш, тека) — не вирок станові: запису нема, той самий стан бере наступний
+    прохід, а Get-Line доводить уже запушений результат до рядка без другого пушу. Діагностика й рядок STATE_INVALID —
+    як у кривого стану (не частіше раз на добу), ім'я файлу вихідних — не id стану: воно лишається справжньому рядку. #>
+    $statePath = Join-Path (Join-Path $WorkDir 'state') ($Id + '.json')
+    if (Test-Path -LiteralPath $statePath) { return }
+    try { $line = Get-Line $Id }
+    catch {
+        Write-WrapperLog "стан ${Id}: $($_.Exception.Message)"
+        Add-HealthException $_.Exception
+        $bad = Get-BadLine $Id 'не обробився — повтор наступним проходом' $_
+        if ($null -ne $bad) { Add-ChainLine "bad $Id" $bad.Outbox }
+        return
+    }
+    if ($line -is [string] -and $line -eq 'RETRY') { return }
+    if ($line -isnot [string] -and $null -ne $line) {
+        # Кінець прогону: рядок — у теку вихідних під id стану; доставка — з неї, як для рядків інших скриптів.
+        Add-OutboxLine ($Id + '.txt') $line.Outbox
+        Write-FileAtomic $statePath (([ordered]@{ line = ''; slug = [string](Get-Prop $line 'Slug'); sent = $true; attempts = 0; outbox = ($Id + '.txt') }) | ConvertTo-Json -Compress)
+        return
+    }
+    if ($null -eq $line) {
+        Write-WrapperLog "стан $Id — повтор, рядка нема"
+        Write-FileAtomic $statePath (([ordered]@{ line = ''; sent = $true; attempts = 0 }) | ConvertTo-Json -Compress)
+        return
+    }
+    Write-WrapperLog $line
+    Write-FileAtomic $statePath (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
+}
+
 function Main {
     if (-not $OutboxDir) { $script:OutboxDir = Join-Path (Split-Path -Parent $WorkDir) 'gemini-outbox' }
     foreach ($d in @($WorkDir, (Join-Path $WorkDir 'state'), (Join-Path $WorkDir 'inbox'), (Join-Path $WorkDir 'seen'), $OutboxDir)) { [void](New-Item -ItemType Directory -Force -Path $d) }
@@ -985,6 +1114,7 @@ function Main {
             [void](Invoke-Native $GitExe @('init', '-q', '--bare', $script:Repo) $WorkDir)
             [void](Invoke-Git @('config', 'remote.origin.url', $RepoUrl))
         }
+        $fetched = [datetime]::UtcNow
         [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
                 '+refs/heads/main:refs/remotes/origin/main',
                 '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
@@ -995,27 +1125,10 @@ function Main {
         if ($Retry) { Reset-State $Retry }
         $files = @(Get-ChildItem -LiteralPath $OutDir -Filter '*.json' -File -ErrorAction SilentlyContinue | Sort-Object Name)
         foreach ($f in $files) {
-            $id = $f.BaseName
-            if ($id -notmatch $script:IdPattern) { continue }
-            $statePath = Join-Path (Join-Path $WorkDir 'state') ($id + '.json')
-            if (Test-Path -LiteralPath $statePath) { continue }
-            try { $line = Get-Line $id }
-            catch { Write-WrapperLog "стан ${id}: $($_.Exception.Message)"; $line = Get-BadLine $id 'не обробився' $_ }
-            if ($line -is [string] -and $line -eq 'RETRY') { continue }
-            if ($line -isnot [string] -and $null -ne $line) {
-                # Кінець прогону: рядок — у теку вихідних під id стану; доставка — з неї, як для рядків інших скриптів.
-                Add-OutboxLine ($id + '.txt') $line.Outbox
-                Write-FileAtomic $statePath (([ordered]@{ line = ''; slug = [string](Get-Prop $line 'Slug'); sent = $true; attempts = 0; outbox = ($id + '.txt') }) | ConvertTo-Json -Compress)
-                continue
-            }
-            if ($null -eq $line) {
-                Write-WrapperLog "стан $id — повтор, рядка нема"
-                Write-FileAtomic $statePath (([ordered]@{ line = ''; sent = $true; attempts = 0 }) | ConvertTo-Json -Compress)
-                continue
-            }
-            Write-WrapperLog $line
-            Write-FileAtomic $statePath (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
+            if ($f.BaseName -match $script:IdPattern) { Receive-RunState $f.BaseName }
         }
+        Confirm-PendingMarkers
+        Remove-FinishedMarkers $fetched
         Add-PoolsLine
         Receive-HealthAlerts
         Receive-Outbox

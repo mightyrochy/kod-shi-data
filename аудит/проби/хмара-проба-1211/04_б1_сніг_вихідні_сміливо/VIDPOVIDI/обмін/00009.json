@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream ribbed turtleneck, slim fit, hip length, cream #F2E8D5, fine merino wool\\nStraight-leg jeans, high rise, full length with a clean hem that sits just above the boot, dark indigo #1F2A44, heavy denim\\nOversized single-breasted coat, wide shoulder, below the knee, bold cobalt blue #1F4FD8, dense wool-blend with a brushed finish (outer layer)\\nChunky lace-up ankle boots with a lug sole, black #1A1A1A, waterproof treated leather that wipes clean of road salt\\nWide knitted scarf, long and wrapped twice, burnt orange #C0562A, soft lambswool\\nRibbed beanie, snug fit, deep forest green #2F5D3A, wool with a fleece lining\\nLined gloves, wrist length, black #1A1A1A, smooth leather with a warm lining\\nCrossbody bag, compact, chestnut brown #4A2A1A, grained leather\\n\\nCobalt is the opposite of copper on the color wheel, so the coat makes your hair glow and stands out against a snowy street. The forest green beanie picks up your eyes, and the burnt orange scarf echoes your hair, which makes the bold color look planned rather than random. The cream turtleneck and dark denim keep the base calm, so the coat does the standing out. Warm layers, waterproof lug-sole boots and wipe-clean leather suit a snowy, salted walk through the center and the stops in cafés.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Ribbed turtleneck\\\",\\\"details\\\":\\\"slim fit, hip length, fine merino wool, ribbed\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F2E8D5\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg jeans\\\",\\\"details\\\":\\\"high rise, full length with a clean hem that sits just above the boot, heavy denim\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#1F2A44\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Oversized single-breasted coat\\\",\\\"details\\\":\\\"wide shoulder, below the knee, dense wool-blend with a brushed finish\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#1F4FD8\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Chunky lace-up ankle boots\\\",\\\"details\\\":\\\"lug sole, waterproof treated leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wide knitted scarf\\\",\\\"details\\\":\\\"long and wrapped twice, soft lambswool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#C0562A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ribbed beanie\\\",\\\"details\\\":\\\"snug fit, wool with a fleece lining\\\",\\\"slot\\\":\\\"headwear\\\",\\\"color_hex\\\":\\\"#2F5D3A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Lined gloves\\\",\\\"details\\\":\\\"wrist length, smooth leather with a warm lining\\\",\\\"slot\\\":\\\"gloves\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Crossbody bag\\\",\\\"details\\\":\\\"compact, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#4A2A1A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2172,\"output_tokens\":520},\"stop_reason\":\"end_turn\"}"
+ }
+}

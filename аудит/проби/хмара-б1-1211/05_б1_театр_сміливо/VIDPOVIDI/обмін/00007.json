@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"вечір у театрі\", \"place\": \"у театрі\", \"intent\": \"хочу виділитися\", \"goal\": \"хочу виділитися\", \"part_of_day\": \"вечір\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"goal\": {\"kind\": \"reading\", \"quote\": \"хочу виділитися\"}, \"goal_quote\": {\"kind\": \"default\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"у театрі\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"вечір у театрі\"}, \"intent\": {\"kind\": \"reading\", \"quote\": \"хочу виділитися\"}, \"intent_quote\": {\"kind\": \"default\"}, \"mood\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"her\", \"quote\": \"вечір\"}}, \"event\": \"вечір у театрі, вистава о 19:00\", \"part_of_day\": \"evening\", \"goal\": \"express\", \"mood\": [\"сміливо\"], \"occasion\": \"theatre\", \"place\": \"theatre\", \"goal_quote\": \"хочу виділитися\", \"intent_quote\": \"хочу виділитися\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Fine-knit top: fitted turtleneck, hip length, deep burgundy #7B1E3A, extra-fine merino wool\\n\\nSkirt: pleated midi, A-line, mid-calf length, vivid emerald #0B7A57, satin-finish crepe\\n\\nTights: sheer, ankle length, black #1A1A1A, 20-denier nylon\\n\\nCoat: long straight-cut, single-breasted, below the knee, warm cream #E8DCC8, soft wool-cashmere blend\\n\\nShoes: ankle boots, almond toe, 5 cm block heel, black #1A1A1A, smooth leather\\n\\nEarrings: sculptural drop earrings, 5 cm long, gold #C9A227, polished brass\\n\\nClutch: small structured envelope clutch, black #1A1A1A, patent leather\\n\\nThis outfit stands out through colour rather than fuss. Emerald against burgundy is a rich, confident pairing that reads as bold under theatre foyer lighting and stays elegant. The refined knit, pleated midi skirt and ankle boots fit a neat evening look, and the satin-finish pleats catch the light as she moves. The cream coat gives a clean, bright frame for the jewel tones on a cool autumn evening, and the black tights, boots and clutch ground the colours. The gold earrings are the only shiny accent, so the look feels intentional and comfortable through a 19:00 performance.\"}],\"usage\":{\"input_tokens\":2318,\"output_tokens\":1110},\"stop_reason\":\"end_turn\"}"
+ }
+}

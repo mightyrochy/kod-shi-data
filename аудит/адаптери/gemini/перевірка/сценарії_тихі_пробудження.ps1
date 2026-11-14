@@ -50,7 +50,7 @@ try {
 
     Scenario '1 закритий перелік кодів' {
         # Усі коди з $script:RunCodes, $script:IsolationChecks, кодів публікації та службових рядків.
-        $quiet = @('STALE', 'REVIEW_API', 'EMPTY_PLAN')
+        $quiet = @('STALE', 'REVIEW_API', 'EMPTY_PLAN', 'CANCELLED')
         foreach ($code in @($script:RunCodes.Keys | Where-Object { $_ -notin @('QUOTA_ZERO', 'DONE', 'BLOCKED') })) {
             $want = $code -notin $quiet
             Check "1 $code — $(if ($want) { 'будить' } else { 'зведення' })" ((Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок $code") -eq $want)

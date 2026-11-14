@@ -1,0 +1,49 @@
+── ПРОМПТ (6912 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: burgundy · about it: text н=1
+2 — kind code: pumps · colour code: black · about it: text н=2
+3 — kind code: necklace · colour code: pearly · about it: text н=3
+4 — kind code: tote · colour code: light_blue · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; burgundy — бордовий; light_blue — блакитний; pearly — перлинний.
+
+ТЕКСТИ:
+{
+"1": "This is a burgundy A-line dress featuring a geometric pattern and a belted waist. The fabric flows gracefully from the bodice to the skirt, offering both coverage and movement that suits an evening occasion.",
+"2": "These are black pointed-toe pumps with a lace motif on the upper and a classic high heel. The design combines structure with delicate detail, adding sophistication to your silhouette while ensuring you can navigate the theatre floor comfortably.",
+"3": "This is a multi-strand pearl necklace with silver hardware. The soft luster of the pearls provides an understated elegance that complements the rich tones of your dress without competing for attention.",
+"4": "This is a structured tote bag in light blue with gold hardware and a matching strap. The clean lines and neutral tone make it easy to carry all your essentials while maintaining the polished aesthetic of your outfit.",
+"5": "I have selected a sophisticated ensemble for your evening at the theatre, keeping your wish for something restrained and classic in mind. The burgundy A-line dress anchors the look with its rich color and geometric pattern, offering an elegant silhouette that flatters your figure. I chose black pumps to ground the outfit, providing a sleek contrast that is perfect for walking through the venue or standing for long acts. A delicate pearl necklace adds a touch of timeless luxury without overpowering the dress, while the light blue tote brings a subtle pop of color and practicality for your essentials. This combination honors your preference for classic style while ensuring you feel confident and put-together for your evening out.",
+"6": "Wear the belt on the dress to define your waistline, creating a sleek profile that elongates your legs when you move between seats.",
+"7": "Перлинне намисто зі срібною застібкою — I declare the mix of registers (classic dress with boho pearl necklace) as a deliberate break, trusting your eye for tonal harmony despite the code's warning about register clash.",
+"8": "Блакитний тоут із текстилю — I keep the moccasin-style dress shoe despite it being labeled 'everyday' because your specific request for a classic, restrained look overrides the code's warning; its neutral beige tone complements the burgundy perfectly and offers a softer, more romantic alternative to high-shine pumps, which aligns with your intent to avoid loudness."
+}
+
+── ВІДПОВІДЬ (2444 симв., 29.9 с, HTTP 200) ──
+```json
+{
+"1": "Це бордова сукня А-силуету з геометричним візерунком і поясом на талії. Тканина елегантно спадає від ліфа до спідниці, забезпечуючи покриття й рух, що підходить для вечірнього заходу.",
+"2": "Це чорні туфлі-човники з гострим носком і мереживним візерунком на верхній частині та класичним високим каблуком. Дизайн поєднує в собі структуру й ніжний декор, додаючи вишуканості твоїй фігурі, водночас забезпечуючи комфортне пересування театральною підлогою.",
+"3": "Це багатошарове перлинне намисто зі срібним замком. М’який блиск перлів надає стриманої елегантності, яка доповнює насичені тони твоєї сукні без зайвої уваги.",
+"4": "Це структурована сумка-тоут блакитного кольору з золотою фурнітурою та відповідним ремінцем. Чіткі лінії й нейтральний тон роблять її зручною для перенесення всіх необхідних речей, зберігаючи при цьому вишуканий вигляд твого образу.",
+"5": "Я підібрала елегантний ансамбль для твоєї вечірньої прогулянки до театру, враховуючи твоє бажання мати щось стримане й класичне. Бордова сукня А-силуету є основою цього образу завдяки своєму насиченому кольору та геометричному візерунку, пропонуючи елегантний силует, який підкреслює твої форми. Я обрала чорні туфлі-човники, щоб завершити образ і створити витончений контраст, що чудово підходить для прогулянок по залу або тривалого стояння на виставах. Ніжне перлинне намисто додає нотку позачасової розкоші без перевантаження сукні, а блакитна сумка-тоут привносить ледь помітний колір і практичність для твоїх речей. Ця комбінація вшановує твою перевагу класичного стилю, водночас забезпечуючи тобі відчуття впевненості та зібраності на вечірньому заході.",
+"6": "Одягни пояс на сукню, щоб підкреслити лінію талії, створивши елегантний силует, який видовжує твої ноги при кожному русі між місцями.",
+"7": "Перлинне намисто зі срібною застібкою — Я вважаю поєднання стилів (класична сукня з богемним перловим намистом) навмисним відхиленням, довіряючи твоєму смаку в гармонії тонів, незважаючи на попередження коду про конфлікт стилів.",
+"8": "Блакитна сумка-тоут із текстилю — Я залишаю туфлі-човники з м’якої шкіри, попри те, що вони позначені як «повсякденні», тому твоє конкретне прохання мати класичний і стриманий вигляд переважає попередження коду; її нейтральний бежевий тон чудово доповнює бордовий колір і пропонує більш м’яку, романтичну альтернативу блискучим туфлям-човникам, що відповідає твоєму наміру уникнути надмірної помітності."
+}
+```

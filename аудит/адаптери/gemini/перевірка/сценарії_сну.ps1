@@ -202,7 +202,7 @@ try {
             [pscustomobject]@{Name='підроблений OutDir з кодом STALL теж не відкриває повтор';Ok=((Get-MarkerState $script:M).Kind -eq 'DONE' -and -not (Test-Path ($state+'.sleep.json')))}
             Write-FileAtomic $state "DONE $parent DONE"
             [pscustomobject]@{Name='справжня перевірка ACL відхиляє файл і корінь, доступні агенту для запису';Ok=(-not (Test-SleepRetryPath $forgedPath))}
-            # Стенд однієї особи не може створити канал іншого власника: далі підмінено
+            # Стенд однієї особи не може створити канал іншого owner: далі підмінено
             # тільки ACL-межу. Вибір теки, розбір, кінцеві коди й планувальник справжні.
             function script:Test-SleepRetryPath { $true }
             Write-FileAtomic $permitPath $permit
@@ -235,6 +235,145 @@ try {
         Export-ModuleMember -Function Run
     }
     foreach ($check in @(& $worker {Run})) {Check $check.Name $check.Ok}
+    $limits = New-Module -ArgumentList $SourceDir,$tmp -ScriptBlock {
+        param($src,$tmp)
+        . (Join-Path $src 'gemini_run.ps1') -RunsDir "$tmp/runs-l" -OutDir "$tmp/out-l" -LaneDir "$tmp/lanes-l" -UpdateRoot "$tmp/trusted-l"
+        $script:TotalMinutes = 10; $script:TurnMinutes = 5; $script:MaxNudges = 2
+        $script:Head = 'c'*40
+        # Годинник на стіні й годинник неспання підмінено: сон — це стрибок першого без руху другого.
+        $script:Wall = [datetime]'2026-11-08T09:21:00'; $script:Awake = [timespan]::FromHours(100)
+        function Get-Date { $script:Wall }
+        function Get-AwakeTime { $script:Awake }
+        function Write-Log([string]$Text) { }
+        function Close-StreamRun($Run) { }
+        function Get-Facts { [pscustomobject]@{Head=$script:Head;OnBranch=$true;Dirty=0;Ahead=1} }
+        function Get-HeadLivePublication { [pscustomobject]@{Bad=@()} }
+        function Get-Nudge { 'догонка' }
+        function Invoke-Turn($M, $Run, [string]$Text, $Deadline) {
+            $script:Turns++
+            if ($script:Turns -eq 1) {
+                # agy губить з'єднання за сон; розмова лишається, тож можлива догонка.
+                $Run.Conversation = 'розмова-1'
+                $script:Wall = $script:Wall + $script:WallStep; $script:Awake = $script:Awake + $script:AwakeStep
+                return [pscustomobject]@{Kind='eof';Result=$null}
+            }
+            [pscustomobject]@{Kind='result';Result=[pscustomobject]@{status='OK';response="НОУТБУК ГОТОВО gemini/сон $script:Head"}}
+        }
+        function Run {
+            <# Межа agy (`agy_total_minutes`): 7 год сну — не TIMEOUT, 11 хв неспання — TIMEOUT. #>
+            $m = [pscustomobject]@{Slug='сон'}
+            $sel = [pscustomobject]@{Engine=[pscustomobject]@{Name='agy';Effort='high'};Exe='не запускати'}
+            $script:Turns = 0; $script:WallStep = [timespan]::FromMinutes(433); $script:AwakeStep = [timespan]::FromMinutes(1)
+            $res = Invoke-Agent $m $script:Head 'наряд' $tmp $sel
+            [pscustomobject]@{Name='сон 7 год посеред ходу agy: догонка й DONE, не TIMEOUT';Ok=($res.Code -ceq 'DONE' -and $res.Turns -eq 2)}
+            $script:Turns = 0; $script:WallStep = [timespan]::FromMinutes(11); $script:AwakeStep = [timespan]::FromMinutes(11)
+            $res = Invoke-Agent $m $script:Head 'наряд' $tmp $sel
+            [pscustomobject]@{Name='11 хв неспання за межі 10 хв: TIMEOUT, як і було';Ok=($res.Code -ceq 'TIMEOUT' -and $res.Turns -eq 1)}
+        }
+        Export-ModuleMember -Function Run
+    }
+    foreach ($check in @(& $limits {Run})) {Check $check.Name $check.Ok}
+    $pause = New-Module -ArgumentList $SourceDir,$tmp -ScriptBlock {
+        param($src,$tmp)
+        . (Join-Path $src 'gemini_run.ps1') -RunsDir "$tmp/runs-p" -OutDir "$tmp/out-p" -LaneDir "$tmp/lanes-p" -UpdateRoot "$tmp/trusted-p"
+        # Батарея на вході й на двох обертах циклу, далі мережа; кожен Start-Sleep — 2 год неспання.
+        $script:Battery = @($true, $true, $true, $false); $script:Clock = [timespan]::FromHours(100)
+        $script:Calls = New-Object Collections.ArrayList
+        function Test-OnBattery { $b = $script:Battery[0]; if ($script:Battery.Count -gt 1) { $script:Battery = $script:Battery[1..($script:Battery.Count - 1)] }; $b }
+        function Get-UnbiasedTime { $script:Clock }
+        function Start-Sleep { $script:Clock += [timespan]::FromHours(2) }
+        function Get-PauseTargets { @(11, 12) }
+        function Set-ProcessPause([int]$Id, [bool]$On) { [void]$script:Calls.Add("$Id $On"); $true }
+        function Write-Log([string]$Text) { }
+        # Серцебиття всередині паузи доходить до Invoke-Native — друга пауза не має нічого робити.
+        function Invoke-HealthBeat { Wait-PowerPause }
+        function Run {
+            <# Без світла процеси нарядів стоять, після — відновлені; 4 год паузи не йдуть ні в межі, ні в завислість. #>
+            $before = Get-AwakeTime
+            Wait-PowerPause
+            [pscustomobject]@{Name='пауза: кожен процес призупинено й відновлено рівно раз, у такому порядку';Ok=(($script:Calls -join ',') -ceq '11 True,12 True,11 False,12 False')}
+            [pscustomobject]@{Name='4 год паузи не додали робочого часу (Get-AwakeTime)';Ok=((Get-AwakeTime) -eq $before -and $script:PausedTotal -eq [timespan]::FromHours(4))}
+            $script:Calls.Clear(); $script:Battery = @($false)
+            Wait-PowerPause
+            [pscustomobject]@{Name='від мережі пауза нічого не чіпає';Ok=($script:Calls.Count -eq 0)}
+        }
+        Export-ModuleMember -Function Run
+    }
+    foreach ($check in @(& $pause {Run})) {Check $check.Name $check.Ok}
+    $targets = New-Module -ArgumentList $SourceDir,$tmp -ScriptBlock {
+        param($src,$tmp)
+        . (Join-Path $src 'gemini_run.ps1') -RunsDir "$tmp/runs-t" -OutDir "$tmp/out-t" -LaneDir "$tmp/lanes-t" -UpdateRoot "$tmp/trusted-t"
+        function Get-Process {
+            <# Перелік процесів машини: інтерфейс, lms, окремий llmster, процес із теки .lmstudio, ComfyUI і сторонні. #>
+            foreach ($row in @(@('LM Studio',21,''),@('lms',22,''),@('llmster',23,''),@('node',24,'C:\Users\u\.lmstudio\bin\server.exe'),@('ComfyUI',25,''),@('chrome',26,'C:\Chrome\chrome.exe'),@('notepad',27,''))) {
+                [pscustomobject]@{ ProcessName = $row[0]; Id = $row[1]; Path = $row[2] }
+            }
+        }
+        function Get-CimInstance { }
+        function Run {
+            <# Планувальник ставить на паузу всі процеси LM Studio за визначенням Test-GpuModelProcess, сторонніх не чіпає. #>
+            $script:PauseMachine = $true
+            $ids = @(Get-PauseTargets)
+            [pscustomobject]@{Name='пауза машини: LM Studio, lms, окремий llmster і процес із .lmstudio, ComfyUI — але не chrome і notepad';Ok=(($ids -join ',') -ceq '21,22,23,24,25')}
+            $script:PauseMachine = $false
+            [pscustomobject]@{Name='без планувальника процесів машини в цілях паузи нема';Ok=(@(Get-PauseTargets).Count -eq 0)}
+        }
+        Export-ModuleMember -Function Run
+    }
+    foreach ($check in @(& $targets {Run})) {Check $check.Name $check.Ok}
+    $free = New-Module -ArgumentList $SourceDir,$tmp -ScriptBlock {
+        param($src,$tmp)
+        . (Join-Path $src 'gemini_run.ps1') -RunsDir "$tmp/runs-f" -OutDir "$tmp/out-f" -LaneDir "$tmp/lanes-f" -UpdateRoot "$tmp/trusted-f"
+        [void][IO.Directory]::CreateDirectory($LaneDir)
+        $script:Calls = New-Object Collections.ArrayList
+        function Test-OnBattery { $b = $script:Battery[0]; $script:Battery = @($script:Battery | Select-Object -Skip 1); $b }
+        function Start-Sleep { }
+        function Invoke-HealthBeat { }
+        function Write-Log([string]$Text) { }
+        function Get-PauseTargets { @(11) }
+        function Set-ProcessPause([int]$Id, [bool]$On) { [void]$script:Calls.Add("пауза $Id $On"); $true }
+        function Get-LmsInstances { [pscustomobject]@{ id = 'owner'; model = 'm1' }; [pscustomobject]@{ id = 'job'; model = 'm2' } }
+        function Invoke-RestMethod {
+            <# Підробні LM Studio і ComfyUI: :8188 вимкнено, решта відповідає. #>
+            [CmdletBinding()] param([Parameter(Position=0)][string]$Uri, $Method, $ContentType, $Body, $TimeoutSec)
+            [void]$script:Calls.Add("$Uri $Body")
+            if ($Uri -like '*:8188/*') { throw 'зʼєднання відхилено' }
+            [pscustomobject]@{ status = 'unloaded' }
+        }
+        function Invoke-Outage([string]$Session) {
+            <# Одна пауза зі світлом, що повертається; $Session — вміст gpu-models.json ('' — запису нема). #>
+            $p = Join-Path $LaneDir 'gpu-models.json'
+            if ($Session) { [IO.File]::WriteAllText($p, $Session) } else { Remove-Item -LiteralPath $p -Force -ErrorAction SilentlyContinue }
+            $script:Calls.Clear(); $script:Battery = @($true, $true, $false)
+            Wait-PowerPause
+            $script:Calls -join ' | '
+        }
+        function Run {
+            <# Звільнення карти: до заморожування; модель живої оренди лишається; збій сервера паузи не зриває. #>
+            $script:PauseMachine = $true
+            $session = '{"v":2,"before":[{"id":"owner","model":"m1"}],"leases":[{"run":"r1","marker":"наряд-1","join":["owner"],"done":false}],"dirty":false}'
+            $unloadOwner = 'http://127.0.0.1:1234/api/v1/models/unload {"instance_id":"owner"}'
+            $unloadJob = 'http://127.0.0.1:1234/api/v1/models/unload {"instance_id":"job"}'
+            $comfy = 'http://127.0.0.1:8000/free {"unload_models":true,"free_memory":true} | http://127.0.0.1:8188/free {"unload_models":true,"free_memory":true}'
+            $lease = Open-Lock (Get-GpuLeaseLockPath 'r1')
+            $got = Invoke-Outage $session
+            [pscustomobject]@{Name='живий GPU-наряд: вивантажено лише чуже, його модель лишилась; ComfyUI звільнено; усе до заморожування';Ok=($got -ceq "$unloadOwner | $comfy | пауза 11 True | пауза 11 False")}
+            $lease.Dispose()
+            $got = Invoke-Outage ''
+            [pscustomobject]@{Name='без GPU-нарядів: вивантажено всі екземпляри LM Studio';Ok=($got -ceq "$unloadOwner | $unloadJob | $comfy | пауза 11 True | пауза 11 False")}
+            $got = Invoke-Outage '{"v":2}'
+            [pscustomobject]@{Name='неповний запис GPU: LM Studio не чіпається, ComfyUI звільнено, пауза йде';Ok=($got -ceq "$comfy | пауза 11 True | пауза 11 False")}
+            $gate = Open-Lock (Get-GpuLockPath)
+            $got = Invoke-Outage ''
+            $gate.Dispose()
+            [pscustomobject]@{Name='ворота GPU зайняті: LM Studio не чіпається, пауза йде';Ok=($got -ceq "$comfy | пауза 11 True | пауза 11 False")}
+            $script:PauseMachine = $false
+            $got = Invoke-Outage ''
+            [pscustomobject]@{Name='без планувальника claude-run карту не звільняє';Ok=($got -ceq 'пауза 11 True | пауза 11 False')}
+        }
+        Export-ModuleMember -Function Run
+    }
+    foreach ($check in @(& $free {Run})) {Check $check.Name $check.Ok}
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
 # Артефакти лишаються в TEMP стенда; він не торкається робочих обгорток і станів ноутбука.
 "провалів: $bad"

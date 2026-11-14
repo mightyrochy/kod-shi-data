@@ -19,7 +19,8 @@
      ЗАБЛОКОВАНО з кодом (MODEL_INVALID, EFFORT_INVALID), без підміни. Дозволи — `--permission-mode auto`.
   3. Промпт — перший і останній рядки запускача (`аудит/ЗАПУСКАЧ.md`) без його id і з вимкненням «лише обгортка за
      позначкою»; нова спроба при наявній гілці наряду — ще «продовжуй з гілки». Гілку й PR-чернетку сесія пушить сама.
-  4. Межі часу всього нема: зупиняє лише завислість — жодної події stream-json довше за поріг (HANG).
+  4. Межі часу всього нема: зупиняє лише завислість — жодної події stream-json довше за поріг (HANG). Очікування фонових
+     завдань агента — без власної межі `claude -p` (CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0): його тоді обмежує лише HANG.
   5. Кінець — рядок теки вихідних (доставляє `gemini-publish`): ГОТОВО <гілка> <SHA40>, лише коли `origin` має
      саме цей SHA на гілці зі звіту, або ЗАБЛОКОВАНО claude/<наряд> <КОД>; копія з незапушеними комітами лишається — ще рядок COPY_KEPT. Відмова за квотою — не кінець: позначка
      чекає скидання (час — з події `rate_limit_event` stream-json) і рядок QUOTA0_CLAUDE_M<хв>; потім її бере ця ж смуга.
@@ -57,6 +58,7 @@ param(
     [string]$HealthDrive = 'C:\',
     [string]$TmpDir = 'C:\tmp',
     [switch]$NoStatus,
+    [switch]$MeasureHealth,
     [string]$WorkerFile = ''
 )
 
@@ -72,6 +74,7 @@ foreach ($k in $PSBoundParameters.Keys) {
 }
 $script:SelfPath = $PSCommandPath
 . (Join-Path $PSScriptRoot 'queue_lanes.ps1')
+Set-RemoteRoot 'refs/claude-run'
 
 $script:Lanes = @('claude')
 $script:EffortPattern = '^(.+)-(none|minimal|low|medium|high|xhigh|max|ultra)$'
@@ -90,7 +93,7 @@ $script:LineTemplates = @(
     "\AGEMINI ОБГОРТКА: ГОТОВО claude/$script:SlugCore [0-9a-f]{40} МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63}\z",
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$script:SlugCore [A-Z0-9_]{2,40}\z",
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z',
-    '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}\z',
+    '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_]+(?:,[A-Z0-9_]+)* (?:20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|-))?\z',
     $script:HoldLineTemplate
 )
 
@@ -171,6 +174,38 @@ function Add-ClaudeFields($M) {
     $M
 }
 
+# Стан позначок claude-run до того, як ключ перейшов на канонічну назву (Get-MarkerKey), лежав під ключем від
+# `$script:RemoteRoot/<назва> <sha>` (refs/claude-run/…). Копіює його під канонічний ключ: `.txt` (виконане, WAIT, OFF),
+# `.seen` (перша поява — порядок черги) і `.owner` (рядок OWNER не повторюється). Раз на файл і без перезапису: є канонічний —
+# лишається він; старі файли не видаляються. `.claim` не переносимо: це живе узяття процесом наряду, що сам його знімає за
+# своїм ключем, — знімок лишився б хибним TAKEN, а мертве узяття без стану прибирає Clear-OrphanClaims. `STARTED` теж: наряд
+# іще йде чи перерваний — його кінець запише старий ключ, а знімок Resume-Interrupted помилково закрив би як INTERRUPTED;
+# коли наряд допише DONE, наступний прохід перенесе його.
+function Copy-StateOnce([string]$From, [string]$To) {
+    if (-not [IO.File]::Exists($From) -or [IO.File]::Exists($To)) { return 0 }
+    if ($From.EndsWith('.txt') -and [IO.File]::ReadAllText($From, $script:Utf8).StartsWith('STARTED ')) { return 0 }
+    $tmp = $To + '.' + [guid]::NewGuid().ToString('N') + '.part'
+    try { [IO.File]::Copy($From, $tmp); [IO.File]::Move($tmp, $To); 1 }
+    catch { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; 0 }
+}
+
+function Move-LegacyMarkerState($Markers) {
+    if ($script:RemoteRoot -ceq 'refs/remotes/origin') { return 0 }
+    $moved = 0
+    foreach ($m in $Markers) {
+        $new = Get-StatePath (Get-MarkerKey $m)
+        $old = Get-StatePath "$script:RemoteRoot/$($m.Name) $($m.Sha)"
+        if ($new -ceq $old -or [IO.File]::Exists((Get-ClaimPath $new))) { continue }
+        try {
+            foreach ($ext in @('.txt', '.seen', '.owner')) {
+                $moved += Copy-StateOnce ($old -replace '\.txt$', $ext) ($new -replace '\.txt$', $ext)
+            }
+        } catch { Write-Log "перенесення стану $($m.Name): $($_.Exception.Message)" }
+    }
+    if ($moved) { Write-Log "стан позначок: перенесено файлів зі старого ключа $moved" }
+    $moved
+}
+
 # --- ноутбук (перекривається на стенді) ----------------------------------------------------------------------------
 
 function Get-BootStamp {
@@ -229,14 +264,16 @@ function Read-NoteRows([string]$Path, [string[]]$Names) {
 # heartbeat.json обгортки Gemini (пише gemini — недовірений файл): лише поля за форматом, решта — «?» чи пропущено.
 function Read-GeminiBeat {
     $b = [ordered]@{ Time = '?'; Isolation = '?'; Marker = ''; Engine = ''; Model = ''; Minutes = ''; Lanes = @(); Quota = $null; Codex = $null; Wait = @(); Limits = ''
-        Unsourced = @(); Profile = $null; Zero = '' }
+        Unsourced = @(); Profile = $null; Zero = ''; CodexFallback = $true }
     $path = Join-Path $GeminiOutDir 'heartbeat.json'
     try { $j = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { return [pscustomobject]$b }
     $get = { param($o, $n) $p = $(if ($null -eq $o -or $o -is [string] -or $o -is [ValueType]) { $null } else { $o.PSObject.Properties[$n] }); if ($null -eq $p -or $null -eq $p.Value) { '' } elseif ($p.Value -is [datetime]) { $p.Value.ToString('s') } else { [string]$p.Value } }
+    # Поля UTC із Z: PowerShell 7 (і `\/Date()\/` у 5.1) віддає їх [datetime], а `.ToString('s')` з $get дав би час без Z, який $utc відкинув би.
+    $getu = { param($o, $n) $p = $(if ($null -eq $o -or $o -is [string] -or $o -is [ValueType]) { $null } else { $o.PSObject.Properties[$n] }); if ($null -eq $p -or $null -eq $p.Value) { '' } elseif ($p.Value -is [datetime]) { Get-UtcStamp $p.Value } else { [string]$p.Value } }
     $utc = { param($s) if ($s -match $script:UtcRx) { $s } else { '' } }
     $t = & $get $j 'time'
     if ($t -match '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d$') { $b.Time = Get-UtcStamp ([datetime]::ParseExact($t, 's', [cultureinfo]::InvariantCulture)) }
-    $readUtc = & $get $j 'read_utc'
+    $readUtc = & $getu $j 'read_utc'
     if ($readUtc -cmatch $script:UtcRx) { $b.Time = $readUtc }
     $iso = & $get $j 'isolation'
     if ($iso -cmatch '^[A-Z0-9_]{2,40}$') { $b.Isolation = $iso }
@@ -245,8 +282,8 @@ function Read-GeminiBeat {
     $fields = @(Get-LimitFields)
     $b.Unsourced = @(@(Get-JsonProp $j 'unsourced' | Select-Object -First 16) | ForEach-Object { [string]$_ } | Where-Object { $fields -ccontains $_ })
     $h = Get-JsonProp $j 'health'
-    $pb = & $get $h 'profile'; $ps = & $get $h 'skipped'; $pu = & $utc (& $get $h 'read')
-    if ($pb -match '^[0-9]{1,15}$' -and $ps -match '^[0-9]{1,9}$' -and $pu) { $b.Profile = [pscustomobject]@{ Bytes = [long]$pb; Skipped = [int]$ps; Read = $pu } }
+    $pb = & $get $h 'profile'; $ps = & $get $h 'skipped'; $pu = & $utc (& $getu $h 'read')
+    if ($pb -match '^[0-9]{1,15}$' -and $ps -match '^[0-9]{1,9}$' -and $pu) { $b.Profile = [pscustomobject]@{ Bytes = [long]$pb; Skipped = [int]$ps; Read = $pu; Top = @(ConvertFrom-SizeList (& $get $h 'top')); Copies = @(ConvertFrom-SizeList (& $get $h 'copies')) } }
     $z = & $get $h 'zero'
     if ($z -match '^[0-9]{1,5}$') { $b.Zero = $z }
     $mk = & $get $j 'marker'
@@ -264,7 +301,7 @@ function Read-GeminiBeat {
         $ln = & $get $l 'lane'; $n = & $get $l 'n'
         if ($ln -notin @('codex', 'agy') -or -not (Test-SlotCount $n)) { continue }
         $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First $script:Ceil.slots[1])) {
-            $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $get $s 'since')
+            $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $getu $s 'since')
             if (-not (Test-SlotName $sl @($ln)) -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
             [pscustomobject]@{ Slot = $sl; Marker = $m; Model = $md; Since = $since; Gpu = ((& $get $s 'gpu') -eq 'True') }
         })
@@ -278,14 +315,29 @@ function Read-GeminiBeat {
             if ($g -cnotmatch '^[A-Z0-9]{1,16}$' -or $wn -cnotmatch '^(?:WEEK|5H|DAY|OTHER|)$' -or $left -notmatch '^(?:100|[1-9]?[0-9])$') { continue }
             [pscustomobject]@{ G = $g; W = $wn; Left = [int]$left; Reset = (& $utc $r) }
         })
-        $b.Quota = [pscustomobject]@{ Read = (& $utc (& $get $q 'read')); Windows = $win }
+        $b.Quota = [pscustomobject]@{ Read = (& $utc (& $getu $q 'read')); Windows = $win }
     }
+    $cf = & $get $j 'codex_fallback'
+    if ($cf -in @('True', 'False')) { $b.CodexFallback = ($cf -eq 'True') }
     $c = Get-JsonProp $j 'codex'
-    if ($null -ne $c) { $b.Codex = [pscustomobject]@{ Refused = (& $utc (& $get $c 'refused')); Reset = (& $utc (& $get $c 'reset')) } }
+    if ($null -ne $c) {
+        # Вимір квоти Codex (пише gemini-run із журналу сесії Codex): за формою — id, вікна {хвилини, використано, залишок, скидання}.
+        $lims = @(foreach ($l in @(Get-JsonProp $c 'limits')) {
+            $id = & $get $l 'id'
+            if ($id -cnotmatch '^[A-Za-z0-9_.-]{1,40}$') { continue }
+            $ws = @(foreach ($w in @(Get-JsonProp $l 'windows')) {
+                $m = & $get $w 'm'; $us = & $get $w 'used'; $lf = & $get $w 'left'
+                if ($m -notmatch '^[0-9]{1,9}$' -or $us -notmatch '^(?:100|[1-9]?[0-9])(?:\.[0-9]{1,3})?$' -or $lf -notmatch '^(?:100|[1-9]?[0-9])$') { continue }
+                [pscustomobject]@{ M = [long]$m; Used = $us; Left = [int]$lf; Reset = (& $utc (& $getu $w 'reset')) }
+            })
+            if ($ws.Count -gt 0) { [pscustomobject]@{ Id = $id; Windows = $ws } }
+        })
+        $b.Codex = [pscustomobject]@{ Refused = (& $utc (& $getu $c 'refused')); Reset = (& $utc (& $getu $c 'reset')); Read = (& $utc (& $getu $c 'read')); Limits = $lims }
+    }
     $b.Wait = @(foreach ($w in @(Get-JsonProp $j 'wait' | Select-Object -First 12)) {
         $m = & $get $w 'marker'; $g = & $get $w 'g'
         if ($m -cnotmatch $script:MarkerRx -or $m.Contains('..')) { continue }
-        [pscustomobject]@{ Marker = $m; Until = (& $utc (& $get $w 'until')); Group = $(if ($g -cmatch '^[A-Z0-9]{1,16}$') { $g } else { '' }) }
+        [pscustomobject]@{ Marker = $m; Until = (& $utc (& $getu $w 'until')); Group = $(if ($g -cmatch '^[A-Z0-9]{1,16}$') { $g } else { '' }) }
     })
     [pscustomobject]$b
 }
@@ -299,31 +351,109 @@ function Get-Minutes([string]$Utc) {
 
 # Квота Claude з останньої події `rate_limit_event` (quota-claude.json, пише процес наряду) — лише обчислене.
 function Read-ClaudeQuota {
-    try { [System.IO.File]::ReadAllText((Join-Path $WorkDir 'quota-claude.json'), $script:Utf8) | ConvertFrom-Json } catch { $null }
+    try { ConvertTo-PlainJson ([System.IO.File]::ReadAllText((Join-Path $WorkDir 'quota-claude.json'), $script:Utf8) | ConvertFrom-Json) } catch { $null }
 }
 
 # Здоров'я машини (10971): вільне місце диска й зміна за добу, розміри названих тек, позначки черги за рушієм, видом і
 # віком голови, позначки на рушії з нульовою квотою. Лише показ — узяття не гейтить; вимір — не частіше за usage_minutes,
-# без обходу всього диска; профіль gemini міряє gemini-run (heartbeat).
+# без обходу всього диска; профіль gemini міряє gemini-run (heartbeat), а теки — окремий процес цього скрипта
+# (-MeasureHealth): обхід `claude-run` з копіями задач (~8 ГБ) іде хвилини й не стоїть у проході стану.
 function Get-FreeBytes { (New-Object System.IO.DriveInfo $HealthDrive).AvailableFreeSpace }
 
 function Format-Gb([double]$Bytes) { ($Bytes / 1GB).ToString('0.0', [cultureinfo]::InvariantCulture) + ' ГБ' }
+
+# Розміри названих тек з кешу dirs.json (Get-MeasureCache); нема кешу — порожньо, розмір з'явиться після обходу.
+function Get-HealthDirs {
+    $c = Get-MeasureCache $WorkDir 'dirs' @('-MeasureHealth', '-WorkDir', $WorkDir, '-TmpDir', $TmpDir) (60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes'))
+    if ($null -eq $c) { return @() }
+    @($c.dirs)
+}
+
+# Тіло процесу -MeasureHealth: обхід названих тек і кеш dirs.json (Save-MeasureCache).
+function Invoke-HealthMeasure {
+    Save-MeasureCache $WorkDir 'dirs' {
+        [ordered]@{ dirs = @(foreach ($d in @(@('C:\tmp', $TmpDir), @('claude-run', $WorkDir))) {
+            $r = Measure-DirBytes $d[1]
+            [pscustomobject]@{ name = $d[0]; bytes = $(if ($null -ne $r) { $r.Bytes } else { -1 }); skipped = $(if ($null -ne $r) { $r.Skipped } else { 0 }) }
+        }) }
+    }
+}
 
 function Update-Health {
     $path = Join-Path $WorkDir 'health.json'
     $h = $null
     if (Test-Path -LiteralPath $path) { try { $h = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    $dirs = @(Get-HealthDirs)
+    if ($null -ne $h) { $h | Add-Member -NotePropertyName dirs -NotePropertyValue $dirs -Force }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     if ($null -ne $h -and $now - [long]$h.time -lt 60 * (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')) { return $h }
     $samples = @(@(Get-JsonProp $h 'samples') | Where-Object { $null -ne $_ -and $now - [long]$_.t -le 2 * 86400 })
     try { $samples += [pscustomobject]@{ t = $now; free = [long](Get-FreeBytes) } } catch { Write-Log "здоров'я: місце не виміряно" }
-    $dirs = @(foreach ($d in @(@('C:\tmp', $TmpDir), @('claude-run', $WorkDir))) {
-        $r = Measure-DirBytes $d[1]
-        [pscustomobject]@{ name = $d[0]; bytes = $(if ($null -ne $r) { $r.Bytes } else { -1 }); skipped = $(if ($null -ne $r) { $r.Skipped } else { 0 }) }
-    })
-    $h = [pscustomobject]@{ time = $now; samples = $samples; dirs = $dirs }
-    Write-FileAtomic $path ($h | ConvertTo-Json -Compress -Depth 4)
-    $h
+    Write-FileAtomic $path ([pscustomobject]@{ time = $now; samples = $samples } | ConvertTo-Json -Compress -Depth 4)
+    [pscustomobject]@{ time = $now; samples = $samples; dirs = $dirs }
+}
+
+# Вікно квоти за довжиною в хвилинах (window_minutes): «5 год», «7 д».
+function Format-WindowLabel([long]$Minutes) {
+    if ($Minutes -le 0) { return '?' }
+    if ($Minutes % 1440 -eq 0) { return "$($Minutes / 1440) д" }
+    if ($Minutes % 60 -eq 0) { return "$($Minutes / 60) год" }
+    "$Minutes хв"
+}
+
+# Вік UTC-часу словами: «3 д 4 год», «2 год 5 хв», «7 хв».
+function Format-Age([string]$Utc) {
+    if ($Utc -notmatch $script:UtcRx) { return '?' }
+    $m = [long](Get-Minutes $Utc)
+    if ($m -lt 0) { return '?' }
+    $d = [long][Math]::Floor($m / 1440); $h = [long][Math]::Floor(($m % 1440) / 60)
+    if ($d -gt 0) { return "$d д $h год" }
+    if ($h -gt 0) { return "$h год $($m % 60) хв" }
+    "$m хв"
+}
+
+# Остання відповідь Codex після $Since (UTC): запис кінця наряду в спільному out з engine codex і engine_answer_utc — часом, коли
+# процес Codex віддав відповідь (його ставить gemini-run одразу після ходу). Його, а не ended_utc, порівнюємо з відмовою: ended_utc
+# ставиться вже після фактів, збірки й супровідних файлів, тож відповідь раніше за відмову іншого слота виглядала б пізнішою.
+# Порожній engine_answer_utc — рушія не кликали (NOT_ON_MAIN, NO_TASK_FILE, ISOLATION) чи він не відповів; код, що є відмовою
+# квоти (QUOTA, QUOTA_ZERO) чи збоєм рушія (AGY_ERROR, AUTH тощо), теж не успіх. '' — такої відповіді нема.
+function Get-CodexSuccessAfter([string]$Since) {
+    if ($Since -cnotmatch $script:UtcRx) { return '' }
+    $from = [datetime]::ParseExact($Since, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
+    $failed = @('', 'QUOTA', 'QUOTA_ZERO', 'AGY_ERROR', 'AUTH', 'EFFORT_INVALID', 'MODEL_INVALID', 'TIMEOUT', 'ENGINE_MISSING', 'CRASH', 'COPY_FAILED')
+    $best = ''
+    foreach ($f in @(Get-ChildItem -LiteralPath $GeminiOutDir -Filter '*.json' -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -cmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json$' -and $_.LastWriteTimeUtc -ge $from })) {
+        try { $t = [System.IO.File]::ReadAllText($f.FullName, $script:Utf8) } catch { continue }
+        if ($t -cnotmatch '"engine":"codex"') { continue }
+        if ($t -cmatch '"code":"([A-Z0-9_]*)"') { $code = $Matches[1] } else { continue }
+        if ($failed -ccontains $code) { continue }
+        if ($t -cmatch '"engine_answer_utc":"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)"') { $end = $Matches[1] } else { continue }
+        if ([string]::CompareOrdinal($end, $Since) -gt 0 -and [string]::CompareOrdinal($end, $best) -gt 0) { $best = $end }
+    }
+    $best
+}
+
+# Стан квоти Codex: відмова діє (Zero), доки не скинуто (Reset) чи не минув quota_wait_minutes від неї, а пізніша відповідь Codex
+# (Success) її скасовує; вимір теж дає нуль, коли вікно використано повністю й скидання попереду чи невідоме.
+function Get-CodexState($Codex) {
+    $s = [pscustomobject]@{ Refused = ''; Reset = ''; Success = ''; Zero = $false; Read = ''; Limits = @() }
+    if ($null -eq $Codex) { return $s }
+    # Запис Codex буває без вимірних полів (старий heartbeat, стенди): читаємо їх лише коли вони є.
+    $s.Refused = [string]$Codex.Refused; $s.Reset = [string]$Codex.Reset
+    if ($null -ne $Codex.PSObject.Properties['Read']) { $s.Read = [string]$Codex.Read }
+    if ($null -ne $Codex.PSObject.Properties['Limits']) { $s.Limits = @($Codex.Limits) }
+    if ($s.Refused -cmatch $script:UtcRx) {
+        $s.Success = Get-CodexSuccessAfter $s.Refused
+        # Вимір пізніший за відмову — ходу Codex після неї знято залишок із журналу (відмовлений хід пише вимір до відмови).
+        if (-not $s.Success -and $s.Read -cmatch $script:UtcRx -and [string]::CompareOrdinal($s.Read, $s.Refused) -gt 0) { $s.Success = $s.Read }
+        if (-not $s.Success) {
+            $s.Zero = $(if ($s.Reset -cmatch $script:UtcRx) { [int](Get-Minutes $s.Reset) -lt 0 } else { [int](Get-Minutes $s.Refused) -lt (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') })
+        }
+    }
+    foreach ($l in $s.Limits) {
+        foreach ($w in @($l.Windows)) { if ((100 - [double]$w.Used) -le 0 -and (-not $w.Reset -or (Test-FutureUtc ([string]$w.Reset)))) { $s.Zero = $true } }
+    }
+    $s
 }
 
 function Get-HealthLines($G, $Cq) {
@@ -345,6 +475,11 @@ function Get-HealthLines($G, $Cq) {
     $sizes = @(foreach ($d in @($h.dirs)) { "$($d.name) $(if ([long]$d.bytes -lt 0) { 'нема' } else { Format-Gb $d.bytes })$(if ([int]$d.skipped -gt 0) { " (недоступних тек $($d.skipped))" })" })
     $sizes += "профіль gemini $(if ($null -ne $G.Profile) { (Format-Gb $G.Profile.Bytes) + $(if ($G.Profile.Skipped -gt 0) { " (недоступних тек $($G.Profile.Skipped))" }) + " (зчитано $($G.Profile.Read))" } else { '? (gemini-run не дав)' })"
     $lines += "- розміри: $($sizes -join ' · ')"
+    if ($null -ne $G.Profile) {
+        foreach ($row in @(@('профіль gemini за теками', $G.Profile.Top), @('копії задач gemini (gemini-runs\w)', $G.Profile.Copies))) {
+            $lines += "- $($row[0]): $(if (@($row[1]).Count) { (@($row[1]) | ForEach-Object { "$($_.Name) $(Format-Gb $_.Bytes)" }) -join ' · ' } else { 'нема' })"
+        }
+    }
     $ms = @(try { Get-Markers } catch { Write-Log "здоров'я: позначки не прочитано"; @() })
     $lines += @('', "Позначки черги: $($ms.Count) (вік — від коміту голови)", '', '| рушій | вид | < 1 год | < 1 доба | ≥ 1 доба |', '|---|---|---|---|---|')
     $keys = @{}; $cnt = @{}
@@ -365,7 +500,7 @@ function Get-HealthLines($G, $Cq) {
         if ($Reset -match $script:UtcRx) { return [int](Get-Minutes $Reset) -lt 0 }
         [int](Get-Minutes $Refused) -lt (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') }
     $cz = $(if ($null -ne $Cq -and (& $zero ([string](Get-JsonProp $Cq 'refused')) ([string](Get-JsonProp $Cq 'reset')))) { @($ms | Where-Object { $_.Lane -eq 'claude' }).Count } else { 0 })
-    $xz = $(if ($null -ne $G.Codex -and (& $zero $G.Codex.Refused $G.Codex.Reset)) { @($ms | Where-Object { $_.Lane -eq 'codex' }).Count } else { 0 })
+    $xz = $(if ((Get-CodexState $G.Codex).Zero) { @($ms | Where-Object { $_.Lane -eq 'codex' }).Count } else { 0 })
     $lines += @('', "Позначки на рушії з нульовою квотою: claude $cz · codex $xz · agy $(if ($G.Zero) { $G.Zero } else { '?' })")
     $lines
 }
@@ -473,8 +608,21 @@ function Get-StatusBody {
         }
         if ([string](Get-JsonProp $cq 'refused')) { $lines += "| claude · остання відмова | — | 0 % | $(if ($cq.reset) { [string]$cq.reset } else { 'CLI не дав' }) | $([string]$cq.refused) |" }
     } else { $lines += '| claude | — | невідомо (ще не було прогону) | — | — |' }
-    if ($null -ne $g.Codex -and $g.Codex.Refused) { $lines += "| codex · остання відмова | — | 0 % | $(if ($g.Codex.Reset) { $g.Codex.Reset } else { 'CLI не дав — чекання quota_wait_minutes' }) | $($g.Codex.Refused) |" }
-    else { $lines += '| codex | — | невідомо (CLI без ходу не дає; відмов не було) | — | — |' }
+    $cx = Get-CodexState $g.Codex
+    $measured = 0
+    if ($null -ne $g.Codex) {
+        foreach ($l in $cx.Limits) {
+            foreach ($w in @($l.Windows)) {
+                $measured++
+                $lines += "| codex · $($l.Id) | $(Format-WindowLabel $w.M) | $($w.Left) % (використано $($w.Used) %) | $(if ($w.Reset) { $w.Reset } else { '?' }) | $(if ($cx.Read) { $cx.Read } else { '?' }) |"
+            }
+        }
+    }
+    if ($measured -eq 0) { $lines += '| codex | — | невідомо (виміру ще нема: його пише gemini-run після ходу Codex) | — | — |' }
+    if ($cx.Refused) {
+        $left = $(if ($cx.Zero) { '0 %' } elseif ($cx.Success) { "— (пізніше був успішний запуск, $($cx.Success))" } else { '— (чекання минуло)' })
+        $lines += "| codex · остання відмова | відмова $(Format-Age $cx.Refused) тому | $left | $(if ($cx.Reset) { $cx.Reset } else { 'CLI не дав — чекання quota_wait_minutes' }) | $($cx.Refused) |"
+    }
     $wait = @(Get-WaitingMarkers) + @($g.Wait)
     if ($wait.Count -gt 0) {
         $lines += @('', '### Чекають скидання квоти', '', '| позначка | до (UTC) | група |', '|---|---|---|')
@@ -551,8 +699,9 @@ function Get-ContinueBranch([string]$Slug) {
     ''
 }
 
-function Get-Prompt($M, [string]$TaskText, [string]$Continue, [string]$TaskDir) {
+function Get-Prompt($M, [string]$TaskText, [string]$Continue, [string]$TaskDir, [string]$MergeMain = '') {
     $cont = $(if ($Continue) { "Продовжуй з гілки ``$Continue``: попередня спроба цього наряду вже запушила її.`n" } else { '' })
+    if ($MergeMain) { $cont += (Get-MergeStepText $Continue $MergeMain) + "`n" }
 @"
 Середовище й кроки ноутбука — ``аудит/НОУТБУК.md``: прочитай; канал результату — останній рядок твоєї відповіді
 («НОУТБУК ГОТОВО <гілка> <повний SHA>» чи «НОУТБУК ЗАБЛОКОВАНО: …»): його читає обгортка claude-run і сама пише
@@ -778,13 +927,14 @@ function Save-ClaudeQuota($Info) {
 function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [string]$RunDir, [string]$StatePath, [string]$StateHead, [string]$Marker, [string]$Slot) {
     $hang = Get-Limit $script:Limits 'HangMinutes' 'claude_hang_minutes'
     $psi = New-StartInfo $Exe $ArgList $RepoDir
+    # `claude -p` сам зупиняє фонові завдання агента (монітор, вимір) і виходить, коли після останнього ходу минуло
+    # 10 хв за годинником стіни; 0 — чекати без цієї межі (назва й значення — з тексту stderr самого claude). Той годинник
+    # іде й під час паузи живлення (Wait-PowerPause призупиняє процеси наряду), тож після паузи межа вже минула, хоч
+    # агент не мовчав. Межа часу прогону — лише завислість нижче (час неспання, `Stop-Tree` прибирає дерево).
+    $psi.EnvironmentVariables['CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'] = '0'
     $psi.RedirectStandardInput = $true
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
-    $stdinEncoding = [Console]::InputEncoding
-    try {
-        [Console]::InputEncoding = $script:Utf8
-        $p = Start-Tree $psi
-    } finally { [Console]::InputEncoding = $stdinEncoding }
+    $p = Invoke-WithStdinUtf8 { Start-Tree $psi }
     $start = ''; try { $start = Get-UtcStamp $p.StartTime } catch { $null = $_ }
     Write-FileAtomic $StatePath ($StateHead + ' ' + (([ordered]@{ pid = $p.Id; start = $start; marker = $Marker; slot = $Slot; retakes = (Get-Retakes $StatePath) }) | ConvertTo-Json -Compress))
     $w = New-Object System.IO.StreamWriter($p.StandardInput.BaseStream, $script:Utf8)
@@ -793,16 +943,13 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $log = Join-Path $RunDir 'claude.jsonl'; $ev = Join-Path $RunDir 'events.tsv'; $errLog = Join-Path $RunDir 'claude.stderr.txt'
     $res = [pscustomobject]@{ Code = 0; Kind = ''; Result = $null; AssistantText = ''; Err = ''; Limit = $null }
     $err = New-Object System.Text.StringBuilder
-    $last = Get-Date
-    $tick = $last
+    $last = Get-AwakeTime
     $outTask = $null; $errTask = $null; $outDone = $false; $errDone = $false
     while ($true) {
         if (-not $outDone -and $null -eq $outTask) { $outTask = $p.StandardOutput.ReadLineAsync() }
         if (-not $errDone -and $null -eq $errTask) { $errTask = $p.StandardError.ReadLineAsync() }
-        $now = Get-Date
-        $last = $last + (Get-SleepGap $tick $now)
-        $tick = $now
-        $left = ($last.AddMinutes($hang) - $now).TotalMilliseconds
+        Wait-PowerPause
+        $left = ($last + [timespan]::FromMinutes($hang) - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { $res.Kind = 'HANG'; break }
         $ms = [int][Math]::Min($left, 60000)
         $wait = [System.Threading.Tasks.Task[]]@(@($outTask, $errTask) | Where-Object { $null -ne $_ })
@@ -839,9 +986,8 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
             } catch { $null = $_ }
         }
         if (-not $type) { continue }
-        $last = Get-Date
-        $tick = $last  # сон до цієї події вже скинуто, вдруге його не додавати
-        [System.IO.File]::AppendAllText($ev, $last.ToString('s') + "`t" + $type + "`n", $script:Utf8)
+        $last = Get-AwakeTime
+        [System.IO.File]::AppendAllText($ev, (Get-Date).ToString('s') + "`t" + $type + "`n", $script:Utf8)
         Read-ClaudeEvent $res $obj
         if ($type -eq 'rate_limit_event') {
             $info = Get-JsonProp $obj 'rate_limit_info'
@@ -855,7 +1001,9 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     $res
 }
 
-function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [string]$Branch = '', [string]$Sha = '') {
+# Кінець позначки: результат, рядок у вихідних і стан DONE; позначка з прийнятим рядком — у перелік публікатора на зняття з
+# черги (Add-FinishedMarker): кінець живе на origin, а не лише в локальному стані. Reason — причина зняття (ЗНЯТО).
+function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [string]$Branch = '', [string]$Sha = '', [string]$Reason = '') {
     if ($Code -eq 'AUTH') { Add-HealthAlert 'AUTH' 'CLAUDE' }
     if ($Code -eq 'ENGINE_MISSING') { Add-HealthAlert 'ENGINE' 'CLAUDE' }
     $line = $(if ($Code -eq 'DONE') { "GEMINI ОБГОРТКА: ГОТОВО $Branch $Sha МОДЕЛЬ $($M.Model)" }
@@ -863,15 +1011,28 @@ function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [stri
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $Id
     [void][IO.Directory]::CreateDirectory($runDir)
     $result = [ordered]@{ marker = $M.Name; sha = $M.Sha; code = $Code; branch = $Branch; head = $Sha; end = (Get-Date).ToString('s') }
+    if ($Reason) { $result.reason = ConvertTo-NoteText $Reason }
     # Ідентичність наряду доступна публікаторові до появи рядка у вихідних, зокрема при ранній відмові.
     Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
-    if (-not (Add-Line $line)) {
+    $sent = [bool](Add-Line $line)
+    if (-not $sent) {
         $Code = 'LINE_REJECTED'; $result.code = $Code
         Write-FileAtomic (Join-Path $runDir 'result.json') ($result | ConvertTo-Json -Compress)
     }
     Write-FileAtomic $StatePath "DONE $Id $Code"
     Remove-Claim $StatePath
     Write-Log "позначка $($M.Name): $Code"
+    if ($sent) {
+        try { Add-FinishedMarker (Join-Path $WorkDir 'finished') $M.Name $M.Sha }
+        catch { Write-Log "позначка $($M.Name): запис на зняття з черги не зроблено — $($_.Exception.Message)" }
+    }
+}
+
+# Позначку знято комітом «ЗНЯТО…» (ConvertTo-Marker): прогін, що вже йде, зупиняється; сама позначка — кінець CANCELLED
+# з причиною в результаті й рядком, а публікатор знімає гілку з черги.
+function Close-CancelledMarker($M, $Workers) {
+    Stop-CancelledRuns $M $Workers
+    Complete-Task $M (Get-StatePath (Get-MarkerKey $M)) (New-Id) 'CANCELLED' -Reason $M.Reason
 }
 
 # Відмова за квотою: позначка чекає скидання (resetsAt останньої `rate_limit_event` зі status rejected; інакше час
@@ -904,7 +1065,7 @@ function Enter-ClaudeQuotaWait($M, [string]$StatePath, [string]$Id, $R, [string]
 function Invoke-Task($M, $Job) {
     $statePath = Get-StatePath (Get-MarkerKey $M)
     $id = [string]$Job.id
-    $main = Get-RefSha 'refs/remotes/origin/main'
+    $main = Get-RefSha "$script:RemoteRoot/main"
     $taskPath = Get-AutoTaskPath $M.Slug
     if (-not $main -or (Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail).Code -ne 0) { return (Complete-Task $M $statePath $id 'NOT_ON_MAIN') }
     if (-not (Test-TaskFile $M.Sha $taskPath)) { return (Complete-Task $M $statePath $id 'NO_TASK_FILE') }
@@ -923,15 +1084,23 @@ function Invoke-Task($M, $Job) {
     }
     if (Test-AutoPlanEmpty $M.Slug $taskText) { return (Complete-Task $M $statePath $id 'EMPTY_PLAN') }
     $cont = Get-ContinueBranch $M.Slug
+    $mergeMain = ''
+    if ($cont) {
+        # Гілка попередньої спроби: злита в main — агент іде від main, не з неї; відстала — перший крок влити main (Get-AttemptStart).
+        [void](Invoke-Git @('fetch', '-q', '--no-tags', '--refmap=', 'origin', "+refs/heads/${cont}:$script:RemoteRoot/$cont") -AllowFail)
+        $att = Get-AttemptStart (Get-RefSha "$script:RemoteRoot/$cont") $main
+        if ($att.Mode -eq 'MERGED') { Write-Log "позначка $($M.Name): $cont злита в main — старт від main"; $cont = '' }
+        elseif ($att.Mode -eq 'BEHIND') { Write-Log "позначка $($M.Name): $cont відстала від main — перший крок влити main"; $mergeMain = $main }
+    }
     $runDir = Join-Path (Join-Path $WorkDir 'runs') $id
     [void](New-Item -ItemType Directory -Force -Path $runDir)
     # Копія задачі — лише після звірки голови: мертва позначка її не отримує; після звіту — геть.
     try {
         $taskDir = Get-TaskCopyDir $id
-        [void](New-TaskCopy $taskDir 'refs/remotes/origin/main' $taskText)
-        Invoke-ClaudeTask $M $Job $exe $taskText $cont $runDir $statePath $taskDir
+        [void](New-TaskCopy $taskDir "$script:RemoteRoot/main" $taskText)
+        Invoke-ClaudeTask $M $Job $exe $taskText $cont $runDir $statePath $taskDir $mergeMain
     } finally {
-        if (Close-TaskCopy @('--remotes')) { [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) COPY_KEPT") }
+        if (Close-TaskCopy @('--remotes', "--glob=$script:RemoteRoot/*")) { [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) COPY_KEPT") }
     }
 }
 
@@ -939,9 +1108,9 @@ function Invoke-Task($M, $Job) {
 function Get-TaskCopyDir([string]$Id) { Join-Path (Join-Path $WorkDir 'w') $Id }
 
 # Прогін claude у копії задачі ($RepoDir) і кінець за звітом.
-function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$Cont, [string]$RunDir, [string]$StatePath, [string]$TaskDir) {
+function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$Cont, [string]$RunDir, [string]$StatePath, [string]$TaskDir, [string]$MergeMain = '') {
     $id = [string]$Job.id
-    $prompt = Get-Prompt $M $TaskText $Cont $TaskDir
+    $prompt = Get-Prompt $M $TaskText $Cont $TaskDir $MergeMain
     [System.IO.File]::WriteAllText((Join-Path $runDir 'prompt.txt'), $prompt, $script:Utf8)
     $a = @('-p', '--model', $M.Claude)
     if ($M.Effort) { $a += @('--effort', $M.Effort) }
@@ -951,6 +1120,7 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
         $r = Invoke-Claude $Exe $a $prompt $runDir $statePath "STARTED $id" $M.Name ([string]$Job.slot)
     } catch {
         Write-Log "claude: $($_.Exception.Message)"
+        Add-CrashNote (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" (Get-FailReason $_)
         return (Complete-Task $M $statePath $id 'CRASH')
     }
     if ($r.Kind) { return (Complete-Task $M $statePath $id $r.Kind) }
@@ -1001,9 +1171,12 @@ function Enter-ClaudeNetworkWait($M, [string]$Id) {
 }
 
 # Відмова до STARTED: лічильник повернень і межа ті самі, що в квоти; на межі — кінцевий стан CRASH і рядок диспетчерові.
-function Close-FailedStart($M, [string]$Id, [string]$StatePath) {
-    if ((Step-FailedStart $M $StatePath) -ne 'LIMIT') { return }
-    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH"
+# $Reason — причина цієї спроби (Get-FailReason), між спробами її несе стан чекання; на межі вона йде в blocked-reasons.json.
+function Close-FailedStart($M, [string]$Id, [string]$StatePath, [string]$Reason = '') {
+    $why = Get-StartFailReason $StatePath $Reason
+    if ((Step-FailedStart $M $StatePath $why) -ne 'LIMIT') { return }
+    Write-Log "позначка $($M.Name): відмов до запуску понад $script:MaxRetakes — кінець CRASH ($why)"
+    Add-CrashNote (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" $why ($script:MaxRetakes + 1)
     Complete-Task $M $StatePath $Id 'CRASH'
 }
 
@@ -1037,12 +1210,17 @@ function Resume-Interrupted {
 # --- вимкнення ----------------------------------------------------------------------------------------------------
 
 # Рушій Gemini зайнятий: задача gemini-run виконується (власникові без адміна її стан не видно, 10013) чи в heartbeat
-# є узята позначка в будь-якій смузі.
+# є узята позначка в будь-якій смузі. «Вільний» — лише за свіжим heartbeat зі смугами: gemini-run пише його щопроходу
+# й щохвилини між проходами (Invoke-HealthBeat), проходи розділяє poll_minutes, а без нарядів задача стартує знову
+# раніше за стелю poll_minutes (Ceil). Heartbeat без смуг (ізоляція, ще не прочитано межі), старший за цю стелю чи
+# відсутній — стан смуг невідомий, а невідоме не «вільно».
 function Test-GeminiBusy {
     $st = @(Get-TaskRows | Where-Object { $_.Name -eq 'gemini-run' } | ForEach-Object { $_.State })
     if ($st.Count -gt 0 -and $st[0] -ne '?') { return ($st[0] -eq 'Running') }
     $b = Read-GeminiBeat
     if ($b.Marker) { return $true }
+    $age = Get-Minutes $b.Time
+    if ($age -eq '?' -or [int]$age -gt $script:Ceil.poll_minutes[1] -or @($b.Lanes).Count -eq 0) { return $true }
     @($b.Lanes | Where-Object { $_.Busy.Count -gt 0 }).Count -gt 0
 }
 
@@ -1060,11 +1238,58 @@ function Test-FutureUtc([string]$Utc) {
     $Utc -cmatch $script:UtcRx -and [datetime]::ParseExact($Utc, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) -gt [datetime]::UtcNow
 }
 
-function Test-ClaudeQuotaZero {
+# Квота Claude на нулі: UTC скидання (майбутнє) першого нульового вікна чи свіжої відмови; '' — квота не нульова.
+function Get-ClaudeZeroReset {
     $cq = Read-ClaudeQuota
-    if ($null -eq $cq) { return $false }
-    foreach ($w in @(Get-JsonProp $cq 'windows')) { if ($null -ne $w -and [string]$w.left -eq '0' -and (Test-FutureUtc ([string]$w.reset))) { return $true } }
-    ([string](Get-JsonProp $cq 'refused')) -ne '' -and (Test-FutureUtc ([string](Get-JsonProp $cq 'reset')))
+    if ($null -eq $cq) { return '' }
+    foreach ($w in @(Get-JsonProp $cq 'windows')) { if ($null -ne $w -and [string]$w.left -eq '0' -and (Test-FutureUtc ([string]$w.reset))) { return [string]$w.reset } }
+    if (([string](Get-JsonProp $cq 'refused')) -ne '' -and (Test-FutureUtc ([string](Get-JsonProp $cq 'reset')))) { return [string](Get-JsonProp $cq 'reset') }
+    ''
+}
+
+# Група квоти agy на нулі за heartbeat (вікно left 0, скидання в майбутньому): UTC скидання; '' — не нульова чи невідома.
+function Get-GroupZeroReset($G, [string]$Group) {
+    if ($null -eq $G.Quota) { return '' }
+    foreach ($w in @($G.Quota.Windows)) { if ($w.G -ceq $Group -and $w.Left -eq 0 -and (Test-FutureUtc ([string]$w.Reset))) { return [string]$w.Reset } }
+    ''
+}
+
+# Групи agy з pools.json (gemini-run): назва (для Get-ModelGroups) і код (як у вікнах heartbeat).
+# $null — файлу нема чи він зіпсований: група моделі невідома, а невідома квота не блокує кандидата (як у Select-Engine).
+function Read-Pools {
+    try { $j = [System.IO.File]::ReadAllText((Join-Path $GeminiOutDir 'pools.json'), $script:Utf8) | ConvertFrom-Json } catch { return $null }
+    $groups = @(foreach ($g in @(Get-JsonProp $j 'groups')) {
+        $code = [string](Get-JsonProp $g 'g'); $name = [string](Get-JsonProp $g 'n')
+        if ($code -cmatch '^[A-Z0-9]{1,16}$' -and $name -cmatch '^[a-z0-9 .-]+$') { [pscustomobject]@{ Name = $name; Code = $code } }
+    })
+    [pscustomobject]@{ Groups = $groups }
+}
+
+# Позначка agy «брати нічого»: кожен кандидат її каскаду (Get-CascadePlan — той самий порядок, що в Select-Engine
+# gemini_run.ps1) недоступний. Кандидат agy недоступний, коли всі його групи за heartbeat на нулі зі скиданням у майбутньому;
+# група не розпізнана — квота невідома, кандидат доступний (перелік `agy models` у pools.json урізаний, тож кандидатів,
+# яких Select-Engine міг би пропустити, не відсіюємо: зайвий лише відкладає простій, відсіяний дав би хибний). Codex-ланка
+# каскаду є, якщо heartbeat не каже `codex_fallback: false` (старий heartbeat поля не має — вважаємо, що є); недоступна
+# лише з відомим скиданням відмови Codex. $null — є що брати; інакше { Groups; Reset } (найраніше скидання, UTC).
+function Get-CascadeZero($G, [string]$Model, [string]$CodexReset) {
+    $pools = Read-Pools
+    if ($null -eq $pools) { return $null }
+    $groups = @(); $resets = @()
+    foreach ($cand in @(Get-CascadePlan $Model '')) {
+        $hit = @(Get-ModelGroups $cand @($pools.Groups))
+        if ($hit.Count -eq 0) { return $null }
+        foreach ($h in $hit) {
+            $r = Get-GroupZeroReset $G $h.Code
+            if ($r -eq '') { return $null }
+            $groups += $h.Code; $resets += $r
+        }
+    }
+    if ($null -eq $G.PSObject.Properties['CodexFallback'] -or $G.CodexFallback) {
+        if ($CodexReset -eq '') { return $null }
+        $groups += 'CODEX'; $resets += $CodexReset
+    }
+    if ($groups.Count -eq 0) { return $null }
+    [pscustomobject]@{ Groups = @($groups); Reset = @($resets | Sort-Object)[0] }
 }
 
 function Get-MarkerStateIn($M, [string]$Dir) {
@@ -1072,18 +1297,47 @@ function Get-MarkerStateIn($M, [string]$Dir) {
     try { Get-MarkerState $M } finally { $script:StateDir = $keep }
 }
 
+# Простій — не «позначок нема», а «брати нічого»: зайнята позначка — узята смугою (.claim) чи та, яку смуга справді візьме. Не візьме:
+# нічний прохід минулого дня (gemini-run бере лише сьогоднішній, Start-Markers) і позначка на рушії з нульовою квотою —
+# Claude, Codex (скидання в майбутньому), група agy з нульовим вікном heartbeat: смуга лише поверне її в чекання. Такі
+# позначки (і ті, що вже чекають квоту) $script:IdleWhy описує для рядка: ` QUOTA0 <N> <ГРУПИ> <найраніше скидання UTC|->`.
 function Test-IdleBusy($G) {
+    $script:IdleWhy = ''
     if (Test-ClaudeBusy) { return $true }
     if (Test-GeminiBusy) { return $true }
-    $claudeZero = Test-ClaudeQuotaZero
-    $codexZero = $null -ne $G.Codex -and (Test-FutureUtc ([string]$G.Codex.Reset))
+    $claudeReset = Get-ClaudeZeroReset
+    $cxs = Get-CodexState $G.Codex
+    $codexReset = $(if ($cxs.Refused -and -not $cxs.Success -and (Test-FutureUtc $cxs.Reset)) { $cxs.Reset } else { '' })
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $today = [datetime]::UtcNow.ToString('yyyyMMdd')
+    $zero = @()
     foreach ($m in @(Get-Markers | Where-Object { $_.Valid })) {
-        if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) { continue }
         $st = $(if ($m.Lane -eq 'claude') { Get-MarkerState $m } else { Get-MarkerStateIn $m $GeminiStateDir })
-        if (-not (Test-MarkerReady $st)) { continue }
-        if (($m.Lane -eq 'claude' -and $claudeZero) -or ($m.Lane -eq 'codex' -and $codexZero)) { continue }
-        return $true
+        # Узята (.claim) — наряд іде чи стартує, хоч би й нічний прохід учорашнього дня; мертве узяття прибирають
+        # Clear-OrphanClaims (до STARTED) і Resume-Interrupted (STARTED без живого слота) тієї смуги.
+        if ($st.Kind -eq 'TAKEN') { return $true }
+        if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) { continue }
+        if ($m.Lane -ne 'claude' -and $m.Slug -cmatch '^Е1-нічний-живий-([0-9]{8})$' -and $Matches[1] -cne $today) { continue }
+        $grp = $(if ($st.Kind -eq 'WAIT') { [string](Get-JsonProp $st.Wait 'group') } else { '' })
+        if (-not (Test-MarkerReady $st)) {
+            if ($grp -cmatch '^[A-Z0-9]{1,16}$' -and $grp -cnotin @('NETWORK', 'SLEEP', 'REVIEW_API', 'PLAN_WAIT', 'START')) {
+                $zero += [pscustomobject]@{ Groups = @($grp); Reset = (Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds([long]$st.Wait.until).UtcDateTime)) }
+            }
+            continue
+        }
+        if ($m.Lane -eq 'agy') {
+            $cz = Get-CascadeZero $G $m.Model $codexReset
+            if ($null -eq $cz) { return $true }
+            $zero += [pscustomobject]@{ Groups = @($cz.Groups); Reset = $cz.Reset }
+            continue
+        }
+        $gr = $(if ($m.Lane -eq 'claude') { $claudeReset } else { $codexReset })
+        if ($gr -eq '') { return $true }
+        $zero += [pscustomobject]@{ Groups = @($(if ($m.Lane -eq 'claude') { 'CLAUDE' } else { 'CODEX' })); Reset = $gr }
+    }
+    if ($zero.Count -gt 0) {
+        $until = @($zero | ForEach-Object { $_.Reset } | Sort-Object)[0]
+        $script:IdleWhy = " QUOTA0 $($zero.Count) $((@($zero | ForEach-Object { $_.Groups } | Sort-Object -Unique)) -join ',') $until"
     }
     $false
 }
@@ -1103,7 +1357,7 @@ function Get-IdleLines {
 
 function Invoke-Off($M) {
     $statePath = Get-StatePath (Get-MarkerKey $M)
-    $main = Get-RefSha 'refs/remotes/origin/main'
+    $main = Get-RefSha "$script:RemoteRoot/main"
     if (-not $main -or (Invoke-Git @('merge-base', '--is-ancestor', $M.Sha, $main) -AllowFail).Code -ne 0) {
         [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) NOT_ON_MAIN")
         Write-FileAtomic $statePath 'DONE NOT_ON_MAIN'
@@ -1182,15 +1436,17 @@ function Start-Markers($Workers) {
     $script:Held = @{}
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $mine = @(Get-Markers | Where-Object { $_.Valid -and $_.Lane -eq 'claude' } | ForEach-Object { Add-ClaudeFields $_ })
+    [void](Move-LegacyMarkerState $mine)
     $skipFile = Join-Path $WorkDir 'skipped.json'
     if ($mine.Count -eq 0) { Save-Skips $skipFile; return @(0, $null) }
     $gpuWhy = $null
     $ordered = @(Get-OrderedMarkers $mine)
-    foreach ($m in @($ordered | Where-Object { $_.Off })) { if ((Test-OffMarker $m) -and $null -eq $off) { $off = $m } }
+    foreach ($m in @($ordered | Where-Object { $_.Off -and -not (Test-MarkerCancelled $_) })) { if ((Test-OffMarker $m) -and $null -eq $off) { $off = $m } }
     if ($null -ne $off) { return @(0, $off) }
-    foreach ($m in @($ordered | Where-Object { -not $_.Off })) {
+    foreach ($m in @($ordered | Where-Object { -not $_.Off -or (Test-MarkerCancelled $_) })) {
         $st = Get-MarkerState $m
         if (-not (Test-MarkerReady $st)) { continue }
+        if (Test-MarkerCancelled $m) { Close-CancelledMarker $m $Workers; continue }
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) {
             Write-Log "позначка $($m.Name): коміт старший за $MarkerMaxAgeDays діб — пропущено"
             Write-FileAtomic (Get-StatePath (Get-MarkerKey $m)) 'STALE'
@@ -1222,7 +1478,7 @@ function Start-Markers($Workers) {
             [void]$Workers.Add($worker)
         } catch {
             Write-Log "позначка $($m.Name): процес наряду не запущено — $($_.Exception.Message)"
-            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m))
+            Close-FailedStart $m $id (Get-StatePath (Get-MarkerKey $m)) (Get-FailReason $_)
             continue
         }
         Write-Log "позначка $($m.Name): слот $slot, пріоритет $($m.Prio)$(if ($m.Deadline) { ", строк $($m.Deadline)" })$(if ($m.Gpu) { ', GPU' }) -> $id"
@@ -1246,10 +1502,11 @@ function Invoke-Worker {
     $lim = @{}
     foreach ($p in $job.limits.PSObject.Properties) { $lim[$p.Name] = $p.Value }
     $script:Limits = $lim
-    $statePath = Get-StatePath "$($job.ref) $($job.sha)"
+    $statePath = Get-StatePath (Get-MarkerKey @{ Name = $job.name; Sha = $job.sha })
     $slotLock = Open-Lock (Join-Path $script:SlotDir "$($job.slot).lock")
     if ($null -eq $slotLock) { Remove-Claim $statePath; Write-Log "слот $($job.slot) зайнятий — позначку не взято"; return $script:WorkerSlotBusy }
     $gpu = $false
+    $failReason = ''
     $info = Join-Path $script:SlotDir "$($job.slot).json"
     try {
         if ($job.gpu) {
@@ -1267,17 +1524,19 @@ function Invoke-Worker {
         0
     } catch {
         Write-Log "процес наряду $($job.name): $($_.Exception.Message)"
+        $failReason = Get-FailReason $_
         1
     } finally {
         if ($gpu) { Exit-GpuLease $job }
         Remove-Item -LiteralPath $info -Force -ErrorAction SilentlyContinue
         # Помилка до STARTED (робоча копія тощо) не лишає claim: позначка повертається в чергу (10162).
-        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath
+        Close-FailedStart ([pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Slug = $job.slug; Model = $job.model }) ([string]$job.id) $statePath $failReason
         $slotLock.Dispose()
     }
 }
 
 function Main {
+    if ($MeasureHealth) { return (Invoke-HealthMeasure) }
     if ($WorkerFile) { $script:Job = Read-WorkerJob $WorkerFile }
     $script:StateDir = Join-Path $WorkDir 'state'
     $script:SlotDir = Join-Path $WorkDir 'slots'
@@ -1307,26 +1566,28 @@ function Main {
         $script:Workers = New-Object System.Collections.ArrayList
         $script:Held = @{}
         $first = $true; $clean = $true; $ver = ''
+        $script:PauseMachine = $true  # лише планувальник: LM Studio й ComfyUI — того самого користувача, що й claude-run
         while ($true) {
             $ver = Get-VersionSwitch
             if ($ver) { Write-VersionSwitch $ver; break }
             $started = 0; $off = $null
             try {
                 [void](Repair-GpuModels)
-                [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
-                        '+refs/heads/main:refs/remotes/origin/main',
-                        '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*') -TimeoutMinutes 15)
+                [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', '--refmap=', 'origin',
+                        "+refs/heads/main:$script:RemoteRoot/main",
+                        "+refs/heads/gemini-queue/*:$($script:QueuePrefix)*"))
                 $script:Limits = Get-Limits
                 # Накопичене — після першого успішного fetch (до нього origin/* застарілі): прохід, що впав на
                 # fetch, прибирання не знімає.
-                if ($clean) { Clear-TaskCopies (Join-Path $WorkDir 'w') @('--remotes'); $clean = $false }
+                if ($clean) { Clear-TaskCopies (Join-Path $WorkDir 'w') @('--remotes', "--glob=$script:RemoteRoot/*"); $clean = $false }
                 Clear-OrphanClaims (Join-Path $WorkDir 'runs')
+                Wait-PowerPause  # без світла нові позначки не стартують
                 $r = Start-Markers $script:Workers
                 $started = $r[0]; $off = $r[1]
                 Update-HoldSignals $script:Held { param($l) Add-Line $l }
                 $busy = ($started -gt 0) -or ($null -ne $off) -or ($script:Workers.Count -gt 0)
                 if (-not $busy) { $busy = [bool](Test-IdleBusy (Read-GeminiBeat)) }
-                Update-Idle $busy { param($l) [bool](Add-Line $l) } $script:FreshBoot
+                Update-Idle $busy { param($l) [bool](Add-Line $l) } $script:FreshBoot $(if ($busy) { '' } else { [string]$script:IdleWhy })
             } catch { Add-HealthException $_.Exception; Write-Log "прохід: $($_.Exception.Message)" }
             if ($first) { Write-FileAtomic $bootFile $boot; $script:FreshBoot = $false; $first = $false }
             foreach ($w in @($script:Workers | Where-Object { $_.Proc.HasExited })) { $script:Workers.Remove($w) }

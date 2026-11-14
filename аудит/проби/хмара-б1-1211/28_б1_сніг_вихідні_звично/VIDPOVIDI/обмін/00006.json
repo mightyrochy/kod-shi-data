@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"гуляємо з подругою центром\", \"place\": \"гуляємо з подругою центром\", \"setting\": \"гуляємо з подругою центром до вечора, заходимо в кав'ярні\", \"movement\": \"гуляємо\", \"weather_band\": \"мінус три\", \"part_of_day\": \"до вечора\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"гуляємо з подругою центром\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"гуляємо з подругою центром\"}, \"precipitation\": {\"kind\": \"her\", \"quote\": \"сніг\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\", \"quote\": \"до вечора\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"гуляємо\"}, \"weather_band\": {\"kind\": \"reading\", \"quote\": \"мінус три\"}, \"setting\": {\"kind\": \"reading\", \"quote\": \"гуляємо з подругою центром до вечора, заходимо в кав'ярні\"}}, \"event\": \"гуляємо з подругою центром до вечора, заходимо в кав'ярні\", \"movement\": \"walk\", \"part_of_day\": \"day\", \"weather_band\": \"frost\", \"precipitation\": \"snow\", \"occasion\": \"walk\", \"place\": \"walk\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"light\": \"daylight\", \"road_salt\": true}, \"person\": {\"skin_hex\": [\"#f1d7c4\", \"#ecc9b2\", \"#f6e0d0\"], \"hair_hex\": [\"#b4552a\", \"#c4683a\"], \"eyes_hex\": \"#5f8a5a\", \"height_cm\": 172, \"girths_cm\": {\"shoulders\": 108, \"bust\": 96, \"waist\": 76, \"hips\": 92}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Dark-wash straight-leg jeans, full length with a slightly high rise, deep indigo #2b3a55, heavyweight stretch denim with a fleece-free smooth finish\\n\\nThermal long-sleeve base layer top, fitted crew neck, hip length, warm cream #f3e9d8, fine merino wool\\n\\nChunky turtleneck sweater, relaxed fit, hip length, rust terracotta #b5532c, soft wool-blend knit\\n\\nWool-blend coat, single-breasted, knee length, deep forest green #2f4a3a, brushed wool with a quilted lining\\n\\nWaterproof leather ankle boots, lace-up with lug sole, round toe, dark chocolate #3e2a20, treated full-grain leather with a warm fleece lining\\n\\nWool scarf, wide and long, oatmeal #d8c8ae, soft lambswool\\n\\nKnitted beanie, snug fit, camel #b98a5a, wool with a soft lining\\n\\nLeather gloves, wrist length, dark chocolate #3e2a20, leather with a warm lining\\n\\nWool socks, mid-calf, charcoal #4a4a4a, thick merino blend\\n\\nThis outfit is built for a snowy walk at three degrees below zero, with layers that hold heat while you stroll and step in and out of cafés. The waterproof lug-sole boots grip wet snow and shrug off road salt, and the dark denim hides splashes while keeping the look neat and everyday. The terracotta sweater and forest green coat sit beautifully with your copper hair and green eyes, and the warm cream and oatmeal tones soften the face. Layers like the thin thermal top are easy to peel off inside the cafés, so you stay comfortable all evening.\"}],\"usage\":{\"input_tokens\":2544,\"output_tokens\":570},\"stop_reason\":\"end_turn\"}"
+ }
+}

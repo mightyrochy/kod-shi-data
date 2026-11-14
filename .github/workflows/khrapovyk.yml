@@ -10,12 +10,22 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Виклик із кроку самозлиття документа (`samozlyttia.yml`, #3585): злиття токеном CI не будить `push`, тож крок викликає
+  # цей процес сам. `pislia` — коміт злиття на `main`, `pered` — `main` до злиття (замість `github.event.before`).
+  workflow_call:
+    inputs:
+      pered:
+        type: string
+        required: true
+      pislia:
+        type: string
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: храповик-кореня-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  group: храповик-кореня-${{ github.event_name == 'pull_request' && github.ref || inputs.pislia || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -30,6 +40,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 2
+          ref: ${{ inputs.pislia }}
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
@@ -67,7 +78,7 @@ jobs:
         id: khrapovyk
         if: steps.obsiah.outputs.lichyty != 'false'
         env:
-          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || inputs.pered || github.event.before }}
         run: |
           if [ "${{ github.event_name }}" = pull_request ]; then
             python3 джерела/прилади/храповик_кореня.py --пр --база "${BASE}" --ознака-стенда "$GITHUB_OUTPUT"

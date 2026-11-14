@@ -123,10 +123,62 @@ try {
     Write-FileAtomic "$OutDir/$legacyId.json" ((@{slug="автоперевірка-10-$reviewHead"}) | ConvertTo-Json)
     Write-FileAtomic "$WorkDir/state/o-$legacyId.json" ((@{line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоперевірка-10-$reviewHead $reviewHead"}) | ConvertTo-Json)
     Check 'старий стан Codex/agy відновлює позначку за id' (Test-ChainReviewDone '10' $reviewHead)
+    # Відкладений кінець: DONE з'являється у стані позначки між двома зверненнями до нього — зняття не губиться (стан читається раз).
+    & {
+        $q = 'gemini-queue/гонка/cc-test/1'; $m = 'c' * 40; $rid = '20261101-230002-0123456789ab'; $key = "refs/remotes/origin/$q $m"
+        $script:StateReads = 0; $orig = ${function:Get-Sha256Hex}
+        $sd = Join-Path $OutDir 'marker-state'; [void][IO.Directory]::CreateDirectory($sd)
+        $sf = Join-Path $sd ((& $orig $key) + '.txt')
+        $pending = Join-Path (Join-Path $WorkDir 'finish-pending') ((& $orig "$q $m $rid") + '.txt')
+        function Get-RefSha { param($Ref) $m }
+        function Get-Sha256Hex([string]$Text) {
+            if ($Text -ceq $key) {
+                $script:StateReads++
+                if ($script:StateReads -eq 2) { Write-FileAtomic $sf "DONE $rid DONE" }
+            }
+            & $orig $Text
+        }
+        function Test-Finished { @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'finished') -Filter '*.txt' -File -ErrorAction SilentlyContinue | Where-Object { ([IO.File]::ReadAllText($_.FullName, $utf)).Trim() -ceq "$q $m" }).Count -gt 0 }
+        Write-FileAtomic $sf 'STARTED {}'
+        Add-PublishedMarker $q $m $rid 'DONE'
+        Check 'JSON раніше за DONE: кінець відкладено, позначки до зняття ще нема' ((Test-Path -LiteralPath $pending) -and -not (Test-Finished))
+        $script:StateReads = 0
+        Confirm-PendingMarkers
+        Check 'стан позначки читається раз за запис, а DONE між читаннями не відкидає відкладеного' ($script:StateReads -eq 1 -and (Test-Path -LiteralPath $pending) -and -not (Test-Finished))
+        Write-FileAtomic $sf "DONE $rid DONE"
+        Confirm-PendingMarkers
+        Check 'після появи DONE відкладений кінець дає запис на зняття' ((Test-Finished) -and -not (Test-Path -LiteralPath $pending))
+    }
     $script:RemoteFailure = $false
     function Invoke-Git { [pscustomobject]@{Code=1;Out='';Err='стенд мережі'} }
     try { [void](Get-LiveCompletion ([pscustomobject]@{stamp=('e'*40);published=$true})) } catch { $script:RemoteFailure = $_.Exception.Message -ceq 'CHAIN_REMOTE' }
     Check 'збій GitHub не видається за прибрану позначку' $script:RemoteFailure
+    # Мережа після сну: ls-remote не питає в неї, доки ім'я вузла не розв'язується; збій при живій мережі лишає текст git у журналі.
+    & {
+        $script:NetChecks = 0; $script:LsCalls = 0; $script:NetUpAfter = 2; $script:LsErr = ''
+        $keepDelay = $script:SendRetryDelaySeconds; $script:SendRetryDelaySeconds = 0
+        function Test-ChainNetwork { $script:NetChecks++; $script:NetChecks -gt $script:NetUpAfter }
+        function Invoke-Git {
+            if ($args[0][0] -ceq 'remote') { return [pscustomobject]@{Code=0;Out='https://x-access-token:секрет@github.com/o/r.git';Err=''} }
+            $script:LsCalls++
+            if ($script:NetChecks -gt $script:NetUpAfter -and -not $script:LsErr) { return [pscustomobject]@{Code=0;Out='';Err=''} }
+            [pscustomobject]@{Code=128;Out='';Err=$(if ($script:LsErr) { $script:LsErr } else { 'fatal: unable to access: Could not resolve host: github.com' })}
+        }
+        $active = [pscustomobject]@{stamp=('e'*40);published=$true}
+        $threw = ''
+        try { [void](Get-LiveCompletion $active) } catch { $threw = [string]$_.Exception.Message }
+        "ДАНІ мережа-ще-нема: виняток='$threw' ls-remote=$($script:LsCalls) перевірок мережі=$($script:NetChecks)"
+        Check 'мережа ще не встала: прохід чекає й ls-remote проходить без CHAIN_REMOTE' ($threw -ceq '' -and $script:LsCalls -eq 1 -and $script:NetChecks -eq 3)
+        $script:NetChecks = 0; $script:LsCalls = 0; $script:NetUpAfter = -1; $script:LsErr = "remote: Repository not found.`nfatal: https://x-access-token:секрет@github.com/o/r.git"
+        $log = "$WorkDir/publish.log"; $before = [IO.File]::ReadAllText($log, $utf).Length
+        $threw = ''
+        try { [void](Get-LiveCompletion $active) } catch { $threw = [string]$_.Exception.Message }
+        $added = [IO.File]::ReadAllText($log, $utf).Substring($before)
+        "ДАНІ мережа-жива: виняток='$threw' ls-remote=$($script:LsCalls) журнал=[$($added.Trim())]"
+        Check 'мережа жива, ls-remote падає: CHAIN_REMOTE без повторів, текст git у журналі' ($threw -ceq 'CHAIN_REMOTE' -and $script:LsCalls -eq 1 -and $added.Contains('Repository not found') -and $added.Contains('код 128'))
+        Check 'журнал не несе даних входу з адреси' (-not $added.Contains('секрет'))
+        $script:SendRetryDelaySeconds = $keepDelay
+    }
     & {
         . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir "$tmp/claude-run" -OutboxDir "$tmp/claude-out" -LaneDir "$tmp/claude-lanes"
         $script:ResultBeforeLine = $false

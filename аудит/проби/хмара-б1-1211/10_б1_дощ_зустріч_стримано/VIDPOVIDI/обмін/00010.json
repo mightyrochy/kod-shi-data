@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tailored trousers, straight leg, full length to the ankle bone, charcoal grey (#3A3D42), fine wool crepe\\nFine-gauge knit sweater, slim fit with a crew neck, hip length, ivory (#F1EBDD), merino wool\\nSingle-breasted blazer, tailored fit, hip length, navy (#1F2A44), textured wool tweed\\nAnkle boots, low block heel, almond toe, dark brown (#4A3426), waterproof smooth leather\\nTrench coat, belted, knee length, camel (#B98B5A), water-repellent cotton gabardine\\nCompact umbrella, black (#111111), sturdy canopy\\nLeather tote bag, structured, medium size, dark brown (#4A3426), grained leather\\nThin scarf, soft drape, muted burgundy (#6E2B3A), lightweight wool\\n\\nThis outfit suits a client meeting in a café because the neat tailored trousers, textured blazer and refined knit give a classic, composed look that fits the business-neat level. The restrained palette of charcoal, ivory and navy feels calm and understated, with burgundy adding a quiet touch of warmth. The waterproof boots, water-repellent trench and umbrella keep her dry through a day of autumn rain, and the cool weather is covered by the layered wool and knit. Everything is comfortable to sit in over a long coffee conversation while still looking polished.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Tailored trousers\\\",\\\"details\\\":\\\"straight leg, full length to the ankle bone, fine wool crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3A3D42\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Fine-gauge knit sweater\\\",\\\"details\\\":\\\"slim fit, crew neck, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F1EBDD\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Single-breasted blazer\\\",\\\"details\\\":\\\"tailored fit, hip length, textured wool tweed\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#1F2A44\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"low block heel, almond toe, waterproof smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#4A3426\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Trench coat\\\",\\\"details\\\":\\\"belted, knee length, water-repellent cotton gabardine\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B98B5A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Compact umbrella\\\",\\\"details\\\":\\\"sturdy canopy\\\",\\\"slot\\\":\\\"accessory\\\",\\\"color_hex\\\":\\\"#111111\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Leather tote bag\\\",\\\"details\\\":\\\"structured, medium size, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#4A3426\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Thin scarf\\\",\\\"details\\\":\\\"soft drape, lightweight wool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#6E2B3A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2142,\"output_tokens\":486},\"stop_reason\":\"end_turn\"}"
+ }
+}

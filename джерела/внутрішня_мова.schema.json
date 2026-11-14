@@ -2119,7 +2119,7 @@
      "type": "object"
     },
     "item_verdicts": {
-     "description": "вердикт про кожну її річ з фото: заяви кодами",
+     "description": "вердикт про кожну річ: заяви кодами",
      "type": "array",
      "items": {
       "type": "object",
@@ -4093,7 +4093,7 @@
          "properties": {
           "as_new": {
            "type": "boolean",
-           "description": "true — as one more saved case; else the open one is updated"
+           "description": "true — a new saved case; else the open one is updated"
           }
          }
         }
@@ -4126,7 +4126,7 @@
           "id": {
            "type": "string",
            "minLength": 1,
-           "description": "the \"id\" of one of saved_cases"
+           "description": "from saved_cases"
           }
          }
         }
@@ -4147,7 +4147,7 @@
           "id": {
            "type": "string",
            "minLength": 1,
-           "description": "the \"id\" of one of saved_cases"
+           "description": "from saved_cases"
           }
          }
         }
@@ -4162,6 +4162,27 @@
          "type": "object",
          "additionalProperties": false,
          "properties": {}
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "switch_profile"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "id"
+         ],
+         "properties": {
+          "id": {
+           "type": "string",
+           "minLength": 1,
+           "description": "from profiles"
+          }
+         }
         }
        }
       },
@@ -4205,6 +4226,272 @@
          }
         }
        }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "find_item"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+          "item_type"
+         ],
+         "properties": {
+          "item_type": {
+           "type": "string",
+           "enum": [
+            "ankle_boots",
+            "anorak",
+            "backpack",
+            "bactus_scarf",
+            "bag_generic",
+            "baguette_bag",
+            "ballet_flats",
+            "beanie",
+            "belt",
+            "belt_bag",
+            "beret",
+            "blazer",
+            "blouse",
+            "bodysuit",
+            "bomber",
+            "boots",
+            "bow",
+            "bracelet",
+            "briefcase",
+            "brooch",
+            "bucket_bag",
+            "cap",
+            "cardigan",
+            "casual_suit",
+            "chelsea_boots",
+            "clutch",
+            "coat",
+            "cocktail_dress",
+            "collar_necklace",
+            "crossbody_bag",
+            "down_jacket",
+            "dress_generic",
+            "dress_shoes",
+            "earrings",
+            "espadrilles",
+            "evening_dress",
+            "fur_coat",
+            "glasses",
+            "gloves",
+            "hair_clip",
+            "hair_tie",
+            "half_coat",
+            "hat",
+            "headband",
+            "heeled_sandals",
+            "hobo_bag",
+            "hoodie",
+            "jacket",
+            "jeans",
+            "jewelry_generic",
+            "jumpsuit",
+            "kerchief",
+            "knitwear",
+            "leggings",
+            "lingerie",
+            "loafers",
+            "longsleeve",
+            "loungewear",
+            "moccasins",
+            "mules",
+            "necklace",
+            "over_knee_boots",
+            "parka",
+            "plimsolls",
+            "poncho",
+            "pumps",
+            "rain_cape",
+            "raincoat",
+            "ring",
+            "saddle_bag",
+            "sandals",
+            "scarf_generic",
+            "shawl",
+            "sheath_dress",
+            "sheepskin_coat",
+            "shirt",
+            "shorts",
+            "skirt",
+            "sneakers",
+            "snood",
+            "socks",
+            "sportswear",
+            "stole",
+            "suit",
+            "sundress",
+            "sweater",
+            "swimsuit",
+            "t_shirt",
+            "tights",
+            "top_garment",
+            "tote",
+            "trench_coat",
+            "trousers",
+            "twilly",
+            "two_piece_set",
+            "ugg_boots",
+            "vest",
+            "watch",
+            "windbreaker"
+           ],
+           "description": "kind of item"
+          },
+          "colour": {
+           "type": "string",
+           "enum": [
+            "beige",
+            "black",
+            "blue",
+            "brick",
+            "brown",
+            "burgundy",
+            "camel",
+            "cappuccino",
+            "cherry",
+            "chocolate",
+            "cocoa",
+            "coral",
+            "cream",
+            "creamy",
+            "denim_blue",
+            "electric_blue",
+            "emerald",
+            "fuchsia",
+            "ginger",
+            "golden",
+            "graphite",
+            "green",
+            "grey",
+            "khaki",
+            "latte",
+            "lemon",
+            "light_blue",
+            "lilac",
+            "magenta",
+            "milky",
+            "mint",
+            "mocha",
+            "mustard",
+            "navy",
+            "olive",
+            "orange",
+            "peach",
+            "pearly",
+            "petrol",
+            "pine_green",
+            "pink",
+            "plum",
+            "powder",
+            "powder_pink",
+            "purple",
+            "raspberry",
+            "red",
+            "rose",
+            "sand",
+            "silvery",
+            "soft_pink",
+            "taupe",
+            "terracotta",
+            "turquoise",
+            "white",
+            "yellow"
+           ],
+           "description": "colour she named"
+          },
+          "length": {
+           "type": "string",
+           "enum": [
+            "knee",
+            "maxi",
+            "mid_thigh",
+            "midi",
+            "mini",
+            "waist"
+           ],
+           "description": "length she named"
+          },
+          "cut": {
+           "type": "string",
+           "enum": [
+            "skinny",
+            "straight",
+            "tapered",
+            "wide",
+            "flared",
+            "culottes",
+            "pencil",
+            "a-line",
+            "full",
+            "pleated",
+            "bias-slip",
+            "bodycon",
+            "fitted",
+            "regular",
+            "relaxed",
+            "oversized",
+            "belted",
+            "wrap",
+            "peplum",
+            "shift",
+            "sheath",
+            "empire",
+            "double-breasted"
+           ],
+           "description": "cut she named"
+          },
+          "pattern": {
+           "type": "string",
+           "enum": [
+            "abstract",
+            "animal_print",
+            "camouflage",
+            "check",
+            "embroidery",
+            "floral",
+            "geometric",
+            "lace_motif",
+            "polka_dot",
+            "print_generic",
+            "solid",
+            "stripes"
+           ],
+           "description": "pattern she named"
+          },
+          "texture": {
+           "type": "string",
+           "enum": [
+            "denim",
+            "knit_fine",
+            "leather",
+            "patent",
+            "satin",
+            "silk_shine",
+            "smooth_matte",
+            "tweed_boucle"
+           ],
+           "description": "fabric surface she named (leather, satin, denim…)"
+          },
+          "shine": {
+           "type": "string",
+           "enum": [
+            "matte",
+            "soft_lustre",
+            "gloss",
+            "sequins_rhinestones"
+           ],
+           "description": "shine she named; sequins or rhinestones — sequins_rhinestones"
+          }
+         }
+        }
+       }
       }
      ],
      "properties": {
@@ -4215,8 +4502,10 @@
         "open_scenario",
         "delete_scenario",
         "new_scenario",
+        "switch_profile",
         "confirm_case",
-        "set_weather_feel"
+        "set_weather_feel",
+        "find_item"
        ]
       },
       "args": {
@@ -4236,6 +4525,10 @@
       {
        "const": "portrait_unreadable",
        "description": "рядок під портретом на першому кроці знайомства: чому стилістка не прочитала кольори з цього фото"
+      },
+      {
+       "const": "portrait_unmeasured",
+       "description": "рядок під портретом на першому кроці знайомства: кольори з цього фото — оцінка на око, бо виміряти їх з кадру не вдалося; який портрет надіслати, щоб їх виміряти"
       },
       {
        "const": "palette_scheme_note",
@@ -4280,6 +4573,10 @@
       {
        "const": "her_item_verdict",
        "description": "вердикт про її власну річ: чи підійде вона під цей вихід"
+      },
+      {
+       "const": "catalogue_search",
+       "description": "що код знайшов у каталозі на її опис речі і котру з знайдених радить першою"
       },
       {
        "const": "her_item_softening",
@@ -4399,6 +4696,22 @@
          {
           "const": "portrait_overexposed",
           "description": "the photo is overexposed: the skin is blown out to white"
+         },
+         {
+          "const": "portrait_uneven_light",
+          "description": "the light falls on one side of the face: one cheek is lit and the other in shadow; a portrait facing a window, in even daylight, lets the colours be measured"
+         },
+         {
+          "const": "portrait_skin_unmeasured",
+          "description": "both cheeks are not visible in clear skin (turned head, hair, hands, shadow); a portrait facing the camera with both cheeks open lets the skin be measured"
+         },
+         {
+          "const": "portrait_hair_unmeasured",
+          "description": "no clear patch of hair is visible (covered, cropped, or against a similar background); a portrait with the hair visible lets it be measured"
+         },
+         {
+          "const": "portrait_eyes_unmeasured",
+          "description": "the irises are not visible clearly enough (small, closed, glasses, glare); a closer portrait with open eyes and no glasses lets the eyes be measured"
          },
          {
           "const": "scheme_tonal",
@@ -4849,6 +5162,94 @@
           "description": "this item's colour is unknown, as neither a photo measured it nor a colour was named, so the item was not checked against her palette; a colour in words makes the check possible"
          },
          {
+          "const": "figure_needs_measurements",
+          "description": "how the item sits on her body is not judged: she has not named her height and at least three girths (shoulders, chest, waist, hips); with them it can be judged"
+         },
+         {
+          "const": "maxi_holds",
+          "description": "on her height the hem of this skirt falls to maxi, and maxi holds here: of the three supports maxi needs (height, lift of the shoes or the skirt's own volume) it has one (values: by — volume)"
+         },
+         {
+          "const": "hem_on_her_body",
+          "description": "where the item's hem falls on her body at her height (values: level — body level code: waist, mini, knee, calf, maxi; measured_from — garment_length when the shop's length in cm was laid on her height, shop_word when only the shop's length word is known); the level heights are shares of her height, not measured on her"
+         },
+         {
+          "const": "hem_not_judged",
+          "description": "where the hem falls on her body is not judged (values: missing — garment_length: the shop card's length in cm or a photo of the item on a person makes it possible)"
+         },
+         {
+          "const": "skirt_cut_reading",
+          "description": "how the knowledge base reads this skirt cut (values: cut — cut code; reading — the knowledge base's reading as free text, retell its content rather than quoting it)"
+         },
+         {
+          "const": "rise_of_item",
+          "description": "the item's rise (values: rise — high, mid or low): the waistband sets where the eye starts her legs; whether it shows is decided by the top worn with it"
+         },
+         {
+          "const": "rise_not_named",
+          "description": "the item's rise is not named by the shop card or the photo, so its effect on her leg line is not judged; the rise from the card or a side photo makes it possible"
+         },
+         {
+          "const": "cut_vs_figure_not_judged",
+          "description": "the cut is not judged against her figure (values: missing — cut: the cut is not named; measurement_error: which half of her figure is wider is not proven beyond the error of measuring oneself with a tape)"
+         },
+         {
+          "const": "colour_role_base",
+          "description": "the item's colour is a neutral: in an outfit it is the base, and the colour comes from other pieces"
+         },
+         {
+          "const": "colour_role_accent",
+          "description": "the item's colour is a colour, not a neutral: in an outfit it is the accent, with neutrals around it (values: loud — true when the colour is loud, so one such accent per outfit)"
+         },
+         {
+          "const": "pairs_with_colours",
+          "description": "colours from her palette that make a scheme with this item (values: colours — colour names; scheme — neutral_plus_accent: a neutral with one accent)"
+         },
+         {
+          "const": "pairs_with_role_palette_unknown",
+          "description": "the item makes a scheme with the opposite role (values: partner — neutrals or accent); which colours are hers needs her colours from a portrait"
+         },
+         {
+          "const": "draws_eye_enlarges",
+          "description": "light, bright and shiny surfaces advance: the item draws the eye to the part of her figure it covers and makes that part look larger (values: by — light, bright, shiny)"
+         },
+         {
+          "const": "recedes_zone",
+          "description": "dark, muted and matte surfaces recede: the item does not draw the eye to the part of her figure it covers"
+         },
+         {
+          "const": "colour_profile_needs_portrait",
+          "description": "her colours were not read, so the item's colour is not checked against her palette or her face: a portrait in daylight, face at least a quarter of the frame, makes it possible (values: reason — why the photo was not read, when it was refused)"
+         },
+         {
+          "const": "her_item_candidate_to_buy",
+          "description": "she is deciding whether to buy this item: it is compared with the others she is choosing between, not put into her outfits"
+         },
+         {
+          "const": "buy_first",
+          "description": "of the items she is choosing between, this one — or these, when several came out equal at the top — is advised first (values: reasons — statement codes that set it apart from the others; avoids — risks the corpus names that the others carry and it does not; then — the others in order)"
+         },
+         {
+          "const": "buy_order_tie",
+          "description": "these items she is choosing between came out equal in the code's judgement: the choice between them is hers"
+         },
+         {
+          "const": "colour_role_not_judged",
+          "description": "whether the item's colour is a neutral base or an accent was not judged (values: missing — colour_measure: neither a measurement nor a shop colour word places it on one side; a photo of the item in daylight lets it be judged)"
+         },
+         {
+          "const": "catalogue_variants_found",
+          "description": "the catalogue has items that match every code of her description; each is shown with the code's judgement for her (values: count — how many; asked — the codes of her description)"
+         },
+         {
+          "const": "catalogue_has_none",
+          "description": "the catalogue has no item that matches every code of her description; nothing similar is offered in its place (values: asked — the codes of her description)"
+         },
+         {
+          "const": "catalogue_records_without_code",
+          "description": "some catalogue items of this kind do not state this feature, so the code cannot tell whether they match and does not show them (values: field — the feature; count — how many items)"
+         },
+         {
           "const": "her_item_in_every_look",
           "description": "she chose this item herself, so it stands in every outfit"
          },
@@ -4982,7 +5383,7 @@
          },
          {
           "const": "unchecked_in_this_look",
-          "description": "behind this button is the list of what stays unchecked in this outfit: what could not be verified for lack of data about the items, about her or about her day"
+          "description": "a heading of two to four words, not a sentence: what in this outfit the stylist could not check; the screen puts the number of lines under it right after the heading, so it must read as the name of that list"
          },
          {
           "const": "no_photo_frames_did_not_open",
@@ -5166,23 +5567,23 @@
          },
          {
           "const": "colour_word_shop",
-          "description": "the code knows the colour of the named items only from the shop's word, not from measuring the photo (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code, colour — colour word)"
+          "description": "the code knows the colour of the named items only from the shop's word, not from measuring the photo, so their colour in this outfit was checked only by that word; she can look at the photo herself (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code, colour — colour word)"
          },
          {
           "const": "colour_word_shop_photo_other",
-          "description": "the shop names one colour of the named items and their card photo shows another, so the code knows neither for sure (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code, colour — the shop's colour word, photo — the colour on the photo)"
+          "description": "the shop names one colour of the named items and their card photo shows another, so the code knows neither for sure and their colour in this outfit is unchecked; she can look at the item herself (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code, colour — the shop's colour word, photo — the colour on the photo)"
          },
          {
           "const": "colour_word_model",
-          "description": "the code knows the colour of the named items only from the model's word, not from measuring the photo (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code, colour — colour word)"
+          "description": "the code knows the colour of the named items only from the model's word, not from measuring the photo, so their colour in this outfit was checked only by that word; she can look at the photo herself (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code, colour — colour word)"
          },
          {
           "const": "colour_word_not_photo",
-          "description": "the colour of the named items comes from a word, not from measuring the photo (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code, colour — colour word)"
+          "description": "the colour of the named items comes from a word, not from measuring the photo, so their colour in this outfit was checked only by that word; she can look at the photo herself (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code, colour — colour word)"
          },
          {
           "const": "colour_partly_measured",
-          "description": "the named items have a partial photo measurement: lightness and chroma bounds are available, while hue is uncertain; this is not a colour word (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code)"
+          "description": "the named items have a partial photo measurement: lightness and chroma bounds are available, while hue is uncertain, so how their hue sits with the rest of the outfit is unchecked; this is not a colour word (values: items — items: item_id, kind — kind code, color — colour code, slot — slot code)"
          },
          {
           "const": "cannot_tell_item_holds_scheme_hue",
@@ -5462,11 +5863,11 @@
          },
          {
           "const": "her_foot_length_unknown",
-          "description": "the code does not know her foot length; it is one question of the questionnaire"
+          "description": "the code does not know her foot length; she can enter it herself: tab \"Profile\", row \"Extended measurements\", field \"Foot length\" (mm)"
          },
          {
           "const": "her_head_girth_unknown",
-          "description": "the code does not know her head girth; it is one question of the questionnaire"
+          "description": "the code does not know her head girth; she can enter it herself: tab \"Profile\", row \"Extended measurements\", field \"Head girth\" (cm)"
          },
          {
           "const": "her_pupil_distance_unknown",
@@ -5506,7 +5907,7 @@
          },
          {
           "const": "wear_way_not_chosen",
-          "description": "how she wears this item is not chosen yet, and which rules apply to it depends on that; all the ways are equal and she is the one who chooses (values: item — the item: item_id, kind and colour codes; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top)"
+          "description": "how she wears this item is not chosen yet, and what suits it in this outfit depends on that; all the ways are equal, she chooses and can tell the stylist (values: item — the item: item_id, kind and colour codes; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top)"
          },
          {
           "const": "wear_place_open",
@@ -6454,19 +6855,7 @@
          },
          {
           "const": "metal_variant_unsettled",
-          "description": "which metal is on this item's frame is unsettled: the shop names several metals for the same listing, or contradicts itself, alloy against name (values: items — list of {slot, variants — the shop's metal codes, named — the metal the code took, frame_tone — the tone the item's colour reads as})"
-         },
-         {
-          "const": "named_metal_is_detail_not_surface",
-          "description": "the metal is named, yet the measurement found no cluster of its tone on the surface of the outfit's items: on the frame the metal is a detail — a trim, a charm, a setting — not the surface (values: metal — metal code, items — how many metal items in the outfit)"
-         },
-         {
-          "const": "named_metal_reads_other_tone_on_frame",
-          "description": "the metal is named, yet the frame reads the item as ANOTHER metal: the photo model's colour code and the measured colour agree on a different metal tone, so the name, not the surface, is in question (values: metal — the named metal code, frame_tone — the metal tone the frame reads, items — how many metal items of the outfit read so)"
-         },
-         {
-          "const": "put_solid_metal_near_face",
-          "description": "if metal is to lead the outfit, put a piece that IS metal near the face, not fabric with a metal trim"
+          "description": "which metal is on this item's frame is unsettled: the shop names several metals for the same listing, or contradicts itself, alloy against name (values: items — list of {item_id, slot, variants — the shop's metal codes})"
          },
          {
           "const": "reduce_to_two_metal_tones",
@@ -6535,6 +6924,10 @@
          {
           "const": "one_register_leads_other_one_quote",
           "description": "one register leads, another gives one quote item, or declare the break"
+         },
+         {
+          "const": "declare_register_mix_break",
+          "description": "keep the outfit as it is and declare the mix of registers a deliberate break"
          },
          {
           "const": "conflicting_register_pair",
@@ -7769,6 +8162,10 @@
           "description": "gold items stand in this kind next to the silver ones although her palette reads cool, where silver is the usual metal: nothing was removed or locked, gold is simply the less usual choice for a cool palette, and she may take it (values: gold_items — how many pool items entered through the gold row)"
          },
          {
+          "const": "jewellery_silver_less_usual_for_warm",
+          "description": "silver items stand in this kind next to the gold ones although her palette reads warm, where gold is the usual metal: nothing was removed or locked, silver is simply the less usual choice for a warm palette, and she may take it (values: silver_items — how many pool items entered through the silver row)"
+         },
+         {
           "const": "jewellery_without_metal_word_first",
           "description": "items with no metal word were put ahead of the ones that name a metal; beyond that the code sees no metal here (values: jewellery — her jewellery code; without_metal_word, with_metal_word)"
          },
@@ -8650,7 +9047,7 @@
          },
          {
           "const": "metal_surface_share",
-          "description": "The check needs measured metal surface share from enrichment v2; named metal is not coverage."
+          "description": "The check needs the share of the item surface that is metal; the photo model names the item colour, not metal apart from a stone or enamel insert, so the share is not known."
          },
          {
           "const": "shared_photo",

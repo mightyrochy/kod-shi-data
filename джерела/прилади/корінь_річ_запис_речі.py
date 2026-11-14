@@ -15,6 +15,7 @@ import gc
 import hashlib
 import importlib
 import json
+import os
 from pathlib import Path
 import re
 import signal
@@ -104,6 +105,16 @@ def підсумувати(запис, читання, журнал=True):
                   for дж in sorted(читання, key=lambda ч: (ч.файл, ч.рядок, ч.вузол))] if журнал else []
 
 
+def умови_node():
+    """Версія `node` і ядро ОС: збій CI сам показує умови, у яких стався (14076: SIGSEGV лише на раннері)."""
+    try:
+        версія = subprocess.run(['node', '--version'], capture_output=True, text=True, timeout=10).stdout.strip()
+    except (OSError, subprocess.SubprocessError) as помилка:
+        версія = f'не отримано ({type(помилка).__name__})'
+    ядро = ' '.join(getattr(os, 'uname', lambda: ())()[:1] + getattr(os, 'uname', lambda: ('', '', ''))()[2:3])
+    return f'node {версія or "не отримано"}; ядро {ядро or sys.platform}'
+
+
 class Прогін:
     """Завантажує жнива поточного дерева й повторює HTML → запис без транспорту."""
 
@@ -146,7 +157,7 @@ class Прогін:
         if вих.returncode:
             # Порожній stderr нічого не казав про причину (CI 07.11: код 1 без stderr): код, сигнал і хвіст stdout.
             сигнал = f', сигнал {signal.Signals(-вих.returncode).name}' if вих.returncode < 0 else ''
-            raise RuntimeError(f'node: код {вих.returncode}{сигнал}; вхід {len(json.dumps(вхід))} байт; '
+            raise RuntimeError(f'node: код {вих.returncode}{сигнал}; {умови_node()}; вхід {len(json.dumps(вхід))} байт; '
                                f'stderr: {вих.stderr.strip()[-500:] or "порожній"}; '
                                f'хвіст stdout ({len(вих.stdout)} симв.): {вих.stdout[-300:]!r}')
         return json.loads(вих.stdout)

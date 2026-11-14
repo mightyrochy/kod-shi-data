@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-knit turtleneck, regular fit, hip length, cream (#EDE3D0), merino wool\\nStraight-leg jeans, high rise, full length with the hem just over the boot, dark indigo (#25304A), heavy cotton denim with a little stretch\\nSingle-breasted coat, tailored straight cut, knee length, camel (#B58B5B), dense wool-cashmere blend\\nLace-up ankle boots, round toe, waterproof, lugged rubber sole, dark brown (#3B2A20), smooth treated leather\\nThick ribbed socks, mid-calf, heather grey (#8D8A85), wool blend\\nWide scarf, long, worn looped once, deep olive (#4F5B3A), brushed lambswool\\nClose-fitting beanie, folded cuff, chocolate (#4A3326), ribbed merino wool\\nGloves, slim cut, wrist length, dark brown (#3B2A20), leather with a soft lining\\nCrossbody bag, compact, structured, worn under the coat or at the hip, dark brown (#3B2A20), smooth leather\\n\\nThis outfit stays quiet and classic: a camel coat, cream knit and dark denim are timeless pieces that look neat without being dressy. At -3 °C with snow, the layers of merino, a dense wool coat, a scarf, a hat and lined gloves keep her warm through the long walk and the café stops, where the scarf and coat can come off easily. The waterproof lugged boots and smooth leather resist wet snow and road salt, and are easy to wipe clean. The warm camel, cream and olive suit her copper hair, green eyes and warm skin tone, so the look is calm and flattering.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Fine-knit turtleneck\\\",\\\"details\\\":\\\"regular fit, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#EDE3D0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg jeans\\\",\\\"details\\\":\\\"high rise, full length with the hem just over the boot, heavy cotton denim with a little stretch\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#25304A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Single-breasted coat\\\",\\\"details\\\":\\\"tailored straight cut, knee length, dense wool-cashmere blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B58B5B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Lace-up ankle boots\\\",\\\"details\\\":\\\"round toe, waterproof, lugged rubber sole, smooth treated leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#3B2A20\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Thick ribbed socks\\\",\\\"details\\\":\\\"mid-calf, wool blend\\\",\\\"slot\\\":\\\"socks\\\",\\\"color_hex\\\":\\\"#8D8A85\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wide scarf\\\",\\\"details\\\":\\\"long, worn looped once, brushed lambswool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#4F5B3A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Close-fitting beanie\\\",\\\"details\\\":\\\"folded cuff, ribbed merino wool\\\",\\\"slot\\\":\\\"headwear\\\",\\\"color_hex\\\":\\\"#4A3326\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Gloves\\\",\\\"details\\\":\\\"slim cut, wrist length, leather with a soft lining\\\",\\\"slot\\\":\\\"gloves\\\",\\\"color_hex\\\":\\\"#3B2A20\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Crossbody bag\\\",\\\"details\\\":\\\"compact, structured, smooth leather, worn under the coat or at the hip\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#3B2A20\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2233,\"output_tokens\":583},\"stop_reason\":\"end_turn\"}"
+ }
+}

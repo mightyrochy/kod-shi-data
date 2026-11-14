@@ -3,6 +3,7 @@ const fs = require('fs'), path = require('path'), os = require('os');
 const assert = require('node:assert/strict');
 const процеси = require('child_process');
 const {знімок, порівняти} = require('./храповик_записів.js');
+const {створитиЗразок} = require('./зразок_приймання.js');
 const сцена = path.join(__dirname, 'нічні/20261027/б1_концерт_стримано');
 
 // Дочірній браузер замінено його записаними виходами; саме приймання виконується без підмін.
@@ -20,6 +21,7 @@ if (process.env.E1_PROBE_LOG) {
     const лог = fs.readFileSync(path.join(сцена, 'лог.txt'), 'utf8');
     const база = JSON.parse(fs.readFileSync(path.join(сцена, 'база.json'), 'utf8'));
     const доказ = JSON.parse(fs.readFileSync(path.join(сцена, 'знімки/доказ.json'), 'utf8'));
+    const проби = створитиЗразок(тека, [{id: 'концерт', база}]);
     const виміри = [];
     for (const [назва, текст, очікувано] of [
       ['відома 10231', лог, 0],
@@ -30,7 +32,7 @@ if (process.env.E1_PROBE_LOG) {
       fs.writeFileSync(файл, текст);
       const звіт = порівняти(база, знімок(текст, доказ, 1));
       const результат = процеси.spawnSync(process.execPath, ['--require', __filename,
-        path.join(__dirname, 'приймання_записів.js'), тека, тека, path.join(тека, назва), '0', '1'],
+        path.join(проби, 'приймання_записів.js'), тека, тека, path.join(тека, назва), '0', '1'],
       {env: {...process.env, E1_PROBE_LOG: файл, REPLAY_BASE_BUILD: '', REPLAY_BASE_ROOT: '', REPLAY_ARCHIVE: ''},
         encoding: 'utf8', windowsHide: true});
       виміри.push({проба: назва, стан: звіт.стан, регресії: звіт.регресії, rc: результат.status});

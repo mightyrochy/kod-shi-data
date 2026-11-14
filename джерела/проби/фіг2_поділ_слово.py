@@ -10,7 +10,7 @@ import bridge as B, feed as Ф, fit as ПС, композитор_річ as КР
 вх.update(сценарій=next(iter(СЗ.СЦЕНАРІЇ.values())), випадок=next(iter(СЗ.СЦЕНАРІЇ)))
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 T = ПС.тіло(float(вх["зріст"]), {k: float(v) for k, v in вх["обхвати"].items()})
-пл, Z = T["висоти"]["плечі"], collections.Counter()
+пл, Z = T["висоти"]["лінія_плеча"], collections.Counter()
 у_вікні = lambda л: abs(math.log((пл - л) / л)) < ПС.C["поділ_рівний"] if 0 < л < пл else False
 for c in B.каталог_останнього_пакета():
     if c.get("слот") != "верхній_шар": continue

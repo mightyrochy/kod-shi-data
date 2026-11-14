@@ -16,12 +16,24 @@ on:
       - '.github/workflows/zbirka.yml'
       - 'аудит/дошка/**'
   workflow_dispatch:
+  # Виклик із кроку самозлиття документа (`samozlyttia.yml`): злиття токеном CI не будить `push`, тож крок викликає
+  # цей процес сам. `pislia` — коміт злиття на `main`, `pered` — `main` до злиття (замість `github.event.before`).
+  workflow_call:
+    inputs:
+      pered:
+        type: string
+        required: true
+      pislia:
+        type: string
+        required: true
 
 permissions:
   contents: read
 
+# Виклик самозлиття — своя черга: у черзі `main` новий запуск витіснив би очікувану збірку push, а легкий шлях виклику
+# не збирає її джерел.
 concurrency:
-  group: збірка-показу-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  group: збірка-показу-${{ github.event_name == 'pull_request' && github.ref || inputs.pislia && 'dokument' || 'main' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -39,12 +51,22 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 2
+          ref: ${{ inputs.pislia }}
 
       - name: які шляхи змінено
         id: zmina
         env:
           BEFORE: ${{ github.event.before }}
+          PISLIA: ${{ inputs.pislia }}
         run: |
+          # Виклик самозлиття: злито документ (`джерела/прилади/документ_без_коду.py` — жодного входу збірки, правил
+          # чи коду), тож лише легкий шлях і згортання дошки; повний шлях (і решта checkout без `ref`) тут не йде.
+          if [ -n "${PISLIA}" ]; then
+            echo "produkt=false" >> "$GITHUB_OUTPUT"
+            echo "pravyla=false" >> "$GITHUB_OUTPUT"
+            echo "виклик самозлиття документа: ${PISLIA} — легкий шлях і згортання дошки" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           # Невідомий diff і ручний запуск — повна перевірка, без тихого пропуску.
           produkt=true
           pravyla=true
@@ -619,12 +641,14 @@ jobs:
   publish:
     name: опублікувати перевірений показ і дошку
     needs: [zminy, zbirka]
-    if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.zbirka.result == 'success' }}
+    if: ${{ !cancelled() && (github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.pislia) && needs.zbirka.result == 'success' }}
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.pislia }}
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
