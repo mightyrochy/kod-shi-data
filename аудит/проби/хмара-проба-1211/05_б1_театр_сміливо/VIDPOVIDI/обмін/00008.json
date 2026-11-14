@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"вечір у театрі\", \"place\": \"вечір у театрі\", \"intent\": \"хочу виділитися\", \"goal\": \"хочу виділитися\", \"part_of_day\": \"вечір\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"goal\": {\"kind\": \"reading\", \"quote\": \"хочу виділитися\"}, \"goal_quote\": {\"kind\": \"default\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"вечір у театрі\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"вечір у театрі\"}, \"intent\": {\"kind\": \"reading\", \"quote\": \"хочу виділитися\"}, \"intent_quote\": {\"kind\": \"default\"}, \"mood\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"her\", \"quote\": \"вечір\"}}, \"event\": \"вечір у театрі, вистава о 19:00\", \"part_of_day\": \"evening\", \"goal\": \"express\", \"mood\": [\"сміливо\"], \"occasion\": \"theatre\", \"place\": \"theatre\", \"goal_quote\": \"хочу виділитися\", \"intent_quote\": \"хочу виділитися\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Fine-knit turtleneck, slim fit, hip length, deep burgundy (#6D1F2F), merino wool\\nPleated midi skirt, A-line, falling below the knee, emerald green (#0B6E4F), satin-finish crepe\\nTailored textured jacket, slightly cropped, single-breasted, black with a gold thread fleck (#1F1C1A), bouclé tweed\\nLong wrap coat, straight cut, mid-calf, camel (#B98B5E), soft wool-cashmere blend\\nAnkle boots, pointed toe, block heel, black (#141414), smooth leather\\nSmall structured top-handle bag, mustard yellow (#D4A017), leather\\nDrop earrings, gold tone (#C9A24B), polished metal\\nSheer tights, black (#1A1A1A), fine knit\\n\\nThis outfit takes a bold route to standing out through color. Burgundy and emerald sit together with confidence, and the mustard bag adds one more accent without crowding the look. The satin pleats move beautifully when you walk to your seat, and the textured jacket keeps the whole look neat and theatre-appropriate. The block-heeled ankle boots stay comfortable through a 19:00 performance and the walk home, and the camel coat covers the cool autumn evening while letting the colors show when you take it off.\"}],\"usage\":{\"input_tokens\":2326,\"output_tokens\":821},\"stop_reason\":\"end_turn\"}"
+ }
+}

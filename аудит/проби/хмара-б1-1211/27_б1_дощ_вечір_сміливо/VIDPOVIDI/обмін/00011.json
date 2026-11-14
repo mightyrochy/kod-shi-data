@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Dark green velvet-effect midi skirt, A-line cut, falling just below the knee, emerald #0B5D4B, stretch velvet with a soft sheen\\nFitted turtleneck sweater, slim cut, hip length, ivory #F2E8D5, fine merino wool\\nTailored wool-blend coat, belted, calf length, deep burgundy #7A1F3D, brushed wool with a water-repellent finish\\nKnee-high boots, block heel of moderate height, sleek round toe, black #1A1A1A, waterproof leather with a rubber sole\\nOpaque tights, 100 denier, black #121212, soft microfiber\\nOversized sturdy umbrella, wind-resistant, black #1C1C1C, nylon canopy with a fiberglass frame\\nStatement earrings, sculptural gold drops, polished gold #C9A24B, brass with gold plating\\nSmall structured crossbody bag, glossy, cobalt blue #1F4FBF, patent leather with a gold chain strap\\n\\nThis outfit works because the rich emerald skirt, burgundy coat and cobalt bag make a bold, confident color story that stands out in a cinema crowd, while the ivory knit keeps it polished and balanced. The look stays neat and refined, with a soft velvet texture and sleek boots that suit an evening out and a dinner afterward. For the cold, rainy and windy evening, the warm merino, thick tights and the water-repellent belted coat keep her comfortable, and waterproof boots with a sturdy umbrella handle the downpour. The crossbody bag keeps her hands free for the umbrella and tickets.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Dark green velvet-effect midi skirt\\\",\\\"details\\\":\\\"A-line cut, falling just below the knee, stretch velvet with a soft sheen\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#0B5D4B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Fitted turtleneck sweater\\\",\\\"details\\\":\\\"Slim cut, hip length, fine merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F2E8D5\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tailored wool-blend coat\\\",\\\"details\\\":\\\"Belted, calf length, brushed wool with a water-repellent finish\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#7A1F3D\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Knee-high boots\\\",\\\"details\\\":\\\"Block heel of moderate height, sleek round toe, waterproof leather with a rubber sole\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Opaque tights\\\",\\\"details\\\":\\\"100 denier, soft microfiber\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#121212\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Oversized sturdy umbrella\\\",\\\"details\\\":\\\"Wind-resistant, nylon canopy with a fiberglass frame\\\",\\\"slot\\\":\\\"accessory\\\",\\\"color_hex\\\":\\\"#1C1C1C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Statement earrings\\\",\\\"details\\\":\\\"Sculptural gold drops, brass with gold plating\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A24B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small structured crossbody bag\\\",\\\"details\\\":\\\"Glossy, patent leather with a gold chain strap\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1F4FBF\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2212,\"output_tokens\":549},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,35 @@
+── ПРОМПТ (5495 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Cocktail-length wrap dress, v-neckline, fitted waist, flowing skirt to just below the knee, vivid emerald green, lightweight crepe with a satin finish\n\nStrappy block-heel sandals, open toe, 7 cm heel, metallic gold, smooth leather, comfortable for walking on grass\n\nSmall structured clutch, top-handle, gold-toned with a subtle sheen, satin-lined metallic leather\n\nStatement drop earrings, sculptural teardrop shape, polished gold, brass with gold plating\n\nThin cuff bracelet, open back, polished gold, brass with gold plating\n\nWhy this outfit works: The saturated emerald dress is a bold choice that makes you stand out in a crowd of pastels and neutrals, while still staying clear of white and avoiding anything that competes with the bride. The wrap cut and lightweight crepe stay cool and comfortable for an outdoor ceremony at 16:00 in August, and the length is smart enough for the restaurant that follows. Block heels keep you steady on grass and are easy to wear through a long evening. Gold accents add polish and warmth, so the look reads confident and celebratory without being overdone.",
+"2": "Wrap dress",
+"3": "Strappy block-heel sandals",
+"4": "Clutch",
+"5": "Drop earrings",
+"6": "Cuff bracelet"
+}
+
+── ВІДПОВІДЬ (1348 симв., 14.2 с, HTTP 200) ──
+{"1":"Сукня з запахом коктейльної довжини, V-подібний виріз, приталений силует, пишна спідниця трохи нижче коліна, яскравий смарагдово-зелений колір, легкий креп з атласним блиском\n\nБосоніжки на блочному підборі з ремінцями, відкритий носок, підбор 7 см, золотистий металік, гладка шкіра, зручні для ходьби по траві\n\nНевеликий структурований клатч з верхньою ручкою, золотистий з ледь помітним блиском, металізована шкіра з атласною підкладкою\n\nВиразні сережки-краплі, скульптурна форма краплі, глянсоване золото, латунь із золотим покриттям\n\nТонкий браслет-манжета, відкрита задня частина, глянсоване золото, латунь із золотим покриттям\n\nЧому цей образ працює: насичена смарагдова сукня — сміливий вибір, завдяки якому ти виділятимешся серед пастельних і нейтральних відтінків, але водночас не вдягнеш білого й оминеш усе, що конкурувало б із нареченою. Крій із запахом і легкий креп лишаються прохолодними та зручними для церемонії просто неба о 16:00 в серпні, а довжина достатньо вишукана для ресторану, який буде після неї. Блочні підбори тримають тебе стійко на траві й зручні протягом довгого вечора. Золоті акценти додають вишуканості й теплоти, тож образ виглядає впевнено та святково, але не надмірно.","2":"Сукня з запахом","3":"Босоніжки на блочному підборі з ремінцями","4":"Клатч","5":"Сережки-краплі","6":"Браслет-манжета"}

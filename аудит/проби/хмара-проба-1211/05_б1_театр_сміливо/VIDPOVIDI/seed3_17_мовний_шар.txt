@@ -1,0 +1,39 @@
+── ПРОМПТ (5539 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Fine-knit mock-neck sweater, slim fit, hip length, long sleeves, cobalt blue, extra-fine merino wool\n\nA-line midi skirt, mid-calf length with soft pleats at the waist, deep plum, textured jacquard crepe\n\nSheer tights, 20 denier, black, matte nylon\n\nAnkle boots, pointed toe, 6 cm block heel, black, smooth leather\n\nTailored single-breasted coat, knee length, charcoal, dense wool with a soft finish\n\nDrop earrings, medium length, silver, polished metal\n\nStructured mini clutch with a short chain strap, cobalt blue, satin-finish leather\n\nWhy this outfit works: The saturated cobalt and deep plum make a bold color pairing that stands out in the warm artificial light of the theatre, which is what you asked for. Cobalt echoes your blue eyes and looks striking against your silver hair and fair skin. The refined knit with a midi skirt and ankle boots keeps the look neat and polished for an evening performance. The neutral charcoal coat keeps the autumn evening comfortable and lets the colors show once you step inside.",
+"2": "Mock-neck sweater",
+"3": "A-line midi skirt",
+"4": "Sheer tights",
+"5": "Ankle boots",
+"6": "Tailored single-breasted coat",
+"7": "Drop earrings",
+"8": "Structured mini clutch"
+}
+
+── ВІДПОВІДЬ (1413 симв., 16.5 с, HTTP 200) ──
+{"1":"Тонкий светр із коміром-стійкою, приталений, довжиною до стегон, з довгими рукавами, кобальтово-синій, з екстратонкої вовни мерино\n\nСпідниця міді А-силуету довжиною до середини литки з м'якими складками на талії, глибокого сливового кольору, з фактурного жакардового крепу\n\nПрозорі колготки, 20 den, чорні, матовий нейлон\n\nБотильйони зі шпичастим носком, на блочному підборі 6 см, чорні, з гладкої шкіри\n\nПриталене однобортне пальто довжиною до коліна, графітове, зі щільної вовни з м'яким опорядженням\n\nСережки-підвіски середньої довжини, сріблясті, з полірованого металу\n\nСтруктурований міні-клатч із коротким ремінцем-ланцюжком, кобальтово-синій, зі шкіри з атласним блиском\n\nЧому цей образ працює: насичений кобальтовий і глибокий сливовий утворюють сміливе поєднання кольорів, яке вирізняється в теплому штучному світлі театру, саме цього ти й хотіла. Кобальт перегукується з твоїми блакитними очима та вражаюче виглядає поруч зі сріблястим волcurrent і світлою шкірою. Вишуканий трикотаж зі спідницею міді та ботильйонами робить образ акуратним і доглянутим для вечірньої вистави. Нейтральне графітове пальто робить осінній вечір комфортним, а кольори розкриваються, щойно ти заходиш досередини.","2":"Светр із коміром-стійкою","3":"Спідниця міді А-силуету","4":"Прозорі колготки","5":"Ботильйони","6":"Приталене однобортне пальто","7":"Сережки-підвіски","8":"Структурований міні-клатч"}

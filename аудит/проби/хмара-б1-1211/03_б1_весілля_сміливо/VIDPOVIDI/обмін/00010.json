@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Formal dress: A-line with a fitted bodice, a softly wrapped V-neckline, thin shoulder straps and a flowing skirt that falls to mid-calf, in deep emerald (#046307), made of silk satin with a soft sheen.\\n\\nHeeled sandals: ankle-strap style with a stable block heel, in antique gold (#B08D57), made of smooth nappa leather.\\n\\nClutch: small structured envelope shape, in antique gold (#B08D57), made of satin-finished metallic leather.\\n\\nDrop earrings: elongated teardrop shape, in polished gold (#D4AF37), made of gold-plated brass with small green crystal accents.\\n\\nThin bangle: slim open cuff, in polished gold (#D4AF37), made of gold-plated brass.\\n\\nWhy this outfit works: Deep emerald silk satin is a rich, saturated colour that stands out in daylight and in the restaurant's evening light, without competing with the bride's white. The mid-calf A-line skirt moves beautifully during the outdoor ceremony and keeps the look formal and elegant. A block heel keeps you steady on grass, and the gold accessories add polish while the dress stays the focal point. No outer layer is needed for a warm August afternoon, and the lightweight silk stays comfortable from the 16:00 ceremony through the dinner.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Formal dress\\\",\\\"details\\\":\\\"A-line with a fitted bodice, a softly wrapped V-neckline, thin shoulder straps and a flowing skirt that falls to mid-calf, silk satin with a soft sheen\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#046307\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Heeled sandals\\\",\\\"details\\\":\\\"ankle-strap style with a stable block heel, smooth nappa leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#B08D57\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Clutch\\\",\\\"details\\\":\\\"small structured envelope shape, satin-finished metallic leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#B08D57\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"elongated teardrop shape, gold-plated brass with small green crystal accents\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#D4AF37\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Thin bangle\\\",\\\"details\\\":\\\"slim open cuff, gold-plated brass\\\",\\\"slot\\\":\\\"bracelet\\\",\\\"color_hex\\\":\\\"#D4AF37\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2118,\"output_tokens\":364},\"stop_reason\":\"end_turn\"}"
+ }
+}

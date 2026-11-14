@@ -1,0 +1,64 @@
+── ПРОМПТ (7788 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: cardigan · colour code: light_blue · about it: text н=1
+2 — kind code: t_shirt · colour code: white · about it: text н=2
+3 — kind code: jeans · colour code: light_blue · about it: text н=3
+4 — kind code: scarf_generic · colour code: beige · about it: text н=4
+5 — kind code: jacket · colour code: brown · about it: text н=5
+6 — kind code: ankle_boots · colour code: black · about it: text н=6
+7 — kind code: tote · colour code: camel · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; camel — кемел; light_blue — блакитний; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This fitted cardigan is cut to follow your silhouette closely, with a clean neckline and long sleeves that drape softly over your frame. Its light blue hue offers a fresh yet sophisticated tone that pairs well with neutral layers beneath it.",
+"2": "The white t-shirt features a relaxed fit with thin straps that sit comfortably on your shoulders, adding breathability and ease to the layered look without adding extra volume.",
+"3": "These straight-leg jeans have a classic wash and subtle distressing for a modern touch, while maintaining a tailored shape that elongates your legs and balances the fitted upper layers.",
+"4": "A soft beige scarf made from a cozy knit fabric, this piece wraps easily around your neck with fringed edges that add movement and visual interest to the outfit without overwhelming its simplicity.",
+"5": "The brown jacket features a sleek puffer design with a high collar that protects against wind and rain while adding a touch of warmth and structure to your ensemble.",
+"6": "Black ankle boots with minimal straps offer stability and polish, grounding the outfit with a neutral tone that complements both the denim above and the jacket below.",
+"7": "A structured brown suede tote bag with long handles offers ample space for your essentials while adding a natural texture that contrasts beautifully with the sleekness of the other pieces.",
+"8": "This look is built for a rainy autumn day with your client meeting at the cafe, where you can layer pieces to stay dry while keeping things chic and professional. The fitted light blue cardigan gives structure to your frame without adding bulk, pairing perfectly with the soft white t-shirt underneath that brings warmth and breathability as you move between coffee cups and conversations. Your straight-leg jeans in light blue ground the outfit with a relaxed yet polished silhouette that works beautifully against the crisp textures of the outerwear layers above. The beige scarf wraps comfortably around your shoulders, offering both texture and gentle color contrast to keep the ensemble feeling warm without appearing heavy or overly dressed up.",
+"9": "Drape the scarf loosely over your shoulders with ends falling naturally at your front, leaving the collar of your cardigan visible for a polished layering effect.",
+"10": "Tuck the front hem of your cardigan slightly into your jeans if you want to define your waistline while maintaining comfort during movement.",
+"11": "Коричневий пуховик з кишенями — This brown leather jacket replaces the missing bottom and acts as the necessary rain shield over the look.",
+"12": "Шарф об'ємний з дредами — A soft beige scarf adds a gentle layer near the face without competing with the white shirt's brightness.",
+"13": "Коричневий пуховик з кишенями — The black leather jacket serves as the missing bottom layer and protects against the wet weather.",
+"14": "Коричневий пуховик з кишенями — I added this black leather jacket to solve the lack of rain protection while maintaining the outfit's elegant tone."
+}
+
+── ВІДПОВІДЬ (2969 симв., 33.9 с, HTTP 200) ──
+```json
+{
+  "1": "Цей приталений кардиган має крій, який щільно повторює твою фігуру, з чистим вирізом горловини та довгими рукавами, що м’яко спадають по твоєму силуету. Його блакитний відтінок дарує свіжий і водночас вишуканий тон, який добре гармонує з нейтральними шарами під ним.",
+  "2": "Біла футболка має вільний крій із тонкими бретелями, які зручно лягають на твої плечі, додаючи дихання та легкість багатошаровості без зайвого об’єму.",
+  "3": "Ці прямі джинси мають класичний колір і ледь помітний потертий ефект для сучасного акценту, зберігаючи при цьому підкреслений силует, який видовжує твої ноги та збалансовує приталені верхні шари.",
+  "4": "М’який бежевий шарф із затишної в’язаної тканини легко обмотується навколо твоєї шиї з бахромою на краях, яка додає руху й візуального інтересу до образу без надмірності.",
+  "5": "Коричнева куртка має елегантний пуховий дизайн із високим коміром, який захищає від вітру та дощу, водночас додаючи теплоти та структури твоєму ансамблю.",
+  "6": "Чорні черевики на підборах з мінімальною кількістю ремінців забезпечують стійкість і вишуканість, заземлюючи образ нейтральним тоном, який доповнює як денім зверху, так і куртку знизу.",
+  "7": "Структурована коричнева замшева сумка-тоут з довгими ручками пропонує достатньо місця для твоїх необхідних речей, водночас додаючи природну текстуру, яка чудово контрастує зі стриманістю інших елементів.",
+  "8": "Цей образ створений для дощового осіннього дня з твоєю зустріччю з клієнтом у кафе, де ти можеш одягати шари, щоб залишатися сухою та водночас виглядати стильно й професійно. Приталений блакитний кардиган надає структури твоїй фігурі без зайвого об’єму, ідеально поєднуючись із м’якою білою футболкою під ним, яка дарує тепло та дихання в русі між чашками кави й розмовами. Твої прямі джинси блакитного кольору заземлюють образ невимушеним, але вишуканим силуетом, який чудово гармонує з чіткими текстурами верхніх шарів одягу. Бежевий шарф зручно обмотується навколо твоїх плечей, пропонуючи як текстуру, так і ніжкий колірний контраст, щоб образ залишався теплим без надмірної тяжкості чи перевантаження.",
+  "9": "Недбало накинь шарф на свої плечі з кінцями, що вільно спадають спереду, залишивши виріз горловини кардигану видимим для вишуканого ефекту багатошаровості.",
+  "10": "Злегка заправ передній край кардигану у джинси, якщо хочеш підкреслити талію, зберігаючи комфорт при русі.",
+  "11": "Коричневий пуховик з кишенями — Ця коричнева шкіряна куртка замінює відсутнє дно й слугує необхідним захистом від дощу для образу.",
+  "12": "Шарф об’ємний з бахромою — М’який бежевий шарф додає ніжний шар біля обличчя, не конкуруючи з яскравістю білої сорочки.",
+  "13": "Коричневий пуховик з кишенями — Чорна шкіряна куртка слугує відсутнім нижнім шаром і захищає від дощу.",
+  "14": "Коричневий пуховик з кишенями — Я додала цю чорну шкіряну куртку, щоб вирішити проблему нестачі захисту від дощу, зберігаючи при цьому елегантний тон образу."
+}
+```

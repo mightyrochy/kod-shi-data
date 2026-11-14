@@ -1,0 +1,60 @@
+── ПРОМПТ (7088 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: coat · colour code: camel · about it: text н=1
+2 — kind code: shirt · colour code: beige · about it: text н=2
+3 — kind code: ugg_boots · colour code: terracotta · about it: text н=3
+4 — kind code: trousers · colour code: grey · about it: text н=4
+5 — kind code: baguette_bag · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; camel — кемел; grey — сірий; terracotta — теракотовий.
+
+ТЕКСТИ:
+{
+"1": "Your camel coat is a relaxed, oversized outer layer that feels both cozy and structured. Its high collar zips up for warmth against the cold, while the soft fabric drapes loosely over your frame.",
+"2": "The beige shirt top features a classic button-down front with a tailored fit and subtle chest pockets. It adds a refined touch beneath your coat without competing for attention.",
+"3": "Your terracotta UGG boots are chunky-soled ankle boots lined with soft shearling, offering both warmth and comfort as you walk through snow or city streets.",
+"4": "The grey trousers have a straight-leg cut that flows smoothly from hip to hem. Their lightweight fabric drapes cleanly, balancing the volume of your coat and adding polish to your ensemble.",
+"5": "Your woven baguette bag carries neutral beige tones with black-and-white striped accents on its handles. Its structured shape complements the relaxed silhouettes in your outfit while holding essentials securely.",
+"6": "This look brings together warmth, polish, and quiet luxury for a Saturday stroll through winter snow. The camel coat anchors your silhouette with softness and ease, while the beige shirt underneath adds refinement without formality. Your grey trousers elongate your legs and ground the volume of the outer layer, while the terracotta UGG boots offer cozy steps across frosty ground. The woven baguette bag carries your day’s essentials in earthy tones that tie back to your coat and shoes, creating a harmonious palette from head to toe.",
+"7": "Leave your coat partially unzipped to reveal the clean lines of your shirt collar and cuffs for effortless elegance.",
+"8": "Tuck one side of your shirt slightly or let it fall open depending on how you want to balance volume at the waist.",
+"9": "Пальто “Dune” кемел — Added camel coat as outerwear to answer weather_needs_outerwear finding and replace the near-white fur which reads bridal in photos.",
+"10": "Уггі карамельні PUMP — Swapped black ankle boots for terracotta suede Ugg-style boots to fix shoes_cut_leg_line and add winter texture suitable for frost.",
+"11": "Пальто “Dune” кемел — Added as an outer layer to answer the weather_needs_outerwear finding and keep the scheme's warm accent family.",
+"12": "Пальто “Dune” кемел — Added coat as outerwear to answer weather_needs_outerwear finding while keeping the scheme's warm accent family intact.",
+"13": "Пальто “Dune” кемел — Added coat as outerwear to answer weather_needs_outerwear finding and provide warmth for the frost."
+}
+
+── ВІДПОВІДЬ (2502 симв., 34.0 с, HTTP 200) ──
+```json
+{
+  "1": "Твоє пальто кемел вільного, оверсайз крою виглядає затишно та водночас структуровано. Його високий комір можна застебнути на блискавку для тепла в холодну погоду, а м’яка тканина легко драпірується по твоїй фігурі.",
+  "2": "Бежева сорочка має класичний ґудзик спереду та приталений крій з непомітними нагрудними кишенями. Вона додає вишуканості під пальто, не відволікаючи уваги.",
+  "3": "Твої уггі теракотового кольору — це об’ємні черевики на товстій підошві з м’якою овечою шерстю всередині. Вони зігрівають і дарують комфорт під час прогулянки снігом чи міськими вулицями.",
+  "4": "Сірі штани мають прямий крій, який плавно спадає від стегна до низу. Легка тканина красиво драпірується, збалансовуючи об’єм пальто та додаючи витонченості твоєму образу.",
+  "5": "Твоя плетіна сумка-багет має нейтральні бежеві тони з чорно-білими смужками на ручках. Її структурована форма доповнює вільні силуети твого одягу та зручно вміщує необхідні речі.",
+  "6": "Цей образ поєднує тепло, вишуканість і тиху розкіш для зимової прогулянки. Пальто кемел м’яко окреслює твою фігуру, а бежева сорочка під ним додає елегантності без зайвої офіційності. Сірі штани візуально видовжують ноги та збалансовують об’єм верхнього одягу, а уггі теракотового кольору дарують затишок на кожному кроці по морозу. Плетіна сумка-багет у земляних тонах доповнює твій образ від голови до п’ят.",
+  "7": "Залиш пальто частково розстебнутим, щоб показати чисті лінії коміра та манжетів сорочки для невимушеної елегантності.",
+  "8": "Злегка заправ одну сторону сорочки або дай їй вільно спадати залежно від того, як ти хочеш збалансувати об’єм на талії.",
+  "9": "Пальто “Dune” кемел — Додала пальто в якості верхнього одягу для відповіді на запит про необхідність утеплення і замінила майже біле хутро, яке виглядало як весільне на фотографіях.",
+  "10": "Уггі карамельні PUMP — Замінила чорні черевики на уггі-подібні чоботи з замші теракотового кольору для вирішення проблеми довжини штанів і додавання зимової текстури, підходящої до морозу.",
+  "11": "Пальто “Dune” кемел — Додала як верхній одяг для відповіді на запит про необхідність утеплення та збереження теплої колірної гами образу.",
+  "12": "Пальто “Dune” кемел — Додала пальто в якості верхнього одягу, щоб відповісти на запит про необхідність утеплення і зберегти теплу кольорову палітру цілою.",
+  "13": "Пальто “Dune” кемел — Додала пальто як верхній одяг для відповіді на запит про необхідність утеплення та забезпечення тепла в мороз."
+}
+```
