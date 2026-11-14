@@ -12,7 +12,7 @@ function Fixture-Git([string]$At, [string[]]$Items) {
     ($out -join "`n").Trim()
 }
 
-$cases = @('private-start', 'new-main', 'published-start', 'BUNDLE_INVALID', 'REF_MISMATCH', 'SECRET', 'GITHUB_DIR', 'WRAPPER_FILES')
+$cases = @('private-start', 'new-main', 'published-start', 'BUNDLE_INVALID', 'REF_MISMATCH', 'SECRET', 'GITHUB_DIR', 'WRAPPER_FILES', 'SECRET-JWT', 'BASE64-NOT-SECRET')
 if ($Before) { $cases = $cases[0..1] }
 $bad = 0
 foreach ($case in $cases) {
@@ -55,11 +55,18 @@ foreach ($case in $cases) {
         'SECRET' { '.codex/auth.json' }
         'GITHUB_DIR' { '.github/workflows/probe.yml' }
         'WRAPPER_FILES' { 'аудит/адаптери/gemini/probe.txt' }
+        'BASE64-NOT-SECRET' { 'VIDPOVIDI/00003.json' }
         default { 'work.txt' }
+    }
+    # Вміст: JWT (заголовок.навантаження.підпис) — відмова; `eyJ` + 12 знаків посеред base64 без крапки (як у JPEG запису обміну) — ні.
+    $body = switch ($case) {
+        'SECRET-JWT' { "token eyJFAKE_HEADER_NOT_A_TOKEN.eyJFAKE_PAYLOAD_NOT_A_TOKEN.FAKE_SIGNATURE_NOT_A_TOKEN`n" }
+        'BASE64-NOT-SECRET' { '{"data": "/9j/4AAQ' + ('QUJD' * 40) + 'eyJA1b2C3d4E5f6+/' + ('REVG' * 40) + '9k="}' + "`n" }
+        default { "work`n" }
     }
     $file = Join-Path $repo $path
     [void](New-Item -ItemType Directory -Force -Path (Split-Path $file))
-    [IO.File]::WriteAllText($file, "work`n", $utf8)
+    [IO.File]::WriteAllText($file, $body, $utf8)
     [void](Fixture-Git $repo @('add', '.')); [void](Fixture-Git $repo @('commit', '-q', '-m', 'Робота агента'))
     $s = [ordered]@{ id = '20261028-000000-aaaaaaaaaaaa'; slug = 'probe'; marker = $marker; start = $start
         head = ''; ahead = 0; bundle = ''; code = 'DONE'; turns = 1; minutes = 0 }
@@ -83,7 +90,7 @@ foreach ($case in $cases) {
         Write-Host "$case verify: код $($verify.Code) $($verify.Err.Trim())"
         Publish-Bundle ([pscustomobject]$s) $s.id
     }
-    $want = if ($Before) { 'BUNDLE_INVALID' } elseif ($case -cmatch '^[A-Z_]+$') { $case } else { 'OK' }
+    $want = if ($Before) { 'BUNDLE_INVALID' } elseif ($case -eq 'SECRET-JWT') { 'SECRET' } elseif ($case -cmatch '^[A-Z_]+$') { $case } else { 'OK' }
     $published = Fixture-Git $origin @('for-each-ref', '--format=%(objectname)', 'refs/heads/gemini/probe')
     $ok = $result[0] -eq $want
     if ($want -eq 'OK') { $ok = $ok -and $published -eq $head }
