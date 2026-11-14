@@ -152,6 +152,8 @@ async function екран(стор){
   });
 }
 
+const {знімокРук, доЗавантажитиФото} = require('./руки_зі_сторінки.js');
+
 async function головна(){
   const ж = (...а) => fs.appendFileSync(ХІД, а.join('') + '\n');
   if (!fs.existsSync(ХІД)) ж('# Хід проходу — що вона бачила й робила (', ПРОХІД, ')\n');
@@ -179,6 +181,12 @@ async function головна(){
   стор.on('response', в => { const з = в.request(); if (з.resourceType() === 'image' && !з.url().startsWith(БАЗА)) фотоЖурнал.write(new Date().toISOString() + ' ' + в.status() + ' ' + з.url().slice(0, 200) + '\n'); });
   const цеМіст = u => decodeURIComponent(u.pathname).endsWith('/міст');
   const обміни = fs.createWriteStream(path.join(СЛУЖБОВЕ, 'обміни.jsonl'));
+  const РУКИ = path.join(СЛУЖБОВЕ, 'руки.jsonl'); let попРуки = '';
+  const записатиРуки = async (крок, мітка, силою) => {
+    const з = await знімокРук(стор); if (!з) return;
+    const т = JSON.stringify(з); if (т === попРуки && !силою) return; попРуки = т;
+    fs.appendFileSync(РУКИ, JSON.stringify({крок, мітка, час: new Date().toISOString(), ...з}) + '\n');
+  };
   await стор.route(u => u.origin === БАЗА && !цеМіст(u), async route => {
     const ім = decodeURIComponent(new URL(route.request().url()).pathname).replace(/^\//, '') || 'index.html';
     const ф = path.join(КОРІНЬ, ім);
@@ -268,7 +276,9 @@ async function головна(){
     if (галерея) { галерея = 0; поясн = (поясн ? поясн + ' ' : '') + 'Відкрилась галерея телефона, але придатного фото там нема. Ти закрила галерею.'; опис += ' → відкрилась галерея, фото нема'; }
     ж('\n### ', крок, ' · ', new Date().toISOString().slice(11, 19), ' UTC · знімок `знімки/', ім, '`\n- бачу: ', String(р.бачу || '').replace(/\n/g, ' '), '\n- дія: ', опис);
     await с(д.чекати != null ? 500 : 2500);
+    await записатиРуки(крок, 'крок');
   }
+  await доЗавантажитиФото(стор); await с(6000); await записатиРуки(крок, 'кінець', true);
   /* підсумкове повідомлення — як від тестувальниці: поломки п'ятьма рядками і що ще хоче сказати */
   const фін = await жінка([{type: 'text', text: 'Ти закінчила. Напиши тепер повідомлення, яке надіслала б нам разом із файлом вердиктів, — так, як просить пам\'ятка: '
     + 'про кожну поломку окремо п\'ятьма рядками (що робила, що сталося, коли, на якому кроці/знімку, телефон і браузер — у тебе Android, Chrome), '
