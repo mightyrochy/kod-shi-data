@@ -24,11 +24,18 @@ import sys, pathlib, json, collections, os, io, contextlib, itertools
 код = pathlib.Path(sys.argv[sys.argv.index("--код") + 1]).resolve() if "--код" in sys.argv else КОРІНЬ / "джерела"
 os.chdir(код); sys.path.insert(0, str(код))
 import feed as Ф, bridge as B, outfit as O, silhouette as СЛ, composer as КМ, fit as ПС
+import колір_річ as _КР
 import areas, colorspace as cs, аксесуари_структура as АС, суд_огляд as СО, формальність as ФОРМ
 
 print(f"код: {код}")
 
 # ── 1. СИЛУЕТ НА КАТАЛОЗІ ─────────────────────────────────────────────────────
+
+def _слотова_near(слот):
+    """Умовність слота (дані проб): обгортку `near_слота` знято в Е3-місце-речі-ч-блиск-нейтраль."""
+    return _КР.SLOT_NEAR_FALLBACK.get(слот, 0.2)
+
+
 БЕЗ_КАТАЛОГУ = "--без-каталогу" in sys.argv
 if not БЕЗ_КАТАЛОГУ:
     вх = json.load(open(код / "стенд_вх.json", encoding="utf-8"))
@@ -87,9 +94,9 @@ print("\n2a. K-ACC-13: два металеві предмети («золото�
 NEAR = (0.05, 0.2, 0.35, 0.6, None)
 СЛОТИ_А = ("прикраси", "годинник", "сумка", "шарф")
 for (с1, n1), (с2, n2) in itertools.combinations_with_replacement(list(itertools.product(СЛОТИ_А, NEAR)), 2):
-    E = [dict(річ=f"a-{с1}", слот=с1, метал="золото", near=(n1 if n1 is not None else O.near_слота(с1)),
+    E = [dict(річ=f"a-{с1}", слот=с1, метал="золото", near=(n1 if n1 is not None else _слотова_near(с1)),
               near_виміряний=n1 is not None, площа=0.02),
-         dict(річ=f"b-{с2}", слот=с2, метал="золото", near=(n2 if n2 is not None else O.near_слота(с2)),
+         dict(річ=f"b-{с2}", слот=с2, метал="золото", near=(n2 if n2 is not None else _слотова_near(с2)),
               near_виміряний=n2 is not None, площа=0.02)]
     зн = [z for z in АС.віднімання(E) if z["правило"] == "K-ACC-13"]
     акс[(зн[0]["сила"] if зн else "нема")] += 1
