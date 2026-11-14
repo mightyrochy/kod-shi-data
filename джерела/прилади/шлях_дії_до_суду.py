@@ -178,6 +178,16 @@ class ШляхДії:
                                  if isinstance(к, ast.Constant) else set()
                                  for к, з in zip(в.keys, в.values)))
         if isinstance(в, ast.IfExp):
+            # Нормалізація форми списку зберігає цілий останній склад.
+            # Голий числовий індекс вибирає річ і такого доказу не дає.
+            інакше = в.orelse
+            if (isinstance(інакше, ast.Call) and ast.unparse(інакше.func) == 'list'
+                    and len(інакше.args) == 1 and isinstance(інакше.args[0], ast.Name)):
+                ім = інакше.args[0].id
+                еталон = ast.parse(f'list({ім}[-1]) if {ім} and isinstance({ім}[0], (list, tuple)) '
+                                   f'else list({ім})', mode='eval').body
+                if ast.dump(в) == ast.dump(еталон):
+                    return self.значення(інакше.args[0], стан, джерело, поле)
             return self.значення(в.body, стан, джерело, поле) & self.значення(в.orelse, стан, джерело, поле)
         if isinstance(в, ast.BoolOp):
             варіанти = [self.значення(з, стан, джерело, поле) for з in в.values
@@ -188,9 +198,8 @@ class ШляхДії:
     @staticmethod
     def поле(походження, ключ):
         """Читання іншого поля не успадковує склад; невідомий ключ не доводить його."""
-        if not isinstance(ключ, ast.Constant):
-            return {()} if isinstance(ключ, ast.UnaryOp) and isinstance(ключ.operand, ast.Constant) \
-                and isinstance(ключ.operand.value, int) and () in походження else set()
+        if not isinstance(ключ, ast.Constant) or not isinstance(ключ.value, str):
+            return set()
         return {п[1:] if п else () for п in походження if not п or п[0] == ключ.value}
 
     def судить(self, в, стан):
