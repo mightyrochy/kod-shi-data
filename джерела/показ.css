@@ -912,8 +912,9 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
 /* «На фото нема …» картки оцінки (рядки 6555, 8112, п.9) — шрифтом і кеглем тексту картки («Що вдало»), а не рубленим
    16 px; повний перелік у видимому тексті, на вузькому екрані переноситься на кілька рядків і не обрізається */
 .оц-нема-на-фото{font:400 15.5px/1.55 var(--голос);font-variation-settings:"CONT" 140;overflow-wrap:anywhere}
-.задум div{position:relative;padding-left:18px;font:400 15.5px/1.55 var(--голос);font-variation-settings:"CONT" 140;margin-top:4px}
-.задум div::before{content:"";position:absolute;left:0;top:11px;width:4px;height:4px;border-radius:50%;
+.задум div,.задум p.задум-чекає{position:relative;padding-left:18px;font:400 15.5px/1.55 var(--голос);font-variation-settings:"CONT" 140;margin:4px 0 0}
+.задум p.задум-чекає{color:var(--олівець)}
+.задум div::before,.задум p.задум-чекає::before{content:"";position:absolute;left:0;top:11px;width:4px;height:4px;border-radius:50%;
   background:var(--чорнило);box-shadow:6px 0 0 var(--чорнило)}
 .вердикт{margin:22px 18px 0;padding-top:22px;position:relative}
 .вердикт::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--мережка);opacity:.9}
