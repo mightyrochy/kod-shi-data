@@ -296,8 +296,9 @@ _БЕЗ_ГЕЙТІВ = {
     вихід="ОБРАЗИ_V1",
     # «pole» — поле складання; без підпису його нема й у скелеті ремонту (`протокол.ПОЛЯ_НА_ПРОХАННЯ`)
     поля_виходу=dict({к: v for к, v in _ПОЛЯ_ОБРАЗІВ.items() if к != "образи[].полюс"}, **{
-        "образи[].речі": "«n» of each item of the improved outfit, alone: all its items, not only the ones you "
-                         "changed",
+        # «alone» і «усі речі, не лише змінені» вже кажуть правила (`РЯДОК_ЛИШЕ_НОМЕР`, «An improved outfit is
+        # whole») — повтор знято (корінь Е2-промпти: кожен промпт коротший за ДО)
+        "образи[].речі": "«n» of each item of the improved outfit",
         "образи[].ід": "«id» of the «your_outfit» you improved",
         "образи[].виконано[].знахідка": "an «id» from «gates» of this outfit",
         "образи[].виконано[].чому": "only with declined: why you keep it, one sentence",

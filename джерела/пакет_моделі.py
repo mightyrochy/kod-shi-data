@@ -504,25 +504,22 @@ import внутрішня_мова as _ВМ_П
     # образу, кожну — її «type» у пулі; слів підпису код не звіряє (п.12).
     "образи[].підпис": "3–5 words: the idea of the outfit; an item it names is one of this outfit's items, called "
                        "by its «type»",
-    "образи[].речі": "«n» of the item alone, e.g. \"%s\"" % ПРИКЛАД_НОМЕРА,
+    "образи[].речі": "«n», e.g. \"%s\"" % ПРИКЛАД_НОМЕРА,      # «alone» — у правилі `РЯДОК_ЛИШЕ_НОМЕР`
     # «the choice is hers» — лише про її бажання; за свою річ стилістка каже, чому вона
     "образи[].день": "one sentence, up to 25 words: how this outfit lives through her day; where something she "
                      "asked for herself argues with the day, say so gently — that part is hers to decide; where "
                      "an item you chose argues with the day, say why you still chose it",
-    "образи[].свідомо[].річ": "«n» of the item alone",
+    # «alone» уже каже правило `РЯДОК_ЛИШЕ_НОМЕР` (повтор, корінь Е2-промпти)
+    "образи[].свідомо[].річ": "«n»",
     # Полюс — один код. Склеєних («tonal_column|ease_the_knot») і власних назв («tone_on_tone», «free_1»)
     # у записаних відповідях — 137 у 36 відповідях із 282; своя ідея моделі — полюс «free», а назва ідеї — підпис
     "образи[].полюс": "the one idea this outfit follows, a single code; an idea of your own is «free», and its "
                       "«caption» names it",
     # Місце речі на тілі каже вона: код бачить слот, а не як річ вдягнено (корінь Е3-місце-речі) — без її слова
     # правила кольору біля обличчя мовчать. Не знає — пропускає поле: запис лишає «невідомо», не вгадує.
-    "образи[].місце[].річ": "«n» of the item alone; one entry for each item whose wearing you know, and a "
-                            "field you do not know is left out",
-    "образи[].місце[].біля_обличчя": "does it touch or frame her face: a scarf under the chin, earrings, a "
-                                     "collar — yes; a beret on the back of the head, a long pendant at the waist — no",
-    "образи[].місце[].видно": "is it seen from under the outer layer when the layer is worn",
-    "образи[].місце[].розстебнуто": "is the outer layer worn open",
-    "образи[].місце[].слова": "a few words of how you wear it, e.g. «scarf wrapped high under the chin»",
+    # Підпис лише в номера: ключі near_face, visible_under_coat, unbuttoned, words кажуть самі за себе, а довжина
+    # промпту — бюджет кореня Е2-промпти (кожен промпт коротший за ДО)
+    "образи[].місце[].річ": "«n»; only what you know",
     # переліки кодів «one of: …» — тією самою нотацією, що листок-перелік скелета (`протокол.перелік_скелета`)
     "потрібно[].слот": "the kind of item that is missing, " + _ПР.перелік_скелета(_ВМ_П.ТАБЛИЦЯ["slot"], en=True),
     "потрібно[].тип": "its type, " + _ПР.перелік_скелета(_ВМ_П.ТАБЛИЦЯ["item_type"], en=True),
