@@ -1,8 +1,7 @@
 #!/bin/bash
-# Серія (серія.sh) + коміт і пуш після кожної завершеної ситуації. Запуск з теки живий-як-людина-2.
+# Коміт і пуш після кожної завершеної ситуації серії (серія.sh запущено окремо).
 cd "$(dirname "$0")/.."; R=$(git rev-parse --show-toplevel)
-[ -n "$(pgrep -f стенд/серія.sh)" ] || bash стенд/серія.sh >> стенд/серія.лог 2>&1 &
-S=$(pgrep -f "стенд/серія.sh" | head -1); уже=с4_побачення_19_30
+уже=с4_побачення_19_30
 while true; do
   for t in с?_*/; do t=${t%/}
     [ -f "$t/повідомлення.md" ] || continue; case "$уже" in *"$t"*) continue;; esac
@@ -13,7 +12,7 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01FPQuiakbM21KZgeS4BTMCW" && for i in 1 2 3 4; do git push -q origin claude/zhyvyi-yak-liudyna-2 && break; sleep 5; done)
     уже="$уже"$'\n'"$t"; echo "$(date -u +%H:%M:%S) закомічено $t" >> стенд/коміти.лог
   done
-  kill -0 $S 2>/dev/null || { [ "$(wc -l <<<"$уже")" -ge 8 ] && break; sleep 20; [ "$(wc -l <<<"$уже")" -ge 8 ] && break; }
   sleep 30
 done
+  [ "$(wc -l <<<"$уже")" -ge 8 ] && break
 echo ГОТОВО >> стенд/коміти.лог
