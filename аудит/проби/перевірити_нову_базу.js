@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs'), path = require('path'), os = require('os');
 const {spawnSync} = require('child_process');
 const {виконати, живийШлях, підсумокВідтворення} = require('./нова_база.js');
-const {свіжіЗаписи, результатСтенда, вікДіб} = require('./приймання_записів.js');
+const {свіжіЗаписи, результатСтенда, вікДіб, стендБази, середовищеСцени} = require('./приймання_записів.js');
 const {звіритиБазу, порівняти} = require('./храповик_записів.js');
 
 const запис = path.join(__dirname, 'нічні/20261028/б1_концерт_стримано');
@@ -185,7 +185,26 @@ try {
   записати(г, '2026-11-01T01:00:00+00:00');
   assert.equal(тихо(() => виконати([наряд, '--main', г], корінь)), 0);
   assert.match(підсумок(), /\(відтворення не перевірено: нема зібраного показу \(.*\) чи кешу Pyodide/);
-  console.log('нова база: 6 груп перевірок зелені');
+  // 7. Вимір бази `main` йде стендом `main` (15263): дерево `main` дає свій стенд, нема його — стенд гілки; змінні, які
+  // читає саме той стенд, прибираються з середовища, а чужі лишаються.
+  const власнийСтенд = path.join(__dirname, 'рв6_стенд.js');
+  const деревоMain = fs.mkdtempSync(path.join(os.tmpdir(), 'main-дерево-'));
+  try {
+    assert.equal(стендБази(undefined), власнийСтенд);
+    assert.equal(стендБази(деревоMain), власнийСтенд, 'нема стенда в дереві main — стенд гілки');
+    fs.mkdirSync(path.join(деревоMain, 'аудит/проби'), {recursive: true});
+    const стендMain = path.join(деревоMain, 'аудит/проби/рв6_стенд.js');
+    fs.writeFileSync(стендMain, "const а = process.env.ПРАПОР_СТЕНДА_MAIN;\n");
+    assert.equal(стендБази(деревоMain), path.resolve(стендMain), 'є стенд у дереві main — береться він');
+    process.env.ПРАПОР_СТЕНДА_MAIN = '1';
+    try {
+      const сцена = {змінні: {}, обмін: path.join(деревоMain, 'обмін')};
+      assert.equal(середовищеСцени(сцена, path.join(деревоMain, 'вихід'), стендMain).ПРАПОР_СТЕНДА_MAIN, undefined);
+      assert.equal(середовищеСцени(сцена, path.join(деревоMain, 'вихід')).ПРАПОР_СТЕНДА_MAIN, '1',
+        'стенд гілки цього прапора не читає — змінна лишається');
+    } finally { delete process.env.ПРАПОР_СТЕНДА_MAIN; }
+  } finally { fs.rmSync(деревоMain, {recursive: true, force: true}); }
+  console.log('нова база: 7 груп перевірок зелені');
 } finally {
   fs.rmSync(корінь, {recursive: true, force: true});
 }

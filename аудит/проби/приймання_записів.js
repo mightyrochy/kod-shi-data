@@ -87,9 +87,9 @@ function записатиБазу(тека, номери) {
 
 /* Середовище стенда для сцени: режими батьківського живого прогону не змінюють записаний сценарій, а відповіді моделі
    йдуть із запису (`REPLAY_EXCHANGE`/`REPLAY_RECORDINGS`). Одне визначення для приймання й для сторожа `нова_база.js`. */
-function середовищеСцени(сцена, тека) {
+function середовищеСцени(сцена, тека, стенд = path.join(__dirname, 'рв6_стенд.js')) {
   const середовище = {...process.env};
-  const код = fs.readFileSync(path.join(__dirname, 'рв6_стенд.js'), 'utf8');
+  const код = fs.readFileSync(стенд, 'utf8');
   for (const м of код.matchAll(/process\.env\.([\p{Lu}_][\p{Lu}\d_]*)/gu))
     if (!['CHROMIUM', 'NODE_PATH', 'HTTPS_PROXY'].includes(м[1])) delete середовище[м[1]];
   Object.assign(середовище, сцена.змінні, {ZNIMKY: path.join(тека, 'знімки')});
@@ -104,14 +104,24 @@ function середовищеСцени(сцена, тека) {
 }
 
 /* Один запуск стенда на записаних відповідях; його вивід — `лог.txt` у `тека` (знімки — за `ZNIMKY` середовища). */
-function запуститиСтенд(збірка, кеш, сід, середовище, тека) {
+function запуститиСтенд(збірка, кеш, сід, середовище, тека, стенд = path.join(__dirname, 'рв6_стенд.js')) {
   fs.mkdirSync(тека, {recursive: true});
   const лог = fs.openSync(path.join(тека, 'лог.txt'), 'w');
   try {
-    return spawnSync(process.execPath, [path.join(__dirname, 'рв6_стенд.js'),
+    return spawnSync(process.execPath, [стенд,
       'http://127.0.0.1:8765', path.resolve(збірка), path.resolve(кеш), String(сід)],
     {cwd: корінь, env: середовище, stdio: ['ignore', лог, лог], timeout: 600000, windowsHide: true});
   } finally { fs.closeSync(лог); }
+}
+
+/* Стенд для виміру бази `main`: його ж — з дерева `main` (`REPLAY_BASE_ROOT`), а не стенд гілки. Коли гілка міняє умову
+   старту стенда (перепис екрана чекає свого прапорця), стенд гілки на показі `main` кінчається таймаутом, і запис,
+   застарілий уже в `main`, читався зміною гілки (15263). Нема дерева `main` чи його стенда — стенд гілки. */
+function стендБази(коріньБази = process.env.REPLAY_BASE_ROOT) {
+  const власний = path.join(__dirname, 'рв6_стенд.js');
+  if (!коріньБази) return власний;
+  const стенд = path.join(коріньБази, 'аудит/проби/рв6_стенд.js');
+  return fs.existsSync(стенд) ? path.resolve(стенд) : власний;
 }
 
 function виконати() {
@@ -159,8 +169,9 @@ function виконати() {
       let вимірБази = null;
       if (process.env.REPLAY_BASE_BUILD) {
         const текаБази = path.join(тека, 'main');
+        const стенд = стендБази();
         const до = запуститиСтенд(process.env.REPLAY_BASE_BUILD, кеш, сцена.сід,
-          {...середовище, ZNIMKY: path.join(текаБази, 'знімки')}, текаБази);
+          середовищеСцени(сцена, текаБази, стенд), текаБази, стенд);
         вимірБази = результатСтенда(текаБази, до.status === null ? 2 : до.status);
         fs.writeFileSync(path.join(тека, 'вимір-бази.json'), JSON.stringify(вимірБази, null, 1) + '\n');
         if (вимірБази.застарілий) console.log('База main: ' + вимірБази.застарілий.причина);
@@ -198,4 +209,4 @@ function виконати() {
 if (require.main === module) {
   try { виконати(); } catch (помилка) { console.error(помилка); process.exitCode = 2; }
 }
-module.exports = {перелік, серіяДва, свіжіЗаписи, новіЗаписи, результатСтенда, записатиБазу, вікДіб, середовищеСцени, запуститиСтенд};
+module.exports = {перелік, серіяДва, свіжіЗаписи, новіЗаписи, результатСтенда, записатиБазу, вікДіб, середовищеСцени, запуститиСтенд, стендБази};
