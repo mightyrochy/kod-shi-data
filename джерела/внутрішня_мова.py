@@ -3568,6 +3568,15 @@ if _спільні:
                                        "(values: item_cm — item shoulder width from the shop's size chart; "
                                        "body_girth_cm — her shoulder girth, not a width)",
 })
+# Е3-заміна-з-перевіркою з3 (14230): розщеплення змішаних кодів порад — лише пояснення, без складової-заміни
+ЗАЯВИ.update({
+    "declare_focus_for_lone_accent": "she can declare the zone of the lone accent as her focus: then the accent is a "
+                                     "point of emphasis, not noise; the outfit stays as it is",
+    "scheme_family_gap_explained": "why the scheme's family is not on the large items of this outfit; the outfit "
+                                   "stays as it is (values: family — the family's word; reason — elsewhere: it "
+                                   "exists only in slots this outfit does not have, assortment_gap: the selection "
+                                   "has no large items of this family, and that is not a choice against the scheme)",
+})
 
 
 def код_пункту(ід):
