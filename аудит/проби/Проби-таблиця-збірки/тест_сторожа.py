@@ -41,4 +41,15 @@ assert С.розбіжність(тека_збірки()) is None
 assert 'нема' in С.вимагати(т, дозволити_повільний=True)
 os.environ['ТАБЛИЦЯ_ПОВІЛЬНИЙ'] = '1'
 assert 'нема' in С.вимагати(т)
-print('сторож таблиці: 7 звірок — так')
+print('сторож таблиці: звірки (код, дані, фід, нема, битa, згода) — так')
+
+# фід: md5 має збігатися з ключ.фід; інший фід — зупинка (15229)
+т = тека_збірки(); ф = os.path.join(т, 'фід.xml'); open(ф, 'wb').write(b'<a/>')
+assert 'фід інший' in С.розбіжність(т, фід=ф)
+ключ_ф = lambda т: None
+with gzip.open(os.path.join(т, С.ТАБЛИЦЯ), 'rt', encoding='utf-8') as г: тб = json.load(г)
+тб['ключ']['фід'] = hashlib.md5(b'<a/>').hexdigest()
+with gzip.open(os.path.join(т, С.ТАБЛИЦЯ), 'wt', encoding='utf-8') as г: json.dump(тб, г)
+assert С.розбіжність(т, фід=ф) is None
+open(ф, 'ab').write(b' ')
+assert 'фід інший' in С.розбіжність(т, фід=ф)
