@@ -1,0 +1,66 @@
+── ПРОМПТ (8578 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Перевір кожне слово ДО відповіді: до неї — лише «ти», жодного «ви», «ваш» і наказу множини, і про неї жодного «вона», «її», «їй», жодне слово не стоїть двічі поспіль, кожна річ — того самого виду, що у вході (річ образу — іменником коду її виду з переліку, коли він є, і слова при ній узгоджені з цим іменником), а українська назва речі — слово в слово. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: belt · colour code: black · about it: text н=1
+2 — kind code: shorts · colour code: latte · about it: text н=2
+3 — kind code: scarf_generic · colour code: blue · about it: text н=3
+4 — kind code: jewelry_generic · colour code: golden · about it: text н=4
+5 — kind code: top_garment · colour code: grey · about it: text н=5
+6 — kind code: sneakers · colour code: beige · about it: text н=6
+7 — kind code: bag_generic · colour code: light_blue · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; blue — синій; golden — золотий; grey — сірий; latte — лате; light_blue — блакитний.
+
+ТЕКСТИ:
+{
+"1": "A sleek black belt designed to define your waist. Its solid color and classic shape create a clean line that breaks up the outfit and highlights your figure, offering a structured anchor for the rest of your look.",
+"2": "Straight-cut shorts in a neutral shade offer a modern, professional silhouette. Their tailored fit provides comfort and ease while maintaining a polished appearance suitable for an office setting, balancing structure with everyday wearability.",
+"3": "A versatile generic scarf in blue adds a layer of sophistication. Its soft fabric introduces a gentle texture contrast to the smoother garments, while its color brings a cool, calming element that complements your autumn palette.",
+"4": "Golden jewelry pieces add a warm, elegant finish to the ensemble. The metallic sheen catches the light subtly, bringing richness to the grey and neutral tones without overpowering the professional vibe of your outfit.",
+"5": "A fitted top in grey creates a streamlined base for the look. Its close cut follows your body's natural shape, accentuating your defined waist and providing a sleek backdrop that allows the other elements to stand out.",
+"6": "Beige sneakers offer a comfortable yet stylish finish with their soft, earthy tone. Their neutral color bridges the gap between formal wear and casual ease, perfect for moving through your day without sacrificing style.",
+"7": "A light blue bag brings a refreshing pop of cool color to the outfit. Its airy hue contrasts beautifully with the warmer tones in your shoes and jewelry, adding visual interest while remaining understated enough for a professional environment.",
+"8": "I chose this ensemble to bring a refined, professional edge to your office day. The fitted grey top sets a crisp foundation, while the straight-cut shorts ground the look with clean lines that flatter your defined waist. A black belt cinches everything at the narrowest point, creating an instant silhouette that elongates your legs and draws the eye upward. Finished with beige sneakers for effortless movement, golden jewelry for a touch of warmth, and a light blue bag to add a fresh accent.",
+"9": "Keep the sleeves rolled or tucked if the autumn chill requires it, maintaining your professional profile without adding bulk.",
+"10": "Tuck the top neatly into the shorts and secure the belt to emphasize your waistline for a structured, polished look.",
+"11": "Ремінь жіночий Welfare чорний — I chose this black leather belt over the white one to ground the outfit in earth tones appropriate for autumn, avoiding a clash with your cool-toned skin in the 'neat' context.",
+"12": "М'який шарф з бахромою синій — I selected this blue scarf to echo the denim and provide a necessary pop of color from your palette without introducing new hues.",
+"13": "Світло-сірий джинсовий топ — I accept this finding of bare arms in cold season because the fitted top and lightweight scarf allow you to regulate your temperature, creating a deliberate break between the cool fabric and your skin that adds necessary interest to the shoulder zone.",
+"14": "Лляні шорти лате — I accept this finding of linen out of season by viewing it as a textural layering choice: the sheer volume of the fabric provides warmth through insulation, making the seasonal warning a deliberate aesthetic risk rather than a failure.",
+"15": "М'який шарф з бахромою синій — The item is outside her palette's core arc but fits the 'edge' dose to add warmth without breaking the scheme."
+}
+
+── ВІДПОВІДЬ (3441 симв., 22.3 с, HTTP 200) ──
+```json
+{
+"1": "Стильний чорний ремінь, створений для підкреслення твоєї талії. Його однотонний колір і класична форма створюють чітку лінію, яка розбиває образ і виділяє твою фігуру, пропонуючи структуровану основу для всього іншого.",
+"2": "Штани прямого крою нейтрального відтінку дарують сучасний професійний силует. Їхній приталений крій забезпечує комфорт і легкість, зберігаючи водночас вишуканий вигляд, який підходить для офісу, поєднуючи структуру з повсякденною практичністю.",
+"3": "Універсальний синій шарф додає образу елегантності. Його м'яка тканина вносить ніжкий контраст текстури до гладших речей, а колір привносить прохолодний і заспокійливий акцент, який гармонує з твоєю осінньою палітрою.",
+"4": "Золоті ювелірні вироби додають теплий елегантний фінал ансамблю. Металевий блиск ледь помітно ловить світло, привносячи багатство в сірі та нейтральні тони без перевантаження професійного настрою твого образу.",
+"5": "Приталений топ у сірому кольорі створює стрункий фон для цього луку. Його облягаючий крій повторює природні лінії тіла, підкреслюючи тонку талію і забезпечуючи гладку основу, яка дозволяє іншим елементам виділитися.",
+"6": "Бежеві кросівки завершують образ комфортно й стильно завдяки своєму м’якому землянистому відтінку. Їхній нейтральний колір заповнює прогалину між формальним одягом і невимушеною легкістю, що чудово підходить для активного дня без шкоди для стилю.",
+"7": "Світло-блакитна сумка додає свіжий акцент кольору до образу. Її повітряний відтінок красиво контрастує з теплішими тонами у твоїх черевиках і прикрасах, додаючи візуальний інтерес, залишаючись водночас досить стриманою для професійного середовища.",
+"8": "Я обрала цей ансамбль, щоб надати твоєму офісному дню вишуканий і професійний шарм. Приталений сірий топ створює чітку основу, а штани прямого крою підкреслюють образ чистими лініями, які гарно пасують до твоєї точеної талії. Чорний ремінь затягує все в найвужчому місці, миттєво створюючи силует, який видовжує ноги і привертає увагу вгору. Завершується бежевими кросівками для легкості рухів, золотими прикрасами для теплого акценту та світло-блакитною сумкою, щоб додати свіжий штрих.",
+"9": "За потреби підкочуй рукави або заправ їх всередину, зберігаючи професійний вигляд без додавання зайвого об’єму.",
+"10": "Акуратно заправ топ у штани і закріпи ремінь, щоб підкреслити лінію талії для структурованого й охайного вигляду.",
+"11": "Ремінь жіночий Welfare чорний — Я обрала цей шкіряний чорний ремінь замість білого, щоб заземлити образ у осінніх тонах і не створити контраст з твоїм холодним кольором шкіри в «охайному» контексті.",
+"12": "М'який шарф з бахромою синій — Я обрала цей блакитний шарф, щоб підкреслити джинс і додати необхідний колір з твоєї палітри без введення нових відтінків.",
+"13": "Світло-сірий джинсовий топ — Я приймаю відкриття рук у холодну пору року, адже приталений топ і легкий шарф дозволяють тобі регулювати температуру тіла, створюючи навмисний проміжок між холодною тканиною та твоєю шкірою, який додає необхідний інтерес до плечової зони.",
+"14": "Лляні шорти лате — Я приймаю знахідку льону не по сезону як вибір текстурного шару: об’ємна тканина забезпечує тепло за рахунок ізоляції, роблячи сезонне попередження навмисним естетичним ризиком, а не невдачею.",
+"15": "М'який шарф з бахромою синій — Цей предмет знаходиться поза основною палітрою, але він підходить для «акцентного» дозування тепла без порушення схеми."
+}
+```

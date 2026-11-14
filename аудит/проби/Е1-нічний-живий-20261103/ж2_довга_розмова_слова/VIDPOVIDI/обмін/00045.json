@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream wool-blend blazer with a relaxed, slightly oversized cut and long sleeves in #f5f1e6, woven wool blend; ivory silk blouse with a Peter Pan collar and dropped shoulders in #fefae0, 100% mulberry silk; charcoal high-waisted wide-leg trousers with a pleated front and tapered ankle in #36454f, heavy-weight stretch cotton.\\nOstrich-egg print leather ankle boots with a low stacked heel and side zipper in #e8e0d5, calfskin with synthetic lining.\\nGold-plated thin hoop earrings with a brushed finish in #ffd700, 14k gold vermeil; a structured small crossbody bag in textured tan leather with a silver clasp in #d2b48c, full-grain cowhide; a delicate chain necklace in #f4e4bc, sterling silver with rhodium plating.\\n\\nThis outfit works perfectly for an evening celebration in an old library because the cream and charcoal palette reflects beautifully under artificial lighting, ensuring she stands out as requested. The structured blazer paired with flowing trousers balances the \\\"smart\\\" dress code required for a book launch while allowing her to move quickly to catch the last train. The earthy tones complement her warm skin and hair, creating a cohesive look that feels both celebratory and intellectually chic against the backdrop of antique books.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"relaxed, slightly oversized cut with long sleeves\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#f5f1e6\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"Peter Pan collar with dropped shoulders\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#fefae0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-waisted wide-leg with a pleated front and tapered ankle\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"low stacked heel with side zipper\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#e8e0d5\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"thin hoop with a brushed finish\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#ffd700\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"bag\\\",\\n      \\\"details\\\": \\\"structured small crossbody with silver clasp\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#d2b48c\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"necklace\\\",\\n      \\\"details\\\": \\\"delicate chain\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": \\\"#f4e4bc\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":642,\"output_tokens\":433},\"stop_reason\":\"end_turn\"}"
+ }
+}
