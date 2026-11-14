@@ -12,7 +12,7 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01FPQuiakbM21KZgeS4BTMCW" && for i in 1 2 3 4; do git push -q origin claude/zhyvyi-yak-liudyna-2 && break; sleep 5; done)
     уже="$уже"$'\n'"$t"; echo "$(date -u +%H:%M:%S) закомічено $t" >> стенд/коміти.лог
   done
+  [ "$(wc -l <<<"$уже")" -ge 8 ] && break
   sleep 30
 done
-  [ "$(wc -l <<<"$уже")" -ge 8 ] && break
 echo ГОТОВО >> стенд/коміти.лог
