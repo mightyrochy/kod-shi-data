@@ -771,14 +771,22 @@ function Clear-UnstartedClaim([string]$StatePath) {
 
 function Get-FailReason($Err) {
     <# Причина збою одним рядком для стану чекання й примітки в #1856 (blocked-reasons.json): тип винятку, текст, місце
-    в скрипті (файл:рядок). Репозиторій відкритий, а примітка може піти в GitHub, тож шляхи профілю користувача
-    (`C:\Users\<ім'я>`, `/home/<ім'я>`, $env:USERPROFILE), облікові дані в URL і ключі замінено, а рядок скорочено до межі приміток (ConvertTo-NoteText). #>
+    в скрипті (файл:рядок), приватне прибрано (Hide-Private), рядок скорочено до межі приміток (ConvertTo-NoteText). #>
     $text = [string]$Err
     if ($Err -is [System.Management.Automation.ErrorRecord]) {
         $text = $Err.Exception.GetType().Name + ': ' + $Err.Exception.Message
         $info = $Err.InvocationInfo
         if ($null -ne $info -and $info.ScriptName) { $text += ' (' + [IO.Path]::GetFileName([string]$info.ScriptName) + ':' + $info.ScriptLineNumber + ')' }
     } elseif ($Err -is [Exception]) { $text = $Err.GetType().Name + ': ' + $Err.Message }
+    ConvertTo-NoteText ([regex]::Replace((Hide-Private $text), '\s+', ' '))
+}
+
+function Hide-Private([string]$Text) {
+    <# Приватне в тексті прибрано: шляхи профілю користувача (`C:\Users\<ім'я>`, `/home/<ім'я>`, $env:USERPROFILE) — `~`,
+    облікові дані в URL, ключі, `Bearer`, JWT і секретні поля — `***`. Репозиторій відкритий, а текст може піти в GitHub;
+    єдиний фільтр і для рядка причини (Get-FailReason), і для багаторядкового доказу в `<id>.tail.txt`. Рядків не склеює
+    й не скорочує. #>
+    $text = $Text
     if ($env:USERPROFILE -and $env:USERPROFILE -ne [IO.Path]::GetPathRoot($env:USERPROFILE)) { $text = [regex]::Replace($text, [regex]::Escape($env:USERPROFILE), '~', 'IgnoreCase') }
     $text = [regex]::Replace($text, '(?i)(?:[a-z]:)?[\\/]+(?:users|home)[\\/]+(?!public\b)[^\\/\s''"]+', '~')
     $text = [regex]::Replace($text, '(?<=://)[^/@\s]+@', '')
@@ -786,8 +794,7 @@ function Get-FailReason($Err) {
     # Текст помилки рушія (AGY_ERROR, QUOTA, AUTH…) може нести заголовок авторизації, JWT чи секретне поле у відповіді API.
     $text = [regex]::Replace($text, '(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}', 'Bearer ***')
     $text = [regex]::Replace($text, ('\bey' + 'J[A-Za-z0-9_-]{10,}'), '***')
-    $text = [regex]::Replace($text, ('(?i)([A-Za-z0-9_.-]*(?:to' + 'ken|sec' + 'ret|pass' + 'w(?:or)?d|pwd|api[_-]?key|authori[sz]ation|credential|cookie)[A-Za-z0-9_.-]*[''"]?\s*[:=]\s*)(?:"[^"\s]{16,}"|''[^''\s]{16,}''|[^\s,;}"'']{16,})'), '$1***')
-    ConvertTo-NoteText ([regex]::Replace($text, '\s+', ' '))
+    [regex]::Replace($text, ('(?i)([A-Za-z0-9_.-]*(?:to' + 'ken|sec' + 'ret|pass' + 'w(?:or)?d|pwd|api[_-]?key|authori[sz]ation|credential|cookie)[A-Za-z0-9_.-]*[''"]?\s*[:=]\s*)(?:"[^"\s]{16,}"|''[^''\s]{16,}''|[^\s,;}"'']{16,})'), '$1***')
 }
 
 function Get-StartFailReason([string]$StatePath, [string]$Reason = '') {
@@ -2532,6 +2539,15 @@ function Get-UtcProp($Obj, [string]$Name) {
     $v = Get-JsonProp $Obj $Name
     if ($v -is [datetime]) { return Get-UtcStamp $v }
     [string]$v
+}
+
+# Значення з ConvertFrom-Json без дат: PowerShell 7 (і `\/Date()\/` у 5.1) віддає ISO-рядок як [datetime], а за ним і порівняння
+# рядків, і повторний запис у JSON дають не ISO UTC (місцевий час чи формат культури). Дату повертаємо UTC-рядком з Z, як її писали.
+function ConvertTo-PlainJson($Value) {
+    if ($Value -is [datetime]) { return Get-UtcStamp $Value }
+    if ($Value -is [pscustomobject]) { foreach ($p in $Value.PSObject.Properties) { $p.Value = ConvertTo-PlainJson $p.Value }; return $Value }
+    if ($Value -is [array]) { return , @(foreach ($v in $Value) { ConvertTo-PlainJson $v }) }
+    $Value
 }
 
 function Update-Idle([bool]$Busy, [scriptblock]$Send, [bool]$Reset = $false, [string]$Why = '') {

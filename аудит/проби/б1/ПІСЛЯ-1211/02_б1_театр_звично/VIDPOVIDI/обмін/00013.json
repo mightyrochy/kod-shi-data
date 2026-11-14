@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Emerald green silk-blend sheath dress, midi length, deep forest hue (#0a4f3c), flowing drape cut\\nBlack leather ankle boots, mid-calf shaft, matte finish, structured block heel\\nGold vermeil hoop earrings, medium gauge, polished metal\\nPearl drop necklace, 3 cm pendant, cultured freshwater pearls on a thin gold chain\\n\\nThis ensemble fits the evening theatre outing by blending neat sophistication with artistic flair suitable for autumn weather. The emerald silk dress provides an elegant silhouette that complements her skin tones while the black boots offer practical coverage against potential rain without needing a heavy coat. Delicate gold jewelry adds a subtle sparkle under artificial stage lighting, honoring her wish for a polished yet graceful appearance for the play.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"sheath dress\\\",\\n      \\\"details\\\": \\\"Emerald green silk-blend, midi length, deep forest hue, flowing drape cut\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#0a4f3c\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"ankle boots\\\",\\n      \\\"details\\\": \\\"Black leather, mid-calf shaft, matte finish, structured block heel\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"hoop earrings\\\",\\n      \\\"details\\\": \\\"Gold vermeil, medium gauge, polished metal\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#FFD700\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"drop necklace\\\",\\n      \\\"details\\\": \\\"Pearl drop, 3 cm pendant, cultured freshwater pearls on a thin gold chain\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": \\\"#FFFDD0\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":506,\"output_tokens\":288},\"stop_reason\":\"end_turn\"}"
+ }
+}

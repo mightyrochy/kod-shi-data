@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Elegant wool-blend midi skirt in forest green (#2e5a4c), A-line silhouette with a slight flare below the knee, falling to mid-calf, woven texture.  \\nSilk-blend blouse in ivory (#fdfdfd), relaxed fit with a modest V-neckline, long sleeves ending at the wrist, smooth lustrous fabric.  \\nTailored wool blazer in charcoal grey (#36454f), structured shoulder line, single-breasted front with notch lapels, cropped just above the hip.  \\nClosed-toe leather ankle boots in dark brown (#4a3b32), block heel of 5 cm, almond-shaped toe, soft supple leather upper.  \\nA simple gold pendant necklace and pearl stud earrings, delicate metal chains matching the solemn tone.  \\nThis ensemble balances reverence for the church service with warmth and comfort for a family lunch afterward. The natural fabrics like wool and silk are respectful yet suitable for autumn weather in daylight, avoiding anything too revealing or flashy. Neutral tones of green, ivory, and charcoal grey harmonize well with her complexion while adhering to formal dress expectations.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Blouse\\\",\\n      \\\"details\\\": \\\"Relaxed fit silk-blend blouse with a modest V-neckline and long sleeves ending at the wrist\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#fdfdfd\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Blazer\\\",\\n      \\\"details\\\": \\\"Tailored wool blazer with structured shoulder line, single-breasted front, notch lapels, and cropped hem just above the hip\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Skirt\\\",\\n      \\\"details\\\": \\\"Wool-blend midi skirt with A-line silhouette, slight flare below the knee, woven texture\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#2e5a4c\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Boots\\\",\\n      \\\"details\\\": \\\"Closed-toe leather ankle boots with a block heel of 5 cm, almond-shaped toe, and soft supple leather upper\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#4a3b32\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Necklace\\\",\\n      \\\"details\\\": \\\"Simple gold pendant necklace on a delicate metal chain\\\",\\n      \\\"slot\\\": \\\"jewelry\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Earrings\\\",\\n      \\\"details\\\": \\\"Pearl stud earrings on delicate metal posts\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":591,\"output_tokens\":426},\"stop_reason\":\"end_turn\"}"
+ }
+}
