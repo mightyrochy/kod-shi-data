@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 ТЕКА = Path(__file__).resolve().parent
 
@@ -40,6 +40,7 @@ def main():
     матриця = collections.defaultdict(collections.Counter)
     причини = collections.Counter()
     відхилені = []
+    ідентифікатори_з_запиту = []
     до = після = кадрів = 0
     for з in записи:
         п = {п[0]: п[1] for п in з["параметри"]}
@@ -55,6 +56,13 @@ def main():
         матриця[група][ключ] += 1
         причини.update(р.get("причини") or [])
         if р["стан"] in ("доведено", "невідомо"):
+            запит = urlsplit(р["адреса"]).query
+            if запит and not р["факти"].get("id_магазину") and р["канонічний"].get("id_магазину"):
+                ідентифікатори_з_запиту.append(dict(ід=з["ід"], адреса=р["адреса"],
+                    параметри=";".join(sorted(parse_qs(запит))),
+                    id_магазину=р["канонічний"]["id_магазину"],
+                    доказ_словником=isinstance(json.loads(р["запис"]["параметри"]["власник_кадру"]), dict),
+                    стан=р["стан"]))
             докази = [читач.доказ_варіанта(р["запис"], к) for к in р["запис"]["фото"]]
             assert докази == р["докази"]
             відомий = bool(докази) and all(докази)
@@ -76,6 +84,9 @@ def main():
     assert sum(int(р["записів"]) for р in рядки[:-1]) == 13882
     assert sum(int(р["оброблено"]) for р in рядки[:-1]) == 13882
     assert sum(int(р["не_виміряно"]) for р in рядки[:-1]) == 0
+    assert json.loads(рядки[-1]["статуси"]) == collections.Counter(str(р["код"]) for р in результати.values())
+    assert json.loads(рядки[-1]["без_відповіді_статуси"]) == \
+        collections.Counter(str(р["код"]) for р in результати.values() if р["стан"] == "без_відповіді")
     колонки = sorted({к for л in матриця.values() for к in л})
     with (ТЕКА / "порівняння.tsv").open("w", encoding="utf-8", newline="") as потік:
         писач = csv.writer(потік, delimiter="\t", lineterminator="\n")
@@ -88,12 +99,21 @@ def main():
                                delimiter="\t", lineterminator="\n")
         писач.writeheader()
         писач.writerows(відхилені)
+    with (ТЕКА / "ід_із_параметрів.tsv").open("w", encoding="utf-8", newline="") as потік:
+        писач = csv.DictWriter(потік, fieldnames=["ід", "адреса", "параметри", "id_магазину", "доказ_словником", "стан"],
+                               delimiter="\t", lineterminator="\n")
+        писач.writeheader()
+        писач.writerows(ідентифікатори_з_запиту)
+    відбитки = {}
+    for ім in ("лічба.tsv", "результати.jsonl.gz", "порівняння.tsv", "відхилено_читачем.tsv", "ід_із_параметрів.tsv"):
+        байти = (ТЕКА / ім).read_bytes()
+        відбитки[ім] = hashlib.sha256(байти.replace(b"\r\n", b"\n") if ім.endswith(".tsv") else байти).hexdigest()
     звіт = dict(записів=13882, крамниць=len(рядки) - 1, доведено_до=до, доведено_після=після,
                 кадрів_із_доказом=кадрів, стара_межа=межа, причини_з_перетинами=причини,
                 відхилення_читача=collections.Counter(р["вибір_адреси"] for р in відхилені),
+                id_із_параметрів=collections.Counter(р["параметри"] for р in ідентифікатори_з_запиту),
                 знімок_sha256=hashlib.sha256(а.знімок.read_bytes()).hexdigest(),
-                відбитки={ім: hashlib.sha256((ТЕКА / ім).read_bytes()).hexdigest()
-                           for ім in ("лічба.tsv", "результати.jsonl.gz", "порівняння.tsv", "відхилено_читачем.tsv")})
+                формат_відбитків="gzip: незмінені байти; TSV: UTF-8 з переносами LF", відбитки=відбитки)
     (ТЕКА / "звірка.json").write_text(json.dumps(звіт, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(звіт, ensure_ascii=False, indent=2))
 

@@ -97,9 +97,12 @@ def підсумок(записи, результати, вихід):
             "доведено:ricamare:сторінка", "невідомо:кілька_кольорів_JSON_LD",
             "невідомо:кілька_свотчів", "невідомо:кілька_значень_вибору", "невідомо:нема_Product",
             "невідомо:нема_id", "невідомо:нема_кадрів", "невідомо:нема_свідчення_одного_кольору",
-            "невідомо:читач_відхилив_доказ", "без_відповіді", "збій_розбору", "не_виміряно", "статуси"]
+            "невідомо:читач_відхилив_доказ", "без_відповіді", "збій_розбору", "не_виміряно", "статуси",
+            "без_відповіді_статуси"]
+    числові_поля = поля[1:-2]
     лічби = collections.defaultdict(collections.Counter)
     статуси = collections.defaultdict(collections.Counter)
+    відмови = collections.defaultdict(collections.Counter)
     for з in записи:
         д = urlsplit(з["адреса"]).netloc
         лічби[д]["записів"] += 1
@@ -115,21 +118,34 @@ def підсумок(записи, результати, вихід):
             raise ValueError("Неназвана категорія: " + ключ)
         лічби[д][ключ] += 1
         статуси[д][str(р["код"])] += 1
+        if стан == "без_відповіді":
+            відмови[д][str(р["код"])] += 1
     рядки = []
     разом = collections.Counter()
+    разом_статуси = collections.Counter()
+    разом_відмови = collections.Counter()
     for д in sorted(лічби):
         л = лічби[д]
-        assert sum(л[п] for п in поля[3:-1]) == л["записів"]
+        assert sum(л[п] for п in числові_поля[2:]) == л["записів"]
         разом.update(л)
-        рядки.append([д] + [str(л[п]) for п in поля[1:-1]] +
-                     [json.dumps(статуси[д], ensure_ascii=False, sort_keys=True)])
+        разом_статуси.update(статуси[д])
+        разом_відмови.update(відмови[д])
+        рядки.append([д] + [str(л[п]) for п in числові_поля] +
+                     [json.dumps(статуси[д], ensure_ascii=False, sort_keys=True),
+                      json.dumps(відмови[д], ensure_ascii=False, sort_keys=True)])
     assert разом["записів"] == 13882
-    рядки.append(["РАЗОМ"] + [str(разом[п]) for п in поля[1:-1]] + [""])
+    рядки.append(["РАЗОМ"] + [str(разом[п]) for п in числові_поля] +
+                 [json.dumps(разом_статуси, ensure_ascii=False, sort_keys=True),
+                  json.dumps(разом_відмови, ensure_ascii=False, sort_keys=True)])
     вихід.mkdir(parents=True, exist_ok=True)
-    (вихід / "лічба.tsv").write_text("\n".join("\t".join(р) for р in [поля] + рядки) + "\n", encoding="utf-8")
-    with gzip.open(вихід / "результати.jsonl.gz", "wt", encoding="utf-8") as потік:
+    тимчасова_лічба = вихід / "лічба.tsv.tmp"
+    тимчасова_лічба.write_bytes(("\n".join("\t".join(р) for р in [поля] + рядки) + "\n").encode("utf-8"))
+    тимчасова_лічба.replace(вихід / "лічба.tsv")
+    тимчасові_результати = вихід / "результати.jsonl.gz.tmp"
+    with gzip.open(тимчасові_результати, "wt", encoding="utf-8") as потік:
         for р in sorted(результати.values(), key=lambda р: р["ід"]):
             потік.write(json.dumps(р, ensure_ascii=False) + "\n")
+    тимчасові_результати.replace(вихід / "результати.jsonl.gz")
     print(json.dumps(разом, ensure_ascii=False), flush=True)
 
 
