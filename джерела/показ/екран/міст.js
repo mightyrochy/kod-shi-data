@@ -27,7 +27,7 @@ function запитатиПроАдресуМоста(адреса){
   return new Promise(завершити => {
     const в = document.createElement('dialog');
     в.setAttribute('aria-labelledby', 'міст-питання');
-    в.style.cssText = 'max-width:min(34rem,calc(100% - 2rem));border:0;border-radius:18px;padding:24px;color:inherit;background:var(--фон,#fff);box-shadow:0 18px 60px #0008';
+    в.style.cssText = 'max-width:min(34rem,calc(100% - 2rem));border:0;border-radius:18px;padding:24px;color:var(--чорнило,inherit);background:var(--полотно,#fff);box-shadow:0 18px 60px #0008';
     const з = document.createElement('h2'); з.id = 'міст-питання'; з.textContent = 'Використовувати цю адресу?';
     const п = document.createElement('p'); текстЖінціП(п, підписЗНазвоюП(['Адреса: ', {назва: адреса}]));
     п.style.cssText = 'overflow-wrap:anywhere;line-height:1.5';
