@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined knit top in charcoal heather, a relaxed yet structured fit with dropped shoulders to balance the upper silhouette, reaching just above the hips. High-waisted trousers in deep olive green, a wide-leg cut that flows gently from the hip to the ankle for ease of movement throughout the day, falling straight to the floor. Leather loafers in matte black with a low block heel, providing stability and support on hard office flooring while maintaining a sleek profile. A slim leather belt in matching black to subtly define the waistline without adding bulk or restriction. This outfit works perfectly because it adheres strictly to her preference for context-optimal dressing by bridging the gap between professional polish and everyday comfort. The neutral tonal palette of charcoal, olive, and black ensures she looks composed and appropriate for the office environment without drawing unnecessary attention to herself. Soft fabrics like the refined knit allow for freedom of motion during long work hours, satisfying her need to feel at ease while maintaining a neat, put-together appearance.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"top\\\",\\n      \\\"details\\\": \\\"refined knit with relaxed structured fit, dropped shoulders, reaching just above hips\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"bottoms\\\",\\n      \\\"details\\\": \\\"high-waisted wide-leg trousers flowing from hip to ankle, falling straight to floor\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#3B4D2C\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"shoes\\\",\\n      \\\"details\\\": \\\"leather loafers with low block heel for stability and support\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"belt\\\",\\n      \\\"details\\\": \\\"slim leather belt matching black to define waistline\\\",\\n      \\\"slot\\\": \\\"belt\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":554,\"output_tokens\":280},\"stop_reason\":\"end_turn\"}"
+ }
+}
