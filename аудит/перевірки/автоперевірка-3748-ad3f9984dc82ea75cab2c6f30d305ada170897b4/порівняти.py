@@ -6,7 +6,7 @@ sys.path.insert(0, str(root / 'джерела'))
 import feed, fit, hypergraph, місце_речі
 
 modules = []
-for name, ref in [('до', '2095aeeee42ab96544f6aa99f45e82aed123061f'), ('після', 'refs/review/3748')]:
+for name, ref in [('до', '2095aeeee42ab96544f6aa99f45e82aed123061f'), ('після', 'ad3f9984dc82ea75cab2c6f30d305ada170897b4')]:
     code = subprocess.check_output(['git', '-C', str(repo), 'show', ref + ':джерела/композитор_слоти.py']).decode('utf8')
     module = types.ModuleType(name)
     exec(compile(code, str(root / 'джерела/композитор_слоти.py'), 'exec'), module.__dict__)
