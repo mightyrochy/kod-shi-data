@@ -106,7 +106,7 @@ def commit(title):
     msg = TEMP / 'коміт_спроба_6.txt'
     msg.write_text(body, encoding='utf-8')
     subprocess.run(['git', 'add', '--', str(BASE)], check=True)
-    subprocess.run(['git', 'commit', '-F', str(msg)], check=True)
+    subprocess.run(['git', 'commit', '--quiet', '-F', str(msg)], check=True)
 
 
 state = {'початок_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
