@@ -16,6 +16,8 @@ async function знімокРук(стор){
     const стан = і => ({src: і.getAttribute('src') || '', завантажено: !!(і.complete && і.naturalWidth > 0), w: і.naturalWidth || 0,
                         h: і.naturalHeight || 0, завершено: !!і.complete, lazy: і.loading === 'lazy'});
     const картки = Array.from(document.querySelectorAll('[id^="к-"]')).filter(е => /^к-\d+$/.test(е.id));
+    // Після «Новий» П і старі вузли ще можуть існувати в схованому екрані.
+    if (!картки.some(к => к.getClientRects().length > 0)) return null;
     const зЗБ = поз => ((ЗБтой && ЗБ.картки || [])[поз] || null);
     const позиції = картки.map((к, н) => {
       const поз = Number(к.id.slice(2)), дані = (typeof П !== 'undefined' && П && (П.картки || [])[поз]) || зЗБ(поз) || {};

@@ -17,6 +17,25 @@ if '--стан' in sys.argv:
         print(x['текст'].replace('\n', ' ')[:500])
     sys.exit(0)
 summary = {}
+hands = {}
+for path in out.glob('стенд/службове/*/руки.jsonl'):
+    screens = {x['крок']: x for x in (json.loads(line) for line in
+               (path.parent / 'екрани.jsonl').read_text(encoding='utf-8').splitlines())}
+    for line in path.read_text(encoding='utf-8').splitlines():
+        x = json.loads(line)
+        screen = screens.get(x['крок'], {})
+        # Для раннього запущеного стенда: беремо лише кадри галереї,
+        # де на видимому екрані є лічильник образів або навігація карток.
+        if not any('попередній' in e or 'наступний ›' in e or 'Записати вердикт' in e for e in screen.get('елем', [])):
+            continue
+        hands[(path.parent.name, x['прохід'], x['прогін'])] = x
+hand_lines = ['# Руки образів на видимих картках', '',
+              'Ситуація · прохід · номер на екрані → рука; ідентифікатор прогону відрізняє старі картки від нового збирання.', '']
+for (scene, pass_no, run), x in hands.items():
+    for p in x['позиції']:
+        broken = json.dumps(x['поломка_руки_2'], ensure_ascii=False) if p['рука'] == '2' else ''
+        hand_lines.append(f"- {scene} · {pass_no} · {p['позиція']} → рука {p['рука']}; прогін {run}; {broken}")
+(out / 'руки.md').write_text('\n'.join(hand_lines) + '\n', encoding='utf-8')
 for path in sorted(out.glob('с*/підсумок.json')):
     x = json.loads(path.read_text(encoding='utf-8'))
     summary[path.parent.name] = {k: x.get(k) for k in
