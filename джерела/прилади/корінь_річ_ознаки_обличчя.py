@@ -57,7 +57,7 @@ hex-поля й читач форми з `схеми_розбору`. Потік
 і не-місць, останній рядок `місць: <N>` (різні `файл:рядок`); код 0 (формат храповика, `аудит/КОД.md`).
 Запуск: python3 -W ignore джерела/прилади/корінь_річ_ознаки_обличчя.py [--корінь <дерево>] [--стенд]"""
 
-import argparse, collections, os, re, sys
+import argparse, collections, gc, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ознаки_основа import (
     S, ТУТ
@@ -2012,7 +2012,11 @@ def main():
     а = п.parse_args()
     if а.стенд:
         sys.exit(0 if стенд() else 1)
+    # Збирач циклів обходив увесь стан аналізу щоразу, як множилися кортежі міток (прохід 1: 96 с проти 82 с з
+    # рідшим збором): дерева AST після розбору заморожено, поріг збору піднято. Лічби це не міняє.
+    gc.set_threshold(100000, 50, 100)
     ан = Аналіз(а.корінь)
+    gc.freeze()
     ан.прогін()
     if os.environ.get("OZNAKY_CHYTANNYA"):
         with open(os.environ["OZNAKY_CHYTANNYA"], "w", encoding="utf-8") as ф:
