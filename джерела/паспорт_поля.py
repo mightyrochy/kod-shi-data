@@ -14,7 +14,8 @@ import re
     "@вимір_like": {"вісь": ('like', 'event_kind')},
     "@вимір_kind": {"вісь": ('kind', 'event_kind')},
     "подія": {
-        "схема": lambda м: 'her words copied letter for letter, shortened only by leaving words out',
+        "схема": lambda м: ('her words copied letter for letter, shortened only by leaving words out; the time '
+                            'she names (hours and minutes) is left out: its part of the day goes into "пора"'),
         "поле": 'event',
         "її_мовою": True,
         "мова": lambda м: dict(м.або_невідомо(м.вільний), description='подія коротко, її мовою'),
