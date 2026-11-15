@@ -1172,10 +1172,12 @@ _пп1г = [_МШП1.прийняти(_рп1, т) for т in (
     json.dumps({"1": {"текст": "Блуза."}, "2": ["Носи", "розстебнутим."]}, ensure_ascii=False),
     json.dumps({"1": {"1": "Блуза.", "2": "Носи."}}, ensure_ascii=False))]
 звірка("Е2-межі п.4: пропущена кома, недійсний екран, обрив — причина з місцем вади; вхідна форма, значення-обʼєкт чи "
-       "список, обгортка номером — `texts_missing`; нотаток ремонту нема",
+       "список, обгортка номером — `texts_missing` (значення не рядок — ще й `value_not_string` з номерами); нотаток "
+       "ремонту нема",
        [п["причина"].split("(")[0] for п in _пп1г] == ["not_json: invalid_json", "not_json: invalid_json",
                                                     "not_json: json_cut_off", "texts_missing: 2/2",
-                                                    "texts_missing: 2/2", "texts_missing: 2/2"]
+                                                    "texts_missing: 2/2; value_not_string: 1, 2",
+                                                    "texts_missing: 2/2; value_not_string: 1"]
        and all("нотатки" not in п and п["без_відповіді"] == ["опис", "як_носити.0"] for п in _пп1г)
        and all("line=" in п["причина"] for п in _пп1г[:3]),
        json.dumps([п["причина"] for п in _пп1г], ensure_ascii=False))
@@ -1231,7 +1233,8 @@ _ві6752 = _МШП1.прийняти(_пр1, json.dumps({"1": {"текст": "�
        "розбіжність на повтор (`texts_missing`), не ремонт (Е2-межі п.4)",
        _вх6752 == {"1": {"текст": "Низ — баскa.", "виправ": ["баскa"]}, "2": "Wear it."}
        and _ві6752["тексти"] == {"опис": "Низ — баскa.", "як_носити.0": "Носи його."}
-       and _ві6752["без_відповіді"] == ["опис"] and _ві6752["причина"] == "texts_missing: 1/2",
+       and _ві6752["без_відповіді"] == ["опис"] and _ві6752["причина"] == "texts_missing: 1/2; value_not_string: 1"
+       and "лише рядок виправленого тексту, не об'єкт" in _МШП1.промпт(_пр1),
        json.dumps([_вх6752, _ві6752], ensure_ascii=False))
 _вк6751 = _МШП1.прийняти_вхід("verdict_comment", json.dumps({"mine": "pretty", "vetoes": [
     {"slot": "top", "item_type": "top_garment"}, {"quote": "без принта", "pattern": "print_generic"},
