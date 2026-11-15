@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Autumn weather isn't specified, so I've included a light outer layer suited to a cool day.\\n\\nSlim-cut tailored trousers, full length, charcoal grey (#3A3D42), wool-blend crepe\\nFitted blouse, straight cut with a soft collar, hip length, ivory (#F3EDE0), matte viscose-silk blend\\nFine-gauge crew-neck knit, regular cut, hip length, deep burgundy (#6D2433), merino wool\\nTextured blazer, single-breasted, straight cut, hip length, heather taupe (#8B8176), wool tweed\\nLoafers, almond toe, low block heel, dark chocolate brown (#3B2A22), polished leather\\nStructured tote bag, medium size, cognac (#9A5B33), smooth leather\\nThin belt, slim buckle, dark chocolate brown (#3B2A22), leather\\nScarf, light, folded loosely, muted olive (#6E7052), fine wool\\n\\nThis outfit sits right in the neat office band: tailored trousers, a blouse with a refined knit, a textured jacket and loafers are exactly what a polished workday calls for. The charcoal, ivory and taupe form a calm neutral base, and the burgundy knit adds a warm autumn accent without feeling loud. Layering the blouse collar under the knit keeps the look put together, while the tweed blazer and light scarf give warmth for a cool autumn commute. Leather loafers with a low heel stay comfortable through a full day at the desk.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Tailored trousers\\\",\\\"details\\\":\\\"Slim cut, full length, wool-blend crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3A3D42\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Blouse\\\",\\\"details\\\":\\\"Fitted, straight cut with a soft collar, hip length, matte viscose-silk blend\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F3EDE0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Crew-neck knit\\\",\\\"details\\\":\\\"Fine-gauge, regular cut, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#6D2433\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Blazer\\\",\\\"details\\\":\\\"Textured, single-breasted, straight cut, hip length, wool tweed\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#8B8176\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Loafers\\\",\\\"details\\\":\\\"Almond toe, low block heel, polished leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#3B2A22\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Structured tote bag\\\",\\\"details\\\":\\\"Medium size, smooth leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#9A5B33\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Thin belt\\\",\\\"details\\\":\\\"Slim buckle, leather\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#3B2A22\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"Light, folded loosely, fine wool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#6E7052\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2173,\"output_tokens\":482},\"stop_reason\":\"end_turn\"}"
+ }
+}
