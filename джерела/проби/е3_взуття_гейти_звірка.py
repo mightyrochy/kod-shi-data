@@ -3,11 +3,12 @@ import collections, gzip, json, sys
 
 
 def main():
-    """Склад і сила тотожні як мультимножина; таблиця змін сирої й ефективної ваги за правилом."""
+    """Склад тотожний як мультимножина (без сили); таблиця змін сили, сирої й ефективної ваги за правилом."""
     до, після = (json.load(gzip.open(ш, 'rt', encoding='utf-8')) for ш in sys.argv[1:3])
     print('код гейтів ДО', до['код'], 'ПІСЛЯ', після['код'], '· знахідок', len(до['записи']), '→', len(після['записи']))
     ключ = lambda р: json.dumps([р[0], р[1], р[2], sorted(map(str, р[3] or [])), р[4]], ensure_ascii=False)
-    склад = [collections.Counter(map(ключ, д['записи'])) for д in (до, після)]
+    без_сили = lambda р: json.dumps([р[0], р[1], р[2], sorted(map(str, р[3] or []))], ensure_ascii=False)
+    склад = [collections.Counter(map(без_сили, д['записи'])) for д in (до, після)]
     assert склад[0] == склад[1], 'склад різний: %s' % ((склад[0] - склад[1]) + (склад[1] - склад[0]))
     сирі = [collections.Counter((ключ(р), р[5]) for р in д['записи']) for д in (до, після)]
     пари = [collections.Counter((ключ(р), р[6], р[7]) for р in д['записи']) for д in (до, після)]
