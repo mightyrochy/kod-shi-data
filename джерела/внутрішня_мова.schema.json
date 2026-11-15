@@ -4093,7 +4093,7 @@
          "properties": {
           "as_new": {
            "type": "boolean",
-           "description": "true — a new saved case; else the open one is updated"
+           "description": "true — a new one; else updates the open one"
           }
          }
         }
@@ -4492,6 +4492,47 @@
          }
         }
        }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "set_palette"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "gamut": {
+           "type": "string",
+           "minLength": 1,
+           "description": "from palette_options"
+          },
+          "base": {
+           "type": "string",
+           "minLength": 1,
+           "description": "from palette_options"
+          }
+         }
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "looks"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "id": {
+           "type": "string",
+           "minLength": 1,
+           "description": "from saved_looks"
+          }
+         }
+        }
+       }
       }
      ],
      "properties": {
@@ -4505,7 +4546,9 @@
         "switch_profile",
         "confirm_case",
         "set_weather_feel",
-        "find_item"
+        "find_item",
+        "set_palette",
+        "looks"
        ]
       },
       "args": {

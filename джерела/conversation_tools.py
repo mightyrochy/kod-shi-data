@@ -26,13 +26,13 @@ import силует_крої as _СК
 ІНСТРУМЕНТИ = {
     "save_scenario": {
         "робить": "зберегти сценарій цієї розмови в збережені сценарії: новим або оновити відкритий",
-        "для_моделі": "saves this case to her saved cases",
-        "коли": "she asks to save it",
+        "для_моделі": "saves this case",
+        "коли": "",
         # Назви аргументом нема: назва сценарію — її ввід у полі форми, а слова з відповіді моделі на екрані — не її
         # доведені слова (корінь Е2-текст-жінці); без назви оновлення лишає назву відкритого сценарію.
         "вхід": {"type": "object", "additionalProperties": False, "properties": {
             "as_new": {"type": "boolean",
-                       "description": "true — a new saved case; else the open one is updated"}}},
+                       "description": "true — a new one; else updates the open one"}}},
         "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
             "done": {"type": "boolean", "description": "чи збережено"},
             "as_new": {"type": "boolean", "description": "збережено новим, а не оновлено відкритий"},
@@ -42,8 +42,8 @@ import силует_крої as _СК
     },
     "list_scenarios": {
         "робить": "показати її збережені сценарії переліком у розмові: назва, про що, дата; відкрити — дотиком",
-        "для_моделі": "lists her saved cases under your reply",
-        "коли": "she asks to see them",
+        "для_моделі": "lists her saved cases",
+        "коли": "",
         "вхід": {"type": "object", "additionalProperties": False, "properties": {}},
         "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
             "done": {"type": "boolean", "description": "чи прочитано збережені"},
@@ -54,7 +54,7 @@ import силует_крої as _СК
     "open_scenario": {
         "робить": "відкрити збережений сценарій: його паспорт і розмову замість поточних",
         "для_моделі": "opens a saved case (unsaved is lost)",
-        "коли": "she asks to open one",
+        "коли": "",
         "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
             "id": {"type": "string", "minLength": 1, "description": "from saved_cases"}}},
         "переліки": {"id": "saved_cases"},
@@ -68,7 +68,7 @@ import силует_крої as _СК
     "delete_scenario": {
         "робить": "видалити збережений сценарій",
         "для_моделі": "deletes a saved case for good",
-        "коли": "she asks to delete one",
+        "коли": "",
         "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
             "id": {"type": "string", "minLength": 1, "description": "from saved_cases"}}},
         "переліки": {"id": "saved_cases"},
@@ -81,7 +81,7 @@ import силует_крої as _СК
     "new_scenario": {
         "робить": "почати новий сценарій: порожній паспорт і нова розмова",
         "для_моделі": "starts an empty case (unsaved is lost)",
-        "коли": "she asks for a new case",
+        "коли": "",
         "вхід": {"type": "object", "additionalProperties": False, "properties": {}},
         "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
             "done": {"type": "boolean", "description": "чи почато"}}},
@@ -92,7 +92,7 @@ import силует_крої as _СК
     "switch_profile": {
         "робить": "перемкнути активний профіль і відкрити його розмову",
         "для_моделі": "opens a profile and its conversation",
-        "коли": "she asks to switch profiles",
+        "коли": "",
         "вхід": {"type": "object", "additionalProperties": False, "required": ["id"], "properties": {
             "id": {"type": "string", "minLength": 1, "description": "from profiles"}}},
         "переліки": {"id": "profiles"},
@@ -133,7 +133,7 @@ import силует_крої as _СК
     "find_item": {
         "робить": "знайти в каталозі речі за її описом і оцінити кожну для неї",
         "для_моделі": "finds shop items with every code she named, judged for her",
-        "коли": "she asks to find an item to buy",
+        "коли": "",
         "вхід": {"type": "object", "additionalProperties": False, "required": ["item_type"], "properties": {
             "item_type": {"type": "string", "enum": _ПР.ЧИТАЧІ["item_type"][1], "description": "kind of item"},
             "colour": {"type": "string", "enum": _ПР.ЧИТАЧІ["colour"][1], "description": "colour she named"},
@@ -151,14 +151,58 @@ import силует_крої as _СК
                  "оцінку кожної каже репліка",
         "функція": "знайтиРічП",
     },
+    # ПАЛІТРА (екран «Палітра»): ті самі входи, що чипи рядів «Гама» й «Основа» з «хай обере стилістка»; без аргументів —
+    # лише показати (порахувати, коли ще нема). Ключі — з переліку ходу `palette_options`, як чипи рядів: гами завжди,
+    # основи показаної гами — лише порахованої палітри; `stylist` — чип «хай обере стилістка» своєї частини. Частину
+    # ключа звіряє показ (`обратиПалітруП`). Схеми тут нема: її з розмови пише поле паспорта `palette`
+    # (`застосуватиПаспортДоЕкрана`), і другий шлях до того самого вибору дав би моделі два коди однієї дії.
+    "set_palette": {
+        "робить": "показати її палітру в розмові (порахувати, коли ще нема) і обрати гаму чи основу або лишити їх "
+                  "стилістці — як дотик чипа на екрані «Палітра»",
+        "для_моделі": "shows her palette; sets picks",
+        "коли": "",
+        "вхід": {"type": "object", "additionalProperties": False, "properties": {
+            "gamut": {"type": "string", "minLength": 1, "description": "from palette_options"},
+            "base": {"type": "string", "minLength": 1, "description": "from palette_options"}}},
+        "переліки": {"gamut": "palette_options", "base": "palette_options"},
+        "частини": {"gamut": "gamut", "base": "base"},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи палітру пораховано й обрано все назване"},
+            "збій": {"type": "string", "description": "чому палітри нема: кольорів профілю нема чи бракує, збій"},
+            "не_обрано": {"type": "array", "description": "частини, чийого ключа вже нема в ряду"}}},
+        "показ": "картка під реплікою: та сама стрічка обраного, що на екрані «Палітра», і гама; без кольорів профілю — "
+                 "той самий напис, що на екрані",
+        "функція": "обратиПалітруП",
+    },
+    # ЗБЕРЕЖЕНІ ОБРАЗИ («Усі образи»): без ід — перелік тими самими плитками; з ід — дотик плитки.
+    "looks": {
+        "робить": "показати її збережені образи плитками «Усіх образів» або відкрити один — як дотик плитки",
+        "для_моделі": "lists her saved looks; with id opens one",
+        "коли": "",
+        "вхід": {"type": "object", "additionalProperties": False, "properties": {
+            "id": {"type": "string", "minLength": 1, "description": "from saved_looks"}}},
+        "переліки": {"id": "saved_looks"},
+        "вихід": {"type": "object", "additionalProperties": False, "required": ["done"], "properties": {
+            "done": {"type": "boolean", "description": "чи прочитано чи відкрито"},
+            "знайдено": {"type": "boolean", "description": "false — плитки за ід уже нема"},
+            "looks": {"type": "array", "description": "ід плиток у картці: усі, новіші першими, чи відкрита"}}},
+        "показ": "картка під реплікою: плитки «Усіх образів» — мініатюра, номер, дата й випадок, останній вердикт",
+        "функція": "відкритиОбразБібліотекиП",
+    },
 }
 
 # Переліки цього ходу: ім'я в промпті → ключ входу ендпойнта `мова`, який дає показ (`ходомРозмовиП`), і поля запису.
 ПЕРЕЛІКИ = {"saved_cases": {"вхід": "збережені", "поля": {"id": "ід", "name": "назва", "case": "випадок",
                                                          "date": "час", "open": "відкрито"},
-                          "опис": 'saved cases: id, name (her title), case (topic), date, open (current); reason code if unreadable'},
+                          "опис": 'her saved cases (name — her title); reason code if unreadable'},
             "profiles": {"вхід": "профілі", "поля": {"id": "ід", "name": "назва", "open": "відкрито"},
-                         "опис": 'her profiles: id, name (her input), open (active)'}}
+                         "опис": 'her profiles (name — her input)'},
+            "saved_looks": {"вхід": "образи", "поля": {"id": "ід", "look": "номер", "case": "випадок", "date": "дата",
+                                                       "verdict": "вердикт", "open": "відкрито"},
+                            "опис": "reason code if unreadable"},
+            "palette_options": {"вхід": "палітра", "поля": {"id": "ід", "part": "частина", "name": "назва",
+                                                             "advised": "радимо", "chosen": "обрано"},
+                                "опис": "gamuts; bases once shown"}}
 ПЕРЕЛІК_МАКС = 30
 
 
@@ -181,9 +225,18 @@ def коди_для_промпту():
     Тип і коди аргументу — у схемі виклику (`схема_виклику`), тож аргумент із переліком кодів — лише назвою."""
     р = ["Tools (results below your reply):"]
     for ім, о in ІНСТРУМЕНТИ.items():
-        аргументи = "; ".join(к if "enum" in с else "%s — %s" % (к, с["description"])
-                              for к, с in о["вхід"]["properties"].items())
-        р.append("- %s: %s; when %s.%s" % (ім, о["для_моделі"], о["коли"], " args: " + аргументи if аргументи else ""))
+        # аргументи з тим самим описом поспіль — одним рядком: «gamut, base, scheme — from palette»
+        групи = []
+        for к, с in о["вхід"]["properties"].items():
+            опис = None if "enum" in с else с["description"]
+            if групи and опис is not None and групи[-1][1] == опис:
+                групи[-1][0].append(к)
+            else:
+                групи.append(([к], опис))
+        аргументи = "; ".join(", ".join(к) + ("" if опис is None else " — " + опис) for к, опис in групи)
+        # «коли» лише там, де воно більше, ніж «вона просить це зробити»: це каже опис частини `tool` у формі ходу
+        р.append("- %s: %s%s.%s" % (ім, о["для_моделі"], "; when " + о["коли"] if о["коли"] else "",
+                                    " args: " + аргументи if аргументи else ""))
     return tuple(р)
 
 
@@ -275,7 +328,10 @@ def звірити_переліки(результат, d):
     вади = []
     for арг, ім in ІНСТРУМЕНТИ[виклик["name"]]["переліки"].items():
         ід = (виклик.get("args") or {}).get(арг)
-        є = [з[ПЕРЕЛІКИ[ім]["поля"]["id"]] for з in _перелік(d, ім)]
+        # спільний перелік кількох аргументів (`palette_options`) ділить записи частиною: ід гами — не ід основи
+        частина = ІНСТРУМЕНТИ[виклик["name"]].get("частини", {}).get(арг)
+        є = [з[ПЕРЕЛІКИ[ім]["поля"]["id"]] for з in _перелік(d, ім)
+             if частина is None or з.get(ПЕРЕЛІКИ[ім]["поля"]["part"]) == частина]
         if ід is not None and ід not in є:
             вади.append("tool.args.%s: %s is not an id of %s; ids: %s" % (арг, ід, ім, ", ".join(є) or "none"))
     if not вади:
