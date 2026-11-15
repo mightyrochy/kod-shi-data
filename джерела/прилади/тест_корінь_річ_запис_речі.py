@@ -7,7 +7,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from корінь_річ_запис_речі import BeautifulSoup, Прогін, підсумувати, звичайні
+from корінь_річ_запис_речі import BeautifulSoup, Прогін, підсумувати, звичайні, ЧАСТИНА, ШМАТОК
 from річ_запис_походження import HTML, Спостерігач, Позначки, походження
 
 СТОРІНКА = '''<html><head><title>Заголовок вкладки</title></head><body>
@@ -183,6 +183,23 @@ class ШляхЖнив(unittest.TestCase):
         self.assertNotIn('браузер', запис)
         self.assertTrue(підсумувати(запис, читання)[0])
         self.assertTrue(any('TypeError' in в for в in self.прогін.відмови))
+
+    def test_вхід_node_рядками(self):
+        """Текст і атрибут понад ЧАСТИНА: кожен рядок входу node ≤ ЧАСТИНА, а значення доходять до JS цілими."""
+        довге = 'Лляна сорочка з довгими рукавами. ' * (ЧАСТИНА // 20)
+        атрибут = ', '.join(f'https://приклад.test/{і}.jpg 1x' for і in range(ЧАСТИНА // 20))
+        self.assertGreater(len(довге), 2 * ШМАТОК)
+        тіло = СТОРІНКА.replace('Власний опис', довге).replace('<h1>', f'<img srcset="{атрибут}"><h1>').replace(
+            '<article id="товар">', '<article id="товар" itemscope itemtype="https://schema.org/Product">')
+        self.прогін.входи_node.clear()
+        dom, _ = self.прогін.dom(тіло, 'https://приклад.test/product/сорочка', {})
+        найбільший, усього, рядків = self.прогін.входи_node[-1]
+        self.assertLessEqual(найбільший, ЧАСТИНА)
+        self.assertGreater(усього, 2 * ЧАСТИНА)
+        self.assertGreater(рядків, 2)
+        self.assertEqual(str(dom['text']), re.sub(r'\s+', ' ', 'Лляна сорочка' + довге).strip()[:30000])
+        self.assertEqual(str(dom['h1']), 'Лляна сорочка')
+        self.assertEqual(len(dom['imgs']), ЧАСТИНА // 20)
 
     def test_помилка_спостерігача_не_стає_відмовою_продукту(self):
         """Розбіжність між справжнім і позначеним викликом червонить прилад."""
