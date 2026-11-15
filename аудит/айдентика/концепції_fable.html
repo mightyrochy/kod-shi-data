@@ -1,0 +1,921 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Люстерко — три підходи до роботи (Fable, 15.11.2026)</title>
+<style>
+@font-face{font-family:"КТ";src:url("../../шрифти/KyivTypeTitling-VarGX.ttf");font-display:swap}
+@font-face{font-family:"КС";src:url("../../шрифти/KyivTypeSerif-VarGX.ttf");font-display:swap}
+:root{
+  --полотно:#F4F0E8;--аркуш:#FBF9F4;--папір:#EDE7DA;--чорнило:#1B1A17;--олівець:#6B665C;--межа:#D9D1C0;--межа2:#B9AE96;
+  --золото:#8B6B2C;--сигнал:#A6452F;
+  --вишня:#6E1F2B;--буряк:#8E2F4A;--калина:#B5322F;--хвоя:#2F4A3A;--ніч:#1F2B44;--барвінок:#6F7FC2;--жар:#D9772B;
+  --пшениця:#D8BE8A;--кемел:#B98A52;--молоко:#EFE6D6;--глина:#9A5B3C;--льон:#CFC5AE;--попіл:#8C8A86;
+  --дисплей:"КТ",Georgia,"Times New Roman",serif;--голос:"КС",Georgia,"Times New Roman",serif;
+  --текст:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#E3DCCC;color:var(--чорнило);font:16px/1.5 var(--текст)}
+h1,h2,h3,h4{font-family:var(--дисплей);font-weight:500;font-variation-settings:"wght" 520,"CONT" 380;margin:0}
+.вступ,.варіант>.опис,.кінцівка{max-width:980px;margin:0 auto;padding:22px 16px}
+.вступ h1{font-size:30px;line-height:1.15;margin-bottom:10px}
+.вступ p,.опис p{margin:8px 0}
+.мапа{position:sticky;top:0;z-index:5;background:var(--чорнило);display:flex;gap:4px;justify-content:center;padding:8px}
+.мапа a{color:var(--аркуш);text-decoration:none;font:600 14px var(--текст);padding:6px 12px;border:1px solid #5a564c;border-radius:999px}
+.варіант{scroll-margin-top:48px;padding:10px 0 34px;border-top:1px solid var(--межа2)}
+.опис h2{font-size:26px;margin-bottom:6px}
+.опис dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;margin:12px 0 0;font-size:15px}
+.опис dt{font-weight:700}.опис dd{margin:0}
+.ряд{display:flex;flex-wrap:wrap;gap:26px 22px;justify-content:center;padding:6px 0}
+figure{margin:0}
+figcaption{font:600 13px var(--текст);color:var(--олівець);padding:0 4px 6px;max-width:390px}
+figcaption b{color:var(--чорнило)}
+
+/* кадр телефона 390×844 */
+.тел{position:relative;width:390px;height:844px;overflow:hidden;background:var(--полотно);color:var(--чорнило);
+  font:15px/1.4 var(--текст);outline:1px solid var(--межа2)}
+.ноут{position:relative;width:1280px;height:800px;overflow:hidden;background:var(--полотно);font:15px/1.4 var(--текст);
+  outline:1px solid var(--межа2);display:grid}
+.ноут-обгортка{overflow-x:auto;max-width:100vw}
+@media (min-width:900px){.тел{zoom:.78}.ноут{zoom:.86}}
+@media (max-width:899px){.ряд{gap:22px 0}.ноут{zoom:.56}figcaption{padding-left:10px}}
+
+.смуга{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--межа);background:var(--аркуш)}
+.знак{font:500 20px var(--дисплей);font-variation-settings:"wght" 560,"CONT" 500}
+.дія{font-size:14px;color:var(--олівець)}
+.вміст{position:absolute;top:52px;bottom:76px;left:0;right:0;padding:12px 16px;overflow:hidden}
+.вміст.берегом{right:16px}
+.низ{position:absolute;left:0;right:0;bottom:0;height:76px;background:var(--аркуш);border-top:1px solid var(--межа);padding:14px 16px}
+.поле{height:48px;border:1px solid var(--чорнило);border-radius:24px;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 16px;color:var(--олівець);background:#fff}
+.поле i{font-style:normal;display:flex;gap:6px}
+.кр{width:34px;height:34px;border-radius:50%;border:1px solid var(--чорнило);display:grid;place-items:center;color:var(--чорнило);font-size:15px}
+.кр.повна{background:var(--чорнило);color:var(--аркуш)}
+.вона{margin:8px 0 8px auto;max-width:80%;width:fit-content;background:var(--папір);padding:9px 13px;border-radius:14px 14px 3px 14px}
+.ст{margin:8px 0;max-width:92%;font:16px/1.42 var(--голос)}
+.ст::before{content:"—";color:var(--золото);margin-right:6px}
+.ярус{background:var(--аркуш);margin:10px -16px;padding:10px 16px 12px;position:relative}
+.ярус::before,.ярус::after{content:"";position:absolute;left:0;right:0;height:5px;border-top:1px solid var(--чорнило);border-bottom:1px solid var(--чорнило);
+  background:repeating-linear-gradient(90deg,transparent 0 5px,var(--чорнило) 5px 6px)}
+.ярус::before{top:0}.ярус::after{bottom:0}
+.ярус>h4,.мітка{font:500 13px var(--дисплей);letter-spacing:.06em;text-transform:uppercase;color:var(--олівець);display:flex;justify-content:space-between;margin:6px 0 8px}
+.рядок{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--межа);font-size:14.5px}
+.рядок:last-of-type{border-bottom:0}
+.рядок span:first-child{color:var(--олівець);flex:none}
+.рядок span:last-child{text-align:right}
+.рядок.річ>span:first-child{color:inherit;flex:1 1 auto}.рядок.річ>span:last-child{flex:none}
+.нам{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.нам span{border:1px solid var(--чорнило);border-radius:999px;padding:5px 11px;font-size:13px;background:var(--аркуш);white-space:nowrap}
+.нам .обр{background:var(--чорнило);color:var(--аркуш)}
+.нам .тих{border-color:var(--межа2);color:var(--олівець)}
+.кн{display:inline-block;background:var(--чорнило);color:var(--аркуш);border-radius:10px;padding:11px 16px;font-weight:600;font-size:15px;text-align:center}
+.кн.тиха{background:transparent;color:var(--чорнило);border:1px solid var(--чорнило)}
+.кн.вся{display:block;margin-top:10px}
+.др{font-size:12.5px;color:var(--олівець)}
+.вікна{display:flex;gap:10px}
+.вікно{flex:1;height:150px;background:var(--папір);border:1px dashed var(--межа2);display:grid;place-items:center;text-align:center;font-size:12.5px;color:var(--олівець);position:relative}
+.вікно svg{width:64px;height:92px;color:var(--льон)}
+.нитки{display:flex;gap:14px;margin:8px 0 2px}
+.нитки div{font-size:12px;color:var(--олівець);text-align:center}
+.нитки b{display:block;width:44px;height:30px;margin:0 auto 3px;background:repeating-linear-gradient(90deg,var(--к) 0 3px,color-mix(in srgb,var(--к) 80%,#000) 3px 4px)}
+.колаж{background:#fff;border:1px solid var(--межа);display:grid;place-items:center;position:relative}
+.р{display:block}
+.берег{position:absolute;top:52px;bottom:76px;right:0;width:16px;background:var(--папір);border-left:1px solid var(--межа2)}
+.берег b{position:absolute;left:3px;width:9px;height:9px;background:var(--межа2)}
+.берег b.тут{background:var(--золото);outline:2px solid var(--аркуш)}
+.кінець{height:34px;margin:0 -16px;background:
+  linear-gradient(var(--чорнило) 0 2px,transparent 2px 32px,var(--чорнило) 32px),
+  repeating-linear-gradient(45deg,var(--к2) 0 3px,transparent 3px 9px),
+  repeating-linear-gradient(-45deg,var(--к2) 0 3px,transparent 3px 9px),var(--к1)}
+.кінець.б{background:linear-gradient(var(--чорнило) 0 2px,transparent 2px 32px,var(--чорнило) 32px),
+  repeating-linear-gradient(90deg,var(--к2) 0 4px,transparent 4px 12px),linear-gradient(var(--к1) 0 60%,var(--к3) 60%)}
+.кінець.в{background:linear-gradient(var(--чорнило) 0 2px,transparent 2px 32px,var(--чорнило) 32px),
+  repeating-conic-gradient(var(--к2) 0 25%,var(--к1) 0 50%) 0 0/14px 14px}
+.кінець.г{background:linear-gradient(var(--чорнило) 0 2px,transparent 2px 32px,var(--чорнило) 32px),
+  linear-gradient(var(--к1) 0 34%,var(--к2) 34% 50%,var(--к3) 50% 66%,var(--к1) 66%)}
+.ціна{font-variant-numeric:tabular-nums;white-space:nowrap}
+.так{color:#2F6B45;font-weight:700}.ні{color:var(--сигнал);font-weight:700}
+.місця{position:absolute;left:0;right:0;bottom:0;height:64px;display:grid;grid-template-columns:repeat(3,1fr);background:var(--аркуш);border-top:1px solid var(--чорнило)}
+.місця div{display:grid;place-items:center;font:500 15px var(--дисплей);border-right:1px solid var(--межа);color:var(--олівець)}
+.місця .тут{color:var(--чорнило);box-shadow:inset 0 3px 0 var(--золото)}
+.кінцівка{font-size:14px;color:var(--олівець)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="сукня" viewBox="0 0 100 120"><path fill="currentColor" d="M35 5h10q5 8 10 0h10l5 25-8 4 2 16 18 65H18l18-65 2-16-8-4z"/></symbol>
+  <symbol id="жакет" viewBox="0 0 100 120"><path fill="currentColor" d="M30 8l14-4 6 12 6-12 14 4 18 22-8 42-8-4v42H28V68l-8 4-8-42z"/><path d="M50 16v94" stroke="#0003" stroke-width="1.5"/></symbol>
+  <symbol id="блуза" viewBox="0 0 100 120"><path fill="currentColor" d="M32 8l12-4q6 9 12 0l12 4 24 26-10 12-12-10v68H30V36L18 46 8 34z"/></symbol>
+  <symbol id="штани" viewBox="0 0 100 120"><path fill="currentColor" d="M28 4h44l6 112H56l-6-76-6 76H22z"/></symbol>
+  <symbol id="спідниця" viewBox="0 0 100 120"><path fill="currentColor" d="M34 8h32l18 102H16z"/></symbol>
+  <symbol id="пальто" viewBox="0 0 100 120"><path fill="currentColor" d="M30 6l14-4 6 11 6-11 14 4 20 24-6 48-10-4 2 44H24l2-44-10 4-6-48z"/><path d="M50 13v105M38 60h24" stroke="#0003" stroke-width="1.5"/></symbol>
+  <symbol id="туфлі" viewBox="0 0 100 60"><path fill="currentColor" d="M6 44q24-4 38-22l14-8q4 16 34 26 4 10-2 12H8z"/></symbol>
+  <symbol id="черевики" viewBox="0 0 100 60"><path fill="currentColor" d="M22 4h30l2 24q26 4 36 14v12H22z"/></symbol>
+  <symbol id="сумка" viewBox="0 0 100 120"><path fill="currentColor" d="M20 46h60l8 62H12z"/><path d="M34 46q0-30 16-30t16 30" fill="none" stroke="currentColor" stroke-width="5"/></symbol>
+  <symbol id="хустка" viewBox="0 0 100 100"><path fill="currentColor" d="M8 18h84L50 92z"/></symbol>
+  <symbol id="намисто" viewBox="0 0 100 80"><path d="M16 12q34 86 68 0" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-dasharray=".1 14"/></symbol>
+  <symbol id="сережки" viewBox="0 0 100 80"><path fill="currentColor" d="M26 10q14 30 0 52-14-22 0-52zM74 10q14 30 0 52-14-22 0-52z"/></symbol>
+  <symbol id="постать" viewBox="0 0 120 300"><circle cx="60" cy="26" r="16" fill="currentColor"/><path fill="currentColor" d="M44 48h32l20 14 8 88-10 2-8-68-2 66 4 140H68l-8-120-8 120H32l4-140-2-66-8 68-10-2 8-88z"/></symbol>
+  <symbol id="лице" viewBox="0 0 100 130"><ellipse cx="50" cy="52" rx="30" ry="38" fill="currentColor"/><path fill="currentColor" d="M14 130q4-34 36-34t36 34z"/></symbol>
+</svg>
+
+<header class="вступ">
+  <h1>Люстерко: три підходи до роботи, а не три кольори</h1>
+  <p>Макети до дослідження <code>аудит/дослідження_research/айдентика_fable_2026-11-15.md</code>. Усі три варіанти навмисно
+  намальовано <b>тими самими кольорами й шрифтами</b>: різниться те, з чого жінка починає і як рухається. Одяг, постаті й
+  «фото» мальовано кодом; крамниці, ціни й речі — умовні. Кожен кадр телефона — 390×844, головний екран ноутбука — 1280×800.</p>
+  <p><b>А. «Рушник»</b> — усе на одному полотні розмови. <b>Б. «Стрій»</b> — аркуш, на якому образ розкладено шарами.
+  <b>В. «Скриня»</b> — від речі, а не від нагоди.</p>
+</header>
+<nav class="мапа"><a href="#а">А. Рушник</a><a href="#б">Б. Стрій</a><a href="#в">В. Скриня</a></nav>
+
+<!-- ═══════════════ А. РУШНИК ═══════════════ -->
+<section class="варіант" id="а">
+<div class="опис">
+  <h2>А. «Рушник» — усе на одному полотні розмови</h2>
+  <p>Вкладок і окремих екранів нема. Одна нагода — одне довге полотно, що тчеться згори вниз: слова, відповіді й «яруси»
+  між ними (про тебе, нагода, барви, образи, рішення). Праворуч — «берег», карта полотна. «Вдягну це» завершує полотно
+  тканим кінцем, і воно лягає в «сувої».</p>
+  <dl>
+    <dt>Українське</dt><dd>Рушник: вузьке полотно 40–50 см на 2 м, оздоблені кінці, яруси між вузькими стрічками, рушник «на дорогу». Кінець — запис: кольори палітри в її пропорції, рапорт — нагода (плахти звали за кольором основи).</dd>
+    <dt>Не прикраса</dt><dd>Без «рушника» зникає спосіб роботи: один потік, берег-карта, згортання ярусів, упізнавання сценарію за кінцем.</dd>
+    <dt>Проти нинішнього</dt><dd>Простіше: нема вкладок, екрана палітри й аркушів знизу — одне вікно (власник 02.11). Складніше: полотно довге, порівнювати різні нагоди — лише через сувої.</dd>
+  </dl>
+</div>
+<div class="ряд">
+
+<figure><figcaption><b>А1. Знайомство й фото</b> — перший ярус полотна</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">Сувої</span></div>
+  <div class="вміст берегом">
+    <p class="ст">Вітаю. Щоб радити саме тобі, мені треба тебе побачити.</p>
+    <div class="ярус"><h4>Про тебе <span>крок 1/3</span></h4>
+      <div class="вікна">
+        <div class="вікно"><div><svg viewBox="0 0 100 130"><use href="#лице"/></svg><br>Портрет · додано</div></div>
+        <div class="вікно"><div><svg viewBox="0 0 120 300"><use href="#постать"/></svg><br>На повен зріст · додано</div></div>
+      </div>
+      <div class="мітка" style="margin-top:12px">Нитки з твого портрета</div>
+      <div class="нитки"><div><b style="--к:#E3C2A4"></b>шкіра</div><div><b style="--к:#5A3A28"></b>волосся</div><div><b style="--к:#6C7A52"></b>очі</div><div><b style="--к:#B8736A"></b>губи</div></div>
+      <div class="рядок"><span>Ім'я</span><span>Оксана</span></div>
+      <div class="рядок"><span>Обхвати й зріст</span><span>плечі · груди · талія · стегна · зріст ›</span></div>
+      <p class="др">Фото можуть іти в хмарну модель — для кольорів і приміряння.</p>
+    </div>
+    <p class="вона">Додала обидва</p>
+    <p class="ст">Бачу теплий підтон і м'який контраст. Далі — що тобі до лиця: метали, білий, нейтралі.</p>
+    <div class="нам"><span class="обр">Далі</span><span>Поправити колір дотиком</span></div>
+  </div>
+  <div class="берег"><b class="тут" style="top:80px"></b><b style="top:330px"></b><b style="top:430px"></b></div>
+  <div class="низ"><div class="поле">Напиши або скажи…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+</div></figure>
+
+<figure><figcaption><b>А2. Розмова зі стилісткою</b> — картка нагоди як ярус</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">Сувої</span></div>
+  <div class="вміст берегом">
+    <p class="вона">Іду на побачення в ресторан, увечері. Обіцяють дощ.</p>
+    <p class="ст">Гарно. Скільки уваги хочеш до себе?</p>
+    <div class="нам"><span>тихо</span><span>звично</span><span class="обр">помітно</span><span class="тих">на твій розсуд</span></div>
+    <p class="вона">Помітно, але без підборів</p>
+    <div class="ярус"><h4>Нагода <span>згорнути ︿</span></h4>
+      <div class="рядок"><span>Нагода</span><span>побачення, ресторан</span></div>
+      <div class="рядок"><span>Коли й погода</span><span>вечір · дощ, прохолодно</span></div>
+      <div class="рядок"><span>Скільки уваги</span><span>помітно</span></div>
+      <div class="рядок"><span>Що ще важливо</span><span>зручно рухатись</span></div>
+      <div class="рядок"><span>Макіяж</span><span>помітний · хай обере стилістка</span></div>
+      <div class="рядок"><span>Барви</span><span>хай обере стилістка ›</span></div>
+      <span class="кн вся">Зібрати образи</span>
+      <p class="др" style="text-align:center;margin:8px 0 0">Рядок можна поправити дотиком або словами.</p>
+    </div>
+    <p class="ст">Можу ще спитати про прикраси — срібло чи золото? Якщо байдуже, оберу сама.</p>
+  </div>
+  <div class="берег"><b style="top:20px"></b><b class="тут" style="top:300px"></b></div>
+  <div class="низ"><div class="поле">Напиши або скажи…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+</div></figure>
+
+<figure><figcaption><b>А3. Палітра</b> — ярус «Барви»: основа й піткання</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">Сувої</span></div>
+  <div class="вміст берегом">
+    <p class="ст">Основою пропоную вишневий: він тримає твій теплий підтон і не губиться ввечері.</p>
+    <div class="ярус"><h4>Барви <span>згорнути ︿</span></h4>
+      <div style="height:96px;background:
+        linear-gradient(transparent 0 18%,var(--пшениця) 18% 30%,transparent 30% 52%,var(--хвоя) 52% 60%,transparent 60% 78%,var(--молоко) 78% 84%,transparent 84%),
+        repeating-linear-gradient(90deg,var(--вишня) 0 4px,#5a1823 4px 5px)"></div>
+      <div class="рядок"><span>Основа — нитка крізь увесь образ</span><span><b>вишневий</b></span></div>
+      <div class="рядок"><span>Барви до неї</span><span>пшеничний · хвоя · молочний</span></div>
+      <div class="мітка" style="margin-top:10px">Основи родинами, від світлого до темного</div>
+      <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px">
+        <i style="height:30px;background:#E9B7B5"></i><i style="height:30px;background:var(--калина)"></i><i style="height:30px;background:var(--буряк)"></i><i style="height:30px;background:var(--вишня);outline:2px solid var(--чорнило);outline-offset:2px"></i>
+        <i style="height:30px;background:#F0D9A8"></i><i style="height:30px;background:var(--пшениця)"></i><i style="height:30px;background:var(--жар)"></i><i style="height:30px;background:var(--глина)"></i>
+        <i style="height:30px;background:#B9CDB4"></i><i style="height:30px;background:#6E8F6A"></i><i style="height:30px;background:var(--хвоя)"></i><i style="height:30px;background:#1E3027"></i>
+        <i style="height:30px;background:#C5CCEA"></i><i style="height:30px;background:var(--барвінок)"></i><i style="height:30px;background:#3A4A85"></i><i style="height:30px;background:var(--ніч)"></i>
+      </div>
+      <p class="др">Рожево-червоні · жовтогарячі · зелені · сині · <u>нейтралі ›</u> · <u>не радимо, але можна ›</u></p>
+      <div class="нам"><span class="обр">хай обере стилістка</span><span>доповнення</span><span>сусідні</span><span>тріада</span></div>
+    </div>
+    <p class="вона">А буряковий?</p>
+    <p class="ст">Можна: він холодніший, тож поруч з обличчям дам молочне.</p>
+  </div>
+  <div class="берег"><b style="top:20px"></b><b style="top:60px"></b><b class="тут" style="top:300px"></b></div>
+  <div class="низ"><div class="поле">Напиши або скажи…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+</div></figure>
+
+<figure><figcaption><b>А4. Образ із речами каталогу</b> — ярус, образи гортають убік</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">Сувої</span></div>
+  <div class="вміст берегом">
+    <p class="ст">Зібрала чотири. Гортай убік.</p>
+    <div class="ярус"><h4>Образи · 1/4 <span>● ○ ○ ○</span></h4>
+      <div style="display:flex;gap:10px;margin-right:-16px">
+        <div class="колаж" style="flex:none;width:300px;height:250px">
+          <svg class="р" style="position:absolute;left:20px;top:14px;width:120px;height:150px;color:var(--пшениця)"><use href="#пальто"/></svg>
+          <svg class="р" style="position:absolute;left:120px;top:20px;width:112px;height:140px;color:var(--вишня)"><use href="#сукня"/></svg>
+          <svg class="р" style="position:absolute;left:222px;top:30px;width:60px;height:74px;color:var(--глина)"><use href="#сумка"/></svg>
+          <svg class="р" style="position:absolute;left:214px;top:120px;width:60px;height:44px;color:var(--золото)"><use href="#сережки"/></svg>
+          <svg class="р" style="position:absolute;left:100px;top:180px;width:104px;height:60px;color:var(--чорнило)"><use href="#черевики"/></svg>
+        </div>
+        <div class="колаж" style="flex:none;width:60px;height:250px;overflow:hidden"><svg class="р" style="position:absolute;left:8px;top:30px;width:120px;height:150px;color:var(--хвоя)"><use href="#жакет"/></svg></div>
+      </div>
+      <p style="font:15.5px/1.4 var(--голос);margin:10px 0 6px">Вишнева сукня тримає увагу, світлий тренч відповідає дощу й не гасить її. Підбора нема — як ти просила.</p>
+      <div class="рядок річ"><span>Сукня міді, вишнева · крамниця А</span><span class="ціна">3 200 ₴ · <u>Замінити</u></span></div>
+      <div class="рядок річ"><span>Тренч пшеничний · крамниця Б</span><span class="ціна">5 400 ₴ · <u>Замінити</u></span></div>
+      <div class="рядок річ"><span>Челсі чорні · крамниця В</span><span class="ціна">3 900 ₴ · <u>Замінити</u></span></div>
+      <div class="рядок річ"><span>Сумка, сережки</span><span class="ціна">2 150 ₴ · <u>розгорнути</u></span></div>
+      <div class="рядок"><span><b style="color:var(--чорнило)">Разом</b></span><span class="ціна"><b>14 650 ₴</b></span></div>
+    </div>
+  </div>
+  <div class="берег"><b style="top:20px"></b><b style="top:60px"></b><b style="top:100px"></b><b class="тут" style="top:320px"></b></div>
+  <div class="низ"><div class="поле">Напиши або скажи…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+</div></figure>
+
+<figure><figcaption><b>А5. Відгук на образ</b> — «не ця», заміна й кінець полотна</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">Сувої</span></div>
+  <div class="вміст берегом">
+    <div class="ярус" style="margin-top:0"><h4>Образ 1 · вдягнеш?</h4>
+      <div class="рядок річ"><span>Челсі чорні · 3 900 ₴</span><span class="ні">не ця</span></div>
+      <div class="нам"><span>колір</span><span>форма</span><span>незручно</span><span class="обр">ціна</span><span class="тих">не казати</span></div>
+    </div>
+    <p class="вона">Задорогі, і хочу щось нижче</p>
+    <p class="ст">Замінила на лофери — 2 400 ₴, той самий чорний. Решта образу без змін.</p>
+    <div class="ярус"><h4>Образ 1 · оновлено</h4>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="колаж" style="width:108px;height:96px;flex:none">
+          <svg class="р" style="position:absolute;left:6px;top:8px;width:44px;height:56px;color:var(--пшениця)"><use href="#пальто"/></svg>
+          <svg class="р" style="position:absolute;left:46px;top:8px;width:44px;height:56px;color:var(--вишня)"><use href="#сукня"/></svg>
+          <svg class="р" style="position:absolute;left:30px;top:66px;width:44px;height:24px;color:var(--чорнило)"><use href="#туфлі"/></svg>
+        </div>
+        <div style="flex:1"><div class="рядок"><span>Разом</span><span class="ціна"><b>13 150 ₴</b></span></div>
+        <div class="нам" style="margin-bottom:0"><span class="обр">Вдягну це</span><span>Ще ні</span></div></div>
+      </div>
+    </div>
+    <p class="вона">Вдягну це</p>
+    <p class="ст">Гарного вечора. Полотно — в сувоях; впізнаєш за кінцем.</p>
+    <div class="кінець" style="--к1:var(--вишня);--к2:var(--пшениця)"></div>
+    <p class="др" style="text-align:center;margin:6px 0">кінець полотна · побачення, вечір, дощ · 15.11</p>
+    <div class="кінець г" style="--к1:var(--вишня);--к2:var(--пшениця);--к3:var(--хвоя)"></div>
+    <p class="др" style="text-align:center;margin:4px 0 0">ромби — побачення; смуги — барви образу в пропорції речей</p>
+  </div>
+  <div class="берег"><b style="top:20px"></b><b style="top:60px"></b><b style="top:100px"></b><b style="top:140px"></b><b class="тут" style="top:560px"></b></div>
+  <div class="низ"><div class="поле">Напиши або скажи…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+</div></figure>
+
+<figure><figcaption><b>А6. Бібліотека</b> — «сувої»: кожне полотно впізнається за кінцем</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Сувої</span><span class="дія">Нове полотно +</span></div>
+  <div class="вміст" style="bottom:0">
+    <div class="нам" style="margin-top:0"><span class="обр">Нагоди</span><span>Мої речі</span><span>Про мене</span></div>
+    <div class="кінець" style="--к1:var(--вишня);--к2:var(--пшениця)"></div>
+    <div class="рядок річ" style="border:0;padding-bottom:14px"><span><b>Побачення, вечір, дощ</b><br><span class="др">сьогодні · вдягла: вишнева сукня й тренч</span></span><span>›</span></div>
+    <div class="кінець б" style="--к1:var(--ніч);--к2:var(--молоко);--к3:var(--кемел)"></div>
+    <div class="рядок річ" style="border:0;padding-bottom:14px"><span><b>Робота, співбесіда</b><br><span class="др">12.11 · вдягла: темно-синій костюм</span></span><span>›</span></div>
+    <div class="кінець в" style="--к1:var(--молоко);--к2:var(--хвоя)"></div>
+    <div class="рядок річ" style="border:0;padding-bottom:14px"><span><b>Весілля подруги, день</b><br><span class="др">08.11 · не вирішила: 4 образи</span></span><span>›</span></div>
+    <div class="кінець г" style="--к1:var(--льон);--к2:var(--жар);--к3:var(--глина)"></div>
+    <div class="рядок річ" style="border:0;padding-bottom:14px"><span><b>Прогулянка, вихідні</b><br><span class="др">02.11 · вдягла: лляні штани й светр</span></span><span>›</span></div>
+    <div class="кінець" style="--к1:var(--хвоя);--к2:var(--молоко)"></div>
+    <div class="рядок річ" style="border:0;padding-bottom:14px"><span><b>Театр, прем'єра</b><br><span class="др">26.10 · вдягла: оксамитовий жакет</span></span><span>›</span></div>
+    <div class="кінець б" style="--к1:var(--кемел);--к2:var(--чорнило);--к3:var(--молоко)"></div>
+    <div class="рядок річ" style="border:0"><span><b>Подорож, Львів на два дні</b><br><span class="др">19.10 · вдягла: 2 образи</span></span><span>›</span></div>
+    <p class="др">Рапорт кінця — нагода (ромби, прутики, шахівниця, смуги); кольори — палітра цього сценарію.</p>
+  </div>
+</div></figure>
+
+<figure><figcaption><b>А7. Заплановане: «купити чи ні»</b> — річ у розмові стає ярусом</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">Сувої</span></div>
+  <div class="вміст берегом">
+    <div class="вона" style="padding:8px"><div class="колаж" style="width:120px;height:130px"><svg class="р" style="width:96px;height:116px;color:var(--хвоя)"><use href="#жакет"/></svg></div>Бачила такий жакет, 3 900. Брати?</div>
+    <div class="ярус"><h4>Річ · жакет, хвоя <span>згорнути ︿</span></h4>
+      <p style="font:500 24px var(--дисплей);margin:2px 0 6px">Бери, але коротший</p>
+      <div class="рядок"><span class="так">✓ колір</span><span>хвоя навпроти твого вишневого: поруч обидва яскравішають</span></div>
+      <div class="рядок"><span class="ні">✗ на тобі</span><span>довжина до стегна вкорочує ноги — шукай до талії</span></div>
+      <div class="рядок"><span class="так">✓ з чим</span><span>3 образи з твоїх речей</span></div>
+      <div style="display:flex;gap:8px;margin:8px 0">
+        <div class="колаж" style="flex:1;height:70px"><svg class="р" style="width:36px;height:44px;color:var(--хвоя);position:absolute;left:14px"><use href="#жакет"/></svg><svg class="р" style="width:34px;height:44px;color:var(--молоко);position:absolute;right:14px"><use href="#штани"/></svg></div>
+        <div class="колаж" style="flex:1;height:70px"><svg class="р" style="width:36px;height:44px;color:var(--хвоя);position:absolute;left:14px"><use href="#жакет"/></svg><svg class="р" style="width:34px;height:44px;color:var(--вишня);position:absolute;right:14px"><use href="#сукня"/></svg></div>
+        <div class="колаж" style="flex:1;height:70px"><svg class="р" style="width:36px;height:44px;color:var(--хвоя);position:absolute;left:14px"><use href="#жакет"/></svg><svg class="р" style="width:34px;height:44px;color:var(--ніч);position:absolute;right:14px"><use href="#спідниця"/></svg></div>
+      </div>
+      <div class="мітка">Коротші в каталозі</div>
+      <div class="рядок річ"><span>Жакет до талії, хвоя · крамниця Б</span><span class="ціна">4 100 ₴ ›</span></div>
+      <div class="рядок річ"><span>Жакет укорочений, пляшковий · крамниця Г</span><span class="ціна">3 600 ₴ ›</span></div>
+      <div class="нам" style="margin-bottom:0"><span>Порівняти обидва</span><span>Показати на мені</span></div>
+    </div>
+  </div>
+  <div class="берег"><b class="тут" style="top:200px"></b></div>
+  <div class="низ"><div class="поле">Напиши або скажи…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+</div></figure>
+</div>
+
+<figure style="margin-top:26px"><figcaption style="max-width:none;text-align:center"><b>А. Ноутбук, головний екран</b> — полотно в центрі, сувої ліворуч, «на верстаті» праворуч</figcaption>
+<div class="ноут-обгортка"><div class="ноут" style="grid-template-columns:270px 1fr 400px;margin:0 auto">
+  <aside style="background:var(--аркуш);border-right:1px solid var(--межа2);padding:18px 16px">
+    <div class="знак" style="margin-bottom:14px">Люстерко</div>
+    <span class="кн тиха" style="display:block;margin-bottom:16px">Нове полотно +</span>
+    <div class="мітка">Сувої</div>
+    <div class="кінець" style="--к1:var(--вишня);--к2:var(--пшениця);margin:0"></div><p style="margin:4px 0 12px"><b>Побачення, вечір, дощ</b><br><span class="др">тчеться зараз</span></p>
+    <div class="кінець б" style="--к1:var(--ніч);--к2:var(--молоко);--к3:var(--кемел);margin:0"></div><p style="margin:4px 0 12px">Робота, співбесіда<br><span class="др">12.11</span></p>
+    <div class="кінець в" style="--к1:var(--молоко);--к2:var(--хвоя);margin:0"></div><p style="margin:4px 0 12px">Весілля подруги, день<br><span class="др">08.11 · не вирішила</span></p>
+    <div class="кінець г" style="--к1:var(--льон);--к2:var(--жар);--к3:var(--глина);margin:0"></div><p style="margin:4px 0 12px">Прогулянка, вихідні<br><span class="др">02.11</span></p>
+    <div class="мітка" style="margin-top:22px">Ще</div><p style="margin:0">Мої речі<br>Про мене</p>
+  </aside>
+  <main style="position:relative;border-right:1px solid var(--межа2)">
+    <div style="padding:18px 34px 0;max-width:610px;margin:0 auto">
+      <p class="вона">Іду на побачення в ресторан, увечері. Обіцяють дощ. Помітно, але без підборів.</p>
+      <div class="ярус"><h4>Нагода <span>розгорнути ﹀</span></h4><p style="margin:0">побачення, ресторан · вечір, дощ · помітно · зручно рухатись</p></div>
+      <div class="ярус"><h4>Барви <span>розгорнути ﹀</span></h4><p style="margin:0">основа вишневий · пшеничний, хвоя, молочний</p></div>
+      <p class="ст">Зібрала чотири. Перший — на верстаті праворуч; скажи, що не так, або торкнись речі.</p>
+      <div class="ярус"><h4>Образи · 4 <span>згорнути ︿</span></h4>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <div class="колаж" style="height:120px;outline:2px solid var(--чорнило)"><svg class="р" style="width:52px;height:66px;color:var(--пшениця);position:absolute;left:8px"><use href="#пальто"/></svg><svg class="р" style="width:50px;height:64px;color:var(--вишня);position:absolute;right:8px"><use href="#сукня"/></svg></div>
+          <div class="колаж" style="height:120px"><svg class="р" style="width:52px;height:66px;color:var(--хвоя);position:absolute;left:8px"><use href="#жакет"/></svg><svg class="р" style="width:46px;height:64px;color:var(--вишня);position:absolute;right:10px"><use href="#спідниця"/></svg></div>
+          <div class="колаж" style="height:120px"><svg class="р" style="width:52px;height:66px;color:var(--молоко);position:absolute;left:8px"><use href="#блуза"/></svg><svg class="р" style="width:46px;height:64px;color:var(--вишня);position:absolute;right:10px"><use href="#штани"/></svg></div>
+          <div class="колаж" style="height:120px"><svg class="р" style="width:52px;height:66px;color:var(--буряк);position:absolute;left:8px"><use href="#сукня"/></svg><svg class="р" style="width:50px;height:64px;color:var(--ніч);position:absolute;right:8px"><use href="#пальто"/></svg></div>
+        </div>
+      </div>
+      <p class="вона">У першому челсі задорогі</p>
+      <p class="ст">Замінила на лофери — 2 400 ₴. Решта без змін.</p>
+    </div>
+    <div class="низ" style="padding:14px 34px"><div class="поле" style="max-width:610px;margin:0 auto">Напиши або скажи…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+    <div class="берег" style="top:0"><b style="top:30px"></b><b style="top:110px"></b><b style="top:180px"></b><b class="тут" style="top:330px"></b></div>
+  </main>
+  <aside style="background:var(--аркуш);padding:18px 20px">
+    <div class="мітка">На верстаті · образ 1/4</div>
+    <div class="колаж" style="height:300px">
+      <svg class="р" style="position:absolute;left:30px;top:20px;width:140px;height:176px;color:var(--пшениця)"><use href="#пальто"/></svg>
+      <svg class="р" style="position:absolute;left:150px;top:26px;width:132px;height:166px;color:var(--вишня)"><use href="#сукня"/></svg>
+      <svg class="р" style="position:absolute;left:278px;top:40px;width:62px;height:76px;color:var(--глина)"><use href="#сумка"/></svg>
+      <svg class="р" style="position:absolute;left:130px;top:216px;width:110px;height:64px;color:var(--чорнило)"><use href="#туфлі"/></svg>
+    </div>
+    <p style="font:15.5px/1.4 var(--голос);margin:10px 0 6px">Вишнева сукня тримає увагу, світлий тренч відповідає дощу.</p>
+    <div class="рядок річ"><span>Сукня міді, вишнева · крамниця А</span><span class="ціна">3 200 ₴</span></div>
+    <div class="рядок річ"><span>Тренч пшеничний · крамниця Б</span><span class="ціна">5 400 ₴</span></div>
+    <div class="рядок річ"><span>Лофери чорні · крамниця В</span><span class="ціна">2 400 ₴</span></div>
+    <div class="рядок"><span><b style="color:var(--чорнило)">Разом</b></span><span class="ціна"><b>13 150 ₴</b></span></div>
+    <div class="нам"><span class="обр">Вдягну це</span><span>Не ця…</span><span>Зняти з верстата</span></div>
+  </aside>
+</div></div></figure>
+</section>
+
+<!-- ═══════════════ Б. СТРІЙ ═══════════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="аркуш1" viewBox="0 0 358 400">
+    <rect x="1" y="1" width="356" height="398" fill="#FBF9F4" stroke="#1B1A17"/><rect x="5" y="5" width="348" height="390" fill="none" stroke="#B9AE96"/>
+    <text x="179" y="27" text-anchor="middle" font-family="КТ,Georgia,serif" font-size="14" letter-spacing="1">АРКУШ I · ПОБАЧЕННЯ, ВЕЧІР, ДОЩ</text>
+    <use href="#постать" x="115" y="42" width="100" height="250" style="color:#DDD4BF"/>
+    <use href="#сукня" x="103" y="80" width="124" height="150" style="color:#6E1F2B"/>
+    <use href="#туфлі" x="134" y="276" width="62" height="34" style="color:#1B1A17"/>
+    <use href="#пальто" x="10" y="62" width="88" height="108" style="color:#D8BE8A"/>
+    <use href="#сережки" x="282" y="52" width="46" height="36" style="color:#8B6B2C"/>
+    <use href="#сумка" x="276" y="150" width="58" height="72" style="color:#9A5B3C"/>
+    <g stroke="#1B1A17" stroke-width=".8" fill="none"><path d="M54 170v18M136 200L88 262M305 88v12M305 222v14M184 302l54 22"/></g>
+    <g font-family="system-ui,sans-serif" font-size="11.5" fill="#1B1A17">
+      <text x="14" y="200" fill="#6B665C" font-size="10">ВЕРХНІЙ ОДЯГ</text><text x="14" y="214">Тренч пшеничний</text><text x="14" y="228" fill="#6B665C">крамниця Б · 5 400 ₴</text>
+      <text x="14" y="276" fill="#6B665C" font-size="10">СУКНЯ</text><text x="14" y="290">Міді, вишнева</text><text x="14" y="304" fill="#6B665C">крамниця А · 3 200 ₴</text>
+      <g text-anchor="end"><text x="344" y="112" fill="#6B665C" font-size="10">ОЗДОБИ</text><text x="344" y="126">Сережки-краплі</text><text x="344" y="140" fill="#6B665C">крамниця Г · 680 ₴</text>
+      <text x="344" y="248" fill="#6B665C" font-size="10">ДОДАТОК</text><text x="344" y="262">Сумка, глина</text><text x="344" y="276" fill="#6B665C">крамниця Д · 1 470 ₴</text>
+      <text x="344" y="336" fill="#6B665C" font-size="10">ВЗУТТЯ</text><text x="344" y="350">Лофери чорні</text><text x="344" y="364" fill="#6B665C">крамниця В · 2 400 ₴</text></g>
+      <text x="14" y="386" font-size="12.5" font-weight="700">Разом 13 150 ₴</text>
+    </g>
+  </symbol>
+</svg>
+<style>
+.арк{background:var(--аркуш);outline:1px solid var(--чорнило);outline-offset:-1px;box-shadow:inset 0 0 0 5px var(--аркуш),inset 0 0 0 6px var(--межа2);padding:14px}
+.арк>h4{font:500 14px var(--дисплей);letter-spacing:.07em;text-transform:uppercase;text-align:center;margin:2px 0 10px}
+.підпис{font:15.5px/1.42 var(--голос);margin:8px 2px}
+.гортач{display:flex;justify-content:center;gap:14px;font:500 14px var(--дисплей);color:var(--олівець);margin:6px 0}
+.гортач b{color:var(--чорнило);border-bottom:2px solid var(--золото)}
+.плахта{display:grid;grid-template-columns:74px repeat(5,1fr);gap:5px;align-items:center;font-size:11.5px}
+.плахта i{height:46px;background:linear-gradient(transparent 32%,var(--б) 32% 68%,transparent 68%),linear-gradient(90deg,transparent 32%,var(--б) 32% 68%,transparent 68%),var(--о)}
+.плахта em{font-style:normal;text-align:center;color:var(--олівець);line-height:1.15}
+.плахта .т{outline:2px solid var(--чорнило);outline-offset:2px}
+.формула{display:flex;height:84px;border:1px solid var(--межа2)}
+.формула>*{display:flex;flex-direction:column}.формула i{display:block}
+.полиця{display:flex;gap:8px}.полиця>div{flex:1;text-align:center;font-size:12px}
+</style>
+<section class="варіант" id="б">
+<div class="опис">
+  <h2>Б. «Стрій» — аркуш, на якому образ розкладено шарами</h2>
+  <p>Головне — аркуш альбому: постать у центрі, образ на ній шарами, від кожної речі — виносна лінія з назвою, крамницею й
+  ціною, внизу — підпис стилістки. Жінка працює дотиком до шару; розмова — рядком під аркушем. Той самий аркуш служить новому
+  образові, оцінці образу з фото, «купити чи ні» й гардеробу.</p>
+  <dl>
+    <dt>Українське</dt><dd>Стрій як комплекс шарів із місцем і назвою кожного; жанр «постать, сталі речі довкола й напис» («Козак Мамай»); аркуші вбрання Кульчицької й Гончара; палітра-«плахта» (рядок — основа, клітинка — пара); профіль-«витинанка» зі згином; «закріпити» — як віск писанки.</dd>
+    <dt>Не прикраса</dt><dd>Шари — справжні слоти, якими образ збирає код; плахта показує всі пари кольорів, які будуть поруч.</dd>
+    <dt>Проти нинішнього</dt><dd>Простіше: образ видно цілим на постаті, заміна — дотиком до місця, одна форма на всі задачі. Складніше: розмова вже не головний вхід (розходиться з п.7), постать треба вміти малювати з масок речей, яких ще нема.</dd>
+  </dl>
+</div>
+<div class="ряд">
+
+<figure><figcaption><b>Б1. Знайомство й фото</b> — аркуш «Ти»: половина з фото, друга зі згину</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">Альбом</span></div>
+  <div class="вміст">
+    <div class="арк"><h4>Аркуш перший · ти</h4>
+      <div style="display:flex;gap:10px">
+        <div style="width:96px;flex:none">
+          <div class="вікно" style="height:104px"><div><svg viewBox="0 0 100 130" style="width:44px;height:56px"><use href="#лице"/></svg><br>портрет</div></div>
+          <div class="вікно" style="height:104px;margin-top:8px"><div><svg viewBox="0 0 120 300" style="width:30px;height:62px"><use href="#постать"/></svg><br>на повен зріст</div></div>
+          <div class="нитки" style="gap:4px;flex-wrap:wrap"><div><b style="--к:#E3C2A4;width:28px;height:22px"></b></div><div><b style="--к:#5A3A28;width:28px;height:22px"></b></div><div><b style="--к:#6C7A52;width:28px;height:22px"></b></div></div>
+          <p class="др" style="margin:2px 0">шкіра · волосся · очі</p>
+        </div>
+        <svg viewBox="0 0 230 330" style="flex:1;height:330px">
+          <defs><clipPath id="лів"><rect x="0" y="0" width="70" height="330"/></clipPath><clipPath id="прав"><rect x="70" y="0" width="80" height="330"/></clipPath></defs>
+          <use href="#постать" x="10" y="14" width="120" height="300" style="color:#1B1A17" clip-path="url(#лів)"/>
+          <use href="#постать" x="10" y="14" width="120" height="300" style="color:#CFC5AE" clip-path="url(#прав)"/>
+          <path d="M70 4v322" stroke="#8B6B2C" stroke-dasharray="5 4"/>
+          <g stroke="#1B1A17" stroke-width=".8"><path d="M96 70h44M92 100h48M88 136h52M94 168h46"/></g>
+          <g font-family="system-ui,sans-serif" font-size="12" fill="#1B1A17"><text x="144" y="74">плечі 38</text><text x="144" y="104">груди 92</text><text x="144" y="140">талія 74</text><text x="144" y="172">стегна 100</text><text x="144" y="300">зріст 168</text><text x="76" y="326" font-size="10" fill="#8B6B2C">згин</text></g>
+        </svg>
+      </div>
+    </div>
+    <p class="підпис">Ліву половину бачу з фото, праву добудувала зі згину. Поправ число, якщо помилилась, — постать зміниться.</p>
+    <div class="рядок"><span>Що до лиця</span><span>метали · білий · нейтралі ›</span></div>
+    <div class="рядок"><span>Розширені виміри</span><span>3 з 6 ›</span></div>
+    <span class="кн вся">Готово — до першої нагоди</span>
+  </div>
+  <div class="низ"><div class="поле">Скажи або напиши…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+</div></figure>
+
+<figure><figcaption><b>Б2. Розмова зі стилісткою</b> — слова заповнюють аркуш нагоди на очах</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">Альбом</span></div>
+  <div class="вміст">
+    <h3 style="font-size:24px;margin:4px 0 10px">Куди ти збираєшся?</h3>
+    <p class="вона" style="max-width:100%">Іду на побачення в ресторан, увечері. Обіцяють дощ. Помітно, але без підборів.</p>
+    <div class="арк"><h4>Аркуш нагоди</h4>
+      <div class="рядок"><span>Нагода</span><span>побачення, ресторан</span></div>
+      <div class="рядок"><span>Коли й погода</span><span>вечір · дощ, прохолодно</span></div>
+      <div class="рядок"><span>Скільки уваги</span><span>помітно</span></div>
+      <div class="рядок"><span>Що ще важливо</span><span>зручно рухатись</span></div>
+      <div class="рядок"><span>Прикраси</span><span style="color:var(--золото)">ще не знаю</span></div>
+      <div class="нам" style="margin-top:2px"><span>срібло</span><span>золото</span><span>інші</span><span class="тих">на твій розсуд</span></div>
+      <div class="рядок"><span>Барви</span><span>плахта ›</span></div>
+    </div>
+    <p class="підпис">Про прикраси можеш не відповідати — тоді оберу сама.</p>
+    <span class="кн вся">Зібрати образи</span>
+    <p class="др" style="margin:12px 0 4px">Або швидко, без слів:</p>
+    <div class="нам" style="margin:0"><span>звичайний день</span><span>робота</span><span class="обр">побачення</span><span>свято</span><span>театр</span><span>спорт</span><span>подорож</span><span>інше</span></div>
+  </div>
+  <div class="низ"><div class="поле">Скажи або напиши…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+</div></figure>
+
+<figure><figcaption><b>Б3. Палітра</b> — «плахта»: рядок — основа, клітинка — пара кольорів</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">← До аркуша</span></div>
+  <div class="вміст">
+    <div class="арк"><h4>Плахта барв</h4>
+      <div class="плахта">
+        <em></em><em>пшенич&shy;ний</em><em>молоч&shy;ний</em><em>хвоя</em><em>барвін&shy;ковий</em><em>жовто&shy;гарячий</em>
+        <em style="text-align:left;color:var(--чорнило)"><b>вишневий</b><br>радимо</em><i style="--о:var(--вишня);--б:var(--пшениця)"></i><i style="--о:var(--вишня);--б:var(--молоко)"></i><i style="--о:var(--вишня);--б:var(--хвоя)"></i><i class="т" style="--о:var(--вишня);--б:var(--барвінок)"></i><i style="--о:var(--вишня);--б:var(--жар)"></i>
+        <em style="text-align:left">буряковий</em><i style="--о:var(--буряк);--б:var(--пшениця)"></i><i style="--о:var(--буряк);--б:var(--молоко)"></i><i style="--о:var(--буряк);--б:var(--хвоя)"></i><i style="--о:var(--буряк);--б:var(--барвінок)"></i><i style="--о:var(--буряк);--б:var(--жар)"></i>
+        <em style="text-align:left">хвоя</em><i style="--о:var(--хвоя);--б:var(--пшениця)"></i><i style="--о:var(--хвоя);--б:var(--молоко)"></i><i style="--о:var(--хвоя);--б:#1E3027"></i><i style="--о:var(--хвоя);--б:var(--барвінок)"></i><i style="--о:var(--хвоя);--б:var(--жар)"></i>
+        <em style="text-align:left">темно-синій</em><i style="--о:var(--ніч);--б:var(--пшениця)"></i><i style="--о:var(--ніч);--б:var(--молоко)"></i><i style="--о:var(--ніч);--б:var(--хвоя)"></i><i style="--о:var(--ніч);--б:var(--барвінок)"></i><i style="--о:var(--ніч);--б:var(--жар)"></i>
+        <em style="text-align:left">кемел</em><i style="--о:var(--кемел);--б:var(--пшениця)"></i><i style="--о:var(--кемел);--б:var(--молоко)"></i><i style="--о:var(--кемел);--б:var(--хвоя)"></i><i style="--о:var(--кемел);--б:var(--барвінок)"></i><i style="--о:var(--кемел);--б:var(--жар)"></i>
+      </div>
+      <p class="др" style="margin:10px 0 0">Ще основи: <u>рожеві</u> · <u>жовтогарячі</u> · <u>сині</u> · <u>нейтралі</u> · <u>не радимо, але можна</u></p>
+    </div>
+    <p class="підпис">Вишневий із барвінковим — рідша пара: холодне поруч із теплим. Можна; барвінкове тоді тримай далі від обличчя — шарфом або сумкою.</p>
+    <div class="рядок"><span>Основа</span><span><b>вишневий</b></span></div>
+    <div class="рядок"><span>Барви до неї</span><span>пшеничний · молочний · барвінковий</span></div>
+    <div class="нам"><span>хай обере стилістка</span><span class="обр">Беру цю плахту</span></div>
+  </div>
+  <div class="низ"><div class="поле">Скажи або напиши…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+</div></figure>
+
+<figure><figcaption><b>Б4. Образ із речами каталогу</b> — аркуш: постать, шари, підписи, напис стилістки</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">Альбом</span></div>
+  <div class="вміст">
+    <div class="гортач"><b>I</b><span>II</span><span>III</span><span>IV</span></div>
+    <svg viewBox="0 0 358 400" style="width:358px;height:400px;display:block"><use href="#аркуш1"/></svg>
+    <p class="підпис">Вишнева сукня тримає увагу, світлий тренч відповідає дощу й не гасить її. Підбора нема — як ти просила.</p>
+    <div class="нам"><span>Чому так — докладніше</span><span>Приміряти на мені</span></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span style="flex:1">Вдягнеш?</span><span class="кн">Так</span><span class="кн тиха">Ні</span></div>
+    <p class="др" style="margin:10px 0 0">Торкнись речі на аркуші — заміню або закріплю її.</p>
+  </div>
+  <div class="низ"><div class="поле">Скажи або напиши…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+</div></figure>
+
+<figure><figcaption><b>Б5. Відгук на образ</b> — дотик до шару: «не ця», заміни, «закріпити»</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">Альбом</span></div>
+  <div class="вміст" style="bottom:0;padding-bottom:0">
+    <svg viewBox="0 0 358 400" style="width:268px;height:300px;display:block;margin:0 auto"><use href="#аркуш1"/><circle cx="165" cy="292" r="40" fill="none" stroke="#8B6B2C" stroke-width="3"/><circle cx="54" cy="116" r="7" fill="#8B6B2C"/><circle cx="165" cy="150" r="7" fill="#8B6B2C"/></svg>
+    <p class="др" style="text-align:center;margin:6px 0">● закріплено: тренч, сукня · ○ обрано: взуття</p>
+    <div class="арк" style="margin:0 -16px;padding:14px 16px 18px">
+      <h4>Взуття · не ця?</h4>
+      <div class="нам" style="margin-top:0"><span>колір</span><span>форма</span><span>незручно</span><span class="обр">ціна</span><span class="тих">не казати</span></div>
+      <div class="полиця">
+        <div><div class="колаж" style="height:74px;outline:2px solid var(--чорнило)"><svg class="р" style="width:70px;height:40px;color:var(--чорнило)"><use href="#туфлі"/></svg></div>Лофери чорні<br><b>2 400 ₴</b></div>
+        <div><div class="колаж" style="height:74px"><svg class="р" style="width:70px;height:40px;color:var(--глина)"><use href="#туфлі"/></svg></div>Лофери, глина<br><b>2 650 ₴</b></div>
+        <div><div class="колаж" style="height:74px"><svg class="р" style="width:70px;height:40px;color:var(--вишня)"><use href="#черевики"/></svg></div>Челсі вишневі<br><b>3 100 ₴</b></div>
+      </div>
+      <p class="підпис" style="margin:10px 0 8px">Лофери тримають той самий чорний, і вони нижчі. Разом стане 13 150 ₴.</p>
+      <span class="кн вся">Взяти лофери</span><span class="кн тиха вся" style="margin-top:8px">Перезібрати довкола закріпленого</span>
+    </div>
+  </div>
+</div></figure>
+
+<figure><figcaption><b>Б6. Бібліотека</b> — «альбом»: аркуші барвною формулою образу</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Альбом</span><span class="дія">Новий аркуш +</span></div>
+  <div class="вміст" style="bottom:0">
+    <div class="нам" style="margin-top:0"><span class="обр">Аркуші</span><span>Гардероб</span><span>Ти</span></div>
+    <div class="мітка">Святкове</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><div class="формула"><div style="flex:35"><i style="flex:1;background:var(--пшениця)"></i></div><div style="flex:42"><i style="flex:82;background:var(--вишня)"></i><i style="flex:18;background:var(--чорнило)"></i></div><div style="flex:23"><i style="flex:20;background:var(--золото)"></i><i style="flex:45;background:var(--глина)"></i><i style="flex:35;background:var(--аркуш)"></i></div></div><b>Побачення, вечір, дощ</b><br><span class="др">сьогодні · вдягла</span></div>
+      <div><div class="формула"><div style="flex:55"><i style="flex:70;background:var(--хвоя)"></i><i style="flex:30;background:var(--молоко)"></i></div><div style="flex:45"><i style="flex:60;background:var(--молоко)"></i><i style="flex:25;background:var(--золото)"></i><i style="flex:15;background:var(--чорнило)"></i></div></div><b>Весілля подруги, день</b><br><span class="др">08.11 · не вирішила</span></div>
+      <div><div class="формула"><div style="flex:30"><i style="flex:1;background:var(--чорнило)"></i></div><div style="flex:50"><i style="flex:1;background:var(--хвоя)"></i></div><div style="flex:20"><i style="flex:50;background:var(--молоко)"></i><i style="flex:50;background:var(--калина)"></i></div></div><b>Театр, прем'єра</b><br><span class="др">26.10 · вдягла</span></div>
+      <div><div class="формула"><div style="flex:60"><i style="flex:1;background:var(--буряк)"></i></div><div style="flex:40"><i style="flex:55;background:var(--ніч)"></i><i style="flex:45;background:var(--льон)"></i></div></div><b>День народження</b><br><span class="др">11.10 · вдягла</span></div>
+    </div>
+    <div class="мітка" style="margin-top:16px">Щоденне</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><div class="формула"><div style="flex:45"><i style="flex:1;background:var(--ніч)"></i></div><div style="flex:35"><i style="flex:65;background:var(--молоко)"></i><i style="flex:35;background:var(--ніч)"></i></div><div style="flex:20"><i style="flex:1;background:var(--кемел)"></i></div></div><b>Робота, співбесіда</b><br><span class="др">12.11 · вдягла</span></div>
+      <div><div class="формула"><div style="flex:50"><i style="flex:55;background:var(--льон)"></i><i style="flex:45;background:var(--глина)"></i></div><div style="flex:50"><i style="flex:30;background:var(--жар)"></i><i style="flex:70;background:var(--льон)"></i></div></div><b>Прогулянка, вихідні</b><br><span class="др">02.11 · вдягла</span></div>
+    </div>
+    <p class="др" style="margin-top:14px">Формула — площини кольору в пропорції речей образу: аркуш упізнається без підпису.</p>
+  </div>
+</div></figure>
+
+<figure><figcaption><b>Б7. Заплановане: оцінка образу з фото й «купити чи ні»</b> — ті самі шари</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">Альбом</span></div>
+  <div class="вміст">
+    <div class="арк"><h4>Аркуш з твого фото</h4>
+      <div style="display:flex;gap:12px">
+        <div class="вікно" style="width:120px;height:210px;flex:none;border-style:solid"><div><svg viewBox="0 0 120 300" style="width:84px;height:176px;position:relative"><use href="#постать" style="color:#DDD4BF"/><use href="#жакет" x="20" y="44" width="80" height="96" style="color:#8C8A86"/><use href="#штани" x="26" y="130" width="68" height="150" style="color:#1F2B44"/></svg><br>твоє фото</div></div>
+        <div style="flex:1">
+          <div class="рядок"><span class="так">✓</span><span>жакет, попелястий</span></div>
+          <div class="рядок"><span class="так">✓</span><span>штани, темно-сині</span></div>
+          <div class="рядок"><span style="color:var(--золото)">?</span><span>блуза — блакитна чи біла? <u>дотик по фото</u></span></div>
+          <div class="рядок"><span>—</span><span>на фото нема взуття: про нього не судила</span></div>
+          <div class="нам" style="margin-bottom:0"><span class="обр">Усе так</span><span>Поправити</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="підпис">Жакет і штани тримають одну лінію — добре. Попелястий холодніший за твою основу: біля обличчя додай молочне.</p>
+    <div class="арк" style="margin-top:10px"><h4>Купити чи ні · стає в шар «верх»</h4>
+      <div class="полиця">
+        <div><div class="колаж" style="height:86px"><svg class="р" style="width:56px;height:68px;color:var(--молоко)"><use href="#блуза"/></svg></div>Блуза молочна · 1 900 ₴<br><b class="так">бери</b> · іде з 5 твоїх</div>
+        <div><div class="колаж" style="height:86px"><svg class="р" style="width:56px;height:68px;color:var(--барвінок)"><use href="#блуза"/></svg></div>Блуза барвінкова · 1 600 ₴<br><b class="ні">не бери</b> · іде з 1</div>
+      </div>
+    </div>
+    <div class="нам"><span>Поставити на аркуш</span><span>Знайти ще в каталозі</span></div>
+  </div>
+  <div class="низ"><div class="поле">Скажи або напиши…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+</div></figure>
+</div>
+
+<figure style="margin-top:26px"><figcaption style="max-width:none;text-align:center"><b>Б. Ноутбук, головний екран</b> — аркуш на весь центр, ліворуч чотири аркуші, праворуч плахта й розмова</figcaption>
+<div class="ноут-обгортка"><div class="ноут" style="grid-template-columns:220px 1fr 390px;margin:0 auto">
+  <aside style="background:var(--аркуш);border-right:1px solid var(--межа2);padding:18px 16px">
+    <div class="знак" style="margin-bottom:14px">Люстерко</div>
+    <div class="мітка">Аркуші цієї нагоди</div>
+    <svg viewBox="0 0 358 400" style="width:150px;height:168px;display:block;outline:3px solid var(--золото)"><use href="#аркуш1"/></svg><p style="margin:4px 0 10px"><b>I</b> · 13 150 ₴</p>
+    <div class="формула" style="width:150px;height:60px"><div style="flex:55"><i style="flex:1;background:var(--хвоя)"></i></div><div style="flex:45"><i style="flex:70;background:var(--вишня)"></i><i style="flex:30;background:var(--чорнило)"></i></div></div><p style="margin:4px 0 10px">II · 11 800 ₴</p>
+    <div class="формула" style="width:150px;height:60px"><div style="flex:40"><i style="flex:1;background:var(--молоко)"></i></div><div style="flex:60"><i style="flex:80;background:var(--вишня)"></i><i style="flex:20;background:var(--глина)"></i></div></div><p style="margin:4px 0 10px">III · 9 400 ₴</p>
+    <div class="формула" style="width:150px;height:60px"><div style="flex:50"><i style="flex:1;background:var(--ніч)"></i></div><div style="flex:50"><i style="flex:1;background:var(--буряк)"></i></div></div><p style="margin:4px 0 14px">IV · 15 200 ₴</p>
+    <div class="мітка">Альбом</div><p style="margin:0">Аркуші · Гардероб · Ти</p>
+  </aside>
+  <main style="padding:20px 30px;border-right:1px solid var(--межа2)">
+    <svg viewBox="0 0 358 400" style="width:560px;height:626px;display:block;margin:0 auto"><use href="#аркуш1"/></svg>
+    <p class="підпис" style="max-width:560px;margin:12px auto 8px">Вишнева сукня тримає увагу, світлий тренч відповідає дощу й не гасить її. Підбора нема — як ти просила.</p>
+    <div style="display:flex;gap:8px;max-width:560px;margin:0 auto;align-items:center"><span style="flex:1">Вдягнеш?</span><span class="кн">Так</span><span class="кн тиха">Ні</span><span class="кн тиха">Приміряти на мені</span></div>
+  </main>
+  <aside style="background:var(--аркуш);padding:18px 20px;position:relative">
+    <div class="мітка">Плахта барв · основа вишневий</div>
+    <div class="плахта" style="grid-template-columns:repeat(5,1fr)"><i style="--о:var(--вишня);--б:var(--пшениця)"></i><i style="--о:var(--вишня);--б:var(--молоко)"></i><i style="--о:var(--вишня);--б:var(--хвоя)"></i><i style="--о:var(--вишня);--б:var(--барвінок)"></i><i style="--о:var(--вишня);--б:var(--жар)"></i></div>
+    <div class="мітка" style="margin-top:18px">Нагода</div>
+    <p style="margin:0 0 14px">побачення, ресторан · вечір, дощ · помітно · зручно рухатись</p>
+    <div class="мітка">Розмова</div>
+    <p class="вона">У першому челсі задорогі, і хочу нижче</p>
+    <p class="ст">Поставила лофери — 2 400 ₴. Тренч і сукню закріпила, як ти позначила.</p>
+    <p class="вона">А якщо без тренча?</p>
+    <p class="ст">Тоді під дощ — жакет із аркуша II; показати поруч?</p>
+    <div class="низ"><div class="поле">Скажи або напиши…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+  </aside>
+</div></div></figure>
+</section>
+
+<!-- ═══════════════ В. СКРИНЯ ═══════════════ -->
+<style>
+.голос{position:absolute;left:0;right:0;bottom:64px;height:58px;background:var(--аркуш);border-top:1px solid var(--межа);padding:7px 12px;display:flex;align-items:center}
+.голос .поле{height:42px;flex:1}.голос .ст{margin:0;font-size:14.5px;line-height:1.3;max-width:100%}
+.скр{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.клітка{background:#fff;border:1px solid var(--межа);aspect-ratio:1;display:grid;place-items:center;position:relative}
+.клітка svg{width:62%;height:72%}
+.клітка.нема{background:transparent;border:1px dashed var(--межа2);color:var(--олівець);font-size:12px;text-align:center}
+.клітка.обр{outline:2px solid var(--чорнило);outline-offset:1px}
+.клітка em{position:absolute;left:0;right:0;bottom:0;font:normal 10.5px var(--текст);text-align:center;background:var(--аркуш);border-top:1px solid var(--межа);padding:1px 0}
+.жердка{border-top:4px solid var(--чорнило);display:flex;gap:6px;margin:10px 0 6px;position:relative}
+.жердка::before,.жердка::after{content:"";position:absolute;top:-10px;width:4px;height:16px;background:var(--чорнило)}
+.жердка::before{left:0}.жердка::after{right:0}
+.віш{flex:1;text-align:center;padding-top:18px;position:relative;font-size:11.5px;line-height:1.25}
+.віш::before{content:"";position:absolute;top:0;left:50%;width:1px;height:18px;background:var(--чорнило)}
+.віш svg{display:block;margin:0 auto 4px;width:56px;height:70px}
+.віш u{display:inline-block;text-decoration:none;border:1px solid var(--чорнило);border-radius:3px;padding:0 5px;font-size:10.5px;margin-top:2px}
+.віш u.куп{border-color:var(--золото);background:var(--золото);color:#fff}
+.розподіл{display:flex;height:34px;border:1px solid var(--межа2)}
+.порівн{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.порівн>div{background:var(--аркуш);border:1px solid var(--межа2);padding:8px}
+.порівн .рядок{font-size:12.5px;padding:5px 0}
+</style>
+<section class="варіант" id="в">
+<div class="опис">
+  <h2>В. «Скриня» — від речі, а не від нагоди</h2>
+  <p>Початок — не «куди збираєшся», а «що в тебе є». Три сталі місця, які ніколи не переїжджають: <b>Скриня</b> (свої речі),
+  <b>Жердка</b> (образи, наготовлені на день) і <b>Ярмарок</b> (каталог крамниць: пошук речі й «купити чи ні»). Стилістка —
+  рядок унизу в кожному місці; розмова починається від речі. Образ складається з «мого» й «докупити», тож видно, скільки
+  коштує не образ, а те, чого бракує.</p>
+  <dl>
+    <dt>Українське</dt><dd>Скриня зі святковим, щоденним і прискринком, «скриню дбати» як багаторічне збирання; жердка для одягу й сталий план хати, де кожна справа має місце; стрій, у якому річ живе десятиліттями й поєднується з різним.</dd>
+    <dt>Не прикраса</dt><dd>Інший порядок роботи — від наявного до потрібного; дає один дім гардеробу з фото, «образу під цю річ», пошуку речі й «допомогти купити».</dd>
+    <dt>Проти нинішнього</dt><dd>Простіше: «купити чи ні» спирається на свої речі, образи дешевші, місця сталі. Складніше: без розпізнавання речей з фото скриня порожня й варіант не працює; хто не хоче фотографувати речі, має гірший вхід; три місця — знову навігація.</dd>
+  </dl>
+</div>
+<div class="ряд">
+
+<figure><figcaption><b>В1. Знайомство й фото</b> — себе і перші три речі: скриня починається одразу</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Люстерко</span><span class="дія">крок 1/2</span></div>
+  <div class="вміст" style="bottom:122px">
+    <h3 style="font-size:24px;margin:4px 0 10px">Заведімо твою скриню</h3>
+    <div class="мітка">Ти</div>
+    <div class="вікна">
+      <div class="вікно" style="height:118px"><div><svg viewBox="0 0 100 130" style="width:44px;height:56px"><use href="#лице"/></svg><br>портрет</div></div>
+      <div class="вікно" style="height:118px"><div><svg viewBox="0 0 120 300" style="width:30px;height:66px"><use href="#постать"/></svg><br>на повен зріст</div></div>
+      <div style="flex:1"><div class="нитки" style="flex-direction:column;gap:6px;margin:0"><div style="display:flex;gap:8px;align-items:center"><b style="--к:#E3C2A4;margin:0"></b>шкіра</div><div style="display:flex;gap:8px;align-items:center"><b style="--к:#5A3A28;margin:0"></b>волосся</div><div style="display:flex;gap:8px;align-items:center"><b style="--к:#6C7A52;margin:0"></b>очі</div></div></div>
+    </div>
+    <div class="мітка" style="margin-top:16px">Перші три речі<span>найчастіші</span></div>
+    <div class="скр" style="grid-template-columns:repeat(3,1fr)">
+      <div class="клітка обр"><svg style="color:var(--кемел)"><use href="#пальто"/></svg></div>
+      <div class="клітка нема"><div>+ фото<br>речі</div></div>
+      <div class="клітка нема"><div>+ фото<br>речі</div></div>
+    </div>
+    <div class="рядок" style="margin-top:8px"><span>Бачу</span><span>пальто · кемел · вовна — так?</span></div>
+    <div class="нам"><span class="обр">Так</span><span>Поправити колір дотиком</span><span>Це не пальто</span></div>
+    <p class="др">Річ вирізаю з фото сама. У святкове чи щоденне — розкладу, а ти переставиш.</p>
+    <span class="кн вся">Далі — до скрині</span>
+    <p class="др" style="text-align:center;margin:10px 0 0"><u>Не хочу фотографувати речі — зібрати все з ярмарку</u></p>
+  </div>
+  <div class="голос"><p class="ст">Порожня скриня — не біда: почну з ярмарку, а своє додаси, коли схочеш.</p></div>
+  <div class="місця"><div class="тут">Скриня</div><div>Жердка</div><div>Ярмарок</div></div>
+</div></figure>
+
+<figure><figcaption><b>В2. Розмова зі стилісткою</b> — починається від речі: «з чим і куди?»</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Скриня</span><span class="дія">← усі речі</span></div>
+  <div class="вміст" style="bottom:122px">
+    <div style="display:flex;gap:12px;align-items:center">
+      <div class="клітка обр" style="width:92px;flex:none"><svg style="color:var(--кемел)"><use href="#пальто"/></svg></div>
+      <div><b>Пальто, кемел</b><br><span class="др">моє · щоденне · вдягала 9 разів</span><h3 style="font-size:22px;margin:6px 0 0">З чим і куди його?</h3></div>
+    </div>
+    <p class="вона">На побачення в суботу, ресторан, увечері. Буде дощ. І без підборів.</p>
+    <p class="ст">Пальто лишаю головним. Під нього — сукня чи штани?</p>
+    <div class="нам"><span class="обр">сукня</span><span>штани</span><span>спідниця</span><span class="тих">на твій розсуд</span></div>
+    <div class="мітка" style="margin-top:12px">Нагода</div>
+    <div class="рядок"><span>Довкола чого</span><span><b>пальто, кемел</b> — моє</span></div>
+    <div class="рядок"><span>Куди й коли</span><span>побачення · субота, вечір</span></div>
+    <div class="рядок"><span>Погода</span><span>дощ, прохолодно</span></div>
+    <div class="рядок"><span>Що ще важливо</span><span>без підборів</span></div>
+    <div class="рядок"><span>Брати</span><span>спершу зі скрині, решту з ярмарку</span></div>
+    <span class="кн вся">Зібрати з цим пальтом</span>
+    <p class="др" style="margin:12px 0 4px">Або без речі, одразу нагода:</p>
+    <div class="нам" style="margin:0"><span>звичайний день</span><span>робота</span><span>побачення</span><span>свято</span><span>театр</span><span>спорт</span><span>подорож</span><span>інше</span></div>
+  </div>
+  <div class="голос"><div class="поле">Скажи або напиши…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+  <div class="місця"><div class="тут">Скриня</div><div>Жердка</div><div>Ярмарок</div></div>
+</div></figure>
+
+<figure><figcaption><b>В3. Палітра</b> — барви скрині проти барв, що до лиця: видно, чого бракує</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Скриня</span><span class="дія">барви</span></div>
+  <div class="вміст" style="bottom:122px">
+    <div class="мітка">Що вже є у твоїй скрині<span>16 речей</span></div>
+    <div class="розподіл"><i style="flex:30;background:var(--ніч)"></i><i style="flex:22;background:var(--чорнило)"></i><i style="flex:18;background:var(--молоко)"></i><i style="flex:14;background:var(--кемел)"></i><i style="flex:10;background:var(--попіл)"></i><i style="flex:6;background:var(--жар)"></i></div>
+    <p class="др" style="margin:4px 0 0">темно-синій 5 · чорний 4 · молочний 3 · кемел 2 · попелястий 1 · жовтогарячий 1</p>
+    <div class="мітка" style="margin-top:16px">Що до лиця тобі</div>
+    <div class="нитки" style="gap:6px;justify-content:space-between"><div><b style="--к:var(--вишня);outline:2px solid var(--чорнило);outline-offset:2px"></b>вишне&shy;вий</div><div><b style="--к:var(--буряк)"></b>буря&shy;ковий</div><div><b style="--к:var(--хвоя)"></b>хвоя</div><div><b style="--к:var(--ніч)"></b>темно-синій</div><div><b style="--к:var(--кемел)"></b>кемел</div><div><b style="--к:var(--молоко)"></b>молоч&shy;ний</div><div><b style="--к:var(--пшениця)"></b>пше&shy;ничний</div></div>
+    <div class="мітка" style="margin-top:16px">Збіг</div>
+    <div class="рядок"><span>Є й до лиця</span><span>темно-синій · кемел · молочний</span></div>
+    <div class="рядок"><span>Є, та не до лиця</span><span>чорний, попелястий — <u>не радимо біля обличчя, але можна</u></span></div>
+    <div class="рядок"><span>До лиця, а нема</span><span><b>вишневий · буряковий · хвоя</b></span></div>
+    <p class="підпис">Тобі бракує теплої барви біля обличчя. Одна вишнева річ піде з шістьма твоїми.</p>
+    <div class="мітка">Основа образу на суботу</div>
+    <div class="нам"><span class="обр">вишневий — докупити</span><span>темно-синій — є</span><span>кемел — є</span><span>хай обере стилістка</span><span>усі кольори ›</span></div>
+  </div>
+  <div class="голос"><div class="поле">Скажи або напиши…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+  <div class="місця"><div class="тут">Скриня</div><div>Жердка</div><div>Ярмарок</div></div>
+</div></figure>
+
+<figure><figcaption><b>В4. Образ із речами каталогу</b> — на жердці: «моє» і «докупити», ціна лише за те, чого бракує</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Жердка</span><span class="дія">образ 1 з 3 ›</span></div>
+  <div class="вміст" style="bottom:122px">
+    <div class="нам" style="margin-top:0"><span>сьогодні</span><span class="обр">сб · побачення</span><span>нд</span><span class="тих">+ нагода</span></div>
+    <div class="жердка">
+      <div class="віш"><svg style="color:var(--кемел)"><use href="#пальто"/></svg>Пальто<br><u>моє</u></div>
+      <div class="віш"><svg style="color:var(--вишня)"><use href="#сукня"/></svg>Сукня міді<br><u class="куп">2 400 ₴</u></div>
+      <div class="віш"><svg viewBox="0 0 100 60" style="color:var(--чорнило);height:40px;margin-top:30px"><use href="#туфлі"/></svg>Лофери<br><u>моє</u></div>
+      <div class="віш"><svg style="color:var(--глина);width:46px"><use href="#сумка"/></svg>Сумка<br><u>моє</u></div>
+      <div class="віш"><svg viewBox="0 0 100 80" style="color:var(--золото);height:40px;margin-top:30px"><use href="#сережки"/></svg>Сережки<br><u class="куп">680 ₴</u></div>
+    </div>
+    <div class="рядок річ"><span><b>3 речі твої · докупити 2</b></span><span class="ціна"><b>3 080 ₴</b></span></div>
+    <div class="рядок річ"><span>Сукня міді, вишнева · крамниця А</span><span><u>Замінити</u></span></div>
+    <div class="рядок річ"><span>Сережки-краплі · крамниця Г</span><span><u>Замінити</u></span></div>
+    <p class="підпис">Вишневе під кемел — тепла пара довкола твого пальта. Лофери твої, підбора нема. Сережки можна не брати: тоді 2 400 ₴.</p>
+    <div class="нам"><span>Без покупок — лише зі скрині</span><span>Ще образ із цим пальтом</span><span>Приміряти на мені</span></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><span style="flex:1">Вдягнеш?</span><span class="кн">Так</span><span class="кн тиха">Ні</span></div>
+    <p class="др" style="margin:10px 0 0">Торкнись речі на жердці — заміню її зі скрині або з ярмарку.</p>
+  </div>
+  <div class="голос"><div class="поле">Скажи або напиши…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+  <div class="місця"><div>Скриня</div><div class="тут">Жердка</div><div>Ярмарок</div></div>
+</div></figure>
+
+<figure><figcaption><b>В5. Відгук на образ</b> — «не ця»: заміна зі скрині або з ярмарку, свої слова</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Жердка</span><span class="дія">сб · побачення</span></div>
+  <div class="вміст" style="bottom:122px">
+    <div class="мітка">Сукня міді, вишнева · не ця?</div>
+    <div class="нам" style="margin-top:0"><span>колір</span><span>форма</span><span class="обр">довжина</span><span>ціна</span><span class="тих">не казати</span></div>
+    <p class="вона">Хочу довшу, щоб нижче коліна</p>
+    <div class="мітка" style="margin-top:12px">Замість неї — зі скрині<span>0 ₴</span></div>
+    <div class="скр">
+      <div><div class="клітка"><svg style="color:var(--ніч)"><use href="#спідниця"/></svg><em>моє</em></div><span class="др">Спідниця</span></div>
+      <div><div class="клітка"><svg style="color:var(--ніч)"><use href="#штани"/></svg><em>моє</em></div><span class="др">Штани</span></div>
+    </div>
+    <div class="мітка" style="margin-top:12px">Або з ярмарку</div>
+    <div class="скр">
+      <div><div class="клітка обр"><svg style="color:var(--буряк)"><use href="#сукня"/></svg></div><span class="др">Максі, буряк<br><b>3 400 ₴</b></span></div>
+      <div><div class="клітка"><svg style="color:var(--вишня)"><use href="#сукня"/></svg></div><span class="др">Сорочка<br><b>2 900 ₴</b></span></div>
+      <div><div class="клітка"><svg style="color:var(--хвоя)"><use href="#сукня"/></svg></div><span class="др">Максі, хвоя<br><b>3 100 ₴</b></span></div>
+      <div><div class="клітка нема"><div>ще 12 ›</div></div></div>
+    </div>
+    <p class="підпис">Бурякова максі закриває коліно й тримає ту саму теплу барву. Зі своєю спідницею купувати не треба нічого.</p>
+    <div style="display:flex;gap:8px"><span class="кн" style="flex:1;white-space:nowrap">Максі · 4 080 ₴</span><span class="кн тиха" style="flex:1;white-space:nowrap">Зі скрині · 0 ₴</span></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:6px"><span style="flex:1">Вдягнеш?</span><span class="кн">Так — лишити на суботу</span><span class="кн тиха">Ні</span></div>
+  </div>
+  <div class="голос"><div class="поле">Скажи або напиши…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+  <div class="місця"><div>Скриня</div><div class="тут">Жердка</div><div>Ярмарок</div></div>
+</div></figure>
+
+<figure><figcaption><b>В6. Бібліотека</b> — скриня: святкове, щоденне, прискринок; образи — на жердці</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Скриня</span><span class="дія">+ річ з фото</span></div>
+  <div class="вміст" style="bottom:122px">
+    <div class="нам" style="margin-top:0"><span class="обр">Речі · 16</span><span>Вдягнуті образи · 6</span><span>Барви</span><span>Я</span></div>
+    <div class="мітка">Святкове<span>4</span></div>
+    <div class="скр">
+      <div class="клітка"><svg style="color:var(--ніч)"><use href="#сукня"/></svg></div>
+      <div class="клітка"><svg style="color:var(--молоко)"><use href="#блуза"/></svg></div>
+      <div class="клітка"><svg style="color:var(--чорнило)"><use href="#жакет"/></svg></div>
+      <div class="клітка"><svg viewBox="0 0 100 60" style="color:var(--чорнило);height:44%"><use href="#туфлі"/></svg></div>
+    </div>
+    <div class="мітка" style="margin-top:12px">Щоденне<span>8</span></div>
+    <div class="скр">
+      <div class="клітка"><svg style="color:var(--кемел)"><use href="#пальто"/></svg></div>
+      <div class="клітка"><svg style="color:var(--ніч)"><use href="#штани"/></svg></div>
+      <div class="клітка"><svg style="color:var(--ніч)"><use href="#спідниця"/></svg></div>
+      <div class="клітка"><svg style="color:var(--молоко)"><use href="#блуза"/></svg></div>
+      <div class="клітка"><svg style="color:var(--попіл)"><use href="#жакет"/></svg></div>
+      <div class="клітка"><svg style="color:var(--чорнило)"><use href="#штани"/></svg></div>
+      <div class="клітка"><svg viewBox="0 0 100 60" style="color:var(--чорнило);height:44%"><use href="#туфлі"/></svg></div>
+      <div class="клітка"><svg viewBox="0 0 100 60" style="color:var(--глина);height:44%"><use href="#черевики"/></svg></div>
+    </div>
+    <div class="мітка" style="margin-top:12px">Прискринок · оздоби й дрібне<span>4</span></div>
+    <div class="скр" style="grid-template-columns:repeat(6,1fr)">
+      <div class="клітка"><svg viewBox="0 0 100 80" style="color:var(--золото)"><use href="#намисто"/></svg></div>
+      <div class="клітка"><svg viewBox="0 0 100 80" style="color:var(--попіл)"><use href="#сережки"/></svg></div>
+      <div class="клітка"><svg style="color:var(--глина)"><use href="#сумка"/></svg></div>
+      <div class="клітка"><svg viewBox="0 0 100 100" style="color:var(--жар)"><use href="#хустка"/></svg></div>
+      <div class="клітка нема"><div>+</div></div>
+    </div>
+    <div class="рядок" style="margin-top:10px"><span>Не вдягала пів року</span><span>3 речі ›</span></div>
+    <div class="рядок"><span>Чого бракує</span><span>теплої барви · взуття на дощ ›</span></div>
+  </div>
+  <div class="голос"><p class="ст">З цих 16 речей складаю 23 образи без жодної покупки.</p></div>
+  <div class="місця"><div class="тут">Скриня</div><div>Жердка</div><div>Ярмарок</div></div>
+</div></figure>
+
+<figure><figcaption><b>В7. Заплановане: пошук речі з розмови й «купити чи ні»</b> — ярмарок звіряє річ зі скринею</figcaption>
+<div class="тел">
+  <div class="смуга"><span class="знак">Ярмарок</span><span class="дія">23 крамниці</span></div>
+  <div class="вміст" style="bottom:122px">
+    <p class="вона" style="max-width:100%;margin-top:2px">Шукаю вишневу сукню міді, до 3 500 ₴</p>
+    <div class="нам"><span class="обр">мій розмір</span><span class="обр">до лиця</span><span>до 3 500 ₴</span><span>є в наявності</span></div>
+    <div class="порівн">
+      <div><div class="колаж" style="height:104px"><svg class="р" style="width:70px;height:86px;color:var(--буряк)"><use href="#сукня"/></svg></div>
+        <b>Максі бурякова</b><br><span class="др">крамниця Б · 3 400 ₴</span>
+        <div class="рядок"><span>колір</span><span>до лиця</span></div>
+        <div class="рядок"><span>на тобі</span><span>нижче коліна</span></div>
+        <div class="рядок"><span>зі скринею</span><span><b>з 6 речами</b></span></div>
+        <p style="margin:6px 0 0"><b class="так">Бери</b></p></div>
+      <div><div class="колаж" style="height:104px"><svg class="р" style="width:70px;height:86px;color:var(--калина)"><use href="#сукня"/></svg></div>
+        <b>Міді калинова</b><br><span class="др">крамниця Д · 2 700 ₴</span>
+        <div class="рядок"><span>колір</span><span>яскравіший за твої</span></div>
+        <div class="рядок"><span>на тобі</span><span>по коліно</span></div>
+        <div class="рядок"><span>зі скринею</span><span><b>з 1 річчю</b></span></div>
+        <p style="margin:6px 0 0"><b class="ні">Не бери</b> <span class="др">· але можна</span></p></div>
+    </div>
+    <p class="підпис">Бурякова піде з пальтом, жакетом і обома парами взуття — шість образів. Калинова дешевша, та носитимеш її лише з чорними лоферами.</p>
+    <div class="нам"><span class="обр">На жердку — глянути в образі</span><span>До крамниці Б ›</span><span>Ще 12 суконь</span></div>
+    <div class="рядок" style="margin-top:6px"><span>У крамниці?</span><span><u>сфотографуй річ — скажу так само</u></span></div>
+  </div>
+  <div class="голос"><div class="поле">Опиши річ або встав посилання…<i><span class="кр">◉</span><span class="кр">↑</span></i></div></div>
+  <div class="місця"><div>Скриня</div><div>Жердка</div><div class="тут">Ярмарок</div></div>
+</div></figure>
+</div>
+
+<figure style="margin-top:26px"><figcaption style="max-width:none;text-align:center"><b>В. Ноутбук, головний екран</b> — три місця поруч, як у хаті: скриня ліворуч, жердка посередині, ярмарок праворуч; розмова — смугою знизу</figcaption>
+<div class="ноут-обгортка"><div class="ноут" style="grid-template-columns:330px 1fr 380px;grid-template-rows:1fr 72px;margin:0 auto">
+  <aside style="background:var(--аркуш);border-right:1px solid var(--чорнило);padding:16px 18px">
+    <div class="знак" style="margin-bottom:10px">Скриня</div>
+    <div class="мітка">Святкове<span>4</span></div>
+    <div class="скр">
+      <div class="клітка"><svg style="color:var(--ніч)"><use href="#сукня"/></svg></div><div class="клітка"><svg style="color:var(--молоко)"><use href="#блуза"/></svg></div><div class="клітка"><svg style="color:var(--чорнило)"><use href="#жакет"/></svg></div><div class="клітка"><svg viewBox="0 0 100 60" style="color:var(--чорнило);height:44%"><use href="#туфлі"/></svg></div>
+    </div>
+    <div class="мітка" style="margin-top:12px">Щоденне<span>8</span></div>
+    <div class="скр">
+      <div class="клітка обр"><svg style="color:var(--кемел)"><use href="#пальто"/></svg></div><div class="клітка"><svg style="color:var(--ніч)"><use href="#штани"/></svg></div><div class="клітка"><svg style="color:var(--ніч)"><use href="#спідниця"/></svg></div><div class="клітка"><svg style="color:var(--молоко)"><use href="#блуза"/></svg></div>
+      <div class="клітка"><svg style="color:var(--попіл)"><use href="#жакет"/></svg></div><div class="клітка"><svg style="color:var(--чорнило)"><use href="#штани"/></svg></div><div class="клітка обр"><svg viewBox="0 0 100 60" style="color:var(--чорнило);height:44%"><use href="#туфлі"/></svg></div><div class="клітка"><svg viewBox="0 0 100 60" style="color:var(--глина);height:44%"><use href="#черевики"/></svg></div>
+    </div>
+    <div class="мітка" style="margin-top:12px">Прискринок<span>4</span></div>
+    <div class="скр">
+      <div class="клітка"><svg viewBox="0 0 100 80" style="color:var(--золото)"><use href="#намисто"/></svg></div><div class="клітка"><svg viewBox="0 0 100 80" style="color:var(--попіл)"><use href="#сережки"/></svg></div><div class="клітка обр"><svg style="color:var(--глина)"><use href="#сумка"/></svg></div><div class="клітка"><svg viewBox="0 0 100 100" style="color:var(--жар)"><use href="#хустка"/></svg></div>
+    </div>
+    <div class="мітка" style="margin-top:14px">Барви скрині</div>
+    <div class="розподіл" style="height:22px"><i style="flex:30;background:var(--ніч)"></i><i style="flex:22;background:var(--чорнило)"></i><i style="flex:18;background:var(--молоко)"></i><i style="flex:14;background:var(--кемел)"></i><i style="flex:10;background:var(--попіл)"></i><i style="flex:6;background:var(--жар)"></i></div>
+    <p class="др" style="margin:6px 0 0">Бракує теплої барви біля обличчя.</p>
+  </aside>
+  <main style="padding:16px 28px;border-right:1px solid var(--чорнило)">
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><div class="знак">Жердка</div><div class="нам" style="margin:0"><span>сьогодні</span><span class="обр">сб · побачення</span><span>нд</span><span class="тих">+ нагода</span></div></div>
+    <div class="жердка" style="margin-top:22px">
+      <div class="віш" style="font-size:13.5px"><svg style="color:var(--кемел);width:96px;height:120px"><use href="#пальто"/></svg>Пальто, кемел<br><u>моє</u></div>
+      <div class="віш" style="font-size:13.5px"><svg style="color:var(--вишня);width:96px;height:120px"><use href="#сукня"/></svg>Сукня міді<br><u class="куп">2 400 ₴</u></div>
+      <div class="віш" style="font-size:13.5px"><svg viewBox="0 0 100 60" style="color:var(--чорнило);width:90px;height:60px;margin-top:60px"><use href="#туфлі"/></svg>Лофери<br><u>моє</u></div>
+      <div class="віш" style="font-size:13.5px"><svg style="color:var(--глина);width:80px;height:120px"><use href="#сумка"/></svg>Сумка<br><u>моє</u></div>
+      <div class="віш" style="font-size:13.5px"><svg viewBox="0 0 100 80" style="color:var(--золото);width:80px;height:60px;margin-top:60px"><use href="#сережки"/></svg>Сережки<br><u class="куп">680 ₴</u></div>
+    </div>
+    <div class="рядок річ" style="margin-top:14px"><span><b>3 речі твої · докупити 2</b></span><span class="ціна"><b>3 080 ₴</b></span></div>
+    <p class="підпис" style="font-size:17px">Вишневе під кемел — тепла пара довкола твого пальта. Лофери твої, підбора нема. Сережки можна не брати: тоді 2 400 ₴.</p>
+    <div class="нам"><span>Без покупок — лише зі скрині</span><span>Ще образ із цим пальтом</span><span>Приміряти на мені</span></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:10px"><span style="flex:1">Вдягнеш?</span><span class="кн">Так</span><span class="кн тиха">Ні</span></div>
+    <div class="мітка" style="margin-top:22px">Ще на жердці</div>
+    <div style="display:flex;gap:12px">
+      <div style="flex:1"><div class="формула" style="height:46px"><div style="flex:50"><i style="flex:1;background:var(--кемел)"></i></div><div style="flex:50"><i style="flex:60;background:var(--ніч)"></i><i style="flex:40;background:var(--молоко)"></i></div></div><span class="др">образ 2 · усе своє · 0 ₴</span></div>
+      <div style="flex:1"><div class="формула" style="height:46px"><div style="flex:45"><i style="flex:1;background:var(--кемел)"></i></div><div style="flex:55"><i style="flex:70;background:var(--хвоя)"></i><i style="flex:30;background:var(--чорнило)"></i></div></div><span class="др">образ 3 · докупити 3 100 ₴</span></div>
+      <div style="flex:1"><div class="формула" style="height:46px"><div style="flex:60"><i style="flex:1;background:var(--ніч)"></i></div><div style="flex:40"><i style="flex:1;background:var(--молоко)"></i></div></div><span class="др">нд · прогулянка · усе своє</span></div>
+    </div>
+  </main>
+  <aside style="background:var(--аркуш);padding:16px 18px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><div class="знак">Ярмарок</div><span class="др">до цього образу бракує 2</span></div>
+    <div class="мітка" style="margin-top:10px">Сукня · вишнева або бурякова</div>
+    <div class="порівн">
+      <div><div class="колаж" style="height:96px"><svg class="р" style="width:64px;height:80px;color:var(--вишня)"><use href="#сукня"/></svg></div><b>Міді вишнева</b><br><span class="др">крамниця А · 2 400 ₴</span>
+        <div class="рядок"><span>зі скринею</span><span><b>з 6</b></span></div><p style="margin:4px 0 0"><b class="так">Бери</b> <span class="др">· на жердці</span></p></div>
+      <div><div class="колаж" style="height:96px"><svg class="р" style="width:64px;height:80px;color:var(--буряк)"><use href="#сукня"/></svg></div><b>Максі бурякова</b><br><span class="др">крамниця Б · 3 400 ₴</span>
+        <div class="рядок"><span>зі скринею</span><span><b>з 6</b></span></div><p style="margin:4px 0 0"><b class="так">Бери</b> <span class="др">· довша</span></p></div>
+    </div>
+    <div class="мітка" style="margin-top:14px">Сережки</div>
+    <div class="порівн">
+      <div><div class="колаж" style="height:70px"><svg class="р" viewBox="0 0 100 80" style="width:60px;height:48px;color:var(--золото)"><use href="#сережки"/></svg></div><b>Краплі</b><br><span class="др">крамниця Г · 680 ₴</span><p style="margin:4px 0 0"><b class="так">Бери</b></p></div>
+      <div><div class="колаж" style="height:70px"><svg class="р" viewBox="0 0 100 80" style="width:60px;height:48px;color:var(--попіл)"><use href="#сережки"/></svg></div><b>Срібні кільця</b><br><span class="др">крамниця Г · 540 ₴</span><p style="margin:4px 0 0"><b class="ні">Не бери</b> <span class="др">· маєш схожі</span></p></div>
+    </div>
+    <p class="др" style="margin:12px 0 0">Опиши річ, встав посилання чи фото з крамниці — звірю зі скринею.</p>
+  </aside>
+  <div style="grid-column:1/-1;background:var(--аркуш);border-top:1px solid var(--чорнило);display:flex;gap:18px;align-items:center;padding:0 18px">
+    <p class="ст" style="margin:0;flex:1;max-width:none">Зібрала довкола пальта. Хочеш довшу сукню — праворуч є бурякова максі.</p>
+    <div class="поле" style="width:520px">Скажи або напиши…<i><span class="кр">◉</span><span class="кр">↑</span></i></div>
+  </div>
+</div></div></figure>
+</section>
+
+<footer class="кінцівка">
+  <p>Джерела тверджень про айдентику з позначками [В]/[П]/[?] — у звіті дослідження. Шрифт заголовків — Kyiv*Type
+  (Д. Растворцев) із <code>шрифти/</code> цього репозиторію; без нього сторінка бере системні шрифти.</p>
+</footer>
+</body>
+</html>
