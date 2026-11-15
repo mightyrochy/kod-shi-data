@@ -1,4 +1,4 @@
-── ПРОМПТ (5817 симв.) ──
+── ПРОМПТ (5930 симв.) ──
 Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
 
 Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
@@ -22,18 +22,20 @@
 4 — назва в тексті н=5
 5 — назва в тексті н=6
 6 — назва в тексті н=7
+7 — назва в тексті н=8
 When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
 
 ТЕКСТИ:
 {
-"1": "Fine-knit sweater, slightly fitted, with a softly scooped neckline and hip length, in warm cream, merino wool\nMidi skirt, A-line with a gentle flare, falling just below the knee, in deep olive, fluid crepe\nTailored coat, straight cut with a notched collar, knee length, in camel, wool-blend twill\nAnkle boots, almond toe, low block heel, in dark chocolate, soft suede\nSmall structured shoulder bag in cognac, smooth leather\nSmall hoop earrings in warm gold, polished metal\n\nThis outfit suits a restaurant date: neat and put together without looking overdressed. Cream near the face brightens her warm complexion, while the olive skirt echoes the green in her eyes and sits well beside her brown hair. The skirt's flare gives an easy, feminine movement, and the fitted knit keeps the line balanced. The camel coat adds warmth for an autumn evening, and the suede boots and cognac bag keep the palette cohesive and rich under the soft artificial light of the restaurant.",
-"2": "Fine-knit sweater",
+"1": "Fitted ribbed knit top, slim cut with a boat neckline, long sleeves, hip length, deep burgundy, fine merino wool\nMidi skirt, softly A-line, falling just below the knee, black, crepe with a subtle drape\nAnkle boots, slim block heel about 5 cm, almond toe, black, smooth leather\nShoulder bag, small structured shape with a short chain strap, black, leather\nDrop earrings, small, polished gold, metal\nThin leather belt, narrow, worn at the waist over the knit, black, leather\nLight wool coat, straight cut, knee length, camel, brushed wool\n\nThis outfit suits a neat date in a restaurant: the refined knit with a skirt and ankle boots sits right in the neat band without feeling stiff. The burgundy brings warmth and a romantic note for an autumn evening, while the black skirt and boots keep the look clean and grounded. Under artificial restaurant lighting the rich colour looks deep and flattering, and the gold earrings add a soft glow near the face. The camel coat keeps her comfortable on the way there and is easy to hand over at the cloakroom.",
+"2": "Fitted ribbed knit top",
 "3": "Midi skirt",
-"4": "Tailored coat",
-"5": "Ankle boots",
-"6": "Small structured shoulder bag",
-"7": "Small hoop earrings"
+"4": "Ankle boots",
+"5": "Shoulder bag",
+"6": "Drop earrings",
+"7": "Thin leather belt",
+"8": "Light wool coat"
 }
 
-── ВІДПОВІДЬ (1349 симв., 15.8 с, HTTP 200) ──
-{"1":"Светр тонкої в'язки, трохи приталений, з м'яким округлим вирізом і довжиною до стегон, теплого кремового кольору, з вовни мериноса\nСпідниця міді, трапецієподібного силуету з легким розкльошем, довжиною трохи нижче коліна, глибокого оливкового кольору, з текучого крепу\nПальто класичного крою, прямого силуету з виїмчастим коміром, довжиною до коліна, кольору кемел, із саржі з вовняною сумішшю\nБотильйони з мигдалеподібним носком, на низькому підборі-блоці, темно-шоколадного кольору, з м'якої замші\nНевелика структурована сумка на плече коньячного кольору, з гладкої шкіри\nМаленькі сережки-кільця теплого золотого кольору, з полірованого металу\n\nЦей образ пасує до побачення в ресторані: охайний і завершений, але без надмірної ошатності. Кремовий колір біля обличчя освітлює твій теплий відтінок шкіри, а оливкова спідниця перегукується із зеленим кольором твоїх очей і гарно поєднується з твоїм коричневим волоссям. Розкльош спідниці дає легкий жіночний рух, а приталений светр зберігає баланс лінії. Пальто кольору кемел додає тепла осіннього вечора, а замшеві ботильйони й коньячна сумка роблять палітру цілісною та насиченою під м'яким штучним світлом ресторану.","2":"Светр тонкої в'язки","3":"Спідниця міді","4":"Пальто класичного крою","5":"Ботильйони","6":"Невелика структурована сумка на плече","7":"Маленькі сережки-кільця"}
+── ВІДПОВІДЬ (1345 симв., 16.2 с, HTTP 200) ──
+{"1":"Приталений трикотажний топ у рубчик, вузького крою, з вирізом-лодочкою, довгими рукавами, довжиною до стегон, насичений бордовий, тонка мериносова вовна\nСпідниця міді, м'якого А-подібного силуету, довжиною трохи нижче коліна, чорна, креп із ледь помітною драпіровкою\nБотильйони, тонкий блоковий підбор близько 5 см, мигдалеподібний носок, чорні, гладка шкіра\nСумка на плече, невелика структурована форма з короткою ланцюжковою лямкою, чорна, шкіра\nСережки-краплі, невеликі, відполіроване золото, метал\nТонкий шкіряний ремінь, вузький, носиться на талії поверх топа, чорний, шкіра\nЛегке вовняне пальто, прямого крою, довжиною до коліна, кемел, начесана вовна\n\nЦей образ пасує до охайного побачення в ресторані: вишуканий топ зі спідницею та ботильйонами потрапляє точно в охайний діапазон і не виглядає скутим. Бордовий додає тепла й романтичної нотки для осіннього вечора, а чорні спідниця й ботильйони тримають образ чистим і зібраним. Під штучним освітленням ресторану насичений колір виглядає глибоким і вигідним, а золоті сережки додають м'якого сяйва біля обличчя. Пальто кольору кемел дає тобі комфорт дорогою туди, і його легко здати в гардероб.","2":"Приталений трикотажний топ у рубчик","3":"Спідниця міді","4":"Ботильйони","5":"Сумка на плече","6":"Сережки-краплі","7":"Тонкий шкіряний ремінь","8":"Легке вовняне пальто"}
