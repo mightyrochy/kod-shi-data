@@ -224,6 +224,9 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 #збій-панель:has(#збій-стан:empty){display:none}
 #збій-панель .статус{margin:0 0 8px}
 .ряд{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+/* «Записати вердикт» видно, поки видно картку: росте поле коментаря — кнопка лишається над краєм екрана (вада 12) */
+.ряд-запису{position:sticky;bottom:calc(var(--під-панеллю, 0px) + 8px);z-index:2;pointer-events:none}
+.ряд-запису>button{pointer-events:auto}
 #сц-мета-зони-плитки[hidden]{display:none}
 .мітка{font:500 20px/1.25 var(--дисплей);font-variation-settings:"CONT" 260;margin:22px 0 8px}
 
