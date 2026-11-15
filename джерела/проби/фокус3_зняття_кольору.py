@@ -30,8 +30,7 @@ for f in sorted(glob.glob(sys.argv[1] + "/ж*_*/вердикти.txt.gz")):
             сх = СР.слоти_акценту_схеми(речі, сп); кв = {"схема_слоти": сх} if "схема_слоти" in С.бюджет_і_відлуння.__code__.co_varnames else {}
             вол = {"волосся_%d" % k: dict(zip("LCh", cs.lch(cs.hx(x)))) for k, x in enumerate(json.load(open(
                 "../аудит/проби/жінки/%s.json" % Path(f).parent.name.split("_")[0]))["hair"])}
-            for z in [z for z in С.бюджет_і_відлуння(речі, вол, None,
-                                                    sorted(сх) or None, **кв) if z["правило"] == "K-COL-02"] + ПСХ.обіцянка_схеми(речі, сп):
+            for z in [z for z in С.бюджет_і_відлуння(речі, вол, None, **кв) if z["правило"] == "K-COL-02"] + ПСХ.обіцянка_схеми(речі, сп):
                 к, v = z["заяви"][0]["code"], z["заяви"][0]["values"]
                 Л[к + " стоїть (кольорових)"] += 1; Л[к + " стоїть (зн.)"] += bool(кз)
                 Л[к + " · зн.: лишає зняте"] += bool(кз & set(v.get("keep") or ())); Л[к + " · зн.: стишує зняте"] += bool(кз & set(v.get("quiet") or ()))
