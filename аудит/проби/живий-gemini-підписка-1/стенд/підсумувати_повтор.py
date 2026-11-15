@@ -4,6 +4,7 @@ from collections import Counter
 import gzip
 import hashlib
 import json
+import re
 import sys
 
 out = Path(sys.argv[1])
@@ -39,6 +40,20 @@ for (scene, pass_no, run), x in hands.items():
 (out / 'руки.md').write_text('\n'.join(hand_lines) + '\n', encoding='utf-8')
 for path in sorted(out.glob('с*/підсумок.json')):
     x = json.loads(path.read_text(encoding='utf-8'))
+    fixed = 0
+    for mismatch in x['розбіжності']:
+        if not mismatch['дія'].startswith('надрукувала в '):
+            continue
+        if any(w['крок'] == mismatch['крок'] and w['прохід'] == mismatch['прохід'] for w in x['слова']):
+            continue
+        m = re.match(r'^надрукувала в «[\s\S]*?»: «([\s\S]*)»$', mismatch['дія'])
+        if m:
+            x['слова'].append({'прохід': mismatch['прохід'], 'крок': mismatch['крок'], 'текст': m[1],
+                               'лягло': False, 'джерело_уточнення': 'записана помилка вводу в розбіжностях'})
+            x['слів_пропущено'] += 1
+            fixed += 1
+    if fixed:
+        path.write_text(json.dumps(x, ensure_ascii=False, indent=2), encoding='utf-8')
     summary[path.parent.name] = {k: x.get(k) for k in
                                ['слів_лягло', 'слів_пропущено', 'проходів', 'початок', 'кінець']}
     summary[path.parent.name]['розбіжностей'] = len(x['розбіжності'])

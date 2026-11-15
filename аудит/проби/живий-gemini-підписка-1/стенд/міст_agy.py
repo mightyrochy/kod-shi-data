@@ -71,6 +71,9 @@ def текст_і_фото(повід, теква):
             if дані:
                 ім = f"{н:02d}{р}"
                 with open(os.path.join(теква, ім), "wb") as ф: ф.write(дані)
+                # @ — і маркер посилання, і допустиме буквальне ім'я:
+                # обидва тлумачення read_file ведуть до тих самих байтів.
+                with open(os.path.join(теква, '@' + ім), "wb") as ф: ф.write(дані)
                 частини.append("@" + ім)
             else:
                 частини.append("(image not delivered)")
@@ -97,12 +100,14 @@ class О(BaseHTTPRequestHandler):
         текст, фото = текст_і_фото(тіло.get("messages") or [], теква)
         # @NN.ext у stdin має лишатися відтворюваним після прибирання TEMP.
         for ім in os.listdir(теква):
+            if ім.startswith('@'): continue
             відн = f"фото/{н:04d}/{ім}"
             шлях = os.path.join(ЗАПИСИ, відн)
             os.makedirs(os.path.dirname(шлях), exist_ok=True)
             shutil.copyfile(os.path.join(теква, ім), шлях)
             мета = фото[int(ім.split('.')[0]) - 1]
-            мета.update({"файл": відн, "sha256": hashlib.sha256(open(шлях, 'rb').read()).hexdigest()})
+            мета.update({"файл": відн, "псевдонім_посилання": '@' + ім,
+                         "sha256": hashlib.sha256(open(шлях, 'rb').read()).hexdigest()})
         вхід = (ДОРУЧЕННЯ + "\n\n===== BEGIN APPLICATION PROMPT =====\n" + текст + "\n===== END APPLICATION PROMPT =====")
         рядок = json.dumps({"event": "user", "message": {"content": [{"type": "text", "text": вхід}]}}, ensure_ascii=False) + "\n"
         запис = {"н": н, "прохід": прохід, "початок_utc": time.strftime("%H:%M:%S", time.gmtime(т0)), "модель": МОДЕЛЬ,
