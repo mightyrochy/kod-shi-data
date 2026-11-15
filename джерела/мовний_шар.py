@@ -3531,8 +3531,8 @@ _ПОЛЯ_EN = {
     # лише `part_of_day`. Годину з події прибирає опис поля, а не код (код її слів не читає, п.12). Її слова про час
     # цілком, з годиною («ввечері, о 19:30»), — уривок `part_of_day`: він іде лише в картку фактів і рядок «Твої
     # слова», не в подію й не стилістці (рішення менеджера 15526: без години картка читається як «не збереглося»)
-    "event": "the event: her own words in her language, shortened only by leaving words out; every part of her "
-             "day stays; all her words of when are only the quote of part_of_day",
+    "event": "the event briefly: her own words from her message, in her language, shortened only by leaving "
+             "words out; when she names several parts of her day, every part stays; her words of when are left out",
     # Приклади підпису — не місця живих сцен (церква, випускний сина, рок-клуб були готовими відповідями)
     "place_words": "where she will be, 1–5 words for her scenario card, in her language, capitalised (like: "
                    "Museum, opening; Country house, garden); whenever place is set, and never instead of "
@@ -3577,7 +3577,8 @@ _ПОЛЯ_EN = {
                    "holds for the later parts until she names another), or when the event or a tile "
                    "in \"chosen\" names it or usually takes it (an evening reception, a theatre, concert or "
                    "opera, a holiday party held in the evening by custom — evening); an event that happens at any "
-                   "time of day — absent",
+                   "time of day — absent; when she says when: {\"quote\": all her words of when, numbers too, "
+                   "\"value\": the code}",
     # Пора року рукам — з дати показу, бо місяця події паспорт не ніс: новорічний корпоратив, про
     # який вона пише 10.10, руки бачили осінню подією. Місяць — розуміння її слів моделлю (п.14), код слів не читає
     # Свята-приклади (новорічна вечірка й корпоратив — свята сцен) — тепер родом випадку
