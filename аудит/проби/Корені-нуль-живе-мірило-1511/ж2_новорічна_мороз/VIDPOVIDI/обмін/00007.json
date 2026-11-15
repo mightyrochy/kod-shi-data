@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"Новорічна вечірка в ресторані\", \"place\": \"в ресторані\", \"weather_band\": \"мороз\", \"part_of_day\": \"Новорічна вечірка\", \"month\": \"Новорічна\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"в ресторані\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"Новорічна вечірка в ресторані\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\", \"quote\": \"Новорічна вечірка\"}, \"weather_band\": {\"kind\": \"reading\", \"quote\": \"мороз\"}}, \"event\": \"Новорічна вечірка в ресторані\", \"part_of_day\": \"evening\", \"weather_band\": \"frost\", \"occasion\": \"celebration\", \"place\": \"restaurant_casual\", \"formality\": [\"smart\"], \"season\": \"winter\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Black velvet blazer, tailored single-breasted cut, hip length, deep black (#1A1A1A), cotton-blend velvet\\n\\nSilk-satin cami blouse, relaxed fit with a soft cowl neckline, tucked in, emerald green (#046307), silk satin\\n\\nHigh-waisted tailored trousers, straight wide leg, full length to the ankle, black (#111111), wool crepe\\n\\nHeeled ankle boots, block heel about 7 cm, almond toe, black (#0D0D0D), smooth leather\\n\\nLong wool coat, single-breasted, tailored cut, knee to mid-calf length, camel (#C19A6B), wool-cashmere blend\\n\\nWool-cashmere scarf, wrapped loosely, charcoal (#36454F), brushed wool-cashmere blend\\n\\nLeather gloves, wrist length, lined, black (#151515), soft lambskin\\n\\nSmall structured clutch, top handle with a detachable chain, gold (#C9A227), metallic leather\\n\\nDrop earrings, slim linear shape, polished gold (#D4AF37), gold-plated metal\\n\\nThis outfit sits right at the smart level for a festive restaurant evening: the velvet blazer and satin top give a celebratory richness, while the tailored trousers keep it polished and easy to move in at a table. Emerald against black reads as luxurious under restaurant lighting, and the gold clutch and earrings add just enough sparkle for New Year without feeling costume-like. The block-heeled boots are dressy yet stable on frosty pavements, and the camel coat, scarf and gloves keep her properly warm for the walk to and from the venue.\"}],\"usage\":{\"input_tokens\":2223,\"output_tokens\":540},\"stop_reason\":\"end_turn\"}"
+ }
+}
