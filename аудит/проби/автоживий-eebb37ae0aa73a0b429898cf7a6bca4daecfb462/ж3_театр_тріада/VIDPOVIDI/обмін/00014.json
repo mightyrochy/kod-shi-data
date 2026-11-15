@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Refined knit top, slim fit, fitted crew neckline, hip length, deep burgundy #6D1F32, fine merino wool\\nMidi skirt, A-line with a soft flare, falling just below the knee, charcoal #36393F, wool crepe\\nTextured jacket, tailored and slightly cropped, single-button, hip length, warm grey #8A8580, bouclé-weave wool blend\\nMid-length coat, straight cut, knee length, notch collar, camel #B58A5A, soft wool-cashmere blend\\nAnkle boots, low block heel, almond toe, black #1A1A1A, smooth leather\\nSheer tights, matte, smoke black #2B2B2B, fine nylon\\nSmall structured shoulder bag, top handle, black #1A1A1A, leather\\nDrop earrings, small and polished, antique gold #B08D57, brass\\nSilk scarf, loosely knotted at the neck, burgundy and cream print #6D1F32 / #EFE6D2, twill silk\\n\\nThis outfit works because it sits squarely at a neat, polished level that suits an evening at the theatre without feeling overdressed. The deep burgundy knit and charcoal skirt feel rich and intimate under artificial stage and foyer lighting, while the textured jacket adds depth and structure. The coat keeps you warm on an autumn evening and can be left in the cloakroom, and the low block-heel boots stay comfortable through a 19:00 performance and the walk to your seat. The gold earrings and silk scarf bring a touch of occasion, tying the warm tones together.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Refined knit top\\\",\\\"details\\\":\\\"slim fit, fitted crew neckline, hip length, fine merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#6D1F32\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Midi skirt\\\",\\\"details\\\":\\\"A-line with a soft flare, falling just below the knee, wool crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#36393F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Textured jacket\\\",\\\"details\\\":\\\"tailored and slightly cropped, single-button, hip length, bouclé-weave wool blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#8A8580\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Mid-length coat\\\",\\\"details\\\":\\\"straight cut, knee length, notch collar, soft wool-cashmere blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B58A5A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"low block heel, almond toe, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sheer tights\\\",\\\"details\\\":\\\"matte, fine nylon\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#2B2B2B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small structured shoulder bag\\\",\\\"details\\\":\\\"top handle, leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"small and polished, brass\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#B08D57\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Silk scarf\\\",\\\"details\\\":\\\"loosely knotted at the neck, burgundy and cream print, twill silk\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#6D1F32\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2192,\"output_tokens\":561},\"stop_reason\":\"end_turn\"}"
+ }
+}
