@@ -1004,5 +1004,135 @@ def обгортка(ід, прибрати):
         self.assertEqual(len(self.місця()), 1)
 
 
+    # ── Заява поза полями ремонту (15641): картка, текст жінці, опис образу ─────────────────────────
+    def _мова(self, **ще):
+        """Словник заяв: дві заміни, три без заміни, два вибори при складанні образу."""
+        заяви = dict(care_or_smooth='the choice is hers: waterproof it beforehand, or take smooth leather or a textile',
+                     carry_layer='rain is only possible, and no outer layer keeps it off — carry a rain layer in case',
+                     waterproof='waterproof it before a wet day',
+                     keep_look='keep the look and say why it holds this day',
+                     no_layer='the day is rainy, and no outer layer keeps the rain off — a trench, a raincoat or a coat',
+                     wish_first='put an item of these kinds in every outfit where it fits',
+                     wish_class='take one item of her wish in at most two outfits of the set', **ще)
+        self.записати('мова.py', 'ЗАЯВИ = %r\ndef заява(код, **з): return dict(code=код, values=з)\n' % заяви)
+
+    def test_заява_картки_й_жінці_поза_ремонтом_місце_15641(self):
+        """Код заміни в картці й у переліку жінці — місця, хоч поля ремонту нема."""
+        self._мова()
+        self.записати('міст.py', '''
+            import мова as м
+            def картка(в):
+                в["рядок"] = ("card_material", м.заява("care_or_smooth"))
+            def вердикт(жінці):
+                жінці.append(м.заява("care_or_smooth"))
+        ''')
+        self.assertEqual([(к.вид, к.умови, к.рядок) for к in self.місця()],
+                         [('заява заміни', 'а', 3), ('заява заміни', 'а', 5)])
+
+    def test_заява_опису_образу_гілкою_місце_15641(self):
+        """Опис образу повертає код заміни з гілки `a if … else b` — місце."""
+        self._мова()
+        self.записати('погода.py', '''
+            import мова as м
+            def опис(можливо):
+                return м.заява("carry_layer" if можливо else "no_layer")
+        ''')
+        self.assertEqual([к.вид for к in self.місця()], ['заява заміни'])
+
+    def test_заява_без_заміни_й_вибір_складання_не_місце_15641(self):
+        """Догляд, пояснення, діагноз із переліком речей і вибір при складанні образу — не місця."""
+        self._мова()
+        self.записати('погода.py', '''
+            import мова as м
+            def опис(жінці, пул):
+                жінці.extend([м.заява("waterproof"), м.заява("keep_look"), м.заява("no_layer")])
+                пул.append(м.заява("wish_first"))
+                пул.append(м.заява("wish_class"))
+        ''')
+        self.assertEqual(self.місця(), [])
+
+    def test_заява_знахідки_з_ремонтом_місцем_одне_місце(self):
+        """Код заміни в заявах знахідки, чий ремонт уже місце, — та сама знахідка, одне місце."""
+        self._мова()
+        self.записати('погода.py', '''
+            import мова as м
+            def правило():
+                return зн(ремонт="замінити гольф на кремовий",
+                          заяви=[м.заява("carry_layer")])
+        ''')
+        self.assertEqual([к.вид for к in self.місця()], ['ремонт'])
+
+    def test_заява_знахідки_без_заміни_в_ремонті_місце(self):
+        """Ремонт без заміни, а заява знахідки пропонує додати річ — місце знахідки через заяву."""
+        self._мова()
+        self.записати('погода.py', '''
+            import мова as м
+            def правило():
+                return зн(ремонт="просочити замшу засобом тричі",
+                          заяви=[м.заява("carry_layer")])
+        ''')
+        м = self.місця()
+        self.assertEqual([(к.вид, к.рядок) for к in м], [('заява заміни', 4)])
+        self.assertIn('заява знахідки', м[0].причина)
+
+    def test_сторонній_словник_не_підміняє_зміст_заяви(self):
+        """Інший словник модуля мови з тим самим ключем не переписує зміст коду з `ЗАЯВИ`."""
+        self.записати('мова.py', """
+            ЗАЯВИ = {"no_shoes": "no shoes, so the outfit is not ready: add a pair for the occasion"}
+            ЗАЯВИ.update({"no_bag": "no bag, and the occasion requires one"})
+            ЧОМУ = {"no_shoes": "нема_взуття"}
+            def заява(код): return dict(code=код)
+        """)
+        self.записати('суд.py', '''
+            import мова as м
+            def блокери(бл):
+                бл.append(м.заява("no_shoes"))
+                бл.append(м.заява("no_bag"))
+        ''')
+        self.assertEqual([(к.вид, к.рядок) for к in self.місця()], [('заява заміни', 3)])
+
+    def test_аргумент_функції_в_поле_ремонту_судиться_за_виробником(self):
+        """Код, переданий у функцію, що кладе його в ремонт, приписується їй (шлях без суду — за нею)."""
+        self._мова()
+        self.записати('правила.py', '''
+            import мова as м
+            def хибна(код, заява):
+                return зн(код, ремонт_заяви=[заява])
+            def точка():
+                return хибна("K-1", м.заява("care_or_smooth"))
+        ''')
+        м = self.місця()
+        self.assertEqual([(к.вид, к.функція) for к in м], [('заява заміни', 'хибна')])
+        self.assertIn('правила.хибна', м[0].причина)
+
+    def test_змінна_циклу_над_кортежами_в_ремонті(self):
+        """Код ремонту зі змінної циклу над літералом кортежів розгортається."""
+        self.записати('мова.py', """
+            ЗАЯВИ = {"remove_excess": "remove the excess item before showing the outfit"}
+            def заява(код): return dict(code=код)
+        """)
+        self.записати('чекліст.py', '''
+            import мова as м
+            def знахідки():
+                вих = []
+                for правило, ремонт in (("K-SYS-08", "remove_excess"),):
+                    вих.append(зн(правило, ремонт=ремонт, ремонт_заяви=[м.заява(ремонт)]))
+                return вих
+        ''')
+        self.assertEqual([(к.вид, к.умови) for к in self.місця()], [('ремонт', 'а')])
+
+
+    def test_код_заяви_змінною_розгортається(self):
+        """Код заяви в змінній (присвоєння) судиться так само, як сталий рядок."""
+        self._мова()
+        self.записати('погода.py', '''
+            import мова as м
+            def опис(жінці):
+                код = "carry_layer"
+                жінці.append(м.заява(код))
+        ''')
+        self.assertEqual([к.вид for к in self.місця()], ['заява заміни'])
+
+
 if __name__ == '__main__':
     unittest.main()
