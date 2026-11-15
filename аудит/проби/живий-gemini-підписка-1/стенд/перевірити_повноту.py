@@ -13,7 +13,7 @@ import sys
 
 out, target = map(Path, sys.argv[1:3])
 source = out.parent.parent / 'живий-як-людина-1'
-issues, scenes, images, bad_calls = [], {}, Counter(), []
+issues, scenes, images, bad_calls, read_errors = [], {}, Counter(), [], []
 rows = [json.loads(s) for s in (out / 'стенд/журнал_моделі_продукту.jsonl').read_text(encoding='utf-8').splitlines()]
 records = {p.stem.split('.')[0]: p for p in (out / 'стенд/записи').glob('*.json.gz')}
 exchanges = {}
@@ -89,7 +89,8 @@ for row in rows:
         if path.name not in reads:
             issues.append({'запис': number, 'фото': photo['файл'], 'проблема': 'немає успішного читання фото'})
     if errors:
-        issues.append({'запис': number, 'помилки_read_file': errors})
+        read_errors.append({'запис': number, 'помилки_read_file': errors,
+                            'успішно_прочитані': sorted(reads)})
     if row['статус'] != 200:
         bad_calls.append({'запис': number, 'прохід': record['прохід'], 'статус': row['статус'],
                           'помилка': row.get('помилка'), 'код': record['код'],
@@ -99,7 +100,8 @@ if len(rows) != len(records):
 result = {'ситуації': scenes, 'викликів': len(rows), 'записів': len(records),
           'обмінів_браузера': sum(map(len, exchanges.values())),
           'статуси_моста': dict(Counter(str(r['статус']) for r in rows)),
-          'фото_статуси': dict(images), 'помилки_повноти': issues, 'збої_моделі': bad_calls}
+          'фото_статуси': dict(images), 'помилки_повноти': issues,
+          'помилки_спроб_читання': read_errors, 'збої_моделі': bad_calls}
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
 print(json.dumps(result, ensure_ascii=False, indent=2))
