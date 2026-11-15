@@ -1536,6 +1536,7 @@ function Start-Markers($Workers) {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $mine = @(Get-Markers | Where-Object { $_.Valid -and $_.Lane -eq 'claude' } | ForEach-Object { Add-ClaudeFields $_ })
     [void](Move-LegacyMarkerState $mine)
+    [void](Remove-OrphanWaits)  # після перенесення: стан під старим ключем ще не переїхав під канонічний
     $skipFile = Join-Path $WorkDir 'skipped.json'
     if ($mine.Count -eq 0) { Save-Skips $skipFile; return @(0, $null) }
     $gpuWhy = $null

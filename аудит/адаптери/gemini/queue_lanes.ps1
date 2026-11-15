@@ -945,14 +945,52 @@ function Clear-OrphanClaims([string]$RunsRoot) {
     }
 }
 
+function Get-LiveStateNames {
+    <# Імена файлів стану позначок, що є серед отриманих посилань: хеш ключа «посилання sha» (Get-MarkerKey) — позначка з
+    іншою головою чи знята має інший ключ, і її старий стан сюди не потрапляє. Збій читання посилань — виняток. #>
+    $live = @{}
+    foreach ($m in @(Get-Markers)) { $live[[IO.Path]::GetFileName((Get-StatePath (Get-MarkerKey $m)))] = $true }
+    $live
+}
+
 function Get-WaitingMarkers {
-    <# Позначки в чеканні квоти (для стану): назва, до коли (UTC), група. #>
+    <# Позначки в чеканні квоти (для стану): назва, до коли (UTC), група. Лише ті, що ще є на origin: стан WAIT знятої
+    позначки (PR злито чи закрито, ланцюг чи диспетчер зняв гілку) сам не змінюється — без звірки він висів би в показі
+    вічно й витісняв живі з перших дванадцяти heartbeat. Посилання не прочитано — порожньо й рядок у журналі. #>
+    $live = $null
+    try { $live = Get-LiveStateNames } catch { Write-Log "чекання квоти: позначки не прочитано — $($_.Exception.Message)"; return @() }
     @(foreach ($f in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+        if (-not $live.ContainsKey($f.Name)) { continue }
         $t = [System.IO.File]::ReadAllText($f.FullName, $script:Utf8)
         if (-not $t.StartsWith('WAIT {')) { continue }
         try { $j = $t.Substring(5) | ConvertFrom-Json } catch { continue }
         [pscustomobject]@{ Marker = [string]$j.marker; Until = [string]$j.until_utc; Group = [string](Get-JsonProp $j 'group') }
     })
+}
+
+function Remove-OrphanWaits {
+    <# Стан WAIT, чия позначка зникла з origin, а час чекання минув, — видалити: рядок без позначки нічого не тримає, а
+    файлів без цього лишалися б сотні. Від NEW для тієї ж голови це відрізняє лише лічильник retakes і голова
+    продовження: позначка, перепушена з тим самим комітом, береться відразу, а не по `until`, а квоту все одно
+    перевіряє вибір рушія. Стан, що ще чекає, і узятий (`.claim`) лишаються: перший сам стане видалюваним, другий —
+    справа наряду. Порожній набір посилань (fetch нічого не дав) — нічого не видаляти. Повертає число видалених. #>
+    $live = $null
+    try { $live = Get-LiveStateNames } catch { Write-Log "стан WAIT без позначки: посилання не прочитано — $($_.Exception.Message)"; return 0 }
+    if ($live.Count -eq 0) { return 0 }
+    $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $n = 0
+    foreach ($f in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
+        if ($live.ContainsKey($f.Name) -or (Test-Path -LiteralPath (Get-ClaimPath $f.FullName))) { continue }
+        $t = [System.IO.File]::ReadAllText($f.FullName, $script:Utf8)
+        if (-not $t.StartsWith('WAIT {')) { continue }
+        $until = 0L
+        try { $until = [long](($t.Substring(5) | ConvertFrom-Json).until) } catch { continue }
+        if ($until -gt $now) { continue }
+        Remove-Item -LiteralPath $f.FullName -Force -ErrorAction SilentlyContinue
+        $n++
+    }
+    if ($n -gt 0) { Write-Log "стан WAIT без позначки на origin: видалено $n" }
+    $n
 }
 
 # --- здоров'я машини (лише показ, узяття не гейтить) ----------------------------------------------------------------
