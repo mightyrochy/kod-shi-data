@@ -1,0 +1,52 @@
+── ПРОМПТ (7220 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sweater · colour code: olive · about it: text н=1
+2 — kind code: trousers · colour code: khaki · about it: text н=2
+3 — kind code: ballet_flats · colour code: brown · about it: text н=3
+4 — kind code: beanie · colour code: beige · about it: text н=4
+5 — kind code: crossbody_bag · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; khaki — хакі; olive — оливковий.
+
+ТЕКСТИ:
+{
+"1": "This olive sweater features a relaxed silhouette and geometric patterns that bring visual interest without overwhelming the eye. The soft texture ensures comfort for long hours at your desk, while the color harmonizes beautifully with your autumn palette.",
+"2": "The khaki culottes offer a fluid line that balances the volume of the sweater above. Their tailored yet loose fit creates an elegant vertical shape, perfect for maintaining a neat office appearance while allowing ease of movement.",
+"3": "Brown ballet flats provide a quiet elegance that complements both the top and trousers. Their classic design adds a touch of sophistication without drawing too much attention, keeping your overall look balanced and professional.",
+"4": "The beige beanie introduces a warm, textural element to your ensemble. Its neutral tone ties together the earthy shades of your outfit, adding just enough coziness for the autumn season without compromising your office-appropriate style.",
+"5": "This beige crossbody bag offers practicality and style in one piece. Its size is perfect for carrying essentials during a busy day at work, while its color bridges the gap between the darker tones of your shoes and lighter hues of your top.",
+"6": "I have chosen an olive geometric sweater with a relaxed cut paired with khaki culottes to give you a comfortable yet polished look for your office day. The soft earth tones of the top and trousers blend seamlessly, creating a calm backdrop that lets your gold and silver jewelry shine. Brown ballet flats add a grounded, effortless finish, while the beige beanie introduces a cozy autumn touch without sacrificing professionalism. This combination respects the neatness required in an office setting while embracing the season's warmth and texture.",
+"7": "Tuck the relaxed sweater slightly at the front to define your waistline, adding structure to the outfit while keeping comfort intact throughout your day.",
+"8": "Carry your crossbody bag on the shoulder across your body for a secure and hands-free feel as you move through the office space.",
+"9": "Штани кюлоти зелені — The trousers are wide-leg; I kept them because they add necessary volume to balance the fitted sweater, creating a pleasing silhouette."
+}
+
+── ВІДПОВІДЬ (2283 симв., 22.2 с, HTTP 200) ──
+{
+  "1": "Цей оливковий светр має вільний силует і геометричні візерунки, які додають зорового інтересу без перевантаження ока. М’яка текстура забезпечує комфорт протягом довгих годин за твоїм столом, а колір гармонійно поєднується з твоєю осінньою палітрою.",
+  "2": "Хакі кюлоти пропонують плавний силует, який врівноважує об’єм светра зверху. Їхній кроїний, але вільний фасон створює елегантну вертикальну форму, ідеально підходить для підтримки охайного офісного вигляду, водночас дозволяючи свободу рухів.",
+  "3": "Коричневі балетки надають тиху вишуканість, яка доповнює як верх, так і штани. Їхній класичний дизайн додає нотку елегантності без надмірної уваги, зберігаючи твій загальний образ збалансованим і професійним.",
+  "4": "Бежева шапка-біні вносить теплий текстурний елемент у твій ансамбль. Її нейтральний тон поєднує земні відтінки твого образу, додаючи достатньо затишку для осіннього сезону без шкоди для твоєї офіційно відповідної стилістики.",
+  "5": "Ця бежева сумка-кросбоді пропонує практичність і стиль в одному предметі. Її розмір ідеальний для носіння необхідних речей протягом напруженого робочого дня, а її колір заповнює прогалину між темнішими тонами твого взуття та світлішими відтінками твоєї блузи.",
+  "6": "Я обрала оливковий геометричний светр з розслабленим кроєм у поєднанні з хакі кюлотами, щоб створити для тебе комфортний і водночас вишуканий образ на твій робочий день. М’які земні тони верху та штанів бездоганно гармонують між собою, створюючи спокійне тло, яке дозволяє твоєму золотому та срібному ювелірному приладдю сяяти. Коричневі балетки додають збалансований і невимушений фінал, а бежева шапка-біні вносить затишний осінній акцент без шкоди для професіоналізму. Ця комбінація поважає охайність, необхідну на роботі, водночас приймаючи тепло та текстуру сезону.",
+  "7": "Злегка підверни розслаблений светр спереду, щоб визначити лінію твоєї талії, додавши структури образу, зберігаючи при цьому комфорт протягом усього дня."
+  "8": "Носи сумку-кросбоді на плечі навхрест для безпечного відчуття і вільних рук під час пересування по офісному простору.",
+  "9": "Штани кюлоти хакі — Штани мають широкий крій; я залишила їх, тому що вони додають необхідний об’єм, щоб збалансувати приталений светр, створюючи гармонійний силует."
+}
