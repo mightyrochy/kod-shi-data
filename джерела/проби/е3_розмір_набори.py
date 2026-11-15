@@ -31,10 +31,8 @@ def набори():
     кеш = pathlib.Path(os.environ["TMP"]) / "е3_каталог.json.gz"
     if not кеш.exists():
         каталог = Ф.база_прогону(Ф.каталог_на_диску("каталог_повний.xml"), ліміт_фото=0)["каталог"]
-        with gzip.open(кеш, "wt", encoding="utf-8") as ф:
-            json.dump(каталог, ф, ensure_ascii=False)
-    with gzip.open(кеш, "rt", encoding="utf-8") as ф:
-        каталог = json.load(ф)
+        with gzip.open(кеш, "wt", encoding="utf-8") as ф: json.dump(каталог, ф, ensure_ascii=False)
+    with gzip.open(кеш, "rt", encoding="utf-8") as ф: каталог = json.load(ф)
     print("каталог", len(каталог), flush=True)
     for р in каталог:
         if р.get("слот") in А.АКСЕСУАР_ВИМІР:
