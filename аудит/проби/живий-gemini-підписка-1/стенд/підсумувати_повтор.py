@@ -20,26 +20,44 @@ if '--стан' in sys.argv:
     sys.exit(0)
 summary = {}
 hands = {}
+run_rules = {}
 for path in out.glob('стенд/службове/*/руки.jsonl'):
     screens = {x['крок']: x for x in (json.loads(line) for line in
                (path.parent / 'екрани.jsonl').read_text(encoding='utf-8').splitlines())}
     for line in path.read_text(encoding='utf-8').splitlines():
         x = json.loads(line)
+        broken = x.get('поломка_руки_2') or {}
+        if broken.get('що') or broken.get('діагноз'):
+            run_rules[(path.parent.name, x['прогін'])] = broken
         screen = screens.get(x['крок'], {})
-        # Для раннього запущеного стенда: беремо лише кадри галереї,
-        # де на видимому екрані є лічильник образів або навігація карток.
-        if not any('попередній' in e or 'наступний ›' in e or 'Записати вердикт' in e for e in screen.get('елем', [])):
+        # Галерею підтверджує її заголовок або навігація. На першій картці
+        # кнопки можуть мати короткі мітки «‹»/«›»; тільки довгі мітки
+        # пропускали показаний другий прохід с2 обох моделей.
+        if 'Твої образи.' not in screen.get('текст', '') and not any('попередній' in e or 'наступний ›' in e or 'Записати вердикт' in e for e in screen.get('елем', [])):
             continue
         hands[(path.parent.name, x['прохід'], x['прогін'])] = x
 hand_lines = ['# Руки образів на видимих картках', '',
               'Ситуація · прохід · номер на екрані → рука; ідентифікатор прогону відрізняє старі картки від нового збирання.', '']
+first_pass = {}
+for scene, pass_no, run in hands:
+    first_pass[(scene, run)] = min(pass_no, first_pass.get((scene, run), pass_no))
 for (scene, pass_no, run), x in hands.items():
     for p in x['позиції']:
         broken = ''
         if p['рука'] == '2':
-            m = re.search(r'"правила":(\[[^\]]*\])', x['поломка_руки_2'].get('що') or '')
-            broken = 'зламані правила: ' + ', '.join(json.loads(m[1])) if m else json.dumps(x['поломка_руки_2'], ensure_ascii=False)
-        hand_lines.append(f"- {scene} · {pass_no} · {p['позиція']} → рука {p['рука']}; прогін {run}" + (f"; {broken}" if broken else ''))
+            details = run_rules.get((scene, run), x['поломка_руки_2'])
+            m = re.search(r'"правила":(\[[^\]]*\])', details.get('що') or '')
+            label = re.search(r'"правило":"([^\"]+)"', details.get('що') or '')
+            if m:
+                broken = 'зламані правила: ' + ', '.join(json.loads(m[1]))
+            elif label:
+                # Поле «що» старого записувача має 400 символів. Для довгої
+                # поломки масив міг обірватися; назва містить повний список.
+                broken = 'зламані правила: ' + ', '.join(label[1].split('+')) + '; джерело: поле правило, масив правила у записі обірвано'
+            else:
+                broken = json.dumps(details, ensure_ascii=False)
+        repeated = f'; повторний показ карток проходу {first_pass[(scene, run)]}' if pass_no != first_pass[(scene, run)] else ''
+        hand_lines.append(f"- {scene} · {pass_no} · {p['позиція']} → рука {p['рука']}; прогін {run}" + (f"; {broken}" if broken else '') + repeated)
 (out / 'руки.md').write_text('\n'.join(hand_lines) + '\n', encoding='utf-8')
 for path in sorted(out.glob('с*/підсумок.json')):
     x = json.loads(path.read_text(encoding='utf-8'))
