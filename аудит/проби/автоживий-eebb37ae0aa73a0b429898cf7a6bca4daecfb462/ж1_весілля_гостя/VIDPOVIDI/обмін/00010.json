@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Floor-length wrap gown, A-line, with a V-neckline and flutter sleeves, in dusty sage green (#9CAF88), in a flowing chiffon with a soft lining\\n\\nStrappy block-heel sandals, open toe, 7 cm heel, in champagne gold (#D4B98A), in smooth satin\\n\\nSmall structured clutch, envelope shape, in soft ivory (#F2EBDD), in satin with a pearl clasp\\n\\nDrop earrings, small teardrop shape, in pale gold (#E3CFA0), in polished metal with a pearl\\n\\nThin pearl bracelet, in ivory (#F4EEE2), on a delicate chain\\n\\nLightweight shawl, rectangular and draped over the arms for the evening, in warm blush (#E8CFC4), in sheer silk-blend voile\\n\\nAs a sister of the bride, you need an outfit that is formal and still lets you move through an outdoor ceremony in August and a restaurant dinner afterward. The sage green chiffon gown reads as dressy without competing with the bride, and it stays light and airy in the summer warmth. Block heels hold steady on grass and terrace paving, while the champagne tones in the shoes and jewelry pick up the glow of late afternoon light. The sheer shawl is only an optional wrap for the cooler evening at the restaurant, so you stay comfortable without adding a heavy layer.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Wrap gown\\\",\\\"details\\\":\\\"Floor-length, A-line, V-neckline, flutter sleeves, flowing chiffon with a soft lining\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#9CAF88\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Strappy block-heel sandals\\\",\\\"details\\\":\\\"Open toe, 7 cm heel, smooth satin\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#D4B98A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Clutch\\\",\\\"details\\\":\\\"Small, structured, envelope shape, satin with a pearl clasp\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#F2EBDD\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Small teardrop shape, polished metal with a pearl\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#E3CFA0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Pearl bracelet\\\",\\\"details\\\":\\\"Thin, on a delicate chain\\\",\\\"slot\\\":\\\"bracelet\\\",\\\"color_hex\\\":\\\"#F4EEE2\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Shawl\\\",\\\"details\\\":\\\"Lightweight, rectangular, draped over the arms for the evening, sheer silk-blend voile\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#E8CFC4\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2135,\"output_tokens\":415},\"stop_reason\":\"end_turn\"}"
+ }
+}

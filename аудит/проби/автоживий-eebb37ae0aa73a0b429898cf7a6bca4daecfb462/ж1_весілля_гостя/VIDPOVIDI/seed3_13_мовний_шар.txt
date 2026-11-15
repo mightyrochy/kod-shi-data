@@ -1,0 +1,39 @@
+── ПРОМПТ (6186 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: beige — бежевий.
+
+ТЕКСТИ:
+{
+"1": "Dress: A-line wedding-guest dress with a V-neckline, soft flutter sleeves, a defined waist and a flowing skirt, midi length just below the calf, in deep jade green, lightweight silk crepe with a fine lining\n\nShoes: Block-heel sandals with a slim ankle strap, heel about 6 cm, in warm nude-gold, soft leather with a satin finish\n\nClutch: Small envelope clutch in champagne [colour: beige], silk satin\n\nEarrings: Teardrop earrings with a slim drop, in polished gold, metal\n\nBracelet: Thin, smooth cuff, in polished gold, metal\n\nWhy this outfit works: A silk crepe dress in a formal midi cut suits the dress code for a close family member at her sister's wedding, and it stays light and breathable for an August afternoon ceremony outdoors. Deep jade echoes her gray-green eyes and sets off her golden hair and warm skin, while avoiding white, ivory and anything that competes with the bride. The flared skirt moves easily on grass and at the restaurant afterward, and the block heel keeps her steady on soft ground. The warm gold accents and the champagne clutch pull the look together and carry it smoothly from daylight into the evening.",
+"2": "Wedding-guest dress",
+"3": "Block-heel sandals",
+"4": "Envelope clutch",
+"5": "Teardrop earrings",
+"6": "Cuff bracelet"
+}
+
+── ВІДПОВІДЬ (1448 симв., 17.4 с, HTTP 200) ──
+{"1":"Сукня: сукня А-силуету для гості на весіллі з V-подібним вирізом, м'якими рукавами-крильцями, підкресленою талією та спідницею, що красиво спадає, довжина міді трохи нижче литки, у глибокому нефритово-зеленому кольорі, легкий шовковий креп із тонкою підкладкою\n\nВзуття: сандалі на блоковому підборі з тонким ремінцем на щиколотці, підбор близько 6 см, у теплому тілесно-золотистому кольорі, м'яка шкіра з атласною обробкою\n\nКлатч: невеликий клатч-конверт у бежевому кольорі, шовковий атлас\n\nСережки: сережки-краплі з тонкою підвіскою, у полірованому золотому кольорі, метал\n\nБраслет: тонкий гладкий браслет-манжета, у полірованому золотому кольорі, метал\n\nЧому цей образ працює: сукня із шовкового крепу офіційного крою міді відповідає дрес-коду для близької родички на весіллі твоєї сестри, до того ж лишається легкою й повітряною для серпневої церемонії надворі вдень. Глибокий нефритовий відтінок перегукується з твоїми сіро-зеленими очима та підкреслює золотисте волосся й теплу шкіру, водночас оминаючи білий, айворі та все, що конкурує з нареченою. Розкльошена спідниця легко рухається по траві та в ресторані після церемонії, а блоковий підбор тримає тебе стійко на м'якому ґрунті. Теплі золоті акценти й бежевий клатч збирають образ докупи та плавно переносять його з денного світла у вечір.","2":"Сукня для гості на весіллі","3":"Сандалі на блоковому підборі","4":"Клатч-конверт","5":"Сережки-краплі","6":"Браслет-манжета"}
