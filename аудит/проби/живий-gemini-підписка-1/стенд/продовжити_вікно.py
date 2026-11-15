@@ -8,14 +8,12 @@ import datetime
 import hashlib
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
 
 HERE = Path(__file__).resolve().parent
 BASE = HERE.parent
-ROOT = HERE.parents[3]
 ATTEMPT = BASE / 'спроба_6'
 ATTEMPT.mkdir(exist_ok=True)
 TEMP = Path(os.environ['TEMP'])
@@ -23,13 +21,13 @@ STOR = TEMP / 'сторінка_спроба_6'
 STOR.mkdir(exist_ok=True)
 BUILD = '8dafc1113ba09cdc5459cead2c0878fbc14b2b37'
 EXPECTED = '890864aa7b59a89da48560a83f50f4123ad8131031b0acbf156bce2909b2ca94'
-html = subprocess.check_output(['git', 'show', BUILD + ':index.html'])
+html = subprocess.check_output(['git', 'show', '855d862368d2ad8e120fd7b083ec5b854c8728e8:index.html'])
 assert hashlib.sha256(html).hexdigest() == EXPECTED, 'Збірка відрізняється від с4'
 (STOR / 'index.html').write_bytes(html)
 env = dict(os.environ, PYTHONUTF8='1', PYTHONIOENCODING='utf-8',
            STOR=str(STOR), PYODIDE=r'C:\Users\gemini\pyodide',
            NODE_PATH=r'C:\Users\gemini\kod-shi-test-node\node_modules')
-SCENES = sorted(p.name for p in (BASE.parent / 'живий-як-людина-1').glob('с*') if p.is_dir())
+SCENES = sorted(p.name for p in (BASE.parent / 'живий-як-людина-1').glob('с[1-8]_*') if p.is_dir())
 PLAN = [('gemini-3.8-flash', s) for s in SCENES if not s.startswith('с4_')]
 PLAN += [('gemini-4-hydrogen', s) for s in SCENES]
 
@@ -114,15 +112,22 @@ def commit(title):
 state = {'початок_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
          'main_на_старті': subprocess.check_output(['git', 'rev-parse', 'origin/main'], text=True).strip(),
          'статус': 'виконується', 'завершено': [], 'квота_до': None}
+resume = ''
+if (ATTEMPT / 'стан.json').exists():
+    state = json.loads((ATTEMPT / 'стан.json').read_text(encoding='utf-8'))
+    state['статус'] = 'виконується'
+    state.setdefault('відновлення_utc', []).append(datetime.datetime.now(datetime.timezone.utc).isoformat())
+    resume = f'відновлення_{len(state["відновлення_utc"])}_'
 try:
     for args, name in [(['agy', 'models'], 'моделі'), (['agy', '-p', '/usage'], 'квота_до')]:
         result = subprocess.run(args, cwd=TEMP, capture_output=True, timeout=120, env=env)
-        (ATTEMPT / (name + '.stdout.txt')).write_bytes(result.stdout)
-        (ATTEMPT / (name + '.stderr.txt')).write_bytes(result.stderr)
+        (ATTEMPT / (resume + name + '.stdout.txt')).write_bytes(result.stdout)
+        (ATTEMPT / (resume + name + '.stderr.txt')).write_bytes(result.stderr)
         assert result.returncode == 0, name + ': CLI відхилила запит'
-    state['квота_до'] = quota((ATTEMPT / 'квота_до.stdout.txt').read_text(encoding='utf-8'))
-    state['квота_після'] = state['квота_до']
-    models = (ATTEMPT / 'моделі.stdout.txt').read_text(encoding='utf-8')
+    current_quota = quota((ATTEMPT / (resume + 'квота_до.stdout.txt')).read_text(encoding='utf-8'))
+    state['квота_до'] = state['квота_до'] or current_quota
+    state['квота_після'] = current_quota
+    models = (ATTEMPT / (resume + 'моделі.stdout.txt')).read_text(encoding='utf-8')
     for model in ['gemini-3.8-flash-low', 'gemini-4-hydrogen-low']:
         assert model + '\t' in models, 'Нема моделі: ' + model
     status()
