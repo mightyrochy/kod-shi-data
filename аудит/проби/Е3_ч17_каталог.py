@@ -33,7 +33,9 @@ print(f"код: {код}")
 
 def _слотова_near(слот):
     """Умовність слота (дані проб): обгортку `near_слота` знято в Е3-місце-речі-ч-блиск-нейтраль."""
-    return _КР.SLOT_NEAR_FALLBACK.get(слот, 0.2)
+    sys.path.insert(0, str(КОРІНЬ / "джерела" / "проби"))
+    from слот_near_дані import SLOT_NEAR_FALLBACK
+    return SLOT_NEAR_FALLBACK.get(слот, 0.2)
 
 
 БЕЗ_КАТАЛОГУ = "--без-каталогу" in sys.argv

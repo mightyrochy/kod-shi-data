@@ -7,6 +7,7 @@
 import json, sys, os, collections
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
 import feed as Ф, bridge as B, колір_образу as КО
+import слот_near_дані as ДАНІ
 вх0 = json.load(open("стенд_вх.json", encoding="utf-8")); вх0["каталог"] = Ф.каталог_на_диску("каталог_повний.xml")
 СЦЕНИ = dict(вечірка=dict(нагода="вечірка", місце="ресторан", година=19, темп_c=18, дрес_код="cocktail"),
              побачення=dict(нагода="побачення", місце="ресторан", година=19, темп_c=18),
@@ -27,7 +28,7 @@ for сц in (sys.argv[1:] or list(СЦЕНИ)):
               "(біля обличчя: %s) | промпт складання %d симв., пул %s | полюс розрив: %s"
               % (сц, намір + ("/" + мета if мета else ""), n, вс["c"], вс["e"], вс["b"], 100.0 * (вс["e"] + вс["b"]) / max(1, n),
                  sum(1 for к in по.values() if к["e"]), len(по), розр or "—",
-                 [с for с in розр if КО.SLOT_NEAR_FALLBACK.get(с, 1) >= КО.NEAR_МІН] or "ні", len(т),
+                 [с for с in розр if ДАНІ.SLOT_NEAR_FALLBACK.get(с, 1) >= КО.NEAR_МІН] or "ні", len(т),
                  (р.get("стеля") or {}).get("пул_токенів"),
                  "недоступний" if "break" in (п.get("poles_unavailable") or []) else
                  ("є речі" if вс["b"] else "нема речей")))
