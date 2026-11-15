@@ -124,7 +124,7 @@ class О(BaseHTTPRequestHandler):
         with замок: у_польоті -= 1
         відповідь = ""; u = {}; статус = 200
         if ітог is None or ітог.get("status") != "SUCCESS":
-            статус = 429 if re.search(r"quota|rate|limit|429|exhaust", f"{помилка} {json.dumps(ітог or {}, ensure_ascii=False)} {err_stderr}", re.I) else 502
+            статус = 429 if re.search(r"\bquota\b|\brate[-_\s]?limit(?:ed|ing)?\b|RESOURCE_EXHAUSTED|\b429\b", f"{помилка} {json.dumps(ітог or {}, ensure_ascii=False)} {err_stderr}", re.I) else 502
             помилка = помилка or str((ітог or {}).get("error") or (ітог or {}).get("status"))[:300]
         else:
             відповідь = (ітог.get("response") or "").strip(); u = ітог.get("usage") or {}

@@ -15,7 +15,7 @@ const сон = n => new Promise(r=>setTimeout(r,n));
 const запис = (name, text) => fs.appendFileSync(path.join(тека,name),text+'\n');
 const дії = [...fs.readFileSync(path.join(перший,'хід.md'),'utf8').matchAll(/### (\d+) ·[^\n]*\n([\s\S]*?)(?=\n### |$)/g)].map(m=>({крок:Number(m[1]),текст:(m[2].match(/^- дія: ([\s\S]*?)(?=\n\n|$)/m)||[])[1]})).filter(x=>x.текст);
 if(process.env.REPLAY_PLAN){console.log(JSON.stringify({ситуація,дій:дії.length,слова:дії.filter(x=>x.текст.startsWith('надрукувала в ')),новий:дії.filter(x=>x.текст==='натиснула «кнопка: Новий»')}));process.exit(0);}
-let браузер, стор, активні=0, останнійВиклик=0, крок=0, прохід=1, слів=0, пропущено=0;
+let браузер, стор, активні=0, останнійВиклик=0, крок=0, прохід=1, слів=0, пропущено=0, блокер=null;
 const summary={ситуація,початок:new Date().toISOString(),слова:[],розбіжності:[],руки:[]};
 function розбіжність(дія,причина,стан){
   const r={прохід,крок:дія.крок,дія:дія.текст,причина,екран:стан.текст,елементи:стан.елем};
@@ -37,7 +37,15 @@ async function спокій(){
   // сторінки, щоб не пропускати кнопки під час «Думаю…» до першого HTTP.
   let кадрО=Date.now();
   while(true){
-    const думає=await стор.evaluate(()=>Array.from(document.querySelectorAll('input,textarea')).some(x=>x.disabled && x.getBoundingClientRect().height>0) || /Думаю…/.test(document.body.innerText));
+    if(блокер && !активні)throw new Error(блокер);
+    const думає=await стор.evaluate(()=>{
+      const ткання=document.getElementById('е-очікування');
+      const палітра=document.getElementById('пал-стан');
+      return (ткання && ткання.getBoundingClientRect().height>0) ||
+        (палітра && палітра.getBoundingClientRect().height>0 && /^(Ще мить…|…)\s*$/.test(палітра.innerText)) ||
+        Array.from(document.querySelectorAll('input,textarea')).some(x=>x.disabled && x.getBoundingClientRect().height>0) ||
+        /Думаю…/.test(document.body.innerText);
+    });
     if(!активні && !думає && Date.now()-останнійВиклик>=1500)break;
     await сон(2000);
     if(Date.now()-кадрО>=15000){await кадр('чекає відповіді моделі й завершення роботи сторінки');кадрО=Date.now();}
@@ -93,6 +101,7 @@ async function головна(){
     try{
       const r=await new Promise((resolve,reject)=>{const q=http.request({host:'127.0.0.1',port:порт,path:'/',method:'POST',timeout:960000,headers:{'content-type':'application/json','content-length':Buffer.byteLength(тіло),'x-prohid':encodeURIComponent(ситуація+' · '+прохід)}},v=>{const a=[];v.on('data',x=>a.push(x));v.on('end',()=>resolve({status:v.statusCode,headers:v.headers,body:Buffer.concat(a).toString('utf8')}));});q.on('error',reject);q.on('timeout',()=>q.destroy(new Error('таймаут моста')));q.end(тіло);});
       fs.appendFileSync(path.join(службове,'обміни.jsonl'),JSON.stringify({початок,прохід,запит:тіло,статус:r.status,відповідь:r.body})+'\n');
+      if(r.status===429)блокер='ЗАБЛОКОВАНО: квота agy; сира відповідь у записі моста';
       const headers={};for(const n of ['x-model','x-images-dropped'])if(r.headers[n])headers[n]=r.headers[n];
       await route.fulfill({status:r.status,contentType:'application/json',headers,body:r.body});
     }catch(e){fs.appendFileSync(path.join(службове,'обміни.jsonl'),JSON.stringify({початок,прохід,запит:тіло,помилка:String(e)})+'\n');await route.fulfill({status:502,body:JSON.stringify({error:{message:String(e)}})}).catch(()=>{});}
