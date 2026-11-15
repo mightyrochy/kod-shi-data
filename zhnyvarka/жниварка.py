@@ -82,6 +82,7 @@
 import argparse, collections, concurrent.futures, csv, datetime, functools, gzip, html, io, json, os, re, sys, threading, time
 import xml.etree.ElementTree as ET
 from urllib.parse import urljoin, urlparse, urlunparse, parse_qs, parse_qsl, urlencode, quote
+from ідентичність_сторінки import ідентифікатор_сторінки, ідентифікатор_запису
 
 try:
     import requests
@@ -1360,7 +1361,7 @@ def _власник_сторінки(ф, url):
     єдине значення вибору кольору) і жоден перелік кольорів сторінки не має більше одного; свідчень нема — «невідомо»
     (14949). Форма доказу — `woo:один_колір`: джерело `картка:один_колір`, товар = id запису, кадри = галерея запису."""
     невідомо = json.dumps("невідомо", ensure_ascii=False)
-    товар = ф.get("id_магазину") or (re.search(r"(\d{3,})/?$", url or "") or [None, None])[1]
+    товар = ідентифікатор_запису(ф, url)
     переліки = [{str(в.get("колір")).strip().lower() for в in ф.get("варіанти") or [] if в.get("колір")},
                 {(x.get("назва") or x.get("hex") or x.get("фото") or "").strip().lower() for x in ф.get("свотчі") or []},
                 set(ф.get("кольори_вибору") or [])]
@@ -1735,6 +1736,7 @@ def факти_з_картки(html_текст, url, селектори=None):
     # `<base href>` (25union: `/image/cache/…` від кореня, не від картки — 542 хибні адреси фото, 5629)
     база_href = суп.find("base", href=True)
     url_бази = urljoin(url, база_href["href"].strip()) if база_href else url
+    скрипти_даних = [с.get_text() for с in суп.find_all("script", type="application/json")]
     for s in суп(["script", "style", "noscript", "svg"]):
         s.decompose()
     h1 = суп.find("h1")
@@ -1761,7 +1763,7 @@ def факти_з_картки(html_текст, url, селектори=None):
                       ("артикул", '[itemprop="sku"]:not(meta), .sku')):
         ел = кор.select_one(сел)
         ф[поле] = _текст(ел, 80) or None
-    ф["id_магазину"] = ф["артикул"]
+    ф["id_магазину"] = ідентифікатор_сторінки(продукт, вузли, блок, скрипти_даних, url, ф["артикул"])
     # блок опису, який сторінка підписала сама: селектор рецепта, інакше `itemprop="description"` (рядок 5657). Сусідні блоки,
     # що вона підписала «схожими» чи «рекомендованими», з нього геть; будь-який інший `class*="desc"` описом не вважається.
     блок_опису = None
@@ -2581,7 +2583,7 @@ def канонічний_запис(ф, маг, канал):
         розміри_джерело=ф.get("розміри_джерело") or ("варіанти" if ф.get("варіанти") else None),
         заміри=(хар.get("заміри") or None), параметри_моделі=(хар.get("параметри_моделі") or None),
         бренд=ф.get("бренд") or хар.get("бренд"), артикул=ф.get("артикул"),
-        id_магазину=ф.get("id_магазину") or (re.search(r"(\d{3,})/?$", url or "") or [None, None])[1],
+        id_магазину=ідентифікатор_запису(ф, url),
         характеристики={k: v for k, v in хар.items() if k in ("сезон", "довжина", "рукав", "принт", "крій", "країна",
                                                               "каблук", "метал", "наповнювач", "підкладка", "тканина", "догляд")},
         group_id=ф.get("group_id"), канал=канал, платформа=маг.get("платформа"), магазин=маг["домен"],
