@@ -200,7 +200,7 @@ import силует_крої as _СК
             "saved_looks": {"вхід": "образи", "поля": {"id": "ід", "look": "номер", "case": "випадок", "date": "дата",
                                                        "verdict": "вердикт", "open": "відкрито"},
                             "опис": "reason code if unreadable"},
-            "palette_options": {"вхід": "палітра", "поля": {"id": "ід", "part": "частина", "name": "назва",
+            "palette_options": {"вхід": "палітра", "поля": {"id": "ід", "part": "частина", "name": "мітка",
                                                              "advised": "радимо", "chosen": "обрано"},
                                 "опис": "gamuts; bases once shown"}}
 ПЕРЕЛІК_МАКС = 30
