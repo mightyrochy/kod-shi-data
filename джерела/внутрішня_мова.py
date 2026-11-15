@@ -23,6 +23,7 @@ import json as _json_
 import slots as _СЛ
 import os
 import statements as _ЗАЯВИ
+import її_входи as _ЇВ
 import словник_кольору as _СК
 import re
 from реєстр_правил import INTENT as _НАМІРИ
@@ -855,6 +856,18 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
 # Значення `place` заяв опцій розкладки (ВМ-3б): коди місця — англійські слова (`hand`, `crossbody`,
 # `on_face`…), тож визначення називає лише, що це місце; перелік у кожному визначенні роздув би промпт.
 _МІСЦЯ_ОПЦІЙ = "where it is worn"
+# ХТО ОГОЛОСИВ ФОКУС — значення `keep_by` (корінь Е2-текст-жінці, рядок дошки 15491): опис для моделі складають
+# звідси, а `заява` не приймає значення поза цим переліком. Доти три описи писали перелік вільним рядком кожен
+# свій, і два називали «zone — her focus zone», якої жоден писач не дає (фокусної зони сценарію не пише ніхто),
+# а `focus_count_over_ceiling` описував `keep`, `quiet` і `keep_by`, яких його писач (`суд_ремесло`) не пише
+# зовсім. Писачі: `суд_від_моделі._лишити_стишити` (K-COL-02), `палітра_схеми` (K-COL-03).
+ХТО_ОГОЛОСИВ = {"scheme": "the palette scheme's accent", "her_wish": "her own choice"}
+
+
+def _опис_keep_by():
+    return "keep_by — who declared it: " + ", ".join("%s — %s" % кв for кв in ХТО_ОГОЛОСИВ.items())
+
+
 ЗАЯВИ = {
     "palette_choice_part": "the current state of this palette part: part is scheme, base or saturation; "
                            "values.value is its actual value, or null while pending; choice is its author. "
@@ -1519,10 +1532,12 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "frame_size_not_checked": "the code did not check the frame's size against her face (values: item — the item: item_id, kind and colour codes)",
     "watch_size_not_checked": "the code did not check the watch's size against her wrist (values: item — the item: item_id, kind and colour codes)",
     "glove_size_not_checked": "the code did not check the gloves' size against her palm (values: item — the item: item_id, kind and colour codes)",
-    "her_foot_length_unknown": "the code does not know her foot length; she can enter it herself: tab "
-                               "\"Profile\", row \"Extended measurements\", field \"Foot length\" (mm)",
-    "her_head_girth_unknown": "the code does not know her head girth; she can enter it herself: tab "
-                              "\"Profile\", row \"Extended measurements\", field \"Head girth\" (cm)",
+    # де вона введе вимір сама — з `її_входи` (поле профілю на екрані), не рядком тут: доти опис
+    # казав «одне з питань анкети», коли анкети нема, а поле вже стояло в «Розширених вимірах»
+    "her_foot_length_unknown": "the code does not know her foot length; she can enter it herself: "
+                               + _ЇВ.де_ввести_en("довжина_стопи_мм"),
+    "her_head_girth_unknown": "the code does not know her head girth; she can enter it herself: "
+                              + _ЇВ.де_ввести_en("голова_см"),
     "her_pupil_distance_unknown": "the code does not know the distance between her pupils",
     "her_wrist_girth_unknown": "the code does not know her wrist girth",
     "her_palm_girth_unknown": "the code does not know her palm girth",
@@ -1736,7 +1751,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "leg_proportion_template_crotch": "the code does not count torso-to-leg proportions: the crotch height "
                                       "comes from a template, not from her; one measurement fixes this",
     "calf_girth_not_measured": "her calf girth is unknown, so how the edges of shoes and of a hem land on the "
-                               "calf is not measured; there is a field for it in \"Extended measurements\"",
+                               "calf is not measured; she can enter it herself: " + _ЇВ.де_ввести_en("литка"),
     "calf_not_widest_point": "the calf is measured and is not the widest place of her leg, so there is "
                              "nothing to compare the edges of shoes and hem with",
     "shoe_cut_irrelevant_leg_covered": "the shoe's cut-line decides nothing here: a long bottom covers the leg "
@@ -1999,9 +2014,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "items, and each item of an echo counts (values: count — how many are loud, "
                                  "ceiling — the ceiling; face — which facial features are loud too: hair, "
                                  "glasses; keep — slot codes of the declared loud element with its echo, "
-                                 "quiet — slot codes of the other loud items, keep_by — who declared it: "
-                                 "scheme — the palette scheme's accent, zone — her focus zone, her_wish — "
-                                 "her own choice)",
+                                 "quiet — slot codes of the other loud items, " + _опис_keep_by() + ")",
     "keep_one_loud_mute_rest": "keep one loud element as the focus and swap each other loud item for a quieter "
                                "item in the same slot — a muted version of its family, or a neutral when the "
                                "slot has none; not by removing the item",
@@ -2161,9 +2174,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "focus_count_over_ceiling": "the outfit has more focuses than the ceiling: equal focuses put each other "
                                 "out, and the outfit reads busy; one colour repeated in several items is one "
                                 "focus (an echo), and a texture alone is not a focus (values: count — how many "
-                                "focuses, ceiling — the ceiling; keep — slot codes of the focus declared by the "
-                                "palette scheme or the focus zone, quiet — slot codes of the other focuses, "
-                                "keep_by — who declared it: scheme, zone or deliberate — your own declared move)",
+                                "focuses, ceiling — the ceiling)",
     "keep_one_focus_quiet_rest": "keep one focus and quieten the rest with a quieter item in the same slot: lower "
                                  "chroma, a smaller print scale; not by removing every focus — the outfit keeps one",
     "keep_declared_focus_quiet_others": "keep the declared focus as it is and quieten only the other focuses with "
@@ -2654,8 +2665,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                        "jewellery is not a colour (values: families — colour family codes, one "
                                        "per hue; keep — "
                                        "slot codes of the declared accent, quiet — slot codes of the other "
-                                       "hues, keep_by — who declared it: scheme — the palette scheme's accent, "
-                                       "her_wish — her own choice)",
+                                       "hues, " + _опис_keep_by() + ")",
     "keep_one_coloured_rest_neutral": "keep one hue coloured, with its echo, and make the rest neutral of the same "
                                       "lightness band (values, when the accent is declared: keep — slot codes to "
                                       "keep coloured, quiet — slot codes to make neutral)",
@@ -3848,6 +3858,10 @@ def заява(код, *, recipient=None, source=None, choice=None, rank=None,
     _вільні = sorted(к for к in КЛЮЧІ_РЕЧІ & set(значення) if _річ_вільним(значення[к]))
     if _вільні:
         raise ValueError("річ заяви %s вільним текстом (%s): річ — `річ_заяви`, без назви" % (код, ", ".join(_вільні)))
+    _чужі = sorted(set(значення.get("keep_by") or ()) - set(ХТО_ОГОЛОСИВ))
+    if _чужі:
+        raise ValueError("keep_by заяви %s: %s поза `ХТО_ОГОЛОСИВ` — опис моделі цього значення не знає"
+                         % (код, ", ".join(map(str, _чужі))))
     м = МЕТАДАНІ_ЗАЯВ.get(код, {})
     return _ЗАЯВИ.створити(код, значення, recipient=recipient or м.get("recipient", _ЗАЯВИ.АДРЕСАТ_ТИПОВИЙ),
                            source=source or м.get("source", UNKNOWN), choice=choice or м.get("choice", UNKNOWN),
