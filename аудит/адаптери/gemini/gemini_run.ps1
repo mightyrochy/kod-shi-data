@@ -1526,6 +1526,7 @@ function Start-Markers($Workers) {
     $script:Held = @{}
     [void](Repair-GpuModels)
     $started = 0
+    [void](Remove-OrphanWaits)
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $all = @(Get-Markers | Where-Object { -not $_.Slug.StartsWith('Е1-нічний-живий-') }) + @(Get-NightlyMarker)
     # Позначка з назвою не за форматом — рядок диспетчерові раз на позначку: 31.10 `ВИМКНИ-НОУТБУК/cc-off/31102` (спроба з
