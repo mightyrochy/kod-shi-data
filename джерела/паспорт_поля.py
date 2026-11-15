@@ -14,7 +14,8 @@ import re
     "@вимір_like": {"вісь": ('like', 'event_kind')},
     "@вимір_kind": {"вісь": ('kind', 'event_kind')},
     "подія": {
-        "схема": lambda м: 'her words copied letter for letter, shortened only by leaving words out',
+        "схема": lambda м: ('her words copied letter for letter, shortened only by leaving words out; all her '
+                            'words of when are left out: they are the quote of "пора"'),
         "поле": 'event',
         "її_мовою": True,
         "мова": lambda м: dict(м.або_невідомо(м.вільний), description='подія коротко, її мовою'),
@@ -246,6 +247,9 @@ import re
         "хід_плиток": 2,
         "мова": lambda м: м.перелік('part_of_day', 'частина доби з її слів чи години'),
         "цитата": 'без',
+        # Уривок пори — її слова про час («о 20:00»): картці («Твої слова») — так, стилістці — ні, їй лише код
+        # `part_of_day` (корінь Е2-частина-дня, 15498; `пакет_моделі.випадок_для_пакета`)
+        "уривок_стилістці": False,
     },
     "пора_року": {
         "сценарій": ('пора року: з місяця події, коли вона його назвала (`місяць`, рядок 5260), інакше з сьогоднішньої дати (рядок 3950, `пора_року`); моделям — `season` дня, суду — K-MAT-03, K-WEA-01, K-WEA-07 без градусів (рядок 5261)', ('сценарій', 'суд_образу')),

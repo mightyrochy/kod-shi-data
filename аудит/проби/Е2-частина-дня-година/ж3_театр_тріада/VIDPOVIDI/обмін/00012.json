@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-gauge crew-neck knit, slightly fitted, hip length, deep burgundy #6D2036, merino wool\\nA-line midi skirt, falling just below the knee, midnight navy #25304A, wool crepe\\nStraight single-breasted coat, knee length, soft heather grey #8A8F98, brushed wool\\nAnkle boots with a low block heel and a softly rounded toe, black #1C1A1D, smooth leather\\nSheer matte tights, black #1C1A1D, fine nylon knit\\nSmall structured shoulder bag, black #1C1A1D, grained leather\\nSlim drop earrings, antique gold #B08D57, brushed metal\\n\\nThis outfit is neat and polished without being stiff, which suits an evening at the theatre. The deep burgundy next to your face warms your fair skin and sets off your dark hair and slate-blue eyes. Under artificial light the rich colours look saturated and elegant, and the navy skirt grounds the look. The A-line skirt and low block heel keep you comfortable through a long performance, and the coat covers the cool autumn evening on the way there and back.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Crew-neck knit\\\",\\\"details\\\":\\\"Fine-gauge, slightly fitted, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#6D2036\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"A-line midi skirt\\\",\\\"details\\\":\\\"Falling just below the knee, wool crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#25304A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight single-breasted coat\\\",\\\"details\\\":\\\"Knee length, brushed wool\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#8A8F98\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"Low block heel, softly rounded toe, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1C1A1D\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sheer matte tights\\\",\\\"details\\\":\\\"Fine nylon knit\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#1C1A1D\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small structured shoulder bag\\\",\\\"details\\\":\\\"Grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1C1A1D\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Slim drop earrings\\\",\\\"details\\\":\\\"Brushed metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#B08D57\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2045,\"output_tokens\":410},\"stop_reason\":\"end_turn\"}"
+ }
+}
