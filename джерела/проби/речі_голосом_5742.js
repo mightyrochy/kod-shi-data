@@ -92,7 +92,7 @@ const РЕЧІ = [
     const знімок = async ім => { const б = page.locator('#оц-речі'); await б.scrollIntoViewIfNeeded(); await page.waitForTimeout(100); await б.screenshot({ path: path.join(тека, ім) }); };
     await page.evaluate(async () => {
       const ф = id => ({ ід: id, тип: 'image/jpeg', дані: __фото[id], ширина: 600, висота: 800 });
-      ОЦ.фото = [ф('ф1'), ф('ф2')]; малюватиОцінкуП(); window.__біг = оцінитиОбразП();
+      ОЦ.фото = [ф('ф1'), ф('ф2')]; показатиОцінку(); window.__біг = оцінитиОбразП();
     });
     await чекати('поява переліку речей', () => !document.getElementById('оц-речі').hidden && document.querySelectorAll('#оц-речі .оц-річ').length > 0);
     лог('перелік:', JSON.stringify(await рядки()));
