@@ -591,7 +591,7 @@ function Get-GpuStateLines($LockedBy, $Holders = @()) {
     # Сторож замка: той самий вимір ряду, що й рядки вище; рядок диспетчерові — раз на ряд бездіяльності (Update-GpuWatch).
     try {
         $w = Update-GpuWatch $Holders $watchSample { param($l) [bool](Add-Line $l) }
-        if ($null -ne $w) { $lines += "- замок тримає $($w.Marker) $($w.LockMinutes) хв; карта без роботи $(if ($gpu.Error) { '?' } else { $w.IdleMinutes }) хв; PID сервера змінювався $($w.PidChanges) разів" }
+        if ($null -ne $w) { $lines += "- замок тримає $($w.Marker) $($w.LockMinutes) хв (без сну; сон $($w.SleepMinutes) хв); карта без роботи $(if ($gpu.Error) { '?' } else { $w.IdleMinutes }) хв; PID сервера змінювався $($w.PidChanges) разів" }
     } catch { Write-Log "сторож GPU: $($_.Exception.Message)"; $lines += '- замок тримає: не виміряно (збій — claude-run.log)' }
     $lines
 }

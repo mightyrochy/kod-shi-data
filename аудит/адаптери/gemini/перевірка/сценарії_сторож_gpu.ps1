@@ -29,40 +29,62 @@ $newEnv = {
     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir $box -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
     foreach ($d in @($work, "$work/state", "$work/slots", $box, "$tmp/lanes", "$tmp/gout")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"
-    $script:Limits = @{ slots = @{ claude = 2 }; source = 'код'; claude_laptop = @(); gpu_idle_minutes = 30; gpu_idle_percent = 15 }
+    $script:Limits = @{ slots = @{ claude = 2 }; source = 'код'; claude_laptop = @(); gpu_idle_minutes = 90; gpu_idle_percent = 15 }
     $script:TestBox = $box
 }
 function Read-Box { @(Get-ChildItem -LiteralPath $script:TestBox -Filter '*.txt' -File -ErrorAction SilentlyContinue | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() }) }
 
-# --- (а) сьогоднішній випадок: замок тримається, карта 0 %, PID міняється ---------------------------------------------------
+# --- (а) сьогоднішній випадок: замок тримається, карта 0 %, PID міняється; перед тим — сон ноутбука -------------------------------
 Scenario 'а випадок 15.11' {
     . $newEnv 'a'
     $send = { param($l) [bool](Add-Line $l) }
     $holder = @([pscustomobject]@{ Marker = $marker; Since = '2026-11-15T09:00:00Z' })
+    $tick = { param([int]$Min, [int]$Pct, [int]$OwnerPid) Update-GpuWatch $holder ([pscustomobject]@{ Percent = $Pct; OwnerPid = $OwnerPid }) $send "$tmp/a/state/gpu-watch.json" $day.AddMinutes($Min) }
     # ДО: запобіжник утримань (Update-HoldSignals) бачить лише позначки, що не стартують, — наряд, що йде, рядка не дає.
     Update-HoldSignals @{} $send
     Check 'а ДО: наявний запобіжник за цього випадку мовчить — рядків 0' (@(Read-Box).Count -eq 0)
-    # Виміри з #1856: 19:39 0 %, 19:45 0 %, 19:50 12 %, 19:55 0 %; PID 30368, 28888, 30348, 36888.
-    $series = @(@(19, 39, 0, 30368), @(19, 45, 0, 28888), @(19, 50, 12, 30348), @(19, 55, 0, 36888), @(20, 0, 0, 36888), @(20, 5, 0, 36888))
-    foreach ($s in $series) { $w = Update-GpuWatch $holder ([pscustomobject]@{ Percent = $s[2]; OwnerPid = $s[3] }) $send "$tmp/a/state/gpu-watch.json" (At $s[0] $s[1]) }
-    Check "а до порога (26 хв без роботи) — рядка нема, в #1856: замок $($w.LockMinutes) хв, без роботи $($w.IdleMinutes) хв, PID ×$($w.PidChanges)" (@(Read-Box).Count -eq 0 -and $w.IdleMinutes -eq 26 -and $w.PidChanges -eq 3 -and $w.LockMinutes -eq 665)
-    $w = Update-GpuWatch $holder ([pscustomobject]@{ Percent = 0; OwnerPid = 36888 }) $send "$tmp/a/state/gpu-watch.json" (At 20 9)
+    # Робота до сну (11:00, 11:05), сон ноутбука без вимірів до 15:35, далі карта працює до 19:35.
+    [void](& $tick (11 * 60) 60 30000); [void](& $tick (11 * 60 + 5) 60 30000)
+    for ($m = 15 * 60 + 35; $m -le 19 * 60 + 35; $m += 5) { [void](& $tick $m 60 30000) }
+    # Виміри з #1856: 19:39 0 %, 19:45 0 %, 19:50 12 %, 19:55 0 %; PID 30368, 28888, 30348, 36888; далі карта на 0 % і той самий PID.
+    foreach ($s in @(@(39, 0, 30368), @(45, 0, 28888), @(50, 12, 30348), @(55, 0, 36888))) { $w = & $tick (19 * 60 + $s[0]) $s[1] $s[2] }
+    for ($m = 20 * 60; $m -le 21 * 60 + 5; $m += 5) { $w = & $tick $m 0 36888 }
+    Check "а до порога (86 хв без роботи) — рядка нема; в #1856: замок $($w.LockMinutes) хв, сон $($w.SleepMinutes), без роботи $($w.IdleMinutes) хв, PID ×$($w.PidChanges)" (@(Read-Box).Count -eq 0 -and $w.IdleMinutes -eq 86 -and $w.PidChanges -eq 4 -and $w.SleepMinutes -eq 270 -and $w.LockMinutes -eq 455)
+    $w = & $tick (21 * 60 + 9) 0 36888
     $r = @(Read-Box)
-    Check "а понад поріг — рівно один рядок диспетчерові: $($r -join ' | ')" ($r.Count -eq 1 -and $r[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE codex/Е1-нічний-живий-20261115 ЗАМОК 669 БЕЗ_РОБОТИ 30 PID_ЗМІН 3')
-    foreach ($m in 14, 19, 24, 60) { [void](Update-GpuWatch $holder ([pscustomobject]@{ Percent = 0; OwnerPid = 36888 }) $send "$tmp/a/state/gpu-watch.json" (At 20 $m)) }
-    [void](Update-GpuWatch $holder ([pscustomobject]@{ Percent = 0; OwnerPid = 1 }) $send "$tmp/a/state/gpu-watch.json" (At 21 5))
+    Check "а понад поріг — рівно один рядок диспетчерові (замок без сну, сон окремо): $($r -join ' | ')" ($r.Count -eq 1 -and $r[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE codex/Е1-нічний-живий-20261115 ЗАМОК 459 СОН 270 БЕЗ_РОБОТИ 90 PID_ЗМІН 4')
+    for ($m = 21 * 60 + 14; $m -le 22 * 60 + 9; $m += 5) { [void](& $tick $m 0 $(if ($m -eq 22 * 60 + 9) { 1 } else { 36888 })) }
     Check 'а повторні проходи тієї самої причини (навіть із новим PID) — нових рядків нуль' (@(Read-Box).Count -eq 1)
-    # Карта попрацювала й знову стала — нова причина, новий рядок.
-    [void](Update-GpuWatch $holder ([pscustomobject]@{ Percent = 70; OwnerPid = 1 }) $send "$tmp/a/state/gpu-watch.json" (At 21 10))
-    [void](Update-GpuWatch $holder ([pscustomobject]@{ Percent = 0; OwnerPid = 1 }) $send "$tmp/a/state/gpu-watch.json" (At 21 15))
-    [void](Update-GpuWatch $holder ([pscustomobject]@{ Percent = 0; OwnerPid = 1 }) $send "$tmp/a/state/gpu-watch.json" (At 21 46))
+    # Карта попрацювала й знову стала на 90 хв — нова причина, новий рядок.
+    [void](& $tick (22 * 60 + 14) 70 1)
+    for ($m = 22 * 60 + 19; $m -le 23 * 60 + 49; $m += 5) { [void](& $tick $m 0 1) }
     Check 'а нова бездіяльність після роботи карти — другий рядок' (@(Read-Box).Count -eq 2)
     # Рядки проходять шаблон публікатора, чужий текст — ні.
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pubw" -OutboxDir "$tmp/pubo"
     $all = @(Read-Box)
     Check 'а обидва рядки приймає й публікатор' (@($all | Where-Object { (Test-OutboxLine $_) -eq '' }).Count -eq $all.Count)
     Check 'а рядок будить диспетчера (Test-DispatcherAction)' (Test-DispatcherAction $all[0])
-    Check 'а підроблений рядок (чужий текст у позначці) публікатор відкидає' ((Test-OutboxLine 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE codex/x; rm ЗАМОК 1 БЕЗ_РОБОТИ 1 PID_ЗМІН 0') -ne '')
+    Check 'а підроблений рядок (чужий текст у позначці) публікатор відкидає' ((Test-OutboxLine 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE codex/x; rm ЗАМОК 1 СОН 0 БЕЗ_РОБОТИ 1 PID_ЗМІН 0') -ne '')
+    Check 'а рядок старого формату (без СОН) публікатор відкидає' ((Test-OutboxLine 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE codex/x ЗАМОК 1 БЕЗ_РОБОТИ 1 PID_ЗМІН 0') -ne '')
+}
+
+# --- (а2) справний прогін: чергування двох моделей (перезавантаження з новим PID), підготовка без викликів, сон ------------------
+# 15.11 у справному прогоні було 107 перезавантажень на 377 викликів (20–120 с без обчислень кожне), 69 хв підготовки Codex без
+# викликів моделі і сон ноутбука 11:30–15:29 UTC: сторож не має давати тривоги.
+Scenario 'а2 справний прогін' {
+    . $newEnv 'a2'
+    $send = { param($l) [bool](Add-Line $l) }
+    $holder = @([pscustomobject]@{ Marker = $marker; Since = '2026-11-15T09:00:00Z' })
+    $maxIdle = 0; $w = $null; $n = 0
+    for ($m = 9 * 60; $m -le 20 * 60 + 30; $m += 5) {
+        if ($m -gt 11 * 60 + 25 -and $m -lt 15 * 60 + 35) { continue }   # сон: вимірів нема
+        if ($m -lt 9 * 60 + 70) { $s = [pscustomobject]@{ Percent = 0; OwnerPid = 100 } }   # підготовка Codex, 69 хв без викликів
+        else { $n++; $s = [pscustomobject]@{ Percent = $(if ($n % 4 -eq 0) { 0 } else { 75 }); OwnerPid = 200 + [int][Math]::Floor($n / 4) } }   # кожен четвертий вимір — перезавантаження моделі
+        $w = Update-GpuWatch $holder $s $send "$tmp/a2/state/gpu-watch.json" $day.AddMinutes($m)
+        $maxIdle = [Math]::Max($maxIdle, $w.IdleMinutes)
+    }
+    Check "а2 справний прогін зі сном і чергуванням моделей — рядка нема (найдовше без роботи $maxIdle хв, PID ×$($w.PidChanges), сон $($w.SleepMinutes) хв)" (@(Read-Box).Count -eq 0 -and $maxIdle -lt 90 -and $w.PidChanges -gt 15 -and $w.SleepMinutes -eq 250)
+    Check "а2 хвилини замка в #1856 — без сну: $($w.LockMinutes)" ($w.LockMinutes -eq 440)
 }
 
 # --- (б) карта працює — рядка нема ------------------------------------------------------------------------------------------
@@ -84,19 +106,22 @@ Scenario 'в зміна замка' {
     $send = { param($l) [bool](Add-Line $l) }
     $first = @([pscustomobject]@{ Marker = $marker; Since = '2026-11-15T09:00:00Z' })
     $next = @([pscustomobject]@{ Marker = $other; Since = '2026-11-15T20:10:00Z' })
-    [void](Update-GpuWatch $first ([pscustomobject]@{ Percent = 0; OwnerPid = 5 }) $send "$tmp/c/state/gpu-watch.json" (At 19 0))
-    [void](Update-GpuWatch $first ([pscustomobject]@{ Percent = -1; OwnerPid = 0 }) $send "$tmp/c/state/gpu-watch.json" (At 19 20))
-    $w = Update-GpuWatch $first ([pscustomobject]@{ Percent = 0; OwnerPid = 5 }) $send "$tmp/c/state/gpu-watch.json" (At 19 40)
-    Check "в невідомий вимір ряд не рве: без роботи $($w.IdleMinutes) хв, рядок надіслано" ($w.IdleMinutes -eq 40 -and @(Read-Box).Count -eq 1)
-    $w = Update-GpuWatch $next ([pscustomobject]@{ Percent = 0; OwnerPid = 9 }) $send "$tmp/c/state/gpu-watch.json" (At 20 15)
-    Check "в новий власник замка — ряд і лічильник PID з нуля: замок $($w.LockMinutes), без роботи $($w.IdleMinutes), PID ×$($w.PidChanges)" ($w.Marker -ceq $other -and $w.LockMinutes -eq 5 -and $w.IdleMinutes -eq 0 -and $w.PidChanges -eq 0 -and @(Read-Box).Count -eq 1)
+    $tick = { param($Holders, [int]$Min, [int]$Pct, [int]$OwnerPid) Update-GpuWatch $Holders ([pscustomobject]@{ Percent = $Pct; OwnerPid = $OwnerPid }) $send "$tmp/c/state/gpu-watch.json" (At 19 0).AddMinutes($Min) }
+    [void](& $tick $first 0 0 5)
+    [void](& $tick $first 20 -1 0)
+    [void](& $tick $first 40 0 5)
+    [void](& $tick $first 60 0 5); [void](& $tick $first 80 0 5)
+    $w = & $tick $first 90 0 5
+    Check "в невідомий вимір ряд не рве: без роботи $($w.IdleMinutes) хв, рядок надіслано" ($w.IdleMinutes -eq 90 -and @(Read-Box).Count -eq 1)
+    $w = & $tick $next 95 0 9
+    Check "в новий власник замка — ряд і лічильник PID з нуля: замок $($w.LockMinutes), без роботи $($w.IdleMinutes), PID ×$($w.PidChanges)" ($w.Marker -ceq $other -and $w.LockMinutes -eq 25 -and $w.IdleMinutes -eq 0 -and $w.PidChanges -eq 0 -and @(Read-Box).Count -eq 1)
 }
 
 # --- (г) рядок у розділі GPU стану ноутбука (#1856) -----------------------------------------------------------------------------
 Scenario 'г стан' {
     . $newEnv 'd'
     $now = [datetime]::UtcNow
-    $st = [ordered]@{ marker = $marker; lock_since = (Get-UtcStamp $now.AddMinutes(-700)); idle_since = (Get-UtcStamp $now.AddMinutes(-45)); last_pid = 100; pid_changes = 3; sent = '' }
+    $st = [ordered]@{ marker = $marker; lock_since = (Get-UtcStamp $now.AddMinutes(-700)); idle_since = (Get-UtcStamp $now.AddMinutes(-100)); last_pid = 100; pid_changes = 3; sent = ''; last_at = (Get-UtcStamp $now.AddMinutes(-3)); sleep_min = 120 }
     [IO.File]::WriteAllText("$tmp/d/state/gpu-watch.json", ($st | ConvertTo-Json -Compress), $utf)
     function Get-GpuTelemetry { [pscustomobject]@{ Error = ''; TotalMiB = 24564; FreeMiB = 9000; Percent = 0 } }
     function Get-GpuCounterRows { @([pscustomobject]@{ Name = 'pid_200_luid_0x00000000_0x0001_phys_0'; DedicatedUsage = 8GB }) }
@@ -104,8 +129,8 @@ Scenario 'г стан' {
     $holder = @([pscustomobject]@{ Marker = $marker; Since = (Get-UtcStamp $now.AddMinutes(-700)) })
     $lines = @(Get-GpuStateLines @('codex-1') $holder)
     $row = @($lines | Where-Object { $_ -like '- замок тримає *' })
-    Check "г рядок у GPU-розділі: $($row -join ' | ')" ($row.Count -eq 1 -and $row[0] -cmatch ('^- замок тримає ' + [regex]::Escape($marker) + ' 70[0-1] хв; карта без роботи 4[5-6] хв; PID сервера змінювався 4 разів$'))
-    Check 'г і рядок диспетчерові надіслано раз' (@(Read-Box | Where-Object { $_ -cmatch 'GPU_IDLE codex/Е1-нічний-живий-20261115 ЗАМОК 70[0-1] БЕЗ_РОБОТИ 4[5-6] PID_ЗМІН 4$' }).Count -eq 1)
+    Check "г рядок у GPU-розділі: $($row -join ' | ')" ($row.Count -eq 1 -and $row[0] -cmatch ('^- замок тримає ' + [regex]::Escape($marker) + ' 5[7-8][0-9] хв (без сну; сон 120 хв); карта без роботи 10[0-1] хв; PID сервера змінювався 4 разів$'))
+    Check 'г і рядок диспетчерові надіслано раз' (@(Read-Box | Where-Object { $_ -cmatch 'GPU_IDLE codex/Е1-нічний-живий-20261115 ЗАМОК 5[7-8][0-9] СОН 120 БЕЗ_РОБОТИ 10[0-1] PID_ЗМІН 4$' }).Count -eq 1)
     $none = @(Get-GpuStateLines @() @() | Where-Object { $_ -like '- замок тримає *' })
     Check 'г замка нема — рядка «замок тримає» нема' ($none.Count -eq 0)
 }

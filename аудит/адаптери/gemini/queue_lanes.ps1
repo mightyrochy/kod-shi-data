@@ -54,7 +54,7 @@ $script:Ceil = @{
 $script:Defaults = @{
     poll_minutes = 2; usage_minutes = 15; quota_wait_minutes = 60
     agy_total_minutes = 180; agy_turn_minutes = 120; codex_stall_minutes = 60; claude_hang_minutes = 120
-    gpu_idle_minutes = 30; gpu_idle_percent = 15
+    gpu_idle_minutes = 90; gpu_idle_percent = 15
 }
 $script:LaneDefaults = [ordered]@{ codex = 2; agy = 2; claude = 2 }
 # Скільки разів відмова за квотою повертає ту саму позначку в чергу: далі — кінець із кодом квоти, як до смуг.
@@ -2651,12 +2651,22 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     if ($null -ne $st) { $st = ConvertTo-PlainJson $st }
     if ($null -eq $st -or [string](Get-JsonProp $st 'marker') -cne $marker) {
         $since = [string]$h[0].Since
-        $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = '' }
+        $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = ''; last_at = ''; sleep_min = 0 }
     }
+    foreach ($n in @('last_at', 'sleep_min')) { if ($null -eq $st.PSObject.Properties[$n]) { Add-Member -InputObject $st -NotePropertyName $n -NotePropertyValue $(if ($n -eq 'sleep_min') { 0 } else { '' }) } }
     $idleLimit = [double](Get-Limit $script:Limits 'GpuIdleMinutes' 'gpu_idle_minutes')
     if ($idleLimit -le 0) { $idleLimit = [double]$script:Defaults['gpu_idle_minutes'] }
     $pctLimit = [double](Get-Limit $script:Limits 'GpuIdlePercent' 'gpu_idle_percent')
     $pct = [int]$Sample.Percent; $ownerPid = [int]$Sample.OwnerPid
+    # Сон ноутбука (Modern Standby: claude-run не міряє): проміжок між вимірами понад $gapLimit хв не був виміряний — не
+    # рахується ні в замок, ні в бездіяльність (15.11 645 хв замка містили сон 11:30–15:29 UTC); ряд бездіяльності починається знову.
+    $gapLimit = 20
+    $lastAt = $(if ($null -ne (Get-JsonProp $st 'last_at') -and [string]$st.last_at -cmatch $rx) { [datetime]::ParseExact([string]$st.last_at, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) } else { $null })
+    if ($null -ne $lastAt -and ($Now - $lastAt).TotalMinutes -gt $gapLimit) {
+        $st.sleep_min = [int](Get-JsonProp $st 'sleep_min') + [int][Math]::Floor(($Now - $lastAt).TotalMinutes)
+        $st.idle_since = ''
+    }
+    $st.last_at = Get-UtcStamp $Now
     if ($ownerPid -gt 0) {
         $last = [int]$st.last_pid
         if ($last -gt 0 -and $last -ne $ownerPid) { $st.pid_changes = [int]$st.pid_changes + 1 }
@@ -2667,17 +2677,18 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
         else { $st.idle_since = '' }
     }
     $from = { param([string]$t) [int][Math]::Max(0, [Math]::Floor(($Now - [datetime]::ParseExact($t, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)).TotalMinutes)) }
-    $lockMin = $(if ([string]$st.lock_since -cmatch $rx) { & $from ([string]$st.lock_since) } else { 0 })
+    $sleepMin = [int](Get-JsonProp $st 'sleep_min')
+    $lockMin = $(if ([string]$st.lock_since -cmatch $rx) { [Math]::Max(0, (& $from ([string]$st.lock_since)) - $sleepMin) } else { 0 })
     $idleMin = $(if ([string]$st.idle_since -cmatch $rx) { & $from ([string]$st.idle_since) } else { 0 })
     $cause = "$marker $($st.idle_since)"
     if ([string]$st.idle_since -cmatch $rx -and $idleMin -ge $idleLimit -and [string]$st.sent -cne $cause) {
         $parts = $marker -split '/'
         $lane = Get-Lane $parts[2]
         if ($lane -eq 'agy') { $lane = 'gemini' }
-        if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE $lane/$($parts[1]) ЗАМОК $lockMin БЕЗ_РОБОТИ $idleMin PID_ЗМІН $($st.pid_changes)") { $st.sent = $cause }
+        if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE $lane/$($parts[1]) ЗАМОК $lockMin СОН $sleepMin БЕЗ_РОБОТИ $idleMin PID_ЗМІН $($st.pid_changes)") { $st.sent = $cause }
     }
     Write-FileAtomic $Path ($st | ConvertTo-Json -Compress)
-    [pscustomobject]@{ Marker = $marker; LockMinutes = $lockMin; IdleMinutes = $idleMin; PidChanges = [int]$st.pid_changes }
+    [pscustomobject]@{ Marker = $marker; LockMinutes = $lockMin; SleepMinutes = $sleepMin; IdleMinutes = $idleMin; PidChanges = [int]$st.pid_changes }
 }
 
 
