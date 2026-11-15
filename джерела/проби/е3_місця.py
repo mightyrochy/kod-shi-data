@@ -23,13 +23,14 @@ def місця(текст, коміт=None):
 
 
 def main():
-    """Відхилити нові місця або незняті місця файлу погоди."""
+    """Відхилити нові місця або незняті місця файлу кроку (4-й аргумент; типово погода) і межу (5-й)."""
     до = місця(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8-sig'), sys.argv[3])
     після = місця(pathlib.Path(sys.argv[2]).read_text(encoding='utf-8-sig'))
     нові = після - до
-    погода = sum(v for k, v in після.items() if k[0] == 'джерела/суд_погода.py')
-    print('місць', sum(до.values()), '→', sum(після.values()), 'нових', sum(нові.values()), 'погода', погода)
-    assert sum(після.values()) <= 150 and not нові and погода == 0
+    файл, межа = (sys.argv[4:5] or ['джерела/суд_погода.py'])[0], int((sys.argv[5:6] or [150])[0])
+    лишилось = sum(v for k, v in після.items() if k[0] == файл)
+    print('місць', sum(до.values()), '→', sum(після.values()), 'нових', sum(нові.values()), файл, лишилось)
+    assert sum(після.values()) <= межа and not нові and лишилось == 0
 
 
 if __name__ == '__main__':
