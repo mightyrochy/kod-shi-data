@@ -4,11 +4,12 @@ from pathlib import Path
 sys.path[:0] = [str(Path(__file__).resolve().parents[2] / т) for т in ("zhnyvarka", "джерела")]
 import жниварка as ж, фід_власник_кадру as ч
 
-def перевірити(назва, ід, ld=None, dom="", дані=None, запит="", доведено=None):
+def перевірити(назва, ід, ld=None, dom="", дані=None, запит="", доведено=None, канонічна=""):
     """Ганяє сторінку через писача, канонічний запис і незмінений читач кожного кадру."""
     адреса = "https://s.ua/product/dress/" + запит
     товар = dict({"@type": "Product", "name": "Сукня", "color": "чорний", "image": "https://s.ua/dress.jpg"}, **(ld or {}))
     html = '<script type="application/ld+json">%s</script>' % json.dumps(товар)
+    if канонічна: html += '<link rel="canonical" href="%s">' % канонічна
     if дані is not None: html += '<script type="application/json">%s</script>' % json.dumps(дані)
     html += '<main itemscope itemtype="https://schema.org/Product"><h1>Сукня</h1>%s</main>' % dom
     ф = ж.факти_з_картки(html, адреса)
@@ -27,7 +28,9 @@ def перевірити(назва, ід, ld=None, dom="", дані=None, за�
 перевірити("конфлікт", None, dom='<input name="product_id" value="42"><input name="product_id" value="43">')
 перевірити("рекомендація LD", None, {"isRelatedTo": {"@type": "Product", "sku": "чужий", "url": "https://s.ua/other/"}})
 перевірити("чужа адреса єдиного Product", None, {"sku": "чужий", "url": "https://s.ua/other/"})
+перевірити("канонічна адреса", "42", {"sku": "42", "url": "https://s.ua/dress/"}, канонічна="https://s.ua/dress/")
+перевірити("чужий канонічний домен", None, {"sku": "42", "url": "https://other.ua/dress/"}, канонічна="https://other.ua/dress/")
 перевірити("JSON платформи", "42", дані=[{"__typename": "Product", "slug": "other", "id": 43}, {"__typename": "Product", "slug": "dress", "id": 42}])
 перевірити("чужий домен JSON", None, дані={"__typename": "Product", "slug": "dress", "url": "https://other.ua/product/dress/", "id": 42})
 перевірити("sc_content", None, запит="?sc_content=37254_r2979v3594", доведено=False)
-print("кадр_варіант_кв1_id_сторінки: 12 випадків ОК")
+print("кадр_варіант_кв1_id_сторінки: 14 випадків ОК")
