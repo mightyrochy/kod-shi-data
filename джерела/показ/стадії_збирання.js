@@ -219,6 +219,9 @@ function зрізТокенівП(){ return Object.assign({}, ТОКЕНИ_П); 
    жінка ніде не бачить. На екрані в неї є кнопка «Скопіювати всі вердикти» і
    «Зберегти всі вердикти файлом», тож рядок називає те, що вона справді може
    відкрити. Саме поле (`діагноз_прогону`) не міняється. */
+/* Код причини битого запису каталогу (`sensory_limit_unreadable:…`, `shop_params_unreadable:…`): такий збій —
+   каталогу, не її вимог (корінь Е2-збій-без-сліду, рішення 15647). */
+const ЗБІЙ_КАТАЛОГУ_П = /\b[a-z_]+_unreadable:/;
 const ЗБІЙ_НЕ_ВІД_ПОВТОРУ = /PythonError|Traceback|OverflowError|MemoryError|RecursionError|ValueError|KeyError|IndexError|AttributeError|ZeroDivisionError|build_no_hand_finished/i;
 
 /* ── ВІДМОВА КОДУ КАЖЕ ПРАВДИВУ ПРИЧИНУ І ЩО ЗРОБИТИ ─────────
