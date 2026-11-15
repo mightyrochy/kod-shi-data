@@ -10,7 +10,8 @@ that admits 85 % of the space is not a rule»); (2) стенд як є (очі #
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import pal_вердикт as ПВ, palette as P, колір_образу as КО, colorspace as cs
-БЛИЗЬКІ = {с for с, v in КО.SLOT_NEAR_FALLBACK.items() if v >= КО.NEAR_МІН}
+import слот_near_дані as ДАНІ
+БЛИЗЬКІ = {с for с, v in ДАНІ.SLOT_NEAR_FALLBACK.items() if v >= КО.NEAR_МІН}
 вх, r, кат, спец = ПВ.стенд(гілка=0)
 import колір_річ as _КОЛІР
 хром = [c for c in кат.values() if _КОЛІР.точка_кольору(c) and c["слот"] in БЛИЗЬКІ and КО.нейтраль(tuple(_КОЛІР.точка_кольору(c))) is None]; боки = [P.бік_b_речі(_КОЛІР.точка_кольору(c)) for c in хром]
