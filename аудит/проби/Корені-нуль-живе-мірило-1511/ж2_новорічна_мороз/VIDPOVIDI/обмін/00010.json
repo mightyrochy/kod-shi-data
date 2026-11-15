@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Dress: knee-length cocktail dress with a fitted bodice, V-neckline, long sleeves and a softly flared skirt, deep emerald #0F5D4A, stretch silk velvet\\n\\nTights: sheer 40-denier opaque-look tights, black #1C1C1E, fine nylon-elastane knit\\n\\nCoat: single-breasted midi coat with a notched collar and a belt, camel #B08A60, wool-cashmere blend\\n\\nShoes: ankle boots with a slim block heel and a pointed toe, black #1A1A1A, smooth leather\\n\\nClutch: small envelope clutch with a hidden chain strap, antique gold #C9A24B, satin-finished metallic leather\\n\\nEarrings: medium drop earrings with a polished finish, warm gold #C9A24B, brass with gold plating\\n\\nScarf: light scarf worn under the coat for the walk, ivory #EDE3D0, fine merino wool\\n\\nWhy this outfit works: The velvet cocktail dress matches the smart, celebratory tone of a New Year dinner, and its long sleeves keep it comfortable in a restaurant after the cold outside. Deep emerald brings out the olive in your eyes and sets off your warm skin and brown hair, while the gold accents add a festive glow under evening light. The fitted bodice and flared skirt define the waist and give a balanced, elegant line. The camel coat, opaque tights and heeled leather ankle boots protect you from the frost without losing the polish of the look.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Cocktail dress\\\",\\\"details\\\":\\\"knee-length, fitted bodice, V-neckline, long sleeves, softly flared skirt, stretch silk velvet\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#0F5D4A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tights\\\",\\\"details\\\":\\\"sheer 40-denier opaque-look, fine nylon-elastane knit\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#1C1C1E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Coat\\\",\\\"details\\\":\\\"single-breasted midi coat with a notched collar and a belt, wool-cashmere blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B08A60\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"slim block heel, pointed toe, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Envelope clutch\\\",\\\"details\\\":\\\"small, hidden chain strap, satin-finished metallic leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#C9A24B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"medium, polished finish, brass with gold plating\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A24B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"light scarf worn under the coat, fine merino wool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#EDE3D0\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2174,\"output_tokens\":471},\"stop_reason\":\"end_turn\"}"
+ }
+}
