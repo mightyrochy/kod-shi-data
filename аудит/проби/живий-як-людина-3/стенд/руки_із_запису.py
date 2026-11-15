@@ -83,10 +83,15 @@ def розібрати(тека):
         else:
             ру[id(г[0])] = 'кат.?'
         образи = []
-        for в in г:
-            підп = підписи_збірки(в)
-            вільні = [х for х in вибори if х['час'] >= г[0]['час'] and id(х) not in використані]
-            кращий = max(вільні, key=lambda х: len(підп & {y['your_outfit']['caption'] for y in (х['д'] or {}).get('verdict', []) if 'your_outfit' in y}), default=None)
+        # вибір до збірки — за найбільшим перетином підписів по всій групі разом (а не жадібно по одній збірці: при нулі
+        # в першої збірка брала перший вільний вибір, і руки 1 і 2 мінялись місцями — с7 прохід 1)
+        вільні = [х for х in вибори if х['час'] >= г[0]['час'] and id(х) not in використані]
+        def перетин(в, х):
+            return len(підписи_збірки(в) & {y['your_outfit']['caption'] for y in (х['д'] or {}).get('verdict', []) if 'your_outfit' in y})
+        import itertools
+        найкр = max(itertools.permutations(вільні, min(len(г), len(вільні))), key=lambda пм: sum(перетин(в, х) for в, х in zip(г, пм)), default=())
+        for н_, в in enumerate(г):
+            кращий = найкр[н_] if н_ < len(найкр) else None
             if кращий: використані.add(id(кращий))
             образи.append({'збірка': в['н'], 'рука': ру[id(в)], 'вибір': кращий})
         асемблі.append(образи)
