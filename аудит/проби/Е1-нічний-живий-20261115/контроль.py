@@ -19,9 +19,11 @@ for entry in done:
         raise RuntimeError('Невідома сцена в done.txt')
     folder = OUT / scene
     result = folder / 'результат.json'
-    if not result.exists():
+    if not folder.is_dir():
         continue
-    relative = result.relative_to(ROOT).as_posix()
+    marker = folder / 'крок_запускача.json'
+    marker.write_text(json.dumps(entry, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    relative = marker.relative_to(ROOT).as_posix()
     tracked = subprocess.run(['git', 'ls-files', '--error-unmatch', '--', relative], cwd=ROOT, capture_output=True)
     if tracked.returncode:
         subprocess.run(['git', 'add', '--', folder.relative_to(ROOT).as_posix(), done_file.relative_to(ROOT).as_posix()], cwd=ROOT, check=True)
@@ -31,7 +33,8 @@ for entry in done:
 active = []
 for scene in plan['scenes']:
     folder = OUT / scene
-    if folder.is_dir() and not (folder / 'результат.json').exists():
+    finished = any('--сцена' in e.get('команда', []) and scene in e['команда'] for e in done)
+    if folder.is_dir() and not finished:
         log = folder / 'лог.txt'
         text = log.read_text(encoding='utf-8').splitlines() if log.exists() else []
         active.append({'сцена': scene, 'останній_рядок': next((s.strip()[:240] for s in reversed(text) if s.strip()), 'старт')})
