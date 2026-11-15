@@ -49,10 +49,12 @@ $script:VersionDir = $PSScriptRoot
 $script:Ceil = @{
     slots = @(0, 64); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
     agy_total_minutes = @(30, 600); agy_turn_minutes = @(10, 600); codex_stall_minutes = @(10, 240); claude_hang_minutes = @(30, 240)
+    gpu_idle_minutes = @(10, 1440); gpu_idle_percent = @(0, 50)
 }
 $script:Defaults = @{
     poll_minutes = 2; usage_minutes = 15; quota_wait_minutes = 60
     agy_total_minutes = 180; agy_turn_minutes = 120; codex_stall_minutes = 60; claude_hang_minutes = 120
+    gpu_idle_minutes = 30; gpu_idle_percent = 15
 }
 $script:LaneDefaults = [ordered]@{ codex = 2; agy = 2; claude = 2 }
 # Скільки разів відмова за квотою повертає ту саму позначку в чергу: далі — кінець із кодом квоти, як до смуг.
@@ -2624,6 +2626,60 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
     $cur = $(if (Test-Path -LiteralPath $path) { [System.IO.File]::ReadAllText($path, $script:Utf8) } else { '' })
     if ($text -cne $cur) { Write-FileAtomic $path $text }
 }
+
+# --- сторож GPU-замка: наряд тримає карту, а вона не працює -----------------------------------------------------------
+# 15.11 GPU-наряд Codex тримав замок понад 640 хв, карта була на 0 % у вимірах 19:39, 19:45, 19:55 UTC (12 % о 19:50), а
+# PID llama-server щоп'ять хвилин ставав новим; `codex_stall_minutes` не спрацював, бо Codex події дає. Сторож лічить лише з
+# вимірів (nvidia-smi — відсоток, лічильник Windows — PID найбільшого власника пам'яті) і записів слотів, без тексту агента;
+# наряду не знімає — знімає диспетчер позначкою «ЗНЯТО». Межі — `gpu_idle_minutes`, `gpu_idle_percent` (`смуги.json`, з джерелом).
+
+function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = '', $Now = $null) {
+    <# Один вимір ряду. $Holders — наряди із замком GPU (Marker, Since UTC-рядок); $Sample — Percent (-1 — невідомо) і
+    OwnerPid (0 — власника нема). Стан `gpu-watch.json`: позначка, початок замка, початок безперервної бездіяльності карти
+    (вимір не вище gpu_idle_percent; невідомий вимір ряд не рве й не подовжує), останній PID, скільки разів він змінився за
+    замок, за якого ряду бездіяльності рядок уже надіслано. Рядок — раз на ряд бездіяльності, понад gpu_idle_minutes.
+    Повертає об'єкт для #1856 (Marker, LockMinutes, IdleMinutes, PidChanges) чи $null, коли замка GPU нема. #>
+    if (-not $Path) { $Path = Join-Path $script:StateDir 'gpu-watch.json' }
+    if ($null -eq $Now) { $Now = [datetime]::UtcNow }
+    $h = @($Holders | Where-Object { $_ -and [string]$_.Marker } | Select-Object -First 1)
+    if ($h.Count -eq 0) { Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue; return $null }
+    $marker = [string]$h[0].Marker
+    $rx = '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$'
+    $fmt = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    $st = $null
+    if (Test-Path -LiteralPath $Path) { try { $st = [System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    if ($null -ne $st) { $st = ConvertTo-PlainJson $st }
+    if ($null -eq $st -or [string](Get-JsonProp $st 'marker') -cne $marker) {
+        $since = [string]$h[0].Since
+        $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = '' }
+    }
+    $idleLimit = [double](Get-Limit $script:Limits 'GpuIdleMinutes' 'gpu_idle_minutes')
+    if ($idleLimit -le 0) { $idleLimit = [double]$script:Defaults['gpu_idle_minutes'] }
+    $pctLimit = [double](Get-Limit $script:Limits 'GpuIdlePercent' 'gpu_idle_percent')
+    $pct = [int]$Sample.Percent; $ownerPid = [int]$Sample.OwnerPid
+    if ($ownerPid -gt 0) {
+        $last = [int]$st.last_pid
+        if ($last -gt 0 -and $last -ne $ownerPid) { $st.pid_changes = [int]$st.pid_changes + 1 }
+        $st.last_pid = $ownerPid
+    }
+    if ($pct -ge 0) {
+        if ($pct -le $pctLimit) { if ([string]$st.idle_since -cnotmatch $rx) { $st.idle_since = Get-UtcStamp $Now } }
+        else { $st.idle_since = '' }
+    }
+    $from = { param([string]$t) [int][Math]::Max(0, [Math]::Floor(($Now - [datetime]::ParseExact($t, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)).TotalMinutes)) }
+    $lockMin = $(if ([string]$st.lock_since -cmatch $rx) { & $from ([string]$st.lock_since) } else { 0 })
+    $idleMin = $(if ([string]$st.idle_since -cmatch $rx) { & $from ([string]$st.idle_since) } else { 0 })
+    $cause = "$marker $($st.idle_since)"
+    if ([string]$st.idle_since -cmatch $rx -and $idleMin -ge $idleLimit -and [string]$st.sent -cne $cause) {
+        $parts = $marker -split '/'
+        $lane = Get-Lane $parts[2]
+        if ($lane -eq 'agy') { $lane = 'gemini' }
+        if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE $lane/$($parts[1]) ЗАМОК $lockMin БЕЗ_РОБОТИ $idleMin PID_ЗМІН $($st.pid_changes)") { $st.sent = $cause }
+    }
+    Write-FileAtomic $Path ($st | ConvertTo-Json -Compress)
+    [pscustomobject]@{ Marker = $marker; LockMinutes = $lockMin; IdleMinutes = $idleMin; PidChanges = [int]$st.pid_changes }
+}
+
 
 # --- простій увімкненого ноутбука ---------------------------------------------------------------------------------------
 # У ніч на 31.10 ноутбук за 13 год працював ~3 год 15 хв і стояв увімкненим до 2 год 20 хв поспіль, а диспетчер не знав

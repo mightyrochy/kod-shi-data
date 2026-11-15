@@ -11,6 +11,9 @@ $script:HealthAlertDir = ''
 # (gemini_run.ps1, Start-Markers; назва — безпечними знаками): рядок рушія й шаблон публікації — тут одне місце.
 $script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:(?:GPU|SLOTS): (?:замок GPU іншого наряду|незакритий знімок моделей GPU|модель GPU-наряду на карті|LM Studio недоступний на :1234|слоти зайняті|nvidia-smi не відповів|кілька GPU: потрібен вимір однієї карти|навантаження (?:100|[1-9]?[0-9]) %|вільно [0-9]{1,7} з потрібних [0-9]{1,7} MiB(?:; навантаження (?:100|[1-9]?[0-9]) %)?|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}|процес [A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB(?:\+[A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB){0,2}), позначок [1-9][0-9]{0,3}|gemini-queue/[\p{L}\p{Nd}._/-]{1,160} FORMAT)\z'
 
+# Сторож GPU-замка (queue_lanes.ps1, Update-GpuWatch): позначка, хвилин замка, хвилин без роботи карти, змін PID власника пам'яті.
+$script:GpuIdleLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE (?:gemini|codex|claude)/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79} ЗАМОК [0-9]{1,6} БЕЗ_РОБОТИ [0-9]{1,6} PID_ЗМІН [0-9]{1,5}\z'
+
 function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
 
 function Add-HoldLine([string]$Line) {

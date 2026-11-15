@@ -93,6 +93,7 @@ $script:LineTemplates = @(
     "\AGEMINI ОБГОРТКА: ГОТОВО claude/$script:SlugCore [0-9a-f]{40} МОДЕЛЬ [a-z0-9][a-z0-9.-]{1,63}\z",
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$script:SlugCore [A-Z0-9_]{2,40}\z",
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z',
+    $script:GpuIdleLineTemplate,
     '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_]+(?:,[A-Z0-9_]+)* (?:20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|-))?\z',
     $script:HoldLineTemplate
 )
@@ -505,10 +506,63 @@ function Get-HealthLines($G, $Cq) {
     $lines
 }
 
+# Наглядова сесія ноутбука в стані (#1856): лист у `claude/лист-ноутбуку-*` підтверджує лише коміт «ПРОЧИТАНО <гілка> <SHA>» у
+# `claude/прочитано-ноутбук` (ядро, «Ролі й канали»); 14–15.11 листи лежали без відповіді, а стан цього не показував. Рядок
+# лічать з посилань origin (час — коміт-вершина гілки), без тексту листів; перелік оновлюється не частіше ніж раз на 10 хв.
+function Get-SupervisorLine([switch]$NoCache) {
+    $cache = Join-Path $script:StateDir 'supervisor.json'
+    if (-not $NoCache -and (Test-Path -LiteralPath $cache)) {
+        try {
+            $c = [System.IO.File]::ReadAllText($cache, $script:Utf8) | ConvertFrom-Json
+            $at = [datetime]::Parse([string](ConvertTo-PlainJson (Get-JsonProp $c 'at')), [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
+            if (([datetime]::UtcNow - $at).TotalMinutes -lt 10 -and [string](Get-JsonProp $c 'line')) { return [string](Get-JsonProp $c 'line') }
+        } catch { $null = $_ }
+    }
+    $fail = 'наглядова: не виміряно (git не відповів — claude-run.log)'
+    $root = $script:RemoteRoot
+    $readRef = "$root/claude/прочитано-ноутбук"
+    $letters = "$root/claude/лист-ноутбуку-"
+    $utc = { param([string]$Iso) ([DateTimeOffset]::Parse($Iso, [cultureinfo]::InvariantCulture)).UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") }
+    $remote = Invoke-Git @('ls-remote', '--heads', 'origin', 'refs/heads/claude/прочитано-ноутбук') -AllowFail -TimeoutMinutes 3
+    if ($remote.Code -ne 0) { Write-Log "наглядова: ls-remote -> $($remote.Code): $($remote.Err.Trim())"; return $fail }
+    $hasRead = ($remote.Out -split "`n" | Where-Object { $_.Trim() -cmatch '^[0-9a-f]{40}\trefs/heads/claude/прочитано-ноутбук$' }).Count -gt 0
+    $specs = @("+refs/heads/claude/лист-ноутбуку-*:$letters*")
+    if ($hasRead) { $specs += "+refs/heads/claude/прочитано-ноутбук:$readRef" }
+    $f = Invoke-Git (@('fetch', '-q', '--prune', '--no-tags', '--refmap=', 'origin') + $specs) -AllowFail -TimeoutMinutes 5
+    if ($f.Code -ne 0) { Write-Log "наглядова: fetch -> $($f.Code): $($f.Err.Trim())"; return $fail }
+    $readNames = @{}; $last = ''
+    if ($hasRead) {
+        $log = Invoke-Git @('log', '--format=%cI%x09%s', $readRef) -AllowFail
+        if ($log.Code -ne 0) { Write-Log "наглядова: log -> $($log.Code): $($log.Err.Trim())"; return $fail }
+        foreach ($row in @($log.Out -split "`n" | Where-Object { $_.Trim() })) {
+            $p = $row.Trim() -split "`t", 2
+            if ($p.Count -ne 2 -or -not ($p[1] -cmatch '^ПРОЧИТАНО (claude/лист-ноутбуку-[^\s]+) [0-9a-f]{40}(?: .*)?$')) { continue }
+            if (-not $last) { $last = "$(& $utc $p[0]) ($($Matches[1]))" }
+            $readNames[$Matches[1]] = $true
+        }
+        if (-not $last) { $last = '? (у вершині гілки нема коміту ПРОЧИТАНО)' }
+    }
+    $refs = Invoke-Git @('for-each-ref', '--format=%(refname)%09%(committerdate:iso-strict)', "$letters*") -AllowFail
+    if ($refs.Code -ne 0) { Write-Log "наглядова: for-each-ref -> $($refs.Code): $($refs.Err.Trim())"; return $fail }
+    $unread = @(foreach ($row in @($refs.Out -split "`n" | Where-Object { $_.Trim() })) {
+        $p = $row.Trim() -split "`t", 2
+        if ($p.Count -ne 2 -or -not $p[0].StartsWith("$root/")) { continue }
+        $name = $p[0].Substring($root.Length + 1)
+        if ($readNames.ContainsKey($name)) { continue }
+        [pscustomobject]@{ Name = $name; Time = (& $utc $p[1]) }
+    })
+    $unread = @($unread | Sort-Object -Property Time, Name)
+    $head = $(if ($hasRead) { "наглядова: останнє ПРОЧИТАНО $last" } else { 'наглядова: гілки claude/прочитано-ноутбук нема (жодного ПРОЧИТАНО)' })
+    $line = "$head; листів без відповіді $($unread.Count)$(if ($unread.Count) { ", найстаріший $($unread[0].Name) $($unread[0].Time)" })"
+    try { Write-FileAtomic $cache (([ordered]@{ at = (Get-UtcStamp (Get-Date)); line = $line }) | ConvertTo-Json -Compress) } catch { $null = $_ }
+    $line
+}
+
 # Вимір відеокарти для стану: відповіді про GPU брали запис замка, а не карту. Той самий вимір, що в Get-GpuLoad (nvidia-smi,
 # лічильник процесів Windows), без порога й без впливу на допуск; замок — окремий рядок.
-function Get-GpuStateLines($LockedBy) {
+function Get-GpuStateLines($LockedBy, $Holders = @()) {
     $gpu = Get-GpuTelemetry
+    $watchSample = [pscustomobject]@{ Percent = $(if ($gpu.Error) { -1 } else { $gpu.Percent }); OwnerPid = 0 }
     $at = Get-UtcStamp (Get-Date)
     $lines = @('', '### GPU')
     if ($gpu.Error) { $lines += "- вимір карти (UTC $at): $($gpu.Error) — завантаження, пам'ять і процеси невідомі; замок нижче карти не відображає" }
@@ -529,10 +583,16 @@ function Get-GpuStateLines($LockedBy) {
                 if ($mib -ge 1) { $owners += [pscustomobject]@{ Pid = $processId; Name = $(if ($p.Name) { $p.Name } else { '?' }); MiB = $mib } }
             }
             $owners = @($owners | Sort-Object -Property @{ Expression = 'MiB'; Descending = $true }, Pid)
+            if ($owners.Count) { $watchSample.OwnerPid = $owners[0].Pid }
             $lines += "- процеси-власники пам'яті (лічильник Windows, PID ім'я MiB): $(if ($owners.Count) { ($owners | ForEach-Object { "$($_.Pid) $($_.Name) $($_.MiB)" }) -join ' · ' } else { 'жоден не тримає понад 1 MiB' })"
         }
     }
     $lines += "- замок GPU обгортки (запис слотів нарядів, не вимір карти): $(if ($LockedBy.Count) { 'зайнятий — ' + ($LockedBy -join ', ') } else { 'вільний' })"
+    # Сторож замка: той самий вимір ряду, що й рядки вище; рядок диспетчерові — раз на ряд бездіяльності (Update-GpuWatch).
+    try {
+        $w = Update-GpuWatch $Holders $watchSample { param($l) [bool](Add-Line $l) }
+        if ($null -ne $w) { $lines += "- замок тримає $($w.Marker) $($w.LockMinutes) хв; карта без роботи $(if ($gpu.Error) { '?' } else { $w.IdleMinutes }) хв; PID сервера змінювався $($w.PidChanges) разів" }
+    } catch { Write-Log "сторож GPU: $($_.Exception.Message)"; $lines += '- замок тримає: не виміряно (збій — claude-run.log)' }
     $lines
 }
 
@@ -554,7 +614,7 @@ function Get-StatusBody {
     )
     foreach ($r in $rows) { $lines += "| $($r.Name) | $($r.Last) | $($r.Result) | $($r.State) |" }
     $lines += @('', '### Смуги', '', '| смуга | слотів | зайнято | позначка | модель | хв | замок GPU |', '|---|---|---|---|---|---|---|')
-    $gpuBy = @()
+    $gpuBy = @(); $gpuHold = @()
     $own = @(Read-SlotInfo 'claude')
     # Щойно запущений наряд ще не записав файла слота: показати його з пам'яті планувальника.
     if ($null -ne $script:Workers) {
@@ -567,7 +627,7 @@ function Get-StatusBody {
     $n = $(if ($null -ne $lim) { [int]$lim.slots['claude'] } else { '?' })
     if ($own.Count -eq 0) { $lines += "| claude | $n | 0 | — | — | — | — |" }
     foreach ($s in $own) {
-        if ($s.gpu) { $gpuBy += [string]$s.slot }
+        if ($s.gpu) { $gpuBy += [string]$s.slot; $gpuHold += [pscustomobject]@{ Marker = [string]$s.marker; Since = [string]$s.since } }
         $lines += "| claude | $n | $($own.Count) | $($s.marker) | $($s.model) | $(Get-Minutes ([string]$s.since)) | $(if ($s.gpu) { 'так' } else { '—' }) |"
     }
     foreach ($ln in @('codex', 'agy')) {
@@ -579,12 +639,13 @@ function Get-StatusBody {
         }
         if ($l[0].Busy.Count -eq 0) { $lines += "| $ln | $($l[0].N) | 0 | — | — | — | — |" }
         foreach ($s in $l[0].Busy) {
-            if ($s.Gpu) { $gpuBy += $s.Slot }
+            if ($s.Gpu) { $gpuBy += $s.Slot; $gpuHold += [pscustomobject]@{ Marker = [string]$s.Marker; Since = [string]$s.Since } }
             $lines += "| $ln | $($l[0].N) | $($l[0].Busy.Count) | $($s.Marker) | $($s.Model) | $(Get-Minutes $s.Since) | $(if ($s.Gpu) { 'так' } else { '—' }) |"
         }
     }
     $lines += @(Get-IdleLines)
-    $lines += @(Get-GpuStateLines $gpuBy)
+    $lines += @(Get-GpuStateLines $gpuBy $gpuHold)
+    $lines += @('', $(try { Get-SupervisorLine } catch { Write-Log "наглядова: $($_.Exception.Message)"; 'наглядова: не виміряно (збій — claude-run.log)' }))
     $lines += @('', "межі: claude-run — $(if ($null -ne $lim) { $lim.source } else { '?' }), gemini-run — $(if ($g.Limits) { $g.Limits } else { '?' })")
     $lines += @('', "heartbeat gemini-run (UTC): $($g.Time) · вік: $(Get-Minutes $g.Time) хв · isolation: $($g.Isolation) · понад 5 хв — джерело застаріле")
     # Межа без джерела (10970) діє з попереднього прийнятого значення; рядок — щоб її було видно, а не щоб зупинити.
