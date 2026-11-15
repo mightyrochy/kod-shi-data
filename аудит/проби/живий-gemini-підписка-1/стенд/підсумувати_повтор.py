@@ -2,6 +2,7 @@
 from pathlib import Path
 from collections import Counter
 import gzip
+import hashlib
 import json
 import sys
 
@@ -66,11 +67,15 @@ for path in out.glob('стенд/службове/*/фото_речей.txt'):
     for line in path.read_text(encoding='utf-8').splitlines():
         if 'attico.ua' in line:
             http_photos[line.split()[1]] += 1
+intact = sum(bool(p.get('файл') and p.get('sha256') and
+                  (out / 'стенд/записи' / p['файл']).exists() and
+                  hashlib.sha256((out / 'стенд/записи' / p['файл']).read_bytes()).hexdigest() == p['sha256']) for p in photos if p['дійшло'])
 result = {'ситуації': summary, 'викликів': len(rows),
           'статуси_моста': dict(Counter(str(x['статус']) for x in rows)),
           'токени': {k: sum(x.get(k) or 0 for x in rows) for k in ['вхід', 'кеш_читання', 'вихід', 'роздуми', 'усього']},
           'час_викликів_с': sum(x['с'] for x in rows),
           'фото_моста': {'всього': len(photos), 'доставлено_файлом': sum(bool(x['дійшло']) for x in photos),
+                        'архів_із_первісним_sha256_підтверджено': intact,
                         'статуси': dict(Counter(str(x['статус']) for x in photos))},
           'attico_браузер': dict(http_photos),
           'текст_сторінки': audit}

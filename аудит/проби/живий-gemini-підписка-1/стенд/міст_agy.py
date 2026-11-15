@@ -25,7 +25,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
              "once, then answer).")
 ТЕКА = os.path.join(os.environ.get("TEMP") or tempfile.gettempdir(), "міст-agy-" + str(os.getpid()))
 os.makedirs(ТЕКА, exist_ok=True); os.makedirs(ЗАПИСИ, exist_ok=True)
-замок = threading.Lock(); у_польоті = 0; макс_одночасно = 0; номер = 0
+замок = threading.Lock(); у_польоті = 0; макс_одночасно = 0
+# Продовження серії не перезаписує записи вже виконаного кроку-виміру.
+номер = max((int(ім.split('.')[0]) for ім in os.listdir(ЗАПИСИ)
+             if re.fullmatch(r'\d+\.json\.gz', ім)), default=0)
 РОЗШ = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "image/gif": ".gif"}
 
 
@@ -139,7 +142,7 @@ class О(BaseHTTPRequestHandler):
             if not відповідь: статус = 502; помилка = "порожня відповідь"
         with gzip.open(os.path.join(ЗАПИСИ, f"{н:04d}.json.gz"), "wt", encoding="utf-8") as ф:
             json.dump({"н": н, "прохід": прохід, "модель": МОДЕЛЬ, "фото": фото, "stdin": рядок, "stdout": вивід,
-                       "stderr": err_stderr[-2000:], "код": код}, ф, ensure_ascii=False)
+                       "stderr": err_stderr, "код": код}, ф, ensure_ascii=False)
         запис.update({"с": round(с, 1), "статус": статус, "вхід": u.get("input_tokens"), "кеш_читання": u.get("cache_read_tokens"),
                       "вихід": u.get("output_tokens"), "роздуми": u.get("thinking_tokens"), "усього": u.get("total_tokens"),
                       "кроків": (ітог or {}).get("num_turns"), "читань_фото": читань, "читань_помилок": читань_помилок,
