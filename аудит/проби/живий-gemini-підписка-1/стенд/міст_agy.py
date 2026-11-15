@@ -9,7 +9,7 @@ content:[text|image]}]}), міст віддає його моделі й пов�
 сягають 140 тис. символів, а рядок команди Windows — 32 тис.
 Кожне звернення: `записи/<н>.json.gz` — стандартний вхід, сирий стандартний вивід `agy` (усі події), код повернення.
 Запуск: python міст_agy.py <порт> <журнал.jsonl> <тека_записів> [модель]   (модель — і з AGY_MODEL)"""
-import base64, gzip, json, os, re, shutil, subprocess, sys, tempfile, threading, time, urllib.parse, urllib.request
+import base64, gzip, hashlib, json, os, re, shutil, subprocess, sys, tempfile, threading, time, urllib.parse, urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ПОРТ = int(sys.argv[1]); ЖУРНАЛ = sys.argv[2]; ЗАПИСИ = sys.argv[3]
@@ -92,6 +92,14 @@ class О(BaseHTTPRequestHandler):
             у_польоті += 1; макс_одночасно = max(макс_одночасно, у_польоті); номер += 1; н = номер
         т0 = time.time(); теква = tempfile.mkdtemp(prefix=f"в{н}-", dir=ТЕКА)
         текст, фото = текст_і_фото(тіло.get("messages") or [], теква)
+        # @NN.ext у stdin має лишатися відтворюваним після прибирання TEMP.
+        for ім in os.listdir(теква):
+            відн = f"фото/{н:04d}/{ім}"
+            шлях = os.path.join(ЗАПИСИ, відн)
+            os.makedirs(os.path.dirname(шлях), exist_ok=True)
+            shutil.copyfile(os.path.join(теква, ім), шлях)
+            мета = фото[int(ім.split('.')[0]) - 1]
+            мета.update({"файл": відн, "sha256": hashlib.sha256(open(шлях, 'rb').read()).hexdigest()})
         вхід = (ДОРУЧЕННЯ + "\n\n===== BEGIN APPLICATION PROMPT =====\n" + текст + "\n===== END APPLICATION PROMPT =====")
         рядок = json.dumps({"event": "user", "message": {"content": [{"type": "text", "text": вхід}]}}, ensure_ascii=False) + "\n"
         запис = {"н": н, "прохід": прохід, "початок_utc": time.strftime("%H:%M:%S", time.gmtime(т0)), "модель": МОДЕЛЬ,
