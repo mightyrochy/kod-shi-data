@@ -1,0 +1,52 @@
+── ПРОМПТ (7192 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: top · colour code: grey · about it: text н=1
+2 — kind code: suit · colour code: black · about it: text н=2
+3 — kind code: belt · colour code: burgundy · about it: text н=3
+4 — kind code: crossbody_bag · colour code: brown · about it: text н=4
+5 — kind code: pumps · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; burgundy — бордовий; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "This grey top brings a cool, muted tone to the ensemble. Its soft color contrasts beautifully with the deep black of the suit and provides a calm base that doesn't compete with the occasion's festive nature.",
+"2": "The straight-cut black suit offers a strong, elegant foundation for your wedding guest look. Its clean lines and dark shade provide a sophisticated backdrop that elevates the entire outfit to the appropriate level of formality for an evening celebration.",
+"3": "The burgundy leather belt adds a pop of rich color and helps define your waistline. This deep, wine-like hue connects well with both the grey top and black suit, adding warmth to the cool palette.",
+"4": "This brown crossbody bag provides an earthy, grounding element that harmonizes with the beige shoes and complements the warm tones of the burgundy belt. Its shape adds practicality for the restaurant evening while maintaining a polished look.",
+"5": "The beige pumps offer a soft transition between your outfit and the floor, elongating the leg line. Their neutral tone prevents the look from becoming too heavy, keeping it light enough for summer evening wear.",
+"6": "I chose a straight-cut black suit as your foundation for this elegant evening in August, offering a timeless silhouette that feels confident without being stiff. Paired with a soft grey top, the cool tone of the fabric adds a gentle contrast to the deep black of the suit, keeping your look fresh against the warm summer light and artificial glow of the restaurant. I selected burgundy leather belt and beige pumps with heels to elongate your line, while the brown crossbody bag introduces a rich, earthy warmth that bridges the cool grey and the deep black perfectly.",
+"7": "Tuck the top fully into the suit set to create a clean, continuous vertical line from chest to hem.",
+"8": "Wear the belt over the high waist of the suit set to define your waistline clearly.",
+"9": "Крос-боді коричневого кольору Le Bambino — I accept this asymmetry interest source because the crossbody bag breaks the rigidity of the monochromatic suit, adding necessary movement and preventing the look from becoming flat during the transition from outdoor ceremony to indoor dining."
+}
+
+── ВІДПОВІДЬ (2289 симв., 20.9 с, HTTP 200) ──
+{
+"1": "Ця сіра блузка додає образу прохолодний, приглушений тон. Її м’який колір чудово контрастує з глибоким чорним кольором костюма і створює спокійну основу, яка не конкурує зі святковою атмосферою події.",
+"2": "Прямий чорний брючний костюм пропонує сильну та елегантну основу для твого образу гості на весіллі. Його чіткі лінії і темний відтінок створюють вишуканий фон, який підносить весь образ до відповідного рівня формальності для вечірнього святкування.",
+"3": "Бордовий шкіряний ремінь додає яскравого кольору і допомагає окреслити твою талію. Цей глибокий, винно-подібний відтінок добре поєднується як з сірою блузкою, так і з чорним костюмом, додаючи тепла до прохолодної палітри.",
+"4": "Коричнева сумка через плече надає образ землістий, заземлюючий елемент, який гармонізує з бежевими туфлями і підкреслює теплі тони бордового ременя. Її форма додає практичності для вечірнього перебування в ресторані, зберігаючи при цьому вишуканий вигляд.",
+"5": "Бежеві туфлі-човники створюють м’який перехід між твоїм образом і підлогою, подовжуючи лінію ніг. Їх нейтральний тон не дозволяє образу стати надто важким, зберігаючи його достатньо легким для носіння в теплий літній вечір.",
+"6": "Я обрала прямий чорний брючний костюм як твою основу для цього елегантного серпневого вечора, пропонуючи позачасовий силует, який виглядає впевнено без надмірної жорсткості. У поєднанні з м’якою сірою блузкою, прохолодний тон тканини додає ніжний контраст до глибокого чорного кольору костюма, зберігаючи твій образ свіжим у теплом літньому світлі та штучному сяйві ресторану. Я обрала бордовий шкіряний ремінь і бежеві туфлі-човники на підборах, щоб подовжити твою фігуру, а коричнева сумка через плече вносить багатий, землистий теплий колір, який чудово з’єднує прохолодний сірий і глибокий чорний.",
+"7": "Повністю заправ блузку у брючний костюм, щоб створити чисту, безперервну вертикальну лінію від грудей до подолу.",
+"8": "Одягни ремінь поверх високої талії брючного костюма, щоб чітко окреслити твою талію.",
+"9": "Коричнева сумка через плече Le Bambino — я приймаю цей інтерес до асиметрії, оскільки вона розбиває монотонність чорного костюма, додаючи необхідний рух і запобігаючи тому, щоб образ став плоским під час переходу від вуличного церемоніалу до вечері в приміщенні."
+}
