@@ -37,16 +37,22 @@ for summary_path in sorted(model.glob('с[1-8]_*/підсумок.json')):
             if when <= stamp:
                 calls.append((when, row))
         before = max(calls, key=lambda x: x[0])[1] if calls else None
+        active = [row for when, row in calls if when + dt.timedelta(seconds=row['с']) >= stamp]
         entries = (summary_path.parent / 'хід.md').read_text(encoding='utf-8')
         timed = [(int(n), t) for n, t in re.findall(r'### (\d+) · (\S+) ·', entries) if t <= event_time]
         prior_frame = max(timed, key=lambda x: x[1])[0] if timed else None
         frame = next((f for f in frames if f['крок'] == prior_frame), {})
+        boundary = None
+        if 'мовчить 300 с' in line:
+            boundary = ('У момент скидання тривав HTTP/CLI-виклик; початок, тривалість і відповідь — у перелічених записах.'
+                        if active else 'Що відбувалося всередині worker до наступного HTTP, не встановлено: стенд не записує трасу внутрішнього кроку запити.')
         result.append({'ситуація': scene, 'прохід': frame.get('прохід'), 'utc': event_time,
                        'консоль': str(console), 'рядок': line_no, 'подія': line,
                        'кадр_перед_подією': prior_frame, 'останній_розпочатий_до_події_запис': before,
                        'доказ_відповіді': f'стенд/записи/{before["н"]:04d}.json.gz' if before else None,
+                       'активні_під_час_скидання_виклики': active,
                        'причина_обриву': 'Сторож сторінки скинув worker після 300 с без повідомлень.' if 'мовчить 300 с' in line else 'Подія консолі; подробиці у сирому записі.',
-                       'межа_доказу': 'Що відбувалося всередині worker до HTTP, не встановлено: стенд не записує трасу внутрішнього кроку запити.' if 'мовчить 300 с' in line else None})
+                       'межа_доказу': boundary})
 (report / 'збої.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
 lines = ['# Збої завершених ситуацій за журналом', '',
          f'Модель: {model.name}. Подій: {len(result)}.', '',
@@ -55,6 +61,7 @@ for x in result:
     lines += [f'- {x["ситуація"]} · прохід {x["прохід"]} · {x["utc"]}: {x["причина_обриву"]} '
               f'Консоль: `{x["консоль"]}`, рядок {x["рядок"]}; кадр перед подією {x["кадр_перед_подією"]}. '
               f'Останній розпочатий перед подією виклик: `{x["доказ_відповіді"]}`. '
+              f'Активні виклики під час події: {[r["н"] for r in x["активні_під_час_скидання_виклики"]]}. '
               + (x['межа_доказу'] or '')]
 lines += ['', 'CLI й браузерний worker мають різні стелі: зовнішні 660 с та CLI 630 с не змінюють '
           '300-секундного сторожа мовчання worker. Відповіді CLI слід читати з вказаних сирих записів; '
