@@ -85,6 +85,42 @@ try {
     Check 'gemini: ключ = "<Ref> <sha>", як до правки' ((Get-MarkerKey $og) -ceq "$($og.Ref) $($og.Sha)")
     Check 'gemini: перенесення нічого не робить' ((Move-LegacyMarkerState @($og)) -eq 0)
     Set-RemoteRoot 'refs/claude-run'
+    # Чекання квоти без позначки на origin: показ і прибирання звіряються з отриманими посиланнями (ключ «посилання sha»).
+    $keepDir = $script:StateDir; $script:StateDir = "$tmp/ws"; [void][IO.Directory]::CreateDirectory($script:StateDir)
+    $future = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 3600; $past = 1700000000L
+    $script:Refs = ''
+    function Invoke-Git { if ($script:Refs -ceq 'FAIL') { throw 'git for-each-ref -> 128' }; [pscustomobject]@{ Code = 0; Out = $script:Refs; Err = '' } }
+    function Put-Wait([string]$Q, [string]$Sha, [long]$Until) {
+        $j = [ordered]@{ until = $Until; until_utc = '2026-11-15T20:00:00Z'; marker = $Q; retakes = 1; group = 'G1' }
+        $p = Get-StatePath "refs/remotes/origin/$Q $Sha"; Write-FileAtomic $p ('WAIT ' + ($j | ConvertTo-Json -Compress)); $p
+    }
+    function Shown { @(Get-WaitingMarkers | ForEach-Object { $_.Marker }) | Sort-Object }
+    $s1 = 'c' * 40; $s2 = 'd' * 40
+    $qLive = 'gemini-queue/чекає-жива/cc-x/1'; $qLiveReady = 'gemini-queue/чекає-готова/cc-x/1'; $qGone = 'gemini-queue/знята-давно/cc-x/1'
+    $qGoneSoon = 'gemini-queue/знята-чекає/cc-x/1'; $qGoneTaken = 'gemini-queue/знята-узята/cc-x/1'; $qMoved = 'gemini-queue/інша-голова/cc-x/1'; $qDone = 'gemini-queue/знята-кінець/cc-x/1'
+    $script:Refs = (@($qLive, $qLiveReady, $qMoved) | ForEach-Object { "refs/claude-run/$_`t$s2`t1700000000`tтема" }) -join "`n"
+    $pLive = Put-Wait $qLive $s2 $future; $pReady = Put-Wait $qLiveReady $s2 $past
+    $pGone = Put-Wait $qGone $s1 $past; $pSoon = Put-Wait $qGoneSoon $s1 $future; $pTaken = Put-Wait $qGoneTaken $s1 $past
+    $pMoved = Put-Wait $qMoved $s1 $past
+    Write-FileAtomic (Get-ClaimPath $pTaken) '20261115-100000-aaaaaaaaaaaa'
+    $pDone = Get-StatePath "refs/remotes/origin/$qDone $s1"; Write-FileAtomic $pDone 'DONE 20261115-100000-bbbbbbbbbbbb OK'
+    $raw = @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.txt' -File | Where-Object { [IO.File]::ReadAllText($_.FullName, $utf).StartsWith('WAIT {') })
+    Check "ДО: у теці стану $($raw.Count) файлів WAIT (їх усі й показував розділ «Чекають скидання квоти»)" ($raw.Count -eq 6)
+    $shown = @(Shown)
+    Check "ПІСЛЯ: показано лише позначки, що є на origin з тим самим sha ($($shown.Count) із 6): жива, готова; знята й стара голова — ні" (($shown -join '|') -ceq ((@($qLive, $qLiveReady) | Sort-Object) -join '|'))
+    $removed = Remove-OrphanWaits
+    Check "ПІСЛЯ: прибрано знятих із минулим чеканням: $removed (знята-давно, інша-голова)" ($removed -eq 2 -and -not [IO.File]::Exists($pGone) -and -not [IO.File]::Exists($pMoved))
+    Check 'ПІСЛЯ: лишились живі, знята з чеканням, що триває, знята з узяттям, кінцевий DONE' ([IO.File]::Exists($pLive) -and [IO.File]::Exists($pReady) -and [IO.File]::Exists($pSoon) -and [IO.File]::Exists($pTaken) -and [IO.File]::Exists($pDone))
+    Check 'ПІСЛЯ: стан живої позначки читає та сама смуга, що й раніше (WAIT, до часу — не готова)' ((Get-MarkerState (ConvertTo-Marker "refs/claude-run/$qLive`t$s2`t1700000000")).Kind -ceq 'WAIT' -and -not (Test-MarkerReady (Get-MarkerState (ConvertTo-Marker "refs/claude-run/$qLive`t$s2`t1700000000"))))
+    Check 'ПІСЛЯ: повторне прибирання — нічого' ((Remove-OrphanWaits) -eq 0)
+    $back = ConvertTo-Marker "refs/claude-run/$qGone`t$s1`t1700000000"
+    Check 'перепушена позначка з тим самим комітом після прибирання — NEW, береться відразу' ((Get-MarkerState $back).Kind -ceq 'NEW' -and (Test-MarkerReady (Get-MarkerState $back)))
+    Check 'знята з чеканням, що триває, не показується, але стан не зник — після `until` станеться прибирання' ((Shown) -cnotcontains $qGoneSoon -and [IO.File]::Exists($pSoon))
+    $script:Refs = ''
+    Check 'порожній набір посилань: нічого не видалено (fetch нічого не дав)' ((Remove-OrphanWaits) -eq 0 -and [IO.File]::Exists($pReady))
+    $script:Refs = 'FAIL'
+    Check 'посилання не прочитано: прибирання нічого не видаляє, показ порожній без винятку' ((Remove-OrphanWaits) -eq 0 -and [IO.File]::Exists($pReady) -and @(Get-WaitingMarkers).Count -eq 0)
+    $script:StateDir = $keepDir
 } catch { "✗ збій сценарію: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
 "ПІДСУМОК: ✗ $bad"
 Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
