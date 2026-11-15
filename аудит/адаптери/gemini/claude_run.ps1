@@ -525,7 +525,7 @@ function Get-SupervisorLine([switch]$NoCache) {
     $utc = { param([string]$Iso) ([DateTimeOffset]::Parse($Iso, [cultureinfo]::InvariantCulture)).UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") }
     $remote = Invoke-Git @('ls-remote', '--heads', 'origin', 'refs/heads/claude/прочитано-ноутбук') -AllowFail
     if ($remote.Code -ne 0) { Write-Log "наглядова: ls-remote -> $($remote.Code): $($remote.Err.Trim())"; return $fail }
-    $hasRead = ($remote.Out -split "`n" | Where-Object { $_.Trim() -cmatch '^[0-9a-f]{40}\trefs/heads/claude/прочитано-ноутбук$' }).Count -gt 0
+    $hasRead = @($remote.Out -split "`n" | Where-Object { $_.Trim() -cmatch '^[0-9a-f]{40}\trefs/heads/claude/прочитано-ноутбук$' }).Count -gt 0
     $specs = @("+refs/heads/claude/лист-ноутбуку-*:$letters*")
     if ($hasRead) { $specs += "+refs/heads/claude/прочитано-ноутбук:$readRef" }
     $f = Invoke-Git (@('fetch', '-q', '--prune', '--no-tags', '--refmap=', 'origin') + $specs) -AllowFail
