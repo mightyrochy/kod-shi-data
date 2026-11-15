@@ -14,6 +14,7 @@ import sys
 out, target = map(Path, sys.argv[1:3])
 source = out.parent.parent / 'живий-як-людина-1'
 issues, scenes, images, bad_calls, read_errors = [], {}, Counter(), [], []
+tools = Counter()
 rows = [json.loads(s) for s in (out / 'стенд/журнал_моделі_продукту.jsonl').read_text(encoding='utf-8').splitlines()]
 records = {p.stem.split('.')[0]: p for p in (out / 'стенд/записи').glob('*.json.gz')}
 exchanges = {}
@@ -36,6 +37,10 @@ for p in sorted(out.glob('с*/підсумок.json')):
     missing = [x['крок'] for x in frames if not (p.parent / 'знімки' / f'{x["крок"]:04d}.jpg').exists()]
     if missing:
         issues.append({'ситуація': scene, 'немає_кадрів': missing})
+    for shot in (p.parent / 'знімки').glob('*.jpg'):
+        data = shot.read_bytes()
+        if not (data.startswith(b'\xff\xd8') and data.endswith(b'\xff\xd9')):
+            issues.append({'ситуація': scene, 'пошкоджений_jpeg': shot.name})
     http = Counter()
     photo_log = out / 'стенд/службове' / scene / 'фото_речей.txt'
     if photo_log.exists():
@@ -74,6 +79,8 @@ for row in rows:
         except ValueError:
             continue
         step = event.get('step_update', {})
+        if step.get('step_type') == 'tool' and step.get('state') in ('DONE', 'ERROR'):
+            tools[step.get('tool_name')] += 1
         if step.get('tool_name') == 'read_file':
             if step.get('state') == 'DONE':
                 reads.add(Path(step['tool_info']['parameters']['Path']).name.lstrip('@'))
@@ -101,7 +108,8 @@ result = {'ситуації': scenes, 'викликів': len(rows), 'запис
           'обмінів_браузера': sum(map(len, exchanges.values())),
           'статуси_моста': dict(Counter(str(r['статус']) for r in rows)),
           'фото_статуси': dict(images), 'помилки_повноти': issues,
-          'помилки_спроб_читання': read_errors, 'збої_моделі': bad_calls}
+          'помилки_спроб_читання': read_errors, 'збої_моделі': bad_calls,
+          'виклики_інструментів': dict(tools)}
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
 print(json.dumps(result, ensure_ascii=False, indent=2))
