@@ -49,12 +49,10 @@ $script:VersionDir = $PSScriptRoot
 $script:Ceil = @{
     slots = @(0, 64); poll_minutes = @(1, 5); usage_minutes = @(5, 60); quota_wait_minutes = @(15, 1440)
     agy_total_minutes = @(30, 600); agy_turn_minutes = @(10, 600); codex_stall_minutes = @(10, 240); claude_hang_minutes = @(30, 240)
-    gpu_idle_minutes = @(10, 1440); gpu_idle_percent = @(0, 50)
 }
 $script:Defaults = @{
     poll_minutes = 2; usage_minutes = 15; quota_wait_minutes = 60
     agy_total_minutes = 180; agy_turn_minutes = 120; codex_stall_minutes = 60; claude_hang_minutes = 120
-    gpu_idle_minutes = 90; gpu_idle_percent = 15
 }
 $script:LaneDefaults = [ordered]@{ codex = 2; agy = 2; claude = 2 }
 # Скільки разів відмова за квотою повертає ту саму позначку в чергу: далі — кінець із кодом квоти, як до смуг.
@@ -481,6 +479,14 @@ function Get-Limits {
         if ($null -eq $v) { continue }
         $accepted[$f] = $v
         if ($lane) { $l.slots[$lane] = [int][Math]::Floor($v) } else { $l[$f] = $v }
+    }
+    # Межі сторожа GPU-замка лише з файла й лише з джерелом: без джерела (чи файла) сторож не діє; значення в коді не дублюється.
+    foreach ($f in @('gpu_stall_minutes', 'gpu_stall_percent')) {
+        $node = $(if ($v2) { Get-JsonProp $doc $f } else { $null })
+        if (Test-LimitSource ([string](Get-JsonProp $node 'джерело'))) {
+            $v = ConvertTo-Bounded (Get-JsonProp $node 'n') @(0, [double]::MaxValue)
+            if ($null -ne $v) { $l[$f] = $v }
+        }
     }
     $text = $accepted | ConvertTo-Json -Compress
     $old = $(if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { [System.IO.File]::ReadAllText($prevPath, $script:Utf8) } else { '' })
@@ -2631,13 +2637,13 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
 # 15.11 GPU-наряд Codex тримав замок понад 640 хв, карта була на 0 % у вимірах 19:39, 19:45, 19:55 UTC (12 % о 19:50), а
 # PID llama-server щоп'ять хвилин ставав новим; `codex_stall_minutes` не спрацював, бо Codex події дає. Сторож лічить лише з
 # вимірів (nvidia-smi — відсоток, лічильник Windows — PID найбільшого власника пам'яті) і записів слотів, без тексту агента;
-# наряду не знімає — знімає диспетчер позначкою «ЗНЯТО». Межі — `gpu_idle_minutes`, `gpu_idle_percent` (`смуги.json`, з джерелом).
+# наряду не знімає — знімає диспетчер позначкою «ЗНЯТО». Межі — `gpu_stall_minutes`, `gpu_stall_percent` (`смуги.json`, з джерелом).
 
 function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = '', $Now = $null, [scriptblock]$Sleeps = $null) {
     <# Один вимір ряду. $Holders — наряди із замком GPU (Marker, Since UTC-рядок); $Sample — Percent (-1 — невідомо) і
     OwnerPid (0 — власника нема). Стан `gpu-watch.json`: позначка, початок замка, початок безперервної бездіяльності карти
-    (вимір не вище gpu_idle_percent; невідомий вимір ряд не рве й не подовжує), останній PID, скільки разів він змінився за
-    замок, за якого ряду бездіяльності рядок уже надіслано. Рядок — раз на ряд бездіяльності, понад gpu_idle_minutes.
+    (вимір не вище gpu_stall_percent; невідомий вимір ряд не рве й не подовжує), останній PID, скільки разів він змінився за
+    замок, за якого ряду бездіяльності рядок уже надіслано. Рядок — раз на ряд бездіяльності, понад gpu_stall_minutes.
     Повертає об'єкт для #1856 (Marker, LockMinutes, IdleMinutes, PidChanges) чи $null, коли замка GPU нема. #>
     if (-not $Path) { $Path = Join-Path $script:StateDir 'gpu-watch.json' }
     if ($null -eq $Now) { $Now = [datetime]::UtcNow }
@@ -2654,9 +2660,8 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
         $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = ''; last_at = ''; sleep_min = 0 }
     }
     foreach ($n in @('last_at', 'sleep_min')) { if ($null -eq $st.PSObject.Properties[$n]) { Add-Member -InputObject $st -NotePropertyName $n -NotePropertyValue $(if ($n -eq 'sleep_min') { 0 } else { '' }) } }
-    $idleLimit = [double](Get-Limit $script:Limits 'GpuIdleMinutes' 'gpu_idle_minutes')
-    if ($idleLimit -le 0) { $idleLimit = [double]$script:Defaults['gpu_idle_minutes'] }
-    $pctLimit = [double](Get-Limit $script:Limits 'GpuIdlePercent' 'gpu_idle_percent')
+    $idleLimit = [double](Get-Limit $script:Limits 'GpuIdleMinutes' 'gpu_stall_minutes')
+    $pctLimit = [double](Get-Limit $script:Limits 'GpuIdlePercent' 'gpu_stall_percent')
     $pct = [int]$Sample.Percent; $ownerPid = [int]$Sample.OwnerPid
     # Час від останнього запису журналу LM Studio, хв (-1 — журнал не читається чи не заданий): тривога лише коли й карта стояла,
     # й викликів моделі нема довше порога; без журналу — не виміряно, тривоги нема.
@@ -2688,7 +2693,7 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     $lockMin = $(if ([string]$st.lock_since -cmatch $rx) { [Math]::Max(0, (& $from ([string]$st.lock_since)) - $sleepMin) } else { 0 })
     $idleMin = $(if ([string]$st.idle_since -cmatch $rx) { & $from ([string]$st.idle_since) } else { 0 })
     $cause = "$marker $($st.idle_since)"
-    if ([string]$st.idle_since -cmatch $rx -and $idleMin -ge $idleLimit -and $callAge -ge $idleLimit -and [string]$st.sent -cne $cause) {
+    if ([string]$st.idle_since -cmatch $rx -and $idleLimit -gt 0 -and $idleMin -ge $idleLimit -and $callAge -ge $idleLimit -and [string]$st.sent -cne $cause) {
         $parts = $marker -split '/'
         $lane = Get-Lane $parts[2]
         if ($lane -eq 'agy') { $lane = 'gemini' }

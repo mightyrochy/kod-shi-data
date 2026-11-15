@@ -515,7 +515,7 @@ function Get-SupervisorLine([switch]$NoCache) {
         try {
             $c = [System.IO.File]::ReadAllText($cache, $script:Utf8) | ConvertFrom-Json
             $at = [datetime]::Parse([string](ConvertTo-PlainJson (Get-JsonProp $c 'at')), [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
-            if (([datetime]::UtcNow - $at).TotalMinutes -lt 10 -and [string](Get-JsonProp $c 'line')) { return [string](Get-JsonProp $c 'line') }
+            if (([datetime]::UtcNow - $at).TotalMinutes -lt (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes') -and [string](Get-JsonProp $c 'line')) { return [string](Get-JsonProp $c 'line') }
         } catch { $null = $_ }
     }
     $fail = 'наглядова: не виміряно (git не відповів — claude-run.log)'
@@ -523,12 +523,12 @@ function Get-SupervisorLine([switch]$NoCache) {
     $readRef = "$root/claude/прочитано-ноутбук"
     $letters = "$root/claude/лист-ноутбуку-"
     $utc = { param([string]$Iso) ([DateTimeOffset]::Parse($Iso, [cultureinfo]::InvariantCulture)).UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") }
-    $remote = Invoke-Git @('ls-remote', '--heads', 'origin', 'refs/heads/claude/прочитано-ноутбук') -AllowFail -TimeoutMinutes 3
+    $remote = Invoke-Git @('ls-remote', '--heads', 'origin', 'refs/heads/claude/прочитано-ноутбук') -AllowFail
     if ($remote.Code -ne 0) { Write-Log "наглядова: ls-remote -> $($remote.Code): $($remote.Err.Trim())"; return $fail }
     $hasRead = ($remote.Out -split "`n" | Where-Object { $_.Trim() -cmatch '^[0-9a-f]{40}\trefs/heads/claude/прочитано-ноутбук$' }).Count -gt 0
     $specs = @("+refs/heads/claude/лист-ноутбуку-*:$letters*")
     if ($hasRead) { $specs += "+refs/heads/claude/прочитано-ноутбук:$readRef" }
-    $f = Invoke-Git (@('fetch', '-q', '--prune', '--no-tags', '--refmap=', 'origin') + $specs) -AllowFail -TimeoutMinutes 5
+    $f = Invoke-Git (@('fetch', '-q', '--prune', '--no-tags', '--refmap=', 'origin') + $specs) -AllowFail
     if ($f.Code -ne 0) { Write-Log "наглядова: fetch -> $($f.Code): $($f.Err.Trim())"; return $fail }
     $readNames = @{}; $last = ''
     if ($hasRead) {

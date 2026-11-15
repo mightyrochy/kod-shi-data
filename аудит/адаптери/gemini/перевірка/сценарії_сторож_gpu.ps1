@@ -29,7 +29,7 @@ $newEnv = {
     . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $work -RepoDir $tmp -OutboxDir $box -PublishDir "$tmp/pub" -GeminiOutDir "$tmp/gout" -LaneDir "$tmp/lanes" -TmpDir "$tmp/ctmp" -NoStatus
     foreach ($d in @($work, "$work/state", "$work/slots", $box, "$tmp/lanes", "$tmp/gout")) { [void][IO.Directory]::CreateDirectory($d) }
     $script:StateDir = "$work/state"; $script:SlotDir = "$work/slots"
-    $script:Limits = @{ slots = @{ claude = 2 }; source = 'код'; claude_laptop = @(); gpu_idle_minutes = 90; gpu_idle_percent = 15 }
+    $script:Limits = @{ slots = @{ claude = 2 }; source = 'код'; claude_laptop = @(); gpu_stall_minutes = 90; gpu_stall_percent = 15 }
     $script:TestBox = $box
 }
 # Події сну, як їх веде публікатор (`sleep-events.json`): сон 11:30–15:29 UTC (Power-Troubleshooter/1) і не-сон «вимкнено й запущено» 06:00–06:30.
@@ -179,7 +179,7 @@ Scenario 'г стан' {
     $holder = @([pscustomobject]@{ Marker = $marker; Since = (Get-UtcStamp $now.AddMinutes(-700)) })
     $lines = @(Get-GpuStateLines @('codex-1') $holder)
     $row = @($lines | Where-Object { $_ -like '- замок тримає *' })
-    Check "г рядок у GPU-розділі: $($row -join ' | ')" ($row.Count -eq 1 -and $row[0] -cmatch ('^- замок тримає ' + [regex]::Escape($marker) + ' 5[7-8][0-9] хв (без сну; сон 120 хв); карта без роботи 10[0-1] хв; PID сервера змінювався 4 разів; виклики моделі: останній 150 хв тому$'))
+    Check "г рядок у GPU-розділі: $($row -join ' | ')" ($row.Count -eq 1 -and $row[0] -cmatch ('^- замок тримає ' + [regex]::Escape($marker) + ' 5[7-8][0-9] хв \(без сну; сон 120 хв\); карта без роботи 10[0-1] хв; PID сервера змінювався 4 разів; виклики моделі: останній 150 хв тому$'))
     Check 'г і рядок диспетчерові надіслано раз' (@(Read-Box | Where-Object { $_ -cmatch 'GPU_IDLE codex/Е1-нічний-живий-20261115 ЗАМОК 5[7-8][0-9] СОН 120 БЕЗ_РОБОТИ 10[0-1] PID_ЗМІН 4$' }).Count -eq 1)
     # Журнал LM Studio не читається: без тривоги, в #1856 — «не виміряно».
     . $newEnv 'd2'
@@ -203,6 +203,7 @@ Scenario 'д наглядова' {
     & git -C $clone config user.email t@t; & git -C $clone config user.name t
     & git -C $clone remote add origin $origin
     [IO.File]::WriteAllText("$clone/f.txt", 'x', $utf); & git -C $clone add f.txt; & git -C $clone commit -q -m base
+    $script:NoHooks = Join-Path $tmp 'no-hooks'
     $RepoDir = $clone   # Invoke-Git обгортки бере $RepoDir з області сценарію
     $tree = (& git -C $clone rev-parse 'HEAD^{tree}').Trim(); $base = (& git -C $clone rev-parse HEAD).Trim()
     # Кирилиця — лише через Invoke-Git обгортки (UTF-8 аргументи) і файл повідомлення: власні аргументи PowerShell 5.1 її псують.
