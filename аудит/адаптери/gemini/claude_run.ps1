@@ -560,9 +560,21 @@ function Get-SupervisorLine([switch]$NoCache) {
 
 # Вимір відеокарти для стану: відповіді про GPU брали запис замка, а не карту. Той самий вимір, що в Get-GpuLoad (nvidia-smi,
 # лічильник процесів Windows), без порога й без впливу на допуск; замок — окремий рядок.
+function Get-LmsCallAge {
+    <# Хвилини від останнього запису в журналах LM Studio (`~\.lmstudio\server-logs\<рік-місяць>\*.log`, час запису файла — без
+    розбору формату: його на ноутбуці ще не виміряно); -1 — теки нема чи не читається з облікового запису обгортки. #>
+    try {
+        $root = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.lmstudio\server-logs'
+        if (-not (Test-Path -LiteralPath $root)) { return -1 }
+        $f = @(Get-ChildItem -LiteralPath $root -Filter '*.log' -File -Recurse -ErrorAction Stop | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1)
+        if ($f.Count -eq 0) { return -1 }
+        [int][Math]::Max(0, [Math]::Floor(([datetime]::UtcNow - $f[0].LastWriteTimeUtc).TotalMinutes))
+    } catch { -1 }
+}
+
 function Get-GpuStateLines($LockedBy, $Holders = @()) {
     $gpu = Get-GpuTelemetry
-    $watchSample = [pscustomobject]@{ Percent = $(if ($gpu.Error) { -1 } else { $gpu.Percent }); OwnerPid = 0 }
+    $watchSample = [pscustomobject]@{ Percent = $(if ($gpu.Error) { -1 } else { $gpu.Percent }); OwnerPid = 0; CallAgeMin = -1 }
     $at = Get-UtcStamp (Get-Date)
     $lines = @('', '### GPU')
     if ($gpu.Error) { $lines += "- вимір карти (UTC $at): $($gpu.Error) — завантаження, пам'ять і процеси невідомі; замок нижче карти не відображає" }
@@ -590,8 +602,9 @@ function Get-GpuStateLines($LockedBy, $Holders = @()) {
     $lines += "- замок GPU обгортки (запис слотів нарядів, не вимір карти): $(if ($LockedBy.Count) { 'зайнятий — ' + ($LockedBy -join ', ') } else { 'вільний' })"
     # Сторож замка: той самий вимір ряду, що й рядки вище; рядок диспетчерові — раз на ряд бездіяльності (Update-GpuWatch).
     try {
+        if ($Holders.Count) { $watchSample.CallAgeMin = [int](Get-LmsCallAge) }
         $w = Update-GpuWatch $Holders $watchSample { param($l) [bool](Add-Line $l) }
-        if ($null -ne $w) { $lines += "- замок тримає $($w.Marker) $($w.LockMinutes) хв (без сну; сон $($w.SleepMinutes) хв); карта без роботи $(if ($gpu.Error) { '?' } else { $w.IdleMinutes }) хв; PID сервера змінювався $($w.PidChanges) разів" }
+        if ($null -ne $w) { $lines += "- замок тримає $($w.Marker) $($w.LockMinutes) хв (без сну; сон $($w.SleepMinutes) хв); карта без роботи $(if ($gpu.Error) { '?' } else { $w.IdleMinutes }) хв; PID сервера змінювався $($w.PidChanges) разів; виклики моделі: $(if ($w.CallAgeMinutes -lt 0) { 'не виміряно (журнал LM Studio не читається)' } else { 'останній ' + $w.CallAgeMinutes + ' хв тому' })" }
     } catch { Write-Log "сторож GPU: $($_.Exception.Message)"; $lines += '- замок тримає: не виміряно (збій — claude-run.log)' }
     $lines
 }

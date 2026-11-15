@@ -2658,6 +2658,9 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     if ($idleLimit -le 0) { $idleLimit = [double]$script:Defaults['gpu_idle_minutes'] }
     $pctLimit = [double](Get-Limit $script:Limits 'GpuIdlePercent' 'gpu_idle_percent')
     $pct = [int]$Sample.Percent; $ownerPid = [int]$Sample.OwnerPid
+    # Час від останнього запису журналу LM Studio, хв (-1 — журнал не читається чи не заданий): тривога лише коли й карта стояла,
+    # й викликів моделі нема довше порога; без журналу — не виміряно, тривоги нема.
+    $callAge = $(if ($null -ne $Sample.PSObject.Properties['CallAgeMin']) { [int]$Sample.CallAgeMin } else { -1 })
     # Сон ноутбука (Modern Standby: claude-run не міряє): проміжок між вимірами понад $gapLimit хв не був виміряний — не
     # рахується ні в замок, ні в бездіяльність (15.11 645 хв замка містили сон 11:30–15:29 UTC); ряд бездіяльності починається знову.
     $gapLimit = 20
@@ -2681,14 +2684,14 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     $lockMin = $(if ([string]$st.lock_since -cmatch $rx) { [Math]::Max(0, (& $from ([string]$st.lock_since)) - $sleepMin) } else { 0 })
     $idleMin = $(if ([string]$st.idle_since -cmatch $rx) { & $from ([string]$st.idle_since) } else { 0 })
     $cause = "$marker $($st.idle_since)"
-    if ([string]$st.idle_since -cmatch $rx -and $idleMin -ge $idleLimit -and [string]$st.sent -cne $cause) {
+    if ([string]$st.idle_since -cmatch $rx -and $idleMin -ge $idleLimit -and $callAge -ge $idleLimit -and [string]$st.sent -cne $cause) {
         $parts = $marker -split '/'
         $lane = Get-Lane $parts[2]
         if ($lane -eq 'agy') { $lane = 'gemini' }
         if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE $lane/$($parts[1]) ЗАМОК $lockMin СОН $sleepMin БЕЗ_РОБОТИ $idleMin PID_ЗМІН $($st.pid_changes)") { $st.sent = $cause }
     }
     Write-FileAtomic $Path ($st | ConvertTo-Json -Compress)
-    [pscustomobject]@{ Marker = $marker; LockMinutes = $lockMin; SleepMinutes = $sleepMin; IdleMinutes = $idleMin; PidChanges = [int]$st.pid_changes }
+    [pscustomobject]@{ Marker = $marker; LockMinutes = $lockMin; SleepMinutes = $sleepMin; IdleMinutes = $idleMin; PidChanges = [int]$st.pid_changes; CallAgeMinutes = $callAge }
 }
 
 
