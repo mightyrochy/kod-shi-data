@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Blouse: soft V-neck, relaxed fit, hip-length and tucked in, dusty blue (#9DB7D1), matte crepe\\n\\nTrousers: high-waisted, straight leg, ankle length, charcoal (#4A4F58), wool-blend twill\\n\\nJacket: single-breasted, slightly tailored, hip length, heather grey (#8C919B), textured tweed-look wool blend\\n\\nCoat: single-breasted, midi length, navy (#2F3E56), brushed wool\\n\\nLoafers: classic almond toe, low block heel, burgundy (#5A2A35), smooth leather\\n\\nBag: structured medium tote with top handles, burgundy (#5A2A35), grained leather\\n\\nNecklace: fine chain with a small round pendant, silver (#C0C0C0), polished metal\\n\\nWhy this works: The outfit sits right in neat business casual for the office, built on tailored trousers, a blouse and a textured jacket, finished with loafers. The dusty blue blouse echoes her eye color and the heather grey jacket picks up her silver hair, while the cool, soft palette suits her fair skin. The high waist and tucked blouse define the waistline, and the straight trousers keep a long, clean line. The navy coat covers the cool November weather, and the burgundy shoes and bag add a warm accent against the cool tones.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Blouse\\\",\\\"details\\\":\\\"soft V-neck, relaxed fit, hip-length, tucked in, matte crepe\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#9DB7D1\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Trousers\\\",\\\"details\\\":\\\"high-waisted, straight leg, ankle length, wool-blend twill\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#4A4F58\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Jacket\\\",\\\"details\\\":\\\"single-breasted, slightly tailored, hip length, textured tweed-look wool blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#8C919B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Coat\\\",\\\"details\\\":\\\"single-breasted, midi length, brushed wool\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#2F3E56\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Loafers\\\",\\\"details\\\":\\\"classic almond toe, low block heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#5A2A35\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tote bag\\\",\\\"details\\\":\\\"structured medium tote with top handles, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#5A2A35\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Necklace\\\",\\\"details\\\":\\\"fine chain with a small round pendant, polished metal\\\",\\\"slot\\\":\\\"necklace\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2119,\"output_tokens\":442},\"stop_reason\":\"end_turn\"}"
+ }
+}
