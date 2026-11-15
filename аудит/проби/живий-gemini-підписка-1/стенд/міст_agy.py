@@ -113,6 +113,11 @@ class О(BaseHTTPRequestHandler):
                     читань += 1; читань_помилок += с.get("state") == "ERROR"
             if ітог is None: помилка = f"rc {код}: " + (р.stderr.decode('utf-8', 'replace') or вивід)[-300:]
             err_stderr = р.stderr.decode("utf-8", "replace")
+        except subprocess.TimeoutExpired as e:
+            # Не губимо сирі події й частину відповіді при зовнішній стелі.
+            вивід = (e.stdout or b"").decode("utf-8", "replace")
+            err_stderr = (e.stderr or b"").decode("utf-8", "replace")
+            помилка = f"TimeoutExpired: стеля {СТЕЛЯ_С} с"
         except Exception as e:
             помилка = f"{type(e).__name__}: {e}"[:300]; err_stderr = ""
         с = time.time() - т0

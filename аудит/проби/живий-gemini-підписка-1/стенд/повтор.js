@@ -33,9 +33,15 @@ async function кадр(опис){
   return стан;
 }
 async function спокій(){
-  // Очікування визначається незавершеним запитом, а не записаними секундами іншої моделі.
+  // Після дотику воркер ще може готувати запит. Чекаємо й видимий стан
+  // сторінки, щоб не пропускати кнопки під час «Думаю…» до першого HTTP.
   let кадрО=Date.now();
-  while(активні || Date.now()-останнійВиклик<900){await сон(2000);if(активні && Date.now()-кадрО>=15000){await кадр('чекає відповіді моделі');кадрО=Date.now();}}
+  while(true){
+    const думає=await стор.evaluate(()=>Array.from(document.querySelectorAll('input,textarea')).some(x=>x.disabled && x.getBoundingClientRect().height>0) || /Думаю…/.test(document.body.innerText));
+    if(!активні && !думає && Date.now()-останнійВиклик>=1500)break;
+    await сон(2000);
+    if(Date.now()-кадрО>=15000){await кадр('чекає відповіді моделі й завершення роботи сторінки');кадрО=Date.now();}
+  }
 }
 function відповідність(рядок,мітка){
   const a=рядок.replace(/^\[\d+\] /,'').replace(/ · зараз:.*$/,'').replace(/\s+/g,' ').trim();
