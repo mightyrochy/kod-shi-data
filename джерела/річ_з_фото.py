@@ -1854,7 +1854,7 @@ def вердикт(річ, F, T, сцен=None, source=ДЖЕРЕЛО_ФОТО_�
             рівень = "з умовою" if рівень == "личить" else рівень
             жінці.append(_ВМ.заява("material_in_rain", materials=[
                 _АП.матеріал_вологи_код(dict(матеріал=мат))]))
-            жінці.append(_ВМ.заява("impregnate_or_smooth_or_textile"))
+            жінці.append(_ВМ.заява("waterproof_before_wet_day"))
             решті.append(("верхній шар, що накриває її річ від дощу, і взуття на мокру дорогу",
                           "outer_layer_and_shoes_for_rain"))
         elif опади is None:
