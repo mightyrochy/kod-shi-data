@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"з подругами\", \"goal\": \"хочу червоний верх, добери до нього образ\"}, \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"goal\": {\"kind\": \"reading\", \"quote\": \"хочу червоний верх, добери до нього образ\"}, \"goal_quote\": {\"kind\": \"default\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"з подругами\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}}, \"event\": \"з подругами\", \"part_of_day\": \"evening\", \"goal\": \"express\", \"occasion\": \"everyday\", \"goal_quote\": \"хочу червоний верх, добери до нього образ\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Red silk blouse, tailored fit, hip-length cut, vivid crimson (hex #D00000), smooth satin fabric.\\nHigh-waisted black wool-blend trousers, straight-leg cut, full length, matte black (hex #1A1A1A), heavy drape fabric.\\nBlack leather ankle boots, rounded toe, mid-calf height, jet black (hex #0F0F0F), smooth grain leather.\\nThis outfit honors your wish for a striking red top while keeping the bottom neutral to let that color shine at an evening gathering with friends. The combination of a silky blouse and structured wool trousers strikes a perfect balance between comfort and style suitable for autumn nights under artificial light. By sticking to monochrome bottoms and footwear, the ensemble feels polished yet effortless, allowing you to express yourself without overthinking every detail.\"}],\"usage\":{\"input_tokens\":662,\"output_tokens\":174},\"stop_reason\":\"end_turn\"}"
+ }
+}
