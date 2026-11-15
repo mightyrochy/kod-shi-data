@@ -1282,8 +1282,13 @@ def _тест_показу(джерело, вихід):
                        cwd=джерело, env=dict(os.environ, NODE_PATH=вузли),
                        capture_output=True, text=True, encoding="utf-8", timeout=900)
     if r.returncode != 0:
-        raise SystemExit("тест_показу.js впав на зібраному файлі (код %d):\n%s"
-                         % (r.returncode, ((r.stdout or "") + (r.stderr or ""))[-2000:]))
+        # Провалені звірки (✗), обрив і підсумок — у stdout, а stderr несе стеки `console.warn` показу: хвіст
+        # «stdout + stderr» топив названу звірку під стеком, і CI казав лише «мережі в тесті нема» (15.11).
+        вивід = r.stdout or ""
+        провалені = [р for р in вивід.splitlines() if р.lstrip().startswith(("✗", "ВПАЛО", "(не дочекались", "тест не"))]
+        raise SystemExit("тест_показу.js впав на зібраному файлі (код %d):\n%s\n--- stdout (хвіст) ---\n%s\n--- stderr (хвіст) ---\n%s"
+                         % (r.returncode, "\n".join(провалені[:40]) or "(жодного ✗ у stdout)",
+                            вивід[-1500:], (r.stderr or "")[-800:]))
     підсумок = [р for р in (r.stdout or "").strip().splitlines() if р.strip()]
     """ЧИСЛО ПОРУЧ ІЗ «ЗЕЛЕНО» (25.09.2026). Тут друкувався ЛИШЕ останній рядок —
     «ПОКАЗ: усе зелене». Батарея, яка обірвалась на 65 звірках із 353, давала в
