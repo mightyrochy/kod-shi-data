@@ -62,7 +62,7 @@ def ідентифікатор_сторінки(продукт, вузли, ко
               any(т in ("Product", "ProductModel", "ProductGroup") for т in
                   (в.get("@type") if isinstance(в.get("@type"), list) else [в.get("@type")])) and
               _адреса(в.get("url") or в.get("@id"), адреса) == _адреса(адреса, адреса)]
-    власні = власні or ([продукт] if продукт else [])
+    власні = власні or ([продукт] if продукт and not (продукт.get("url") or продукт.get("@id")) else [])
     групи = [set(), set(), set(), set()]
     for вузол in власні:
         for поле, група in (("productID", 0), ("productId", 0), ("sku", 3)):
