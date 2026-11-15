@@ -1076,6 +1076,10 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                     "take smooth leather",
     "impregnate_or_smooth_or_textile": "the choice is hers: waterproof it beforehand, or take smooth leather "
                                        "or a textile",
+    # Розщеплення змішаних кодів (Е3-заміна-з-перевіркою): суддя без пулу кандидатів не називає заміни; лишається
+    # порада без заміни. Змішані коди, з яких розщеплено нові (тут і нижче), — без емітента.
+    "waterproof_before_wet_day": "not in this weather untreated: waterproof it beforehand, three times with full "
+                                 "drying in between",
     # ── ЇЇ ВЛАСНА РІЧ: ЧИ ПІДІЙДЕ (`річ_з_фото.вердикт`) ─────────────────────
     "item_suits": "the item suits her",
     "item_suits_with_condition": "the item suits her with a condition",
@@ -1947,6 +1951,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "or_lean_on_texture_contrast": "or lean on texture contrast: the items carry different texture labels, "
                                    "and whether the difference is visible the code does not measure "
                                    "(values: textures — how many different labels)",
+    "keep_look_on_texture_contrast": "keep the look and lean on the texture of her items: their texture labels "
+                                     "differ, and whether the difference is visible the code does not measure — "
+                                     "a visual call (values: textures — how many different labels)",
     "more_than_one_loud_colour": "the outfit has more than one loud colour (values: loud_from — the chroma "
                                  "from which a colour counts as loud)",
     "lightness_range_off_her_contrast": "the outfit's lightness range does not suit her contrast: too wide "
@@ -2393,10 +2400,13 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "possible_rain_layer_to_carry": "rain is only possible, and no outer layer of the look keeps it off — "
                                      "carry a rain layer in case it starts (values: precipitation — the "
                                      "precipitation code)",
+    "possible_rain_no_rain_layer": "rain is only possible, and no outer layer of the look keeps it off (values: "
+                                   "precipitation — the precipitation code)",
     "rain_outer_layer_over_look": "an outer layer that keeps off rain — a trench, a raincoat or a parka — over "
                                   "this look, or keep the look and say why it holds this day",
     "smooth_protected_leather_or_rubber_or_treat": "replace it with smooth protected leather or rubber, or "
                                                    "treat it with a water repellent and accept the risk",
+    "keep_look_say_why_it_holds_day": "keep the look and say why it holds this day",
     "face_contrast_above_her_own": "the step of lightness between the item near the face and her skin is larger "
                                    "than the step her own colouring carries, so the item draws the eye before "
                                    "the face; this describes the item, not her looks (values: jump — the "
@@ -2557,6 +2567,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "trench_counted_as_warm_layer": "a trench was counted as warmth, but it is for rain",
     "warm_layer_under_or_instead_of_trench": "an insulated layer under the trench or instead of it, or "
                                              "declare the wool version",
+    "declare_wool_trench": "declare the wool version of the trench — then it is a different case",
     "layer_closes_wet_windy_regime": "this layer covers the wet-and-windy gap of down and coats",
     "layer_declared_no_filling": "the item declares \"no filling\": do not count this layer as warm on a par "
                                  "with an insulated one of the same type",
@@ -2838,6 +2849,7 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
     "all_colour_under_coat": "all colour stays under the coat: outdoors the look has no interest",
     "build_from_coat_or_colour_on_top": "build the look from the coat inward, or move colour to scarf, hat or "
                                         "bag, visible over the coat",
+    "build_from_coat_inward": "build the look from the coat inward",
     "light_flare_in_wind": "a light flare in the wind (light_fabric): a risk",
     "heavier_fabric_below_knee_or_straighter": "heavier fabric of the same silhouette, below-knee length, or "
                                                "a straighter cut for this outing",
