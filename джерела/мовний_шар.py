@@ -3532,7 +3532,8 @@ _ПОЛЯ_EN = {
     # цілком, з годиною («ввечері, о 19:30»), — уривок `part_of_day`: він іде лише в картку фактів і рядок «Твої
     # слова», не в подію й не стилістці (рішення менеджера 15526: без години картка читається як «не збереглося»)
     "event": "the event briefly: her own words from her message, in her language, shortened only by leaving "
-             "words out; when she names several parts of her day, every part stays; her words of when are left out",
+             "words out; when she names several parts of her day, every part stays; the time she names "
+             "(hours and minutes, in digits or in words) is left out: its part of the day goes into part_of_day",
     # Приклади підпису — не місця живих сцен (церква, випускний сина, рок-клуб були готовими відповідями)
     "place_words": "where she will be, 1–5 words for her scenario card, in her language, capitalised (like: "
                    "Museum, opening; Country house, garden); whenever place is set, and never instead of "
