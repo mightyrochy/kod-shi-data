@@ -1,0 +1,161 @@
+Записаний живий шлях, виклик 1 (мовний шар: хід розмови): запит голови d40b7af5 проти main 4b76636c і проти запису 07.11.
+main міряно СВОЇМ стендом на СВОЇЙ повній збірці: cd <дерево main> && node аудит/проби/приймання_записів.js <збірка main> <кеш Pyodide> <вихід> 0 2
+голову — стендом гілки на повній збірці голови, та сама команда з кореня гілки.
+
+б1_концерт_стримано: виклик main 1, голови 1; sha256 запиту main efaa0e248a2fffcf7fd8fef281031f7f4eb956112f4f8e740774dae037e5afd7; голови efaa0e248a2fffcf7fd8fef281031f7f4eb956112f4f8e740774dae037e5afd7; запити побайтово однакові: так
+  проти запису 00001.json: листків запису 203, голови 212; поза текстом задачі різниці нема
+  − лише в записі /task/answer: "ХІД_РОЗМОВИ"
+  + лише в запиті /profiles/0/id: "пф-3-1"
+  + лише в запиті /profiles/0/name: "Проба РВ-6"
+  + лише в запиті /profiles/0/open: true
+  + лише в запиті /task/answer_schema/text/0/her_words/0: "her whole words from a quote, or a whole tile label, that this sentence restates"
+  + лише в запиті /task/answer_schema/text/0/recorded/0: "the about codes this sentence says are recorded; the others it says are not"
+  + лише в запиті /task/codes/121: "- switch_profile: opens a profile and its conversation; when she asks to switch profiles. args: id — from …
+  + лише в запиті /task/codes/122: "- confirm_case: marks her passport confirmed; when she says it is right."
+  + лише в запиті /task/codes/123: "- set_weather_feel: sets the weather feel, no degrees; when she names the weather by a word. args: feel"
+  + лише в запиті /task/codes/124: "- find_item: finds shop items with every code she named, judged for her; when she asks to find an item to …
+  + лише в запиті /task/input/12: "\"her_new_message\" — her new message"
+  ~ /task/codes/115: "Tools (\"tool\": {\"name\", \"args\"}; the app does it and shows the result under your reply):" → "Tools (results below your reply):"
+  ~ /task/codes/116: "- save_scenario: saves this case (the passport and this conversation) to her saved cases; when her new mes… → "- save_scenario: saves this case to her saved cases; when she asks to save it. args: as_new — true — a new…
+  ~ /task/codes/117: "- list_scenarios: shows the list of her saved cases under your reply; when her new message asks to see or … → "- list_scenarios: lists her saved cases under your reply; when she asks to see them."
+  ~ /task/codes/118: "- open_scenario: opens one of her saved cases instead of the current one (what is not saved is lost); when… → "- open_scenario: opens a saved case (unsaved is lost); when she asks to open one. args: id — from saved_ca…
+  ~ /task/codes/119: "- delete_scenario: deletes one of her saved cases for good; when her new message asks to delete or remove … → "- delete_scenario: deletes a saved case for good; when she asks to delete one. args: id — from saved_cases"
+  ~ /task/codes/120: "- new_scenario: starts a new empty case with a new conversation (what is not saved is lost); when her new … → "- new_scenario: starts an empty case (unsaved is lost); when she asks for a new case."
+  ~ /task/input/10: "\"format_error\" — why your previous answer to this same message could not be used: not_json_object — not … → "\"photos\" — ids of photos she attached to her new message; do not describe or judge them"
+  ~ /task/input/11: "\"her_new_message\" — her new message" → "\"format_error\" — why your previous answer to this same message could not be used: not_json_object — not …
+  ~ /task/input/3: "\"saved_cases\" — her saved cases: \"id\", \"name\" — the name she gave it, \"case\" — what it is about, \… → "\"saved_cases\" — saved cases: id, name (her title), case (topic), date, open (current); reason code if un…
+  ~ /task/input/4: "\"passport\" — prior case in codes, with sources and quotes" → "\"profiles\" — her profiles: id, name (her input), open (active)"
+  ~ /task/input/5: "\"chosen\" — card codes with source kind and quote; her words override it" → "\"passport\" — prior case in codes, with sources and quotes"
+  ~ /task/input/6: "\"advice_topics\" — advice topic codes not yet offered whose condition already holds" → "\"chosen\" — card codes with source kind and quote; her words override it"
+  ~ /task/input/7: "\"advice_topics_if\" — advice topic codes not yet offered whose condition does not hold yet" → "\"advice_topics\" — advice topic codes not yet offered whose condition already holds"
+  ~ /task/input/8: "\"required\" — required question codes before her new message" → "\"advice_topics_if\" — advice topic codes not yet offered whose condition does not hold yet"
+  ~ /task/input/9: "\"photos\" — ids of photos she attached to her new message; do not describe or judge them" → "\"required\" — required question codes before her new message"
+
+ж1_контекст_заперечення: виклик main 1, голови 1; sha256 запиту main 059eb1a2d85dc8acee9e7ea8610c8d7fe5ed42f47f554c94f44ca8d04d30b868; голови 059eb1a2d85dc8acee9e7ea8610c8d7fe5ed42f47f554c94f44ca8d04d30b868; запити побайтово однакові: так
+  проти запису 00001.json: листків запису 203, голови 212; поза текстом задачі різниці нема
+  − лише в записі /task/answer: "ХІД_РОЗМОВИ"
+  + лише в запиті /profiles/0/id: "пф-3-1"
+  + лише в запиті /profiles/0/name: "Проба РВ-6"
+  + лише в запиті /profiles/0/open: true
+  + лише в запиті /task/answer_schema/text/0/her_words/0: "her whole words from a quote, or a whole tile label, that this sentence restates"
+  + лише в запиті /task/answer_schema/text/0/recorded/0: "the about codes this sentence says are recorded; the others it says are not"
+  + лише в запиті /task/codes/121: "- switch_profile: opens a profile and its conversation; when she asks to switch profiles. args: id — from …
+  + лише в запиті /task/codes/122: "- confirm_case: marks her passport confirmed; when she says it is right."
+  + лише в запиті /task/codes/123: "- set_weather_feel: sets the weather feel, no degrees; when she names the weather by a word. args: feel"
+  + лише в запиті /task/codes/124: "- find_item: finds shop items with every code she named, judged for her; when she asks to find an item to …
+  + лише в запиті /task/input/12: "\"her_new_message\" — her new message"
+  ~ /task/codes/115: "Tools (\"tool\": {\"name\", \"args\"}; the app does it and shows the result under your reply):" → "Tools (results below your reply):"
+  ~ /task/codes/116: "- save_scenario: saves this case (the passport and this conversation) to her saved cases; when her new mes… → "- save_scenario: saves this case to her saved cases; when she asks to save it. args: as_new — true — a new…
+  ~ /task/codes/117: "- list_scenarios: shows the list of her saved cases under your reply; when her new message asks to see or … → "- list_scenarios: lists her saved cases under your reply; when she asks to see them."
+  ~ /task/codes/118: "- open_scenario: opens one of her saved cases instead of the current one (what is not saved is lost); when… → "- open_scenario: opens a saved case (unsaved is lost); when she asks to open one. args: id — from saved_ca…
+  ~ /task/codes/119: "- delete_scenario: deletes one of her saved cases for good; when her new message asks to delete or remove … → "- delete_scenario: deletes a saved case for good; when she asks to delete one. args: id — from saved_cases"
+  ~ /task/codes/120: "- new_scenario: starts a new empty case with a new conversation (what is not saved is lost); when her new … → "- new_scenario: starts an empty case (unsaved is lost); when she asks for a new case."
+  ~ /task/input/10: "\"format_error\" — why your previous answer to this same message could not be used: not_json_object — not … → "\"photos\" — ids of photos she attached to her new message; do not describe or judge them"
+  ~ /task/input/11: "\"her_new_message\" — her new message" → "\"format_error\" — why your previous answer to this same message could not be used: not_json_object — not …
+  ~ /task/input/3: "\"saved_cases\" — her saved cases: \"id\", \"name\" — the name she gave it, \"case\" — what it is about, \… → "\"saved_cases\" — saved cases: id, name (her title), case (topic), date, open (current); reason code if un…
+  ~ /task/input/4: "\"passport\" — prior case in codes, with sources and quotes" → "\"profiles\" — her profiles: id, name (her input), open (active)"
+  ~ /task/input/5: "\"chosen\" — card codes with source kind and quote; her words override it" → "\"passport\" — prior case in codes, with sources and quotes"
+  ~ /task/input/6: "\"advice_topics\" — advice topic codes not yet offered whose condition already holds" → "\"chosen\" — card codes with source kind and quote; her words override it"
+  ~ /task/input/7: "\"advice_topics_if\" — advice topic codes not yet offered whose condition does not hold yet" → "\"advice_topics\" — advice topic codes not yet offered whose condition already holds"
+  ~ /task/input/8: "\"required\" — required question codes before her new message" → "\"advice_topics_if\" — advice topic codes not yet offered whose condition does not hold yet"
+  ~ /task/input/9: "\"photos\" — ids of photos she attached to her new message; do not describe or judge them" → "\"required\" — required question codes before her new message"
+
+ж2_різдвяна_вечеря: виклик main 1, голови 1; sha256 запиту main 9661abe2d9fcad8425fa4db7a5f231e70c5b835df2e032d2fc7de42f7952cf03; голови 9661abe2d9fcad8425fa4db7a5f231e70c5b835df2e032d2fc7de42f7952cf03; запити побайтово однакові: так
+  проти запису 00001.json: листків запису 203, голови 212; поза текстом задачі різниці нема
+  − лише в записі /task/answer: "ХІД_РОЗМОВИ"
+  + лише в запиті /profiles/0/id: "пф-3-1"
+  + лише в запиті /profiles/0/name: "Проба РВ-6"
+  + лише в запиті /profiles/0/open: true
+  + лише в запиті /task/answer_schema/text/0/her_words/0: "her whole words from a quote, or a whole tile label, that this sentence restates"
+  + лише в запиті /task/answer_schema/text/0/recorded/0: "the about codes this sentence says are recorded; the others it says are not"
+  + лише в запиті /task/codes/121: "- switch_profile: opens a profile and its conversation; when she asks to switch profiles. args: id — from …
+  + лише в запиті /task/codes/122: "- confirm_case: marks her passport confirmed; when she says it is right."
+  + лише в запиті /task/codes/123: "- set_weather_feel: sets the weather feel, no degrees; when she names the weather by a word. args: feel"
+  + лише в запиті /task/codes/124: "- find_item: finds shop items with every code she named, judged for her; when she asks to find an item to …
+  + лише в запиті /task/input/12: "\"her_new_message\" — her new message"
+  ~ /task/codes/115: "Tools (\"tool\": {\"name\", \"args\"}; the app does it and shows the result under your reply):" → "Tools (results below your reply):"
+  ~ /task/codes/116: "- save_scenario: saves this case (the passport and this conversation) to her saved cases; when her new mes… → "- save_scenario: saves this case to her saved cases; when she asks to save it. args: as_new — true — a new…
+  ~ /task/codes/117: "- list_scenarios: shows the list of her saved cases under your reply; when her new message asks to see or … → "- list_scenarios: lists her saved cases under your reply; when she asks to see them."
+  ~ /task/codes/118: "- open_scenario: opens one of her saved cases instead of the current one (what is not saved is lost); when… → "- open_scenario: opens a saved case (unsaved is lost); when she asks to open one. args: id — from saved_ca…
+  ~ /task/codes/119: "- delete_scenario: deletes one of her saved cases for good; when her new message asks to delete or remove … → "- delete_scenario: deletes a saved case for good; when she asks to delete one. args: id — from saved_cases"
+  ~ /task/codes/120: "- new_scenario: starts a new empty case with a new conversation (what is not saved is lost); when her new … → "- new_scenario: starts an empty case (unsaved is lost); when she asks for a new case."
+  ~ /task/input/10: "\"format_error\" — why your previous answer to this same message could not be used: not_json_object — not … → "\"photos\" — ids of photos she attached to her new message; do not describe or judge them"
+  ~ /task/input/11: "\"her_new_message\" — her new message" → "\"format_error\" — why your previous answer to this same message could not be used: not_json_object — not …
+  ~ /task/input/3: "\"saved_cases\" — her saved cases: \"id\", \"name\" — the name she gave it, \"case\" — what it is about, \… → "\"saved_cases\" — saved cases: id, name (her title), case (topic), date, open (current); reason code if un…
+  ~ /task/input/4: "\"passport\" — prior case in codes, with sources and quotes" → "\"profiles\" — her profiles: id, name (her input), open (active)"
+  ~ /task/input/5: "\"chosen\" — card codes with source kind and quote; her words override it" → "\"passport\" — prior case in codes, with sources and quotes"
+  ~ /task/input/6: "\"advice_topics\" — advice topic codes not yet offered whose condition already holds" → "\"chosen\" — card codes with source kind and quote; her words override it"
+  ~ /task/input/7: "\"advice_topics_if\" — advice topic codes not yet offered whose condition does not hold yet" → "\"advice_topics\" — advice topic codes not yet offered whose condition already holds"
+  ~ /task/input/8: "\"required\" — required question codes before her new message" → "\"advice_topics_if\" — advice topic codes not yet offered whose condition does not hold yet"
+  ~ /task/input/9: "\"photos\" — ids of photos she attached to her new message; do not describe or judge them" → "\"required\" — required question codes before her new message"
+
+ж4_213_червоний_верх: виклик main 1, голови 1; sha256 запиту main 925e148130cef4cabfe7cfafac940284e71585022a784783bac5c34284d5e7a1; голови 925e148130cef4cabfe7cfafac940284e71585022a784783bac5c34284d5e7a1; запити побайтово однакові: так
+  проти запису 00001.json: листків запису 203, голови 212; поза текстом задачі різниці нема
+  − лише в записі /task/answer: "ХІД_РОЗМОВИ"
+  + лише в запиті /profiles/0/id: "пф-3-1"
+  + лише в запиті /profiles/0/name: "Проба РВ-6"
+  + лише в запиті /profiles/0/open: true
+  + лише в запиті /task/answer_schema/text/0/her_words/0: "her whole words from a quote, or a whole tile label, that this sentence restates"
+  + лише в запиті /task/answer_schema/text/0/recorded/0: "the about codes this sentence says are recorded; the others it says are not"
+  + лише в запиті /task/codes/121: "- switch_profile: opens a profile and its conversation; when she asks to switch profiles. args: id — from …
+  + лише в запиті /task/codes/122: "- confirm_case: marks her passport confirmed; when she says it is right."
+  + лише в запиті /task/codes/123: "- set_weather_feel: sets the weather feel, no degrees; when she names the weather by a word. args: feel"
+  + лише в запиті /task/codes/124: "- find_item: finds shop items with every code she named, judged for her; when she asks to find an item to …
+  + лише в запиті /task/input/12: "\"her_new_message\" — her new message"
+  ~ /task/codes/115: "Tools (\"tool\": {\"name\", \"args\"}; the app does it and shows the result under your reply):" → "Tools (results below your reply):"
+  ~ /task/codes/116: "- save_scenario: saves this case (the passport and this conversation) to her saved cases; when her new mes… → "- save_scenario: saves this case to her saved cases; when she asks to save it. args: as_new — true — a new…
+  ~ /task/codes/117: "- list_scenarios: shows the list of her saved cases under your reply; when her new message asks to see or … → "- list_scenarios: lists her saved cases under your reply; when she asks to see them."
+  ~ /task/codes/118: "- open_scenario: opens one of her saved cases instead of the current one (what is not saved is lost); when… → "- open_scenario: opens a saved case (unsaved is lost); when she asks to open one. args: id — from saved_ca…
+  ~ /task/codes/119: "- delete_scenario: deletes one of her saved cases for good; when her new message asks to delete or remove … → "- delete_scenario: deletes a saved case for good; when she asks to delete one. args: id — from saved_cases"
+  ~ /task/codes/120: "- new_scenario: starts a new empty case with a new conversation (what is not saved is lost); when her new … → "- new_scenario: starts an empty case (unsaved is lost); when she asks for a new case."
+  ~ /task/input/10: "\"format_error\" — why your previous answer to this same message could not be used: not_json_object — not … → "\"photos\" — ids of photos she attached to her new message; do not describe or judge them"
+  ~ /task/input/11: "\"her_new_message\" — her new message" → "\"format_error\" — why your previous answer to this same message could not be used: not_json_object — not …
+  ~ /task/input/3: "\"saved_cases\" — her saved cases: \"id\", \"name\" — the name she gave it, \"case\" — what it is about, \… → "\"saved_cases\" — saved cases: id, name (her title), case (topic), date, open (current); reason code if un…
+  ~ /task/input/4: "\"passport\" — prior case in codes, with sources and quotes" → "\"profiles\" — her profiles: id, name (her input), open (active)"
+  ~ /task/input/5: "\"chosen\" — card codes with source kind and quote; her words override it" → "\"passport\" — prior case in codes, with sources and quotes"
+  ~ /task/input/6: "\"advice_topics\" — advice topic codes not yet offered whose condition already holds" → "\"chosen\" — card codes with source kind and quote; her words override it"
+  ~ /task/input/7: "\"advice_topics_if\" — advice topic codes not yet offered whose condition does not hold yet" → "\"advice_topics\" — advice topic codes not yet offered whose condition already holds"
+  ~ /task/input/8: "\"required\" — required question codes before her new message" → "\"advice_topics_if\" — advice topic codes not yet offered whose condition does not hold yet"
+  ~ /task/input/9: "\"photos\" — ids of photos she attached to her new message; do not describe or judge them" → "\"required\" — required question codes before her new message"
+
+ж7_мінус_вісім_пішки: виклик main 1, голови 1; sha256 запиту main f5ac52d8086ca0a65fe0be3a5a434f1bd23d6d315622efabc8b191db0b12a02a; голови f5ac52d8086ca0a65fe0be3a5a434f1bd23d6d315622efabc8b191db0b12a02a; запити побайтово однакові: так
+  проти запису 00001.json: листків запису 203, голови 212; поза текстом задачі різниці нема
+  − лише в записі /task/answer: "ХІД_РОЗМОВИ"
+  + лише в запиті /profiles/0/id: "пф-3-1"
+  + лише в запиті /profiles/0/name: "Проба РВ-6"
+  + лише в запиті /profiles/0/open: true
+  + лише в запиті /task/answer_schema/text/0/her_words/0: "her whole words from a quote, or a whole tile label, that this sentence restates"
+  + лише в запиті /task/answer_schema/text/0/recorded/0: "the about codes this sentence says are recorded; the others it says are not"
+  + лише в запиті /task/codes/121: "- switch_profile: opens a profile and its conversation; when she asks to switch profiles. args: id — from …
+  + лише в запиті /task/codes/122: "- confirm_case: marks her passport confirmed; when she says it is right."
+  + лише в запиті /task/codes/123: "- set_weather_feel: sets the weather feel, no degrees; when she names the weather by a word. args: feel"
+  + лише в запиті /task/codes/124: "- find_item: finds shop items with every code she named, judged for her; when she asks to find an item to …
+  + лише в запиті /task/input/12: "\"her_new_message\" — her new message"
+  ~ /task/codes/115: "Tools (\"tool\": {\"name\", \"args\"}; the app does it and shows the result under your reply):" → "Tools (results below your reply):"
+  ~ /task/codes/116: "- save_scenario: saves this case (the passport and this conversation) to her saved cases; when her new mes… → "- save_scenario: saves this case to her saved cases; when she asks to save it. args: as_new — true — a new…
+  ~ /task/codes/117: "- list_scenarios: shows the list of her saved cases under your reply; when her new message asks to see or … → "- list_scenarios: lists her saved cases under your reply; when she asks to see them."
+  ~ /task/codes/118: "- open_scenario: opens one of her saved cases instead of the current one (what is not saved is lost); when… → "- open_scenario: opens a saved case (unsaved is lost); when she asks to open one. args: id — from saved_ca…
+  ~ /task/codes/119: "- delete_scenario: deletes one of her saved cases for good; when her new message asks to delete or remove … → "- delete_scenario: deletes a saved case for good; when she asks to delete one. args: id — from saved_cases"
+  ~ /task/codes/120: "- new_scenario: starts a new empty case with a new conversation (what is not saved is lost); when her new … → "- new_scenario: starts an empty case (unsaved is lost); when she asks for a new case."
+  ~ /task/input/10: "\"format_error\" — why your previous answer to this same message could not be used: not_json_object — not … → "\"photos\" — ids of photos she attached to her new message; do not describe or judge them"
+  ~ /task/input/11: "\"her_new_message\" — her new message" → "\"format_error\" — why your previous answer to this same message could not be used: not_json_object — not …
+  ~ /task/input/3: "\"saved_cases\" — her saved cases: \"id\", \"name\" — the name she gave it, \"case\" — what it is about, \… → "\"saved_cases\" — saved cases: id, name (her title), case (topic), date, open (current); reason code if un…
+  ~ /task/input/4: "\"passport\" — prior case in codes, with sources and quotes" → "\"profiles\" — her profiles: id, name (her input), open (active)"
+  ~ /task/input/5: "\"chosen\" — card codes with source kind and quote; her words override it" → "\"passport\" — prior case in codes, with sources and quotes"
+  ~ /task/input/6: "\"advice_topics\" — advice topic codes not yet offered whose condition already holds" → "\"chosen\" — card codes with source kind and quote; her words override it"
+  ~ /task/input/7: "\"advice_topics_if\" — advice topic codes not yet offered whose condition does not hold yet" → "\"advice_topics\" — advice topic codes not yet offered whose condition already holds"
+  ~ /task/input/8: "\"required\" — required question codes before her new message" → "\"advice_topics_if\" — advice topic codes not yet offered whose condition does not hold yet"
+  ~ /task/input/9: "\"photos\" — ids of photos she attached to her new message; do not describe or judge them" → "\"required\" — required question codes before her new message"
+
+
+Усі десять сцен запису 07.11 (обидві частини приймання), запит виклику 1: main 4b76636c своїм стендом, ДО d40b7af5, ПІСЛЯ 3fdad76a
+б1_концерт_стримано: виклик 1; sha256 запиту main efaa0e248a2fffcf…; ДО = main: так; ПІСЛЯ = main: так
+ж1_контекст_заперечення: виклик 1; sha256 запиту main 059eb1a2d85dc8ac…; ДО = main: так; ПІСЛЯ = main: так
+ж2_різдвяна_вечеря: виклик 1; sha256 запиту main 9661abe2d9fcad84…; ДО = main: так; ПІСЛЯ = main: так
+ж4_213_червоний_верх: виклик 1; sha256 запиту main 925e148130cef4ca…; ДО = main: так; ПІСЛЯ = main: так
+ж7_мінус_вісім_пішки: виклик 1; sha256 запиту main f5ac52d8086ca0a6…; ДО = main: так; ПІСЛЯ = main: так
+ж1_екскурсія_бруківка: виклик 1; sha256 запиту main 0372820e5bcc4f3c…; ДО = main: так; ПІСЛЯ = main: так
+ж2_новорічна_мороз: виклик 1; sha256 запиту main 77d50df85d14e4b7…; ДО = main: так; ПІСЛЯ = main: так
+ж3_прогулянка_кофта: виклик 1; sha256 запиту main d33443affb5f2807…; ДО = main: так; ПІСЛЯ = main: так
+ж4_робота_срібні_сережки: виклик 1; sha256 запиту main 8240069877a45329…; ДО = main: так; ПІСЛЯ = main: так
+ж7_робота_можливо_дощ: виклик 1; sha256 запиту main 17e3b8ed9fb395f1…; ДО = main: так; ПІСЛЯ = main: так

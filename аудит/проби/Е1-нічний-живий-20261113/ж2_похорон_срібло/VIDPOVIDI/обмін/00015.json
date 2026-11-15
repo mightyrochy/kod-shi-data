@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Charcoal wool crepe coat, knee-length, #2F3031, heavy wool blend for modesty and warmth\\nBlack tailored trousers, straight cut, #000000, fine virgin wool with a matte finish\\nWhite high-neck silk blouse, relaxed fit, #FFFFFF, smooth mulberry silk\\nSimple silver pearl pendant necklace, round shape, metallic silver tone (silver), sterling silver chain\\nMatching silver stud earrings, small circle shape, metallic silver tone (silver), oxidized silver\\nSilver signet ring, square face shape, metallic silver tone (silver), polished sterling silver with an engraved mourning motif\\nBlack leather ankle boots, low block heel, #0A0A0A, soft full-grain leather with a matte finish\\nMatte black clutch, rectangular shape, #1C1C1C, textured suede exterior\\n\\nThis ensemble honors the solemnity of your grandfather's funeral while strictly adhering to your wish for silver jewelry. The deep charcoal coat and black trousers provide a respectful, dark palette suitable for mourning during the autumn morning, ensuring you stay warm without drawing attention away from the ceremony. The silver accessories act as a subtle personal touch that celebrates his life rather than merely signaling grief, balancing tradition with your specific desires. Every element, from the matte textures to the understated elegance of the silver, creates a dignified presence appropriate for a close relative attending a burial service.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Coat\\\",\\n      \\\"details\\\": \\\"charcoal wool crepe, knee-length, heavy wool blend for modesty and warmth\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#2F3031\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Trousers\\\",\\n      \\\"details\\\": \\\"black tailored, straight cut, fine virgin wool with a matte finish\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Blouse\\\",\\n      \\\"details\\\": \\\"white high-neck silk, relaxed fit, smooth mulberry silk\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFFFF\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Necklace\\\",\\n      \\\"details\\\": \\\"simple silver pearl pendant, round shape, sterling silver chain\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Earrings\\\",\\n      \\\"details\\\": \\\"matching silver stud, small circle shape, oxidized silver\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Ring\\\",\\n      \\\"details\\\": \\\"silver signet, square face shape, polished sterling silver with an engraved mourning motif\\\",\\n      \\\"slot\\\": \\\"ring\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Boots\\\",\\n      \\\"details\\\": \\\"black leather ankle, low block heel, soft full-grain leather with a matte finish\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#0A0A0A\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Clutch\\\",\\n      \\\"details\\\": \\\"matte black, rectangular shape, textured suede exterior\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#1C1C1C\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":641,\"output_tokens\":521},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """СІД-3 (рядок 760): солі перемішування поза порядок_запиту/уважний_вибір. Знімає КОЖЕН рядок сіда
 `random.Random(…)` за повний прохід `запити` (3 сіди) і хеш пулу: до/після правки збігаються = порядок той самий.
-Прогін: PYTHONPATH=. python3 проби/сід3_солі.py"""
-import re, json, hashlib, gzip, shutil, tempfile, os, random, collections
+Прогін: cd джерела && python3 проби/сід3_солі.py"""
+import re, json, hashlib, gzip, shutil, tempfile, os, random, collections, sys; sys.path.insert(0, ".")
+sys.path.insert(0, "прилади"); import сторож_таблиці
+сторож_таблиці.явно_без_таблиці("сід3_солі порівнює порядок до/після на опорному шляху дерева джерел, таблиці там нема")
 import bridge as B
 ЗНЯТО = collections.Counter(); _R = random.Random
 class Р(_R):

@@ -1,0 +1,43 @@
+── ПРОМПТ (6651 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: two_piece_set · colour code: beige · about it: text н=1
+2 — kind code: trench_coat · colour code: mocha · about it: text н=2
+3 — kind code: dress_shoes · colour code: brown · about it: text н=3
+4 — kind code: bag_generic · colour code: beige · about it: text н=4
+5 — kind code: necklace · colour code: pearly · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; mocha — мокко; pearly — перлинний.
+
+ТЕКСТИ:
+{
+"1": "A beige two-piece set with a fitted cut. It is the base of the outfit and gives a clean, even line.",
+"2": "A trench coat in soft mocha with a fitted cut. It is a warm shade that sits close to the beige of the set.",
+"3": "Brown dress shoes. They are the deepest tone of the outfit and give it a neat, office-ready finish.",
+"4": "A beige bag in a warm tone that matches the set and keeps the palette quiet.",
+"5": "A pearly necklace with a soft shine. It adds a light accent near the face.",
+"6": "The whole outfit stays in warm neutrals: beige set, mocha trench, brown shoes and a beige bag. They sit close to one another, so the look reads calm and put together, which suits a working day in the office. The fitted set and the fitted trench follow your line without adding bulk, so nothing competes at the waist or the ankle. The brown shoes are the deepest tone of the outfit and close it off deliberately. The pearly necklace is the one light, soft shine, and it sits close to your face.",
+"7": "Wear the trench open over the set so the beige and mocha form one vertical line, and let the brown shoes finish it as the darkest tone.",
+"8": "Keep the pearly necklace as the only shine near your face, with nothing else competing with it.",
+"9": "Броги шкіряні з фурнітурою золотистого кольору (Other Brand) Other Brand — The closed brown shoes sit close to your skin tone, so the leg line stays calm under the midi length. The step is small and suits a conventional office look.",
+"10": "Перлинне намисто зі срібною застібкою — The pearly necklace is the priciest piece, but it is the one light note near your face and it lifts the tonal set without making it loud."
+}
+
+── ВІДПОВІДЬ (1652 симв., 18.0 с, HTTP 200) ──
+{"1":"Бежевий комплект приталеного крою. Це основа образу, і він дає чисту, рівну лінію.","2":"Тренч приталеного крою в м'якому відтінку мокко. Це теплий відтінок, який близький до бежевого комплекту.","3":"Коричневі туфлі. Вони найглибшого тону в образі й надають йому охайного завершення, готового до офісу.","4":"Бежева сумка теплого тону, що пасує до комплекту й зберігає спокійну палітру.","5":"Перлинне намисто з м'яким блиском. Воно додає легкий акцент біля обличчя.","6":"Весь образ витримано в теплих нейтральних тонах: бежевий комплект, тренч мокко, коричневі туфлі та бежева сумка. Вони близькі між собою, тому образ виглядає спокійним і зібраним, що пасує до робочого дня в офісі. Приталені комплект і тренч повторюють твою лінію без зайвого об'єму, тож ніщо не змагається на талії чи щиколотці. Коричневі туфлі — найглибший тон образу, і вони свідомо його завершують. Перлинне намисто — єдиний легкий, м'який блиск, і воно лежить близько до твого обличчя.","7":"Носи тренч розстебнутим поверх комплекту, щоб бежевий і мокко складали одну вертикальну лінію, а коричневі туфлі завершили її як найтемніший тон.","8":"Тримай перлинне намисто єдиним блиском біля твого обличчя, щоб ніщо інше з ним не змагалося.","9":"Броги шкіряні з фурнітурою золотистого кольору (Other Brand) Other Brand — Закриті коричневі туфлі близькі до твого тону шкіри, тому лінія ніг лишається спокійною під довжиною міді. Крок невеликий і пасує до звичного офісного образу.","10":"Перлинне намисто зі срібною застібкою — Перлинне намисто є найдорожчою річчю, але це єдина легка нотка біля твого обличчя, і воно підносить тональний комплект, не роблячи його гучним."}

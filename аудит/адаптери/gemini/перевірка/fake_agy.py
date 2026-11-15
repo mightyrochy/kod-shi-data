@@ -99,7 +99,7 @@ def act(prompt):
     if SC == 'secret_path':
         commit('.codex/auth.json', '{}'); return 'SUCCESS', done(), ''
     if SC == 'secret_content':
-        commit('робота/нотатки.md', 'token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'); return 'SUCCESS', done(), ''
+        commit('робота/нотатки.md', 'token eyJFAKE_HEADER_NOT_A_TOKEN.eyJFAKE_PAYLOAD_NOT_A_TOKEN.FAKE_SIGNATURE_NOT_A_TOKEN'); return 'SUCCESS', done(), ''
     if SC == 'github_renamed':
         commit('.github/workflows/z.yml'); git('mv', '.github/workflows/z.yml', 'z.yml')
         git('-c', 'user.name=g', '-c', 'user.email=g@x', 'commit', '-q', '-m', 'mv'); return 'SUCCESS', done(), ''

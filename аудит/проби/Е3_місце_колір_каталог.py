@@ -7,6 +7,8 @@ def головна():
     sys.path.insert(0, str(корінь / "джерела")); os.chdir(корінь / "джерела")
     import фід_каталог as ФК, feed as Ф, колір_річ as К, місце_речі as М
     import аксесуари_структура as А
+    sys.path.insert(0, str(корінь / "джерела" / "проби"))
+    from слот_near_дані import SLOT_NEAR_FALLBACK
     sha = "d911187265b4a2696df5dbb2d1665e1611339333"
     до = types.ModuleType("аксесуари_до")
     exec(subprocess.check_output(["git", "show", f"{sha}:джерела/аксесуари_структура.py"], encoding="utf-8"), до.__dict__)
@@ -19,7 +21,7 @@ def головна():
         слоти[р["слот"]] += 1
         # Формула K-CLR-02 / R-COL-16 бази: near елемента, а без виміру — таблиця слота.
         вага = р.get("near")
-        if вага is None: вага = К.SLOT_NEAR_FALLBACK.get(р["слот"], 0.2)
+        if вага is None: вага = SLOT_NEAR_FALLBACK.get(р["слот"], 0.2)
         до_ліч["біля обличчя"] += вага >= К.NEAR_МІН
         бік = М.бік_межі(р)
         після["біля обличчя"] += бік is True

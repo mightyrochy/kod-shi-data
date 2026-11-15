@@ -67,27 +67,27 @@ const ПРОФІЛІ = {
     await стор.route(u => !(u.origin === new URL(БАЗА).origin) && !/cdn\.jsdelivr\.net\/pyodide/.test(u.href), r => r.abort());
 
     await стор.goto(БАЗА + '/index.html#міст=' + БАЗА + '/міст&т=tok-znimky', { waitUntil: 'load', timeout: 180000 });
-    await стор.waitForFunction(() => typeof РЕЖИМ !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
+    await стор.waitForFunction(() => typeof Екран !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
     await стор.click('#кол-блок details.розкривач > summary');
     await стор.fill('#кол-відповідь', ПРОФІЛІ[сід] || ПРОФІЛІ[1]);
     await стор.click('#кол-читати');
     await стор.fill('[id="пр-імʼя"]', 'Знімок ' + сід);
     await стор.check('#пр-згода');
     await стор.click('#н-далі');
-    await стор.waitForFunction(() => ЕКРАН === 1, null, { timeout: 30000 });
+    await стор.waitForFunction(() => Екран.стан.крок === 1, null, { timeout: 30000 });
     await стор.click('#н-далі');
-    await стор.waitForFunction(() => ЕКРАН === 2, null, { timeout: 30000 });
+    await стор.waitForFunction(() => Екран.стан.крок === 2, null, { timeout: 30000 });
     for (const [і, v] of [['мр-плечі', 98], ['мр-груди', 92], ['мр-талія', 74], ['мр-стегна', 99], ['мр-зріст', 168]])
       await стор.fill('#' + і, String(v));
     await стор.click('#н-далі');
-    await стор.waitForFunction(() => РЕЖИМ === 'сценарій' && ПРОФІЛЬ_СТВОРЕНО, null, { timeout: 120000 });
+    await стор.waitForFunction(() => Екран.стан.режим === 'сценарій' && ПРОФІЛЬ_СТВОРЕНО, null, { timeout: 120000 });
     /* Випадок — реплікою в чат, як у жінки: доти картка сценарію (а з нею рядок
        «Палітра») на екрані не стоїть, і клік падає на «element is not visible». */
     await стор.fill('#чат-поле', 'робочий день в офісі, дрес-код business casual, без підборів');
     await стор.click('#чат-слати');
     await стор.waitForFunction(() => document.querySelectorAll('#чат-стрічка .репліка').length >= 2, null, { timeout: 480000 });
     await стор.click('#пал-кнопка');
-    await стор.waitForFunction(() => РЕЖИМ === 'палітра'
+    await стор.waitForFunction(() => Екран.стан.режим === 'палітра'
         && (document.querySelectorAll('#пал-основа .чип').length > 1
             || /не порахувалась|зчитай/.test((document.getElementById('пал-стан') || {}).textContent || '')),
       null, { timeout: 600000 });

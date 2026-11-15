@@ -4,7 +4,10 @@
 1. Розбір рядка — випадки стенда обгортки (`сценарії_живий_рядок.ps1`, сценарій 2).
 2. Штучна історія git: злиття до й після збірки звіту, сквош і коміт злиття, «не потрібен», сцена в кількох PR,
    сцена, чий id — префікс іншого, чужий автор, злиття до вікна, звіт без межі й межа не за форматом.
-3. Паритет розбору з `Get-LiveAfterLines` обгортки (`queue_lanes.ps1`) — через `pwsh` на реєстрі, тілах комітів
+3. Прогнано за записами (`прогнані_записами` — повтор `Get-AutoRanPairs`): завершений запис, відмова питання й сцени, rc 2,
+   сцена «функція», злиття не предок SHA запису, перенесений запис; паритет з `Get-AutoRanPairs` — на штучній історії
+   й на справжньому дереві.
+4. Паритет розбору з `Get-LiveAfterLines` обгортки (`queue_lanes.ps1`) — через `pwsh` на реєстрі, тілах комітів
    `main` і файлах `аудит/` з рядком `ЖИВИЙ ПІСЛЯ`. Нема `pwsh` — «не виміряно»; у CI (`CI` задано) це провал.
 
 Прогін:  python3 джерела/прилади/тест_живий_після_прогнано.py   → останній рядок «OK» чи «ПРОВАЛ: N»
@@ -112,8 +115,9 @@ def історія():
         збірка = _коміт(тека, {"index.html": "збірка"}, "збірка: x", "2026-11-06T14:00:00Z", автор="github-actions[bot]")
         _коміт(тека, {"е.txt": "5"}, "Після збірки (#14)\n\nЖИВИЙ ПІСЛЯ: ж1_а — після", "2026-11-06T15:00:00Z")
         звіт = ("# Звіт\n\n| ж1_а | повне |\n| ж1_а_б | розмова |\n\nПЕРЕВІРЕНО ЗБІРКУ: " + збірка + "\n")
-        _коміт(тека, {"аудит/проби/автоживий-x/ЗВІТ.md": звіт, "аудит/проби/автоживий-x/ж2_в/лог.txt": "лог"},
-               "Звіт автоживий-x (#15)", "2026-11-06T16:00:00Z")
+        _коміт(тека, {"аудит/проби/автоживий-" + збірка + "/ЗВІТ.md": звіт,
+                      "аудит/проби/автоживий-" + збірка + "/ж2_в/лог.txt": "лог"},
+               "Звіт автоживий (#15)", "2026-11-06T16:00:00Z")
         _коміт(тека, {"аудит/проби/нічний/ЗВІТ.md": "Нічний: ж1_а, ж3_г\n\n## ПЕРЕВІРЕНО ЗБІРКУ\n\nРядка нема\n",
                       "аудит/проби/функція/ЗВІТ.md": "ПЕРЕВІРЕНО ЗБІРКУ `" + збірка + "` — сцена ж3_г\n"},
                "Звіти без межі (#16)", "2026-11-06T17:00:00Z")
@@ -175,9 +179,61 @@ def історія():
                                 "--від", "2026-11-05T00:00:00Z", "--зараз", "2026-11-06T18:00:00Z", "--тіла", тіла_шлях],
                                capture_output=True, text=True, cwd=тека)
         перевірити("прилад з --тіла: «прогнано: 2 з 4»", вивід.stdout.strip().splitlines()[-1] == "прогнано: 2 з 4")
+        записи_історії(тека, прилад, від, зараз)
     finally:
         os.chdir(стара)
         shutil.rmtree(тека, ignore_errors=True)
+
+
+def запис_сцени(тека_запису, sha, rc=0, обмін=True, без=()):
+    файли = {"результат.json": json.dumps({"rc": rc, "sha": sha}), "повтор.json": "{}", "лог.txt": "лог",
+             "знімки/доказ.json": "{}"}
+    if обмін:
+        файли["VIDPOVIDI/обмін/1.json"] = "{}"
+    return {тека_запису + "/" + ш: т for ш, т in файли.items() if ш not in без}
+
+
+def записи_історії(тека, прилад, від, зараз):
+    """Прогнано за записами: Е1-нічний-живий-20261106 прогнав (14, ж1_а) і (13, ж3_г) — друга сцена «функція»."""
+    код = _git(тека, "rev-parse", "HEAD")
+    д = "аудит/проби/Е1-нічний-живий-20261106"
+    план = {"scenes": {"ж1_а": [{"pr": 14, "question": "q"}, {"pr": 10, "question": "q"}], "ж1_а_б": [{"pr": 11}],
+                       "ж2_в": [{"pr": 10}], "ж3_г": [{"pr": 13}], "ж5_д": [{"pr": 14}]}, "cloud": {}, "build": код}
+    done = "\n".join(json.dumps(р, ensure_ascii=False) for р in [
+        {"сцена": "ж2_в", "відмова": "нема фото"}, {"сцена": "ж1_а", "pr": 10, "відмова_питання": "режим"}])
+    файли = {д + "/ПЛАН.json": json.dumps(план, ensure_ascii=False), д + "/done.txt": done + "\n"}
+    файли.update(запис_сцени(д + "/ж1_а", код))
+    файли.update(запис_сцени(д + "/ж1_а_б", код, rc=2))
+    файли.update(запис_сцени(д + "/ж2_в", код))
+    файли.update(запис_сцени(д + "/ж3_г", код))
+    файли.update(запис_сцени(д + "/ж5_д", код, обмін=False))
+    _коміт(тека, файли, "Е1 нічний (#17)", "2026-11-06T17:30:00Z")
+    ран = прилад.прогнані_записами("main")
+    перевірити("записи: завершена сцена — пари плану, відмова питання й сцени, rc 2 і запис без обміну — ні",
+               sorted(ран) == ["13|ж3_г", "14|ж1_а"])
+    перевірити("записи: ключ — PR|сцена, SHA — коду запису", ран["14|ж1_а"] == [{"sha": код, "звіт": "Е1-нічний-живий-20261106"}])
+    лічба = прилад.лічити("main", від, зараз)
+    за_записами = sorted((п["pr"], п["сцена"]) for п in лічба["питання"].values() if п["записи"])
+    перевірити("лічба: прогнано за записами — (14, ж1_а); «функція» (13, ж3_г) — ні; (10, ж1_а) — відмова питання",
+               за_записами == [(14, "ж1_а")])
+    перевірити("лічба: (14, ж1_а) не в непрогнаних, (13, ж3_г) — в непрогнаних",
+               sorted((п["pr"], п["сцена"]) for п in лічба["непрогнані"]) == [(13, "ж3_г")])
+    # Злиття після коду запису — не предок: запис його не прогнав.
+    _коміт(тека, {"є.txt": "6"}, "Пізніше (#18)\n\nЖИВИЙ ПІСЛЯ: ж5_д — ще", "2026-11-06T17:40:00Z")
+    пізній = прилад.лічити("main", від, прилад._час("2026-11-06T18:00:00Z"))
+    перевірити("злиття PR після коду запису — не прогнано записом",
+               not [п for п in пізній["питання"].values() if п["pr"] == 18 and п["записи"]])
+    # Перенесений `нова_база.js` запис: теки сцени в наряді нема, шлях_запису називає її.
+    д2 = "аудит/проби/Е1-нічний-живий-20261105"
+    база = "аудит/проби/нічні/20261105/ж1_а_б"
+    план2 = {"scenes": {"ж1_а_б": [{"pr": 11}]}, "cloud": {}}
+    файли2 = {д2 + "/ПЛАН.json": json.dumps(план2), д2 + "/done.txt": "\n",
+              база + "/походження.json": json.dumps({"шлях_запису": д2.replace("/", "\\") + "\\ж1_а_б"})}
+    файли2.update(запис_сцени(база, код))
+    _коміт(тека, файли2, "Е1 перенесений (#19)", "2026-11-06T17:50:00Z")
+    ран2 = прилад.прогнані_записами("main", ["Е1-нічний-живий-20261105"])
+    перевірити("перенесений запис — за походження.json", sorted(ран2) == ["11|ж1_а_б"])
+    паритет_записів(тека, "HEAD", "штучна історія")
 
 
 # --- 3. паритет з PowerShell ----------------------------------------------------------------------------------------
@@ -204,6 +260,82 @@ foreach ($body in @(ConvertFrom-Json ([IO.File]::ReadAllText($BodiesPath, $utf))
 }
 [IO.File]::WriteAllLines($OutPath, $lines, $utf)
 """
+
+
+PS_ЗАПИСИ = r"""
+param([string]$Source, [string]$Repo, [string]$Head, [string]$DirsPath, [string]$OutPath)
+$ErrorActionPreference = 'Stop'
+$utf = New-Object Text.UTF8Encoding($false)
+$script:AutoPlanMarginHours = 6
+$script:Repo = $Repo
+function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail) {
+    $psi = New-Object Diagnostics.ProcessStartInfo 'git'
+    foreach ($a in (@('-C', $script:Repo, '-c', 'core.quotepath=false') + $GitArgs)) { [void]$psi.ArgumentList.Add($a) }
+    $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true; $psi.UseShellExecute = $false
+    $psi.StandardOutputEncoding = [Text.Encoding]::UTF8
+    $p = [Diagnostics.Process]::Start($psi)
+    $err = $p.StandardError.ReadToEndAsync()
+    $out = $p.StandardOutput.ReadToEnd(); $p.WaitForExit()
+    [pscustomobject]@{Code=$p.ExitCode; Out=$out; Err=$err.Result}
+}
+$errors = $null
+$ast = [Management.Automation.Language.Parser]::ParseFile($Source, [ref]$null, [ref]$errors)
+if ($errors -and $errors.Count) { throw "queue_lanes.ps1 не розбирається" }
+$names = @('Get-JsonProp', 'ConvertTo-AutoTime', 'Get-AutoRanPairs')
+$found = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $names -ccontains $n.Name }, $true))
+if ($found.Count -ne $names.Count) { throw 'нема функцій запису' }
+foreach ($function in $found) { . ([scriptblock]::Create($function.Extent.Text)) }
+$reports = @(); $i = 0
+foreach ($dir in @(ConvertFrom-Json ([IO.File]::ReadAllText($DirsPath, $utf)))) {
+    $i++; $reports += @([pscustomobject]@{number=$i; head=@{ref=('claude/' + $dir); sha=$Head}})
+}
+$ran = Get-AutoRanPairs $reports ([datetimeoffset]::MinValue)
+$lines = New-Object 'System.Collections.Generic.List[string]'
+foreach ($key in @($ran.Keys | Sort-Object)) { $lines.Add($key + "`t" + ((@($ran[$key] | ForEach-Object { $_.sha }) | Sort-Object) -join ',')) }
+[IO.File]::WriteAllLines($OutPath, $lines, $utf)
+"""
+
+
+def паритет_записів(тека, голова, назва):
+    """`Get-AutoRanPairs` і `прогнані_записами` дають ті самі пари й SHA записів на одному дереві."""
+    pwsh = shutil.which("pwsh")
+    if not pwsh:
+        print("— паритет записів (" + назва + "): не виміряно (нема pwsh)")
+        if os.environ.get("CI"):
+            перевірити("у CI pwsh є", False)
+        return
+    дерево = прилад._текст(прилад.git("-C", тека, "ls-tree", "-r", "--name-only", голова, "--", "аудит/проби").stdout)
+    теки = sorted({ш.split("/")[2] for ш in дерево.splitlines() if ш.count("/") >= 3 and ш.split("/")[2]
+                   and прилад.ТЕКА_ЗВІТУ.match(ш.split("/")[2])})
+    стара = os.getcwd()
+    тимч = tempfile.mkdtemp(prefix="паритет-записів-")
+    try:
+        скрипт, вхід, вихід = (os.path.join(тимч, і) for і in ("p.ps1", "теки.json", "вихід.txt"))
+        with open(скрипт, "w", encoding="utf-8-sig") as ф:
+            ф.write(PS_ЗАПИСИ)
+        with open(вхід, "w", encoding="utf-8") as ф:
+            json.dump(теки, ф, ensure_ascii=False)
+        sha = прилад._текст(прилад.git("-C", тека, "rev-parse", голова).stdout).strip()
+        готово = subprocess.run([pwsh, "-NoProfile", "-NonInteractive", "-File", скрипт, "-Source",
+                                 os.path.join(КОРІНЬ, "аудит/адаптери/gemini/queue_lanes.ps1"), "-Repo", тека, "-Head", sha,
+                                 "-DirsPath", вхід, "-OutPath", вихід], capture_output=True, text=True)
+        if готово.returncode:
+            перевірити("pwsh виконав Get-AutoRanPairs (" + назва + "): " + готово.stderr[-500:], False)
+            return
+        with open(вихід, encoding="utf-8") as ф:
+            очікувано = {}
+            for рядок in ф.read().split("\n"):
+                if рядок:
+                    ключ, _, шас = рядок.partition("\t")
+                    очікувано[ключ] = шас.split(",")
+        os.chdir(тека)
+        мої = {к: sorted(з["sha"] for з in v) for к, v in прилад.прогнані_записами(sha, теки).items()}
+        os.chdir(стара)
+        перевірити(f"паритет Get-AutoRanPairs ({назва}): звітів {len(теки)}, пар {len(очікувано)}, моїх {len(мої)}",
+                   {к: sorted(v) for к, v in очікувано.items()} == мої)
+    finally:
+        os.chdir(стара)
+        shutil.rmtree(тимч, ignore_errors=True)
 
 
 def паритет():
@@ -274,5 +406,6 @@ if __name__ == "__main__":
     розбір()
     історія()
     паритет()
+    паритет_записів(КОРІНЬ, "HEAD", "дерево репозиторію")
     print("OK" if not провалів else f"ПРОВАЛ: {провалів}")
     sys.exit(1 if провалів else 0)
