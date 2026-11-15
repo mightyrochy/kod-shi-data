@@ -832,7 +832,9 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
 /* ── КАРТКА ОБРАЗУ: вікно Кричевського. Колаж — плаский аркуш із вирізаним
       краєм (витинанка), без нахилу й тіні. Колір біля фото — лише лінією. ─ */
 #картки{display:block;margin:0;padding:0}
-.картка{--ск:18px;background:var(--аркуш);margin:14px 0 6px;padding:0 0 18px;overflow:hidden}
+/* `clip`, а не лише `hidden`: обрізає так само, але картка не стає власною областю гортання, і «Записати вердикт»
+   (`.ряд-запису`) липне до низу ЕКРАНА, а не картки (вада 12); `hidden` — для браузерів без `clip` */
+.картка{--ск:18px;background:var(--аркуш);margin:14px 0 6px;padding:0 0 18px;overflow:hidden;overflow:clip}
 #картки .картка[hidden]{display:none}
 #картки .картка:not([hidden]){animation:нанизати .34s cubic-bezier(.2,.7,.2,1) both}
 @keyframes нанизати{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
