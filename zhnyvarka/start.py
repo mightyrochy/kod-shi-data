@@ -3,7 +3,7 @@
 (або й це не треба — якщо поруч лежить github_token.txt, результат викладається сам).
 
 Що робить сам, без питань:
- 1. Оновлює жниварка.py, магазини.tsv і себе з GitHub (тека zhnyvarka/ у repo kod-shi-data);
+ 1. Оновлює жниварку з модулем ідентичності сторінки, магазини.tsv і себе з GitHub (тека zhnyvarka/ у repo kod-shi-data);
     без інтернету/без файлів у repo — працює з тим, що лежить поруч.
  2. Якщо попередній прогін обірвано (закрите вікно, вимкнений ноутбук) — пакує його в zip
     «…_незавершений.zip», щоб нічого не пропало. Та сама версія → продовжує; нова версія → заново.
@@ -17,7 +17,7 @@ from urllib.parse import quote
 REPO = "mightyrochy/kod-shi-data"
 ТЕКА_У_REPO = "zhnyvarka"                       # ASCII: цю адресу читає і .bat через curl
 RAW = "https://raw.githubusercontent.com/%s/main/%s/" % (REPO, ТЕКА_У_REPO)
-ФАЙЛИ_ОНОВЛЕННЯ = ("жниварка.py", "магазини.tsv", "start.py")
+ФАЙЛИ_ОНОВЛЕННЯ = ("ідентичність_сторінки.py", "жниварка.py", "магазини.tsv", "start.py")
 МАРКЕР = "прогін_іде.txt"
 ТУТ = os.path.dirname(os.path.abspath(__file__))
 ТИХО = dict(stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
