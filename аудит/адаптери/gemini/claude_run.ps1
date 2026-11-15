@@ -560,16 +560,41 @@ function Get-SupervisorLine([switch]$NoCache) {
 
 # Вимір відеокарти для стану: відповіді про GPU брали запис замка, а не карту. Той самий вимір, що в Get-GpuLoad (nvidia-smi,
 # лічильник процесів Windows), без порога й без впливу на допуск; замок — окремий рядок.
-function Get-LmsCallAge {
-    <# Хвилини від останнього запису в журналах LM Studio (`~\.lmstudio\server-logs\<рік-місяць>\*.log`, час запису файла — без
-    розбору формату: його на ноутбуці ще не виміряно); -1 — теки нема чи не читається з облікового запису обгортки. #>
+function Get-LmsCallAge([string]$Root = '') {
+    <# Хвилини від останнього запису в журналах LM Studio (`~\.lmstudio\server-logs\<рік-місяць>\*.log`); -1 — теки нема чи не
+    читається. Файл вибирається переліком, а час береться з самого файла (GetLastWriteTimeUtc): час із запису каталогу
+    (LastWriteTimeUtc елемента переліку) NTFS оновлює із запізненням, поки LM Studio тримає журнал відкритим — 15.11 20:00:19Z
+    при останньому рядку 20:32:18Z. Формат журналу не розбирається. #>
     try {
-        $root = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.lmstudio\server-logs'
-        if (-not (Test-Path -LiteralPath $root)) { return -1 }
-        $f = @(Get-ChildItem -LiteralPath $root -Filter '*.log' -File -Recurse -ErrorAction Stop | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1)
-        if ($f.Count -eq 0) { return -1 }
-        [int][Math]::Max(0, [Math]::Floor(([datetime]::UtcNow - $f[0].LastWriteTimeUtc).TotalMinutes))
+        if (-not $Root) { $Root = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.lmstudio\server-logs' }
+        if (-not (Test-Path -LiteralPath $Root)) { return -1 }
+        $newest = $null
+        foreach ($f in @(Get-ChildItem -LiteralPath $Root -Filter '*.log' -File -Recurse -ErrorAction Stop)) {
+            $t = [IO.File]::GetLastWriteTimeUtc($f.FullName)
+            if ($null -eq $newest -or $t -gt $newest) { $newest = $t }
+        }
+        if ($null -eq $newest) { return -1 }
+        [int][Math]::Max(0, [Math]::Floor(([datetime]::UtcNow - $newest).TotalMinutes))
     } catch { -1 }
+}
+
+function Get-SleepOverlap([datetime]$From, [datetime]$To) {
+    <# Хвилини сну ноутбука в проміжку: події з `sleep-events.json` публікатора (`gemini_publish.ps1`, Get-WakeRows — журнал Windows
+    Power-Troubleshooter/1); `heartbeat/boot` (вимкнено й запущено, а не сон) не рахується. Файла нема чи він не читається — 0. #>
+    try {
+        $path = Join-Path $PublishDir 'sleep-events.json'
+        if (-not (Test-Path -LiteralPath $path)) { return 0 }
+        $j = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+        $total = 0.0
+        foreach ($e in @($j.events)) {
+            if ($null -eq $e -or [string]$e.source -cne 'Power-Troubleshooter/1') { continue }
+            $a = $(if ($e.from -is [datetime]) { $e.from.ToUniversalTime() } else { [datetimeoffset]::Parse([string]$e.from, [cultureinfo]::InvariantCulture).UtcDateTime })
+            $b = $(if ($e.to -is [datetime]) { $e.to.ToUniversalTime() } else { [datetimeoffset]::Parse([string]$e.to, [cultureinfo]::InvariantCulture).UtcDateTime })
+            $lo = $(if ($a -gt $From) { $a } else { $From }); $hi = $(if ($b -lt $To) { $b } else { $To })
+            if ($hi -gt $lo) { $total += ($hi - $lo).TotalMinutes }
+        }
+        [int][Math]::Floor($total)
+    } catch { 0 }
 }
 
 function Get-GpuStateLines($LockedBy, $Holders = @()) {
@@ -603,7 +628,7 @@ function Get-GpuStateLines($LockedBy, $Holders = @()) {
     # Сторож замка: той самий вимір ряду, що й рядки вище; рядок диспетчерові — раз на ряд бездіяльності (Update-GpuWatch).
     try {
         if ($Holders.Count) { $watchSample.CallAgeMin = [int](Get-LmsCallAge) }
-        $w = Update-GpuWatch $Holders $watchSample { param($l) [bool](Add-Line $l) }
+        $w = Update-GpuWatch $Holders $watchSample { param($l) [bool](Add-Line $l) } '' $null { param($f, $t) Get-SleepOverlap $f $t }
         if ($null -ne $w) { $lines += "- замок тримає $($w.Marker) $($w.LockMinutes) хв (без сну; сон $($w.SleepMinutes) хв); карта без роботи $(if ($gpu.Error) { '?' } else { $w.IdleMinutes }) хв; PID сервера змінювався $($w.PidChanges) разів; виклики моделі: $(if ($w.CallAgeMinutes -lt 0) { 'не виміряно (журнал LM Studio не читається)' } else { 'останній ' + $w.CallAgeMinutes + ' хв тому' })" }
     } catch { Write-Log "сторож GPU: $($_.Exception.Message)"; $lines += '- замок тримає: не виміряно (збій — claude-run.log)' }
     $lines

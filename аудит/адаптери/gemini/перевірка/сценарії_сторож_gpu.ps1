@@ -32,6 +32,11 @@ $newEnv = {
     $script:Limits = @{ slots = @{ claude = 2 }; source = 'код'; claude_laptop = @(); gpu_idle_minutes = 90; gpu_idle_percent = 15 }
     $script:TestBox = $box
 }
+# Події сну, як їх веде публікатор (`sleep-events.json`): сон 11:30–15:29 UTC (Power-Troubleshooter/1) і не-сон «вимкнено й запущено» 06:00–06:30.
+[void][IO.Directory]::CreateDirectory("$tmp/pub")
+[IO.File]::WriteAllText("$tmp/pub/sleep-events.json", (@{ read_utc = '2026-11-15T20:00:00.0000000+00:00'; events = @(
+    @{ key = 'a'; from = '2026-11-15T11:30:00.0000000+00:00'; to = '2026-11-15T15:29:00.0000000+00:00'; source = 'Power-Troubleshooter/1'; announced = $true },
+    @{ key = 'b'; from = '2026-11-15T06:00:00.0000000+00:00'; to = '2026-11-15T06:30:00.0000000+00:00'; source = 'heartbeat/boot'; announced = $true }) } | ConvertTo-Json -Depth 5 -Compress), $utf)
 function Read-Box { @(Get-ChildItem -LiteralPath $script:TestBox -Filter '*.txt' -File -ErrorAction SilentlyContinue | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() }) }
 
 # --- (а) сьогоднішній випадок: замок тримається, карта 0 %, PID міняється; перед тим — сон ноутбука -------------------------------
@@ -39,7 +44,7 @@ Scenario 'а випадок 15.11' {
     . $newEnv 'a'
     $send = { param($l) [bool](Add-Line $l) }
     $holder = @([pscustomobject]@{ Marker = $marker; Since = '2026-11-15T09:00:00Z' })
-    $tick = { param([int]$Min, [int]$Pct, [int]$OwnerPid, [int]$Call = 120) Update-GpuWatch $holder ([pscustomobject]@{ Percent = $Pct; OwnerPid = $OwnerPid; CallAgeMin = $Call }) $send "$tmp/a/state/gpu-watch.json" $day.AddMinutes($Min) }
+    $tick = { param([int]$Min, [int]$Pct, [int]$OwnerPid, [int]$Call = 120) Update-GpuWatch $holder ([pscustomobject]@{ Percent = $Pct; OwnerPid = $OwnerPid; CallAgeMin = $Call }) $send "$tmp/a/state/gpu-watch.json" $day.AddMinutes($Min) { param($f, $t) Get-SleepOverlap $f $t } }
     # ДО: запобіжник утримань (Update-HoldSignals) бачить лише позначки, що не стартують, — наряд, що йде, рядка не дає.
     Update-HoldSignals @{} $send
     Check 'а ДО: наявний запобіжник за цього випадку мовчить — рядків 0' (@(Read-Box).Count -eq 0)
@@ -49,10 +54,10 @@ Scenario 'а випадок 15.11' {
     # Виміри з #1856: 19:39 0 %, 19:45 0 %, 19:50 12 %, 19:55 0 %; PID 30368, 28888, 30348, 36888; далі карта на 0 % і той самий PID.
     foreach ($s in @(@(39, 0, 30368), @(45, 0, 28888), @(50, 12, 30348), @(55, 0, 36888))) { $w = & $tick (19 * 60 + $s[0]) $s[1] $s[2] }
     for ($m = 20 * 60; $m -le 21 * 60 + 5; $m += 5) { $w = & $tick $m 0 36888 }
-    Check "а до порога (86 хв без роботи) — рядка нема; в #1856: замок $($w.LockMinutes) хв, сон $($w.SleepMinutes), без роботи $($w.IdleMinutes) хв, PID ×$($w.PidChanges)" (@(Read-Box).Count -eq 0 -and $w.IdleMinutes -eq 86 -and $w.PidChanges -eq 4 -and $w.SleepMinutes -eq 270 -and $w.LockMinutes -eq 455)
+    Check "а до порога (86 хв без роботи) — рядка нема; в #1856: замок $($w.LockMinutes) хв, сон $($w.SleepMinutes), без роботи $($w.IdleMinutes) хв, PID ×$($w.PidChanges)" (@(Read-Box).Count -eq 0 -and $w.IdleMinutes -eq 86 -and $w.PidChanges -eq 4 -and $w.SleepMinutes -eq 239 -and $w.LockMinutes -eq 486)
     $w = & $tick (21 * 60 + 9) 0 36888
     $r = @(Read-Box)
-    Check "а понад поріг — рівно один рядок диспетчерові (замок без сну, сон окремо): $($r -join ' | ')" ($r.Count -eq 1 -and $r[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE codex/Е1-нічний-живий-20261115 ЗАМОК 459 СОН 270 БЕЗ_РОБОТИ 90 PID_ЗМІН 4')
+    Check "а понад поріг — рівно один рядок диспетчерові (замок без сну, сон окремо): $($r -join ' | ')" ($r.Count -eq 1 -and $r[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE codex/Е1-нічний-живий-20261115 ЗАМОК 490 СОН 239 БЕЗ_РОБОТИ 90 PID_ЗМІН 4')
     for ($m = 21 * 60 + 14; $m -le 22 * 60 + 9; $m += 5) { [void](& $tick $m 0 $(if ($m -eq 22 * 60 + 9) { 1 } else { 36888 })) }
     Check 'а повторні проходи тієї самої причини (навіть із новим PID) — нових рядків нуль' (@(Read-Box).Count -eq 1)
     # Карта попрацювала й знову стала на 90 хв — нова причина, новий рядок.
@@ -80,11 +85,11 @@ Scenario 'а2 справний прогін' {
         if ($m -gt 11 * 60 + 25 -and $m -lt 15 * 60 + 35) { continue }   # сон: вимірів нема
         if ($m -lt 9 * 60 + 70) { $s = [pscustomobject]@{ Percent = 0; OwnerPid = 100; CallAgeMin = 200 } }   # підготовка Codex, 69 хв без викликів
         else { $n++; $s = [pscustomobject]@{ Percent = $(if ($n % 4 -eq 0) { 0 } else { 75 }); OwnerPid = 200 + [int][Math]::Floor($n / 4); CallAgeMin = 3 } }   # кожен четвертий вимір — перезавантаження моделі
-        $w = Update-GpuWatch $holder $s $send "$tmp/a2/state/gpu-watch.json" $day.AddMinutes($m)
+        $w = Update-GpuWatch $holder $s $send "$tmp/a2/state/gpu-watch.json" $day.AddMinutes($m) { param($f, $t) Get-SleepOverlap $f $t }
         $maxIdle = [Math]::Max($maxIdle, $w.IdleMinutes)
     }
-    Check "а2 справний прогін зі сном і чергуванням моделей — рядка нема (найдовше без роботи $maxIdle хв, PID ×$($w.PidChanges), сон $($w.SleepMinutes) хв)" (@(Read-Box).Count -eq 0 -and $maxIdle -lt 90 -and $w.PidChanges -gt 15 -and $w.SleepMinutes -eq 250)
-    Check "а2 хвилини замка в #1856 — без сну: $($w.LockMinutes)" ($w.LockMinutes -eq 440)
+    Check "а2 справний прогін зі сном і чергуванням моделей — рядка нема (найдовше без роботи $maxIdle хв, PID ×$($w.PidChanges), сон $($w.SleepMinutes) хв)" (@(Read-Box).Count -eq 0 -and $maxIdle -lt 90 -and $w.PidChanges -gt 15 -and $w.SleepMinutes -eq 239)
+    Check "а2 хвилини замка в #1856 — без сну: $($w.LockMinutes)" ($w.LockMinutes -eq 451)
 }
 
 # --- (а3) знімки 0 %, а виклики моделі йдуть (за журналом LM Studio) — рядка нема; журнала нема — не виміряно, без тривоги ------------
@@ -99,6 +104,36 @@ Scenario 'а3 виклики моделі' {
     Check 'а3 журнал LM Studio не читається — без тривоги, в результаті «не виміряно» (-1)' (@(Read-Box).Count -eq 0 -and $w.CallAgeMinutes -eq -1)
     $w = Update-GpuWatch $holder ([pscustomobject]@{ Percent = 0; OwnerPid = 1; CallAgeMin = 95 }) $send "$tmp/a3/state/gpu-watch.json" $day.AddMinutes(21 * 60 + 10)
     Check 'а3 викликів моделі нема 95 хв і карта стояла — рядок раз' (@(Read-Box).Count -eq 1)
+}
+
+# --- (а5) пропущені такти без події сну — не сон; Get-SleepOverlap; Get-LmsCallAge ----------------------------------------------------
+Scenario 'а5 пропущені такти' {
+    . $newEnv 'a5'
+    $send = { param($l) [bool](Add-Line $l) }
+    $holder = @([pscustomobject]@{ Marker = $marker; Since = '2026-11-15T05:59:00Z' })
+    $sl = { param($f, $t) Get-SleepOverlap $f $t }
+    $tk = { param([int]$Min) Update-GpuWatch $holder ([pscustomobject]@{ Percent = 0; OwnerPid = 7; CallAgeMin = 120 }) $send "$tmp/a5/state/gpu-watch.json" $day.AddMinutes($Min) $sl }
+    [void](& $tk (5 * 60 + 59)); [void](& $tk (6 * 60 + 4))
+    $w = & $tk (7 * 60 + 19)   # 14.11: такти 06:04–07:14 пропущено (IgnoreNew), ноутбук не спав
+    Check "а5 73 хв без вимірів без події сну — не сон, ряд не скинуто, замок не зменшено: замок $($w.LockMinutes), сон $($w.SleepMinutes), без роботи $($w.IdleMinutes)" ($w.SleepMinutes -eq 0 -and $w.IdleMinutes -eq 80 -and $w.LockMinutes -eq 80 -and @(Read-Box).Count -eq 0)
+    [void](& $tk (7 * 60 + 29))
+    $r = @(Read-Box)
+    Check "а5 рядок на 90-й хв ряду: $($r -join ' | ')" ($r.Count -eq 1 -and $r[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE codex/Е1-нічний-живий-20261115 ЗАМОК 90 СОН 0 БЕЗ_РОБОТИ 90 PID_ЗМІН 0')
+    Check 'а5 Get-SleepOverlap: сон 11:30–15:29 — повністю 239, частково 30, «вимкнено й запущено» (heartbeat/boot) не сон' ((Get-SleepOverlap $day.AddMinutes(11 * 60) $day.AddMinutes(16 * 60)) -eq 239 -and (Get-SleepOverlap $day.AddMinutes(11 * 60) $day.AddMinutes(12 * 60)) -eq 30 -and (Get-SleepOverlap $day.AddMinutes(5 * 60 + 59) $day.AddMinutes(7 * 60)) -eq 0)
+    Check 'а5 sleep-events.json нема — сон 0, без збою' ((Get-SleepOverlap $day.AddMinutes(0) $day.AddMinutes(1)) -eq 0 -and (& { $PublishDir = "$tmp/нема"; (Get-SleepOverlap $day.AddMinutes(11 * 60) $day.AddMinutes(16 * 60)) -eq 0 }))
+}
+
+Scenario 'а6 журнал LM Studio' {
+    . $newEnv 'a6'
+    $root = Join-Path $tmp 'lms-logs'; $sub = Join-Path $root '2026-11'
+    [void][IO.Directory]::CreateDirectory($sub)
+    [IO.File]::WriteAllText("$sub/старий.log", 'a', $utf); [IO.File]::WriteAllText("$sub/свіжий.log", 'b', $utf)
+    [IO.File]::SetLastWriteTimeUtc("$sub/старий.log", [datetime]::UtcNow.AddMinutes(-120)); [IO.File]::SetLastWriteTimeUtc("$sub/свіжий.log", [datetime]::UtcNow.AddMinutes(-4))
+    $age = Get-LmsCallAge $root
+    Check "а6 час найновішого файла журналу: $age хв (очікується 3–5)" ($age -ge 3 -and $age -le 5)
+    $src = (Get-Command Get-LmsCallAge).ScriptBlock.ToString()
+    Check 'а6 час береться з самого файла ([IO.File]::GetLastWriteTimeUtc), а не з запису каталогу (елемент переліку мав відставання 32 хв)' ($src -cmatch 'GetLastWriteTimeUtc\(\$f\.FullName\)' -and $src -cnotmatch '\$f\.LastWriteTimeUtc|Sort-Object LastWriteTimeUtc')
+    Check 'а6 теки нема чи в ній жодного журналу — -1 (не виміряно)' ((Get-LmsCallAge (Join-Path $tmp 'нема')) -eq -1 -and (Get-LmsCallAge $sub.Replace('2026-11', 'порожня')) -eq -1)
 }
 
 # --- (б) карта працює — рядка нема ------------------------------------------------------------------------------------------

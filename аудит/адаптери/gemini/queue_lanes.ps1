@@ -2633,7 +2633,7 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
 # вимірів (nvidia-smi — відсоток, лічильник Windows — PID найбільшого власника пам'яті) і записів слотів, без тексту агента;
 # наряду не знімає — знімає диспетчер позначкою «ЗНЯТО». Межі — `gpu_idle_minutes`, `gpu_idle_percent` (`смуги.json`, з джерелом).
 
-function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = '', $Now = $null) {
+function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = '', $Now = $null, [scriptblock]$Sleeps = $null) {
     <# Один вимір ряду. $Holders — наряди із замком GPU (Marker, Since UTC-рядок); $Sample — Percent (-1 — невідомо) і
     OwnerPid (0 — власника нема). Стан `gpu-watch.json`: позначка, початок замка, початок безперервної бездіяльності карти
     (вимір не вище gpu_idle_percent; невідомий вимір ряд не рве й не подовжує), останній PID, скільки разів він змінився за
@@ -2661,13 +2661,17 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     # Час від останнього запису журналу LM Studio, хв (-1 — журнал не читається чи не заданий): тривога лише коли й карта стояла,
     # й викликів моделі нема довше порога; без журналу — не виміряно, тривоги нема.
     $callAge = $(if ($null -ne $Sample.PSObject.Properties['CallAgeMin']) { [int]$Sample.CallAgeMin } else { -1 })
-    # Сон ноутбука (Modern Standby: claude-run не міряє): проміжок між вимірами понад $gapLimit хв не був виміряний — не
-    # рахується ні в замок, ні в бездіяльність (15.11 645 хв замка містили сон 11:30–15:29 UTC); ряд бездіяльності починається знову.
-    $gapLimit = 20
-    $lastAt = $(if ($null -ne (Get-JsonProp $st 'last_at') -and [string]$st.last_at -cmatch $rx) { [datetime]::ParseExact([string]$st.last_at, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) } else { $null })
-    if ($null -ne $lastAt -and ($Now - $lastAt).TotalMinutes -gt $gapLimit) {
-        $st.sleep_min = [int](Get-JsonProp $st 'sleep_min') + [int][Math]::Floor(($Now - $lastAt).TotalMinutes)
-        $st.idle_since = ''
+    # Сон ноутбука — лише за журналом Windows (події сну, які веде публікатор: `sleep-events.json`; $Sleeps повертає хвилини сну
+    # в проміжку). Проміжок без вимірів і без події сну (пропущені такти TaskScheduler: 14.11 73 хв при MultipleInstances =
+    # IgnoreNew) — не сон: ряд бездіяльності не скидається, хвилини замка не зменшуються. Початок проміжку — останній вимір,
+    # а на першому вимірі — початок замка.
+    $lastAt = $(if ($null -ne (Get-JsonProp $st 'last_at') -and [string]$st.last_at -cmatch $rx) { [datetime]::ParseExact([string]$st.last_at, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) } elseif ([string]$st.lock_since -cmatch $rx) { [datetime]::ParseExact([string]$st.lock_since, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) } else { $null })
+    if ($null -ne $lastAt -and $null -ne $Sleeps -and $Now -gt $lastAt) {
+        $slept = [int](& $Sleeps $lastAt $Now)
+        if ($slept -gt 0) {
+            $st.sleep_min = [int](Get-JsonProp $st 'sleep_min') + $slept
+            $st.idle_since = ''
+        }
     }
     $st.last_at = Get-UtcStamp $Now
     if ($ownerPid -gt 0) {
