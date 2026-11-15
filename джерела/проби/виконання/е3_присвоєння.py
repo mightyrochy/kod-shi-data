@@ -9,13 +9,15 @@ import functools, gzip, inspect, json, os, pathlib, runpy, sys, time, traceback
         'силует_пропорції': ('об_єм',), 'суд_від_моделі': ('нижче_смуги_образу', 'перевірити_від_моделі'),
         'розбір_відповідей': ('застосувати_свідомі',),
         'поломки': ('_каблук_вищий', '_акцент_нейтраллю', '_метал_навпаки', '_тканина_навпаки')}
+# K-COMP-07 — свій вимір; чотири правила — гілка наміру statement (`суд_від_моделі.py`, 15636)
+ПЕРЕВІРКА_ВІД_МОДЕЛІ = ('K-COMP-07', 'K-COL-02', 'K-COMP-04', 'K-INT-04', 'K-COMP-03')
 ОСОБИ = (('#deb295', '#f1dbaa', '#759087'), ('#f3d6cf', '#3b3b45', '#6f8fb5'))   # тепла й холодна
 МАКІЯЖ = ('#d9a0a0', '#8b2232', '#c46a4f', '#6b4a6e', '#e8c4b0')
 
 
 def main():
     вихід, тека = sys.argv[1], os.path.abspath(sys.argv[2])
-    частини = (sys.argv[3] if len(sys.argv) > 3 else 'каталог,межі,гейти,дим').split(',')
+    частини = (sys.argv[3] if len(sys.argv) > 3 else 'каталог,межі,намір,гейти,дим').split(',')
     sys.path.insert(0, тека)
     os.chdir(тека)
     import importlib
@@ -36,7 +38,7 @@ def main():
                 for з in р.get('акцент') or []:
                     if isinstance(з, dict): запис('перевірити_від_моделі/акцент', з)
                 for з in р.get('знахідки') or []:
-                    if isinstance(з, dict) and з.get('правило') == 'K-COMP-07': запис(ф.__name__, з)
+                    if isinstance(з, dict) and з.get('правило') in ПЕРЕВІРКА_ВІД_МОДЕЛІ: запис(ф.__name__, з)
                 return р
             for з in (р[0] if isinstance(р, tuple) else р) if isinstance(р, (list, tuple)) else []:
                 if isinstance(з, dict) and 'правило' in з: запис(ф.__name__, з)
@@ -57,6 +59,7 @@ def main():
     М = {мод: importlib.import_module(мод) for мод in ЦІЛІ}
     if 'каталог' in частини: каталог(М, мітка)
     if 'межі' in частини: межі(М, мітка)
+    if 'намір' in частини: намір(мітка)
     провали = []
     if 'гейти' in частини or 'дим' in частини:
         скрипти = ([('прилади/розділи_гейтів.py', [])] if 'гейти' in частини else []) + (
@@ -112,6 +115,32 @@ def каталог(М, мітка):
             СВМ.нижче_смуги_образу([р['id']], за_ід, сц, свідомі=[dict(ід=р['id'], текст='свідомо')])
             СВМ.нижче_смуги_образу([р['id']], за_ід, сц, кандидати={'x': [dict(р, за_бажанням=True)]})
         if н % 5000 == 0: print('річ', н, flush=True)
+
+
+def намір(мітка, образів=800):
+    """Образи з повного каталогу (верх, низ, взуття, сумка — сідом) під наміром statement і типовим
+    через `pipeline.перевірити_від_моделі`: гілка наміру statement (K-COL-02, K-COMP-04, K-INT-04, K-COMP-03)."""
+    import random, bridge as Б, pipeline as P
+    with gzip.open(pathlib.Path(os.environ.get('TMP', '/tmp'), 'е3_присвоєння_каталог.json.gz'), 'rt',
+                   encoding='utf-8') as ф:
+        кат = json.load(ф)
+    за_слотом = {}
+    for р in кат:
+        за_слотом.setdefault(р.get('слот'), []).append(р)
+    вх = dict(шкіра='#deb295', волосся='#f1dbaa', очі='#759087', зріст=167,
+              обхвати={'плечі': 98, 'груди': 90, 'талія': 72, 'стегна': 100, 'коліно': 37, 'литка': 35})
+    F, T = Б._збірка(вх)[:2]
+    в = random.Random(20261115)
+    for н in range(образів):
+        речі = [в.choice(за_слотом[с]) for с in ('верх', 'низ', 'взуття', 'сумка') if за_слотом.get(с)]
+        for intent in ('statement', 'conventional'):
+            мітка[0] = 'намір ' + intent
+            try:
+                P.перевірити_від_моделі([р['id'] for р in речі], F, речі, T,
+                                        dict(нагода='побачення', intent=intent))
+            except Exception as з:
+                print('намір', н, intent, type(з).__name__, з)
+        if н % 200 == 0: print('образ', н, flush=True)
 
 
 def межі(М, мітка):
