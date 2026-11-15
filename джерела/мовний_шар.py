@@ -3499,8 +3499,7 @@ _ПОЛЯ_EN = {
                 "venue alone. Unlisted ordinary social or leisure outings use everyday; event keeps her name. "
                 "Working is work even at home (place home); studying is school, even daily; a hobby lesson is "
                 "everyday, not work or theatre; someone else's wedding is wedding_guest, never celebration. "
-                "The outing quote also gives movement when it says how she gets there, never movement alone; "
-                "place where named; part_of_day when named",
+                "The outing quote also gives movement when it says how she gets there, never movement alone",
     # «йога зранку, потім кава з подругою» → `occasion_part: sport` з уривком йоги:
     # правило «частина не названа — перша не спортивна» стояло лише в правилі ходу, не в описі поля
     # «йога зранку, потім кава» — `occasion_part: sport` 3/3: «sport when it is for doing
@@ -3526,8 +3525,14 @@ _ПОЛЯ_EN = {
     # подія йде на картку випадку, тож — її слова з листа, її мовою, лише скорочені
     # «Йога зранку, потім кава з подругою» — `event` «кава з подругою», `occasion` everyday:
     # йога випала з усього, що бачать руки 3–4 (`case` — подія й нагода); у Ж17 лишилась нагодою sport
+    # КОРІНЬ Е2-ЧАСТИНА-ДНЯ (15498, живе мірило 15.11): «лише скорочені» лишали її годину — «побачення в ресторані
+    # ввечері, о 19:30» ставало подією паспорта, `case.event` стилістки й «…о 19:30» на картці руки 1, хоча коли — це
+    # лише `part_of_day`. Годину з події прибирає опис поля, а не код (код її слів не читає, п.12). Її слова про час
+    # цілком, з годиною («ввечері, о 19:30»), — уривок `part_of_day`: він іде лише в картку фактів і рядок «Твої
+    # слова», не в подію й не стилістці (рішення менеджера 15526: без години картка читається як «не збереглося»)
     "event": "the event briefly: her own words from her message, in her language, shortened only by leaving "
-             "words out; when she names several parts of her day, every part stays",
+             "words out; when she names several parts of her day, every part stays; the time she names "
+             "(hours and minutes, in digits or in words) is left out: its part of the day goes into part_of_day",
     # Приклади підпису — не місця живих сцен (церква, випускний сина, рок-клуб були готовими відповідями)
     "place_words": "where she will be, 1–5 words for her scenario card, in her language, capitalised (like: "
                    "Museum, opening; Country house, garden); whenever place is set, and never instead of "
@@ -3572,7 +3577,8 @@ _ПОЛЯ_EN = {
                    "holds for the later parts until she names another), or when the event or a tile "
                    "in \"chosen\" names it or usually takes it (an evening reception, a theatre, concert or "
                    "opera, a holiday party held in the evening by custom — evening); an event that happens at any "
-                   "time of day — absent",
+                   "time of day — absent; when she says when: {\"quote\": all her words of when, numbers too, "
+                   "\"value\": the code}",
     # Пора року рукам — з дати показу, бо місяця події паспорт не ніс: новорічний корпоратив, про
     # який вона пише 10.10, руки бачили осінню подією. Місяць — розуміння її слів моделлю (п.14), код слів не читає
     # Свята-приклади (новорічна вечірка й корпоратив — свята сцен) — тепер родом випадку
@@ -4058,6 +4064,9 @@ _ПРАВИЛО_ПЛИТОК = (
     "Values are only the codes and forms from \"codes\".",
     # М-1 В-1 і Ч-5: назва події — опора і для `event`, і для коду нагоди чи місця; МОВА-1 (02.10): подія
     # без свого підпису — код із тими самими правилами, суть — у `stylist_note`.
+    # ОДНЕ ВИЗНАЧЕННЯ ЧАСТИНИ ДНЯ (корінь Е2-частина-дня, 15528): «an event whose name or custom keeps a time of day
+    # … also gives part_of_day» тут і «part_of_day when named» в описі `occasion` повторювали опис `part_of_day`
+    # («when the event … names it or usually takes it»); лишився він один
     # «Різдвяна вечеря», «новорічний корпоратив», «Новорічна
     # вечірка» — `month` 0 з 5, і руки бачили осінь (`season: autumn`); 0 з 71 записаного ходу обох прогонів має `month`
     # узагалі, і Ж:09 «весілля сестри в серпні» — теж без нього. Опис поля (`_ПОЛЯ_EN["month"]`) модель читає, коли
@@ -4066,8 +4075,7 @@ _ПРАВИЛО_ПЛИТОК = (
     # слів не читає (п.12).
     "An event she names goes into \"event\" and also as the code of \"occasion\" or \"place\" whose label "
     "names this event or one of its kind, with the name of the event as quote. Her words that date it — a date, "
-    "a month, or a holiday that falls in one month — also give \"month\", with that word as quote; an event "
-    "whose name or custom keeps a time of day (a dinner, an evening party) also gives \"part_of_day\". An event "
+    "a month, or a holiday that falls in one month — also give \"month\", with that word as quote. An event "
     "with no label of its own takes a code with the same rules, and "
     "\"stylist_note\" says what the event really is.",
     # Хрестини «спершу церква, потім обід у ресторані» давали нагоду однієї частини й місце іншої — або
