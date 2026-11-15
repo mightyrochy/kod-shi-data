@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на роботу\", \"place\": \"на роботу\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"на роботу\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"на роботу\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}}, \"event\": \"на роботу\", \"occasion\": \"work\", \"place\": \"office\", \"formality\": [\"neat\"], \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#f2dcd6\", \"#ecd0ca\", \"#f6e4df\"], \"hair_hex\": [\"#c3c6cc\", \"#aeb2ba\"], \"eyes_hex\": \"#7fa6c8\", \"height_cm\": 160, \"girths_cm\": {\"shoulders\": 100, \"bust\": 98, \"waist\": 88, \"hips\": 100}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Silk-blend blouse, relaxed fit with a soft round neckline and long sleeves, hip-skimming length, ivory (#F4EEE4), crepe with a matte finish\\n\\nHigh-rise straight-leg trousers, full length to the ankle bone, charcoal grey (#3E434B), fine wool-blend twill\\n\\nSingle-breasted blazer, slightly tailored, one button, hip length, heather blue-grey (#8C9BAE), textured tweed-like wool blend\\n\\nWool-blend coat, straight cut with a notch collar, knee length, deep navy (#27334A), brushed wool\\n\\nPointed-toe ankle boots, low block heel, mid-calf-free shaft, dark graphite (#2F3237), smooth leather\\n\\nStructured tote bag, medium size, taupe grey (#8A8279), grained leather\\n\\nThin silk scarf, loosely knotted at the neck, dusty blue (#7FA6C8) with a faint ivory pattern, silk twill\\n\\nSmall stud earrings, silver tone (#C0C0C4), polished metal\\n\\nThe outfit stays within a neat office dress code: blouse, trousers and a textured blazer with ankle boots. The cool, soft palette of ivory, blue-grey and navy echoes her silver-toned hair and blue eyes, while the ivory next to her face keeps her light, warm-pink skin looking fresh. High-rise, straight trousers and a tailored blazer create one clean vertical line, and the ankle-length hem with a low heel keeps the proportions balanced. The coat adds warmth for a mid-November commute and can be taken off at the office.\"}],\"usage\":{\"input_tokens\":2233,\"output_tokens\":979},\"stop_reason\":\"end_turn\"}"
+ }
+}
