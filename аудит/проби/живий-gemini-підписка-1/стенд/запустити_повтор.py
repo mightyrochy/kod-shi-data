@@ -18,12 +18,23 @@ MODEL, PAGE_MODEL = sys.argv[2:4]
 ENV = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8", PRODUCT_MODEL=PAGE_MODEL)
 OUT.mkdir(parents=True, exist_ok=True)
 (OUT / 'стенд').mkdir(exist_ok=True)
-PORT = 8791
+# Перший вільний порт; чужі процеси не зупиняємо (доповнення наряду /5).
+PORT = int(ENV.get('BRIDGE_PORT', 8791))
+while True:
+    probe = socket.socket()
+    try:
+        probe.bind(('127.0.0.1', PORT))
+        break
+    except OSError:
+        PORT += 1
+    finally:
+        probe.close()
 (OUT / 'запуск.json').write_text(json.dumps({
     'початок_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
     'модель_agy': MODEL, 'модель_сторінки': PAGE_MODEL, 'ситуації': sys.argv[4:],
     'голова_гілки': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
-    'main_наряду': 'a6b373f405422d09afe6a562671317c1900b7ba8',
+    'main_наряду': '855d862368d2ad8e120fd7b083ec5b854c8728e8',
+    'порт_моста': PORT,
     'сторінка_sha256': hashlib.sha256((Path(ENV['STOR']) / 'index.html').read_bytes()).hexdigest(),
     'жінка': 'скрипт зі словами й діями першого прогону', 'телефон': [390, 844],
     'стеля_моста_с': int(ENV.get('AGY_СТЕЛЯ_С', 660)),
@@ -31,7 +42,7 @@ PORT = 8791
 
 
 def quota(name):
-    work = Path(os.environ['TEMP']) / 'agy-прогін-4'
+    work = Path(os.environ['TEMP']) / 'agy-прогін-5'
     work.mkdir(exist_ok=True)
     result = subprocess.run(['agy', '-p', '/usage'], cwd=work, capture_output=True, timeout=120)
     (OUT / (name + '.stdout.txt')).write_bytes(result.stdout)
