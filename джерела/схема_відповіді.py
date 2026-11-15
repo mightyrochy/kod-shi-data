@@ -336,13 +336,16 @@ def скелет_мовного_шару():
             "formality": "the code of one step of the ladder, on every turn once the kind of outing is known",
             "formality_reason": " | ".join(мова.ТАБЛИЦЯ["formality_reason"]) + "; the reason of that same ladder step",
             "formality_branch": "business or social, on a step that has both branches",
-            "occasion_part": "with occasion: which activity this outfit is for; a time of day is not an activity",
+            "occasion_part": "with occasion: which activity this outfit is for",
             "wants": [{"quote": "her exact words about this item",
                        "<attribute>": "only named attributes from thing (" + ", ".join(мова.РІЧ_У_СЛОВАХ) + ")"}],
-            "<field>": "every other changed field from codes: a code or number as {quote: her exact words, value: its value}; "
-                       + "".join("%s also with \"%s\": \"%s\" when her words name it; " % ((о["поле"],) + о["названа"])
-                                 for о in мова.ПОЛЯ_ПАСПОРТА.values() if о.get("названа"))
-                       + "reserved_colour and open_zones are event norms, without quote",
+            # «; reserved_colour and open_zones are event norms, without quote» знято (15528): те саме кажуть правило
+            # ходу («like formality, your understanding of the event's norm») і «Fields without quote» у кодах;
+            # «a time of day is not an activity» при `occasion_part` — його опис («Morning/evening is not a different
+            # activity»)
+            "<field>": "every other changed field from codes: a code or number as {quote: her exact words, value: its value}"
+                       + "".join("; %s also with \"%s\": \"%s\" when her words name it" % ((о["поле"],) + о["названа"])
+                                 for о in мова.ПОЛЯ_ПАСПОРТА.values() if о.get("названа")),
         },
         "need": " | ".join(форма["properties"]["need"]["enum"]),
         "text": [{"about": ["update field codes (" + ", ".join(поля) + ") or her_question"],
