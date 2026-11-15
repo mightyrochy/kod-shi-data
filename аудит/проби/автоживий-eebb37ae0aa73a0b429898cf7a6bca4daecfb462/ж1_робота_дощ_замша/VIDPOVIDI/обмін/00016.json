@@ -1,0 +1,116 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "Photo 1 — the shop's photo of #66·28 (dress, dress_generic); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://rito.ua/image/cachewebp/catalog/FW%2024-25/7480%20(20)-824x1236.webp"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 2 — the shop's photo of #66·28 (dress, dress_generic); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://rito.ua/image/cachewebp/catalog/FW%2024-25/7480%20(13)-824x1236.webp"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 3 — the shop's photo of #260·04 (outerwear, coat); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://bella-bicchi.com/upload/iblock/8c3/9doek3akicw5evcgjaujjius3kgafceb/IMG_2177.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 4 — the shop's photo of #260·04 (outerwear, coat); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://bella-bicchi.com/upload/iblock/d01/3zk8jbnmurt1c4i786t2x1f3y5jloqm9/IMG_2178.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 5 — the shop's photo of #251·17 (shoes, boots); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://kasandra.ua/content/images/12/450x600l80mc0/92444247288351.webp"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 6 — the shop's photo of #251·17 (shoes, boots); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://kasandra.ua/content/images/12/450x600l80mc0/19649128162912.webp"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 7 — the shop's photo of #354·07 (bag, bag_generic); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://cultboutique.com.ua/files/resized/products/img_5294-copy_1.2400x2400w.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 8 — the shop's photo of #354·07 (bag, bag_generic); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://cultboutique.com.ua/files/resized/products/img_5295-copy.2400x2400w.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "{\"version\": \"1\", \"task\": {\"role\": \"You are the stylist of the Lyusterko styling app. You describe to her the outfit you chose for her.\", \"rules\": [\"Describe only the items of «outfit»: no suggestions to buy or add more, no items it does not contain — no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or she may own it.\", \"Do not change the outfit yourself. A clearly different item or colour goes into «wrong_photos» or «swap»; do not invent the expected item behind that mismatch.\", \"Every factual property in «about_items», «text», «named» and «how_to_wear» needs support in that item's own codes or in a clearly visible feature on its own delivered photo. A photo supports visible shape, colour and texture, not fibre composition, manufacturing method, feel, comfort or weather protection. Do not infer an absent property from the item category, her body, weather or a way to wear it; omit it instead. A code and a photo that disagree are not evidence for combining their properties.\", \"Say each thing about an item once. Keep the same properties throughout the answer and one coherent wearing plan; an alternative is a choice, not another simultaneous instruction. Explain the outfit using supported properties, without filling a sentence or attribute quota.\", \"Talk to her about the items, never about what you were given: no word about photos, frames, what else a frame shows, a photo you could not see, or the codes and data you went by, and no comparison of a photo with them — the card already shows her the photos and says under an item when it has none.\", \"Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).\", \"Every item of «outfit» is your choice: stand behind it. Do not end a doubt with «the choice is yours», «it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a decision to her only about what she asked for herself: her words in «case», an item marked «hers».\", \"Only when a photo shows that an item is not what this outfit needs — a clearly different colour, another kind of item, or unfit for her occasion — and that matters for this outfit, name that one item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in doubt, leave «swap» out.\", \"Write the answer object itself: it begins with {\\\"version\\\" and ends with the brace that closes it. Do not wrap it in another object; after that brace the answer is over — write nothing more.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"Text for her. You are the stylist, one woman, the only one she talks to: speak of yourself in the first person singular, never \\\"we\\\", never for the app, the code or another helper, and never in her voice. Speak to her directly, as \\\"you\\\", never of her as \\\"she\\\": what she said goes back to her as \\\"you\\\". Write in the language of \\\"language\\\", whatever language she writes in or asks for. Plain human words, without item numbers, ids, hex codes or markdown.\", \"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \\\"on the scale\\\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer_schema\": {\"version\": \"1\", \"text\": \"<prose for her after the items: (1) optional, only when it adds something — how the shoes, the outer layer and the accessories go with the rest, in one or two sentences; (2) why it works, briefly and only where supported, taking from «day», «palette», «makeup» and «missing» only what matters most for this outfit and her occasion>\", \"how_to_wear\": [\"<one piece of advice per line, at most three, each changing how the outfit looks or lives through her day; advice that puts an item into, under or over another names that other item too, and both are items of «outfit»>\"], \"wrong_photos\": [\"<«n» of an item whose photo shows another item, a clearly different color, a placeholder or a logo; the same item on a person, from another angle, close up or with other clothes in the frame is no reason; when in doubt, leave it out>\"], \"swap\": {\"item\": \"<«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty reason — the usual case>\", \"why\": \"<why the photo warrants replacing this item: a clearly different colour, another kind of item or a mismatch with her occasion, one of: colour, kind, occasion>\", \"to\": \"<only with «swap_spares» in the input: «n» of the spare you choose; leave it out to keep the item>\"}, \"named\": [{\"n\": \"<«n» of the item of «outfit» that «text» or «how_to_wear» names; a thing that is not an item of «outfit» has no «n» — and should not be named at all>\", \"what\": \"<every garment, shoe, bag, jewelry or accessory that «text» or «how_to_wear» names — each once, in a few words>\"}], \"about_items\": [{\"n\": \"<«n» of the item of «outfit»: one entry for every item of «outfit», in its order>\", \"text\": \"<brief prose about this item alone and its supported properties; little evidence means a short description, with no attribute list or minimum length. It belongs to her outfit; never call it excluded. No other clothing or accessory, whether from its photo or «outfit»: combinations belong to «text». Her figure only through line and cut, never a shape code or «…-shape»>\"}]}, \"input\": [\"\\\"outfit\\\" — chosen items, each numbered «n», with known properties as codes: «kind», «type», cut, fabric, material, length, sleeve, pattern, details and colour («color» code, measured «hex»). Codes guide photo reading or describe an item without photos; absent properties are unknown\", \"\\\"photos\\\" — this item's photo numbers; preceding blocks are labelled «Photo N — …:» with the item's «n». «not delivered» or «not available» means no image; describe only this item's «kind» in its own numbered photos: a belt shown on a blouse is the belt, not the blouse. If none of its photos arrived, use its codes\", \"\\\"kind\\\" — what the item is, as a code (belt, top, dress, shoes, bag…); «type» — its narrower type when the code knows it; «set» — a set sold as one item, its top and its bottom both in the outfit; «about_items» describes the item of this «kind» and nothing else from its photo\", \"\\\"case\\\" — her occasion: its fields as codes, her own words as quotes; «formality» is an internal 1–10 band, for you only\", \"\\\"day\\\" — day with source; when the known item properties support it, in the last part of «text» say how this outfit lives through her day; when something you chose argues with the day (weather, hours on her feet, the place), say in one plain sentence why you still chose it and what that means for her day; describe the chosen items without proposing a different composition; never hand that decision back to her\", \"\\\"palette\\\" — her palette; in the last part of «text», in prose: discuss metal only with jewelry or metal details in this outfit; call a colour «farthest» from her only if an outfit item carries it; an optional combination uses only outfit items, never additions\", \"\\\"body\\\" — measured height, shape code, zones and statements: suitable cuts, the anchor for volume, and where most conditions meet on her body; where known cut and length support it, in the last part of «text» explain the outfit's line and focus with the items responsible. Speak of its effect, never her body's lacks or what to hide. If an item opposes these statements, gently explain your choice or a remedy using only outfit items. «cuts» means item cuts: «belted» is its own belt, not an added belt. Describe her figure through line and cut, never a shape code, letter, «…-shape», body type or number\", \"\\\"shape\\\" — figure route, not a verdict: A — hips wider than shoulders; V — shoulders wider than hips; X — a marked waist; H — straight, no marked waist; HX — waist undetermined by FFIT (waist_defined=null; waist_basis explains); O — FFIT Oval/Diamond, waist wider than hips: a vertical to the face and legs, quiet middle\", \"\\\"ways_to_wear\\\" — ways the items can be worn: «item» — «n» of the item of «outfit» (none — the whole outfit); each statement is one way — its place, and its effect when the code knows one; these are alternatives, not a list of instructions to combine: choose one coherent way for each item; in «how_to_wear» name a way only when it changes something for this outfit — its effect matters here (a line across the torso that already has many, a hem it lands on); a way that changes nothing is left out\", \"\\\"your_declared\\\" — items you kept deliberately although the code found something against them: «item» — its «n», «statements» — what the code found, as statement codes; this was your choice, not a flaw of the item: never call it a mismatch and never name it in «swap»; in «how_to_wear» say what she does about what the code found\", \"\\\"statements\\\" — what the code found: each entry is {code, values, …}; codes are defined in \\\"statement_codes\\\"\"], \"statement_codes\": {\"pair_side_unknown\": \"her top and hip girths are measured once each, so the error of their difference is unknown and the code does not say which half is wider; the girths are facts (values: top_cm, hips_cm, difference_pct)\", \"volume_anchor\": \"a voluminous outfit keeps one anchor where the body shows: the waist (belt, wrap, tuck) or the ankle (a tapered or cropped bottom); volume without an anchor reads as \\\"the body shows nowhere\\\"\", \"body_knot\": \"most conditions meet at these zones of her body; conditions shared by both zones need ONE item for both, since a fix on one zone moves the other; the rest on the first zone is fixed separately (values: zones — per zone: conditions, tension 0 to 1; shared, own — condition codes, defined here too)\", \"one_line\": \"the contour leaves the body in ONE place below the shoulders: a voluminous top together with a voluminous bottom gives two lines, and neither reads\", \"raise_collar_free_state\": \"raising the collar is a free fourth state\", \"raise_collar\": \"raise the collar: it adds a vertical near the face and sharpens the silhouette\", \"material_in_rain\": \"the named materials soak and spoil in rain when untreated (values: materials — material codes)\"}}, \"outfit\": {\"id\": \"o7\", \"items\": [{\"n\": \"#66·28\", \"kind\": \"dress\", \"type\": \"dress_generic\", \"color\": \"grey\", \"hex\": \"#4d4c50\", \"photos\": [1, 2], \"cut\": \"belted|a-line|sheath\"}, {\"n\": \"#260·04\", \"kind\": \"outerwear\", \"type\": \"coat\", \"color\": \"beige\", \"hex\": \"#bea99b\", \"photos\": [3, 4], \"cut\": \"regular\", \"sleeve\": \"вшивний\", \"details\": [\"hood\", \"double_breasted\"]}, {\"n\": \"#251·17\", \"kind\": \"shoes\", \"type\": \"boots\", \"color\": \"grey\", \"hex\": \"#868684\", \"photos\": [5, 6], \"heel\": true}, {\"n\": \"#354·07\", \"kind\": \"bag\", \"type\": \"bag_generic\", \"color\": \"brown\", \"hex\": \"#4d3b3b\", \"photos\": [7, 8]}]}, \"case\": {\"field_quotes\": {\"occasion\": \"на роботу пішки\", \"place\": \"на роботу\", \"movement\": \"пішки\", \"wants\": \"замшеві чоботи\"}, \"wish_quotes\": [\"замшеві чоботи\"], \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"wish_quotes\": {\"kind\": \"default\"}, \"wishes\": {\"kind\": \"reading\", \"quote\": \"замшеві чоботи\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"замшеві чоботи\"}]}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"на роботу\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"на роботу пішки\"}, \"precipitation\": {\"kind\": \"her\", \"quote\": \"дощ\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"пішки\"}}, \"event\": \"на роботу пішки, увесь день дощ\", \"wishes\": [\"boots, suede\"], \"occasion\": \"work\"}, \"day\": {\"movement\": \"walk\", \"place\": \"office\", \"season\": \"autumn\", \"season_source\": {\"kind\": \"default\"}, \"precipitation\": \"rain\", \"formality\": {\"from\": \"neat\", \"to\": \"neat\"}, \"occasion_requirements\": {\"profile\": \"unknown\", \"light\": \"unknown\", \"mourning\": false, \"lightness_range\": null, \"lightness_max\": null, \"chroma_max\": null, \"loudness_max\": null, \"loudness_source\": \"unknown\", \"near_white_veto\": false, \"shine_near_face_from\": null, \"festive_trim_shine_from\": null, \"decorated_headwear_or_nonmetal_jewelry\": [], \"loud_patterns_large_or_near_face\": []}}, \"palette\": {\"metal\": \"gold_and_silver\", \"combinations\": [{\"technique\": \"analogous\", \"colors\": [\"pink #8a6c76\", \"beige #bc9c97\", \"white #d4d4d4\"]}, {\"technique\": \"tone_on_tone\", \"colors\": [\"burgundy #682d29\", \"pink #a8655e\", \"beige #d2aba7\"]}, {\"technique\": \"tone_on_tone\", \"colors\": [\"chocolate #4b3c32\", \"brown #9c6d4b\", \"beige #cfae98\"]}]}, \"body\": {\"height_cm\": 168, \"shape\": \"HX\", \"zones\": {\"top_vs_bottom\": 0.01, \"waist_defined\": null, \"waist_basis\": \"body_error_unknown\"}, \"statements\": [{\"code\": \"pair_side_unknown\", \"values\": {\"top_cm\": 98.0, \"hips_cm\": 99.0, \"difference_pct\": 1}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_f584e2b162eb74fe4ddb83d6\"}, {\"code\": \"volume_anchor\", \"values\": {}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_0e831db17272cc10db154708\"}, {\"code\": \"body_knot\", \"values\": {\"zones\": [{\"zone\": \"waist\", \"conditions\": 2, \"tension\": 1.0}, {\"zone\": \"ankle\", \"conditions\": 2, \"tension\": 1.0}], \"shared\": [\"volume_anchor\", \"one_line\"], \"own\": []}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_852890e7338362fdb0fba965\"}]}, \"ways_to_wear\": [{\"item\": \"#260·04\", \"statements\": [{\"code\": \"raise_collar_free_state\", \"values\": {}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_5646f456f06d28c4ebe2c962\"}, {\"code\": \"raise_collar\", \"values\": {}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_133a58884c4c98795f276577\"}]}], \"your_declared\": [{\"item\": \"#251·17\", \"statements\": [{\"code\": \"material_in_rain\", \"values\": {\"materials\": [\"suede\"]}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_00676583418a0b10ff36a63f\"}]}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5",
+   "x-images-dropped": "4"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"version\\\":\\\"1\\\",\\\"text\\\":\\\"The beige coat over the grey dress keeps the look calm and neat for an office day, and the grey boots echo the dress so the line from hem to ground stays unbroken. The brown bag adds a warmer note that sits well with the beige. The dress is belted, so your waist stays the one clear point of the outfit, while the regular-cut coat adds no second volume. The heel on the boots lengthens the leg line below the dress hem. I kept the suede boots because you asked for them, but all-day rain is hard on suede, so they need to be treated before the walk. With the hood up, the walk to work stays practical.\\\",\\\"how_to_wear\\\":[\\\"Pull the coat's hood up over your hair for the walk in the rain, and put it back when you get inside.\\\",\\\"Treat the suede of the boots before you leave, because untreated suede soaks and spoils in rain.\\\"],\\\"wrong_photos\\\":[],\\\"named\\\":[{\\\"n\\\":\\\"#260·04\\\",\\\"what\\\":\\\"beige double-breasted coat with hood\\\"},{\\\"n\\\":\\\"#251·17\\\",\\\"what\\\":\\\"grey suede boots\\\"},{\\\"n\\\":\\\"#66·28\\\",\\\"what\\\":\\\"grey belted dress\\\"},{\\\"n\\\":\\\"#354·07\\\",\\\"what\\\":\\\"brown bag\\\"}],\\\"about_items\\\":[{\\\"n\\\":\\\"#66·28\\\",\\\"text\\\":\\\"A grey dress with its own belt that marks the waist. It gives a clean, neat base for an office day.\\\"},{\\\"n\\\":\\\"#260·04\\\",\\\"text\\\":\\\"A beige double-breasted coat in a regular cut, with set-in sleeves and a hood. The double-breasted front gives it a tailored look, and the light beige softens the grey beneath.\\\"},{\\\"n\\\":\\\"#251·17\\\",\\\"text\\\":\\\"Grey boots with a heel, in the suede you wanted. Their grey picks up the dress and keeps the leg line continuous.\\\"},{\\\"n\\\":\\\"#354·07\\\",\\\"text\\\":\\\"A brown bag in a deep, dark shade. It adds warmth against the grey and beige.\\\"}]}\"}],\"usage\":{\"input_tokens\":6918,\"output_tokens\":1837},\"stop_reason\":\"end_turn\"}"
+ }
+}
