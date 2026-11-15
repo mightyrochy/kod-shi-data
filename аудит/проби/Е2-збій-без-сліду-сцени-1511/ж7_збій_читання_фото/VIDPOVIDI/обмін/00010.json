@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk-blend blouse, relaxed tailored fit, hip length, ivory (#F2EBDD), matte crepe with a soft drape\\n\\nStraight-leg trousers, high waist, full ankle length, charcoal grey (#3B3F45), fine wool-blend twill\\n\\nTextured blazer, single-breasted, slightly relaxed cut, hip length, camel-and-oat tweed (#B89B72), wool bouclé\\n\\nLeather loafers, almond toe, low block heel, deep chocolate brown (#4A3328), smooth calf leather\\n\\nLeather belt, slim, brushed gold buckle, cognac (#9A5B32), smooth leather\\n\\nStructured tote bag, medium size, top handles, cognac (#9A5B32), grained leather\\n\\nSmall hoop earrings, thin, gold (#C9A24B), polished metal\\n\\nWool-blend scarf, lightweight, draped loosely at the neck, sage green (#8A9A7B), soft brushed wool\\n\\nThis outfit sits right in the neat business-casual range: a blouse with tailored trousers, a textured jacket and loafers look polished without feeling stiff. The warm camel tweed, ivory and charcoal make a calm autumn palette, and the sage scarf adds a fresh accent near the face. The straight trousers and relaxed blazer give an elongated, balanced line, and the soft fabrics stay comfortable through a full day at the desk. The cognac belt and bag tie in with the brown loafers, so the whole look feels pulled together.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Silk-blend blouse\\\",\\\"details\\\":\\\"relaxed tailored fit, hip length, matte crepe with a soft drape\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F2EBDD\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg trousers\\\",\\\"details\\\":\\\"high waist, full ankle length, fine wool-blend twill\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3B3F45\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Textured blazer\\\",\\\"details\\\":\\\"single-breasted, slightly relaxed cut, hip length, wool bouclé tweed\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B89B72\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Leather loafers\\\",\\\"details\\\":\\\"almond toe, low block heel, smooth calf leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#4A3328\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Leather belt\\\",\\\"details\\\":\\\"slim, brushed gold buckle, smooth leather\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#9A5B32\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Structured tote bag\\\",\\\"details\\\":\\\"medium size, top handles, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#9A5B32\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small hoop earrings\\\",\\\"details\\\":\\\"thin, polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A24B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wool-blend scarf\\\",\\\"details\\\":\\\"lightweight, draped loosely at the neck, soft brushed wool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#8A9A7B\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2188,\"output_tokens\":511},\"stop_reason\":\"end_turn\"}"
+ }
+}
