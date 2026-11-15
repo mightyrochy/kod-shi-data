@@ -1,7 +1,7 @@
 #!/bin/bash
 # Коміт і пуш після кожної завершеної ситуації серії (серія.sh запущено окремо).
 cd "$(dirname "$0")/.."; R=$(git rev-parse --show-toplevel)
-DONE=""; R=$R
+DONE="с4_побачення_19_30"; R=$R
 while true; do
   for t in с?_*/; do t=${t%/}
     [ -f "$t/повідомлення.md" ] || continue; case "$DONE" in *"$t"*) continue;; esac
