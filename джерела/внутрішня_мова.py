@@ -1361,9 +1361,9 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                              "so their colour in this outfit was checked only by that word; she can look at the "
                              "photo herself (values: items — items: item_id, kind — kind code, color — colour code, slot — slot "
                              "code, colour — colour word)",
-    "colour_partly_measured": "the named items have a partial photo measurement: lightness and chroma bounds "
-                              "are available, while hue is uncertain, so how their hue sits with the rest of the outfit is "
-                              "unchecked; this is not a colour word "
+    "colour_partly_measured": "the photo of the named items showed only part of their colour: how light and how "
+                              "bright they are is known, but not the exact shade, so how their shade sits with the rest of "
+                              "the outfit is unchecked; she can look at the photo herself "
                               "(values: items — items: item_id, kind — kind code, color — colour code, slot — slot code)",
     "cannot_tell_item_holds_scheme_hue": "so the code cannot tell whether the item holds the hue of the "
                                          "chosen palette scheme",
@@ -1531,8 +1531,8 @@ _МІСЦЯ_ОПЦІЙ = "where it is worn"
                                  "frame_size — literal card field, her_pupillary_distance_mm — measured number, "
                                  "item_id — exact item reference, never write it in the woman's text, item — the item: item_id, kind and colour codes)",
     # ── спосіб носіння (`аксесуари_структура`, `аксесуари_суд`) ────────────────
-    "wear_way_not_chosen": "how she wears this item is not chosen yet, and what suits it in this outfit depends on "
-                           "that; all the ways are equal, she chooses and can tell the stylist (values: item — the item: item_id, kind and colour codes; ways — codes of the ways: hand — in the hand, shoulder — on the "
+    "wear_way_not_chosen": "she has not said yet how she will wear this item, and how it fits this outfit depends on "
+                           "that; any of the named ways is fine, and she can say hers in the conversation (values: item — the item: item_id, kind and colour codes; ways — codes of the ways: hand — in the hand, shoulder — on the "
                            "shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, "
                            "shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the "
                            "bag handle, wrist — on the wrist, as_top — instead of a top)",
@@ -3796,6 +3796,27 @@ def визначення_заяв(коди):
     "stylist_will_choose": dict(choice="pending"),
 }
 
+# ЇЙ У «НЕПЕРЕВІРЕНОМУ» — ПЕРЕЛІК ДОЗВОЛУ, А НЕ ЗАБОРОНИ (наряд `Прогін-текст-службове`, вади 3 і 10 живих
+# «як людина» 13.11 і 14.11; корінь Е2-текст-жінці). Перелік журналу вище — заборона: заява, якої туди не вписали,
+# ішла жінці. Після #3665 так ішли межа системи («похибка мірок на рівнях маківки, підборіддя» —
+# `volume_anchor_not_judged_error_unknown`, «рівні шаблону тіла» — `outer_length_vs_knee_not_judged`), прогалина
+# картки крамниці (довжини, крою трикотажу, розміру шарфа, обхвату шапки), звіт виміру й наслідки теорії палітри
+# («дві нейтралі однієї світлоти», «шум світлоти фото», «форма образу без цілі»): у записах стенда й мосту офлайн
+# до неї доходили 43 коди цього виду, з них 24 — такі. Тепер у рядку «неперевіреного» жінці лишається лише заява звідси: те,
+# що вона бачить на своїй речі (колір і крій зі слова крамниці проти фото, підошва на льоду, склад проти солі,
+# довгий поділ у дощ, колір для трауру лише зі слова) чи дасть сама (спосіб носіння, її мірки й розмір). Кожна інша
+# заява цього виду — журналу (звіт власника), хоч би хто її не вписав: нове правило зі службовим визначенням до
+# неї не дійде, доки його заяву не вписали сюди її словами. Решта видів повідомлень — як були.
+ЇЙ_У_НЕПЕРЕВІРЕНОМУ = frozenset((
+    "colour_word_shop", "colour_word_shop_photo_other", "colour_word_model", "colour_word_not_photo",
+    "colour_partly_measured", "photo_shows_other_colour", "mourning_colour_word_only",
+    "cut_not_declared_assumed_regular", "cut_from_photo_shop_differs", "cut_from_shop_photo_differs",
+    "sole_grip_unknown_ice", "outer_composition_unknown_salt", "long_hem_rain_ground_unknown",
+    "wear_way_not_chosen", "scarf_near_face_way_unknown",
+    "her_foot_length_unknown", "her_head_girth_unknown", "shoe_size_not_checked", "hat_size_not_checked",
+))
+_ВИД_НЕПЕРЕВІРЕНОГО = "card_unchecked"
+
 # РІЧ У ЗНАЧЕННІ ЗАЯВИ — КОДАМИ (Е2-вхід-опису-кодами): ключі, що за визначеннями `ЗАЯВИ` несуть річ, беруть
 # `річ_заяви` (item_id, kind, color), а не назву крамниці вільним текстом — назва везла вид і колір словами в промпт
 # опису й перекладача, і модель брала їх звідти. Одна точка для всіх виробників, як і словник кодів вище.
@@ -3854,6 +3875,11 @@ def повідомлення(вид, *заяви):
     if вид not in ВИДИ_ПОВІДОМЛЕНЬ:
         raise KeyError("вид повідомлення поза словником ВИДИ_ПОВІДОМЛЕНЬ: %r" % (вид,))
     з = [x for x in заяви if x]
+    if вид == _ВИД_НЕПЕРЕВІРЕНОГО:
+        # рядок «неперевіреного» жінці — лише заява з `ЇЙ_У_НЕПЕРЕВІРЕНОМУ`; решта — журналу (звіт власника)
+        з = [_ЗАЯВИ.уточнити(x, recipient="journal")
+             if isinstance(x, dict) and x.get("recipient", _ЗАЯВИ.АДРЕСАТ_ТИПОВИЙ) == _ЗАЯВИ.АДРЕСАТ_ТИПОВИЙ
+             and x.get("code") not in ЇЙ_У_НЕПЕРЕВІРЕНОМУ else x for x in з]
     return dict(kind=вид, statements=з) if з else None
 
 
