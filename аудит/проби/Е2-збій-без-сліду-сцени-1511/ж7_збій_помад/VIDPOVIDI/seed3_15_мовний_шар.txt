@@ -1,0 +1,43 @@
+── ПРОМПТ (6186 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+8 — назва в тексті н=9
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Tailored trousers, straight-leg, ankle-length, charcoal grey, fine wool-blend twill\n\nBlouse, relaxed fit with a soft collar and concealed placket, hip-skimming length, ivory, matte crepe\n\nKnit cardigan, fitted, button-front, hip length, deep burgundy, fine merino with a subtle ribbed texture\n\nLoafers, low block heel, almond toe, dark chocolate brown, smooth leather\n\nBelt, slim, with a small gold-tone buckle, dark chocolate brown, smooth leather\n\nTote bag, structured, medium size, cognac, grained leather\n\nDrop earrings, small, gold-tone, polished metal\n\nOuter layer: trench coat, knee length, single-breasted, stone beige, water-repellent cotton gabardine\n\nThis outfit sits right in the neat business-casual band: tailored trousers, a crisp blouse, a textured cardigan and loafers are exactly what an office day calls for, without tipping into stiff formality. The ivory blouse brightens the face and the burgundy cardigan adds an autumn richness, while charcoal and chocolate keep the overall palette calm and grounded. The ribbed merino adds quiet texture, and the trench gives dependable cover for an autumn commute. I left the lip colour neutral in the styling so the burgundy tone and your own choice of lipstick can work together, since you said you'd choose that yourself.",
+"2": "Tailored trousers",
+"3": "Blouse",
+"4": "Knit cardigan",
+"5": "Loafers",
+"6": "Belt",
+"7": "Tote bag",
+"8": "Drop earrings",
+"9": "Trench coat"
+}
+
+── ВІДПОВІДЬ (1582 симв., 18.6 с, HTTP 200) ──
+{"1":"Класичні штани, прямі, до щиколотки, вугільно-сірі, тонкий твіл із вовняної суміші\n\nБлузка, вільного крою з м'яким коміром і прихованою планкою, довжиною до стегон, кольору слонової кістки, матовий креп\n\nВ'язаний кардиган, приталений, на ґудзиках спереду, довжиною до стегон, глибокий бордовий, тонкий мериніс із ледь помітною рубчастою фактурою\n\nЛофери, на низькому широкому підборі, з мигдалеподібним носком, темно-шоколадні, гладка шкіра\n\nРемінь, тонкий, з невеликою пряжкою золотистого відтінку, темно-шоколадний, гладка шкіра\n\nСумка-шопер, структурована, середнього розміру, коньячного кольору, зерниста шкіра\n\nСережки-підвіски, маленькі, золотистого відтінку, полірований метал\n\nВерхній шар: тренч, довжиною до коліна, однобортний, кам'яно-бежевий, водовідштовхувальний бавовняний габардин\n\nЦей образ потрапляє просто в акуратну ділову невимушеність: класичні штани, свіжа блузка, фактурний кардиган і лофери — саме те, що потрібно для офісного дня, не скочуючись у сувору формальність. Блузка кольору слонової кістки освітлює обличчя, а бордовий кардиган додає осінньої насиченості, тоді як вугільно-сірий і шоколадний тримають загальну палітру спокійною й зібраною. Рубчастий мериніс додає стриманої фактури, а тренч надійно захищає під час осінньої дороги на роботу. Колір помади я залишила в образі нейтральним, щоб бордовий відтінок і твій власний вибір помади гармоніювали, адже ти сказала, що обереш її сама.","2":"Класичні штани","3":"Блузка","4":"В'язаний кардиган","5":"Лофери","6":"Ремінь","7":"Сумка-шопер","8":"Сережки-підвіски","9":"Тренч"}
