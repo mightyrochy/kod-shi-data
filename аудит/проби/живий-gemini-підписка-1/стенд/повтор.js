@@ -24,7 +24,9 @@ function розбіжність(дія,причина,стан){
 }
 async function кадр(опис){
   крок++; const ім=String(крок).padStart(4,'0')+'.jpg';
-  await стор.screenshot({path:path.join(тека,'знімки',ім),type:'jpeg',quality:72});
+  // Знімок не успадковує 15-секундну стелю дотиків: у спробі /6
+  // Chromium перевищив її під час збирання, і стенд обірвав другий прохід.
+  await стор.screenshot({path:path.join(тека,'знімки',ім),type:'jpeg',quality:72,timeout:0});
   const стан=await екран(стор);
   запис('хід.md',`\n### ${крок} · ${new Date().toISOString()} · прохід ${прохід} · знімок \`знімки/${ім}\`\n- дія скрипта: ${опис}`);
   fs.appendFileSync(path.join(службове,'екрани.jsonl'),JSON.stringify({крок,прохід,опис,...стан})+'\n');
