@@ -2149,8 +2149,7 @@ def від_моделі(вхід, *, прогін_руки=None):
                     "card_material",
                     _ВМ_в.заява("material_on_salted_road" if _сіль else "material_in_rain",
                                 materials=_коди),
-                    _ВМ_в.заява("impregnate_or_smooth_leather" if _сіль
-                                else "impregnate_or_smooth_or_textile")),
+                    _ВМ_в.заява("waterproof_before_wet_day")),
                 сіль=_сіль, речей=len(_умова))
     # звіт власника: її день, проти якого модель думала над образами
     if _день_в and not в.get("джерело_образу"):
