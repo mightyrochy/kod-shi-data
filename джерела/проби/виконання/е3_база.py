@@ -1,6 +1,8 @@
 """Завантаження двох модулів із коміту для відтворюваної звірки ваги."""
 import importlib.abc
 import importlib.util
+import linecache
+import pathlib
 import subprocess
 import sys
 
@@ -18,7 +20,10 @@ def встановити(коміт):
         def exec_module(self, module):
             шлях = 'джерела/' + module.__name__ + '.py'
             код = subprocess.check_output(['git', 'show', коміт + ':' + шлях])
+            шлях = str(pathlib.Path(шлях).resolve())
+            текст = код.decode('utf-8')
+            linecache.cache[шлях] = (len(код), None, текст.splitlines(True), шлях)
             module.__file__ = шлях
-            exec(compile(код.decode('utf-8'), шлях, 'exec'), module.__dict__)
+            exec(compile(текст, шлях, 'exec'), module.__dict__)
 
     sys.meta_path.insert(0, База())
