@@ -3528,10 +3528,11 @@ _ПОЛЯ_EN = {
     # йога випала з усього, що бачать руки 3–4 (`case` — подія й нагода); у Ж17 лишилась нагодою sport
     # КОРІНЬ Е2-ЧАСТИНА-ДНЯ (15498, живе мірило 15.11): «лише скорочені» лишали її годину — «побачення в ресторані
     # ввечері, о 19:30» ставало подією паспорта, `case.event` стилістки й «…о 19:30» на картці руки 1, хоча коли — це
-    # лише `part_of_day`. Годину з події прибирає опис поля, а не код (код її слів не читає, п.12)
-    "event": "the event briefly: her own words from her message, in her language, shortened only by leaving "
-             "words out; when she names several parts of her day, every part stays; the time she names "
-             "(hours and minutes, in digits or in words) is left out: its part of the day goes into part_of_day",
+    # лише `part_of_day`. Годину з події прибирає опис поля, а не код (код її слів не читає, п.12). Її слова про час
+    # цілком, з годиною («ввечері, о 19:30»), — уривок `part_of_day`: він іде лише в картку фактів і рядок «Твої
+    # слова», не в подію й не стилістці (рішення менеджера 15526: без години картка читається як «не збереглося»)
+    "event": "the event: her own words in her language, shortened only by leaving words out; every part of her "
+             "day stays; all her words of when are only the quote of part_of_day",
     # Приклади підпису — не місця живих сцен (церква, випускний сина, рок-клуб були готовими відповідями)
     "place_words": "where she will be, 1–5 words for her scenario card, in her language, capitalised (like: "
                    "Museum, opening; Country house, garden); whenever place is set, and never instead of "
