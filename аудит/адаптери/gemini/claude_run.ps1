@@ -511,11 +511,13 @@ function Get-HealthLines($G, $Cq) {
 # лічать з посилань origin (час — коміт-вершина гілки), без тексту листів; перелік оновлюється не частіше ніж раз на 10 хв.
 function Get-SupervisorLine([switch]$NoCache) {
     $cache = Join-Path $script:StateDir 'supervisor.json'
+    $ttl = [double](Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes')
+    if ($ttl -le 0) { $ttl = [double]$script:Defaults['usage_minutes'] }
     if (-not $NoCache -and (Test-Path -LiteralPath $cache)) {
         try {
             $c = [System.IO.File]::ReadAllText($cache, $script:Utf8) | ConvertFrom-Json
             $at = [datetime]::Parse([string](ConvertTo-PlainJson (Get-JsonProp $c 'at')), [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
-            if (([datetime]::UtcNow - $at).TotalMinutes -lt (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes') -and [string](Get-JsonProp $c 'line')) { return [string](Get-JsonProp $c 'line') }
+            if (([datetime]::UtcNow - $at).TotalMinutes -lt $ttl -and [string](Get-JsonProp $c 'line')) { return [string](Get-JsonProp $c 'line') }
         } catch { $null = $_ }
     }
     $fail = 'наглядова: не виміряно (git не відповів — claude-run.log)'
