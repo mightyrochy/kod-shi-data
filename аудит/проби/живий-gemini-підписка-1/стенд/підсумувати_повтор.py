@@ -6,6 +6,16 @@ import json
 import sys
 
 out = Path(sys.argv[1])
+if '--стан' in sys.argv:
+    journal = out / 'стенд/журнал_моделі_продукту.jsonl'
+    rows = [json.loads(s) for s in journal.read_text(encoding='utf-8').splitlines()] if journal.exists() else []
+    print('Завершених викликів:', len(rows), '; статуси:', dict(Counter(x['статус'] for x in rows)),
+          '; фото:', sum(x['фото'] for x in rows))
+    for path in out.glob('стенд/службове/*/екрани.jsonl'):
+        x = json.loads(path.read_text(encoding='utf-8').splitlines()[-1])
+        print(path.parent.name, 'крок', x['крок'], 'прохід', x['прохід'], x['опис'][:100])
+        print(x['текст'].replace('\n', ' ')[:500])
+    sys.exit(0)
 summary = {}
 for path in sorted(out.glob('с*/підсумок.json')):
     x = json.loads(path.read_text(encoding='utf-8'))

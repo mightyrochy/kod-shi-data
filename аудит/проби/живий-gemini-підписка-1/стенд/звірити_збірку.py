@@ -14,6 +14,8 @@ import sys
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[4]
+MAIN = sys.argv[1] if len(sys.argv) > 1 else 'a6b373f405422d09afe6a562671317c1900b7ba8'
+OUT = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(__file__).resolve().parent.parent / 'спроба_4/відповідність_збірки.json'
 sys.path.insert(0, str(ROOT / 'джерела'))
 import build_артефакт as build
 
@@ -28,18 +30,17 @@ for name in archive.namelist():
     rows.append({'файл': name, 'байти_збігаються': packed == current,
                  'AST_збігається': ast.dump(ast.parse(packed)) == ast.dump(ast.parse(current))})
 source_sha = (ROOT / 'build.txt').read_text(encoding='utf-8').strip()
-diff = subprocess.check_output(['git', 'diff', '--name-only', source_sha, 'a6b373f405422d09afe6a562671317c1900b7ba8', '--', 'джерела'], cwd=ROOT, text=True).splitlines()
+diff = subprocess.check_output(['git', 'diff', '--name-only', source_sha, MAIN, '--', 'джерела'], cwd=ROOT, text=True).splitlines()
 catalog = archive.read('каталог_brief.xml')
 current_catalog = (ROOT / 'джерела/каталог_повний.xml').read_bytes()
-result = {'готова_збірка': source_sha, 'main_наряду': 'a6b373f405422d09afe6a562671317c1900b7ba8',
+result = {'готова_збірка': source_sha, 'main_наряду': MAIN,
           'зміни_джерел_від_збірки': diff, 'модулі': rows,
           'каталог_байти_збігаються': catalog == current_catalog,
           'каталог_збігається': catalog.replace(b'\r\n', b'\n') == current_catalog.replace(b'\r\n', b'\n'),
           'каталог_архів_sha256': hashlib.sha256(catalog).hexdigest(),
           'каталог_джерела_sha256': hashlib.sha256(current_catalog).hexdigest(),
           'index_sha256': hashlib.sha256((ROOT / 'index.html').read_bytes()).hexdigest()}
-out = Path(__file__).resolve().parent.parent / 'спроба_4/відповідність_збірки.json'
-out.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
+OUT.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
 assert all(row['AST_збігається'] for row in rows), 'Python-код відрізняється'
 assert result['каталог_збігається'], 'Каталог відрізняється'
 assert diff == ['джерела/аудит/ДОСЯЖНІСТЬ.md'], 'Є зміни виконуваних джерел'
