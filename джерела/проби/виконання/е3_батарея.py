@@ -40,8 +40,9 @@ def main():
     for шлях in sorted((джерела/'проби').glob('wea_*.py')):
         аргументи=[str(джерела),str(каталог)] if шлях.name in ('wea_вхід.py','wea_канон.py','wea_спека.py') else []
         перевірки.append((шлях,аргументи))
-    if not база: перевірки.append((джерела/'проби/сила_частка.py',[]))
-    if база or os.environ.get('E3_WEIGHTS_ONLY'): перевірки = перевірки[3:4] + перевірки[5:]
+    if not база: перевірки.extend((шлях, []) for шлях in sorted((джерела/'проби').glob('сила_*.py')))
+    if os.environ.get('E3_GATES_ONLY'): перевірки = перевірки[3:4]
+    elif база or os.environ.get('E3_WEIGHTS_ONLY'): перевірки = перевірки[3:4] + перевірки[5:]
     провали=[]
     with open(префікс+'.log','w',encoding='utf-8',buffering=1) as журнал:
         for шлях,аргументи in перевірки:
@@ -49,12 +50,16 @@ def main():
                 with gzip.open(pathlib.Path(os.environ['TMP'])/'е3_каталог.json.gz','rt',encoding='utf-8') as файл:
                     каталог.write_text(файл.read(),encoding='utf-8')
             мітка=шлях.name; результат=sys.stdout; потік_помилок=sys.stderr; sys.argv=[str(шлях),*аргументи]; os.chdir(джерела)
+            попередні_шляхи = list(sys.path)
+            sys.path.insert(0, str(шлях.parent))
             print('СТАРТ',мітка,flush=True); початок=time.monotonic()
             sys.stdout=sys.stderr=журнал; код=0
             try: runpy.run_path(str(шлях),run_name='__main__')
             except SystemExit as збій: код=збій.code or 0
             except BaseException as збій: код=1; traceback.print_exc()
-            finally: sys.stdout=результат;sys.stderr=потік_помилок;журнал.flush()
+            finally:
+                sys.stdout=результат;sys.stderr=потік_помилок;журнал.flush()
+                sys.path[:] = попередні_шляхи
             if код: провали.append([мітка,код])
             print('КІНЕЦЬ',мітка,'код',код,'секунд',round(time.monotonic()-початок),flush=True)
         мітка='тест_показу.js'; print('СТАРТ',мітка,flush=True)
