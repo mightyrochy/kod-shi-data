@@ -4,14 +4,17 @@ import collections, gzip, importlib.abc, importlib.util, json, pathlib, subproce
 sys.path[:0] = [str(КОРІНЬ / 'джерела'), str(КОРІНЬ / 'джерела/проби')]
 
 
+МОДУЛІ_ДО = ('верхнє_довжина', 'верхнє_реєстр')   # реєстр несе константу K-OUT-02 і з нею стелю тіру
+
+
 class База(importlib.abc.MetaPathFinder, importlib.abc.Loader):
-    """`верхнє_довжина` з коміту ДО; решта модулів — робоче дерево (спільне для обох знімків)."""
+    """`МОДУЛІ_ДО` з коміту ДО; решта модулів — робоче дерево (спільне для обох знімків)."""
     def __init__(self, коміт): self.коміт, self.create_module = коміт, lambda spec: None
     def find_spec(self, ім, path=None, target=None):
-        return importlib.util.spec_from_loader(ім, self) if ім == 'верхнє_довжина' else None
+        return importlib.util.spec_from_loader(ім, self) if ім in МОДУЛІ_ДО else None
     def exec_module(self, м):
-        м.__file__, код = str(КОРІНЬ / 'джерела/верхнє_довжина.py'), subprocess.check_output(
-            ['git', '-C', str(КОРІНЬ), 'show', self.коміт + ':джерела/верхнє_довжина.py'])
+        м.__file__, код = str(КОРІНЬ / 'джерела' / (м.__name__ + '.py')), subprocess.check_output(
+            ['git', '-C', str(КОРІНЬ), 'show', '%s:джерела/%s.py' % (self.коміт, м.__name__)])
         exec(compile(код, м.__file__, 'exec'), м.__dict__)
 
 
