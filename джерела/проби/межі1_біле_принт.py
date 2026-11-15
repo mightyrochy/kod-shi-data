@@ -7,7 +7,7 @@ import sys, pathlib, collections
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 sys.path.append(str(pathlib.Path(__file__).resolve().parent))   # 3.3: ядро першим (тезку проби/знання_дріт.py перейменовано в 1.7)
 import формальність as Ф, пакет_моделі as ПМ, дріт_моделі as ДМ
-from слот_near_дані import SLOT_NEAR_FALLBACK as NEAR
+from колір_річ import SLOT_NEAR_FALLBACK as NEAR
 E = [dict(річ=н, слот=сл, L=92, C=6, lab=(92, 2, 6), площа=0.03, near=NEAR[сл])
      for н, сл in (("шарф молочний", "шарф"), ("капелюх білий", "головний_убір"), ("сережки перли", "сережки"))]
 for з in Ф.нагода_палітра(E, нагода="весілля", зарезервований_колір="near_white"):

@@ -24,7 +24,6 @@ _КОРІНЬ = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_КОРІНЬ))
 import feed as Ф, bridge as B, composer as КМ, outfit as O, fit as ПС
 import суд_образу as СО, colorspace as cs, колір_образу as КО
-import слот_near_дані as ДАНІ
 
 вх = json.load(open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8"))
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml")
@@ -56,7 +55,7 @@ print("   %s «%s» + елісітація %s → %s" % (річ["слот"], р�
 # near з таблиці, а не з двійки
 _р = КМ.у_річ(dict(річ), річ["слот"], T)
 print("near слота «%s»: таблиця %.2f · у речі %.2f (доти двійка давала 0.10)"
-      % (річ["слот"], ДАНІ.SLOT_NEAR_FALLBACK.get(річ["слот"], 0.2), _р["near"]))
+      % (річ["слот"], КО.SLOT_NEAR_FALLBACK.get(річ["слот"], 0.2), _р["near"]))
 assert влучань >= 1, "вікно правила мусить бути досяжним хоч раз на живому каталозі"
 # утримане рішення доїжджає окремим відром
 ід = [next(c for c in кат if c.get("слот") == сл)["id"] for сл in ("сукня", "взуття", "сумка")]

@@ -6,7 +6,6 @@
 import sys, pathlib, json, collections
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import feed as Ф, bridge as B, паспорт_нагоди as ПН, колір_річ as КР
-import слот_near_дані as ДАНІ
 Н = ("visible_makeup_helps_low_contrast", "bright_makeup_softer_for_work")
 вх = json.load(open(pathlib.Path(__file__).resolve().parent.parent / "стенд_вх.json", encoding="utf-8"))
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml"); вх["гілка"] = 0
@@ -29,6 +28,6 @@ for п, волосся in ПРОФІЛІ.items():
             if п == "низький" and с == "офіс" and not мк:
                 кат = B.каталог_останнього_пакета()
                 біля = collections.Counter(c.get("слот") for c in кат
-                                           if ДАНІ.SLOT_NEAR_FALLBACK.get(c.get("слот"), 0) >= 0.6
+                                           if КР.SLOT_NEAR_FALLBACK.get(c.get("слот"), 0) >= 0.6
                                            and c.get("слот") in ("прикраси", "сережки", "намисто", "кольє", "брошка"))
                 print("   пул руки 1 (офіс): приобличчеві прикраси за слотами:", dict(біля) or "—")

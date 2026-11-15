@@ -17,7 +17,6 @@ import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import pal_вердикт as ПВ
 import palettes as PAL, pipeline as PL, status as СТ, колір_образу as КО
-import слот_near_дані as ДАНІ
 
 розм = PAL.ПРИЙОМИ["розміщення"]
 print("прийом «розміщення» → ід %s · джерело «%s» · сила %s"
@@ -30,7 +29,7 @@ print("друга половина без входу: %s · перевірка=%
 біля = ПВ.взяти(r, кат, "верх", поза) or ПВ.з_каталогу(кат, "верх", поза)   # near 0.90
 далі = [ПВ.взяти(r, кат, с, lambda *a: True) for с in ("низ", "взуття", "сумка")]
 print("біля обличчя «%s» (вага слота «верх» %.2f ≥ поріг %.2f)"
-      % ((біля or {}).get("назва", "—")[:40], ДАНІ.SLOT_NEAR_FALLBACK["верх"], КО.NEAR_МІН))
+      % ((біля or {}).get("назва", "—")[:40], КО.SLOT_NEAR_FALLBACK["верх"], КО.NEAR_МІН))
 зн, _ = ПВ.знахідки(вх, [x["id"] for x in [біля] + далі if x])
 print("ФАКТ · K-PAL-09 (механізм K-COL-08): %s" % ПВ.рядок(зн, "K-PAL-09"))
 z = next((x for x in зн if x.get("правило") == "K-PAL-09"), None)
