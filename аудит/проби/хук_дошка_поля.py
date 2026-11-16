@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+"""Стенд хука `.claude/хуки/дошка_поля.py` (наряд диспетчера 16.11): коміт файлу дошки з хибними полями — відмова.
+
+Запуск (з кореня репозиторію, потрібні голови в клоні): python3 аудит/проби/хук_дошка_поля.py
+Мірило: записані файли дошки з голів #3997 (bc62011c…) і #3998 (e5b7023e…) — відмова з тими самими рядками «ПОМИЛКА»,
+що дає прилад CI (`згорнути_дошку.py --лише-перевірити`); виправлені з голів ebd61f5f… і 16451b20… — коміт іде;
+коміт без файлів дошки — прилад не запускається; збій хука (нема приладу) — коміт іде з попередженням.
+Тимчасовий репозиторій: копії приладів і дошки з робочого дерева, файл дошки — в індексі.
+"""
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+
+КОРІНЬ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ХУК = os.path.join(КОРІНЬ, ".claude", "хуки", "дошка_поля.py")
+Д1 = "аудит/дошка/claude/перевірка-пачка-1611-0150-А.md"
+Д2 = "аудит/дошка/claude/перевірка-пачка-1611-0142.md"
+ВИПАДКИ = [  # (мітка, голова, файл, чекаємо відмову, помилок у файлі)
+    ("#3997 до", "bc62011c6fc5d823e93d0e049c587a85a8e986dd", Д1, True),
+    ("#3998 до", "e5b7023e279b598965605f3fda0453cf17156ca4", Д2, True),
+    ("#3997 після", "ebd61f5f274520236c7f4ca4724d945c671fc87e", Д1, False),
+    ("#3998 після", "16451b20ad01a2e43f5d08cf503ebc9e24ccae25", Д2, False),
+]
+
+
+def sh(*а, cwd, вхід=None, env=None):
+    return subprocess.run(а, cwd=cwd, input=вхід, capture_output=True, text=True, env=env)
+
+
+def новий_репозиторій():
+    т = tempfile.mkdtemp(prefix="хук_дошка_")
+    os.makedirs(os.path.join(т, "джерела"))
+    shutil.copytree(os.path.join(КОРІНЬ, "джерела", "прилади"), os.path.join(т, "джерела", "прилади"),
+                    ignore=shutil.ignore_patterns("__pycache__"))
+    os.makedirs(os.path.join(т, "аудит", "дошка", "claude"))
+    shutil.copy(os.path.join(КОРІНЬ, "аудит", "БЕКЛОГ.md"), os.path.join(т, "аудит"))
+    shutil.copytree(os.path.join(КОРІНЬ, "аудит", "корені"), os.path.join(т, "аудит", "корені"))
+    sh("git", "init", "-q", cwd=т)
+    sh("git", "add", "-A", cwd=т)
+    sh("git", "-c", "user.email=a@b", "-c", "user.name=x", "commit", "-qm", "база", cwd=т)
+    return т
+
+
+def хук(т, команда="git commit -m x"):
+    env = dict(os.environ, CLAUDE_PROJECT_DIR=т)
+    п = time.perf_counter()
+    р = sh(sys.executable, ХУК, cwd=т, вхід=json.dumps({"tool_name": "Bash", "tool_input": {"command": команда}}),
+           env=env)
+    мс = (time.perf_counter() - п) * 1000
+    вихід = json.loads(р.stdout) if р.stdout.strip() else {}
+    ш = вихід.get("hookSpecificOutput", {})
+    return ш.get("permissionDecision") == "deny", ш.get("permissionDecisionReason", ""), ш.get("additionalContext", ""), \
+        р.stderr, мс
+
+
+def помилки_приладу(т):
+    р = sh(sys.executable, "-I", "джерела/прилади/згорнути_дошку.py", "--лише-перевірити", cwd=т)
+    return [л for л in р.stderr.splitlines() if л.startswith("ПОМИЛКА")]
+
+
+def main():
+    збої = 0
+
+    def перевір(умова, текст):
+        nonlocal збої
+        print(("✔ " if умова else "✗ ") + текст)
+        збої += 0 if умова else 1
+
+    for мітка, голова, файл, чекаємо in ВИПАДКИ:
+        т = новий_репозиторій()
+        вміст = sh("git", "show", f"{голова}:{файл}", cwd=КОРІНЬ).stdout
+        with open(os.path.join(т, файл), "w", encoding="utf-8") as ф:
+            ф.write(вміст)
+        sh("git", "add", "-A", cwd=т)
+        відмова, причина, _, _, мс = хук(т)
+        прилад = помилки_приладу(т)
+        показані = [л for л in причина.splitlines() if л.startswith("ПОМИЛКА")]
+        if чекаємо:
+            перевір(відмова and показані == прилад and len(прилад) > 0,
+                    f"{мітка} ({голова[:8]}): коміт відхилено, помилок {len(показані)} = рядки приладу CI ({мс:.0f} мс)")
+        else:
+            перевір(not відмова and not прилад, f"{мітка} ({голова[:8]}): коміт пройшов, помилок 0 ({мс:.0f} мс)")
+        shutil.rmtree(т)
+
+    т = новий_репозиторій()  # без дошки: прилад не викликано
+    with open(os.path.join(т, "файл.txt"), "w") as ф:
+        ф.write("x")
+    sh("git", "add", "-A", cwd=т)
+    os.remove(os.path.join(т, "джерела", "прилади", "згорнути_дошку.py"))  # якби прилад викликали — збій-попередження
+    відмова, _, застереження, _, мс = хук(т)
+    перевір(not відмова and not застереження, f"коміт без файлів дошки: пройшов, прилад не викликано ({мс:.0f} мс)")
+    перевір(not хук(т, "git status")[0], "не коміт — хук мовчить")
+
+    sh("git", "reset", "-q", cwd=т)
+    shutil.copy(os.path.join(КОРІНЬ, "аудит", "БЕКЛОГ.md"), os.path.join(т, Д1))
+    sh("git", "add", "-A", cwd=т)  # файл дошки в індексі, приладу нема → збій хука не блокує
+    відмова, _, застереження, ст, _ = хук(т)
+    перевір(not відмова and "збій хука" in застереження and "збій хука" in ст, "нема приладу: коміт іде, попередження")
+    відмова, _, застереження, _, _ = хук(т, "git commit -m 'зламана")
+    перевір(not відмова, "команда не розібрана / зіпсований вхід: коміт іде")
+    shutil.rmtree(т)
+    sys.exit(1 if збої else 0)
+
+
+if __name__ == "__main__":
+    main()
