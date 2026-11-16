@@ -58,9 +58,11 @@ import colorspace as _cs
         # принт»), хоч крамниця його знає, — колір речі без фото береться звідси, без посилання на джерело
         # Е2-вхід-опису-кодами (ПС-22): назва з крамниці несла вид і колір словами, і модель брала їх звідти —
         # річ міняла вид і колір; тепер річ — номер і поля кодами, ті самі, що бачила стилістка складання
-        _ЗП.Поле("outfit", "chosen items, each numbered «n», with known properties as codes: «kind», «type», cut, "
-                           "fabric, material, length, sleeve, pattern, details and colour («color» code, measured "
-                           "«hex»). Codes guide photo reading or describe an item without photos; absent properties are unknown",
+        # Е2-опора-пояснення (п.1): речі йдуть лише тим, що продукт знає (`знання_речі.певне`) — вид і колір, виміряний
+        # на кадрі; крою, тканини, довжини й кольору слова крамниці на дроті нема: їх ніхто не звіряв із кадром
+        _ЗП.Поле("outfit", "chosen items, each numbered «n», with known properties as codes: «kind», «type» and the "
+                           "colour measured on its photo («color» code, «hex»). Codes guide photo reading or describe "
+                           "an item without photos; absent properties are unknown",
                  треба=True),
         _ЗП.Поле("outfit.items[].photos",
                  "this item's photo numbers; preceding blocks are labelled «Photo N — …:» with the item's «n». "
@@ -87,8 +89,7 @@ import colorspace as _cs
                     "«looks …, but …»; this is no reason for «wrong_photos» or «swap»: the card already tells "
                     "her about the photo"),
         _ЗП.Поле("outfit.items[].no_photo", "this item has no photo of its own among the others",
-                 як="describe it by its codes — «kind», «type», «color» and the rest; do not take another "
-                    "item's photo for it"),
+                 як="describe it only by its codes; do not take another item's photo for it"),
         _ЗП.Поле("outfit.items[].hers", "her own item from her photo, not a product",
                  як="do not offer to buy it and do not mention a price or a shop; say how the other items "
                     "work with it"),
@@ -371,9 +372,9 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     """Четвертий виклик: `ОПИС_V1` — обраний образ обʼєктом коду (його перевіряє схема,
     його кладе звіт); моделі його несе `промпт_опису` англійським дротом.
 
-    `речі` — `[{н, назва, слот, тип?, частина?, магазин, колір?, код_кольору?, hex?, кадр_колір?, ознаки?, фото,
-    фото_номери}]`, як віддає `bridge.опис`; `ознаки` — поля речі пулу (`пакет_моделі.річ_пулу`), які дріт
-    несе кодами замість назви (`дріт_моделі._ознаки_опису`). Скільки фото: речей — усі, що в
+    `речі` — `[{н, назва, слот, тип?, частина?, магазин, колір?, код_кольору?, hex?, кадр_колір?, фото,
+    фото_номери}]`, як віддає `bridge.опис`; що з цього бачить модель, вирішує складач
+    `знання_речі.певне` (лише властивості з певністю). Скільки фото: речей — усі, що в
     образі; на річ — одне-двоє. Тому річ і несе `фото_номери`: без них модель не
     знає, котре зображення чиє, і описує чуже взуття. Адреса фото (`фото`) у промпт
     не йде: зображення стоять перед обʼєктом блоками, а рядок адреси моделі нічого не
@@ -397,8 +398,6 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         for к in ("слот", "тип", "частина", "магазин", "колір", "код_кольору", "hex", "кадр_колір"):
             if x.get(к):
                 з[к] = str(x[к])
-        if isinstance(x.get("ознаки"), dict) and x["ознаки"]:
-            з["ознаки"] = dict(x["ознаки"])
         ном = [int(n) for n in (x.get("фото_номери") or [])]
         if ном:
             з["фото_номери"] = ном
