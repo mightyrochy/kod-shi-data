@@ -166,7 +166,7 @@ def її_речі(речі_паспорта):
     правила=(
         "Items one per line, garments first, then shoes and accessories: what it is, cut, length, color "
         "with its hex code, fabric.",
-        "An outer layer only when the weather needs it; at +20 °C and warmer there is none.",
+        "An outer layer only when the weather needs it; in the warm or hot band there is none.",
         "Last, why this outfit works, in 3–4 sentences.",
     ),
     вихід="OUTFIT_TEXT",
