@@ -11,10 +11,12 @@ img,svg{display:block}
 [hidden]{display:none!important}
 :focus-visible{outline:2.5px solid var(--bura);outline-offset:3px}
 h2{font-weight:600;font-size:24px;line-height:1.15;letter-spacing:-.012em;margin:6px 0 14px}
-h3{font-weight:600;font-size:15px;line-height:1.3;margin:20px 0 10px}
+h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 .dr{font-size:13px;line-height:1.4;color:var(--tin)}
-.kurs,.zr .dz i{font-style:normal;font-variation-settings:'slnt' -10}
+.zr .dz i{font-style:normal;font-variation-settings:'slnt' -10}
 .lsh{display:none}
+.napys{overflow:visible;flex:none}
+.imja{display:grid;justify-items:start}
 
 /* каркас: два боки однієї речі */
 .ark{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
@@ -29,32 +31,43 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:20px 0 10px}
 .hid a::before{content:'';width:9px;height:9px;border-radius:50%;box-shadow:inset 0 0 0 1.5px currentColor;flex:none}
 .hid a[aria-current]{color:var(--bura);font-weight:600}
 .hid a[aria-current]::before{background:var(--bura)}
+.hid a.nove::before{width:11px;height:11px;background:var(--zhov);box-shadow:inset 0 0 0 1.5px var(--bura)}
 @media(max-width:999px){.ark.obert .dva{animation:obert .52s cubic-bezier(.2,.7,.2,1)}}
 @keyframes obert{from{transform:perspective(1400px) rotateY(-86deg);opacity:.25}to{transform:none;opacity:1}}
 
-/* кнопки: головна — бура крапля, друга — лише лінія */
-.kn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;padding:6px 24px;border-radius:28px;background:var(--bura);color:var(--tlo);font-weight:500;font-size:17px;line-height:1.2;text-align:center}
+/* кнопки: головна — бура пляма, друга — лише лінія */
+.kn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;padding:6px 22px;border-radius:28px;background:var(--bura);color:var(--tlo);font-weight:500;font-size:17px;line-height:1.2;text-align:center}
 .kn.lin{background:none;color:var(--bura);box-shadow:inset 0 0 0 1.5px var(--bura)}
 .kn.mala{min-height:44px;font-size:15px;width:auto;padding:0 18px}
 .dii{display:flex;gap:10px;flex-wrap:wrap}
 .dii.st{flex-direction:column;margin-top:8px}
-.dija{position:sticky;bottom:calc(var(--hid) + env(safe-area-inset-bottom) + 12px);z-index:3;margin-top:8px}
+/* дія кроку: смуга над перемикачем боків, завжди під пальцем */
+.dija{position:sticky;bottom:calc(var(--hid) + env(safe-area-inset-bottom));z-index:3;display:flex;gap:10px;margin:14px calc(var(--p) * -1) -36px;padding:10px var(--p);background:var(--tlo);border-top:1px solid var(--lin)}
+.dija.dvi .kn{flex:1.25;white-space:nowrap;padding:6px 14px}
+.dija.dvi .kn.lin{flex:1}
+.dija.pole .kn{min-height:50px}
+.dija.pole .kn i{width:11px;height:11px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--bura)}
 .tyh{display:inline-flex;align-items:center;min-height:44px;font-size:15px;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:4px}
 .nazad{display:inline-flex;align-items:center;min-height:44px;font-size:15px;color:var(--tin)}
 .plama{position:absolute;left:-20px;top:-20px;z-index:-1;pointer-events:none}
 [data-pol]{position:relative;isolation:isolate}
+/* лінія лишається поверх поливи, як на кахлі */
+[data-pol]::after{content:'';position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1.5px var(--bura);pointer-events:none}
 .kr{display:inline-block;width:14px;height:14px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px var(--bura)}
-.m{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--bura);margin:0 7px 0 0;vertical-align:-1px}
+.m{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--bura);margin:0 7px 0 0;vertical-align:-1px;flex:none}
 .m.pry{background:none;box-shadow:inset 0 0 0 1.5px var(--bura)}
+.slot{display:block;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--tin);line-height:1.5}
 
 /* початок: зворот люстерка */
-.poch{min-height:100vh;min-height:100dvh;padding:14px var(--p) 28px;display:flex;flex-direction:column;max-width:540px;margin:0 auto}
-.poch .kah{width:100%;height:auto}
-.pid{font-size:11.5px;letter-spacing:.03em;color:var(--tin);text-align:center;margin:6px 0 18px}
-.poch .napys{max-width:100%;height:auto;margin:0 0 0 -3px}
-.poch .sl p{font-size:18px;line-height:1.45;margin:8px 0 22px;max-width:21em}
-.poch .sl{margin-top:auto;display:flex;flex-direction:column}
-.poch .tyh{align-self:center;margin-top:8px}
+.poch{min-height:100vh;min-height:100dvh;padding:16px var(--p) 14px;display:flex;flex-direction:column;max-width:540px;margin:0 auto}
+.poch .mal{margin:0 -14px}
+.poch .kah{width:100%;height:auto;max-height:54vh;max-height:54dvh}
+.poch .sl{flex:1;display:flex;flex-direction:column;margin-top:14px}
+.poch .napys{max-width:100%;height:auto}
+.poch .zakl{font-size:18px;line-height:1.45;margin:18px 0 20px;max-width:21em}
+.poch .nyz{margin-top:auto;display:flex;flex-direction:column}
+.poch .tyh{align-self:center;margin-top:4px}
+.pid{font-size:11.5px;letter-spacing:.02em;color:var(--tin);text-align:center;margin:6px 0 0}
 
 /* знайомство: її лице в люстерку */
 .lust-m{width:230px;margin:0 auto -6px}.lust-m .kah{width:100%;height:auto}
@@ -64,7 +77,7 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:20px 0 10px}
 .dvafoto{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 14px}
 .dvafoto img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:3px}
 .dvafoto figcaption,.obkh{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--tin);min-height:40px}
-.obkh{border-top:1px solid var(--lin);border-bottom:1px solid var(--lin);margin:0 0 20px;font-size:15px;color:var(--bura);gap:10px}
+.obkh{border-top:1px solid var(--lin);border-bottom:1px solid var(--lin);margin:0 0 8px;font-size:15px;color:var(--bura);gap:10px}
 .obkh .dr{margin-right:auto}
 .dvafoto button,.obkh button{text-decoration:underline;text-underline-offset:3px;min-height:40px;padding:0 0 0 12px;font-size:13.5px;color:var(--bura)}
 
@@ -74,17 +87,17 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:20px 0 10px}
 .hl{position:relative;margin:0 0 18px 40px;font-size:16px;line-height:1.45}
 .hl>.znak{position:absolute;left:-40px;top:-3px}
 .hl>.kn{margin-top:14px}
-.plyt{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 0 22px}
-.plyt button{min-height:50px;border-radius:5px;box-shadow:inset 0 0 0 1.5px var(--bura);font-size:15px;font-weight:500;text-align:left;padding:0 14px}
+.plyt{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 10px;margin:0 0 24px}
+.plyt button{min-height:48px;border-radius:5px;box-shadow:inset 0 0 0 1.5px var(--bura);font-size:15px;font-weight:500;text-align:left;padding:0 14px}
 .plyt button[aria-pressed=true]{font-weight:600}
-.pole{position:sticky;bottom:calc(var(--hid) + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 0 12px;background:var(--tlo);margin-top:6px}
-.pole .kn{min-height:50px;background:var(--tlo)}
-.pole .kn i{width:11px;height:11px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--bura)}
 
 /* що я зрозуміла: крапка — сказала, кільце — припустила */
-.leg{font-size:13.5px;color:var(--tin);margin:-6px 0 12px;display:flex;flex-wrap:wrap;align-items:center}
-.leg .m.pry{margin-left:16px}
-.zr{list-style:none;padding:0;margin:0 0 20px;border-top:1.5px solid var(--bura)}
+.zr-v{margin:4px 0 12px}
+.zr-v .imja{margin:7px 0 13px}
+.pro{font-size:14px;line-height:1.35;color:var(--tin)}
+.leg{font-size:13.5px;color:var(--tin);margin:0 0 10px;display:flex;flex-wrap:wrap;gap:2px 16px}
+.leg span{display:inline-flex;align-items:center}
+.zr{list-style:none;padding:0;margin:0 0 8px;border-top:1.5px solid var(--bura)}
 .zr li{position:relative;padding:11px 0 12px 26px;border-bottom:1px solid var(--lin);display:grid;gap:1px}
 .zr li::before{content:'';position:absolute;left:2px;top:17px;width:11px;height:11px;border-radius:50%;background:var(--bura)}
 .zr li.pry::before{background:none;box-shadow:inset 0 0 0 1.5px var(--bura)}
@@ -96,42 +109,50 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:20px 0 10px}
 .zr .dii button{min-height:38px;padding:0 15px;border-radius:19px;box-shadow:inset 0 0 0 1.5px var(--bura);font-size:14px}
 .zr li.nema .v{text-decoration:line-through;color:var(--tin)}
 .zr li.nema .dz{display:none}
-.zr.kor li{padding:7px 0 8px 24px}.zr.kor li::before{top:12px;width:9px;height:9px}.zr.kor .v{font-size:15px}
+.zr.kor{margin-bottom:20px}.zr.kor li{padding:7px 0 8px 24px}.zr.kor li::before{top:12px;width:9px;height:9px}.zr.kor .v{font-size:15px}
 
 /* барви: квітка */
-.barv{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin:0 0 14px}
-.barv ul{list-style:none;padding:0;font-size:14.5px;display:grid;gap:7px}
-.barv li{display:flex;align-items:center;gap:9px}
-.barv li span{color:var(--tin)}
+.barv{display:grid;justify-items:center;gap:10px;margin:0 0 20px}
+.barv ul{list-style:none;padding:0;font-size:14px;line-height:1.3;display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;width:100%}
+.barv li{display:grid;grid-template-columns:14px 1fr;column-gap:9px;align-items:center}
+.barv li b{font-weight:500}
+.barv li span{grid-column:2;color:var(--tin);font-size:12.5px}
+.barv.ryad{grid-template-columns:auto 1fr;justify-items:start;align-items:center;gap:22px}
+.barv.ryad ul{grid-template-columns:1fr;gap:5px}
+.barv.ryad li{grid-template-columns:14px auto 1fr}
+.barv.ryad li span{grid-column:3}
 .osn{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
 .osn button{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 15px 0 11px;border-radius:22px;box-shadow:inset 0 0 0 1.5px var(--lin);font-size:14.5px}
 .osn button[aria-pressed=true],.skh button[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--bura);font-weight:600}
-.skh{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 0 22px}
+.skh{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 0 8px}
 .skh button{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;text-align:left;min-height:66px;padding:8px 10px;border-radius:5px;box-shadow:inset 0 0 0 1.5px var(--lin);font-size:14.5px;line-height:1.25}
 .skh small{display:block;font-size:12px;font-weight:400;color:var(--tin);line-height:1.25;margin-top:2px}
 
 /* чекання: люстерко малює — лінія, полива, випал */
+.chek-m{margin:0 -14px}
 .chek-m .kah{width:100%;height:auto}
-.chek .bik-p .sh{stroke-dasharray:1;stroke-dashoffset:1}
+.chek .bik-p .sh{stroke-dasharray:1 2;stroke-dashoffset:1.02}
 .chek .bik-p .pl,.chek .bik-p .pol{opacity:0}
 .chek.k1 .bik-p .sh{stroke-dashoffset:0;transition:stroke-dashoffset .55s ease-out;transition-delay:calc(var(--i) * 9ms)}
 .chek.k1 .bik-p .pl{opacity:1;transition:opacity .7s 1.1s}
 .chek .bik-p .pol{transform:translateY(-7px);transition:opacity 1.3s ease-out,transform 1.9s ease-out}
 .chek.k2 .zel .bik-p .ch-olen,.chek.k3 .zhov .bik-p .ch-olen,.chek.k4 .bik-p .ch-lystok,.chek.k4 .bik-p .ch-vnutr,.chek.k5 .bik-p .pol.ch-kvitka{opacity:.5;transform:none}
-.chek.vypal .bik-p .pol{opacity:1;transform:none;transition:opacity .9s}
+.chek.vypal .shar .bik-p .pol.pol{opacity:1;transform:none;transition:opacity .9s}
 .chek.bezruhu *{transition:none!important}
 .pom .bik-p .sh{stroke-dasharray:.03 .085}
-.pom .bik-p .pl{opacity:.0}
-.krok-n{display:flex;align-items:center;gap:6px;margin:10px 0 4px}
+.pom .bik-p .pl{opacity:0}
+.chek-m .pom{max-height:40vh;max-height:40dvh}
+.krok-n{display:flex;align-items:center;gap:6px;margin:8px 0 4px}
 .krok-n i{width:9px;height:9px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--tin)}
 .krok-n i.je{background:var(--bura);box-shadow:none}
 .krok-n span{margin-left:6px}
 .krok-t{font-size:19px;font-weight:600;line-height:1.25;min-height:48px}
 .krok-f{min-height:20px;margin:2px 0 12px;font-size:14px}
-.znajd{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:0 0 14px}
+.znajd{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:0 0 16px}
 .znajd .m6{display:block;aspect-ratio:3/4;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--lin);overflow:hidden}
 .znajd .foto{opacity:0;transition:opacity .9s}
 .znajd .je .foto{opacity:1}
+.chekaty .dr{margin-bottom:12px}
 .kroky{list-style:none;padding:0;margin:0 0 18px;display:grid;gap:7px}
 .kroky li{display:grid;grid-template-columns:20px 1fr;font-size:15px;line-height:1.35;color:var(--tin)}
 .kroky li::before{content:'';width:10px;height:10px;margin-top:5px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--tin)}
@@ -139,43 +160,46 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:20px 0 10px}
 .kroky li.tut{color:var(--bura);font-weight:600}
 
 /* лице: образ; фото одягу — найсильніше, поруч лише лінія й крапка */
-.obv{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin:2px 0 12px}
-.obv .pro{font-size:14px;line-height:1.35;color:var(--tin);margin-top:2px}
-.im{display:block}.im+.im{margin-top:-4px}
-.derevo{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
-.derevo a{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 13px 0 7px;border-radius:22px;font-size:14px;box-shadow:inset 0 0 0 1.5px var(--lin)}
-.derevo a[aria-current]{box-shadow:inset 0 0 0 2px var(--bura);font-weight:600}
-.derevo .shche{color:var(--tin)}
+.obv{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin:2px 0 14px}
+.obv .pro{margin-top:13px}
 .slova{font-size:17px;line-height:1.45;margin:0 0 18px}
 .slova.dovhi{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:2px}
 .slova.dovhi.vse{display:block}
+.slova.dovhi+.tyh{margin-bottom:8px}
 .sitka{display:grid;grid-template-columns:repeat(2,1fr);gap:20px 12px;margin:0 0 20px}
 .rich{display:block;font-size:14px;line-height:1.3;min-width:0}
 .rich .foto{margin-bottom:8px}
-.slot{display:block;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--tin);line-height:1.5}
-.rich b{display:block;font-weight:500;font-size:15px;overflow-wrap:anywhere}
-.kc{display:block;color:var(--tin);font-size:13.5px}
+.rich b{font-weight:500;font-size:15px;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.kc{display:block;color:var(--tin);font-size:13.5px;margin-top:1px}
+.kc i{font-style:normal;color:var(--bura)}
+.kc.cina{font-size:16px;margin:-8px 0 16px}
 .rich.nova .slot{color:var(--bura);font-weight:600}
 .foto{display:block;position:relative;aspect-ratio:3/4;background:var(--bila);overflow:hidden;border-radius:3px}
 .foto img{width:100%;height:100%;object-fit:cover;object-position:50% 0}
 .foto[data-or=le] img{object-fit:contain;object-position:50% 50%}
-.foto.male img{width:var(--w);height:var(--h);max-width:100%;object-fit:contain;position:absolute;left:0;right:0;top:12px;margin:0 auto}
-.foto.male::after{content:attr(data-prym);position:absolute;left:8px;right:8px;bottom:8px;font-size:11.5px;line-height:1.3;color:var(--tin);text-align:center}
+/* дрібне фото з крамниці: не розтягуємо, кажемо словами */
+.sitka .foto.male img,.zbl .foto.male img,.para .foto.male img{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:auto;height:auto;max-width:calc(100% - 20px);max-height:calc(100% - 64px)}
+.sitka .foto.male::after,.zbl .foto.male::after,.para .foto.male::after{content:attr(data-prym);position:absolute;left:8px;right:8px;bottom:8px;font-size:11.5px;line-height:1.3;color:var(--tin);text-align:center}
 .foto.bezrechi img,.foto.nema-foto img{display:none}
-.foto.bezrechi::after,.foto.nema-foto::after{content:attr(data-nema);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;font-size:12.5px;line-height:1.3;color:var(--tin);background:var(--tlo);box-shadow:inset 0 0 0 1.5px var(--lin);border-radius:3px}
+.foto.bezrechi::after,.foto.nema-foto::after{content:attr(data-nema);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px;text-align:center;font-size:12px;line-height:1.3;color:var(--tin);background:var(--tlo);box-shadow:inset 0 0 0 1.5px var(--lin);border-radius:3px}
 .foto.svoja{background:none;box-shadow:inset 0 0 0 1.5px var(--lin);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--tin)}
 .foto.svoja .kr{width:34px;height:34px}
 .rich.pusta .foto{background:none;box-shadow:inset 0 0 0 1.5px var(--lin)}
 .rich.pusta .foto img{opacity:0;transition:opacity .9s}
 .rich.pusta.je .foto{background:var(--bila)}.rich.pusta.je .foto img{opacity:1}
-.razom{display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid var(--bura);padding-top:12px;margin:0 0 14px;font-size:15px}
+.razom{display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid var(--bura);padding-top:12px;margin:0 0 22px;font-size:15px}
 .razom b{font-size:22px;font-weight:600;letter-spacing:-.01em}
-.razom s{color:var(--tin);font-size:14px;margin-right:8px}
-.zber{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:500;margin:0 0 16px;padding:12px 14px;border-radius:5px}
+.razom s{color:var(--tin);font-size:14px;font-weight:400;margin-right:8px}
+.derevo{margin:0 0 8px}
+.derevo div{display:flex;gap:8px;margin-top:8px}
+.derevo a{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 12px 0 7px;border-radius:22px;font-size:14px;box-shadow:inset 0 0 0 1.5px var(--lin);white-space:nowrap}
+.derevo a[aria-current]{box-shadow:inset 0 0 0 2px var(--bura);font-weight:600}
+.derevo .shche{color:var(--tin)}
+.zber{display:flex;align-items:baseline;font-size:15px;line-height:1.4;font-weight:500;margin:0 0 16px;padding:11px 0 12px;border-top:1px solid var(--lin);border-bottom:1px solid var(--lin)}
 .zbl .foto{max-width:300px;margin:0 auto 14px}
 
 /* сумнів і заміна */
-.zam{list-style:none;padding:0;display:grid;gap:16px;margin:4px 0 20px}
+.zam{list-style:none;padding:0;display:grid;gap:18px;margin:4px 0 22px}
 .zam li{display:grid;grid-template-columns:104px 1fr;gap:14px;align-items:start;font-size:14.5px;line-height:1.38}
 .zam b{font-weight:600;font-size:15.5px;display:block}
 .zam .rz{display:block;font-size:13.5px;color:var(--tin);margin-bottom:5px}
@@ -185,7 +209,7 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:20px 0 10px}
 
 /* купити чи ні; свій образ */
 .kup{display:grid;grid-template-columns:132px 1fr;gap:16px;align-items:end;margin:0 0 16px}
-.vyrok{display:block;margin:6px 0 4px -2px;max-width:100%;height:auto}
+.vyrok{margin:10px 0 8px;max-width:100%;height:auto}
 .prych{list-style:none;padding:0;display:grid;gap:9px;margin:0 0 6px}
 .prych li{position:relative;padding-left:24px;line-height:1.4}
 .prych li::before{content:'';position:absolute;left:1px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--bura)}
@@ -200,17 +224,19 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:20px 0 10px}
 .svij .dr{margin-top:4px}
 
 /* мої образи: піч — кахля за кожен образ */
-.pich-v{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:2px 0 12px}
-.pich{display:grid;grid-template-columns:repeat(2,1fr);border-top:1.5px solid var(--bura);border-left:1.5px solid var(--bura);margin:0 0 20px}
-.kl{border-right:1.5px solid var(--bura);border-bottom:1.5px solid var(--bura);aspect-ratio:8/9.4;padding:12px 12px 11px;display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.pich-v{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:8px 0 14px}
+.pich{display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr;border-top:1.5px solid var(--bura);border-left:1.5px solid var(--bura);margin:0 0 14px}
+.kl{border-right:1.5px solid var(--bura);border-bottom:1.5px solid var(--bura);min-height:212px;padding:12px 12px 12px;display:flex;flex-direction:column;align-items:flex-start;min-width:0}
 .kl .znak{align-self:center;margin:0 0 auto}
-.kl .pd{font-size:12.5px;line-height:1.35;color:var(--tin);margin-top:1px}
-.kl .st{font-size:12.5px;line-height:1.35;display:flex;align-items:center;gap:6px;margin-top:4px}
+.kl .imja{margin-top:8px}
+.kl .pd{font-size:12.5px;line-height:1.35;color:var(--tin);margin-top:7px}
+.kl .st{font-size:12.5px;line-height:1.35;display:flex;align-items:center;gap:6px;margin-top:3px}
 .kl .st::before{content:'';width:9px;height:9px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--bura)}
 .kl .st.je::before{background:var(--bura)}
 .kl.pusta{align-items:center;justify-content:center;text-align:center;font-size:14.5px;color:var(--tin);gap:10px}
 .kl.pusta i{width:44px;height:44px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--bura);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:24px;font-weight:300;color:var(--bura);line-height:1}
-.kl .kah{width:100%;height:auto;margin:auto 0}
+.kl.mal-k{justify-content:center}
+.kl .kah{width:100%;height:auto}
 
 /* перемикач сцен прототипу (не частина інтерфейсу) */
 .pult{position:fixed;z-index:50;top:5px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;background:#222;color:#fff;border-radius:16px;padding:2px 9px;font:12px/1 system-ui,sans-serif;opacity:.88;white-space:nowrap;max-width:97vw}
@@ -219,9 +245,10 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:20px 0 10px}
 
 /* широкий екран: обидва боки поруч, між ними — держак люстерка */
 @media(min-width:1000px){
-  :root{--p:48px}
-  .lsh{display:block}.ltel{display:none!important}
+  :root{--p:64px}
+  .lsh{display:block}
   .verh{height:84px;padding:0 48px;position:relative}
+  .verh .lz .napys{height:19px;width:auto}
   .verh .ja{position:absolute;left:50%;top:10px;transform:translateX(-50%);margin:0;width:64px;height:64px;background:var(--tlo);border-radius:50%;z-index:2}
   .verh .ja .znak{width:60px;height:60px}
   .hid{position:absolute;top:0;right:48px;left:auto;bottom:auto;height:84px;width:auto;padding:0;gap:30px;border:0;background:none}
@@ -229,15 +256,22 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:20px 0 10px}
   .ark{position:relative}
   .dva{display:grid;grid-template-columns:1fr 1fr;position:relative}
   .dva::before{content:'';position:absolute;left:50%;top:-16px;bottom:0;border-left:1.5px solid var(--bura);margin-left:-.75px}
-  .ark[data-bik] .bik{display:block;padding:26px 64px 96px;max-width:640px;width:100%;margin:0}
+  .ark[data-bik] .bik{display:block;padding:26px var(--p) 64px;max-width:640px;width:100%;margin:0}
   .zvorot{justify-self:end}
   .sitka{grid-template-columns:repeat(3,1fr)}
-  .dija,.pole{bottom:16px}
-  .poch{max-width:1180px;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;padding:24px 48px}
-  .poch .mal{max-width:560px;justify-self:end;width:100%}
-  .poch .sl{margin:0;max-width:440px}
-  .poch .sl p{font-size:21px}
-  .pich{grid-template-columns:repeat(2,1fr)}
+  .dija{bottom:0;margin-bottom:-40px}
+  .dija .kn{max-width:340px}
+  .poch{max-width:1280px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:72px;align-items:center;padding:24px 56px}
+  .poch .mal{margin:0;justify-self:end;width:100%;max-width:680px}
+  .poch .kah{max-height:88vh;max-height:88dvh}
+  .poch .sl{margin:0;max-width:440px;flex:none}
+  .poch .zakl{font-size:21px;margin:24px 0 28px}
+  .poch .nyz{margin-top:0}
+  .poch .tyh{align-self:flex-start;margin-top:10px}
+  .pid{text-align:left;margin-top:36px}
+  .chek-m{margin:0}
   .mal-zl{max-width:360px}
+  .lust-m{margin-left:0}
+  .kl{min-height:250px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

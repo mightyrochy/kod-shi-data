@@ -223,11 +223,12 @@
   /* ───── знак: квітка окремо ─────
      o.px — розмір на екрані (лінія не тонша за 1,4 px); o.barvy — кольори пелюсток (речі образу; null — пелюстка лише лінією);
      o.vinets — колір вінця (полива чи нема); o.sklo — люстерко: порожнє скло; o.portret — фото в склі;
-     o.rysky === false — без рисок вінця (дрібний знак); o.patoky — патьоки поливи під вінцем */
+     o.rysky === false — без рисок вінця (дрібний знак); o.patoky — патьоки поливи під вінцем;
+     o.misce — лишити місце під патьоки й без них (знаки в одному ряду — однієї висоти) */
   function znak(o) {
     o = o || {}; var px = o.px || 64, R = 100, B = BARVY, np = o.sklo ? 6 : (o.barvy ? o.barvy.length : 6);
     var k = kvitka(0, 0, R, { zerno: o.zerno || 3, n: np }), tov = Math.max(4.4, 1.4 * 216 / px), s = '', id = o.id || 'z';
-    var rysky = o.rysky === undefined ? px >= 56 : o.rysky, vys = o.patoky ? 252 : 216;
+    var rysky = o.rysky === undefined ? px >= 56 : o.rysky, vys = o.patoky || o.misce ? 252 : 216;
     if (o.vinets) s += '<path class="vin" d="' + k.vinets + (o.patoky ? k.patoky.join('') : '') + '" fill="' + o.vinets + '" fill-rule="evenodd"/>';
     if (o.portret) s += '<clipPath id="cz' + id + '"><circle r="60"/></clipPath><image href="' + o.portret + '" x="-61" y="-61" width="122" height="122" preserveAspectRatio="xMidYMid slice" clip-path="url(#cz' + id + ')"/>';
     if (!o.sklo) {
@@ -242,16 +243,16 @@
   /* ───── полива під складником інтерфейсу ─────
      пляма w × h px: виходить за контур і стікає патьоком; фільтр #fpS — один на сторінку (spilni) */
   function plama(w, h, barva, zerno) {
-    var g = rnd(zerno || 1), p = [], i, n, vy = 4, bo = 6;
-    n = Math.max(3, Math.round(w / 46)); for (i = 0; i <= n; i++) p.push([-bo + (w + 2 * bo) * i / n + (g() - .5) * 5, -vy + (g() - .5) * 5]);
-    n = Math.max(2, Math.round(h / 40)); for (i = 1; i <= n; i++) p.push([w + bo + (g() - .5) * 5, -vy + (h + 2 * vy) * i / n + (g() - .5) * 4]);
-    n = Math.max(3, Math.round(w / 46)); for (i = 1; i <= n; i++) p.push([w + bo - (w + 2 * bo) * i / n + (g() - .5) * 5, h + vy + (g() - .5) * 6]);
-    n = Math.max(2, Math.round(h / 40)); for (i = 1; i < n; i++) p.push([-bo + (g() - .5) * 5, h + vy - (h + 2 * vy) * i / n + (g() - .5) * 4]);
-    var kx = w * (0.16 + g() * 0.5), d = zamk(p) + krapla(kx, h + vy - 3, 7 + g() * 3, 12 + g() * 12) + (w > 150 ? krapla(kx + 20 + g() * 30, h + vy - 3, 5 + g() * 2, 7 + g() * 7) : '');
-    return '<svg class="plama" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="' + (w + 40) + '" height="' + (h + 60) + '" viewBox="-20 -20 ' + (w + 40) + ' ' + (h + 60) + '"><path d="' + d + '" fill="' + (BARVY[barva] || barva) + '" filter="url(#fpS)"/></svg>';
+    var g = rnd(zerno || 1), p = [], i, n, vy = 3, bo = 4;
+    n = Math.max(3, Math.round(w / 46)); for (i = 0; i <= n; i++) p.push([-bo + (w + 2 * bo) * i / n + (g() - .5) * 4, -vy + (g() - .5) * 4]);
+    n = Math.max(2, Math.round(h / 40)); for (i = 1; i <= n; i++) p.push([w + bo + (g() - .5) * 4, -vy + (h + 2 * vy) * i / n + (g() - .5) * 3]);
+    n = Math.max(3, Math.round(w / 46)); for (i = 1; i <= n; i++) p.push([w + bo - (w + 2 * bo) * i / n + (g() - .5) * 4, h + vy + (g() - .5) * 4]);
+    n = Math.max(2, Math.round(h / 40)); for (i = 1; i < n; i++) p.push([-bo + (g() - .5) * 4, h + vy - (h + 2 * vy) * i / n + (g() - .5) * 3]);
+    var kx = w * (0.16 + g() * 0.5), d = zamk(p) + krapla(kx, h + vy - 3, 6 + g() * 2.5, 8 + g() * 5) + (w > 150 ? krapla(kx + 20 + g() * 30, h + vy - 3, 4.5 + g() * 2, 5 + g() * 4) : '');
+    return '<svg class="plama" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="' + (w + 40) + '" height="' + (h + 50) + '" viewBox="-20 -20 ' + (w + 40) + ' ' + (h + 50) + '"><path d="' + d + '" fill="' + (BARVY[barva] || barva) + '" filter="url(#fpS)"/></svg>';
   }
   function spilni() {
-    return '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><filter id="fpS" x="-10%" y="-10%" width="120%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="8" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G" result="d"/><feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="3" seed="21" result="t"/><feColorMatrix in="t" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1.5 0 0 0 -0.5" result="w"/><feComposite in="d" in2="w" operator="out"/></filter></defs></svg>';
+    return '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><filter id="fpS" x="-10%" y="-10%" width="120%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="8" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G" result="d"/><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="21" result="t"/><feColorMatrix in="t" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1.1 0 0 0 -0.46" result="w"/><feComposite in="d" in2="w" operator="out"/></filter></defs></svg>';
   }
 
   root.КАХЛЯ = { A: A, W: 960, H: 1087, BARVY: BARVY, olen: olen, lystok: lystok, vnutr: vnutr, vis: vis, kvitka: kvitka, malyunok: malyunok, znak: znak, plama: plama, spilni: spilni, kr: kr, zamk: zamk, krapla: krapla, rnd: rnd };
