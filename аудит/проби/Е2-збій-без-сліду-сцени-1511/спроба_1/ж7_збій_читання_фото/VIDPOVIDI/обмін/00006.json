@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на роботу\", \"place\": \"на роботу\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"на роботу\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"на роботу\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}}, \"event\": \"на роботу\", \"occasion\": \"work\", \"place\": \"office\", \"formality\": [\"neat\"], \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#f2dcd6\", \"#ecd0ca\", \"#f6e4df\"], \"hair_hex\": [\"#c3c6cc\", \"#aeb2ba\"], \"eyes_hex\": \"#7fa6c8\", \"height_cm\": 160, \"girths_cm\": {\"shoulders\": 100, \"bust\": 98, \"waist\": 88, \"hips\": 100}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Pale blue blouse: classic fit, long sleeves, hip-skimming length, soft blue #c9d9e8, matte crepe\\nStraight-leg trousers: high-rise, ankle-length, deep navy #2b3a55, wool blend\\nTextured blazer: single-breasted, slightly tailored, hip length, grey-blue #8a94a6, herringbone wool tweed\\nLoafers: classic almond toe, low block heel, charcoal #3a3d45, smooth leather\\nSlim belt: narrow, with a small silver buckle, charcoal #3a3d45, smooth leather\\nStructured tote bag: medium size, top handles, taupe-grey #9a9298, grained leather\\nSmall hoop earrings: thin, polished silver tone #c0c0c0, metal\\n\\nThis outfit sits squarely in neat office dress: a blouse with trousers, a textured jacket and loafers. The soft blue of the blouse echoes her eye color and, together with navy and grey-blue, forms a cool palette that flatters her fair skin and silver hair without looking harsh. The high-rise straight trousers and the tailored jacket give a clean, elongated line, and the belt defines the waist. The tweed adds autumn texture and warmth, while the muted tones keep everything easy to wear through a working day.\"}],\"usage\":{\"input_tokens\":2234,\"output_tokens\":1113},\"stop_reason\":\"end_turn\"}"
+ }
+}

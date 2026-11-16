@@ -1,0 +1,43 @@
+── ПРОМПТ (6349 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+8 — назва в тексті н=9
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Dark straight-leg jeans, full length with a slight stretch, in indigo blue, mid-weight stretch denim\nLong-sleeve crew-neck knit top, relaxed fit, hip length, in oatmeal beige, soft merino-cotton blend\nLightweight cardigan, open front, mid-thigh length, in forest green, chunky cotton-wool knit\nLight trench-style jacket, straight cut, knee-skimming length, in warm sand, water-resistant cotton gabardine\nLeather sneakers, low-top, cushioned rubber sole with good grip for cobblestones, in off-white, smooth leather\nCrossbody bag, compact with a zip closure, in cognac brown, pebbled leather\nSoft scarf, lightweight and oversized, in muted burgundy, wool-viscose blend\nCushioned no-show socks in light grey, breathable cotton blend\n\nThis outfit is built for nine hours on your feet over cobblestones, so the sneakers with grippy, cushioned soles keep every step comfortable and stable. At +12 °C the layers do the work: the knit and cardigan hold warmth, and the trench blocks the wind, so you can take pieces off as the day warms up or add the scarf when you pause in the shade. The dark denim and neutral earthy tones stay neat and everyday-appropriate, while the burgundy scarf and cognac bag add a little warmth of color that suits an autumn old-town setting. The hands-free crossbody keeps your essentials secure while you explore, take photos, and move through crowds.",
+"2": "Dark straight-leg jeans",
+"3": "Long-sleeve crew-neck knit top",
+"4": "Lightweight cardigan",
+"5": "Light trench-style jacket",
+"6": "Leather sneakers",
+"7": "Crossbody bag",
+"8": "Soft scarf",
+"9": "Cushioned no-show socks"
+}
+
+── ВІДПОВІДЬ (1789 симв., 22.5 с, HTTP 200) ──
+{"1":"Темні прямі джинси, повної довжини, з легкою еластичністю, синій індиго, еластичний денім середньої щільності\nТрикотажний топ з довгим рукавом і круглим вирізом, вільного крою, довжиною до стегон, вівсяний бежевий, м'яка суміш мериноса й бавовни\nЛегкий кардиган, з відкритою передньою частиною, довжиною до середини стегна, лісовий зелений, об'ємний трикотаж із бавовни й вовни\nЛегка куртка в стилі тренча, прямого крою, довжиною до колін, теплий пісочний, водовідштовхувальний бавовняний габардин\nШкіряні кросівки, низькі, з амортизуючою гумовою підошвою з хорошим зчепленням на бруківці, брудно-білі, гладка шкіра\nСумка через плече, компактна, із застібкою-змійкою, коньячно-коричнева, шкіра із зернистою фактурою\nМ'який шарф, легкий і великого розміру, приглушений бордовий, суміш вовни й віскози\nАмортизуючі шкарпетки-сліди світло-сірого кольору, дихаюча бавовняна суміш\n\nЦей образ розрахований на дев'ять годин на ногах по бруківці, тому кросівки з підошвою, що добре тримає, й амортизацією роблять кожен крок зручним і стійким. За +12 градусів працюють шари: топ і кардиган утримують тепло, а куртка захищає від вітру, тож можеш знімати речі, коли день теплішає, або додати шарф, коли зупиняєшся в тіні. Темні джинси й нейтральні землисті тони виглядають охайно й доречно на щодень, а бордовий шарф і коньячна сумка додають трохи теплого кольору, який пасує осінньому старому місту. Сумка через плече залишає руки вільними й надійно тримає твої найнеобхідніші речі, поки ти розглядаєш місто, фотографуєш і рухаєшся серед натовпу.","2":"Темні прямі джинси","3":"Трикотажний топ з довгим рукавом і круглим вирізом","4":"Легкий кардиган","5":"Легка куртка в стилі тренча","6":"Шкіряні кросівки","7":"Сумка через плече","8":"М'який шарф","9":"Амортизуючі шкарпетки-сліди"}

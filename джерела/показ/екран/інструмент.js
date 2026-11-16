@@ -4,7 +4,19 @@
 const ЗБІЙ_ІНСТРУМЕНТА_П = {save_scenario: 'not_saved', list_scenarios: 'scenarios_unreadable',
                             open_scenario: 'library_unreadable', delete_scenario: 'not_deleted', new_scenario: 'not_written',
                             switch_profile: 'profile_unreadable', confirm_case: 'not_written',
-                            set_weather_feel: 'not_written', find_item: 'catalogue_search_failed'};
+                            set_weather_feel: 'not_written', find_item: 'catalogue_search_failed',
+                            set_palette: 'palette_failed', looks: 'library_unreadable'};
+/* Плитки збережених образів у картці — ті самі, що в «Усіх образах» (`плиткаБібліотеки`), за ід результату; ід кнопки
+   екрана картка не бере (дотику в розмові нема — відкрити образ вона просить словами). Перелік ще не читався (після
+   перезавантаження) — читається тим самим `оновитиБібліотеку`; видалений відтоді образ плитки не має. */
+function плиткиОбразівП(к, іди){
+  const малювати = () => БІБЛІОТЕКА_П.плитки.forEach((пл, н) => {
+    if (!іди.includes(пл.ід)) return;
+    const т = плиткаБібліотеки(пл, н); т.removeAttribute('id'); т.tabIndex = -1; к.appendChild(т);
+  });
+  if (БІБЛІОТЕКА_П.плитки.length || БІБЛІОТЕКА_П.стан) малювати();
+  else оновитиБібліотеку().then(малювати).catch(e => збійЖінціП(к.appendChild(ел('div')), 'library_unreadable', e));
+}
 /* Картка результату під реплікою: підпис — той самий, що показує кнопка вікна; назва — її ввід (`назва`), без
    назви — підпис без назви з датою (`підписБезНазвиП`), як у «Збережених». */
 function карткаІнструментаП(р){
@@ -30,6 +42,10 @@ function карткаІнструментаП(р){
   }
   else if (р.tool === 'open_scenario' && р.done)
     текстЖінціП(к, підписЗНазвоюП(['Відкрито сценарій «', назва, '».']), 'tool_scenario_opened_failed');
+  else if (р.tool === 'delete_scenario' && р.чекає_підтвердження){
+    /* перший крок: що саме зникне — назва сценарію (без назви — підпис з датою); видаляє повторний виклик */
+    текстЖінціП(к.appendChild(ел('div')), підписЗНазвоюП(['Видалити сценарій «', назва, '» назавжди? Підтвердь — і він зникне.']), 'tool_scenario_deleted_failed');
+  }
   else if (р.tool === 'delete_scenario' && р.done)
     текстЖінціП(к, підписЗНазвоюП(['Сценарій «', назва, '» видалено.']), 'tool_scenario_deleted_failed');
   else if (р.tool === 'new_scenario' && р.done)
@@ -45,6 +61,23 @@ function карткаІнструментаП(р){
        ціна), у порядку, в якому код їх радить; нема жодної — карти без рядків: «нема» каже репліка */
     (р.варіанти || []).forEach(в => к.appendChild(рядокЗмінноїПари(в)));
   }
+  else if (р.tool === 'set_palette' && !р.збій){
+    /* ключа вже нема в ряду (палітру перераховано між ходом і викликом) — збій цієї частини над стрічкою */
+    if ((р.не_обрано || []).length)
+      збійЖінціП(к.appendChild(ел('div')), 'palette_choice_gone', 'tool_failed: set_palette ' + р.не_обрано.join(','));
+    карткаПалітриП(к);
+  }
+  else if (р.tool === 'set_palette' && (р.збій === 'порожня' || р.збій === 'бракує'))
+    карткаПалітриП(к, р.збій);
+  else if (р.tool === 'looks' && р.done && !р.відкрито){
+    текстЖінціП(к.appendChild(ел('div')), р.кількість ? 'Збережені образи — ' + р.кількість + ':' : 'Збережених образів ще нема.', 'tool_looks_failed');
+    плиткиОбразівП(к, р.looks || []);
+  }
+  else if (р.tool === 'looks' && р.done){
+    текстЖінціП(к.appendChild(ел('div')), 'Відкрито збережений образ:', 'tool_look_opened_failed');
+    плиткиОбразівП(к, р.looks || []);
+  }
+  else if (р.tool === 'looks' && р.знайдено === false) збійЖінціП(к, 'look_not_found', 'tool_failed: ' + р.tool);
   else if (р.tool === 'switch_profile' && р.збій === 'profile_not_found')
     збійЖінціП(к, 'profile_not_found', 'tool_failed: ' + р.tool);
   else if (р.tool === 'switch_profile' && р.збій === 'profile_switch_blocked')

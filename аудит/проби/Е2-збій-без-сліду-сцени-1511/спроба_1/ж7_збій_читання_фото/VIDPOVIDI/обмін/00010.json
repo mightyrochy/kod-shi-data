@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Pale blue blouse: classic fit, long sleeves, hip-skimming length, soft blue #c9d9e8, matte crepe\\nStraight-leg trousers: high-rise, ankle-length, deep navy #2b3a55, wool blend\\nTextured blazer: single-breasted, slightly tailored, hip length, grey-blue #8a94a6, herringbone wool tweed\\nLoafers: classic almond toe, low block heel, charcoal #3a3d45, smooth leather\\nSlim belt: narrow, with a small silver buckle, charcoal #3a3d45, smooth leather\\nStructured tote bag: medium size, top handles, taupe-grey #9a9298, grained leather\\nSmall hoop earrings: thin, polished silver tone #c0c0c0, metal\\n\\nThis outfit sits squarely in neat office dress: a blouse with trousers, a textured jacket and loafers. The soft blue of the blouse echoes her eye color and, together with navy and grey-blue, forms a cool palette that flatters her fair skin and silver hair without looking harsh. The high-rise straight trousers and the tailored jacket give a clean, elongated line, and the belt defines the waist. The tweed adds autumn texture and warmth, while the muted tones keep everything easy to wear through a working day.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Pale blue blouse\\\",\\\"details\\\":\\\"classic fit, long sleeves, hip-skimming length, matte crepe\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#c9d9e8\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg trousers\\\",\\\"details\\\":\\\"high-rise, ankle-length, wool blend\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#2b3a55\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Textured blazer\\\",\\\"details\\\":\\\"single-breasted, slightly tailored, hip length, herringbone wool tweed\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#8a94a6\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Loafers\\\",\\\"details\\\":\\\"classic almond toe, low block heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#3a3d45\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Slim belt\\\",\\\"details\\\":\\\"narrow, with a small silver buckle, smooth leather\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#3a3d45\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Structured tote bag\\\",\\\"details\\\":\\\"medium size, top handles, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#9a9298\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small hoop earrings\\\",\\\"details\\\":\\\"thin, polished silver tone, metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#c0c0c0\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2104,\"output_tokens\":440},\"stop_reason\":\"end_turn\"}"
+ }
+}
