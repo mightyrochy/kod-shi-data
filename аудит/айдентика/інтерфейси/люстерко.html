@@ -89,7 +89,7 @@ img{display:block}
 .rjad i.pyt{color:var(--ceh)}
 .rjad small{display:block;font-size:13px;color:var(--sire);margin-top:2px}
 .rjad .tak{display:flex;gap:16px;margin-top:4px;font-weight:400}
-.rjad .tak .pl{min-height:36px;font-size:14px}
+.rjad .tak .pl{min-height:40px;font-size:14px}
 .rjad.umova .p{background:var(--sol);margin:-6px -12px -6px -4px;padding:6px 12px 6px 6px;font-weight:600}
 .rjad.hol{font:600 20px/1.15 'Fixel Display',sans-serif;padding-top:4px}
 .rjad.hol .l{font:400 15px/1.32 'Fixel Text',sans-serif;padding-top:3px}
@@ -120,7 +120,7 @@ img{display:block}
 .spysok summary small{grid-column:1/3;font-size:13px;color:var(--sire)}
 .spysok details p{font-size:15px;padding:0 0 10px}
 .spysok details div{display:flex;gap:18px;flex-wrap:wrap;padding-bottom:14px}
-.spysok details .pl{min-height:36px;font-size:14px}
+.spysok details .pl{min-height:40px;font-size:14px}
 .razom{display:flex;justify-content:space-between;padding:12px 0;font-weight:600;background:var(--sklo);position:relative}
 
 /* зворот дзеркала: збережене — як напис на звороті */
@@ -226,7 +226,7 @@ window.СЦЕНИ=[
  return '<h1 class="naz na-osi">Стань перед люстерком</h1><div class="os" style="margin-top:14px"><button class="foto pusto l" data-nema="твоє фото на повен зріст — торкнись" data-dali></button><span class="foto sklo pusto p" style="outline:0" data-nema="тут буде відбиття: ти, вдягнена до нагоди"></span></div>'+
  '<p class="pid na-osi" style="max-width:300px;margin-top:14px">Нема фото? Назви свої барви словами — волосся, очі, шкіра. Теж зберу.</p>'}},
 {id:'znajomstvo',nazva:'знайомство й фото',html:function(){sh({do:1,s:'Бачу тебе, '+V.vona.imja+'. Запам’ятала — більше не питатиму. Куди збираємось?'});
- return '<div class="os"><div class="l">'+vona('zrist')+'</div><div class="p"><p class="pid" style="margin-bottom:8px">бачу в тобі</p><div class="stovp" style="height:auto">'+V.vona.barvy.map(function(b,i){return '<div class="'+(i?'':'sv')+'" style="background:'+b[1]+';height:64px">'+b[0]+'</div>'}).join('')+'</div><p style="margin-top:12px;font-weight:600">тепла гама</p><p class="pid" style="margin-top:8px">обхвати '+V.vona.obkhvaty+'</p><button class="pl" style="margin-top:10px;min-height:36px;font-size:14px">виправити</button></div></div>'+
+ return '<div class="os"><div class="l">'+vona('zrist')+'</div><div class="p"><p class="pid" style="margin-bottom:8px">бачу в тобі</p><div class="stovp" style="height:auto">'+V.vona.barvy.map(function(b,i){return '<div class="'+(i?'':'sv')+'" style="background:'+b[1]+';height:64px">'+b[0]+'</div>'}).join('')+'</div><p style="margin-top:12px;font-weight:600">тепла гама</p><p class="pid" style="margin-top:8px">обхвати '+V.vona.obkhvaty+'</p><button class="pl" style="margin-top:10px;min-height:40px;font-size:14px">виправити</button></div></div>'+
  '<h2 class="naz na-osi" style="margin-top:18px">Куди збираємось?</h2><div class="plytky">'+V.plytky.map(function(p){return '<button class="pl" data-dali>'+p+'</button>'}).join('')+'</div>'}},
 {id:'rozmova',nazva:'розмова, диктування',html:function(){sh({do:3,vidkr:1,je:1,pole:V.rozmova[3].dykt});
  return '<div class="os"><div class="l">'+vona('zrist')+'</div><span class="foto sklo pusto p" style="outline:0" data-nema="слухаю"></span></div>'}},
@@ -264,7 +264,7 @@ window.СЦЕНИ=[
  return '<div class="os"><div class="l">'+vona('zrist')+'</div><div class="p">'+vona('zrist','vidbyttja stalo')+'</div><b class="znak pyt">×</b></div><h1 class="naz na-osi" style="margin-top:10px">Не зібрала</h1><p class="na-osi" style="max-width:320px;font-size:15px;padding-top:0">Крамниці довго не відповідають. Твої слова й барви на місці.</p>'+
  '<div class="kroky">'+k.slice(0,3).map(function(x,i){return '<div class="rjad"><span class="l" style="color:inherit">'+x[0]+'</span><i><b class="kom'+(i<2?'':' c')+'"></b></i><span class="p pid">'+(i<2?x[1]:'урвалось о 2:10')+'</span></div>'}).join('')+'</div><div class="dii"><button class="kn" data-scena-do="chekannja">Ще раз</button><button class="kn druha" data-scena-do="zrozumila">змінити нагоду</button></div>'}},
 {id:'svij',nazva:'оцінка свого образу',html:function(){var s=V.svij;sh({shche:[['v',s.slova_v],['s',s.dobre+' '+s.porada]],s:s.dobre+' '+s.porada,pole:'Виправ, якщо я не так розгледіла'});
- return '<div class="os pid"><span class="l">ти сьогодні</span><span class="p">бачу на фото — так?</span></div><div class="os" style="margin-top:8px"><div class="l">'+vona('svij')+'</div><div class="p">'+s.rozpiznala.map(function(x){return '<p style="padding:9px 0;border-bottom:1px solid rgba(23,32,42,.16);display:flex;justify-content:space-between;gap:8px"><span>'+x+'</span><i class="kom z" style="margin-top:6px"></i></p>'}).join('')+'<button class="pl" style="margin-top:8px;min-height:36px;font-size:14px">+ додати</button><p class="pid" style="margin-top:14px;display:flex;gap:6px"><i class="kom o" style="margin-top:4px"></i>'+s.nema+' на фото не видно — про них не суджу</p></div></div>'+
+ return '<div class="os pid"><span class="l">ти сьогодні</span><span class="p">бачу на фото — так?</span></div><div class="os" style="margin-top:8px"><div class="l">'+vona('svij')+'</div><div class="p">'+s.rozpiznala.map(function(x){return '<p style="padding:9px 0;border-bottom:1px solid rgba(23,32,42,.16);display:flex;justify-content:space-between;gap:8px"><span>'+x+'</span><i class="kom z" style="margin-top:6px"></i></p>'}).join('')+'<button class="pl" style="margin-top:8px;min-height:40px;font-size:14px">+ додати</button><p class="pid" style="margin-top:14px;display:flex;gap:6px"><i class="kom o" style="margin-top:4px"></i>'+s.nema+' на фото не видно — про них не суджу</p></div></div>'+
  '<h1 class="naz na-osi" style="margin-top:16px">'+s.vyrok+'</h1><ul class="prychyny"><li><i class="kom z"></i>'+s.dobre+'</li><li><i class="kom c"></i>'+s.porada+'</li></ul><div class="dii"><button class="kn druha">'+s.dija[0].toUpperCase()+s.dija.slice(1)+'</button></div>'}}
 ];
 })();

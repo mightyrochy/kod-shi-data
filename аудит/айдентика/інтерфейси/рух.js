@@ -37,7 +37,8 @@
     korin = document.getElementById('korin');
     if (!/чисто/.test(decodeURIComponent(location.search))) {
       pult = document.createElement('nav'); pult.className = 'pult';
-      pult.innerHTML = '<button aria-label="попередня сцена">‹</button><b></b><button aria-label="наступна сцена">›</button><a href="../інтерфейси_дизайнера.html">огляд</a>';
+      pult.innerHTML = '<button aria-label="попередня сцена">‹</button><b></b><button aria-label="наступна сцена">›</button><a class="sys">система</a><a href="../інтерфейси_дизайнера.html">огляд</a>';
+      pult.querySelector('.sys').href = decodeURIComponent(location.pathname.split('/').pop()).replace('.html', '_система.html');
       pult.children[0].onclick = function () { window.ДАЛІ(-1); };
       pult.children[2].onclick = function () { window.ДАЛІ(1); };
       document.body.appendChild(pult);
