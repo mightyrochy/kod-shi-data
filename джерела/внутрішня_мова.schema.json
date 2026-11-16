@@ -332,6 +332,14 @@
       "unknown"
      ]
     },
+    "wear": {
+     "description": "як вона цю річ носить",
+     "enum": [
+      "near_face",
+      "covers_hair",
+      "unknown"
+     ]
+    },
     "quote": {
      "type": "string",
      "description": "дослівний уривок її слів про цю річ"
@@ -644,6 +652,14 @@
       "unknown"
      ]
     },
+    "wear": {
+     "description": "як вона цю річ носить",
+     "enum": [
+      "near_face",
+      "covers_hair",
+      "unknown"
+     ]
+    },
     "quote": {
      "type": "string",
      "description": "дослівний уривок її слів про цю річ"
@@ -743,6 +759,18 @@
     },
     "duration_h": {
      "description": "скільки годин триває подія",
+     "oneOf": [
+      {
+       "type": "number",
+       "minimum": 0
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
+    "walk_min": {
+     "description": "скільки хвилин вона йтиме пішки дорогою (не тривалість події)",
      "oneOf": [
       {
        "type": "number",
@@ -1014,6 +1042,21 @@
       "october",
       "november",
       "december",
+      "unknown"
+     ]
+    },
+    "weekday": {
+     "description": "день тижня події, коли її слова його називають",
+     "enum": [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday",
+      "today",
+      "tomorrow",
       "unknown"
      ]
     },
@@ -2381,6 +2424,10 @@
         "description": "скільки годин триває подія"
        },
        {
+        "const": "walk_min",
+        "description": "скільки хвилин вона йтиме пішки дорогою (не тривалість події)"
+       },
+       {
         "const": "movement",
         "description": "сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, ставатиме на коліна чи займатиметься спортом"
        },
@@ -2451,6 +2498,10 @@
        {
         "const": "month",
         "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця"
+       },
+       {
+        "const": "weekday",
+        "description": "день тижня події, коли її слова його називають"
        },
        {
         "const": "formality_branch",
@@ -2597,6 +2648,10 @@
           "description": "скільки годин триває подія"
          },
          {
+          "const": "walk_min",
+          "description": "скільки хвилин вона йтиме пішки дорогою (не тривалість події)"
+         },
+         {
           "const": "movement",
           "description": "сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, ставатиме на коліна чи займатиметься спортом"
          },
@@ -2667,6 +2722,10 @@
          {
           "const": "month",
           "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця"
+         },
+         {
+          "const": "weekday",
+          "description": "день тижня події, коли її слова його називають"
          },
          {
           "const": "formality_branch",
@@ -2994,6 +3053,32 @@
         },
         "value": {
          "description": "скільки годин триває подія",
+         "oneOf": [
+          {
+           "type": "number",
+           "minimum": 0
+          },
+          {
+           "const": "unknown"
+          }
+         ]
+        }
+       }
+      },
+      "walk_min": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "скільки хвилин вона йтиме пішки дорогою (не тривалість події)",
          "oneOf": [
           {
            "type": "number",
@@ -3431,6 +3516,35 @@
           "october",
           "november",
           "december",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "weekday": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "день тижня події, коли її слова його називають",
+         "enum": [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+          "sunday",
+          "today",
+          "tomorrow",
           "unknown"
          ]
         }
@@ -3910,6 +4024,7 @@
           "place",
           "setting",
           "duration_h",
+          "walk_min",
           "movement",
           "dress_code",
           "palette",
@@ -3928,6 +4043,7 @@
           "mood",
           "part_of_day",
           "month",
+          "weekday",
           "formality_branch",
           "open_zones",
           "reserved_colour",
@@ -3967,6 +4083,7 @@
           "place",
           "setting",
           "duration_h",
+          "walk_min",
           "movement",
           "dress_code",
           "palette",
@@ -3985,6 +4102,7 @@
           "mood",
           "part_of_day",
           "month",
+          "weekday",
           "formality_branch",
           "open_zones",
           "reserved_colour",
@@ -9554,6 +9672,17 @@
    "november": "листопад",
    "december": "грудень"
   },
+  "weekday": {
+   "monday": "понеділок",
+   "tuesday": "вівторок",
+   "wednesday": "середа",
+   "thursday": "четвер",
+   "friday": "пʼятниця",
+   "saturday": "субота",
+   "sunday": "неділя",
+   "today": "сьогодні",
+   "tomorrow": "завтра"
+  },
   "weather_band": {
    "deep_frost": "deep_frost",
    "frost": "frost",
@@ -9891,6 +10020,10 @@
   "feature": {
    "heels": "підбори",
    "large_print": "великий принт"
+  },
+  "wear": {
+   "near_face": "біля_обличчя",
+   "covers_hair": "волосся_сховане"
   },
   "own_item_status": {
    "has": "певна",
