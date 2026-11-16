@@ -2956,7 +2956,7 @@ def _опис_keep_by():
     "outer_layer_kept_despite_warmth": "the outer layer stays although the temperature band alone would not "
                                       "ask for it (values: weather_band — the weather band code; held_by — "
                                       "dress_code when the dressiness band or the dress code holds it, "
-                                      "weather_or_outdoors when rain, wind or the street below +22 °C does)",
+                                      "weather_or_outdoors when rain, wind or the street in a cooler band than the warm one does)",
     "outer_layer_removed_by_temperature": "the outer layer was removed by the temperature band: it asks for "
                                          "one layer on the torso, so the empty kind is not a gap in the "
                                          "catalogue (values: weather_band — the weather band code)",
@@ -3096,7 +3096,7 @@ def _опис_keep_by():
     # ── добір у пулі мосту (`міст_пакет`) ──────────────────────────────────────────
     "kind_topped_up_to_minimum": "the kind was topped up: the windows of the palette held fewer items than "
                                  "the outfit needs, and without this kind there is no outfit (shoes and a bag "
-                                 "the occasion demands, an outer layer the cold below +10 °C, a top and a "
+                                 "the occasion demands, an outer layer the cold of the cool band and colder, a top and a "
                                  "bottom are what an outfit is). The added items travel with \"in_arc: "
                                  "false\" — a named step outside the palette, not a hidden one (values: had, "
                                  "need, added, now)",
