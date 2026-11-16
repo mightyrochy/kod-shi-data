@@ -179,6 +179,16 @@ import colorspace as _cs
                     "occasion and her day best, or none; describe the outfit with your choice in place — the "
                     "chosen spare instead of the item; the card tells her separately what you replaced and why, "
                     "so «text» does not; answer «swap» again with «item», «why» and «to»"),
+        # Е3-заміна-з-перевіркою (умова «г», 16.11): опис складу, який код уже вирішив після пропозиції заміни. Доти
+        # на картку йшла проза відповіді, що заміну пропонувала, — «я замінюю сукню» під тією самою сукнею, коли заміни
+        # не сталося; а перепитаний без цього поля опис пропонував би ту саму заміну знову
+        _ЗП.Поле("swap_decided", "after a «swap» was proposed, the code has decided this outfit: «item» — «n» of the "
+                                 "item in question, «outcome» — «stays» (it remains in the outfit) or «replaced» (it "
+                                 "took the place of the proposed item)",
+                 як="describe the outfit exactly as it is now; the card tells her separately what was replaced, or "
+                    "that the item stays and what the outfit lacks, so «text» and «how_to_wear» do not speak of "
+                    "replacing anything; do not answer «swap»",
+                 вихід_без=("заміна",)),
     ),
     правила=(
         # ОПИС-1: вигадані речі («простий світлий топ» без топа, «золоті сережки» без сережок,
@@ -251,8 +261,12 @@ import colorspace as _cs
                       "with other clothes in the frame is no reason; when in doubt, leave it out",
         "заміна.річ": "«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty "
                       "reason — the usual case",
-        "заміна.чому": "why the photo warrants replacing it: a clearly different colour, another kind "
-                       "of item, a mismatch with her occasion or her day",
+        # Е3-заміна-з-перевіркою (16.11): опис поля називав підстави словами, а схема приймає лише код
+        # (`протокол.ПІДСТАВИ_ЗАМІНИ`) — модель писала «colour: its creamy near-white shade…», і код відмовляв за
+        # формою (`reason_not_in_list`, п'ять разів за ніч 07.11). Поле називає коди, речення — ні
+        "заміна.чому": "one code for what the photo shows, and nothing else: «colour» — a clearly different "
+                       "colour, «kind» — another kind of item, «occasion» — unfit for her occasion, «day» — unfit "
+                       "for her weather or her way there",
         "заміна.на": "only with «swap_spares» in the input: «n» of the spare you choose; leave it out to "
                      "keep the item",
     },
@@ -353,7 +367,7 @@ def _місця_в_ід(об, склад):
 def опис_обʼєкт(речі, образ=None, задум=None, випадок=None, свідомі=None, фото_є=True,
                 канал_3=None, палітра=None, день=None, день_образу=None, неповний=None,
                 межі=None, мова_тексту=None, випадок_коди=None, заміна_запасні=None, макіяж=None,
-                тіло=None):
+                тіло=None, рішення_заміни=None):
     """Четвертий виклик: `ОПИС_V1` — обраний образ обʼєктом коду (його перевіряє схема,
     його кладе звіт); моделі його несе `промпт_опису` англійським дротом.
 
@@ -372,6 +386,8 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     шаром, Ukrainian без нього (показ шле `мова_тексту`, як рукам 3–4).
     `заміна_запасні` — ФОТО-1: `{річ: н, чому, запасні: [речі тими самими полями, що образ]}`, лише
     в зайвому виклику, коли опис назвав річ для заміни, а код знайшов запасні (`заміна_з_фото`).
+    `рішення_заміни` — `{н, стан: stays | replaced}`: опис складу, який код вирішив після пропозиції заміни
+    (`swap_decided`); з ним відповідь не просить `swap` і не пише про заміну — картка каже про неї своїм рядком.
     `тіло` — її фігура кодами (`hypergraph.тіло_для_опису`): без неї промпт не несе поля.
     `свідомі` — `[{н, заяви}]`: річ, яку стилістка поставила проти знахідки коду, і заяви тієї знахідки.
     """
@@ -443,6 +459,8 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         об["палітра"] = dict(палітра)
     if isinstance(заміна_запасні, dict) and заміна_запасні.get("запасні"):
         об["заміна_запасні"] = заміна_запасні
+    if isinstance(рішення_заміни, dict) and рішення_заміни.get("н") and рішення_заміни.get("стан"):
+        об["рішення_заміни"] = dict(н=str(рішення_заміни["н"]), стан=str(рішення_заміни["стан"]))
     об["завдання"] = {"мова": str(мова_тексту or _ЗП.МОВА_EN), "відповідь": ОПИС.вихід}
     return об
 
@@ -648,7 +666,7 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
             # поля), тож без них відкидається лише «на» (сирим — у `на_відкинуто`), а річ іде тим самим
             # шляхом, що заміна без «на»; відмова — коли не резолвилась річ або «на» відповіді на запасні
             _на_зайве = not запасні and not _на
-            # річ, що резолвилась, лишається й при відмові: її запис `про_речі` знімає `без_прози_заміни`
+            # річ, що резолвилась, лишається й при відмові: рядок картки про неї пише `заміна_з_фото.текст_складу`
             р["заміна"] = (dict(річ=_рі[0], чому=_причина_зміни, **_на_річ,
                                 **({"на_відкинуто": str(_зм["на"])} if _на_зайве else {}))
                            if len(_рі) == 1 and (_на or _на_зайве) else
@@ -688,28 +706,6 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
             instead=" ".join(([ПОВТОР_НАЗВАНОГО_EN % ", ".join("«%s»" % w for w in _поза[:8])] if _поза else [])
                              + ([ПОВТОР_НЕ_ОПИСАНО_EN % ", ".join("«%s»" % w for w in _не[:8])] if _не else []))),
             ensure_ascii=False)
-    return р
-
-
-def без_прози_заміни(р):
-    """Опис назвав річ у `swap`, а заміни з цієї відповіді не буде → той самий розбір без запису `про_речі`
-    цієї речі (за її id), з `текст` і `проза` без його абзацу; знятий запис — у `про_речі_знято`.
-
-    `swap` сумки код відхилив, а її запис лишився —
-    «Її потрібно замінити для гармонії» під річчю, яка на картці. Слів запису код не читає (п.12), тож знімає
-    його цілим, без повторного виклику моделі (п.21). Прийнята заміна сюди не доходить: картку тоді описує
-    відповідь на запасні (`від_моделі` з `заміна_запасні`), і цей розбір не показується."""
-    ід = str(((р or {}).get("заміна") or {}).get("річ") or "")
-    знято = [x for x in (р.get("про_речі") or []) if ід and str(x.get("id")) == ід]
-    if not знято:
-        return р
-    лишились = [x for x in р["про_речі"] if x not in знято]
-    _абзаци = "\n".join(x["текст"] for x in р["про_речі"])
-    _власний = (р.get("текст") or "")[len(_абзаци) + 1:] if (р.get("текст") or "").startswith(_абзаци + "\n") else None
-    р = dict(р, про_речі=лишились, про_речі_знято=[dict(id=ід, чому="swap_not_applied")])
-    if _власний is not None:
-        р["текст"] = "\n".join([x["текст"] for x in лишились] + [_власний])
-        р["проза"] = "\n".join([р["текст"]] + list(р.get("як_носити") or [])).strip() or None
     return р
 
 
