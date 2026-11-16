@@ -24,7 +24,9 @@
 ## Події й стан
 
 - Стан сесії: `get_session(<id>)` того самого ходу, час UTC.
-  `list_*` — фільтри й `limit` ≤ 10, `list_events` — `kinds`; не тягти весь список у контекст.
+  `list_*` — фільтри й `limit` ≤ 10, `list_events` — `kinds`; не тягти весь список у контекст. Свої сесії на такті
+  диспетчер бере `list_sessions(children=true)` сторінками, доки сторінка не вийде вся з архіву: рядок не в архіві —
+  сесія працює (`status_bucket` — working) або скінчила й чекає дії чи архіву (менеджер 15.11 за словом власника 15.11).
 - Недоставлені листи: `list_triggers(recurring=false, include_completed=true, limit=6)`, звірити `last_run`; лист —
   `CLAUDE.md`, «Лист».
 - Нагляд PR — такт пульсу; `subscribe_pr_activity` закрито в `.claude/settings.json` — підписки дали 44 % пробуджень

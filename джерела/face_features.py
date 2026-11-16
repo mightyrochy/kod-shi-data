@@ -165,8 +165,22 @@ def класи(F, source=None):
     return dict(контраст=ознаки(F, source)["контраст"].get("рівень"),
                 глибина=palettes.осі(F, source)["коди"]["value"],
                 очі=колір_річ.сім_я(tuple(очі[k] for k in ("L", "a", "b"))) if очі.get("L") is not None else None,
-                сивина={k: float(f.get("C") or 0.0) < _ахроматична_межа() for k, f in F.items()
+                сивина={k: сиве(f) for k, f in F.items()
                         if k.startswith("волосся") and isinstance(f, dict) and f.get("C") is not None})
+
+
+# Чорне — не сиве (K-TIME-01: «grey becomes a neutral in place of black/brown»): ахроматичне волосся темніше за межу
+# чорного ISCC-NBS — чорне. Блок 267 black — нейтраль Мансела V 0–2.5 (`дані_корпусу/ISCC-NBS_вікна.txt`), 266 dark
+# gray — від V 2.5; V → Y — поліном ASTM D1535 (як `лабораторія/колір_сім_ї_грані_області`), Y → L* — CIE.
+V_ЧОРНОГО = 2.5
+_Y_ЧОРНОГО = sum(к * V_ЧОРНОГО ** (i + 1) for i, к in enumerate((1.1914, -0.22533, 0.23352, -0.020484, 0.00081939)))
+L_ЧОРНОГО = 116.0 * (_Y_ЧОРНОГО / 100.0) ** (1.0 / 3.0) - 16.0   # ≈ 25.3
+
+
+def сиве(f):
+    """Чи голос волосся сивий (K-PAL-13, K-TIME-01): ахроматичний (C* нижче `colorspace.ACHROMATIC_C`) і не чорний
+    (L* від `L_ЧОРНОГО`). Одне визначення для класу рис і прийому палітри (`palettes`)."""
+    return float(f.get("C") or 0.0) < _ахроматична_межа() and float(f.get("L") or 0.0) >= L_ЧОРНОГО
 
 
 def _ахроматична_межа():
