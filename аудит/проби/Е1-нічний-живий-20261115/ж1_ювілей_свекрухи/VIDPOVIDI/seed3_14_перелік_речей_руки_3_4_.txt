@@ -1,0 +1,30 @@
+── ПРОМПТ (2094 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined navy blue silk blend sheath dress with a subtle floral jacquard pattern that falls to mid-calf length, featuring a modest V-neck and three-quarter sleeves.\nNude patent leather pointed-toe pumps with a 75mm heel.\nA lightweight cashmere wrap cardigan in charcoal grey for the autumn chill.\n\nThis outfit works because it elevates your look to a formal level appropriate for a family anniversary dinner without appearing overly flashy or drawing unwanted attention. The navy blue and nude color palette is elegant and understated, ensuring you blend seamlessly into an upscale restaurant setting where everyone else is dressed up. The soft textures of the jacquard dress and cashmere cardigan add warmth and comfort, allowing you to relax during the celebration while maintaining a polished appearance that respects the host's status."}
+
+── ВІДПОВІДЬ (631 симв., 4.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "navy blue silk blend with subtle floral jacquard pattern, V-neck, three-quarter sleeves, mid-calf length",
+      "slot": "dress",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "nude patent leather pointed-toe with 75mm heel",
+      "slot": "shoes",
+      "color_hex": "#E3D5CA",
+      "worn": true
+    },
+    {
+      "name": "wrap cardigan",
+      "details": "lightweight cashmere charcoal grey",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    }
+  ]
+}

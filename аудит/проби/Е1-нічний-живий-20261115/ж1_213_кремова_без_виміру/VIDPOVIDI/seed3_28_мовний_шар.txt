@@ -1,0 +1,59 @@
+── ПРОМПТ (7055 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: black · about it: text н=1
+2 — kind code: ring · colour code: silvery · about it: text н=2
+3 — kind code: earrings · colour code: black · about it: text н=3
+4 — kind code: beanie · colour code: pink · about it: text н=4
+5 — kind code: dress_shoes · colour code: orange · about it: text н=5
+6 — kind code: tote · colour code: beige · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; orange — помаранчевий; pink — рожевий; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This black lace motif bodycon dress defines your silhouette with a close fit and delicate detailing that elevates the look for an evening date.",
+"2": "The silvery ring adds a refined touch without overpowering your overall ensemble, catching light subtly at your fingertips.",
+"3": "Black earrings offer understated elegance that matches the dress while keeping the focus on your face and neckline.",
+"4": "The pink knit beanie brings cozy texture and a playful color contrast to your black dress, making it perfect for an autumn evening outing.",
+"5": "Orange dress shoes introduce a bold, cheerful hue that balances the seriousness of the lace dress and adds personality to your step.",
+"6": "The beige tote bag grounds the outfit in soft, neutral tones that echo your palette and offer practicality without cluttering the look.",
+"7": "You are wearing a black lace motif bodycon dress that hugs your figure, paired with a pink knit beanie for warmth and a pop of color against the dark fabric. A silvery ring and black earrings add subtle sparkle to your look, while orange dress shoes bring a playful, bright contrast to the evening. You carry a beige tote bag that complements the neutral tones in your palette.",
+"8": "Tuck or belt if you want to define a waist on this bodycon silhouette",
+"9": "Let the pink beanie soften the formality of the dress while keeping it stylish for an evening out",
+"10": "Шапка Color — Pink/Red – ручне вʼязання — Adding your beige scarf as a third piece to break the all-neutral scheme, add texture warmth for autumn, and reach the minimum item count.",
+"11": "Шапка Color — Pink/Red – ручне вʼязання — Adding a beige/brown item under a cool navy suit is unusual but works here because the palette allows neutrals and the 'tonal' idea relies on texture contrast, not strict color matching.",
+"12": "Шапка Color — Pink/Red – ручне вʼязання — Keeping your beige scarf to fulfill the wish for cream/neutral tones and add necessary texture interest against the lace."
+}
+
+── ВІДПОВІДЬ (2200 симв., 25.1 с, HTTP 200) ──
+{
+"1": "Ця чорна сукня-облягання з мереживним візерунком підкреслює твою фігуру, а ніжні деталі роблять образ вишуканим для вечірнього побачення.",
+"2": "Срібна каблучка додає елегантності без перевантаження загального ансамблю, ледь помітно відбиваючи світло на кінчиках твоїх пальців.",
+"3": "Чорні сережки пропонують стриману витонченість, яка гармоніює з сукнею та привертає увагу до обличчя й шиї.",
+"4": "Рожева вʼязана шапка додає затишної текстури та грайливого колірного контрасту до твоєї чорної сукні, роблячи її ідеальною для осіннього вечірнього виходу.",
+"5": "Помаранчеві туфлі-човники вносять сміливий, радісний відтінок, який збалансовує серйозність мереживної сукні та додає характеру твоїй ході.",
+"6": "Бежева сумка тоут завершує образ мʼякими нейтральними тонами, які перегукуються з твоєю палітрою кольорів і пропонують практичність без зайвого клопоту.",
+"7": "Ти одягнена в чорну сукню-облягання з мереживним візерунком, яка підкреслює твою фігуру. До неї доповненням служить рожева вʼязана шапка для тепла та яскравого акценту на темній тканині. Срібна каблучка й чорні сережки додають ледь помітного блиску твоєму образу, а помаранчеві туфлі-човники привносять грайливий і світлий контраст у вечірній образ. Ти тримаєш бежеву сумку тоут, яка доповнює нейтральні відтінки в твоїй палітрі.",
+"8": "Заправ або підпереж її, якщо хочеш підкреслити талію на цьому силуеті-обляганні",
+"9": "Нехай рожева шапка помʼякшить формальність сукні, зберігаючи при цьому стильний вигляд для вечірнього виходу.",
+"10": "Шапка Color — Pink/Red – ручне вʼязання — Додаю твій бежевий шарф як третій елемент, щоб розбавити монохромну нейтральну гаму, додати текстури та тепла на осінь і досягти мінімальної кількості предметів.",
+"11": "Шапка Color — Pink/Red – ручне вʼязання — Додавання бежевого/коричневого елемента під холодний темно-синій костюм незвичне, але тут працює, тому що палітра дозволяє нейтральні кольори, а ідея «тональності» покладається на контраст текстур, а не суворе колірне узгодження.",
+"12": "Шапка Color — Pink/Red – ручне вʼязання — Залишаю твій бежевий шарф, щоб виконати бажання мати кремові/нейтральні тони та додати необхідний інтерес текстури на фоні мережива."
+}

@@ -1,0 +1,63 @@
+── ПРОМПТ (7735 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: coat · colour code: silvery · about it: text н=1
+2 — kind code: shirt · colour code: silvery · about it: text н=2
+3 — kind code: earrings · colour code: red · about it: text н=3
+4 — kind code: skirt · colour code: beige · about it: text н=4
+5 — kind code: boots · colour code: mocha · about it: text н=5
+6 — kind code: saddle_bag · colour code: beige · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; mocha — мокко; red — червоний; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "Your silvery hooded coat offers a relaxed silhouette that drapes softly over your frame. The neutral tone matches the shirt inside while providing warmth for the autumn evening.",
+"2": "The silvery check shirt brings texture to your upper body, its pattern peeking through the coat or showing on its own for a date-night touch.",
+"3": "Red earrings add a striking contrast that draws attention to your face without overwhelming the rest of the outfit.",
+"4": "The beige a-line skirt flows cleanly over your straight figure, creating a vertical line that lengthens your legs and balances the relaxed top layers.",
+"5": "Mocha boots with a heel give you height and stability, grounding the softness of the skirt and coat for walking through the restaurant.",
+"6": "A beige saddle bag complements the skirt's color while its structure adds a touch of polish to your ensemble.",
+"7": "For your dinner date in the restaurant at 7:30 PM, I have chosen a silvery coat with a relaxed fit and hood to set an autumn evening tone, paired with a matching silvery check shirt and a beige a-line skirt that flatters your straight figure. The mocha boots and beige saddle bag ground the look, while red earrings add a festive pop perfect for a date night. This outfit works because the analogous mix of silvers and beiges creates a sophisticated palette that fits your smart formality, and the relaxed cuts allow you to move comfortably through the evening without losing style.",
+"8": "Wear the hood down to keep your face visible under restaurant lights",
+"9": "Tuck the shirt into the skirt or leave it untucked depending on how much leg you want to show",
+"10": "Wear the boots with a confident stride to balance the relaxed coat line",
+"11": "Довге жіноче вовняне пальто з кашеміром і норковим хутром, силует на запах, класичний стиль Bella Bicchi — Replaced one of the shirts with a warm beige coat to add an outer layer, fixing the 'kind_twice' error and adding depth for the evening occasion.",
+"12": "Сережки-гвоздики червоні квадрати в позолоті — Added red earrings to fix the 'no_third_piece' (or rather, to provide the accent since the scheme was 'neutrals_plus_accent' and we only had neutrals). This fulfills the color promise.",
+"13": "Чоботи замшеві мокко MACH на шкірі — The boots are styled as an intentional 'below band' choice for comfort and evening walkability, grounding the formal skirt without compromising the outfit's overall smart aesthetic.",
+"14": "Сумка Cromia PERLA ROSSO сідло, Спідниця-плісе максі жіноча демісезонна — The neatness of the shirt and skirt elevates them to meet the occasion's 'smart' requirement, ensuring the look is polished rather than casual despite their simple construction."
+}
+
+── ВІДПОВІДЬ (2818 симв., 25.7 с, HTTP 200) ──
+{
+"1": "Твій срібний стьобаний пальта з капюшоном пропонує вільний силует, який м’яко драпірується по твоїй фігурі. Нейтральний тон гармонійно поєднується зі сорочкою всередині та дарує тепло для осіннього вечора.",
+"2": "Срібляста картата сорочка додає текстури верхній частині тіла, її візерунок проглядає крізь пальта або демонструється самостійно на побаченні ввечері.",
+"3": "Червоні сережки створюють вражаючий контраст, який привертає увагу до твого обличчя без перевантаження решти образу.",
+"4": "Бежева спідниця-сонце охайно спадає по твоїй стрункій фігурі, утворюючи вертикальну лінію, яка видовжує ноги та збалансовує розслаблені верхні шари одягу.",
+"5": "Мокко чобітки на підборах додають тобі зросту і стійкості, заземлюючи м’якість спідниці й пальта для прогулянки рестораном.",
+"6": "Бежева сумка-сіделка доповнює колір спідниці, а її структура надає образу нотку вишуканості.",
+"7": "На твою вечерю в ресторані о 19:30 я підібрала срібне пальта з розслабленим силуетом і капюшоном, щоб створити атмосферу осіннього вечора, у поєднанні зі сріблястою картатою сорочкою та бежевою спідницею-сонце, яка вигідно підкреслює твою струнку фігуру. Мокко чобітки й бежева сумка-сіделка заземлюють образ, а червоні сережки додають святкового акценту, ідеального для побачення ввечері. Цей наряд працює тому, що аналогічна комбінація сріблястих і бежевих відтінків створює вишукану палітру, яка відповідає твоєму розумному формальному стилю, а розслаблені фасони дозволяють тобі вільно рухатися протягом вечора без втрати елегантності.",
+"8": "Опусти капюшон, щоб твій обличчя було видно під ресторанним світлом",
+"9": "Заправ сорочку в спідницю або залиш її назовні залежно від того, скільки ніг ти хочеш показати",
+"10": "Впевнено ступай у чоботях, щоб збалансувати лінію розслабленого пальта",
+"11": "Довге жіноче вовняне пальто з кашеміром і норковим хутром, силует на запах, класичний стиль Bella Bicchi — Замінила одну зі сорочок теплим бежевим пальтам, щоб додати верхній шар, виправивши помилку 'kind_twice' та додавши глибини для вечірнього випадку.",
+"12": "Сережки-гвоздики червоні квадрати в позолоті — Додала червоні сережки, щоб виправити відсутність третього елемента (або скоріше, надати акцент, оскільки схема була 'нейтральні кольори плюс акцент', і у нас були лише нейтральні). Це виконує обіцянку щодо кольору.",
+"13": "Чоботи замшеві мокко MACH на шкірі — Чобітки стилізовані як свідомий вибір «нижче щиколотки» для комфорту та зручності під час вечірньої прогулянки, заземлюючи формальну спідницю без шкоди загальній розумній естетиці образу.",
+"14": "Сумка Cromia PERLA ROSSO сідло, Спідниця-плісе максі жіноча демісезонна — Охайність сорочки та спідниці підносить їх до рівня вимог випадку «smart», забезпечуючи, що образ виглядає охайно, а не випадково, попри їхню просту конструкцію."
+}

@@ -1,0 +1,38 @@
+── ПРОМПТ (5555 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Sheath dress, fitted silhouette with a flared skirt reaching mid-calf, cream color, delicate lace fabric. \nPointed-toe pumps, sleek pump shape, black or deep burgundy shade, smooth leather material. \nElegant gold drop earrings and a thin silver chain necklace to complement the lace without overwhelming it. \n\nThis outfit works perfectly for an evening date in a casual restaurant setting because the specified cream lace midi dress directly fulfills her wish while aligning with the smart formality level. The fitted yet flared cut provides a flattering silhouette suitable for autumn evenings under artificial light, creating a romantic and polished look. Adding subtle gold jewelry enhances the delicate texture of the lace, ensuring she feels confident and stylish without breaking any of her stated preferences.",
+"2": "Sheath dress",
+"3": "Pointed-toe pumps",
+"4": "Elegant gold drop earrings and a thin silver chain necklace"
+}
+
+── ВІДПОВІДЬ (1018 симв., 13.3 с, HTTP 200) ──
+{
+"1": "Сукня-футляр, приталений силует зі спідницею-кльош довжиною до середини литки, кремового кольору, з ніжної мереживної тканини. \nТуфлі-човники на шпильці, елегантна форма туфель-човників, чорного або темно-бордового відтінку, гладка шкіра. \nЕлегантні золоті сережки-підвіски та тонка срібна ланцюжкова підвіска для доповнення мережива без перевантаження образу. \n\nЦей образ ідеально підходить для вечірнього побачення в неформальному ресторані, адже зазначена кремова мереживна сукня-міді повністю відповідає її бажанню та водночас відповідає рівню розумної урочистості. Приталений, але розкльошений крій створює вигідний силует для осінніх вечорів під штучним світлом, формуючи романтичний і доглянутий образ. Додавання стриманих золотих прикрас підкреслює ніжну текстуру мережива, забезпечуючи їй впевненість та стильний вигляд без порушення жодних її заявлених переваг.",
+"2": "Сукня-футляр",
+"3": "Туфлі-човники на шпильці",
+"4": "Елегантні золоті сережки-підвіски та тонка срібна ланцюжкова підвіска"
+}

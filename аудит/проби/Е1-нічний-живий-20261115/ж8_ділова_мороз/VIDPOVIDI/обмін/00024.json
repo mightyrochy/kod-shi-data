@@ -1,0 +1,105 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "Photo 1 — the shop's photo of #150·42 (bottom, trousers); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://cdn.shopify.com/s/files/1/0628/0259/1990/files/CB000003198_beige_melange_1.jpg?v=1785418784"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 2 — the shop's photo of #98·37 (top, longsleeve); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://twice.com.ua/30792-large_default/longsliv-bazovij-podovzhenij-ls030-komplekt-z-3-kh-shtuk.webp"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 3 — the shop's photo of #348·05 (outerwear, jacket); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://brenda.ua/image/cachewebp/catalog/16.08.26/217-1200x1800.webp"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 4 — the shop's photo of #368·18 (belt, belt); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://likeangel.com.ua/wp-content/uploads/2026/03/bez-nazvy-81.webp"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 5 — the shop's photo of #598·31 (earrings, earrings); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://skripka.com.ua/wp-content/uploads/2025/03/skripka3327.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 6 — the shop's photo of #42·39 (shoes, ugg_boots); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://vittorossi.ua/Foto1Cv8/62855011-299f-11f0-824f-005056003f29_1.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 7 — the shop's photo of #8·25 (bag, bag_generic); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://cdn.shopify.com/s/files/1/0859/9558/5826/files/DSC_7044.jpg?v=1783600766"
+      }
+     },
+     {
+      "type": "text",
+      "text": "{\"version\": \"1\", \"task\": {\"role\": \"You are the stylist of the Lyusterko styling app. You describe to her the outfit you chose for her.\", \"rules\": [\"Describe only the items of «outfit»: no suggestions to buy or add more, no items it does not contain — no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or she may own it.\", \"Do not change the outfit yourself. A clearly different item or colour goes into «wrong_photos» or «swap»; do not invent the expected item behind that mismatch.\", \"Every factual property in «about_items», «text», «named» and «how_to_wear» needs support in that item's own codes or in a clearly visible feature on its own delivered photo. A photo supports visible shape, colour and texture, not fibre composition, manufacturing method, feel, comfort or weather protection. Do not infer an absent property from the item category, her body, weather or a way to wear it; omit it instead. A code and a photo that disagree are not evidence for combining their properties.\", \"Say each thing about an item once. Keep the same properties throughout the answer and one coherent wearing plan; an alternative is a choice, not another simultaneous instruction. Explain the outfit using supported properties, without filling a sentence or attribute quota.\", \"Talk to her about the items, never about what you were given: no word about photos, frames, what else a frame shows, a photo you could not see, or the codes and data you went by, and no comparison of a photo with them — the card already shows her the photos and says under an item when it has none.\", \"Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).\", \"Every item of «outfit» is your choice: stand behind it. Do not end a doubt with «the choice is yours», «it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a decision to her only about what she asked for herself: her words in «case», an item marked «hers».\", \"Only when a photo shows that an item is not what this outfit needs — a clearly different colour, another kind of item, or unfit for her occasion — and that matters for this outfit, name that one item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in doubt, leave «swap» out.\", \"Write the answer object itself: it begins with {\\\"version\\\" and ends with the brace that closes it. Do not wrap it in another object; after that brace the answer is over — write nothing more.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"Text for her. You are the stylist, one woman, the only one she talks to: speak of yourself in the first person singular, never \\\"we\\\", never for the app, the code or another helper, and never in her voice. Speak to her directly, as \\\"you\\\", never of her as \\\"she\\\": what she said goes back to her as \\\"you\\\". Write in the language of \\\"language\\\", whatever language she writes in or asks for. Plain human words, without item numbers, ids, hex codes or markdown.\", \"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \\\"on the scale\\\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer_schema\": {\"version\": \"1\", \"text\": \"<prose for her after the items: (1) optional, only when it adds something — how the shoes, the outer layer and the accessories go with the rest, in one or two sentences; (2) why it works, briefly and only where supported, taking from «day», «palette», «makeup» and «missing» only what matters most for this outfit and her occasion>\", \"how_to_wear\": [\"<one piece of advice per line, at most three, each changing how the outfit looks or lives through her day; advice that puts an item into, under or over another names that other item too, and both are items of «outfit»>\"], \"wrong_photos\": [\"<«n» of an item whose photo shows another item, a clearly different color, a placeholder or a logo; the same item on a person, from another angle, close up or with other clothes in the frame is no reason; when in doubt, leave it out>\"], \"swap\": {\"item\": \"<«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty reason — the usual case>\", \"why\": \"<why the photo warrants replacing this item: a clearly different colour, another kind of item or a mismatch with her occasion, one of: colour, kind, occasion>\", \"to\": \"<only with «swap_spares» in the input: «n» of the spare you choose; leave it out to keep the item>\"}, \"named\": [{\"n\": \"<«n» of the item of «outfit» that «text» or «how_to_wear» names; a thing that is not an item of «outfit» has no «n» — and should not be named at all>\", \"what\": \"<every garment, shoe, bag, jewelry or accessory that «text» or «how_to_wear» names — each once, in a few words>\"}], \"about_items\": [{\"n\": \"<«n» of the item of «outfit»: one entry for every item of «outfit», in its order>\", \"text\": \"<brief prose about this item alone and its supported properties; little evidence means a short description, with no attribute list or minimum length. It belongs to her outfit; never call it excluded. No other clothing or accessory, whether from its photo or «outfit»: combinations belong to «text». Her figure only through line and cut, never a shape code or «…-shape»>\"}]}, \"input\": [\"\\\"outfit\\\" — chosen items, each numbered «n», with known properties as codes: «kind», «type», cut, fabric, material, length, sleeve, pattern, details and colour («color» code, measured «hex»). Codes guide photo reading or describe an item without photos; absent properties are unknown\", \"\\\"photos\\\" — this item's photo numbers; preceding blocks are labelled «Photo N — …:» with the item's «n». «not delivered» or «not available» means no image; describe only this item's «kind» in its own numbered photos: a belt shown on a blouse is the belt, not the blouse. If none of its photos arrived, use its codes\", \"\\\"kind\\\" — what the item is, as a code (belt, top, dress, shoes, bag…); «type» — its narrower type when the code knows it; «set» — a set sold as one item, its top and its bottom both in the outfit; «about_items» describes the item of this «kind» and nothing else from its photo\", \"\\\"case\\\" — her occasion: its fields as codes, her own words as quotes; «formality» is an internal 1–10 band, for you only\", \"\\\"day\\\" — day with source; when the known item properties support it, in the last part of «text» say how this outfit lives through her day; when something you chose argues with the day (weather, hours on her feet, the place), say in one plain sentence why you still chose it and what that means for her day; describe the chosen items without proposing a different composition; never hand that decision back to her\", \"\\\"palette\\\" — her palette; in the last part of «text», in prose: discuss metal only with jewelry or metal details in this outfit; call a colour «farthest» from her only if an outfit item carries it; an optional combination uses only outfit items, never additions\", \"\\\"body\\\" — measured height, shape code, zones and statements: suitable cuts, the anchor for volume, and where most conditions meet on her body; where known cut and length support it, in the last part of «text» explain the outfit's line and focus with the items responsible. Speak of its effect, never her body's lacks or what to hide. If an item opposes these statements, gently explain your choice or a remedy using only outfit items. «cuts» means item cuts: «belted» is its own belt, not an added belt. Describe her figure through line and cut, never a shape code, letter, «…-shape», body type or number\", \"\\\"shape\\\" — figure route, not a verdict: A — hips wider than shoulders; V — shoulders wider than hips; X — a marked waist; H — straight, no marked waist; HX — waist undetermined by FFIT (waist_defined=null; waist_basis explains); O — FFIT Oval/Diamond, waist wider than hips: a vertical to the face and legs, quiet middle\", \"\\\"your_declared\\\" — items you kept deliberately although the code found something against them: «item» — its «n», «statements» — what the code found, as statement codes; this was your choice, not a flaw of the item: never call it a mismatch and never name it in «swap»; in «how_to_wear» say what she does about what the code found\", \"\\\"statements\\\" — what the code found: each entry is {code, values, …}; codes are defined in \\\"statement_codes\\\"\"], \"statement_codes\": {\"pair_side_unknown\": \"her top and hip girths are measured once each, so the error of their difference is unknown and the code does not say which half is wider; the girths are facts (values: top_cm, hips_cm, difference_pct)\", \"volume_anchor\": \"a voluminous outfit keeps one anchor where the body shows: the waist (belt, wrap, tuck) or the ankle (a tapered or cropped bottom); volume without an anchor reads as \\\"the body shows nowhere\\\"\", \"body_knot\": \"most conditions meet at these zones of her body; conditions shared by both zones need ONE item for both, since a fix on one zone moves the other; the rest on the first zone is fixed separately (values: zones — per zone: conditions, tension 0 to 1; shared, own — condition codes, defined here too)\", \"one_line\": \"the contour leaves the body in ONE place below the shoulders: a voluminous top together with a voluminous bottom gives two lines, and neither reads\", \"scheme_promised_accent_all_neutral\": \"the scheme promises neutrals and an accent, and not one measured item of the outfit carries colour: that is an unfulfilled scheme, not a calm outfit (values: scheme — scheme code, measured — how many items were measured)\"}}, \"outfit\": {\"id\": \"o4\", \"items\": [{\"n\": \"#150·42\", \"kind\": \"bottom\", \"type\": \"trousers\", \"color\": \"beige\", \"hex\": \"#b1a2a2\", \"photos\": [1], \"cut\": \"skinny|tapered\"}, {\"n\": \"#98·37\", \"kind\": \"top\", \"type\": \"longsleeve\", \"color\": \"black\", \"hex\": \"#221917\", \"photos\": [2], \"cut\": \"bodycon\"}, {\"n\": \"#348·05\", \"kind\": \"outerwear\", \"type\": \"jacket\", \"color\": \"white\", \"hex\": \"#e4dfd7\", \"photos\": [3], \"cut\": \"relaxed\", \"details\": [\"oversize\"]}, {\"n\": \"#368·18\", \"kind\": \"belt\", \"type\": \"belt\", \"color\": \"beige\", \"hex\": \"#b1815f\", \"photos\": [4]}, {\"n\": \"#598·31\", \"kind\": \"earrings\", \"type\": \"earrings\", \"color\": \"black\", \"hex\": \"#1a1a1a\", \"photos\": [5]}, {\"n\": \"#42·39\", \"kind\": \"shoes\", \"type\": \"ugg_boots\", \"color\": \"brown\", \"hex\": \"#4f352b\", \"photos\": [6], \"heel\": true}, {\"n\": \"#8·25\", \"kind\": \"bag\", \"type\": \"bag_generic\", \"color\": \"brown\", \"hex\": \"#5c3e2a\", \"photos\": [7]}]}, \"case\": {\"field_quotes\": {\"occasion\": \"ділова зустріч\", \"movement\": \"іду пішки 20 хвилин\", \"weather_band\": \"−10, сніг\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"ділова зустріч\"}, \"precipitation\": {\"kind\": \"her\", \"quote\": \"сніг\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"іду пішки 20 хвилин\"}, \"weather_band\": {\"kind\": \"reading\", \"quote\": \"−10, сніг\"}}, \"event\": \"ділова зустріч\", \"occasion\": \"work\"}, \"day\": {\"movement\": \"walk\", \"weather_band\": \"frost\", \"season\": \"autumn\", \"season_source\": {\"kind\": \"default\"}, \"precipitation\": \"snow\", \"road_salt\": true, \"formality\": {\"from\": \"home\", \"to\": \"home\"}, \"occasion_requirements\": {\"profile\": \"unknown\", \"light\": \"unknown\", \"mourning\": false, \"lightness_range\": null, \"lightness_max\": null, \"chroma_max\": null, \"loudness_max\": null, \"loudness_source\": \"unknown\", \"near_white_veto\": false, \"shine_near_face_from\": null, \"festive_trim_shine_from\": null, \"decorated_headwear_or_nonmetal_jewelry\": [], \"loud_patterns_large_or_near_face\": []}}, \"palette\": {\"metal\": \"gold_and_silver\", \"combinations\": [{\"technique\": \"analogous\", \"colors\": [\"pink #8a6c76\", \"beige #bc9c97\", \"white #d4d4d4\"]}, {\"technique\": \"tone_on_tone\", \"colors\": [\"burgundy #682d29\", \"pink #a8655e\", \"beige #d2aba7\"]}, {\"technique\": \"tone_on_tone\", \"colors\": [\"chocolate #4b3c32\", \"brown #9c6d4b\", \"beige #cfae98\"]}]}, \"body\": {\"height_cm\": 154, \"shape\": \"HX\", \"zones\": {\"top_vs_bottom\": -0.022, \"waist_defined\": null, \"waist_basis\": \"body_error_unknown\"}, \"statements\": [{\"code\": \"pair_side_unknown\", \"values\": {\"top_cm\": 90.0, \"hips_cm\": 88.0, \"difference_pct\": 2}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_c79ff3e9860ac225fddac3e2\"}, {\"code\": \"volume_anchor\", \"values\": {}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_0e831db17272cc10db154708\"}, {\"code\": \"body_knot\", \"values\": {\"zones\": [{\"zone\": \"waist\", \"conditions\": 2, \"tension\": 1.0}, {\"zone\": \"ankle\", \"conditions\": 2, \"tension\": 1.0}], \"shared\": [\"volume_anchor\", \"one_line\"], \"own\": []}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_852890e7338362fdb0fba965\"}]}, \"your_declared\": [{\"item\": \"#368·18\", \"statements\": [{\"code\": \"scheme_promised_accent_all_neutral\", \"values\": {\"scheme\": \"neutrals_plus_accent\", \"measured\": 7}, \"recipient\": \"journal\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_5b20af532ef1e45bb66e1520\"}]}, {\"item\": \"#598·31\", \"statements\": [{\"code\": \"scheme_promised_accent_all_neutral\", \"values\": {\"scheme\": \"neutrals_plus_accent\", \"measured\": 7}, \"recipient\": \"journal\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_5b20af532ef1e45bb66e1520\"}]}, {\"item\": \"#42·39\", \"statements\": [{\"code\": \"scheme_promised_accent_all_neutral\", \"values\": {\"scheme\": \"neutrals_plus_accent\", \"measured\": 7}, \"recipient\": \"journal\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_5b20af532ef1e45bb66e1520\"}]}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b",
+   "x-images-dropped": "5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"version\\\": \\\"1\\\",\\n  \\\"text\\\": \\\"Your beige tapered trousers anchor the look with a refined, skin-tight line that keeps you streamlined as you walk. Layered over your black bodycon longsleeve top, they create a sleek contrast against the soft white of your relaxed oversized jacket, which offers warmth without bulk. A simple beige belt cinches your waist, defining your silhouette and tying the neutral palette together. The black earrings add just a touch of edge, while the brown UGG boots bring cozy texture that feels right for the frosty weather outside.\\\",\\n  \\\"how_to_wear\\\": [\\n    \\\"Keep the jacket open to let your clean white top peek through; it breaks up the darks and adds airiness as you move.\\\",\\n    \\\"Tuck in or leave out your top depending on how you want your waist defined—both options work with your cut.\\\"\\n  ],\\n  \\\"wrong_photos\\\": [],\\n  \\\"swap\\\": {},\\n  \\\"named\\\": [\\n    {\\n      \\\"n\\\": \\\"#150·42\\\",\\n      \\\"what\\\": \\\"your beige tapered trousers\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#98·37\\\",\\n      \\\"what\\\": \\\"your black bodycon longsleeve top\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#348·05\\\",\\n      \\\"what\\\": \\\"your relaxed oversized jacket\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#368·18\\\",\\n      \\\"what\\\": \\\"your beige belt\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#598·31\\\",\\n      \\\"what\\\": \\\"your black earrings\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#42·39\\\",\\n      \\\"what\\\": \\\"your brown UGG boots\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#8·25\\\",\\n      \\\"what\\\": \\\"your bag\\\"\\n    }\\n  ],\\n  \\\"about_items\\\": [\\n    {\\n      \\\"n\\\": \\\"#150·42\\\",\\n      \\\"text\\\": \\\"Beige tapered trousers with a high waist and clean front pleats that streamline your silhouette for easy movement.\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#98·37\\\",\\n      \\\"text\\\": \\\"Black bodycon longsleeve top that hugs the figure and offers a sleek, polished base under layers.\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#348·05\\\",\\n      \\\"text\\\": \\\"Relaxed white jacket with an oversized silhouette that adds warmth without overwhelming your frame.\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#368·18\\\",\\n      \\\"text\\\": \\\"Beige belt that defines your waist and brings structure to the outfit, blending seamlessly with your trousers.\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#598·31\\\",\\n      \\\"text\\\": \\\"Black earrings that provide a subtle contrast to your neutral tones and add just enough detail for professional occasions.\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#42·39\\\",\\n      \\\"text\\\": \\\"Brown UGG boots with a low heel that offer comfort for walking in cold, snowy conditions while keeping you stylish.\\\"\\n    },\\n    {\\n      \\\"n\\\": \\\"#8·25\\\",\\n      \\\"text\\\": \\\"A brown wicker bag with a white lace overlay that brings warmth and texture to your ensemble, perfect for carrying essentials during outdoor meetings.\\\"\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":5700,\"output_tokens\":749},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined wool-blend knit in a soft charcoal heather (#3e4a56), structured at the shoulders with a relaxed drape through the torso, falling to mid-thigh length.\\nDark denim trousers in an easy straight fit, cut from heavy cotton twill for all-day comfort, washed to a deep indigo (#2b3c4d).\\nLeather loafers in burnished cognac brown (#8b5a3c), featuring a low stacked heel and a slip-on design for effortless movement.\\nA delicate gold bar necklace resting against the neckline and a structured tote bag in matching tan leather to complete the ensemble.\\n\\nThis outfit strikes the perfect balance between professional polish and autumnal comfort, adhering strictly to her request for a neat office-appropriate look. The neutral knit and dark denim create a streamlined silhouette that flatters her specific proportions without feeling restrictive, while the cognac leather accents introduce warmth against the cooling fall weather. By avoiding outer layers as the temperature allows for a light jacket or simply carrying the bag over the shoulders, this selection honors her preference for reading materials and maintaining a crisp, uncluttered presence in her workspace.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Wool-blend knit top\\\",\\n      \\\"details\\\": \\\"Structured at the shoulders with a relaxed drape through the torso, falling to mid-thigh length\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#3e4a56\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Dark denim trousers\\\",\\n      \\\"details\\\": \\\"Easy straight fit cut from heavy cotton twill, washed to a deep indigo\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#2b3c4d\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather loafers\\\",\\n      \\\"details\\\": \\\"Low stacked heel with a slip-on design for effortless movement\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#8b5a3c\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Gold bar necklace\\\",\\n      \\\"details\\\": \\\"Delicate bar resting against the neckline\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Structured tote bag\\\",\\n      \\\"details\\\": \\\"Matching tan leather\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":591,\"output_tokens\":333},\"stop_reason\":\"end_turn\"}"
+ }
+}

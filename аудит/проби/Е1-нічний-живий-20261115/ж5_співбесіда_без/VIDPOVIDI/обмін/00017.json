@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Linen-blend blazer, tailored fit, cropped length at the hip, navy blue with hex code #000080, structured woven fabric.\\nSilk-blend blouse, relaxed collar, knee-length hem, soft heather grey with hex code #BDBDBD, smooth fluid fabric.\\nPencil skirt, straight cut, mid-thigh length above the knee, charcoal slate with hex code #36454F, crisp stretch cotton.\\nLeather loafers, pointed toe, ankle height, matte brown with hex code #8B4513, genuine calf leather.\\nGold-plated geometric pendant necklace, minimal thin chain design, polished brass finish, lightweight metal alloy.\\nStructured beige clutch, rigid box shape, top handle strap, textured pebbled leather.\\n\\nThis outfit works by balancing professional polish with approachable warmth for a banking analytics interview. The navy blazer and grey skirt create a sharp, trustworthy silhouette that aligns with the \\\"everyday\\\" business dress code while avoiding any black items per her specific request. The silk blouse adds a touch of soft sophistication suitable for morning daylight in an office setting, ensuring she looks both competent and personable. Completing the look with earth-tone loafers and gold accessories grounds the outfit in autumnal elegance without appearing overly rigid or ceremonial.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"linen-blend tailored fit cropped length structured woven fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#000080\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"silk-blend relaxed collar knee-length hem smooth fluid fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#BDBDBD\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"skirt\\\",\\n      \\\"details\\\": \\\"pencil skirt straight cut mid-thigh length crisp stretch cotton\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"loafers\\\",\\n      \\\"details\\\": \\\"leather pointed toe ankle height matte brown genuine calf leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#8B4513\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"necklace\\\",\\n      \\\"details\\\": \\\"gold-plated geometric pendant necklace minimal thin chain design polished brass finish lightweight metal alloy\\\",\\n      \\\"slot\\\": \\\"jewelry\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"clutch\\\",\\n      \\\"details\\\": \\\"structured beige rigid box shape top handle strap textured pebbled leather\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#F5F5DC\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":624,\"output_tokens\":399},\"stop_reason\":\"end_turn\"}"
+ }
+}

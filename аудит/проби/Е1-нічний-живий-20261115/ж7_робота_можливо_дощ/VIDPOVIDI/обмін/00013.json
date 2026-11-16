@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined wool-blend trench coat, straight cut reaching mid-calf, forest green (#2F4F4F), heavy water-resistant cotton with a subtle herringbone weave.\\nUnderneath, a structured silk-blend blouse, slightly relaxed fit ending at the hip, charcoal gray (#36454F), smooth fluid fabric that resists light moisture.\\nHigh-waisted tailored trousers, straight leg length hitting the ankle, deep navy blue (#000080), dense twill with a matte finish to repel water stains.\\nLeather ankle boots, block heel for stability on wet pavement, chocolate brown (#3b241f), full-grain leather with a textured grip sole.\\nA compact transparent nylon umbrella tucked into the coat pocket, and a structured crossbody bag in matching charcoal fabric to keep essentials dry.\\n\\nThis outfit works because it balances professional polish with essential protection against the forecasted rain without sacrificing comfort for her walk to work. The dark, matte fabrics chosen here naturally hide water spots and dirt while maintaining a sleek silhouette suitable for a neat office environment. The ankle boots provide secure footing on potentially slippery sidewalks, ensuring she arrives dry and ready despite the unpredictable autumn weather.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"trench coat\\\",\\n      \\\"details\\\": \\\"refined wool-blend with subtle herringbone weave, straight cut reaching mid-calf\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#2F4F4F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"structured silk-blend with slightly relaxed fit ending at the hip, smooth fluid fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-waisted tailored with straight leg length hitting the ankle, dense twill with matte finish\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#000080\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"boots\\\",\\n      \\\"details\\\": \\\"leather ankle boots with block heel for stability, full-grain leather with textured grip sole\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#3b241f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"umbrella\\\",\\n      \\\"details\\\": \\\"compact transparent nylon tucked into the coat pocket\\\",\\n      \\\"slot\\\": \\\"accessory\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": false\\n    },\\n    {\\n      \\\"name\\\": \\\"crossbody bag\\\",\\n      \\\"details\\\": \\\"structured in matching charcoal fabric to keep essentials dry\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":602,\"output_tokens\":417},\"stop_reason\":\"end_turn\"}"
+ }
+}

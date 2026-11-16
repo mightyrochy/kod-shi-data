@@ -1,0 +1,55 @@
+── ПРОМПТ (7413 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: suit · colour code: navy · about it: text н=1
+2 — kind code: loafers · colour code: turquoise · about it: text н=2
+3 — kind code: collar_necklace · colour code: golden · about it: text н=3
+4 — kind code: bag_generic · colour code: mustard · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: golden — золотий; mustard — гірчичний; navy — темно-синій; turquoise — бірюзовий.
+
+ТЕКСТИ:
+{
+"1": "A navy fitted set that offers a sleek, tailored foundation for your celebration. Its dark color provides an elegant canvas, allowing the vibrant accents of your shoes and jewelry to stand out while maintaining a sophisticated look appropriate for an evening gathering.",
+"2": "Turquoise loafers that inject a lively, cool-toned contrast against the navy fabric. Their classic yet slightly casual shape keeps the outfit feeling approachable and fun, perfect for dancing or mingling at a birthday party.",
+"3": "A delicate golden pearl necklace that brings soft luxury to your neckline. The small pearls catch the light subtly, adding refinement without overwhelming the look, while the gold metal complements the warm undertones in your bag and hair.",
+"4": "A mustard-colored bag that adds a rich, earthy warmth to the palette. Its tone bridges the cool navy and turquoise with an organic feel, creating a balanced and thoughtfully composed outfit suited for autumn evening festivities.",
+"5": "For your Saturday evening birthday celebration, I’ve chosen a navy fitted set to serve as your anchor, grounding the outfit in a classic silhouette that remains elegant without being too formal. Its deep tone provides a neutral backdrop for your accessories, letting their details shine. The turquoise loafers bring a playful pop of color perfect for an autumnal party atmosphere, while the golden pearl necklace adds a touch of sophisticated sparkle to your neckline. Completing the look is a mustard bag, which offers a warm, earthy contrast that ties the entire ensemble together harmoniously.",
+"6": "Layer the navy fitted set confidently as your base, letting its structured cut define your shape for the evening.",
+"7": "Keep the turquoise loafers visible with cropped or slim bottoms to maintain balance and ensure they don't get lost under fabric volume.",
+"8": "Кольє Pearls - Gold Plated — Adds the missing jewelry (collar necklace) to balance the 'near_face' weight and add a touch of luxury to the structured suit; replaces the beanie with a necklace.",
+"9": "Міні-сумочка Розалія mustard small — Adds the missing bag (bag_generic) to complete the outfit structure and provide a place for essentials at a party.",
+"10": "Кольє Pearls - Gold Plated — Golden collar necklace adds brightness near the face, balancing the dark tones of the outfit.",
+"11": "Лофери жіночі бірюзові — Turquoise loafers add a vibrant splash of color, balancing the dark navy suit and adding a playful touch."
+}
+
+── ВІДПОВІДЬ (2519 симв., 25.2 с, HTTP 200) ──
+{
+"1": "Темно-синій приталений комплект, який дає елегантну та витончену основу для твого святкування. Його темний колір створює чудовий фон, дозволяючи яскравим акцентам взуття та ювелірних виробів вирізнятися, зберігаючи водночас вишуканий образ, який підходить для вечірнього зібрання.",
+"2": "Бірюзові лофери, які додають жвавий і прохолодний контраст до темно-синьої тканини. Їх класична, але трохи неформальна форма робить твій образ доступним та веселим, чудовим для танців або спілкування на дні народження.",
+"3": "Ніжне золоте перлове намисто, яке додає м’якої розкоші до твоєї лінії шиї. Маленькі перлини ледь помітно ловлять світло, надаючи витонченості без перевантаження образу, а золото гармонійно поєднується з теплими відтінками у твоїй сумці та волоссі.",
+"4": "Сумка гірчичного кольору, яка додає багатий і землистий колір до палітри. Її тон пов’язує прохолодний темно-синій з бірюзовим органічним відчуттям, створюючи гармонійний та добре підібраний образ для осінніх вечірніх святкувань.",
+"5": "Для твого суботнього вечірнього дня народження я обрала темно-синій приталений комплект як основу, який заземлює твій образ у класичному силуеті, що залишається елегантним без надмірної офіційності. Його глибокий тон надає нейтральний фон для твоїх аксесуарів, дозволяючи їх деталям сяяти. Бірюзові лофери додають грайливий акцент кольору, ідеально підходящий до осінньої атмосфери вечірки, а золоте перлове намисто додає витончену блискучу деталь на твою лінію шиї. Завершує образ сумка гірчичного кольору, яка пропонує теплий і землистий контраст, що гармонійно пов’язує весь ансамбль.",
+"6": "Впевнено одягни темно-синій приталений комплект як основу, дозволяючи його структурований крій підкреслити твою фігуру на вечір.",
+"7": "Залиш бірюзові лофери видимими з укороченими або вузькими штанами, щоб зберегти баланс і переконатися, що вони не загубляться під об’ємом тканини.",
+"8": "Намисто Pearls - Gold Plated — Додає відсутні ювелірні вироби (намисто), щоб збалансувати вагу «біля_обличчя» та додати розкоші структурованому костюму; замінює шапку на намисто.",
+"9": "Міні-сумка Розалія mustard small — Додає відсутню сумку (bag_generic), щоб завершити структуру образу і забезпечити місце для необхідних речей на вечірці.",
+"10": "Намисто Pearls - Gold Plated — Золоте перлове намисто додає яскравість біля обличчя, збалансовуючи темні тони вбрання.",
+"11": "Лофери жіночі бірюзові — Бірюзові лофери додають яскравий акцент кольору, балансуючи темно-синій костюм і надаючи грайливого штриха."
+}

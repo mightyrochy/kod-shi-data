@@ -1,0 +1,37 @@
+── ПРОМПТ (2130 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend trench coat, straight cut, knee-length, slate grey with hex code #708090, waterproof fabric.\nRelaxed-fit knit top, crew neck, hip-length, cream white with hex code #FFFDD0, soft merino wool.\nTailored wool trousers, tapered leg, ankle-length, charcoal with hex code #36454F, heavy twill.\nLeather Chelsea boots, sleek silhouette, mid-calf height, dark brown with hex code #5C4033, water-resistant leather.\n\nThis outfit balances the practical needs of walking to work in autumn rain with a polished look for the office. The trench coat provides essential protection against possible precipitation while maintaining a sleek silhouette that doesn't bulk up under layers. Choosing tailored trousers and a refined knit ensures you look neat and professional despite the casual movement, while the dark color palette remains classic and appropriate for a business setting."}
+
+── ВІДПОВІДЬ (787 симв., 7.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "trench coat",
+      "details": "straight cut, knee-length, waterproof fabric",
+      "slot": "outerwear",
+      "color_hex": "#708090",
+      "worn": true
+    },
+    {
+      "name": "knit top",
+      "details": "relaxed-fit, crew neck, hip-length, soft merino wool",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "wool trousers",
+      "details": "tailored, tapered leg, ankle-length, heavy twill",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Chelsea boots",
+      "details": "sleek silhouette, mid-calf height, water-resistant leather",
+      "slot": "shoes",
+      "color_hex": "#5C4033",
+      "worn": true
+    }
+  ]
+}
