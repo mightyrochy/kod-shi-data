@@ -1087,6 +1087,9 @@ def _опис_keep_by():
     "heel_cost_long_walk": "the heel of this pair is a noticeable cost for the feet on a long walk",
     "heel_cost_long_day": "the heel of this pair is a noticeable cost for the feet over a long day on her "
                           "feet",
+    # дорога пішки — та сама змінна тривалості, що в K-END-01 (тема-10, K-WEA-07): ціна за її хід пішки
+    "heel_cost_on_walk": "the heel of this pair is a noticeable cost for the feet on her way on foot (values: "
+                         "walk_min — minutes she walks on foot, heel_cm — heel height in cm)",
     "not_a_ban_her_choice": "this is not a ban: the choice is hers",
     "flat_pair_removes_cost": "a low-heeled pair removes this cost",
     "swap_pair_example": "such a pair, for example: she can take it along and change shoes when she wants",
