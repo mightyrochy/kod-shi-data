@@ -3237,8 +3237,9 @@ import спільні_вимоги as _ВИМ
 # (ділова, світська) — кожна з одягом, нормою й прикладами: модель обирає один із семи кодів і гілку, а числа шкали
 # лишаються мірою коду (НП-в).
 def _драбина_en():
-    """Щаблі драбини рядком для моделі: «neat — business: одяг; whose standard is норма; e.g. приклади | social: …» · …"""
-    гілка = lambda г: "%s%s; whose standard is %s%s" % (("%s: " % г["гілка"]) if г["гілка"] else "", г["одяг"],
+    """Щаблі драбини рядком для моделі: «neat — business: одяг; standard: норма; e.g. приклади | social: …» · …
+    «standard:» замість «whose standard is» у кожній гілці — повтор (корінь Е2-промпти, п.5); що це, каже шапка драбини."""
+    гілка = lambda г: "%s%s; standard: %s%s" % (("%s: " % г["гілка"]) if г["гілка"] else "", г["одяг"],
                                                          г["норма"], ("; e.g. " + г["приклади"]) if г["приклади"] else "")
     return " · ".join("%s — %s" % (щ["код"], " | ".join(гілка(г) for г in щ["гілки"])) for щ in _ФОРМ_.ДРАБИНА)
 
@@ -3258,9 +3259,9 @@ _ПОЛЯ_EN = {
     "declared_break": _ПН.СХЕМА_ПАСПОРТА["заявлений_злам"],
     "declared_column": _ПН.СХЕМА_ПАСПОРТА["заявлена_колона"],
     "matching_opaque_tights": _ПН.СХЕМА_ПАСПОРТА["тон_колготи"],
-    "host_context": "whether the event has a host or stakes: yes when her words name one, no when explicitly absent, otherwise unknown; not whether she herself is the host; do not infer from the occasion type",
-    "creative_environment": "whether the event is in a creative environment: yes when named, no when explicitly denied, otherwise unknown; not her wish for a bold outfit; do not infer from the occasion type",
-    "direct_sun": "direct sunlight on her: yes only when her words name direct sun, no when they name shade or no sun; otherwise unknown; do not infer from temperature, precipitation or season",
+    "host_context": "whether the event has a host or stakes: yes when her words name one, no when explicitly absent; not whether she herself is the host; do not infer from the occasion type",
+    "creative_environment": "whether the event is in a creative environment: yes when named, no when explicitly denied; not her wish for a bold outfit; do not infer from the occasion type",
+    "direct_sun": "direct sunlight on her: yes only when her words name direct sun, no when they name shade or no sun; do not infer from temperature, precipitation or season",
     "palette": "the palette scheme she chose for this outfit",
     # «Йду ввечері на вечірку в клуб» — `occasion` з цим уривком, `place` — ні (клас
     # 4206): правило ходу каже про місце в назві події, а опис поля, яке модель заповнює першим, — ні
@@ -3328,7 +3329,7 @@ _ПОЛЯ_EN = {
                   "and overrides the event's norm",
     "setting": "indoors, outdoors or mixed",
     "duration_h": "how many hours the event lasts",
-    "walk_min": "minutes she walks on foot on the way; not the event duration",
+    "walk_min": "minutes she walks there on foot; not duration_h",
     # `activity` кодів спорту не має (діти, нерівний ґрунт, прогулянка, ходьба, фотосесія) — спорт її дня
     # несе `movement: sport`, і руки 3–4 бачать його в `case` (`руки_без_коду.випадок_кодами`, `рух`)
     # «фраза дороги, що називає вихід, — і нагода» тепер лише в описі `occasion`; «як дістається — рух» (R2) — тут
@@ -3363,9 +3364,9 @@ _ПОЛЯ_EN = {
     # Свята-приклади (новорічна вечірка й корпоратив — свята сцен) — тепер родом випадку
     # Що дає місяць (дата, місяць, свято одного місяця — з цим словом цитатою), каже правило події (R6): там його
     # модель і заповнює; тут — лише чого місяцем не буває.
-    "month": "the month of the event, only when her words date it (the event rule); an event of any month — absent",
+    "month": "the event month",
     # День тижня — своє поле (корінь Е2-втрата-слова, 16027: «в суботу» 11 сцен, 0 дійшло — поля не було)
-    "weekday": "the day of the event she names: a weekday, «today» or «tomorrow»",
+    "weekday": "the event day",
     # «return only its code, never degrees» — R5 («Values are only the codes»); «K-WEA-01 with the P-5 split» —
     # мітки бази знань, не вимога; знято (Е2-промпти, п.1)
     "weather_band": "the weather band, from the degrees she names (digits or words) or her feeling of "
@@ -3604,7 +3605,7 @@ def _коди_норми(поля=None):
     поля (хід плиток бере `ПОЛЯ_ХОДУ_ПЛИТОК`: решту `прийняти_хід_плиток` відкидає, тож модель їх не бачить)."""
     р = ["Fields without quote — the value alone, not {\"quote\", \"value\"}:",
          "- formality — %s" % _ПОЛЯ_EN["formality"],
-         "  · the ladder (step — its branches: clothes; whose standard puts an outing on the step; ordinary "
+         "  · the ladder (step — its branches: clothes; standard: the norm that puts an outing on the step; ordinary "
          "examples, not codes): %s" % _драбина_en(),
          "- formality_branch — %s; %s" % (_ПОЛЯ_EN["formality_branch"], _тип_en(_ВМ.СЦЕНАРІЙ["formality_branch"]))]
     # МОВА-1 (02.10): `part_of_day` — службове, як ці два, але доти його рядка тут не було: модель не
@@ -3634,7 +3635,7 @@ def _коди_розмови():
         if _група(ім, с) == "пари":
             тип = _довідник_en(ім) if ім in _ГРУПИ_ДОВІДНИКА else _тип_en(с)
             if с.get("type") == "array" and "enum" in (с.get("items") or {}):
-                тип += '; {"quote": the fragment of her words, "value": [codes]}'
+                тип += '; {"quote": her fragment, "value": [codes]}'
             названа = next((о["названа"] for о in _ВМ.ПОЛЯ_ПАСПОРТА.values() if о.get("поле") == ім and о.get("названа")), None)
             if названа:
                 тип += '; {"quote": her words that name it, "value": its value, "%s": "%s"}' % названа
@@ -3855,7 +3856,8 @@ _ПРАВИЛО_ПЛИТОК = (
     # слів не читає (п.12).
     "An event she names goes into \"event\" and also as the code of \"occasion\" or \"place\" whose label "
     "names this event or one of its kind, with the name of the event as quote. Her words that date it — a date, "
-    "a month, or a holiday that falls in one month — also give \"month\", with that word as quote. An event "
+    "a month, or a holiday that falls in one month — also give \"month\", and the day she names \"weekday\", "
+    "with that word as quote. An event "
     "with no label of its own takes a code with the same rules, and "
     "\"stylist_note\" says what the event really is.",
     # Хрестини «спершу церква, потім обід у ресторані» давали нагоду однієї частини й місце іншої — або
