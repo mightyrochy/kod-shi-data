@@ -1439,9 +1439,8 @@ def повнота_набору(вердикт, кандидати=None, кат�
                 _н.append(_ВМ.заява("tried_swaps_all_flawed", swaps=ремонт["замін_у_пулі"])
                           if ремонт.get("замін_у_пулі")
                           else _ВМ.заява("no_other_item_for_that_slot"))
-                _н.append(_ВМ.заява("repair_failed_needs_thinner_top"))
             else:
-                _н.append(_ВМ.заява("no_other_combination_take_another_top"))
+                _н.append(_ВМ.заява("selection_has_no_other_combination"))
             рядок = _дописати(рядок, _н)
     # ── ОСНОВИ НЕМА Й ПУЛ ЇЇ НЕ ДАЄ — НЕ АКСЕСУАРИ НА КАРТЦІ ──
     # Відсутня сумка чи третя річ лишає впізнаваний образ: сукня, туфлі й
