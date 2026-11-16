@@ -79,7 +79,11 @@ def розібрати(тека):
                 ва = 'volume_top_and_bottom_no_anchor' in a_sc(а); вб = 'volume_top_and_bottom_no_anchor' in a_sc(б)
                 if ка != кб: ру[id(а)], ру[id(б)] = ('2', '1') if ка > кб else ('1', '2')
                 elif ва != вб: ру[id(а)], ру[id(б)] = ('2', '1') if ва else ('1', '2')
-                else: ру[id(а)] = ру[id(б)] = 'кат.?'
+                else:
+                    # поломка правила (rule_off) прибирає речення правила з task.input: довший task.input — повна рука 1
+                    ia = len(json.dumps((а['д'].get('task') or {}).get('input'), ensure_ascii=False)); ib = len(json.dumps((б['д'].get('task') or {}).get('input'), ensure_ascii=False))
+                    if ia != ib: ру[id(а)], ру[id(б)] = ('1', '2') if ia > ib else ('2', '1')
+                    else: ру[id(а)] = ру[id(б)] = 'кат.?'
         else:
             ру[id(г[0])] = 'кат.?'
         образи = []
