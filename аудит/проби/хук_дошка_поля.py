@@ -5,6 +5,9 @@
 Мірило: записані файли дошки з голів #3997 (bc62011c…) і #3998 (e5b7023e…) — відмова з тими самими рядками «ПОМИЛКА»,
 що дає прилад CI (`згорнути_дошку.py --лише-перевірити`); виправлені з голів ebd61f5f… і 16451b20… — коміт іде;
 коміт без файлів дошки — прилад не запускається; збій хука (нема приладу) — коміт іде з попередженням.
+Наряд 16.11 (рядки 15899–15901): коміт файлу дошки з хибними полями в ІНШОМУ дереві, ніж `CLAUDE_PROJECT_DIR`
+(`cd <дерево> && git commit`, `git -C <дерево> commit`), з префіксом змінної середовища — відмова; `git commit-tree` і
+коміт за шляхом без файлу дошки — без відмови; нема голови в клоні — стенд червоний з назвою голови.
 Тимчасовий репозиторій: копії приладів і дошки з робочого дерева, файл дошки — в індексі.
 """
 import json
@@ -45,8 +48,8 @@ def новий_репозиторій():
     return т
 
 
-def хук(т, команда="git commit -m x"):
-    env = dict(os.environ, CLAUDE_PROJECT_DIR=т)
+def хук(т, команда="git commit -m x", проєкт=None):
+    env = dict(os.environ, CLAUDE_PROJECT_DIR=проєкт or т)
     п = time.perf_counter()
     р = sh(sys.executable, ХУК, cwd=т, вхід=json.dumps({"tool_name": "Bash", "tool_input": {"command": команда}}),
            env=env)
@@ -55,6 +58,12 @@ def хук(т, команда="git commit -m x"):
     ш = вихід.get("hookSpecificOutput", {})
     return ш.get("permissionDecision") == "deny", ш.get("permissionDecisionReason", ""), ш.get("additionalContext", ""), \
         р.stderr, мс
+
+
+def вміст_голови(голова, файл):
+    """Файл з голови; нема голови в клоні чи порожній — None (стенд червоний з назвою голови, а не ✔ на порожньому)."""
+    р = sh("git", "show", f"{голова}:{файл}", cwd=КОРІНЬ)
+    return р.stdout if р.returncode == 0 and р.stdout.strip() else None
 
 
 def помилки_приладу(т):
@@ -72,7 +81,11 @@ def main():
 
     for мітка, голова, файл, чекаємо in ВИПАДКИ:
         т = новий_репозиторій()
-        вміст = sh("git", "show", f"{голова}:{файл}", cwd=КОРІНЬ).stdout
+        вміст = вміст_голови(голова, файл)
+        if вміст is None:
+            перевір(False, f"{мітка}: нема голови {голова} у клоні (git fetch origin {голова}) — випадок не виміряно")
+            shutil.rmtree(т)
+            continue
         with open(os.path.join(т, файл), "w", encoding="utf-8") as ф:
             ф.write(вміст)
         sh("git", "add", "-A", cwd=т)
@@ -85,6 +98,30 @@ def main():
         else:
             перевір(not відмова and not прилад, f"{мітка} ({голова[:8]}): коміт пройшов, помилок 0 ({мс:.0f} мс)")
         shutil.rmtree(т)
+
+    # 15899–15900: хибний файл дошки в індексі дерева А, проєкт (CLAUDE_PROJECT_DIR) — чисте дерево П
+    вміст = вміст_голови(ВИПАДКИ[0][1], Д1)
+    if вміст is not None:
+        А, П = новий_репозиторій(), новий_репозиторій()
+        with open(os.path.join(А, Д1), "w", encoding="utf-8") as ф:
+            ф.write(вміст)
+        sh("git", "add", "-A", cwd=А)
+        for мітка, команда, проєкт, чекаємо in [
+            ("cd <інше дерево> && git commit", f"cd {А} && git commit -m y", П, True),
+            ("git -C <інше дерево> commit", f"git -C {А} commit -m y", П, True),
+            ("префікс змінної GIT_AUTHOR_NAME=x git commit", "GIT_AUTHOR_NAME=x git commit -m y", А, True),
+            ("два префікси + cd", f"cd {А} && A=1 B='2 3' git commit -m y", П, True),
+            ("git commit-tree", "SHA=$(git commit-tree 'HEAD^{tree}' -p HEAD -m \"ДИСПЕТЧЕР: x\")", А, False),
+            ("git commit -m y -- інший.txt", "git commit -m y -- інший.txt", А, False),
+            ("git commit -m y -- файл дошки", f"git commit -m y -- {Д1}", А, True),
+        ]:
+            відмова, причина, застереження, _, мс = хук(А, команда, проєкт)
+            перевір(відмова == чекаємо and not застереження and (not чекаємо or "ПОМИЛКА" in причина),
+                    f"{мітка}: {'відмова' if відмова else 'пропуск'}, очікували {'відмову' if чекаємо else 'пропуск'} ({мс:.0f} мс)")
+        shutil.rmtree(А)
+        shutil.rmtree(П)
+    else:
+        перевір(False, f"нема голови {ВИПАДКИ[0][1]} у клоні — випадки 15899–15900 не виміряно")
 
     т = новий_репозиторій()  # без дошки: прилад не викликано
     with open(os.path.join(т, "файл.txt"), "w") as ф:
