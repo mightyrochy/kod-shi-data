@@ -542,7 +542,7 @@ import внутрішня_мова as _ВМ_П
 # ремонту й вибору (`повнота_образу.ВИБІР`, звідки ремонт бере поля «case.*»).
 ПОЛЯ_МЕЖІ_НА_СЛОТ = tuple(
     _ЗП.Поле("case.refusals.%s[].only_on" % к, "the kinds of item this refusal is about",
-             як="it holds for these kinds only; a refusal without «only_on» holds for the whole outfit")
+             як="for these kinds only; without «only_on» — the whole outfit")
     for к in ("colors", "prints", "fabrics", "types"))
 РЯДКИ_ЗАДАЧІ_ЗА_ПРАВИЛОМ = {"K-CRA-01": РЯДОК_ТРЕТЬОЇ_РЕЧІ, "K-VAR-01": РЯДОК_РІЧ_ДВІЧІ}
 
