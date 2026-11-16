@@ -78,6 +78,10 @@ elif SC == 'quota_reset_at':
     resp, err = '', "You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at %s." % when
 elif SC == 'auth':
     resp, err = '', 'Not logged in. Please log in'
+elif SC == 'engine_fail':
+    # збій рушія без класу (не квота, не вхід, не зусилля) з текстом, який має дійти до результату: шлях профілю й ключ — приватне
+    sys.stderr.write('panic: stream disconnected before completion\n')
+    resp, err = '', 'Internal error at C:\\Users\\Alice\\codex\\x.rs api_key=abcdefghijklmnop12345 rushij-error-end'
 elif SC == 'blocked':
     commit('робота/б.txt'); resp = 'ЗАБЛОКОВАНО: чекаю рішення'
 elif SC == 'slow_done':
@@ -92,6 +96,23 @@ elif SC == 'hang':
     time.sleep(300); raise SystemExit(0)
 else:
     raise SystemExit('невідомий сценарій ' + SC)
+
+if os.environ.get('FAKE_CODEX_RATE'):
+    # журнал сесії Codex <CODEX_HOME>/sessions/Р/М/Д/rollout-*.jsonl: подія token_count із rate_limits (форма — codex-rs protocol.rs);
+    # FAKE_CODEX_RATE="<використано 5 год>,<використано тижня>"
+    u5, u7 = os.environ['FAKE_CODEX_RATE'].split(',')
+    now = time.time(); g = time.gmtime(now)
+    d = os.path.join(os.environ['CODEX_HOME'], 'sessions', time.strftime('%Y/%m/%d', g))
+    os.makedirs(d, exist_ok=True)
+    rl = {'limit_id': 'codex', 'limit_name': None, 'plan_type': 'plus',
+          'primary': {'used_percent': float(u5), 'window_minutes': 300, 'resets_at': int(now) + 3600},
+          'secondary': {'used_percent': float(u7), 'window_minutes': 10080, 'resets_at': int(now) + 3 * 86400}}
+    line = {'timestamp': time.strftime('%Y-%m-%dT%H:%M:%S.000Z', g), 'type': 'event_msg',
+            'payload': {'type': 'token_count', 'info': None, 'rate_limits': rl}}
+    with open(os.path.join(d, 'rollout-%d-%d.jsonl' % (time.time_ns(), n)), 'w', encoding='utf-8') as rf:
+        meta = {'timestamp': line['timestamp'], 'type': 'session_meta', 'payload': {}}
+        # компактний JSON, як пише serde у справжньому журналі
+        rf.write(json.dumps(meta, separators=(',', ':')) + '\n' + json.dumps(line, separators=(',', ':')) + '\n')
 
 if SC != 'slow_done':
     print(json.dumps({'type': 'turn.started'}))

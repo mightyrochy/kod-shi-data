@@ -11,6 +11,9 @@ $script:HealthAlertDir = ''
 # (gemini_run.ps1, Start-Markers; назва — безпечними знаками): рядок рушія й шаблон публікації — тут одне місце.
 $script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?:(?:GPU|SLOTS): (?:замок GPU іншого наряду|незакритий знімок моделей GPU|модель GPU-наряду на карті|LM Studio недоступний на :1234|слоти зайняті|nvidia-smi не відповів|кілька GPU: потрібен вимір однієї карти|навантаження (?:100|[1-9]?[0-9]) %|вільно [0-9]{1,7} з потрібних [0-9]{1,7} MiB(?:; навантаження (?:100|[1-9]?[0-9]) %)?|GPU зайнята стороннім процесом|процес [A-Za-z0-9._+-]{1,92}|процес [A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB(?:\+[A-Za-z0-9._-]{1,30} [0-9]{1,7} MiB){0,2}), позначок [1-9][0-9]{0,3}|gemini-queue/[\p{L}\p{Nd}._/-]{1,160} FORMAT)\z'
 
+# Сторож GPU-замка (queue_lanes.ps1, Update-GpuWatch): позначка, хвилин замка, хвилин без роботи карти, змін PID власника пам'яті.
+$script:GpuIdleLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE (?:gemini|codex|claude)/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79} ЗАМОК [0-9]{1,6} СОН [0-9]{1,6} БЕЗ_РОБОТИ [0-9]{1,6} PID_ЗМІН [0-9]{1,5}\z'
+
 function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
 
 function Add-HoldLine([string]$Line) {
@@ -73,6 +76,22 @@ function Invoke-HealthBeat {
     $script:LastHealthBeat = [datetime]::UtcNow
     try { & $script:HeartbeatAction }
     finally { $script:HeartbeatBusy = $false }
+}
+
+function Add-FinishedMarker([string]$Dir, [string]$Name, [string]$Sha) {
+    <# Позначка дійшла кінцевого стану, її рядок опубліковано: запис «<позначка> <SHA>» для публікатора
+    (`gemini_publish.ps1`, Remove-FinishedMarkers), який знімає гілку з черги під lease на цей SHA. Пишуть процеси
+    власника (публікатор, claude-run) — у gemini прав пушу нема. #>
+    if ($Name -cnotmatch '^gemini-queue/\S+$' -or $Name.Contains('..') -or $Sha -cnotmatch '^[0-9a-f]{40}$') { return }
+    [void][IO.Directory]::CreateDirectory($Dir)
+    Write-FileAtomic (Join-Path $Dir ((Get-Sha256Hex "$Name $Sha") + '.txt')) "$Name $Sha"
+}
+
+function Test-OldChainMarker($M) {
+    <# Позначка автоперевірки в тій формі, яку ставив ланцюг обгортки (`/p2` без `gpu` і строку, `Add-ChainMarker`): ланцюг її
+    більше не ставить (слово власника 08.11 15:47) — лишилися давні, і їх смуги не беруть. Позначка диспетчера має іншу умову
+    (p0, p1, строк): коміт, на який вказує позначка, автора не лишає — це `main` на мить постановки в обох. #>
+    $M.Slug -cmatch '^автоперевірка-[1-9][0-9]{0,8}-[0-9a-f]{40}$' -and $M.Cond -ceq 'p2'
 }
 
 function Test-ReviewBranch([string]$Branch) {

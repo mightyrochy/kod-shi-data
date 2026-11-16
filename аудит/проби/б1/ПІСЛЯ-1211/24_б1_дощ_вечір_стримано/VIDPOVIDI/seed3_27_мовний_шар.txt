@@ -1,0 +1,55 @@
+── ПРОМПТ (6895 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: black · about it: text н=1
+2 — kind code: belt · colour code: brown · about it: text н=2
+3 — kind code: boots · colour code: chocolate · about it: text н=3
+4 — kind code: tote · colour code: brown · about it: text н=4
+5 — kind code: coat · colour code: beige · about it: text н=5
+6 — kind code: headband · colour code: green · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; chocolate — шоколадний; green — зелений.
+
+ТЕКСТИ:
+{
+"1": "A tailored black maxi dress with a crisp collar and structured fit that elongates your frame. Its sleek silhouette is cinched at the waist by a matching belt, creating a streamlined look ideal for evening outings.",
+"2": "This brown leather belt adds definition to your waistline while harmonizing beautifully with your boots and handbag. It introduces texture without overwhelming the minimalist aesthetic of your outfit.",
+"3": "Chunky-soled chocolate boots offer both style and practicality on a rainy evening. Their height balances the length of the dress, adding warmth and visual weight to complete the grounded feel of your ensemble.",
+"4": "The brown leather tote complements your footwear seamlessly, offering just enough structure to carry essentials while maintaining an understated elegance. Its neutral tone bridges the black dress and beige coat effortlessly.",
+"5": "A fitted beige coat with a relaxed double-breasted front brings sophistication to any transition. Its soft fabric and classic cut provide comfort and warmth without compromising your clean, timeless aesthetic.",
+"6": "This crystal-studded headband adds a touch of sparkle that catches the light just right for evening occasions. It introduces subtle glamour while maintaining the overall composed look you desire.",
+"7": "Your black dress anchors the look in quiet elegance, its structured collar and slim belt defining a sharp silhouette that feels both refined and modern. The rich brown boots match the leather tote perfectly, adding warmth to your autumn evening, while the beige coat wraps around you like a soft embrace for those cooler moments outside. Even if the rain starts, this outfit holds its composure—you’ll transition seamlessly from the cinema to dinner without breaking stride.",
+"8": "Tuck your top into the waistband of the dress for a clean line before adding the belt",
+"9": "Wear the coat open to showcase the dress’s shape and let the boots ground the ensemble",
+"10": "Коричневий шкіряний тоут з биркою — I embrace this gate regarding the casual bag because its textural warmth provides the perfect counterpoint to the structured, classic coat and dress, preventing the look from feeling too stiff or cold for your evening plans."
+}
+
+── ВІДПОВІДЬ (2208 симв., 23.6 с, HTTP 200) ──
+```json
+{
+"1": "Чорна приталена максісукня з акуратним коміром і чітким силуетом, що візуально подовжує твою фігуру. Її елегантний крій підкреслює талію за допомогою пояса в тон, створюючи вишуканий образ для вечірніх прогулянок.",
+"2": "Цей коричневий шкіряний пояс додасть визначення лінії твоєї талії, гармонійно поєднуючись з черевиками й сумкою. Він привносить текстуру без перевантаження мінімалістичного стилю твого образу.",
+"3": "Чоботи на масивній підошві шоколадного кольору забезпечать тобі стиль і практичність у дощовий вечір. Їх висота збалансує довжину сукні, додаючи тепла й візуальної ваги для завершення гармонійного образу.",
+"4": "Коричнева шкіряна сумка-тоут бездоганно поєднується з твоїм взуттям, пропонуючи достатньо місця для необхідних речей і зберігаючи при цьому стриману елегантність. Її нейтральний відтінок легко пов’язує чорну сукню й бежевий тренч.",
+"5": "Приталений бежевий тренч з розслабленим двобортним верхом додасть вишуканості будь-якому переходу. Його м'яка тканина та класичний крій забезпечують комфорт і тепло, не жертвуючи твоїм чистим, позачасовим стилем.",
+"6": "Цей обруч з кристалами додасть образу нотку блиску, який буде ловити світло під час вечірніх заходів. Він привносить ледь помітний гламур, зберігаючи загальний зібраний вигляд, якого ти прагнеш.",
+"7": "Чорна сукня задає тон усьому образу своєю тихою елегантністю, а її структурований комір і вузький пояс підкреслюють чіткий силует, який здається одночасно вишуканим і сучасним. Коричневі чоботи чудово поєднуються зі шкіряною сумкою-тоут, додаючи тепла твоєму осінньому вечору, а бежевий тренч ніжно огортає тебе в прохолодні моменти на вулиці. Навіть якщо почне дощити, цей образ збереже свою витримку — ти без зусиль перейдеш від кінотеатру до вечері.",
+"8": "Заправ топ у пояс сукні для чистої лінії перед тим, як одягнути ремінь",
+"9": "Одягни тренч розстебнутим, щоб продемонструвати форму сукні та дозволити чоботям завершити образ",
+"10": "Коричневий шкіряний тоут з биркою — Я підтримую цей вибір сумки, адже її текстурне тепло ідеально контрастує зі структурованим класичним тренчем і сукнею, не дозволяючи образу здаватися надто жорстким або холодним для твоїх вечірніх планів."
+}
+```

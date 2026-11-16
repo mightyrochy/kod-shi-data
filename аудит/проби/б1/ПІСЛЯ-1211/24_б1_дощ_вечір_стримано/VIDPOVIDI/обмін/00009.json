@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\", \"\\\"intent\\\" — what matters most to her: comfort_first (comfort and freedom of movement), context_optimal (fitting the place and the event), statement (standing out), fashion_forward (a bold fashion look, at least two sources of interest), editorial (an editorial construction, at least one source of interest); count limits do not apply to fashion_forward or editorial\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"кіно, потім вечеря\", \"weather_band\": \"+9 °C\", \"intent\": \"хочу стримано й класично\", \"registers\": \"стримано й класично\", \"mood\": \"стримано й класично\", \"part_of_day\": \"ввечері\"}, \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"кіно, потім вечеря\"}, \"intent\": {\"kind\": \"reading\", \"quote\": \"хочу стримано й класично\"}, \"intent_quote\": {\"kind\": \"default\"}, \"mood\": {\"kind\": \"reading\", \"quote\": \"стримано й класично\"}, \"precipitation\": {\"kind\": \"reading\", \"quote\": \"злива й вітер\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\", \"quote\": \"ввечері\"}, \"her_registers\": {\"kind\": \"reading\", \"quote\": \"стримано й класично\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"стримано й класично\"}]}, \"weather_band\": {\"kind\": \"reading\", \"quote\": \"+9 °C\"}}, \"event\": \"кіно, потім вечеря\", \"part_of_day\": \"evening\", \"weather_band\": \"cold\", \"precipitation\": \"rain\", \"her_registers\": [\"classic\"], \"mood\": [\"спокійно\"], \"occasion\": \"date\", \"intent_quote\": \"хочу стримано й класично\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"artificial\"}, \"person\": {\"skin_hex\": [\"#5a3a2a\", \"#4e3022\", \"#664332\"], \"hair_hex\": [\"#16110e\", \"#241a15\"], \"eyes_hex\": \"#3b2417\", \"height_cm\": 165, \"girths_cm\": {\"shoulders\": 112, \"bust\": 114, \"waist\": 104, \"hips\": 114}, \"intent\": \"context_optimal\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A structured tweed blazer in deep charcoal grey (#3e4247), featuring a classic notched lapel and a relaxed but tailored fit that allows for ease of movement, paired with matching wide-leg trousers made from a soft yet durable wool-blend fabric. A silk blouse in rich burgundy (#8a1c25) with a subtle sheen serves as the centerpiece, offering a touch of elegance without overwhelming the classic aesthetic. Knee-high leather ankle boots in polished black (#000000) provide warmth against the rain and wind while maintaining a sleek silhouette suitable for transitioning from the cinema to dinner. A slim leather clutch in black (#1a1a1a) and delicate gold hoop earrings complete the look, ensuring functionality without clutter. This outfit works because it strictly adheres to her desire for something restrained and classic, balancing the need for comfort in changing weather with a sophisticated evening-ready appearance. The monochromatic grey base grounded by the warm burgundy accent feels intentional and timeless, perfectly suited for an autumn date night involving both film viewing and fine dining.\"}],\"usage\":{\"input_tokens\":1067,\"output_tokens\":222},\"stop_reason\":\"end_turn\"}"
+ }
+}

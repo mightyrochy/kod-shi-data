@@ -1,0 +1,25 @@
+── ПРОМПТ (1934 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "own": "<id from her_items or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description", "\"her_items\" — her own items; an item of the description that is one of them gets its id in \"own\""]}, "description": "A sundress named Amora, loose fit, knee-length, terracotta with hex code #c76e42, linen.\nBallet flats, rounded toe, nude with hex code #d2b487, soft leather.\nThis outfit perfectly captures the cozy, relaxed mood for a walk in the sun. The breathable linen fabric of the sundress is ideal for autumn daylight and allows you to comfortably wear your chosen item. The neutral tone of the flats complements the terracotta hue without overpowering it, creating a simple yet stylish everyday look.", "her_items": [{"id": "її-с1", "name": "Амора"}]}
+
+── ВІДПОВІДЬ (397 симв., 3.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Sundress",
+      "details": "loose fit, knee-length",
+      "slot": "dress",
+      "color_hex": "#c76e42",
+      "own": "її-с1",
+      "worn": true
+    },
+    {
+      "name": "Ballet flats",
+      "details": "rounded toe, soft leather",
+      "slot": "shoes",
+      "color_hex": "#d2b487",
+      "own": null,
+      "worn": true
+    }
+  ]
+}

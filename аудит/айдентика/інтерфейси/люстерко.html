@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Люстерко · приклад 2 «Пара»</title>
+<style>
+/* ПАРА. Усе стоїть двома половинами обабіч осі: ліворуч — ти й твої слова, праворуч — відбиття: що люстерко зрозуміло й зібрало.
+   Взірці: колти ХІ–ХІІ ст. (двоє обабіч дерева; бліде золото — поле, емаль — малі комірки), літера й негатив Нарбута,
+   хатнє дзеркало на шухляді (лице порожнє, все дрібне — в шухляді під ним). */
+@font-face{font-family:'Fixel Text';font-weight:400;font-display:swap;src:url(https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelText-Regular.woff2) format('woff2')}
+@font-face{font-family:'Fixel Text';font-weight:600;font-display:swap;src:url(https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelText-SemiBold.woff2) format('woff2')}
+@font-face{font-family:'Fixel Display';font-weight:300;font-display:swap;src:url(https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelDisplay-Light.woff2) format('woff2')}
+@font-face{font-family:'Fixel Display';font-weight:600;font-display:swap;src:url(https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/FixelDisplay-SemiBold.woff2) format('woff2')}
+:root{
+  --sklo:#F1F3F0;  /* скло: лице дзеркала, холодне й порожнє */
+  --bile:#FFFFFF;  /* підкладка фото */
+  --ink:#17202A;   /* відбиття: слова люстерка */
+  --sire:#58626C;  /* підписи */
+  --emal:#1D3A66;  /* синя емаль: вона сама — її слова, її дії */
+  --sol:#E0C887;   /* солом'яне золото колта: поле шухляди */
+  --sol2:#EEE6CB;  /* те саме поле, розбілене: ручка й шухляда з розмовою */
+  --ceh:#A6452E;   /* цегляна крихта: «ні», «проти» */
+  --zel:#2E5E4B;   /* зелена крихта: «так», «вдягла» */
+  --pol:calc((100vw - 44px)/2);
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--sklo)}
+body{font:400 16px/1.42 'Fixel Text','Segoe UI',system-ui,sans-serif;color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+body:before{content:'';position:fixed;top:0;bottom:0;left:50%;width:1px;background:rgba(23,32,42,.2);z-index:0}  /* вісь */
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+a{color:inherit}
+img{display:block}
+
+/* шапка: дві половини названо — «ти» й «люстерко» */
+.verkh{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;column-gap:20px;padding:16px 12px 0;font:600 15px/1 'Fixel Display',sans-serif;letter-spacing:.01em}
+.verkh .ty{text-align:right;color:var(--emal)}
+.verkh a{position:absolute;right:12px;top:15px;font:400 13px/1 'Fixel Text',sans-serif;color:var(--sire);text-decoration:none;padding:2px 0;border-bottom:1px solid currentColor}
+
+#korin{position:relative;z-index:1;padding:20px 12px 200px}
+.os{display:grid;grid-template-columns:1fr 1fr;column-gap:20px;position:relative;align-items:start}
+.os+.os{margin-top:14px}
+.l{text-align:right}.p{text-align:left}
+.na-osi{background:var(--sklo);text-align:center;padding:8px 0;margin:0 auto;position:relative}
+.naz{font:300 32px/1.06 'Fixel Display',sans-serif;letter-spacing:-.02em;max-width:11em;text-wrap:balance}
+.naz.vel{font-size:46px;letter-spacing:-.03em}
+.pid{font-size:13px;line-height:1.35;color:var(--sire)}
+.vona-kazhe{color:var(--emal)}
+.znak{position:absolute;left:50%;top:var(--y,50%);transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;background:var(--sklo);border:1px solid var(--ink);display:grid;place-items:center;font:600 14px/1 'Fixel Display',sans-serif;z-index:2}
+.znak.pyt{border-color:var(--ceh);color:var(--ceh)}
+.znak.syn{background:var(--emal);border-color:var(--emal);color:#fff}
+
+/* фото: скло саме нічого не додає — ні рамки, ні тіні */
+.foto{display:block;position:relative;background:var(--bile);overflow:hidden;aspect-ratio:2/3;width:100%}
+.foto img{width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.foto.tlo-rivne img{object-fit:contain}
+.foto.male{display:grid;place-items:center}
+.foto.male img{width:auto;height:auto;max-width:min(100%,var(--w));max-height:min(100%,var(--h))}
+.foto.bezrechi img,.foto.nema-foto img{display:none}
+.foto.bezrechi:after,.foto.nema-foto:after,.foto.pusto:after{content:attr(data-nema);position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:10px;font-size:13px;line-height:1.3;color:var(--sire)}
+.foto.pusto{background:none;outline:1px dashed rgba(23,32,42,.45);outline-offset:-1px}
+.foto.sklo{background:var(--bile)}
+.foto.kv{aspect-ratio:1}
+.foto.vidbyttja img{transform:scaleX(-1);filter:grayscale(1) blur(1.5px) contrast(.8);opacity:.42;animation:jasn 5s ease-in-out infinite alternate}
+.foto.vidbyttja.stalo img{animation:none;opacity:.14}
+@keyframes jasn{from{opacity:.16}to{opacity:.5}}
+.foto b.mitka{position:absolute;left:0;bottom:0;background:var(--emal);color:#fff;font:600 12px/1 'Fixel Text',sans-serif;padding:5px 8px}
+
+/* дії: емаль — головна; обвід — друга; обидві стоять на осі */
+.dii{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px;position:relative}
+.kn{min-height:48px;padding:0 24px;background:var(--emal);color:#fff;font-weight:600;display:inline-flex;align-items:center}
+.kn.druha{background:var(--sklo);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.kn:active{background:var(--ink);color:#fff}
+.pl{min-height:40px;display:inline-flex;align-items:center;font-size:15px;border-bottom:1px solid currentColor;text-decoration:none}
+.pl.je{color:var(--emal);font-weight:600;border-bottom-width:2px}
+/* вибір: слова двома стовпцями, що туляться до осі; обране — з емалевою коміркою з боку осі */
+.plytky{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:20px;margin-top:6px;position:relative}
+.plytky .pl{border:0;min-height:44px;font-size:16px;gap:8px}
+.plytky .pl:nth-child(odd){justify-content:flex-end;text-align:right}
+.plytky .pl:nth-child(even){flex-direction:row-reverse;justify-content:flex-end}
+.plytky .pl.je:after{content:'';width:9px;height:9px;background:var(--emal);flex:none}
+.plytky .pl u{width:14px;height:14px;flex:none;text-decoration:none}
+
+/* рядки пар: її слова | знак на осі | що зрозуміла */
+.rjad{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);column-gap:6px;align-items:start;padding:11px 0;position:relative;font-size:15px;line-height:1.32}
+.rjad .l{color:var(--emal)}
+.rjad .l.nema{color:var(--sire);font-size:13px}
+.rjad i{width:30px;height:22px;display:grid;place-items:center;background:var(--sklo);font:600 14px/1 'Fixel Display',sans-serif;font-style:normal}
+.rjad i.pyt{color:var(--ceh)}
+.rjad small{display:block;font-size:13px;color:var(--sire);margin-top:2px}
+.rjad .tak{display:flex;gap:16px;margin-top:4px;font-weight:400}
+.rjad .tak .pl{min-height:40px;font-size:14px}
+.rjad.umova .p{background:var(--sol);margin:-6px -12px -6px -4px;padding:6px 12px 6px 6px;font-weight:600}
+.rjad.hol{font:600 20px/1.15 'Fixel Display',sans-serif;padding-top:4px}
+.rjad.hol .l{font:400 15px/1.32 'Fixel Text',sans-serif;padding-top:3px}
+
+/* барви: два стовпці однакової висоти — її барви й барви образу */
+.stovp{display:flex;flex-direction:column;height:300px}
+.stovp div{display:flex;align-items:flex-end;padding:6px 8px;font-size:13px;color:#fff;min-height:26px}
+.stovp div.sv{color:var(--ink)}
+.l .stovp div{justify-content:flex-end}
+
+/* полиця-шухляда під дзеркалом: дрібні речі лежать на солом'яному полі */
+.polycja{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:var(--sol);padding:8px;margin:14px -12px 0;position:relative}
+.polycja .foto{aspect-ratio:1;background:var(--sol)}
+.polycja .foto.tlo-rivne img{mix-blend-mode:multiply}
+.polycja .foto.tlo-zhyve{background:var(--bile)}
+.polycja.try{grid-template-columns:repeat(3,1fr)}
+.polycja figure{position:relative}
+.polycja figcaption{font-size:13px;line-height:1.2;margin-top:4px;text-align:center}
+.polycja .zm:after,.polycja .sv:after{content:'нове';position:absolute;left:0;top:0;background:var(--emal);color:#fff;font:600 12px/1 'Fixel Text',sans-serif;padding:3px 5px}
+.polycja .sv:after{content:'своє';background:var(--zel)}
+
+.spysok{margin-top:6px;background:var(--sklo);position:relative}
+.spysok details{border-bottom:1px solid rgba(23,32,42,.16)}
+.spysok summary{display:grid;grid-template-columns:1fr auto;gap:0 12px;padding:11px 0;list-style:none;cursor:pointer;min-height:48px}
+.spysok summary::-webkit-details-marker{display:none}
+.spysok summary b{font-weight:600}
+.spysok summary span{font-variant-numeric:tabular-nums;white-space:nowrap}
+.spysok summary small{grid-column:1/3;font-size:13px;color:var(--sire)}
+.spysok details p{font-size:15px;padding:0 0 10px}
+.spysok details div{display:flex;gap:18px;flex-wrap:wrap;padding-bottom:14px}
+.spysok details .pl{min-height:40px;font-size:14px}
+.razom{display:flex;justify-content:space-between;padding:12px 0;font-weight:600;background:var(--sklo);position:relative}
+
+/* зворот дзеркала: збережене — як напис на звороті */
+.zvorot{background:var(--sol);aspect-ratio:2/3;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:12px;gap:6px}
+.zvorot .dribni{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:100%;margin-top:10px}
+.zvorot .dribni .foto{aspect-ratio:1;background:none}
+.zvorot .dribni .foto.tlo-rivne img{mix-blend-mode:multiply}
+.zvorot b{font:600 22px/1.05 'Fixel Display',sans-serif;text-wrap:balance}
+.zvorot span{font-size:13px}
+.zvorot em{font-style:normal;font-size:13px;display:inline-flex;align-items:center;gap:5px;margin-top:6px}
+.kom{display:inline-block;width:9px;height:9px;background:var(--emal);flex:none}
+.kom.z{background:var(--zel)}.kom.c{background:var(--ceh)}.kom.o{background:none;box-shadow:inset 0 0 0 1px var(--sire)}
+.kom.zhyva{animation:blym 1.1s steps(2) infinite}
+@keyframes blym{50%{opacity:.25}}
+.prychyny{list-style:none;padding:0;margin:6px auto 0;background:var(--sklo);position:relative;max-width:340px}
+.prychyny li{display:grid;grid-template-columns:9px 1fr;gap:10px;align-items:baseline;padding:7px 0;font-size:15px}
+.kroky{margin-top:16px}
+.kroky .rjad{padding:7px 0;font-size:14px}
+.kroky .rjad i .kom{margin:0}
+.kroky .bude{color:var(--sire)}
+
+/* ручка й шухляда: розмова — один рядок під дзеркалом; тягнеш — уся */
+.ruchka{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--sol2);border-top:1px solid rgba(23,32,42,.2)}
+.ruchka:before{content:'';position:absolute;left:50%;top:-5px;width:10px;height:10px;margin-left:-5px;background:var(--emal)}
+.istorija{display:none;background:var(--sol2);padding:22px 16px 6px;max-height:58vh;overflow:auto}
+.vidkryta .istorija{display:block}
+.istorija p{margin:0 0 14px;font-size:15px;line-height:1.4;max-width:86%}
+.istorija p.v{color:var(--emal)}
+.istorija p.s{margin-left:auto}
+.ostannje{display:block;width:100%;padding:16px 16px 0;font-size:15px;line-height:1.36;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ostannje:empty{display:none}
+.vidkryta .ostannje{display:none}
+.vvid{display:flex;align-items:center;gap:12px;padding:10px 16px calc(12px + env(safe-area-inset-bottom))}
+.vvid span{flex:1;min-height:44px;display:flex;align-items:center;color:rgba(23,32,42,.62);border-bottom:1px solid rgba(23,32,42,.5);font-size:15px;line-height:1.25}
+.vvid span.je{color:var(--emal)}
+.vvid span.je:after{content:'';width:2px;height:20px;background:var(--emal);margin-left:2px;animation:blym 1s steps(2) infinite}
+.mik{width:44px;height:44px;border-radius:50%;background:var(--emal);flex:none;display:grid;place-items:center}
+.mik svg{width:18px;height:18px}
+.mik.chuje{box-shadow:0 0 0 5px rgba(29,58,102,.25)}
+.pult{position:fixed;z-index:9;top:40px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:rgba(23,32,42,.88);color:#fff;font:12px/1 system-ui,sans-serif;padding:4px 6px;border-radius:14px;white-space:nowrap}
+.pult button{width:28px;height:24px;color:#fff;font-size:16px;text-align:center}.pult b{font-weight:400}.pult a{color:#fff;opacity:.7;margin:0 6px}
+.os.pidp{font-size:13px;line-height:1.3;color:var(--sire);margin-top:4px;margin-bottom:8px}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--emal);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+/* широкий екран: шухляда висунута збоку, дзеркало розгорнуте диптихом */
+@media (min-width:1000px){
+  :root{--sh:400px}
+  body{padding-left:var(--sh);font-size:17px}
+  body:before{left:calc(var(--sh) + (100vw - var(--sh))/2)}
+  .verkh,#korin{max-width:720px;margin:0 auto;padding-left:0;padding-right:0}
+  .verkh{padding-top:28px;font-size:17px;column-gap:40px}
+  .verkh a{right:0;top:28px}
+  #korin{padding-top:28px;padding-bottom:80px}
+  .os,.plytky{column-gap:40px}
+  .naz{font-size:48px}.naz.vel{font-size:72px}
+  .rjad{grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr);font-size:17px;column-gap:10px}.rjad i{width:40px}
+  .rjad.hol{font-size:28px}
+  .stovp{height:420px}
+  .polycja{margin:20px 0 0;gap:10px;padding:12px}
+  .ruchka{right:auto;top:0;width:var(--sh);border-top:0;display:flex;flex-direction:column}
+  .ruchka:before{left:auto;right:-5px;top:50%;margin:-5px 0 0}
+  .istorija{display:block;flex:1;max-height:none;padding:64px 32px 12px}
+  .istorija:before{content:'розмова';display:block;font:600 15px/1 'Fixel Display',sans-serif;margin-bottom:28px}
+  .istorija p{font-size:16px}
+  .ostannje{display:none}
+  .vvid{background:var(--sol);padding:14px 32px 20px}
+  .pult{top:8px}
+}
+</style>
+</head>
+<body>
+<header class="verkh"><span class="ty">ти</span><span>люстерко</span><a href="#12" data-scena-do="moji">мої · 3</a></header>
+<main id="korin"></main>
+<footer class="ruchka" id="ruchka">
+  <div class="istorija" id="ist"></div>
+  <button class="ostannje" id="ost" aria-label="показати всю розмову"></button>
+  <div class="vvid"><span id="pole"></span><button class="mik" aria-label="диктувати"><svg viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><rect x="6.5" y="1.5" width="5" height="9" rx="2.5"/><path d="M3.5 8.5a5.5 5.5 0 0 0 11 0M9 14v2.5"/></svg></button></div>
+</footer>
+
+<script src="вміст.js"></script>
+<script src="рух.js"></script>
+<script>
+(function(){
+var V=window.ВМІСТ,R=V.rechi,F=window.ФОТО,hrn=V.hrn,Z=V.zrozumila;
+function vona(k,cl){return '<span class="foto '+(cl||'')+'"><img src="'+V.vona[k]+'" alt="'+V.vona.imja+'"></span>'}
+/* шухляда: розмова до репліки n, далі — додані репліки; на телефоні закрита й показує лише останнє слово люстерка */
+function sh(o){var h='';for(var i=0;i<(o.do||0);i++)h+='<p class="'+V.rozmova[i].h+'">'+V.rozmova[i].t+'</p>';(o.shche||[]).forEach(function(x){h+='<p class="'+x[0]+'">'+x[1]+'</p>'});
+ document.getElementById('ist').innerHTML=h;document.getElementById('ost').textContent=o.s||'';
+ var p=document.getElementById('pole');p.textContent=o.pole||'Скажи або напиши…';p.className=o.je?'je':'';
+ document.querySelector('.mik').className='mik'+(o.je?' chuje':'');document.getElementById('ruchka').className='ruchka'+(o.vidkr?' vidkryta':'');
+ var el=document.getElementById('ist');setTimeout(function(){el.scrollTop=el.scrollHeight},0)}
+document.addEventListener('click',function(e){if(e.target.closest('#ost'))document.getElementById('ruchka').classList.add('vidkryta');else if(!e.target.closest('#ruchka'))document.getElementById('ruchka').classList.remove('vidkryta')});
+function polycja(ks,o){o=o||{};return '<div class="polycja">'+ks.map(function(k){return '<figure class="'+(k===o.zm?'zm':k===o.sv?'sv':'')+'">'+F(k)+'</figure>'}).join('')+'</div>'}
+function spysok(ks,o){o=o||{};var s=0;return '<div class="spysok">'+ks.map(function(k,i){var r=R[k],sv=k===o.sv;if(!sv)s+=r.cina;
+ return '<details'+(i===(o.vidkr||0)?' open':'')+'><summary><b>'+r.nazva+'</b><span>'+(sv?'своє':hrn(r.cina))+'</span><small>'+r.kram+(k===o.zm?' · замість черевиків':'')+'</small></summary><p>'+r.chomu+'</p><div><a class="pl" href="'+r.url+'" target="_blank" rel="noopener">у крамницю ↗</a><button class="pl" data-scena-do="sumniv">не ця</button><button class="pl">'+(sv?'каталожна':'маю свою')+'</button></div></details>'}).join('')+'</div><p class="razom"><span>разом</span><span>'+hrn(s)+'</span></p>'}
+function rjad(r){return r.ska?'<div class="rjad'+(r.umova?' umova':'')+'"><span class="l">«'+r.ska+'»</span><i>=</i><span class="p">'+r.v+(r.k==='Увага'?'<span class="tak"><button class="pl">тихо</button><button class="pl je">звично</button><button class="pl">помітно</button></span>':'')+'</span></div>'
+ :'<div class="rjad"><span class="l nema">не казала</span><i class="pyt">?</i><span class="p">'+r.k.toLowerCase()+': '+r.v+'<small>'+r.chomu+'</small><span class="tak"><button class="pl">так</button><button class="pl">прибрати</button></span></span></div>'}
+function suma(ks){return ks.reduce(function(a,k){return a+R[k].cina},0)}
+
+window.СЦЕНИ=[
+{id:'pochatok',nazva:'порожній початок',html:function(){sh({s:'Я — люстерко, що відповідає. Покажи себе й скажи, куди йдеш, — зберу образ із речей українських крамниць.',pole:'Куди збираєшся?'});
+ return '<h1 class="naz na-osi">Стань перед люстерком</h1><div class="os" style="margin-top:14px"><button class="foto pusto l" data-nema="твоє фото на повен зріст — торкнись" data-dali></button><span class="foto sklo pusto p" style="outline:0" data-nema="тут буде відбиття: ти, вдягнена до нагоди"></span></div>'+
+ '<p class="pid na-osi" style="max-width:300px;margin-top:14px">Нема фото? Назви свої барви словами — волосся, очі, шкіра. Теж зберу.</p>'}},
+{id:'znajomstvo',nazva:'знайомство й фото',html:function(){sh({do:1,s:'Бачу тебе, '+V.vona.imja+'. Запам’ятала — більше не питатиму. Куди збираємось?'});
+ return '<div class="os"><div class="l">'+vona('zrist')+'</div><div class="p"><p class="pid" style="margin-bottom:8px">бачу в тобі</p><div class="stovp" style="height:auto">'+V.vona.barvy.map(function(b,i){return '<div class="'+(i?'':'sv')+'" style="background:'+b[1]+';height:64px">'+b[0]+'</div>'}).join('')+'</div><p style="margin-top:12px;font-weight:600">тепла гама</p><p class="pid" style="margin-top:8px">обхвати '+V.vona.obkhvaty+'</p><button class="pl" style="margin-top:10px;min-height:40px;font-size:14px">виправити</button></div></div>'+
+ '<h2 class="naz na-osi" style="margin-top:18px">Куди збираємось?</h2><div class="plytky">'+V.plytky.map(function(p){return '<button class="pl" data-dali>'+p+'</button>'}).join('')+'</div>'}},
+{id:'rozmova',nazva:'розмова, диктування',html:function(){sh({do:3,vidkr:1,je:1,pole:V.rozmova[3].dykt});
+ return '<div class="os"><div class="l">'+vona('zrist')+'</div><span class="foto sklo pusto p" style="outline:0" data-nema="слухаю"></span></div>'}},
+{id:'zrozumila',nazva:'«що я зрозуміла»',html:function(){sh({do:5,s:V.rozmova[4].t,pole:'Виправ словами або торкнись рядка'});
+ return '<h1 class="naz na-osi">Чи так я зрозуміла?</h1><div class="os pid" style="margin-top:4px"><span class="l">ти сказала</span><span class="p">я зрозуміла</span></div>'+
+ '<div class="rjad hol"><span class="l">«'+Z[0].ska+'»</span><i>=</i><span class="p">Хрестини. Ти — хрещена</span></div>'+[Z[1],Z[3],Z[2],Z[4],Z[5]].map(rjad).join('')+Z.slice(6).map(rjad).join('')+
+ '<div class="dii"><button class="kn" data-scena-do="chekannja">Так — збирай</button><button class="kn druha" data-dali>барви</button></div>'}},
+{id:'barvy',nazva:'барви',html:function(){var b=V.barvy;sh({do:5,s:b.chomu,pole:'«Хочу більше зеленого» — можна й словами'});
+ return '<h1 class="naz na-osi">Барви</h1><div class="os pid" style="margin-top:4px"><span class="l">твої</span><span class="p">образу — стільки, скільки буде на тобі</span></div><div class="os" style="margin-top:8px"><div class="l"><div class="stovp">'+V.vona.barvy.map(function(x,i){return '<div class="'+(i?'':'sv')+'" style="background:'+x[1]+';flex:1">'+x[0]+'</div>'}).join('')+'</div></div><div class="p"><div class="stovp">'+b.plamy.map(function(p){return '<div class="'+(p[1]==='#EFE7DA'||p[1]==='#C39A78'?'sv':'')+'" style="background:'+p[1]+';flex:'+p[2]+'">'+p[0]+' · '+p[3]+'</div>'}).join('')+'</div></div><b class="znak">=</b></div>'+
+ '<div class="os pid" style="margin-top:16px"><span class="l">основа</span><span class="p">як стоять одна до одної</span></div><div class="plytky" style="margin-top:0">'+[0,1,2,3].map(function(i){var o=b.osnovy[i],s=b.skhemy[i],c={'бордо':'#6B2231','хвоя':'#1F3A33','темно-синій':'#1D2B45','шоколад':'#4E342C'}[o];return '<button class="pl'+(i?'':' je')+'"><u style="background:'+c+'"></u>'+o+'</button><button class="pl'+(s[2]?' je':'')+'">'+s[0]+'</button>'}).join('')+'</div>'+
+ '<div class="dii"><button class="kn" data-dali>Збирай із цими</button></div>'}},
+{id:'chekannja',nazva:'чекання збирання',html:function(){var k=V.chekannja.kroky;sh({do:5,s:'Збираю. Ще хвилини дві — можеш піти, покличу. Усе сказане лишається тут.',pole:'Можна говорити далі — врахую'});
+ return '<div class="os"><div class="l">'+vona('zrist')+'</div><div class="p">'+vona('zrist','vidbyttja')+'</div><b class="znak syn">…</b></div><h1 class="naz na-osi" style="margin-top:10px">Збираю</h1><p class="pid na-osi">1:42 з приблизно 3:40 · <button class="pl je" style="min-height:28px;font-size:13px">покличу, коли зберу ✓</button></p>'+
+ '<div class="kroky">'+k.map(function(x,i){return '<div class="rjad'+(i>3?' bude':'')+'"><span class="l" style="color:inherit">'+x[0]+'</span><i><b class="kom'+(i<3?'':i===3?' zhyva':' o')+'"></b></i><span class="p pid">'+(i<3?x[1]:i===3?'зараз':'')+'</span></div>'}).join('')+'</div>'}},
+{id:'dva',nazva:'два образи — пара',html:function(){var a=V.obraz,b=V.druhyj;sh({do:5,s:'Зібрала два. Лівий — як ти просила. Правий — на крок сміливіше: '+b.slova.split(': ')[1],pole:'Котрий? Або скажи, що не так'});
+ function pol(o,n,cl){var ks=o.rechi;return '<div class="'+cl+'"><p style="font-weight:600;margin-bottom:8px">'+n+'</p>'+F(ks[0])+'<div class="polycja try" style="margin:6px 0 0;padding:6px">'+ks.slice(1).map(function(k){return '<figure>'+F(k)+'</figure>'}).join('')+'</div><p style="margin-top:10px;font-variant-numeric:tabular-nums">'+hrn(suma(ks))+'</p><button class="kn'+(cl==='l'?'':' druha')+'" style="margin-top:10px;min-height:44px" data-dali>цей</button></div>'}
+ return '<div class="os">'+pol(a,'Як просила','l')+pol(b,b.nazva,'p')+'<b class="znak" style="--y:180px">чи</b></div><p class="pid na-osi" style="margin-top:16px;max-width:320px">Фото зеленої сукні крамниця дала дрібне — показую не більшим, ніж воно є.</p>'}},
+{id:'obraz',nazva:'образ',html:function(){var o=V.obraz;sh({do:5,s:o.slova,shche:[['s',o.dovhi]],pole:'Щось не так? Скажи — пересклáду'.replace('á','а')});
+ return '<h1 class="naz vel na-osi">'+V.nahoda.nazva+'</h1><p class="pid na-osi" style="padding-top:0">'+V.nahoda.povna+' · '+V.nahoda.koly+'</p><div class="os" style="margin-top:6px"><div class="l">'+vona('zrist')+'</div><div class="p">'+F(o.rechi[0])+'</div></div><div class="os pidp"><div class="l">ти</div><div class="p">сукня на моделі крамниці · на тобі — коли буде примірка</div></div>'+polycja(o.rechi.slice(1))+spysok(o.rechi)+
+ '<div class="dii"><button class="kn" data-scena-do="pislja">Вдягну — зберегти</button><button class="kn druha" data-dali>не зовсім…</button></div>'}},
+{id:'sumniv',nazva:'сумнів і заміна',html:function(){var s=V.sumniv,c=R[s.rich],n=R[s.zaminy[0]];sh({do:5,shche:[['v',s.slova],['s','Чую. Ось пара замість них — уже приміряла до цього образу. Решта стоїть, як стояла.']],s:'Чую. Ось пара замість них — уже приміряла до цього образу. Решта стоїть, як стояла.',pole:'Або опиши, яких хочеш'});
+ return '<p class="vona-kazhe na-osi" style="max-width:300px">«'+s.slova+'»</p><div class="os pid" style="margin-top:6px"><span class="l">було</span><span class="p">натомість — раджу</span></div><div class="os" style="margin-top:8px"><div class="l">'+F(s.rich,'style="aspect-ratio:1"')+'<p style="margin-top:8px">'+c.nazva+'</p><p style="font-variant-numeric:tabular-nums">'+hrn(c.cina)+'</p></div><div class="p">'+F(s.zaminy[0],'style="aspect-ratio:1"')+'<p style="margin-top:8px;font-weight:600">'+n.nazva+'</p><p style="font-variant-numeric:tabular-nums">'+hrn(n.cina)+'</p><p class="pid" style="margin-top:6px">'+n.chomu+'</p></div><b class="znak syn" style="--y:88px">→</b></div>'+
+ '<p class="pid na-osi" style="margin-top:12px">ще дві, якщо не ця</p><div class="os">'+s.zaminy.slice(1).map(function(k,i){var r=R[k];return '<div class="'+(i?'p':'l')+'">'+F(k,'style="aspect-ratio:3/2"')+'<p style="margin-top:6px;font-size:14px">'+r.nazva+' · '+hrn(r.cina)+'</p><p class="pid">'+r.chomu+'</p></div>'}).join('')+'</div>'+
+ '<div class="dii"><button class="kn" data-dali>Взяти лофери</button><button class="kn druha" data-dali="-1">лишити черевики</button></div>'}},
+{id:'pislja',nazva:'після заміни · зворот',html:function(){var s=V.sumniv,m=V.moji[0],ks=m.rechi;sh({do:5,shche:[['v',s.slova],['s',s.vidpovid],['v',s.svoje.slova],['s',s.svoje.vidpovid]],s:s.svoje.vidpovid+' Зберегла — лежить на звороті дзеркала, з днем і нагодою.'});
+ return '<h1 class="naz vel na-osi">'+m.nazva+'</h1><p class="pid na-osi" style="padding-top:0">збережено · обернеш — побачиш, коли й куди</p><div class="os" style="margin-top:6px"><div class="l">'+F(ks[0])+'</div><div class="p"><div class="zvorot"><b>'+m.nazva+'</b><span>'+m.pro+'</span><span>'+m.data+'</span><em><i class="kom o"></i>ще попереду</em></div></div></div>'+
+ '<div class="polycja">'+ks.slice(1).map(function(k){return '<figure class="'+(k==='lofe'?'zm':k==='palt'?'sv':'')+'">'+F(k)+'</figure>'}).join('')+'</div>'+spysok(ks,{zm:'lofe',sv:'palt',vidkr:2})+'<div class="dii"><button class="kn" data-scena-do="moji">Мої образи</button></div>'}},
+{id:'kupyty',nazva:'купити чи ні',html:function(){var k=V.kupyty,r=R[k.rich],p=R[k.porivn];sh({do:0,shche:[['v',k.slova],['s',k.vyrok+'. '+k.chomu.join(' ')]],s:k.chomu[2],pole:'Покажи ще одну — порівняю'});
+ return '<p class="vona-kazhe na-osi">«'+k.slova+'»</p><div class="os pid" style="margin-top:6px"><span class="l">у крамниці</span><span class="p">уже маєш · з образу «Хрещена»</span></div><div class="os" style="margin-top:8px"><div class="l">'+F(k.rich,'style="aspect-ratio:1"')+'<p style="margin-top:8px">'+r.nazva+'</p><p>'+hrn(r.cina)+'</p></div><div class="p">'+F(k.porivn,'style="aspect-ratio:1"')+'<p style="margin-top:8px">'+p.nazva+'</p><p>'+hrn(p.cina)+'</p></div><b class="znak" style="--y:88px">чи</b></div>'+
+ '<h1 class="naz vel na-osi" style="margin-top:14px">'+k.vyrok+'</h1><ul class="prychyny">'+k.chomu.map(function(c,i){return '<li><i class="kom '+(i<2?'z':'c')+'"></i>'+c+'</li>'}).join('')+'</ul><p class="pid na-osi" style="margin-top:8px">хочеш саме цю барву — менші</p><div class="polycja try">'+k.skhozhi.map(function(x){return '<figure>'+F(x)+'<figcaption>'+hrn(R[x].cina)+'</figcaption></figure>'}).join('')+'</div><div class="dii"><button class="kn druha">Усе ж беру</button></div>'}},
+{id:'moji',nazva:'мої образи',html:function(){sh({s:'Три образи. Ліворуч — як виглядав, праворуч — зворот: коли, куди й чи вдягла.',pole:'«Що вдягти завтра на роботу?»'});
+ return '<h1 class="naz na-osi">Мої образи</h1>'+V.moji.map(function(m){return '<div class="os" style="margin-top:14px"><div class="l">'+F(m.rechi[0])+'</div><div class="p"><div class="zvorot"><b>'+m.nazva+'</b><span>'+m.pro+'</span><span>'+m.data+'</span><em><i class="kom '+(m.vdjahla?'z':'o')+'"></i>'+(m.vdjahla?'вдягла':'ще попереду')+'</em><div class="dribni">'+m.rechi.slice(1).map(function(k){return F(k)}).join('')+'</div></div></div></div>'}).join('')+
+ '<p class="pid na-osi" style="margin-top:22px">ще вмію</p><div class="plytky" style="margin-top:0"><button class="pl" data-scena-do="svij">оцінити твій образ з фото</button><button class="pl">зібрати під одну річ</button><button class="pl" data-scena-do="kupyty">сказати, купити чи ні</button><button class="pl">мої речі · буде</button></div>'}},
+{id:'pomylka',nazva:'помилка',html:function(){var k=V.chekannja.kroky;sh({do:5,s:V.pomylka,pole:'Скажи або напиши…'});
+ return '<div class="os"><div class="l">'+vona('zrist')+'</div><div class="p">'+vona('zrist','vidbyttja stalo')+'</div><b class="znak pyt">×</b></div><h1 class="naz na-osi" style="margin-top:10px">Не зібрала</h1><p class="na-osi" style="max-width:320px;font-size:15px;padding-top:0">Крамниці довго не відповідають. Твої слова й барви на місці.</p>'+
+ '<div class="kroky">'+k.slice(0,3).map(function(x,i){return '<div class="rjad"><span class="l" style="color:inherit">'+x[0]+'</span><i><b class="kom'+(i<2?'':' c')+'"></b></i><span class="p pid">'+(i<2?x[1]:'урвалось о 2:10')+'</span></div>'}).join('')+'</div><div class="dii"><button class="kn" data-scena-do="chekannja">Ще раз</button><button class="kn druha" data-scena-do="zrozumila">змінити нагоду</button></div>'}},
+{id:'svij',nazva:'оцінка свого образу',html:function(){var s=V.svij;sh({shche:[['v',s.slova_v],['s',s.dobre+' '+s.porada]],s:s.dobre+' '+s.porada,pole:'Виправ, якщо я не так розгледіла'});
+ return '<div class="os pid"><span class="l">ти сьогодні</span><span class="p">бачу на фото — так?</span></div><div class="os" style="margin-top:8px"><div class="l">'+vona('svij')+'</div><div class="p">'+s.rozpiznala.map(function(x){return '<p style="padding:9px 0;border-bottom:1px solid rgba(23,32,42,.16);display:flex;justify-content:space-between;gap:8px"><span>'+x+'</span><i class="kom z" style="margin-top:6px"></i></p>'}).join('')+'<button class="pl" style="margin-top:8px;min-height:40px;font-size:14px">+ додати</button><p class="pid" style="margin-top:14px;display:flex;gap:6px"><i class="kom o" style="margin-top:4px"></i>'+s.nema+' на фото не видно — про них не суджу</p></div></div>'+
+ '<h1 class="naz na-osi" style="margin-top:16px">'+s.vyrok+'</h1><ul class="prychyny"><li><i class="kom z"></i>'+s.dobre+'</li><li><i class="kom c"></i>'+s.porada+'</li></ul><div class="dii"><button class="kn druha">'+s.dija[0].toUpperCase()+s.dija.slice(1)+'</button></div>'}}
+];
+})();
+</script>
+</body>
+</html>

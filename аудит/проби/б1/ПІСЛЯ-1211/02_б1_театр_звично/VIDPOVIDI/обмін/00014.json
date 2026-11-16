@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk blouse, tailored cut, elbow length, ivory (#FFFFF0), lightweight woven; wool-blend trousers, straight leg, full length, charcoal (#36454F), fine heavy weave; structured blazer, boxy fit, hip length, deep rust (#802020), textured tweed.\\n\\nThis ensemble works perfectly for an evening at the theatre during autumn because the tailored blazer adds a polished layer appropriate for neat dress code requirements without being overly formal. The rich charcoal and rust tones complement the warm artificial lighting typical of a stage setting, while the silk blouse provides a subtle sheen that catches the light elegantly. The fabric choices ensure warmth against the chill air outside yet remain comfortable enough to settle in during the performance.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Silk blouse\\\", \\\"details\\\": \\\"tailored cut, elbow length, lightweight woven\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#FFFFF0\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Wool-blend trousers\\\", \\\"details\\\": \\\"straight leg, full length, fine heavy weave\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#36454F\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Structured blazer\\\", \\\"details\\\": \\\"boxy fit, hip length, textured tweed\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#802020\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":508,\"output_tokens\":152},\"stop_reason\":\"end_turn\"}"
+ }
+}

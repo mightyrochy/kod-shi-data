@@ -1,0 +1,58 @@
+── ПРОМПТ (6969 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: navy · about it: text н=1
+2 — kind code: two_piece_set · colour code: black · about it: text н=2
+3 — kind code: ankle_boots · colour code: brown · about it: text н=3
+4 — kind code: necklace · about it: text н=4
+5 — kind code: ring · colour code: silvery · about it: text н=5
+6 — kind code: bag_generic · colour code: camel · about it: text н=6
+7 — kind code: coat · colour code: beige · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; camel — кемел; navy — темно-синій; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "This navy bodycon blazer provides structure and sophistication, its sleek cut elongating your silhouette.",
+"2": "The black two-piece set forms a clean base for your outfit, with both pieces coordinating seamlessly in color and style.",
+"3": "These nubuck ankle boots offer a stylish finish while being durable enough for snowy conditions.",
+"4": "The silvery multi-strand necklace adds depth and sparkle without overpowering your ensemble, its layered design creating visual interest.",
+"5": "This textured silver ring brings a modern edge to your look, its unique shape adding personality.",
+"6": "Your beige animal-print bag introduces an unexpected flair, breaking up the monochrome tones with a touch of warmth and pattern.",
+"7": "The beige coat keeps you warm and complements your palette, its neutral tone tying together the outfit’s earthy accents.",
+"8": "For your business meeting, you’ve chosen a sophisticated black two-piece set as the foundation of your outfit. Layering a navy bodycon blazer over it creates a polished silhouette that feels both professional and modern. The silvery multi-strand necklace adds a touch of understated elegance, while the textured silver ring offers a subtle metallic accent that complements the necklace’s tone perfectly. Your beige animal-print bag introduces a playful yet chic element that balances the formality of your attire. To complete the look, ankle boots provide both style and practicality for walking in snowy conditions. The beige coat wraps you warmly, ensuring comfort during your outdoor journey while maintaining a cohesive aesthetic with the rest of your ensemble.",
+"9": "Wear the blazer open or buttoned depending on how much warmth you need; it can be removed indoors if necessary.",
+"10": "Let the necklace’s multiple strands rest naturally around your neck without over-tightening."
+}
+
+── ВІДПОВІДЬ (1943 симв., 18.1 с, HTTP 200) ──
+```json
+{
+  "1": "Цей темно-синій приталений блейзер додає структури та вишуканості, його елегантний крій видовжує твій силует.",
+  "2": "Чорний комплект з двох частин створює чисту основу для твого образу, обидві частини гармонійно поєднуються за кольором і стилем.",
+  "3": "Ці замшеві черевики до щиколотки завершують образ зі смаком, при цьому вони досить міцні для сніжних умов.",
+  "4": "Срібний багатошаровий кулон додає глибини та блиску без перевантаження ансамблю, його нашарований дизайн створює візуальний інтерес.",
+  "5": "Ця текстурована срібна каблучка привносить сучасну нотку у твій вигляд, її незвичайна форма додає особистості.",
+  "6": "Твоя бежева сумка з принтом «тварина» вносить неочікуваний акцент, розбавляючи монохромні тони дотиком тепла та візерунка.",
+  "7": "Бежевий пальта зігріває тебе і гармонує з твоєю колірною гамою, його нейтральний тон поєднує земні відтінки вбрання.",
+  "8": "На твою ділову зустріч ти обрала вишуканий чорний комплект з двох частин як основу свого образу. Накинувши поверх нього темно-синій приталений блейзер, ти створюєш елегантний силует, який поєднує в собі професіоналізм і сучасність. Срібний багатошаровий кулон додає нотку стриманої вишуканості, а текстурована срібна каблучка пропонує тонкий металевий акцент, що чудово доповнює колір кулона. Твоя бежева сумка з принтом «тварина» вносить грайливий і водночас елегантний елемент, який балансує формальність твого одягу. Щоб завершити образ, черевики до щиколотки забезпечують стиль і практичність для ходьби у сніжних умовах. Бежеве пальта зігріває тебе, гарантуючи комфорт під час твоєї прогулянки на вулиці, при цьому зберігає цілісний естетичний вигляд з рештою твого ансамблю.",
+  "9": "Носи блейзер розстебнутим або застебнутим залежно від того, скільки тепла тобі потрібно; його можна зняти в приміщенні, якщо це необхідно.",
+  "10": "Дай багатошаровому кулону вільно лежати на шиї без надто сильного стягування."
+}
+```

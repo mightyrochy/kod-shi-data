@@ -7,11 +7,17 @@
   1  мовну модель просять градуси (схема, опис поля `temperature_c`, промпт, заява з `temperature_c`/`temp_c`) чи код
      приймає їх із відповіді;
   2  код читає, пише, зберігає чи передає градуси (паспорт, картка, сцена, кеш, правила, бриф, промпт, заява суду,
-     дріт, протокол стилістки), зокрема прапорець походження градусів (`темп_з_відчуття`);
+     дріт, протокол стилістки), зокрема прапорець походження градусів (`темп_з_відчуття`) і її словами: цитата поля
+     смуги погоди в плоских цитатах паспорта (`цитати_полів` → `field_quotes`, «Твої слова») і в джерелі поля
+     (`sources[].quote`) — доповнено 15.11 (`АналізСлів`, Ц і Д); число з її уривка (Ч, рішення менеджера 15523);
+     рядок з °C будь-якою мовою в змістовому полі знахідки суду (`знахідка.ЗМІСТОВІ`, до запиту стилістки; показ
+     читає — ще й п.4) — З, рішення менеджера 15584: місце визначає читач рядка, а не мова;
   3  код перетворює відчуття на градуси (таблиця `weather_feel`) чи градуси на смугу, факт чи величину — порогом
      реєстру чи літералом, пошуком у таблиці смуг, відстанню чи часткою в °C; сам поріг реєстру, межа таблиці смуг,
      з якою порівнюють градуси нагоди, і літерал межі — теж місце;
-  4  панель дає ввести градуси числом, картка й показ показують градуси;
+  4  панель дає ввести градуси числом, картка й показ показують градуси, зокрема текстом моделі: шапка картки з
+     вільного рядка відповіді моделі про погоду — доповнено 15.11 (`АналізСлів`, Ш); поріг у °C текстом моделі
+     (англійська рядкова константа з числом °C, «at +20 °C and warmer») — п.3 (`АналізСлів`, Т);
   5  рішення правила погоди судить межею, якої база знань не дає (межі K-WEA-01 — з бази, `тема-4` §IX.4), чи межу
      визначено двічі (літерал, що повторює поріг реєстру). Місце — саме рішення (порівняння), не кожна точка з ід.
   6  м/с вітру нагоди: поле, ключ, перетворення плитки чи слова на м/с, поріг і показ.
@@ -1597,6 +1603,944 @@ class АналізДжс:
                     break
 
 
+# ── градуси її словами й словами моделі (п.2 — цитата поля, п.4 — шапка, п.3 — поріг текстом моделі) ──────────────
+# Доповнення класу 15.11 (дошка 15497, #3888): смугу код тримав, а її слова з градусами йшли далі як є. Значення тут
+# — слова, а не число, тож зерно — не ключ градусів, а поле смуги погоди (`смуга_погоди` паспорта, `weather_band`
+# дроту й мовної моделі), чий уривок — її градуси («мінус десять», «+12 °C»), і вільний текст моделі про нього.
+#   Ц  — плоска цитата паспорта (`цитати_полів` → `field_quotes` стилістці, `quotes` мовній моделі, «Твої слова»):
+#        запис у колекцію плоских цитат з ключем поля погоди чи з ключем-змінною, якої на цьому шляху поле погоди не
+#        минає. Колекція — індекс із ключем `цитати_полів`, її `setdefault`/`get` чи ім'я, присвоєне з них або
+#        присвоєне назад у `…["цитати_полів"]`; JS — `….цитати_полів[к] = …`.
+#   Д  — джерело поля (`sources[].quote`): виклик складача походження (функція, що пише параметр у ключ `quote`)
+#        з її уривком поля в функції, загальній за полем (параметр-поле), — уривком факту картки (`["уривок"]`,
+#        `.get("уривок")`) чи плоскою цитатою поля (`цитати_полів` + `.get(поле)`).
+#   Ш  — шапка картки з тексту моделі: таблиця пар (ключ відповіді моделі, поле паспорта), з перших елементів якої код
+#        будує схему відповіді вільним рядком (`{к: {"type": "string"} for к, _ in ТАБЛИЦЯ}`); пара з полем погоди —
+#        місце (слова моделі про погоду — з її градусами — стоять у шапці над картками).
+#   Ч  — читач уривка (рішення менеджера 15523, 15.11): уривок у факті картки (`картка_запиту.записати`, поле
+#        `уривок`) і читачі, що звіряють його з її словами (`мовний_шар.тримається`) чи лічать силу факту за тим, чи
+#        уривок є, — не місце; місце п.2 — читач, що дістає з уривка поля, яке може бути погодою, число (`float`,
+#        `int`, `re.*` з `\d`/`[0-9]`, `.isdigit()`; JS `parseFloat`/`parseInt`/`Number`, `.match`/`.search`/`.exec`
+#        з `\d`), і той, що несе його далі картки (Ц, Д).
+#   Т  — поріг у °C текстом моделі: рядкова константа (не докстрінг) англійською (мова промптів і описів моделі,
+#        `аудит/ПРОДУКТ.md` п.12), де стоїть число з °C («at +20 °C and warmer there is none»); рядок, що вчить
+#        перевести градуси в код смуги (°C поруч із кодом смуги), — не місце (п.1).
+# Поле погоди «минає» запис, коли умова на шляху до нього (`if`, `and`, JS `if (…)` / `&&`) для поля погоди хибна,
+# чи коли кожен виклик функції-складача закінчується зняттям `quote` за умовою, істинною для поля погоди. Умову
+# обчислено: порівняння з літералом чи переліком, виклик функції продукту з одним аргументом-полем (функцію
+# виконано на дереві, що лічиться), JS — `(А.Б || []).includes(поле)`, де `А` — таблиця довідника, яку код Python
+# кладе викликом функції продукту (`таблиці["факт_паспорта"] = К.політика()`). Не обчислено — місце (не менше місць).
+ПОЛЕ_ПОГОДИ = ("смуга_погоди", "weather_band")
+ЦИТАТИ = "цитати_полів"
+УРИВОК = "уривок"
+ЦИТАТА_ДЖЕРЕЛА = "quote"
+ОПОРИ = "опори"
+ЧИСЛО_ГРАДУСІВ = re.compile(r"[+\-−]?\d+(?:[.,]\d+)?\s?°\s?C\b")
+КОДИ_СМУГ = re.compile(r"\b(?:deep_frost|frost|cold|cool|mild|warm|hot)\b")
+ПОГОДА = ПОЛЕ_ПОГОДИ[0]
+
+
+def _константа_є(вузол, значення):
+    """Чи у виразі є рядкова константа `значення`."""
+    return any(рядок_константи(в) == значення for в in ast.walk(вузол))
+
+
+class Виконавець:
+    """Функції продукту дерева, що лічиться: модуль — з його теки, вивід імпорту й виклику поглинуто."""
+
+    def __init__(self, корінь):
+        self.корінь = корінь
+        self.модулі = {}
+        self.помилки = []
+
+    def модуль(self, шлях):
+        if шлях in self.модулі:
+            return self.модулі[шлях]
+        import contextlib
+        import importlib.util
+        import io
+        повний = os.path.join(self.корінь, шлях)
+        тека = os.path.dirname(повний)
+        ім = os.path.splitext(os.path.basename(шлях))[0]
+        м = None
+        було = list(sys.path)
+        try:
+            sys.path.insert(0, тека)
+            # той самий модуль з іншої теки (інше дерево) — не наш
+            for к, в in list(sys.modules.items()):
+                ф = getattr(в, "__file__", None) or ""
+                if ф and os.path.dirname(os.path.abspath(ф)) != os.path.abspath(тека) and \
+                        os.path.exists(os.path.join(тека, к + ".py")):
+                    del sys.modules[к]
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                if ім in sys.modules and os.path.abspath(getattr(sys.modules[ім], "__file__", "") or "") == \
+                        os.path.abspath(повний):
+                    м = sys.modules[ім]
+                else:
+                    сп = importlib.util.spec_from_file_location(ім, повний)
+                    м = importlib.util.module_from_spec(сп)
+                    sys.modules[ім] = м
+                    сп.loader.exec_module(м)
+        except Exception as е:      # не обчислено — місце лишається
+            self.помилки.append("%s: імпорт: %s: %s" % (шлях, type(е).__name__, е))
+            м = None
+        finally:
+            sys.path[:] = було
+        self.модулі[шлях] = м
+        return м
+
+    def виклик(self, шлях, ім, *арг):
+        import contextlib
+        import io
+        м = self.модуль(шлях)
+        ф = getattr(м, ім, None) if м is not None else None
+        if not callable(ф):
+            return None, False
+        try:
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                return ф(*арг), True
+        except Exception as е:
+            self.помилки.append("%s.%s%r: %s: %s" % (шлях, ім, арг, type(е).__name__, е))
+            return None, False
+
+
+class АналізСлів:
+    """Ц, Д, Ш, Т — градуси її словами й словами моделі; місця — через `додати(файл, рядок, пункт, доказ)`."""
+
+    def __init__(self, корінь, пі, джс):
+        self.пі = пі
+        self.джс = джс
+        self.за_модулем = {}
+        for м in пі:
+            self.за_модулем.setdefault(м.ім_модуля, м)
+        self.вик = Виконавець(корінь)
+        self.лік = {"Ц": 0, "Д": 0, "Ш": 0, "Т": 0, "Ч": 0, "З": 0}
+        # поля знахідки суду — з самого дерева (`знахідка.ЗМІСТОВІ`, `знахідка.ОБОВʼЯЗКОВІ`), рішення менеджера 15584
+        зм = self.за_модулем.get("знахідка")
+        self.змістові = tuple(self.глобальне(зм, "ЗМІСТОВІ") or ()) if зм else ()
+        self.обовязкові = tuple(self.глобальне(зм, "ОБОВ\u02bcЯЗКОВІ") or ()) if зм else ()
+        self.примітки = []
+
+    # ── функції продукту за іменем у точці виклику ──
+    def ціль(self, м, функ):
+        """(Пі, ім'я функції) для `f` / `M.f` / `from m import f`; None — не функція продукту."""
+        if isinstance(функ, ast.Name):
+            if any(ф.name == функ.id for ф in м.функції if ф.col_offset == 0):
+                return м, функ.id
+            імп = м.імпорти.get(функ.id)
+            if імп and імп[1] and імп[0] in self.за_модулем:
+                return self.за_модулем[імп[0]], імп[1]
+        elif isinstance(функ, ast.Attribute) and isinstance(функ.value, ast.Name):
+            імп = м.імпорти.get(функ.value.id)
+            if імп and імп[1] is None and імп[0] in self.за_модулем:
+                return self.за_модулем[імп[0]], функ.attr
+        return None
+
+    def глобальне(self, м, ім):
+        """Значення літерала рівня модуля (кортеж, список, множина рядків) чи None."""
+        for в in м.дерево.body:
+            if isinstance(в, ast.Assign) and any(isinstance(ц, ast.Name) and ц.id == ім for ц in в.targets):
+                try:
+                    return ast.literal_eval(в.value)
+                except (ValueError, SyntaxError, TypeError):
+                    return None
+        return None
+
+    # ── умова для поля погоди: True / False / None (не обчислено) ──
+    def умова(self, м, умова, поле):
+        if isinstance(умова, ast.BoolOp):
+            значення = [self.умова(м, з, поле) for з in умова.values]
+            if isinstance(умова.op, ast.And):
+                return False if False in значення else (True if all(з is True for з in значення) else None)
+            return True if True in значення else (False if all(з is False for з in значення) else None)
+        if isinstance(умова, ast.UnaryOp) and isinstance(умова.op, ast.Not):
+            з = self.умова(м, умова.operand, поле)
+            return None if з is None else not з
+        if isinstance(умова, ast.Compare) and len(умова.ops) == 1 and isinstance(умова.left, ast.Name) \
+                and умова.left.id == поле:
+            інше = умова.comparators[0]
+            оп = умова.ops[0]
+            if isinstance(оп, (ast.Eq, ast.NotEq)) and рядок_константи(інше) is not None:
+                return (рядок_константи(інше) in ПОЛЕ_ПОГОДИ) == isinstance(оп, ast.Eq)
+            if isinstance(оп, (ast.In, ast.NotIn)):
+                try:
+                    кол = ast.literal_eval(інше)
+                except (ValueError, SyntaxError, TypeError):
+                    кол = self.глобальне(м, інше.id) if isinstance(інше, ast.Name) else None
+                if isinstance(кол, (tuple, list, set, frozenset, dict)):
+                    return (ПОГОДА in кол) == isinstance(оп, ast.In)
+            return None
+        if isinstance(умова, ast.Call) and len(умова.args) == 1 and not умова.keywords \
+                and isinstance(умова.args[0], ast.Name) and умова.args[0].id == поле:
+            ц = self.ціль(м, умова.func)
+            if ц:
+                з, ок = self.вик.виклик(ц[0].шлях, ц[1], ПОГОДА)
+                return bool(з) if ок else None
+        return None
+
+    def згадує(self, вузол, поле):
+        return any(isinstance(в, ast.Name) and в.id == поле for в in ast.walk(вузол))
+
+    def минає(self, м, вузол, поле):
+        """Чи умова на шляху до вузла (у його функції) для поля погоди хибна."""
+        б, дитина = м.батько.get(id(вузол)), вузол
+        while б is not None and not isinstance(б, ОБЛАСТІ):
+            if isinstance(б, (ast.If, ast.IfExp)) and дитина is not б.test and self.згадує(б.test, поле):
+                з = self.умова(м, б.test, поле)
+                в_тілі = (дитина in б.body) if isinstance(б, ast.If) else (дитина is б.body)
+                if з is (not в_тілі) or (з is False and в_тілі):
+                    return True
+                if в_тілі and isinstance(б.test, ast.BoolOp) and isinstance(б.test.op, ast.And) and \
+                        any(self.згадує(з_, поле) and self.умова(м, з_, поле) is False for з_ in б.test.values):
+                    return True
+            б, дитина = м.батько.get(id(б)), б
+        return False
+
+    # ── Ц: плоска цитата ──
+    def колекція(self, м, вираз, вузол):
+        """Чи вираз — колекція плоских цитат."""
+        if isinstance(вираз, ast.Subscript) and рядок_константи(вираз.slice) == ЦИТАТИ:
+            return True
+        if isinstance(вираз, ast.Call) and isinstance(вираз.func, ast.Attribute) and \
+                вираз.func.attr in ("setdefault", "get") and вираз.args and рядок_константи(вираз.args[0]) == ЦИТАТИ:
+            return True
+        if isinstance(вираз, ast.Name):
+            обл = м.область(вузол)
+            д = м.досяжне(обл, вираз.id, вузол)
+            if д and д[1] is not None and д[2] == "знач" and _константа_є(д[1], ЦИТАТИ):
+                return True
+            # ім'я, яке присвоюють назад у `…["цитати_полів"]` у тій самій області
+            for в in м.вид("Assign"):
+                if м.область(в) is обл and isinstance(в.value, ast.Name) and в.value.id == вираз.id and any(
+                        isinstance(ц, ast.Subscript) and рядок_константи(ц.slice) == ЦИТАТИ for ц in в.targets):
+                    return True
+        return False
+
+    def цитати_пі(self, м, додати):
+        for в in м.вид("Assign"):
+            for ц in в.targets:
+                if not (isinstance(ц, ast.Subscript) and self.колекція(м, ц.value, в)):
+                    continue
+                ключ = ц.slice
+                к = рядок_константи(ключ)
+                if к is not None:
+                    if к in ПОЛЕ_ПОГОДИ:
+                        додати(м.шлях, в.lineno, 2, "плоска цитата поля погоди «%s» (її градуси словами)" % к)
+                        self.лік["Ц"] += 1
+                    continue
+                поле = ключ.id if isinstance(ключ, ast.Name) else None
+                if поле and self.минає(м, в, поле):
+                    continue
+                додати(м.шлях, в.lineno, 2, "плоска цитата поля з ключем `%s`, який поле погоди не минає "
+                       "(її градуси словами → field_quotes / «Твої слова»)" % (поле or ast.unparse(ключ)))
+                self.лік["Ц"] += 1
+
+    # ── Д: джерело поля з `quote` ──
+    def складачі(self):
+        """{(шлях, функція): номер параметра}, що пишеться в `quote` результату."""
+        вих = {}
+        for м in self.пі:
+            for ф in м.функції:
+                пар = м.параметри.get(id(ф), [])
+                for в in ast.walk(ф):
+                    ім = None
+                    if isinstance(в, ast.Assign) and any(isinstance(ц, ast.Subscript) and
+                                                         рядок_константи(ц.slice) == ЦИТАТА_ДЖЕРЕЛА for ц in в.targets):
+                        ім = в.value.id if isinstance(в.value, ast.Name) else None
+                    elif isinstance(в, ast.Dict):
+                        for к, з in zip(в.keys, в.values):
+                            if к is not None and рядок_константи(к) == ЦИТАТА_ДЖЕРЕЛА and isinstance(з, ast.Name):
+                                ім = з.id
+                    if ім in пар:
+                        вих[(м.шлях, ф.name)] = пар.index(ім)
+        return вих
+
+    def уривок_поля(self, м, вираз, вузол, поле):
+        """Чи вираз — її уривок поля: уривок факту чи плоска цитата поля (`цитати_полів` … `.get(поле)`)."""
+        if _константа_є(вираз, УРИВОК):
+            return True
+        if isinstance(вираз, ast.Name):
+            д = м.досяжне(м.область(вузол), вираз.id, вузол)
+            if д and д[1] is not None and д[2] == "знач":
+                return _константа_є(д[1], УРИВОК) or (_константа_є(д[1], ЦИТАТИ) and self.згадує(д[1], поле))
+        return False
+
+    def ключ_запису(self, ф, п):
+        """Чи параметр `п` — ключ запису у функції: індекс `[п]` чи перший аргумент `.get(п)`."""
+        for в in ast.walk(ф):
+            if isinstance(в, ast.Subscript) and isinstance(в.slice, ast.Name) and в.slice.id == п:
+                return True
+            if isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr == "get" and в.args \
+                    and isinstance(в.args[0], ast.Name) and в.args[0].id == п:
+                return True
+        return False
+
+    def знято_обгорткою(self, м, ф, поле_ф):
+        """Чи кожен виклик функції `ф` — `V = ф(…)`, після якого `V.pop("quote")` за умовою, істинною для погоди."""
+        викликів = 0
+        for мм in self.пі:
+            for в in мм.вид("Call"):
+                ц = self.ціль(мм, в.func)
+                if ц != (м, ф.name):
+                    continue
+                викликів += 1
+                ст = мм.батько.get(id(в))
+                if not (isinstance(ст, ast.Assign) and len(ст.targets) == 1 and isinstance(ст.targets[0], ast.Name)):
+                    return False
+                змінна = ст.targets[0].id
+                обг = мм.функція_вузла(в)
+                if обг is None:
+                    return False
+                номер = м.параметри.get(id(ф), []).index(поле_ф)
+                поле_о = в.args[номер].id if номер < len(в.args) and isinstance(в.args[номер], ast.Name) else None
+                знято = False
+                for і in ast.walk(обг):
+                    if isinstance(і, ast.If) and поле_о and self.згадує(і.test, поле_о) and \
+                            self.умова(мм, і.test, поле_о) is True and і.lineno > в.lineno:
+                        for п in ast.walk(і):
+                            if isinstance(п, ast.Call) and isinstance(п.func, ast.Attribute) and п.func.attr == "pop" \
+                                    and isinstance(п.func.value, ast.Name) and п.func.value.id == змінна and \
+                                    п.args and рядок_константи(п.args[0]) == ЦИТАТА_ДЖЕРЕЛА:
+                                знято = True
+                if not знято:
+                    return False
+        return викликів > 0
+
+    # ── вкладене джерело: `опори` факту картки (її слова по частинах складеного поля) ──
+    def з_опор(self, м, виклик):
+        """Чи виклик складача стоїть у вкладеному записі, що ітерує `…["опори"]` / `.get("опори")` факту."""
+        б = м.батько.get(id(виклик))
+        while б is not None and not isinstance(б, ОБЛАСТІ):
+            ітери = []
+            if isinstance(б, (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.DictComp)):
+                ітери = [г.iter for г in б.generators]
+            elif isinstance(б, (ast.For, ast.AsyncFor)):
+                ітери = [б.iter]
+            if any(isinstance(в, ast.Constant) and в.value == ОПОРИ for і in ітери for в in ast.walk(і)):
+                return True
+            б = м.батько.get(id(б))
+        return False
+
+    def писачі_опор(self):
+        """[(модуль, функція, параметр опор, параметр поля)]: функція кладе параметр у ключ `опори` запису, що лежить за
+        ключем-параметром (`картка[поле] = факт`, `факт["опори"] = опори`)."""
+        вих = []
+        for м in self.пі:
+            for ф in м.функції:
+                пар = м.параметри.get(id(ф), [])
+                опора = поле = None
+                for в in ast.walk(ф):
+                    if isinstance(в, ast.Assign) and \
+                            any(isinstance(ц, ast.Subscript) and рядок_константи(ц.slice) == ОПОРИ for ц in в.targets):
+                        імена = [н.id for н in ast.walk(в.value) if isinstance(н, ast.Name) and н.id in пар]
+                        опора = імена[0] if імена else опора
+                    if isinstance(в, ast.Assign):
+                        for ц in в.targets:
+                            if isinstance(ц, ast.Subscript) and isinstance(ц.slice, ast.Name) and ц.slice.id in пар:
+                                поле = ц.slice.id
+                if опора and поле:
+                    вих.append((м, ф, опора, поле))
+        return вих
+
+    def поле_виклику(self, м, виклик, арг):
+        """Чи аргумент-поле може бути полем погоди: рядок, змінна циклу по переліку літералів; інше — може."""
+        if арг is None:
+            return True
+        з = рядок_константи(арг)
+        if з is not None:
+            return з in ПОЛЕ_ПОГОДИ
+        if isinstance(арг, ast.Name):
+            б = м.батько.get(id(виклик))
+            while б is not None and not isinstance(б, ОБЛАСТІ):
+                if isinstance(б, (ast.For, ast.AsyncFor)) and isinstance(б.target, ast.Name) and б.target.id == арг.id:
+                    try:
+                        кол = ast.literal_eval(б.iter)
+                    except (ValueError, SyntaxError, TypeError):
+                        return True
+                    return isinstance(кол, (tuple, list, set, frozenset)) and any(к in ПОЛЕ_ПОГОДИ for к in кол)
+                б = м.батько.get(id(б))
+        return True
+
+    def опори_без_погоди(self):
+        """True — писачі `опори` є, і жоден виклик з `опори` не кладе поле погоди; False — може; None — писача нема."""
+        писачі = self.писачі_опор()
+        if not писачі:
+            return None
+        цілі = {(м.шлях, ф.name): (оп, пл, ф) for м, ф, оп, пл in писачі}
+        for м in self.пі:
+            for в in м.вид("Call"):
+                ц = self.ціль(м, в.func)
+                if not ц or (ц[0].шлях, ц[1]) not in цілі:
+                    continue
+                оп, пл, ф = цілі[(ц[0].шлях, ц[1])]
+                пар = ц[0].параметри.get(id(ф), [])
+
+                def аргумент(ім):
+                    for к in в.keywords:
+                        if к.arg == ім:
+                            return к.value, True
+                    і = пар.index(ім)
+                    return (в.args[і], True) if і < len(в.args) else (None, False)
+                знач, є = аргумент(оп)
+                if not є or (isinstance(знач, ast.Constant) and знач.value is None):
+                    continue
+                поле, _ = аргумент(пл)
+                if self.поле_виклику(м, в, поле):
+                    return False
+        return True
+
+    def джерела_пі(self, додати):
+        складачі = self.складачі()
+        for м in self.пі:
+            for в in м.вид("Call"):
+                ц = self.ціль(м, в.func)
+                if not ц or (ц[0].шлях, ц[1]) not in складачі:
+                    continue
+                номер = складачі[(ц[0].шлях, ц[1])]
+                if номер >= len(в.args):
+                    continue
+                ф = м.функція_вузла(в)
+                if ф is None or ф.name == ц[1]:
+                    continue
+                # функція загальна за полем: параметр, яким беруть запис (`[поле]`, `.get(поле)`)
+                ключі = [п for п in м.параметри.get(id(ф), []) if self.ключ_запису(ф, п)]
+                поле = next((п for п in ключі if self.уривок_поля(м, в.args[номер], в, п)), None)
+                if поле is None:
+                    continue
+                if self.минає(м, в, поле):
+                    continue
+                # обгортка знімає `quote` лише з запису, який функція повертає, — не з вкладених (`parts`)
+                ст = м.батько.get(id(в))
+                верхній = isinstance(ст, ast.Assign) and len(ст.targets) == 1 and isinstance(ст.targets[0], ast.Name) \
+                    and any(isinstance(р, ast.Return) and isinstance(р.value, ast.Name) and р.value.id == ст.targets[0].id
+                            for р in ast.walk(ф))
+                if верхній and self.знято_обгорткою(м, ф, поле):
+                    continue
+                # вкладений запис `parts` читають з `опори` факту картки: він несе її слова лише там, куди писач `опори`
+                # може покласти поле погоди (писач, якого не знайдено чи не обчислено, — місце)
+                if self.з_опор(м, в) and self.опори_без_погоди() is True:
+                    continue
+                додати(м.шлях, в.lineno, 2, "джерело поля `quote` з її уривком (`%s(…)` у `%s`), який поле "
+                       "погоди не минає (її градуси словами → sources[].quote)" % (ц[1], ф.name))
+                self.лік["Д"] += 1
+
+    # ── Ш: шапка з вільного тексту моделі ──
+    def шапки_пі(self, додати):
+        таблиці = set()
+        for м in self.пі:
+            for в in м.вид("DictComp"):
+                if not (isinstance(в.value, ast.Dict) and any(рядок_константи(к) == "type" and рядок_константи(з) ==
+                                                                "string" for к, з in zip(в.value.keys, в.value.values))
+                        and not any(рядок_константи(к) == "enum" for к in в.value.keys)):
+                    continue
+                for ген in в.generators:
+                    і = ген.iter
+                    if isinstance(і, ast.Attribute) and isinstance(і.value, ast.Name):
+                        імп = м.імпорти.get(і.value.id)
+                        if імп and імп[1] is None and імп[0] in self.за_модулем:
+                            таблиці.add((self.за_модулем[імп[0]].шлях, і.attr))
+                    elif isinstance(і, ast.Name):
+                        імп = м.імпорти.get(і.id)
+                        if імп and імп[1] and імп[0] in self.за_модулем:
+                            таблиці.add((self.за_модулем[імп[0]].шлях, імп[1]))
+                        else:
+                            таблиці.add((м.шлях, і.id))
+        for м in self.пі:
+            for в in м.дерево.body:
+                if not isinstance(в, ast.Assign):
+                    continue
+                for ц in в.targets:
+                    if isinstance(ц, ast.Name) and (м.шлях, ц.id) in таблиці and isinstance(в.value, (ast.Tuple, ast.List)):
+                        for е in в.value.elts:
+                            if isinstance(е, (ast.Tuple, ast.List)) and any(рядок_константи(х) in ПОЛЕ_ПОГОДИ
+                                                                          for х in е.elts):
+                                додати(м.шлях, е.lineno, 4, "шапка картки словами моделі про погоду (`%s`: вільний "
+                                       "рядок відповіді моделі → поле погоди; її градуси в шапці)" % ц.id)
+                                self.лік["Ш"] += 1
+
+    # ── Т: поріг у °C текстом моделі ──
+    def тексти_пі(self, м, додати):
+        for в in м.вид("Constant"):
+            if not isinstance(в.value, str) or id(в) in м.докстрінги or not ЧИСЛО_ГРАДУСІВ.search(в.value):
+                continue
+            for н in range(в.lineno, (в.end_lineno or в.lineno) + 1):
+                р = м.рядки[н - 1] if 0 < н <= len(м.рядки) else ""
+                # шматок у лапках, де стоїть число з °C (коментар рядка — не текст)
+                шматок = next((с.group(2) for с in re.finditer(r"([\"'])((?:\\.|(?!\1).)*)\1", р)
+                               if ЧИСЛО_ГРАДУСІВ.search(с.group(2))), None)
+                if шматок is None:
+                    continue
+                мм = ЧИСЛО_ГРАДУСІВ.search(шматок)
+                if len(re.findall(r"[A-Za-z]", шматок)) <= len(re.findall(r"[А-Яа-яЇїІіЄєҐґ]", шматок)):
+                    continue        # українською — примітка чи текст жінці, не мова моделі
+                if КОДИ_СМУГ.search(шматок) and re.search(r"→|=>|->", шматок):
+                    continue        # п.1: вчить перевести градуси в код смуги
+                додати(м.шлях, н, 3, "поріг у °C текстом моделі: «%s»" % мм.group(0))
+                self.лік["Т"] += 1
+
+    # ── З: градуси в змістовому полі знахідки суду (рішення менеджера 15584) ──
+    # Чи рядок із числом °C — місце, вирішує читач рядка, а не мова. Змістові поля знахідки («суть», «чому» —
+    # `знахідка.ЗМІСТОВІ`) читає запит стилістки, тож рядок з °C, що в них іде (прямо, через змінну чи через ключ
+    # словника, який код у них вкладає), — п.2, а коли поле читає показ (JS) — ще й п.4. Інше текстове поле
+    # конструктора знахідки (`ламається` → `де_ламається`) — місце, лише коли його ключ читає показ; інакше — примітка
+    # з переліком читачів. Рядок без такого читача (примітка реєстру, опис поля, текст стенда) — не місце.
+    def функція(self, м, ім, глиб=0):
+        """(Пі, FunctionDef) верхнього рівня за іменем — з переходом за реекспортом `from m import ім`."""
+        for ф in м.функції:
+            if ф.col_offset == 0 and ф.name == ім:
+                return м, ф
+        імп = м.імпорти.get(ім)
+        if глиб < 4 and імп and імп[1] and імп[0] in self.за_модулем:
+            return self.функція(self.за_модулем[імп[0]], імп[1], глиб + 1)
+        return None
+
+    def ціль_ф(self, м, функ):
+        if isinstance(функ, ast.Name):
+            return self.функція(м, функ.id)
+        if isinstance(функ, ast.Attribute) and isinstance(функ.value, ast.Name):
+            імп = м.імпорти.get(функ.value.id)
+            if імп and імп[1] is None and імп[0] in self.за_модулем:
+                return self.функція(self.за_модулем[імп[0]], функ.attr)
+        return None
+
+    def форма_знахідки(self, в):
+        """{ключ: вираз} словника у формі знахідки (є обов'язкові ключі й хоч один змістовий) чи None."""
+        if isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id == "dict":
+            пари = {к.arg: к.value for к in в.keywords if к.arg}
+        elif isinstance(в, ast.Dict):
+            пари = {рядок_константи(к): з for к, з in zip(в.keys, в.values)
+                    if к is not None and рядок_константи(к) is not None}
+        else:
+            return None
+        if all(к in пари for к in self.обовязкові) and any(к in пари for к in self.змістові):
+            return пари
+        return None
+
+    @staticmethod
+    def цілим(з):
+        """Імена, що стають значенням поля цілими: `п`, `п or …`, `… if … else п` (не вкладені у формат чи виклик)."""
+        if isinstance(з, ast.Name):
+            return {з.id}
+        if isinstance(з, ast.BoolOp):
+            return set().union(*(АналізСлів.цілим(х) for х in з.values))
+        if isinstance(з, ast.IfExp):
+            return АналізСлів.цілим(з.body) | АналізСлів.цілим(з.orelse)
+        return set()
+
+    def конструктори(self):
+        """{(шлях, ім'я): ({позиція: параметр}, {змістові параметри}, {інший параметр: ключ запису})} — функції, що
+        вкладають параметр у змістове поле знахідки: словником у формі знахідки, через інший конструктор чи
+        пересиланням `*a, **kw`; до нерухомої точки."""
+        к = {}
+        змінено = True
+        while змінено:
+            змінено = False
+            for м in self.пі:
+                for ф in м.функції:
+                    if ф.col_offset:
+                        continue
+                    а = ф.args
+                    поз = [п.arg for п in а.posonlyargs + а.args]
+                    усі = set(поз + [п.arg for п in а.kwonlyargs])
+                    зм, інші, переслано = set(), {}, None
+                    for в in ast.walk(ф):
+                        пари = self.форма_знахідки(в)
+                        for ключ, з in (пари or {}).items():
+                            if ключ in self.змістові:
+                                зм |= self.цілим(з) & усі
+                        if isinstance(в, ast.Assign) and isinstance(в.value, ast.Name) and в.value.id in усі:
+                            for ц in в.targets:
+                                if isinstance(ц, ast.Subscript) and рядок_константи(ц.slice):
+                                    інші.setdefault(в.value.id, рядок_константи(ц.slice))
+                        if not isinstance(в, ast.Call):
+                            continue
+                        ц = self.ціль_ф(м, в.func)
+                        інфо = к.get((ц[0].шлях, ц[1].name)) if ц and ц[1] is not ф else None
+                        if not інфо:
+                            continue
+                        if а.vararg and а.kwarg and \
+                                any(isinstance(х, ast.Starred) and isinstance(х.value, ast.Name) and
+                                    х.value.id == а.vararg.arg for х in в.args) and \
+                                any(кв.arg is None and isinstance(кв.value, ast.Name) and кв.value.id == а.kwarg.arg
+                                    for кв in в.keywords):
+                            переслано = інфо
+                            continue
+                        for і, арг in enumerate(в.args):
+                            if isinstance(арг, ast.Starred):
+                                break
+                            if інфо[0].get(і) in інфо[1]:
+                                зм |= self.цілим(арг) & усі
+                        for кв in в.keywords:
+                            if кв.arg in інфо[1]:
+                                зм |= self.цілим(кв.value) & усі
+                    нове = переслано or ((dict(enumerate(поз)), зм, {п: кл for п, кл in інші.items() if п not in зм})
+                                         if зм else None)
+                    if нове and к.get((м.шлях, ф.name)) != нове:
+                        к[(м.шлях, ф.name)] = нове
+                        змінено = True
+        return к
+
+    def читання_ключа(self, в):
+        """Ключ константи в читанні `X["K"]` / `X.get("K")` чи None."""
+        if isinstance(в, ast.Subscript) and isinstance(в.ctx, ast.Load) and рядок_константи(в.slice):
+            return рядок_константи(в.slice)
+        if isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr == "get" and в.args and \
+                рядок_константи(в.args[0]):
+            return рядок_константи(в.args[0])
+        return None
+
+    def записи_ключа(self, м, ключ):
+        """Значення, що модуль кладе під ключ: `dict(K=…)`, `{"K": …}`, `X["K"] = …`."""
+        вих = []
+        for в in м.вид("Call", "Dict", "Assign"):
+            if isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id == "dict":
+                вих += [кв.value for кв in в.keywords if кв.arg == ключ]
+            elif isinstance(в, ast.Dict):
+                вих += [з for к, з in zip(в.keys, в.values) if к is not None and рядок_константи(к) == ключ]
+            elif isinstance(в, ast.Assign) and any(isinstance(ц, ast.Subscript) and рядок_константи(ц.slice) == ключ
+                                                   for ц in в.targets):
+                вих.append(в.value)
+        return вих
+
+    def градуси_виразу(self, м, вираз):
+        """Рядкові константи з числом °C, що йдуть у вираз: прямо, через змінну, через ключ словника модуля."""
+        вих, бачені = [], set()
+
+        def іти(в, глиб):
+            for х in ast.walk(в):
+                if isinstance(х, ast.Constant) and isinstance(х.value, str) and id(х) not in м.докстрінги and \
+                        ЧИСЛО_ГРАДУСІВ.search(х.value):
+                    if id(х) not in бачені:
+                        бачені.add(id(х))
+                        вих.append(х)
+                elif isinstance(х, ast.Name) and глиб < 2:
+                    д = м.досяжне(м.область(х), х.id, х)
+                    if д and д[1] is not None and д[2] == "знач" and ("ім", id(д[1])) not in бачені:
+                        бачені.add(("ім", id(д[1])))
+                        іти(д[1], глиб + 1)
+                elif глиб == 0 and self.читання_ключа(х) and ("ключ", self.читання_ключа(х)) not in бачені:
+                    # один перехід ключем: значення, яке код поля читає зі словника модуля (не ланцюг ключів)
+                    бачені.add(("ключ", self.читання_ключа(х)))
+                    for з in self.записи_ключа(м, self.читання_ключа(х)):
+                        іти(з, глиб + 1)
+        іти(вираз, 0)
+        return вих
+
+    def читачі_ключа(self, ключ):
+        """(Python [файл:рядок], показ [файл:рядок]) — читання ключа: `["K"]` / `.get("K")`; JS `.K` / `["K"]`."""
+        пі, показ = [], []
+        for м in self.пі:
+            for в in м.вид("Subscript", "Call"):
+                if self.читання_ключа(в) == ключ:
+                    пі.append("%s:%d" % (м.шлях, в.lineno))
+        for ф in self.джс:
+            т = ф.т
+            for і in range(1, len(т)):
+                if т[і][1] != ключ:
+                    continue
+                if т[і][0] == "ім" and т[і - 1][1] == "." and not (і + 1 < len(т) and т[і + 1][:2] == ("оп", "=")):
+                    показ.append("%s:%d" % (ф.шлях, т[і][2]))
+                elif т[і][0] == "ряд" and т[і - 1][1] == "[" and і + 1 < len(т) and т[і + 1][1] == "]" and \
+                        not (і + 2 < len(т) and т[і + 2][:2] == ("оп", "=")):
+                    показ.append("%s:%d" % (ф.шлях, т[і][2]))
+        return sorted(set(пі)), sorted(set(показ))
+
+    def знахідки_пі(self, додати):
+        if not self.змістові:
+            return
+        к = self.конструктори()
+        показ_змісту = {кл: bool(self.читачі_ключа(кл)[1]) for кл in self.змістові}
+        читачі = {}
+        for м in self.пі:
+            for в in м.вид("Call", "Dict"):
+                вирази = [(з, ключ, None) for ключ, з in (self.форма_знахідки(в) or {}).items()
+                          if ключ in self.змістові]
+                ц = self.ціль_ф(м, в.func) if isinstance(в, ast.Call) else None
+                інфо = к.get((ц[0].шлях, ц[1].name)) if ц else None
+                if інфо:
+                    поз, зм, інші = інфо
+                    for і, арг in enumerate(в.args):
+                        if isinstance(арг, ast.Starred):
+                            break
+                        п = поз.get(і)
+                        if п in зм or п in інші:
+                            вирази.append((арг, п, None if п in зм else інші[п]))
+                    for кв in в.keywords:
+                        if кв.arg in зм or кв.arg in інші:
+                            вирази.append((кв.value, кв.arg, None if кв.arg in зм else інші[кв.arg]))
+                for вираз, поле, ключ in вирази:
+                    for конст in self.градуси_виразу(м, вираз):
+                        мм = ЧИСЛО_ГРАДУСІВ.search(конст.value)
+                        рядки = м.рядки_токена(конст, мм.group(0))
+                        if ключ is not None:
+                            if ключ not in читачі:
+                                читачі[ключ] = self.читачі_ключа(ключ)
+                            пі, показ = читачі[ключ]
+                            if not показ:
+                                self.примітки.append((м.шлях, рядки[0], поле, ключ, мм.group(0), пі))
+                                continue
+                            пункти = (2, 4)
+                            доказ = "°C у полі «%s» знахідки, ключ `%s` читає показ (%s): «%s»" % (
+                                поле, ключ, ", ".join(показ[:3]), мм.group(0))
+                        else:
+                            пункти = (2, 4) if показ_змісту.get(поле) else (2,)
+                            доказ = "°C у змістовому полі «%s» знахідки суду (до запиту стилістки): «%s»" % (
+                                поле, мм.group(0))
+                        for н in рядки:
+                            for п in пункти:
+                                додати(м.шлях, н, п, доказ)
+                        self.лік["З"] += 1
+
+    # ── Ч: число з уривка ──
+    ЧИСЛОВІ_ПІ = {"float", "int", "Decimal"}
+    ЧИСЛОВІ_RE = {"search", "findall", "match", "fullmatch", "finditer", "sub", "split"}
+
+    def читання_уривка(self, в):
+        """Чи вузол — читання уривка: `X["уривок"]` чи `X.get("уривок")`."""
+        if isinstance(в, ast.Subscript) and рядок_константи(в.slice) == УРИВОК and isinstance(в.ctx, ast.Load):
+            return в.value
+        if isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr == "get" and в.args and \
+                рядок_константи(в.args[0]) == УРИВОК:
+            return в.func.value
+        return None
+
+    def уривки_виразу(self, м, вираз, вузол):
+        """[(контейнер, вузол-читання)] уривків у виразі — прямо чи через ім'я, присвоєне з читання."""
+        вих = []
+        for в in ast.walk(вираз):
+            к = self.читання_уривка(в)
+            if к is not None:
+                вих.append((к, в))
+            elif isinstance(в, ast.Name):
+                д = м.досяжне(м.область(вузол), в.id, вузол)
+                if д and д[1] is not None and д[2] == "знач":
+                    вих += [(self.читання_уривка(х), х) for х in ast.walk(д[1]) if self.читання_уривка(х) is not None]
+        return вих
+
+    def може_бути_погодою(self, м, контейнер, вузол):
+        """Поле факту, чий уривок читають: погода, інше поле (літерал) чи змінна, якої погода не минає."""
+        рядки = [рядок_константи(х) for х in ast.walk(контейнер) if рядок_константи(х) is not None]
+        if any(р in ПОЛЕ_ПОГОДИ for р in рядки):
+            return True
+        if any(р not in ("картка_запиту", ЦИТАТИ, УРИВОК) for р in рядки):
+            return False
+        імена = {х.id for х in ast.walk(контейнер) if isinstance(х, ast.Name)}
+        for ім in list(імена):
+            д = м.досяжне(м.область(вузол), ім, вузол)
+            if д and д[1] is not None:
+                імена |= {х.id for х in ast.walk(д[1]) if isinstance(х, ast.Name)}
+                рядки = [рядок_константи(х) for х in ast.walk(д[1]) if рядок_константи(х) is not None]
+                if any(р in ПОЛЕ_ПОГОДИ for р in рядки):
+                    return True
+                if any(р not in ("картка_запиту", ЦИТАТИ, УРИВОК) for р in рядки):
+                    return False
+        return not any(self.минає(м, вузол, ім) for ім in імена)
+
+    def числа_пі(self, м, додати):
+        for в in м.вид("Call"):
+            ф = в.func
+            аргументи = list(в.args)
+            if isinstance(ф, ast.Name) and ф.id in self.ЧИСЛОВІ_ПІ:
+                що = "%s(…)" % ф.id
+            elif isinstance(ф, ast.Attribute) and isinstance(ф.value, ast.Name) and ф.attr in self.ЧИСЛОВІ_RE and \
+                    м.імпорти.get(ф.value.id, (None,))[0] == "re" and в.args and \
+                    re.search(r"\\d|\[0-9|\\D", рядок_константи(в.args[0]) or ""):
+                що = "re.%s з цифрою" % ф.attr
+                аргументи = аргументи[1:]
+            elif isinstance(ф, ast.Attribute) and ф.attr in ("isdigit", "isnumeric", "isdecimal"):
+                що = ".%s()" % ф.attr
+                аргументи = [ф.value]
+            else:
+                continue
+            for арг in аргументи:
+                for контейнер, _ in self.уривки_виразу(м, арг, в):
+                    if self.може_бути_погодою(м, контейнер, в):
+                        додати(м.шлях, в.lineno, 2, "число з її уривка поля (%s): градуси з її слів у коді" % що)
+                        self.лік["Ч"] += 1
+                        break
+                else:
+                    continue
+                break
+
+    def числа_джс(self, ф, додати):
+        т = ф.т
+        for і, (вид, з, р) in enumerate(т):
+            if not ((вид == "ім" and з == УРИВОК and і > 0 and т[і - 1][1] == ".") or (вид == "ряд" and з == УРИВОК
+                                                                                    and і > 0 and т[і - 1][1] == "[")):
+                continue
+            # число: уривок у дужках parseFloat/parseInt/Number того самого виразу
+            j, глиб, знайдено = і - 1, 0, None
+            while j >= 0 and т[j][1] not in (";", "{", "}"):
+                if т[j][:2] == ("оп", ")"):
+                    глиб += 1
+                elif т[j][:2] == ("оп", "("):
+                    if глиб == 0 and j > 0 and т[j - 1][0] == "ім" and т[j - 1][1] in ("parseFloat", "parseInt", "Number"):
+                        знайдено = т[j - 1][1]
+                        break
+                    глиб = max(0, глиб - 1)
+                j -= 1
+            if знайдено is None:
+                k = і + 1
+                while k + 3 < len(т) and т[k][1] in ("]", ")", "'", "ряд") and т[k][0] == "оп":
+                    k += 1
+                if т[k][1] == "." and т[k + 1][1] in ("match", "search", "replace", "split") and т[k + 2][1] == "(" \
+                        and т[k + 3][0] == "рег" and re.search(r"\\d|\[0-9|\\D", т[k + 3][1]):
+                    знайдено = т[k + 1][1]
+            if знайдено:
+                додати(ф.шлях, р, 2, "число з її уривка поля (JS %s): градуси з її слів у коді" % знайдено)
+                self.лік["Ч"] += 1
+
+    # ── JS: плоска цитата ──
+    def умова_джс(self, токени, поле):
+        """Кон'юнкт умови JS (токени) для поля погоди: True / False / None."""
+        текст = " ".join(з if вид != "ряд" else repr(з) for вид, з, _ in токени)
+        м_ = re.fullmatch(r"(!\s*)?\(?\s*(\S+)\s*\.\s*(\S+)\s*(?:\|\|\s*\[\s*\]\s*)?\)?\s*\.\s*includes\s*\(\s*%s\s*\)"
+                          % re.escape(поле), текст)
+        if м_:
+            список = self.довідник_джс(м_.group(2), м_.group(3))
+            if список is None:
+                return None
+            є = ПОГОДА in список
+            return (not є) if м_.group(1) else є
+        м_ = re.fullmatch(r"%s\s*(!==|!=|===|==)\s*'([^']*)'" % re.escape(поле), текст)
+        if м_:
+            return (м_.group(2) in ПОЛЕ_ПОГОДИ) == м_.group(1).startswith("=")
+        return None
+
+    def довідник_джс(self, ім, ключ):
+        """Значення `ім.ключ`, де `ім` у JS — `const ім = X.K0`, а K0 Python кладе викликом функції продукту."""
+        к0 = self._джс_джерела.get(ім)
+        if к0 is None:
+            return None
+        for м in self.пі:
+            for в in м.вид("Assign"):
+                if any(isinstance(ц, ast.Subscript) and рядок_константи(ц.slice) == к0 for ц in в.targets) \
+                        and isinstance(в.value, ast.Call) and not в.value.args:
+                    ц = self.ціль(м, в.value.func)
+                    if ц:
+                        з, ок = self.вик.виклик(ц[0].шлях, ц[1])
+                        if ок and isinstance(з, dict):
+                            return list(з.get(ключ) or [])
+        return None
+
+    def цитати_джс(self, ф, додати):
+        т = ф.т
+        self._джс_джерела = {}
+        for і in range(len(т) - 4):
+            if т[і][0] == "ім" and т[і][1] in ("const", "let", "var") and т[і + 1][0] == "ім" and т[і + 2][1] == "=" \
+                    and т[і + 3][0] == "ім" and т[і + 4][1] == "." and і + 5 < len(т) and т[і + 5][0] == "ім" and \
+                    (і + 6 >= len(т) or т[і + 6][1] in (";", ")")):
+                self._джс_джерела[т[і + 1][1]] = т[і + 5][1]
+        for і in range(len(т) - 5):
+            if not (т[і][1] == "." and т[і + 1] [:2] == ("ім", ЦИТАТИ) and т[і + 2][1] == "["):
+                continue
+            j, глиб = і + 3, 1
+            while j < len(т) and глиб:
+                глиб += т[j][1] == "[" and т[j][0] == "оп"
+                глиб -= т[j][1] == "]" and т[j][0] == "оп"
+                j += 1
+            if j >= len(т) or т[j][:2] != ("оп", "="):
+                continue
+            ключ = т[і + 3:j - 1]
+            if len(ключ) == 1 and ключ[0][0] == "ряд":
+                if ключ[0][1] in ПОЛЕ_ПОГОДИ:
+                    додати(ф.шлях, т[і][2], 2, "плоска цитата поля погоди «%s» (JS)" % ключ[0][1])
+                    self.лік["Ц"] += 1
+                continue
+            поле = ключ[0][1] if len(ключ) == 1 and ключ[0][0] == "ім" else None
+            if поле and self.минає_джс(т, і, поле):
+                continue
+            додати(ф.шлях, т[і][2], 2, "плоска цитата поля з ключем `%s`, який поле погоди не минає (JS; її "
+                   "градуси словами → field_quotes / «Твої слова»)" % (поле or "…"))
+            self.лік["Ц"] += 1
+
+    def минає_джс(self, т, і, поле):
+        """Умови `if (…)` над записом (той самий оператор чи блок), кон'юнкти `&&` з полем: хоч одна хибна для погоди."""
+        j, глиб = і, 0
+        while j > 0:
+            j -= 1
+            вид, з, _ = т[j]
+            if вид != "оп":
+                continue
+            if з in ")]}":
+                глиб += 1
+                if з == ")" and глиб == 1:
+                    # кінець умови `if (…)` прямо перед оператором запису
+                    k, г = j, 0
+                    while k >= 0:
+                        г += т[k][1] == ")" and т[k][0] == "оп"
+                        г -= т[k][1] == "(" and т[k][0] == "оп"
+                        if г == 0:
+                            break
+                        k -= 1
+                    if k > 0 and т[k - 1][:2] == ("ім", "if") and self._оператор_після(т, j, і):
+                        if self._умова_хибна(т[k + 1:j], поле):
+                            return True
+                continue
+            if з in "([{":
+                if глиб == 0:
+                    if з == "{" and j > 0 and т[j - 1][1] == ")":
+                        k, г = j - 1, 0
+                        while k >= 0:
+                            г += т[k][1] == ")" and т[k][0] == "оп"
+                            г -= т[k][1] == "(" and т[k][0] == "оп"
+                            if г == 0:
+                                break
+                            k -= 1
+                        if k > 0 and т[k - 1][:2] == ("ім", "if") and self._умова_хибна(т[k + 1:j - 1], поле):
+                            return True
+                        if k > 0 and т[k - 1][:2] == ("ім", "function"):
+                            return False
+                    continue
+                глиб -= 1
+                continue
+            if з == ";" and глиб == 0:
+                continue
+        return False
+
+    def _оператор_після(self, т, кінець_умови, і):
+        """Між `)` умови й записом — лише ланцюг запису (без `;`)."""
+        return all(т[к][1] != ";" for к in range(кінець_умови + 1, і))
+
+    def _умова_хибна(self, умова, поле):
+        частини, поточна, г = [], [], 0
+        for т_ in умова:
+            if т_[0] == "оп" and т_[1] in "([{":
+                г += 1
+            elif т_[0] == "оп" and т_[1] in ")]}":
+                г -= 1
+            if т_[:2] == ("оп", "&&") and г == 0:
+                частини.append(поточна)
+                поточна = []
+                continue
+            поточна.append(т_)
+        частини.append(поточна)
+        return any(any(т_[:2] == ("ім", поле) for т_ in ч) and self.умова_джс(ч, поле) is False for ч in частини)
+
+    def місця(self, додати, звіт):
+        for м in self.пі:
+            self.цитати_пі(м, додати)
+            self.тексти_пі(м, додати)
+            self.числа_пі(м, додати)
+        self.знахідки_пі(додати)
+        self.джерела_пі(додати)
+        self.шапки_пі(додати)
+        for ф in self.джс:
+            if not isinstance(ф, Хтмл):
+                self.цитати_джс(ф, додати)
+                self.числа_джс(ф, додати)
+        звіт.append("її словами й словами моделі: плоска цитата поля — %d; джерело з `quote` — %d; шапка з тексту "
+                    "моделі — %d; поріг у °C текстом моделі — %d; число з її уривка — %d; °C у змістовому полі знахідки — %d" % (
+                        self.лік["Ц"], self.лік["Д"], self.лік["Ш"], self.лік["Т"], self.лік["Ч"], self.лік["З"]))
+        if not self.змістові:
+            звіт.append("знахідка.ЗМІСТОВІ у дереві не знайдено — поля знахідки не судяться")
+        for шлях, н, поле, ключ, гр, пі in sorted(set((ш, н, п, к, г, tuple(пі)) for ш, н, п, к, г, пі in self.примітки)):
+            звіт.append("примітка, не місце: %s:%d — «%s» у полі «%s» знахідки (ключ `%s`) без читача в показі; "
+                        "читачі ключа в Python: %s" % (шлях, н, гр, поле, ключ, ", ".join(пі) or "нема"))
+        for п in self.вик.помилки:
+            звіт.append("умову не обчислено (місце лишається): " + п)
+
+
 # ── правила бази знань (п.5) ────────────────────────────────────────────────────────────────────────────────────
 # Межі смуг K-WEA-01 — з самої бази (карта шарів торса, тема-4 §IX.4): рядок-якір мусить там бути, межі читаються з
 # нього. Рішення з порогом поза ними (сніг 0, 12 літніх речей, допуски) чи літерал, що повторює поріг реєстру, — п.5.
@@ -1732,6 +2676,7 @@ def лічити_величину(корінь, без_бази=False, віте�
     звіт = []
     if not вітер:
         рішення_бази(корінь, рішення, пороги_реєстру, додати, звіт, без_бази)
+        АналізСлів(корінь, пі, джс).місця(додати, звіт)
     читачі = set()
     for м in пі:
         for ф in м.функції:
@@ -2090,13 +3035,343 @@ function смугаП(){
     "вітер_контейнер_не_число",
 )})
 
+# Її словами й словами моделі (Ц, Д, Ш, Т; доповнення 15.11): місце й не-місце на кожен шлях; умову виконано на
+# штучному дереві (`ш_поля.далі`, `ш_картка.політика`), як на дереві продукту.
+ШТУЧНІ.update({
+    "джерела/ш_поля.py": '''\
+ЛИШЕ_МОВІ = frozenset({"смуга_погоди"})
 
-def самоперевірка():
+
+def далі(поле):
+    return поле not in ЛИШЕ_МОВІ
+
+
+def походження(вид, уривок=None):
+    вих = {"kind": вид}
+    if уривок:
+        вих["quote"] = уривок
+    return вих
+
+
+def _джерело(паспорт, поле):
+    ф = (паспорт.get("картка") or {}).get(поле) or {}
+    вих = походження(ф.get("джерело"), ф.get("уривок"))  # М:слова_джерело_обгорнуте
+    вих["parts"] = [походження(о.get("джерело"), о.get("уривок")) for о in ф.get("опори") or []]  # М:слова_джерело_вкладене
+    return вих
+
+
+def джерело(паспорт, поле):
+    вих = _джерело(паспорт, поле)
+    if not далі(поле):
+        вих.pop("quote", None)
+    return вих
+
+
+def джерело_давнє(паспорт, поле):
+    ф = (паспорт.get("картка") or {}).get(поле) or {}
+    return походження(ф.get("джерело"), ф.get("уривок"))  # М:слова_джерело
+
+
+def джерело_з_цитат(паспорт, поле):
+    цитата = (паспорт.get("цитати_полів") or {}).get(поле)
+    return походження("reading", цитата)  # М:слова_джерело_з_цитат
+
+
+def джерело_не_погоди(паспорт, поле):
+    ф = (паспорт.get("картка") or {}).get(поле) or {}
+    if поле != "смуга_погоди":
+        return походження(ф.get("джерело"), ф.get("уривок"))  # М:слова_джерело_не_погоди
+    return {}
+
+
+def бажання(б):
+    return походження("her", б.get("уривок"))  # М:слова_джерело_не_поле
+''',
+    "джерела/ш_картка.py": '''\
+import ш_поля as _П
+
+
+def політика():
+    return dict(лише_мові=sorted(_П.ЛИШЕ_МОВІ))
+
+
+def проєкція(паспорт, поле, факт):
+    цитати = паспорт.setdefault("цитати_полів", {})
+    if факт["уривок"] and _П.далі(поле):
+        цитати[поле] = факт["уривок"]  # М:слова_цитата_минає
+    if факт["уривок"]:
+        цитати[поле] = факт["уривок"]  # М:слова_цитата
+
+
+def погода(паспорт, т):
+    паспорт["цитати_полів"]["смуга_погоди"] = т  # М:слова_цитата_погоди
+    паспорт["цитати_полів"]["опади"] = т  # М:слова_цитата_інше_поле
+
+
+def хід(паспорт, цит):
+    уривки = dict(паспорт.get("цитати_полів") or {})
+    for ім in ("опади", "смуга_погоди"):
+        уривки[ім] = цит[ім]  # М:слова_цитата_копія
+    паспорт["цитати_полів"] = уривки
+
+
+def не_погода(паспорт, поле, т):
+    if поле != "смуга_погоди":
+        паспорт["цитати_полів"][поле] = т  # М:слова_цитата_не_погода
+    else:
+        паспорт["цитати_полів"][поле] = None  # М:слова_цитата_інакше_погода
+
+
+def інша_колекція(паспорт, поле, т):
+    паспорт["бажання"][поле] = т  # М:слова_не_цитата
+''',
+    "джерела/ш_довідник.py": '''\
+import ш_картка as _К
+таблиці = {}
+таблиці["факт_ш"] = _К.політика()
+''',
+    "джерела/показ/ш_цитати.js": '''\
+function записатиП(паспорт, картка, поле){
+  const політика = ДОВІДНИК.факт_ш;
+  if (картка[поле].уривок && !(політика.лише_мові || []).includes(поле)) паспорт.цитати_полів[поле] = картка[поле].уривок;  // М:слова_js_минає
+  if (картка[поле].уривок) паспорт.цитати_полів[поле] = картка[поле].уривок;  // М:слова_js_цитата
+  if (поле !== 'смуга_погоди') { паспорт.цитати_полів[поле] = 'x'; }  // М:слова_js_блок_минає
+  паспорт.цитати_полів['смуга_погоди'] = 'x';  // М:слова_js_погоди
+  if (паспорт.цитати_полів[поле] === 'x') return;  // М:слова_js_читання
+}
+''',
+    "джерела/ш_шапка.py": '''\
+ШАПКА = (("weather_band", "смуга_погоди"),  # М:слова_шапка
+         ("mood", "настрій"))  # М:слова_шапка_інше
+КОДИ = (("weather_band", "смуга_погоди"),)  # М:слова_таблиця_кодів
+''',
+    "джерела/ш_схема.py": '''\
+import ш_шапка as _Ш
+СХЕМА = {"header": {"type": "object", "properties": {к: {"type": "string"} for к, _ in _Ш.ШАПКА}}}
+ПЕРЕЛІК = {к: {"type": "string", "enum": ["deep_frost"]} for к, _ in _Ш.КОДИ}
+''',
+    "джерела/ш_промпт.py": '''\
+ПРОМПТ = ("Dress for the weather band. "
+          "An outer layer only when needed; at +20 °C and warmer there is none.")  # М:слова_поріг_текстом
+ВЧИТЬ = "Her degrees become a band: below -8 °C → deep_frost."  # М:слова_вчить_смугу
+УКР = "при +15 °C у безвітря стійка не заміщає шарфа"  # М:слова_примітка_без_читача
+
+
+def ф():
+    """Model sees +20 °C only in a docstring."""  # М:слова_докстрінг
+    return "the band, not degrees"  # М:слова_без_градусів
+''',
+})
+ОЧІКУВАНІ.update({
+    "слова_джерело": {2}, "слова_джерело_з_цитат": {2}, "слова_джерело_вкладене": {2},
+    "слова_джерело_обгорнуте": set(), "слова_джерело_не_погоди": set(), "слова_джерело_не_поле": set(),
+    "слова_цитата": {2}, "слова_цитата_погоди": {2}, "слова_цитата_копія": {2}, "слова_цитата_минає": set(),
+    "слова_цитата_інше_поле": set(), "слова_цитата_не_погода": set(), "слова_цитата_інакше_погода": {2},
+    "слова_не_цитата": set(), "слова_js_минає": set(), "слова_js_цитата": {2}, "слова_js_блок_минає": set(),
+    "слова_js_погоди": {2}, "слова_js_читання": set(), "слова_шапка": {4}, "слова_шапка_інше": set(),
+    "слова_таблиця_кодів": set(), "слова_поріг_текстом": {3}, "слова_вчить_смугу": set(),
+    "слова_примітка_без_читача": set(), "слова_докстрінг": set(), "слова_без_градусів": set(),
+})
+
+# Читач уривка (рішення менеджера 15523): уривок у картці, звірка й сила — не місце; число з уривка поля погоди — п.2.
+ШТУЧНІ.update({
+    "джерела/ш_уривок.py": '''\
+import re
+
+
+def у_записати(картка, поле, значення, уривок):
+    факт = {"значення": значення, "уривок": уривок}  # М:уривок_у_картці
+    картка[поле] = факт
+
+
+def у_тримається(картка, поле, слова):
+    return звірити(картка[поле]["уривок"], слова)  # М:уривок_звірка
+
+
+def у_сила(факт):
+    return 2 if факт.get("уривок") else 1  # М:уривок_сила
+
+
+def у_число(картка):
+    return float(re.sub(r"[^0-9-]", "", картка["смуга_погоди"]["уривок"]))  # М:уривок_число
+
+
+def у_число_поля(картка, поле):
+    у = картка[поле]["уривок"]
+    return re.findall(r"\\d+", у)  # М:уривок_число_поля
+
+
+def у_опади(картка):
+    return int(картка["опади"]["уривок"])  # М:уривок_число_іншого
+
+
+def у_не_погода(картка, поле):
+    if поле != "смуга_погоди":
+        return int(картка[поле]["уривок"])  # М:уривок_число_не_погоди
+    return 0
+
+
+def у_цифра(картка, поле):
+    return картка[поле]["уривок"].isdigit()  # М:уривок_цифра
+''',
+    "джерела/показ/ш_уривок.js": '''\
+function числоП(картка, поле){
+  const т = parseFloat(картка[поле].уривок);  // М:уривок_js_число
+  const ц = картка[поле].уривок.match(/\\d+/);  // М:уривок_js_регулярка
+  const мітка = String(картка[поле].уривок || '').trim();  // М:уривок_js_мітка
+  return т + ц + мітка;
+}
+''',
+})
+ОЧІКУВАНІ.update({
+    "уривок_у_картці": set(), "уривок_звірка": set(), "уривок_сила": set(), "уривок_число": {2},
+    "уривок_число_поля": {2}, "уривок_число_іншого": set(), "уривок_число_не_погоди": set(), "уривок_цифра": {2},
+    "уривок_js_число": {2}, "уривок_js_регулярка": {2}, "уривок_js_мітка": set(),
+})
+
+# Знахідка суду (рішення менеджера 15584): чи рядок з °C — місце, вирішує читач, а не мова. Змістові поля знахідки
+# (`знахідка.ЗМІСТОВІ`) і все, що код у них вкладає, — п.2 (показ читає їх — ще й п.4); інше поле — лише з читачем у
+# показі; примітка без читача поза кодом — не місце.
+ШТУЧНІ.update({
+    "джерела/знахідка.py": '''\
+ОБОВʼЯЗКОВІ = ("правило",)
+ЗМІСТОВІ = ("суть", "чому")
+''',
+    "джерела/ш_зн.py": '''\
+def зн(правило, сила, суть, речі, чому, ламається=None, примітка=None):
+    d = dict(правило=правило, сила=сила, суть=суть, речі=речі, чому=чому)
+    if ламається:
+        d["де_ламається"] = ламається
+    if примітка:
+        d["нота_показу"] = примітка
+    return d
+
+
+def брак(правило, речі, чому=None):
+    return зн(правило, "питання", "бракує входу", речі, чому or "rule_input_missing")
+''',
+    "джерела/ш_реєстр.py": '''\
+from ш_зн import зн, брак
+''',
+    "джерела/ш_обгортка.py": '''\
+import ш_реєстр as _Р
+
+
+def зн(*a, **kw):
+    kw.setdefault("сила", "soft")
+    return _Р.зн(*a, **kw)
+''',
+    "джерела/ш_суд.py": '''\
+from ш_реєстр import зн as _зн, брак as _брак
+import ш_обгортка as _О
+
+НОТИ = {"K-9": dict(нота="при +2 °C успадковано з температурної смуги")}  # М:знахідка_примітка_реєстру
+ОПИС = {"випадок": "текст нагоди («офіс, 18 °C»)"}  # М:знахідка_опис_поля
+
+
+def суд(смуга, словами):
+    вих = [_зн("K-1", "soft", "при %s шапки нема" % смуга, [],
+               "у смузі нижче −8 °C мапа просить пуху")]  # М:знахідка_чому
+    вих.append(_зн("K-2", "soft", "нижче −8°C палітру несуть %s" % "шапка", [], "x"))  # М:знахідка_суть
+    вих.append(_О.зн("K-3", суть="s", речі=[], чому="тренч у +5 °C — не шар"))  # М:знахідка_обгортка
+    вих.append(_брак("K-4", [], "без шапки при −10 °C"))  # М:знахідка_через_конструктор
+    вих.append(_зн("K-5", "soft", "s", [], "x", ламається="гейт лише нижче −8 °C"))  # М:знахідка_ламається
+    вих.append(_зн("K-6", "soft", "s", [], "x", примітка="нижче −8 °C"))  # М:знахідка_читач_показу
+    вих.append(_зн("K-7", "soft", "у %s шапки нема" % словами(смуга), [], "x"))  # М:знахідка_смугою
+    поріг = "нижче −8 °C пух"  # М:знахідка_змінна
+    вих.append(_зн("K-8", "soft", "s", [], поріг))
+    вих.append(dict(правило="K-10", суть="при −3 °C", речі=[]))  # М:знахідка_словник
+    вих.append(dict(слот="шарф", назва="при −3 °C"))  # М:знахідка_не_знахідка
+    return вих
+
+
+def стан(вітер):
+    рез = dict(чому="стійка закриває шию", умова="лише за вітру; при +15 °C не заміщає")  # М:знахідка_ключ
+    інше = dict(нота="при +15 °C стійка відкрита")  # М:знахідка_ключ_без_читача
+    return _зн("K-11", "default", "s", [], "%s. %s" % (рез["чому"], рез["умова"])), інше
+''',
+    "джерела/показ/ш_знахідка.js": '''\
+function рядокП(з){
+  return з.суть + ' ' + з.нота_показу;
+}
+''',
+})
+ОЧІКУВАНІ.update({
+    # штучний показ читає `суть`, а `чому` — ні: п.4 лише там, де поле читає показ
+    "знахідка_чому": {2}, "знахідка_суть": {2, 4}, "знахідка_обгортка": {2}, "знахідка_через_конструктор": {2},
+    "знахідка_ламається": set(), "знахідка_читач_показу": {2, 4}, "знахідка_смугою": set(),
+    "знахідка_змінна": {2}, "знахідка_словник": {2, 4}, "знахідка_не_знахідка": set(), "знахідка_ключ": {2},
+    "знахідка_ключ_без_читача": set(), "знахідка_примітка_реєстру": set(), "знахідка_опис_поля": set(),
+})
+
+
+# Вкладене джерело поля — `parts` з `опори` факту картки (її слова по частинах складеного поля; дошка 15930): місце,
+# лише коли писач `опори` може покласти туди поле погоди. Писач і читач — у одному дереві, тож кожен випадок —
+# окреме штучне дерево (спільне дерево зробило б один випадок чинним для всіх).
+_ЧИТАЧ_ОПОР = '''\
+ЛИШЕ_МОВІ = frozenset({"смуга_погоди"})
+
+
+def походження(вид, уривок=None):
+    вих = {"kind": вид}
+    if уривок:
+        вих["quote"] = уривок
+    return вих
+
+
+def _вид(паспорт, поле):
+    ф = (паспорт.get("картка") or {}).get(поле) or {}
+    вих = походження(ф.get("джерело"), ф.get("уривок"))
+    if ф.get("опори"):
+        вих["parts"] = [походження(о.get("джерело"), о.get("уривок")) for о in ф["опори"]]  # М:опори_читач
+    return вих
+
+
+def вид(паспорт, поле):
+    вих = _вид(паспорт, поле)
+    if поле in ЛИШЕ_МОВІ:
+        вих.pop("quote", None)
+    return вих
+'''
+_ПИСАЧ_ОПОР = '''\
+def записати(паспорт, поле, значення, уривок, опори=None):
+    факт = {"значення": значення, "уривок": уривок}
+    if опори:
+        факт["опори"] = list(опори)
+    паспорт["картка"][поле] = факт
+
+
+def складені(паспорт, внутрішня):
+    for поле in %s:
+        записати(паспорт, поле, внутрішня[поле], "х", опори=[{"уривок": "х"}])
+
+
+def без_опор(паспорт):
+    записати(паспорт, "смуга_погоди", "cold", "х")
+'''
+ДЕРЕВА_ОПОР = {
+    # писач кладе `опори` лише полям складеного списку — вкладений запис не несе погоди
+    "опори_не_погода": ({"джерела/ш_поля.py": _ЧИТАЧ_ОПОР, "джерела/ш_запис.py": _ПИСАЧ_ОПОР % '("бажання", "вето")'},
+                        {"опори_читач": set()}),
+    # близький справжній: у переліку поля писача є смуга погоди
+    "опори_з_погодою": ({"джерела/ш_поля.py": _ЧИТАЧ_ОПОР,
+                         "джерела/ш_запис.py": _ПИСАЧ_ОПОР % '("бажання", "смуга_погоди")'},
+                        {"опори_читач": {2}}),
+    # поле писача не обчислено (параметр, не перелік літералів) — не менше місць
+    "опори_поле_не_обчислено": ({"джерела/ш_поля.py": _ЧИТАЧ_ОПОР,
+                                 "джерела/ш_запис.py": _ПИСАЧ_ОПОР.replace("for поле in %s:", "for поле in внутрішня:") % ()},
+                                {"опори_читач": {2}}),
+    # писача `опори` у дереві нема — не доведено, що погоди туди не кладуть
+    "опори_без_писача": ({"джерела/ш_поля.py": _ЧИТАЧ_ОПОР}, {"опори_читач": {2}}),
+}
+
+
+def _прогін(штучні, очікувані, префікс=""):
     """[(назва, так/ні)]: кожна позначка штучних файлів — очікуваний набір пунктів; вивід — однаковий двічі."""
     тека = tempfile.mkdtemp(prefix="е2_смуга_")
     try:
         позначки = {}
-        for шлях, текст in ШТУЧНІ.items():
+        for шлях, текст in штучні.items():
             повний = os.path.join(тека, шлях)
             os.makedirs(os.path.dirname(повний), exist_ok=True)
             with open(повний, "w", encoding="utf-8") as ф:
@@ -2108,20 +3383,28 @@ def самоперевірка():
         другий = лічити(тека, без_бази=True)
         місця = перший[0]
         підсумок = []
-        for ім, очікуване in ОЧІКУВАНІ.items():
+        for ім, очікуване in очікувані.items():
             if ім not in позначки:
-                підсумок.append((ім + " (позначки нема)", False))
+                підсумок.append((префікс + ім + " (позначки нема)", False))
                 continue
             є = місця.get(позначки[ім], {}).get("пункти", set())
             ок = set(є) == очікуване
-            підсумок.append(("%s — %s" % (ім, "п." + ",".join(map(str, sorted(є))) if є else "не місце")
-                             if ок else "%s — є %s, чекали %s" % (ім, sorted(є), sorted(очікуване)), ок))
-        підсумок.append(("позначки без очікуваного: %s" % (", ".join(sorted(set(позначки) - set(ОЧІКУВАНІ)))
-                                                           or "нема"), not (set(позначки) - set(ОЧІКУВАНІ))))
-        підсумок.append(("вивід детермінований", друк(*перший) == друк(*другий)))
+            підсумок.append((префікс + ("%s — %s" % (ім, "п." + ",".join(map(str, sorted(є))) if є else "не місце")
+                                        if ок else "%s — є %s, чекали %s" % (ім, sorted(є), sorted(очікуване))), ок))
+        підсумок.append((префікс + "позначки без очікуваного: %s" % (", ".join(sorted(set(позначки) - set(очікувані)))
+                                                                   or "нема"), not (set(позначки) - set(очікувані))))
+        підсумок.append((префікс + "вивід детермінований", друк(*перший) == друк(*другий)))
         return підсумок
     finally:
         shutil.rmtree(тека, ignore_errors=True)
+
+
+def самоперевірка():
+    """[(назва, так/ні)]: основне штучне дерево, потім кожне з `ДЕРЕВА_ОПОР`."""
+    підсумок = _прогін(ШТУЧНІ, ОЧІКУВАНІ)
+    for ім, (штучні, очікувані) in ДЕРЕВА_ОПОР.items():
+        підсумок += _прогін(штучні, очікувані, ім + ": ")
+    return підсумок
 
 
 def main(арг):

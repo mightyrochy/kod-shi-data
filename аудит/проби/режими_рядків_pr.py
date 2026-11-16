@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import sys
 
-from записати_сцену import вхід_реєстру, режим_питання, змінні_режиму
+from записати_сцену import вхід_реєстру, режим_питання, режим_хмарний, змінні_режиму
 
 
 def перевірити(рядки):
@@ -14,7 +14,7 @@ def перевірити(рядки):
     for р in рядки:
         режим = режим_питання(р["question"])
         причина = None
-        if режим is not None:
+        if режим is not None and not режим_хмарний(режим):
             try:
                 змінні_режиму(р["id"], режим, вхід_реєстру(р["id"]))
             except ValueError as в:

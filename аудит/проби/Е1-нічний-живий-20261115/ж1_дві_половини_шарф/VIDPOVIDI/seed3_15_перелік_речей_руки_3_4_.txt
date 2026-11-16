@@ -1,0 +1,37 @@
+── ПРОМПТ (1999 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Copper-colored wool-blend blazer with a structured shoulder cut in medium length, color #b56b3f.\nCream silk blouse with a relaxed collar and mid-thigh length, color #f1dbaa.\nWide-leg dark denim trousers with a straight leg fall to the ankle, color #2c2a29.\nChunky black leather ankle boots with a low block heel, color #1a1a1a.\n\nThis outfit works because it balances her desire for an experimental mood with the comfort needed for a day walk in autumn weather. The copper tone of the blazer subtly echoes the highlights in her hair, creating a cohesive look that feels personal rather than stiff. The dark denim grounds the outfit while the cream blouse adds necessary softness to keep the ensemble breathable and stylish without an outer coat."}
+
+── ВІДПОВІДЬ (788 симв., 6.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "Structured shoulder cut in medium length, wool-blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#b56b3f",
+      "worn": true
+    },
+    {
+      "name": "Blouse",
+      "details": "Relaxed collar and mid-thigh length, silk fabric",
+      "slot": "top",
+      "color_hex": "#f1dbaa",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "Wide-leg with a straight leg fall to the ankle, denim fabric",
+      "slot": "bottom",
+      "color_hex": "#2c2a29",
+      "worn": true
+    },
+    {
+      "name": "Boots",
+      "details": "Chunky ankle boots with a low block heel, leather fabric",
+      "slot": "shoes",
+      "color_hex": "#1a1a1a",
+      "worn": true
+    }
+  ]
+}

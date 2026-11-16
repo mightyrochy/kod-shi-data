@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-knit sweater: slim fit, crew neck, hip length, long sleeves, cream (#efe6d6), merino wool\\n\\nMidi skirt: A-line, mid-calf, softly flared, deep olive (#55562f), wool crepe\\n\\nCoat: single-breasted, straight cut, knee length, camel (#b88a5a), wool with a soft brushed finish\\n\\nSheer tights: 20 denier, dark brown (#3b2c20), nylon\\n\\nAnkle boots: almond toe, slim block heel of about 6 cm, chocolate brown (#4a3524), smooth leather\\n\\nHandbag: small structured top-handle, cognac (#8a5a35), leather\\n\\nEarrings: thin small hoops, warm gold (#c9a24b), polished metal\\n\\nThis outfit sits at a neat, classic level that suits a restaurant date without looking overdone. The cream knit next to your face brightens your warm skin and picks up the light tones in your hair, while the deep olive skirt echoes your eyes. The camel coat, chocolate boots and cognac bag stay in one warm family, so the look is restrained and cohesive under the soft evening light. The A-line midi and slim heel give an elegant, feminine line, and the coat keeps you comfortable on an autumn evening.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Fine-knit sweater\\\",\\\"details\\\":\\\"slim fit, crew neck, hip length, long sleeves, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#efe6d6\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Midi skirt\\\",\\\"details\\\":\\\"A-line, mid-calf, softly flared, wool crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#55562f\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Coat\\\",\\\"details\\\":\\\"single-breasted, straight cut, knee length, wool with a soft brushed finish\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#b88a5a\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sheer tights\\\",\\\"details\\\":\\\"20 denier, nylon\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#3b2c20\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"almond toe, slim block heel of about 6 cm, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#4a3524\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Handbag\\\",\\\"details\\\":\\\"small structured top-handle, leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#8a5a35\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Earrings\\\",\\\"details\\\":\\\"thin small hoops, polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#c9a24b\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2103,\"output_tokens\":425},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -10,6 +10,7 @@ import re
 import re as _re_ід
 import json as _json_ід
 import протокол as _ПР
+import реєстр_сила as _РС
 import фрази_формату as _ФФ
 import спільні_вимоги as _ВИМ
 from пакет_моделі import номери_речей, скелет_схеми
@@ -57,22 +58,16 @@ import colorspace as _cs
         # принт»), хоч крамниця його знає, — колір речі без фото береться звідси, без посилання на джерело
         # Е2-вхід-опису-кодами (ПС-22): назва з крамниці несла вид і колір словами, і модель брала їх звідти —
         # річ міняла вид і колір; тепер річ — номер і поля кодами, ті самі, що бачила стилістка складання
-        _ЗП.Поле("outfit", "the chosen outfit: its items with number «n» and what the code knows of each as codes — "
-                           "«kind» and «type», its cut, fabric, material, length, sleeve, pattern and details when "
-                           "known, and its color («color» as a code, «hex» measured) — a hint for reading the photo, "
-                           "and the item itself when it has no photo",
+        _ЗП.Поле("outfit", "chosen items, each numbered «n», with known properties as codes: «kind», «type», cut, "
+                           "fabric, material, length, sleeve, pattern, details and colour («color» code, measured "
+                           "«hex»). Codes guide photo reading or describe an item without photos; absent properties are unknown",
                  треба=True),
         _ЗП.Поле("outfit.items[].photos",
-                 "the numbers of this item's photos: every photo stands under its own label «Photo N — …:» "
-                 "among the blocks placed before this object, and the label names the item by its «n»; under a "
-                 "label with «not delivered» or «not available» there is no image",
-                 як="describe what you see on the photos; from each photo take only the item of "
-                    "its «kind» — a belt, a bag or jewelry is often shown worn with a blouse or a dress: describe "
-                    "the belt, not the blouse; never take for an item a photo under another number, and when "
-                    "all of its photos are not delivered, describe it by its codes: its «kind», «type», «color» "
-                    "and the rest",
-                 без="There are no item photos: describe the items by their codes — «kind», «type», «color» and "
-                     "the rest; leave «wrong_photos» empty."),
+                 "this item's photo numbers; preceding blocks are labelled «Photo N — …:» with the item's «n». "
+                 "«not delivered» or «not available» means no image",
+                 як="describe only this item's «kind» in its own numbered photos: a belt shown on a blouse is "
+                    "the belt, not the blouse. If none of its photos arrived, use its codes",
+                 без="No photos: describe the items by their codes; leave «wrong_photos» empty."),
         # «Пасок Базовий блакитний» описувався блузою з фото пояса — опис йшов за кадром, а не за
         # річчю; рід речі кодом каже, ЩО на кадрі описувати
         # цілий комплект — родом «set» (від «top, blazer» опис звав його «не включеним»)
@@ -109,52 +104,51 @@ import colorspace as _cs
         # правило «body» («where it sets the eye … waist») і спосіб носіння вели б модель далі:
         # «підперезана червоним паском», «щоб пасок підкреслював найвужчу частину тулуба» при
         # «приховати живіт». Названу зону ховає крій, сміливе лишається деінде (п.17).
-        _ВИМ.поле("case.goal_zones", як="this comes before «body» and «ways_to_wear»: set the eye on none of these zones — no "
-                    "sentence or way to wear that marks, frames or accentuates them; with belly or hips: no tuck "
-                    "of any kind (not a front or half tuck, not a top tucked into the bottom, whatever it is "
-                    "said to avoid) and no belt at the waist, never «the narrowest part of the torso»; do not name "
-                    "them to her as something to hide; say where the outfit leads the eye instead"),
+        _ВИМ.поле("case.goal_zones", як="takes priority over «body» and «ways_to_wear»: neither prose nor advice may "
+                    "mark, frame or accentuate these zones. For belly or hips: no tuck of any kind, including "
+                    "front or half, and no waist belt or «narrowest part of the torso». Say where the outfit "
+                    "leads the eye, without calling these zones something to hide"),
         # «the choice is hers» про БУДЬ-ЩО, що сперечається з днем, модель ставила в кінець більшості
         # карток — про речі, які обрала сама («сітка… наскільки це важливо в церкві, вирішуєш ти»).
         # Своє рішення стилістка не віддає жінці назад.
-        _ВИМ.поле("day", як="in the last part of «text» say how this outfit lives through her day; when something "
-                    "you chose argues with the day (weather, hours on her feet, the place), say in one plain "
-                    "sentence why you still chose it and what that means for her day; describe the chosen "
-                    "items without proposing a different composition; never hand that decision back to her"),
+        # Прогін3-погода-й-дорога: «why you still chose it» на річ, яку фото показало не для дня, давало «шпилька
+        # вимагає обережних кроків» на сніг і двадцять хвилин пішки (с8) — складання й ремонт фото не бачили, і
+        # «свідомого вибору» не було. Тепер така річ — `swap` з підставою `day`; пояснення лишається тому, що
+        # з днем лише сперечається.
+        _ВИМ.поле("day", як="when the known item properties support it, in the last part of «text» say how this outfit "
+                    "lives through her day. An item its photo shows unfit for her weather or way there is «swap»; "
+                    "for anything else that argues with the day (hours on her feet, the place), say in one plain "
+                    "sentence why you still chose it and what it means for her day, never handing that decision "
+                    "back to her"),
         # ОПИС-1 (K-PAL-11/14/15): «найдальші» й «комбінація», якщо йдуть у КОЖЕН опис, дають
         # «маленька оливкова чи зелена деталь» навіть на похороні й поради додати річ, якої в образі
         # нема. Тож лише те, що стосується речей образу.
         _ЗП.Поле("palette", "her palette",
-                 як="in the third part, in your own words and only where it concerns the items of this "
-                    "outfit: the metal, when the outfit has jewelry or metal details; a colour «farthest» "
-                    "from her only when an item of this outfit carries it (call no other colour farthest "
-                    "from her); a combination she can put together — optional, and only from the items of "
-                    "this outfit, never by adding an item; not as a list"),
+                 як="in the last part of «text», in prose: discuss metal only with jewelry or metal details "
+                    "in this outfit; call a colour «farthest» from her only if an outfit item carries it; "
+                    "an optional combination uses only outfit items, never additions"),
         # K-BOD-02, K-SIL-03 (аудит/ПРОДУКТ.md п.4): її фігура кодами — ті самі, що в брифі складання.
         # П.17: річ образу — вибір стилістки; річ проти фігури — пояснити, рішення не віддавати.
         # «cuts_best_on_her: belted» при вільному светрі без пояса давало «tuck in just the front hem
         # slightly over your belt»; «що з цим робити» — лише речами образу.
         # «your O-shape waist» у записі пальта, «your O-shape figure» у «text» — код фігури
         # (`body.shape`) ішов би жінці; межа — ознаки фігури словами крою, і в записі речі теж
-        _ЗП.Поле("body", "her figure as the code measured it: height, shape code, zones, and statements — the cuts "
-                         "that sit best on her, where a voluminous outfit takes its anchor, where most conditions "
-                         "meet on her body",
-                 як="in the last part of «text» say in one or two sentences what this outfit does for her "
-                    "figure — which line it draws, where it sets the eye (shoulders, waist, hips, legs, "
-                    "height), with the items that do it; speak of what the outfit does, never of what her "
-                    "body lacks or what should be hidden; when an item of the outfit works against these "
-                    "statements, say so gently and say why you chose it anyway or what to do with it — only "
-                    "with the items of «outfit»; «cuts» are cuts of an item, not items to add («belted» — a top "
-                    "with its own belt, never a belt she puts on); her figure only in words of the line and the "
-                    "cut — her waist, hips, shoulders, legs — never as the shape code, a letter, an «…-shape», "
-                    "a body type or a number"),
+        _ЗП.Поле("body", "measured height, shape code, zones and statements: suitable cuts, the anchor for volume, "
+                         "and where most conditions meet on her body",
+                 як="where known cut and length support it, in the last part of «text» explain the outfit's "
+                    "line and focus with the items responsible. Speak of its effect, never her body's lacks "
+                    "or what to hide. If an item opposes these statements, gently explain your choice or a "
+                    "remedy using only outfit items. «cuts» means item cuts: «belted» is its own belt, not an "
+                    "added belt. Describe her figure through line and cut, never a shape code, letter, "
+                    "«…-shape», body type or number"),
         _ЗП.Поле("body.shape", _Д.ФІГУРА_КОДИ_EN),
         # ОПИС-1 (K-ACC-12, K-EDG-01): у кожної сумки є три способи (рука, плече, навскоси),
         # і «Як це носити» щоразу казало б про сумку
         _ЗП.Поле("ways_to_wear", "ways the items can be worn: «item» — «n» of the item of «outfit» (none — the "
                                  "whole outfit); each statement is one way — its place, and its effect when the "
                                  "code knows one",
-                 як="in «how_to_wear» name a way only when it changes something for this outfit — its effect "
+                 як="these are alternatives, not a list of instructions to combine: choose one coherent way "
+                    "for each item; in «how_to_wear» name a way only when it changes something for this outfit — its effect "
                     "matters here (a line across the torso that already has many, a hem it lands on); a way "
                     "that changes nothing is left out"),
         # «against a condition» без умови — сумку, яку стилістка ДОДАЛА, опис
@@ -181,10 +175,10 @@ import colorspace as _cs
         _ЗП.Поле("swap_spares", "the item you named for replacement, your reason, and the spares of the "
                                 "same kind the code checked in its place; every spare has «photos» like "
                                 "the items of the outfit",
-                 як="look at the photos of the spares and choose the one that serves this outfit and her "
-                    "occasion best, or none; describe the outfit with your choice in place — the chosen "
-                    "spare instead of the item; the card tells her separately what you replaced and why, so "
-                    "«text» does not; answer «swap» again with «item», «why» and «to»"),
+                 як="look at the photos of the spares and choose the one that serves this outfit, her "
+                    "occasion and her day best, or none; describe the outfit with your choice in place — the "
+                    "chosen spare instead of the item; the card tells her separately what you replaced and why, "
+                    "so «text» does not; answer «swap» again with «item», «why» and «to»"),
     ),
     правила=(
         # ОПИС-1: вигадані речі («простий світлий топ» без топа, «золоті сережки» без сережок,
@@ -192,9 +186,17 @@ import colorspace as _cs
         "Describe only the items of «outfit»: no suggestions to buy or add more, no items it does not contain — "
         "no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or "
         "she may own it.",
-        "Do not change the outfit yourself. Describe each item as its photo shows it: a clearly different item or "
-        "colour goes only into «wrong_photos» or «swap».",
-        "Say each thing about an item once, and do not state a quality and then doubt it.",
+        "Do not change the outfit yourself. A clearly different item or colour goes into «wrong_photos» or «swap»; "
+        "do not invent the expected item behind that mismatch.",
+        # Поля опису не зобов'язують добудовувати невідомі властивості за категорією речі.
+        "Every factual property in «about_items», «text», «named» and «how_to_wear» needs support in that item's "
+        "own codes or in a clearly visible feature on its own delivered photo. A photo supports visible shape, "
+        "colour and texture, not fibre composition, manufacturing method, feel, comfort or weather protection. "
+        "Do not infer an absent property from the item category, her body, weather or a way to wear it; "
+        "omit it instead. A code and a photo that disagree are not evidence for combining their properties.",
+        "Say each thing about an item once. Keep the same properties throughout the answer and one coherent "
+        "wearing plan; an alternative is a choice, not another simultaneous instruction. Explain the outfit "
+        "using supported properties, without filling a sentence or attribute quota.",
         # ПРОЗА-КАРТОК-2: «На фото є ще й підібрані сірі штани, але до цього образу належить
         # лише жакет», «Фото я не бачу, тому орієнтуюся на назву», «як сказано в назві» — службова мова
         # про кадр у картці; чого бракує на фото, картка вже каже під річчю (п.9).
@@ -211,9 +213,9 @@ import colorspace as _cs
         "«it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a "
         "decision to her only about what she asked for herself: her words in «case», an item marked «hers».",
         "Only when a photo shows that an item is not what this outfit needs — a clearly different colour, "
-        "another kind of item, or unfit for her occasion — and that matters for this outfit, name that one "
-        "item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in "
-        "doubt, leave «swap» out.",
+        "another kind of item, unfit for her occasion or her day — and that matters for this outfit, name "
+        "that item in «swap»: the code then looks for a replacement of the same kind. When in doubt, "
+        "leave «swap» out.",
         _ЗП.КІНЕЦЬ_ВІДПОВІДІ_EN,
     ),
     вихід="ОПИС_ВІДПОВІДЬ_V1",
@@ -226,15 +228,14 @@ import colorspace as _cs
         # «styled here with matching wide-leg trousers» при бомбері без штанів, кардиган «поверх
         # в'язаного комплекту» з його фото при сукні — запис речі описував увесь кадр. Код прози не читає (п.12),
         # тож межа — тут: запис має лише свою річ, а як речі поєднуються — «text» (речі образу, звірені «named»)
-        "про_речі[].текст": "prose for her about this one item alone: what it is, cut, length, color in words, fabric, "
-                            "in one or two sentences, as its photo and data show; it is in her outfit — never say it "
-                            "is not included; no other garment, shoe, bag or accessory — neither one its photo shows "
-                            "it with nor another item of «outfit»: how the items go together belongs to «text»; her "
-                            "figure, if at all, only in words of the line and the cut — never the shape code or an "
-                            "«…-shape»",
+        "про_речі[].текст": "brief prose about this item alone and its supported properties; little evidence means "
+                            "a short description, with no attribute list or minimum length. It belongs to her "
+                            "outfit; never call it excluded. No other clothing or accessory, whether from its photo "
+                            "or «outfit»: combinations belong to «text». Her figure only through line and cut, "
+                            "never a shape code or «…-shape»",
         "текст": "prose for her after the items: (1) optional, only when it adds something — how the "
                  "shoes, the outer layer and the accessories go with the rest, in one or two sentences; "
-                 "(2) why it works — 3–4 sentences, taking from «day», «palette», «makeup» and «missing» "
+                 "(2) why it works, briefly and only where supported, taking from «day», «palette», «makeup» and «missing» "
                  "only what matters most for this outfit and her occasion",
         # «Tuck the blazer in slightly» без адресата — переклад дописав «у штани»
         # при спідниці; порада, що кладе річ у, під чи на іншу, називає й ту, і обидві — речі образу
@@ -250,8 +251,8 @@ import colorspace as _cs
                       "with other clothes in the frame is no reason; when in doubt, leave it out",
         "заміна.річ": "«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty "
                       "reason — the usual case",
-        "заміна.чому": "why the photo warrants replacing this item: a clearly different colour, "
-                       "another kind of item or a mismatch with her occasion",
+        "заміна.чому": "why the photo warrants replacing it: a clearly different colour, another kind "
+                       "of item, a mismatch with her occasion or her day",
         "заміна.на": "only with «swap_spares» in the input: «n» of the spare you choose; leave it out to "
                      "keep the item",
     },
@@ -1037,6 +1038,11 @@ def образи_з_json(об, кандидати=None, каталог=None):
                                            склад=запис.get("ід") or [], поза=_поза)
         if _поза:
             запис["свідомі_поза"] = _поза
+        # ЯК ВДЯГНЕНО КОЖНУ РІЧ — її слово (`ОБРАЗ_МОДЕЛІ.місце`) за id речі складу; суд кладе його на річ
+        # полем `місце_стилістки`, і запис місця (`місце_речі.записати`) бере його джерелом «стилістка»
+        _місця = місця_з_json(о.get("місце"), словник, за_ном, склад=запис.get("ід") or [])
+        if _місця:
+            запис["місця"] = _місця
         # `текст` лишається в записі, але на JSON-шляху несе ЛИШЕ ПРОЗУ моделі
         # (підпис, день, причини оголошених ходів): єдиний його читач —
         # мовний гейт (`перевірити_від_моделі`), а він судить саме прозу. Номери й
@@ -1194,7 +1200,14 @@ def ід_з_тексту(текст, кандидати=None, каталог=Non
 
 СВІДОМО_РЕГ = _re_ід.compile(r"^\s*(?:СВІДОМО|Свідомо|свідомо|НАВМИСНО|Навмисно|навмисно)\s*[:—–-]\s*(.+?)\s*$", _re_ід.M)
 _СЛУЖБОВИЙ_НОМЕР = _re_ід.compile(r"#(?![0-9a-fA-F]{6}\b)\d+")   # шестизначний hex-колір не є службовим номером
-СВІДОМИЙ_МНОЖНИК = 0.6   # той самий коефіцієнт, що K-KOH-03 дає ОДНОМУ свідомому розриву (T3)
+# Той самий коефіцієнт, що K-KOH-03 дає ОДНОМУ свідомому розриву (T3, конвенція корпусу): запис із тіром
+# і правилом-власником, а не голий літерал, — його читає `перезважити(частка=…)`.
+РЕЄСТР_СВІДОМОГО = {
+    "свідомий_множник": dict(t="T3", val=0.6, прав=["K-KOH-03"],
+                             суть="частка ваги, що лишається знахідці, проти якої жінка оголосила свідомий розрив",
+                             де="застосувати_свідомі()"),
+}
+СВІДОМИЙ_МНОЖНИК = РЕЄСТР_СВІДОМОГО["свідомий_множник"]["val"]
 
 def свідомі_розриви(текст):
     """Рядки «СВІДОМО: <річ> — <чому>» з ПРОЗОВОЇ відповіді моделі. Бриф давно велить
@@ -1278,6 +1291,30 @@ def свідомі_з_json(свідомо, словник, за_ном=None, с�
                 назва = ", ".join(_ФС.назва_для_людини(словник[і]) or річ for і in ід)
         р["текст"] = ("%s — %s" % (назва, чому)).strip(" —") if назва else чому
         вих.append(р)
+    return вих
+
+
+def місця_з_json(місце, словник, за_ном=None, склад=None):
+    """Поле `місце` образу (`[{річ, біля_обличчя, видно, розстебнуто, слова}]`, `протокол.МІСЦЕ_РЕЧІ`) →
+    {id речі: слово стилістки} — те, що читає `місце_речі.записати` з поля речі `місце_стилістки`.
+
+    Адреса — той самий номер пулу, що в «речі», і той самий `розпізнати_речі`. Річ поза складом образу (`склад`)
+    і річ, якої код не впізнав, слова не дістають: місце речі, якої на ній нема, — не факт про цей образ.
+    Порожнє значення («не знаю», null) не пишеться: «невідомо» — це відсутність слова, а не слово."""
+    вих = {}
+    _склад = set(склад) if склад is not None else None
+    for м in список(місце):
+        if not isinstance(м, dict) or not str(м.get("річ") or "").strip():
+            continue
+        слово = {к: м[к] for к in _ПР.ПОЛЯ_МІСЦЯ if к != "слова" and м.get(к) in ("так", "ні")}
+        if str(м.get("слова") or "").strip():
+            слово["слова"] = str(м["слова"]).strip()
+        if not слово:
+            continue
+        знайдені, _невірні, _ч = розпізнати_речі(str(м["річ"]), словник, за_ном, поле=True)
+        for і in знайдені:
+            if і in словник and (_склад is None or і in _склад):
+                вих.setdefault(і, {}).update(слово)
     return вих
 
 
@@ -1384,9 +1421,7 @@ def застосувати_свідомі(знахідки, розриви, ре
                 _речі_р = {str(x) for x in (р.get("ід_речей") or ([р["ід"]] if р.get("ід") else []))}
                 if _речі_р and not (_речі_р & речі_зн):
                     continue
-                z["сила_нп"] = round(z["сила_нп"] * СВІДОМИЙ_МНОЖНИК, 3)
-                z["свідомий"] = р["текст"]
-                z["сила_нп_джерело"] = (z.get("сила_нп_джерело") or "") + "; свідомий розрив ×%.1f (K-KOH-03, T3)" % СВІДОМИЙ_МНОЖНИК
+                z = dict(_РС.перезважити(z, None, частка=СВІДОМИЙ_МНОЖНИК), свідомий=р["текст"])
                 р["послаблено"] += 1
                 break
         вих.append(z)

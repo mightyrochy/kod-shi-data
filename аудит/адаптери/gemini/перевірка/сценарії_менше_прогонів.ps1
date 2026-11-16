@@ -10,6 +10,11 @@ function Check([string]$Name, [bool]$Ok) {
     <# Кожен провал мірила лишається червоним і впливає на код завершення. #>
     if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
 }
+function Write-Log([string]$Text) {
+    <# queue_lanes.ps1 вимагає від хазяїна функцію журналу (шапка файлу): без неї збій прив'язки процесу до задачі Windows у Start-Tree
+    (процес git устиг вийти) обривав би сам виклик git замість рядка в журналі. Сценарії, що міряють журнал, задають свою. #>
+    Write-Host "  журнал обгортки: $Text"
+}
 function Scenario([string]$Name, [scriptblock]$Body) {
     <# Незалежні правила виконуються до кінця й при відсутній функції базової версії. #>
     try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
@@ -92,11 +97,11 @@ try {
         Invoke-WrapperChain
 
 
-        Check '1б чисте злиття main — одна позначка замість двох' (@($script:TestMarkers | Where-Object { $_ -like 'автоперевірка-*' }).Count -eq 1)
+        Check '1б чисте злиття main: автоперевірку ставить диспетчер, ланцюг позначок не ставить' (@($script:TestMarkers | Where-Object { $_ -like 'автоперевірка-*' }).Count -eq 0)
         [IO.File]::WriteAllText("$seed/a.txt","інший код`n",$utf)
         & git -C $seed commit -qam 'реальна зміна'; $pull.head.sha = (& git -C $seed rev-parse HEAD).Trim()
         Invoke-WrapperChain
-        Check '1б зміна коду — друга перевірка' (@($script:TestMarkers | Where-Object { $_ -like 'автоперевірка-*' }).Count -eq 2)
+        Check '1б зміна коду: ланцюг позначок не ставить' (@($script:TestMarkers | Where-Object { $_ -like 'автоперевірка-*' }).Count -eq 0)
     }
     Scenario '2 останній штамп' {
         $script:TestPulls = @()

@@ -1,0 +1,67 @@
+── ПРОМПТ (8551 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: graphite · about it: text н=1
+2 — kind code: dress_generic · colour code: pearly · about it: text н=2
+3 — kind code: belt · colour code: brown · about it: text н=3
+4 — kind code: scarf_generic · colour code: red · about it: text н=4
+5 — kind code: ring · colour code: golden · about it: text н=5
+6 — kind code: coat · colour code: beige · about it: text н=6
+7 — kind code: bag_generic · colour code: brown · about it: text н=7
+8 — kind code: pumps · colour code: black · about it: text н=8
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; golden — золотий; graphite — графіт; pearly — перлинний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This graphite check blazer has a relaxed silhouette that drapes softly over your frame. Its subtle pattern adds just enough visual interest to feel polished, while the dark tone keeps it grounded and understated for an evening out.",
+"2": "The pearly dress features a sleek sheath or A-line cut with a built-in belt that gently skims your waist. Its soft, light finish reflects the club lights subtly, keeping you looking luminous without appearing loud.",
+"3": "This brown belt slips over the dress to add a warm, earthy definition to your waistline. It acts as an anchor for the softer fabrics while introducing a rich color that bridges the darker top and lighter bottom.",
+"4": "The red scarf is lightweight and vibrant enough to act as a pop of color without overwhelming your look. Its placement near your neck draws the eye upward, naturally distracting from areas you wish to keep in shadow.",
+"5": "This golden ring sits comfortably on one finger, offering a small, refined detail that catches the light occasionally. It complements the warm undertones of your palette and adds a touch of personal luxury to the ensemble.",
+"6": "The beige coat provides a neutral, breathable outer layer with a regular fit that layers easily over the blazer and dress. Its light color keeps the overall silhouette feeling airy and prevents the outfit from becoming too heavy for an evening out.",
+"7": "This brown bag matches your belt perfectly to create a cohesive line around your midsection. Its structure holds its shape well, making it easy to carry casually while holding all your essentials securely.",
+"8": "These black pumps provide a sleek foundation that elongates your legs and grounds the outfit in sophistication. Their classic shape works perfectly with both the flow of the dress and the line of the coat.",
+"9": "This outfit brings your wish for a low-key evening at the club to life without making you stand out. The graphite check blazer adds a relaxed, structured frame that feels effortless, while the pearly dress flows softly beneath it for comfort and elegance. A rich brown belt defines your waist gently, balancing the relaxed cut of the jacket with a touch of polish. The deep red scarf acts as your secret highlight—bold enough to feel festive but contained enough not to dominate the room. Gold details from the ring and coat lining catch the club lights softly without shouting for attention.",
+"10": "Leave the blazer unbuttoned to show the dress's neckline, keeping the look open and breezy rather than boxed in.",
+"11": "Жіноча сумка Welfare коричнева — I added this leather bag to fix the missing 'bag' slot required for the occasion; its brown tone matches the belt and provides a necessary contrast to the cool graphite coat.",
+"12": "Туфлі-човники чорного кольору на підборах — I added black suede pumps to fix the missing 'shoes' slot; they match the tonal scheme and ground the outfit without adding shine near the face.",
+"13": "Пояс Krayka Brown – ручна робота — I keep this scarf despite the 'below_band' flag because I will drape it loosely across the collarbone to add texture without adding volume, addressing the blandness finding.",
+"14": "Шарф з м'якої вовни ягня темно-червоний — The red belt serves as a single focal point that draws attention upward away from the belly, fulfilling both the 'conceal' goal and the 'single focus' rule by acting as an intentional anchor rather than a distraction.",
+"15": "Піджак в принт гусяча лапка на гудзик — I accept this finding because the scarf's loose collarbone draping adds necessary texture to the tonal coat and blazer, preventing the look from appearing too flat under artificial lighting while still maintaining your 'quiet' intent."
+}
+
+── ВІДПОВІДЬ (3613 симв., 60.0 с, HTTP 200) ──
+```json
+{
+"1": "Цей графітовий блейзер у клітинку має вільний силует, який м’яко драпірується по твоїй фігурі. Його ледь помітний візерунок додає достатньо візуального інтересу для того, щоб ти виглядала охайно, а темний тон робить його стриманим і невимушеним для вечора.",
+"2": "Перлова сукня має елегантний приталений або А-силует з вбудованим поясом, який ніжно підкреслює твою талію. Її м’яке світле оздоблення ледь помітно відбиває клубні вогні, зберігаючи сяйво без зайвої гучності.",
+"3": "Цей коричневий пояс одягається поверх сукні, щоб додати теплих земляних тонів твоїй талії. Він слугує своєрідним акцентом для м’якших тканин і вносить насичений колір, який поєднує темний верх з світлим низом.",
+"4": "Червоний шарф легкий і достатньо яскравий, щоб стати помітним кольоровим акцентом без перевантаження образу. Розміщений біля шиї, він привертає увагу вгору, природно відводячи її від тих частин тіла, які ти хочеш залишити в тіні.",
+"5": "Це золоте кільце зручно сидить на одному пальці, пропонуючи невелику витончену деталь, яка час від часу ловить світло. Воно доповнює теплі тони твоєї палітри та додає нотку особистої розкоші в ансамбль.",
+"6": "Бежеве пальто забезпечує нейтральний дихаючий верхній шар звичайного крою, який легко одягається поверх блейзера і сукні. Його світлий колір зберігає загальну силуетну легкість і не дозволяє образу стати надмірно важким для вечора.",
+"7": "Ця коричнева сумка чудово поєднується з твоїм поясом, створюючи гармонійний контур у середній частині тіла. Її структура добре тримає форму, що робить її зручною для недбалого носіння та надійно зберігає всі необхідні речі.",
+"8": "Ці чорні туфлі-човники на підборах створюють елегантну основу, яка видовжує твої ноги і надає образу вишуканості. Їхня класична форма чудово поєднується як з драпіруванням сукні, так і з лінією пальта.",
+"9": "Цей образ втілює твоє бажання провести тихий вечір у клубі без зайвої уваги до себе. Графітовий блейзер у клітинку додає розслаблений структурований силует, який виглядає невимушено, а перлова сукня м’яко спадає під ним для комфорту та елегантності. Коричневий пояс ніжно окреслює твою талію, збалансовуючи вільний крій жакета з ноткою охайності. Глибокий червоний шарф стає твоєю секретною родзинкою — достатньо сміливим для святкового настрою, але не надто помітним.",
+"10": "Залиш блейзер розстебнутим, щоб показати виріз сукні та зберегти образ відкритим і легким, а не закритим.",
+"11": "Я додала цю шкіряну сумку Welfare коричневого кольору, щоб виправити відсутність необхідного слоту для «сумки» на цей випадок; її коричневий тон поєднується з поясом і створює потрібний контраст до прохолодного графітового пальта.",
+"12": "Я додала чорні замшеві туфлі-човники на підборах, щоб виправити відсутність слоту для «взуття»; вони поєднуються з тональною схемою та надають образу стійкості без зайвого блиску біля обличчя.",
+"13": "Я залишаю цей шарф Krayka Brown – ручної роботи, незважаючи на прапорець «below_band», тому що я його вільно драпірую через ключицю, щоб додати текстури без зайвого об’єму, вирішуючи проблему з монотонністю.",
+"14": "Шарф з м'якої вовни ягня темно-червоного кольору слугує єдиним акцентом, який привертає увагу вгору від живота, задовольняючи як мету «приховати», так і правило «одного фокусу» завдяки тому, що він діє як навмисний акцент, а не відволікаючий фактор.",
+"15": "Я приймаю це спостереження, адже вільне драпірування шарфа через ключицю додає необхідної текстури до тонального пальта і блейзера, запобігаючи тому, щоб образ виглядав надто плоским під штучним освітленням, зберігаючи при цьому твій «тихий» намір."
+}
+```

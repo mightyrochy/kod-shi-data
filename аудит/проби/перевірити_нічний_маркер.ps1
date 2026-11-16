@@ -65,6 +65,71 @@ try {
     }
     $tomorrow = @(Get-NightlyMarker ([datetime]'2026-10-28T02:00:00Z'))
     if (-not $Before) { Assert-That ($tomorrow.Count -eq 0) 'дата без окремого дозволу не запускається' }
+    # Диспетчер знімає нічну позначку комітом «ЗНЯТО…» поверх дозволу з main: голова не з main, але зняття має дійти до обробника скасування.
+    if (-not $Before) {
+        [void](Git-At $seed @('checkout', '-qb', 'зняття-ночі', $base))
+        [void](Git-At $seed @('commit', '-qm', 'ЗНЯТО: проба нічного зняття', '--allow-empty'))
+        $cancelSha = Git-At $seed @('rev-parse', 'HEAD')
+        [void](Git-At $seed @('push', '-q', 'origin', "${cancelSha}:refs/heads/$queue"))
+        [void](Git-At $seed @('checkout', '-q', 'main'))
+        [void](Git-At $clone @('fetch', '-q', 'origin'))
+        $cn = @(Get-NightlyMarker $clock)
+        Assert-That ($cn.Count -eq 1 -and $cn[0].Cancel -and $cn[0].Sha -ceq $cancelSha) 'нічне ЗНЯТО поверх дозволу читається як зняття з SHA знімального коміту'
+        [void](Git-At $origin @('update-ref', '-d', "refs/heads/$otherQueue"))
+        [void](Git-At $clone @('fetch', '-q', '--prune', 'origin'))
+        $nightReader = ${function:Get-NightlyMarker}
+        & {
+            $script:NightClosed = 0; $script:StateDir = Join-Path $testRoot 'state'; $script:SlotDir = Join-Path $testRoot 'slots'; [void](New-Item -ItemType Directory -Force -Path $script:StateDir, $script:SlotDir)
+            function Get-NightlyMarker { & $nightReader $clock }
+            function Repair-GpuModels { }
+            function Save-Skips($Path) { }
+            function Close-CancelledMarker($M, $Workers) { $script:NightClosed++ }
+            [void](Start-Markers @())
+        }
+        Assert-That ($script:NightClosed -eq 1) 'нічне ЗНЯТО доходить до обробника скасування (Close-CancelledMarker) у Start-Markers'
+        [void](Git-At $seed @('push', '-q', '-f', 'origin', "${base}:refs/heads/$queue"))
+        [void](Git-At $clone @('fetch', '-q', 'origin'))
+        Assert-That (@(Get-NightlyMarker $clock).Count -eq 1 -and -not @(Get-NightlyMarker $clock)[0].Cancel) 'повернений дозвіл знову дає звичайну ніч без скасування'
+        # Спроба /2 теж знімається: найбільша спроба з ЗНЯТО віддається як зняття, а не губиться на користь /1 з main.
+        $q2 = $queue -replace '/1/gpu-p8$', '/2/gpu-p8'
+        [void](Git-At $seed @('push', '-q', 'origin', "${cancelSha}:refs/heads/$q2"))
+        [void](Git-At $clone @('fetch', '-q', 'origin'))
+        $c2 = @(Get-NightlyMarker $clock)
+        Assert-That ($c2.Count -eq 1 -and $c2[0].Cancel -and $c2[0].Ref.EndsWith('/2/gpu-p8')) 'ЗНЯТО на спробі /2 віддається як зняття /2'
+        [void](Git-At $origin @('update-ref', '-d', "refs/heads/$q2"))
+        [void](Git-At $clone @('fetch', '-q', '--prune', 'origin'))
+    }
+    if (-not $Before) {
+        # Живий ноутбук 10.11: /1 кінчилась CRASH (сон), диспетчер поставив /2 на тому самому коміті; стан — у теці стенда.
+        $nState = Join-Path $testRoot 'state'; [void](New-Item -ItemType Directory -Force -Path $nState)
+        $nFile = Join-Path $testRoot 'runs/nightly/20261027.json'; $nFile2 = Join-Path $testRoot 'runs/nightly/20261027-2.json'
+        $first = [IO.File]::ReadAllText($nFile, $script:Utf8)
+        Write-FileAtomic (Get-StatePath (Get-MarkerKey $night) $nState) 'DONE 20261027-020000-aaaaaaaaaaaa CRASH'
+        Assert-That (-not (Test-MarkerReady (Get-MarkerState $night $nState))) '/1 після CRASH — кінцевий стан, сама не береться'
+        $queue2 = $queue -replace '/1/gpu-p8$', '/2/gpu-p8'; $queue3 = $queue -replace '/1/gpu-p8$', '/3/gpu-p8'
+        [void](Git-At $seed @('push', '-q', 'origin', "${base}:refs/heads/$queue2"))
+        [void](Git-At $clone @('fetch', '-q', 'origin'))
+        $two = @(Get-NightlyMarker $clock)
+        Assert-That ($two.Count -eq 1 -and $two[0].N -ceq '2' -and $two[0].Sha -ceq $night.Sha) '/1 DONE CRASH і /2 на тому ж коміті — бере /2'
+        Assert-That ($two[0].Slug -ceq $night.Slug -and $two[0].Gpu -and $two[0].Prio -eq 8) '/2 — той самий slug (його тримає Test-SlugBusy), GPU, p8'
+        Assert-That ((Get-MarkerKey $two[0]) -cne (Get-MarkerKey $night) -and (Test-MarkerReady (Get-MarkerState $two[0] $nState))) '/2 має свій ключ стану: кінець /1 її не блокує'
+        Assert-That ((Test-Path -LiteralPath $nFile2) -and ([IO.File]::ReadAllText($nFile, $script:Utf8) -ceq $first)) 'стан /2 у своєму файлі, файл /1 (старий формат) не змінено'
+        $good = [IO.File]::ReadAllText($nFile2, $script:Utf8)
+        [IO.File]::WriteAllText($nFile2, '{"date":"20261027","sha":"x","time":"1"}', $script:Utf8)
+        $threw = $false; try { [void](Get-NightlyMarker $clock) } catch { $threw = $_.Exception.Message -ceq 'Хибний стан нічного прогону' }
+        Assert-That $threw 'хибний стан спроби /2 лишає захист «Хибний стан нічного прогону»'
+        [IO.File]::WriteAllText($nFile2, $good, $script:Utf8)
+        $off = Git-At $seed @('commit-tree', "${base}^{tree}", '-p', $base, '-m', 'Поза main')
+        [void](Git-At $seed @('push', '-q', 'origin', "${off}:refs/heads/$queue3"))
+        [void](Git-At $clone @('fetch', '-q', 'origin'))
+        Assert-That (@(Get-NightlyMarker $clock)[0].N -ceq '2') '/3 не на main — не бере, лишається /2'
+        [void](Git-At $origin @('update-ref', '-d', "refs/heads/$queue2"))
+        [void](Git-At $clone @('fetch', '-q', '--prune', 'origin'))
+        $one = @(Get-NightlyMarker $clock)
+        Assert-That ($one.Count -eq 1 -and $one[0].N -ceq '1' -and (Get-MarkerKey $one[0]) -ceq (Get-MarkerKey $night)) 'тільки /1 (а /3 не на main) — як раніше: /1'
+        [void](Git-At $origin @('update-ref', '-d', "refs/heads/$queue3"))
+        [void](Git-At $clone @('fetch', '-q', '--prune', 'origin'))
+    }
     # У режимі ДО позначка є лише в локальному JSON, як у старій латці 02.
     if ($Before) {
         [void](Git-At $origin @('update-ref', '-d', "refs/heads/$queue"))

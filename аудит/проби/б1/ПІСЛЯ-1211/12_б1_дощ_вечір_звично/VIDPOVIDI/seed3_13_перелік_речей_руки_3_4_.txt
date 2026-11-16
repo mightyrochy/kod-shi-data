@@ -1,0 +1,44 @@
+── ПРОМПТ (2324 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet trench coat, knee-length cut, structured silhouette, charcoal gray (#3a3d40), heavy cotton-blend twill.\nSilk-blend blouse, relaxed fit with a soft drape, deep emerald green (#04392b), fluid micro-plain weave.\nHigh-waisted wide-leg trousers, full length, straight leg opening, midnight blue (#071932), stretch wool crepe.\nBlock heel pumps, stiletto silhouette, pointed toe, oxblood red (#870610), smooth calfskin leather.\nGold-plated delicate pendant necklace, round lock shape, minimal width, rose gold tone, polished brass alloy.\n\nThis outfit strikes the perfect balance for an evening date that transitions from a rainy cinema outing to a cozy dinner, adhering to the \"neat\" dress code while respecting the cold and wet weather. The deep jewel tones of emerald and oxblood create a romantic atmosphere against the dim artificial lighting, while the velvet texture adds warmth and luxury suitable for autumn. The trench coat provides essential protection from the rain without sacrificing style, ensuring comfort and elegance throughout the entire night out."}
+
+── ВІДПОВІДЬ (1098 симв., 8.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Velvet trench coat",
+      "details": "knee-length cut, structured silhouette, heavy cotton-blend twill fabric",
+      "slot": "outerwear",
+      "color_hex": "#3a3d40",
+      "worn": true
+    },
+    {
+      "name": "Silk-blend blouse",
+      "details": "relaxed fit with a soft drape, fluid micro-plain weave fabric",
+      "slot": "top",
+      "color_hex": "#04392b",
+      "worn": true
+    },
+    {
+      "name": "High-waisted wide-leg trousers",
+      "details": "full length, straight leg opening, stretch wool crepe fabric",
+      "slot": "bottom",
+      "color_hex": "#071932",
+      "worn": true
+    },
+    {
+      "name": "Block heel pumps",
+      "details": "stiletto silhouette, pointed toe, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#870610",
+      "worn": true
+    },
+    {
+      "name": "Gold-plated delicate pendant necklace",
+      "details": "round lock shape, minimal width, rose gold tone, polished brass alloy",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

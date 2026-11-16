@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"вечір у театрі\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"вечір у театрі\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}}, \"event\": \"вечір у театрі\", \"occasion\": \"theatre\", \"formality\": [\"formal\"], \"season\": \"autumn\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Black wool sheath dress, knee-length cut, solid matte black (hex #000000), heavy woven wool with a subtle herringbone texture.\\nCream silk blouse, classic pointed collar, relaxed fit, pale cream (hex #FFFDD0), smooth satin weave.\\nCharcoal grey tailored blazer, structured shoulders, single-button closure, waist-length jacket, dark charcoal grey (hex #36454F), sharp wool blend with fine pinstripes.\\nBlack leather pumps, pointed toe, 7-centimeter heel, glossy finish, calfskin leather (hex #1A1A1A).\\nBlack silk opera gloves, elbow-length, satin weave, deep black (hex #0B0B0B), smooth and slightly stiffened cotton blend lining.\\n\\nThis ensemble meets the formal dress code required for an evening at the theatre by combining a structured blazer with a refined sheath dress and elegant pumps. The addition of silk opera gloves elevates the look to a ceremonial level, perfectly honoring the traditional atmosphere of a classic stage performance. All pieces are crafted from premium, dark fabrics suitable for autumn weather, ensuring warmth without sacrificing the polished silhouette needed for such an occasion.\"}],\"usage\":{\"input_tokens\":577,\"output_tokens\":250},\"stop_reason\":\"end_turn\"}"
+ }
+}

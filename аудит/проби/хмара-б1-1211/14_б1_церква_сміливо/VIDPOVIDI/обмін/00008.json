@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"служба в церкві\", \"place\": \"служба в церкві\", \"intent\": \"хочу виділитися\", \"goal\": \"хочу виділитися\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"goal\": {\"kind\": \"reading\", \"quote\": \"хочу виділитися\"}, \"goal_quote\": {\"kind\": \"default\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"служба в церкві\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"служба в церкві\"}, \"intent\": {\"kind\": \"reading\", \"quote\": \"хочу виділитися\"}, \"intent_quote\": {\"kind\": \"default\"}, \"mood\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"language_model_note\": {\"kind\": \"reading\"}}, \"event\": \"служба в церкві, потім обід з батьками\", \"goal\": \"express\", \"mood\": [\"сміливо\"], \"occasion\": \"church\", \"place\": \"church_service\", \"goal_quote\": \"хочу виділитися\", \"intent_quote\": \"хочу виділитися\", \"formality\": [\"neat\"], \"season\": \"autumn\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Fine merino sweater, fitted crew neck, hip length, long sleeves, emerald green #0B6B4F, extra-fine merino wool\\nPleated midi skirt, A-line, mid-calf length, burgundy #7A1F36, wool crepe\\nOpaque tights, 60 denier, black #1A1A1A, matte knit\\nSingle-breasted coat, tailored fit, knee length, camel #C19A6B, soft brushed wool\\nAnkle boots, almond toe, 5 cm block heel, cognac #8B4A2B, smooth leather\\nSilk scarf, square, loosely knotted at the neck, gold and emerald print on a cream ground #E8DCC0, twill silk\\nDrop earrings, small and sculptural, warm gold #C9A24B, brushed metal\\nStructured top-handle bag, medium size, black #1C1C1C, grained leather\\n\\nEmerald and burgundy side by side make a rich, confident colour pairing, so you will stand out in the pews without anything flashy. The mid-calf skirt, long sleeves and closed neckline keep the look respectful for a church service. The same outfit also suits a relaxed lunch with your parents afterwards. The camel coat and cognac boots add warmth for an autumn day, and the silk scarf and gold earrings give a polished finish.\"}],\"usage\":{\"input_tokens\":2278,\"output_tokens\":1153},\"stop_reason\":\"end_turn\"}"
+ }
+}

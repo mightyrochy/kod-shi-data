@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"OUTFIT_TEXT\\nRelaxed-fit silk blouse, loose cut, mid-length, soft cream, 19% mulberry silk\\nTailored wool-blend trousers, straight-leg cut, full length, charcoal heather, 50% virgin wool with 27% mohair\\nChunky knit cardigan, relaxed boxy cut, hip length, forest green, 65% acrylic and 35% wool\\nLeather ankle boots, pointed toe, mid-calf height, dark brown, smooth full-grain leather\\nThis ensemble balances the request for a calm mood with the upscale restaurant setting through sophisticated textures like silk and fine wool. The neutral cream base creates a serene backdrop that allows the deep forest green of the cardigan to add a touch of autumnal elegance without appearing loud. By avoiding an outer layer due to the warm evening temperature, the look remains breathable while maintaining a polished yet understated refinement suitable for a quiet dinner.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Relaxed-fit silk blouse\\\", \\\"details\\\": \\\"loose cut, mid-length, soft cream, 19% mulberry silk\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#f5f5dc\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Tailored wool-blend trousers\\\", \\\"details\\\": \\\"straight-leg cut, full length, charcoal heather, 50% virgin wool with 27% mohair\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#36454f\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Chunky knit cardigan\\\", \\\"details\\\": \\\"relaxed boxy cut, hip length, forest green, 65% acrylic and 35% wool\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#228b22\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Leather ankle boots\\\", \\\"details\\\": \\\"pointed toe, mid-calf height, dark brown, smooth full-grain leather\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#3e2723\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":545,\"output_tokens\":251},\"stop_reason\":\"end_turn\"}"
+ }
+}

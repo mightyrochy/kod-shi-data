@@ -58,43 +58,16 @@ try {
     }
     Invoke-WrapperChain
     $after = $Phase -eq 'ПІСЛЯ'; $skip = if ($after) { 0 } else { 1 }
-    $script:Files['1/1'] = @([pscustomobject]@{filename='аудит/наряди/крок.md'})
-    $script:Pulls = @((Pull 1)); Invoke-WrapperChain
-    Check "документний PR: позначок=$(@(Markers 'автоперевірка-1-').Count)" (@(Markers 'автоперевірка-1-').Count -eq $skip)
-    $script:Files['2/1'] = @([pscustomobject]@{filename='джерела/a.py'})
-    $script:Pulls = @((Pull 2 '[НЕ ЗЛИВАТИ] Код')); Invoke-WrapperChain
-    Check "[НЕ ЗЛИВАТИ]: позначок=$(@(Markers 'автоперевірка-2-').Count)" (@(Markers 'автоперевірка-2-').Count -eq $skip)
-    $n = 3
-    foreach ($path in @('джерела/a.py','.github/workflows/a.yml','аудит/адаптери/gemini/a.ps1','аудит/проби/a.py','каталог/a.json','a.py')) {
-        $script:Files["$n/1"] = @([pscustomobject]@{filename=$path}); $script:Pulls = @((Pull $n)); Invoke-WrapperChain
-        Check "код ${path}: одна перевірка" (@(Markers "автоперевірка-$n-").Count -eq 1)
-        $n++
-    }
-    $docs = @(1..100 | ForEach-Object { [pscustomobject]@{filename="аудит/наряди/$_.md"} })
-    $script:Files['20/1'] = $docs; $script:Files['20/2'] = @([pscustomobject]@{filename='джерела/останній.py'})
-    $script:Pulls = @((Pull 20)); Invoke-WrapperChain
-    Check 'код на другій сторінці отримав перевірку' (@(Markers 'автоперевірка-20-').Count -eq 1)
-    Check 'API читає обидві сторінки списку файлів' ((@($script:Requests | Where-Object { $_ -match '/pulls/20/files' }).Count -eq 2) -eq $after)
-    $script:Files['21/1'] = $docs; $script:Files['21/2'] = @([pscustomobject]@{filename='аудит/наряди/останній.md'})
-    $script:Pulls = @((Pull 21)); Invoke-WrapperChain
-    Check '101 документний файл: без зайвої перевірки' (@(Markers 'автоперевірка-21-').Count -eq $skip)
-    $script:Files['22/1'] = @([pscustomobject]@{filename='джерела/a.py'}) + $docs[0..98]
-    $script:Files['22/2'] = @([pscustomobject]@{filename='аудит/наряди/останній.md'})
-    $script:FailPage = '22/2'; $script:Pulls = @((Pull 22)); Invoke-WrapperChain
-    Check 'збій другої сторінки: без позначки навіть після знайденого коду' (@(Markers 'автоперевірка-22-').Count -eq $skip)
-    if ($after) {
-        $state = ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $WorkDir 'chain.json')))
-        Check 'збій API не записано як виконану перевірку' (@($state.reviews | Where-Object { $_ -match '^22 ' }).Count -eq 0)
-    }
-    $script:FailPage = ''; Invoke-WrapperChain
-    Check 'після відновлення API той самий PR отримав рівно одну перевірку' (@(Markers 'автоперевірка-22-').Count -eq 1)
-    $script:Files['23/1'] = @(); $script:Pulls = @((Pull 23)); Invoke-WrapperChain
-    Check 'порожній список файлів не вважається документним успіхом' (@(Markers 'автоперевірка-23-').Count -eq $skip)
-    $script:Files['23/1'] = @([pscustomobject]@{filename='джерела/a.py'}); Invoke-WrapperChain
-    Check 'порожній список файлів повторено після відновлення' (@(Markers 'автоперевірка-23-').Count -eq 1)
-    $script:Files['24/1'] = @([pscustomobject]@{filename='аудит/опис.md';status='renamed';previous_filename='джерела/a.py'})
-    $script:Pulls = @((Pull 24)); Invoke-WrapperChain
-    Check 'перенесення коду в документацію теж змінює код' (@(Markers 'автоперевірка-24-').Count -eq 1)
+    # Позначки автоперевірок ставить диспетчер: за будь-якого складу файлів PR ланцюг їх не ставить і список файлів не читає.
+    $paths = @('аудит/наряди/крок.md','джерела/a.py','.github/workflows/a.yml','аудит/адаптери/gemini/a.ps1','аудит/проби/a.py','каталог/a.json','a.py')
+    $n = 1
+    foreach ($path in $paths) { $script:Files["$n/1"] = @([pscustomobject]@{filename=$path}); $n++ }
+    $script:Files['20/1'] = @(1..100 | ForEach-Object { [pscustomobject]@{filename="аудит/наряди/$_.md"} }); $script:Files['20/2'] = @([pscustomobject]@{filename='джерела/останній.py'})
+    $script:FailPage = '20/2'
+    $script:Pulls = @(@(1..$paths.Count | ForEach-Object { Pull $_ }) + (Pull 19 '[НЕ ЗЛИВАТИ] Код') + (Pull 20)); Invoke-WrapperChain
+    Check "PR коду й документів, [НЕ ЗЛИВАТИ], дві сторінки файлів, збій сторінки: позначок автоперевірки=$(@(Markers 'автоперевірка-').Count)" (@(Markers 'автоперевірка-').Count -eq 0)
+    Check 'список файлів PR ланцюг не читає' (@($script:Requests | Where-Object { $_ -match '/files\?' }).Count -eq 0)
+    $script:FailPage = ''
     $script:Pulls = @()
     $product = Merge 'джерела/a.py' '2'; Invoke-WrapperChain
     Check "злиття без збірки: автоживих=$(@(Markers 'автоживий-').Count)" (@(Markers 'автоживий-').Count -eq $skip)
@@ -140,7 +113,20 @@ Invoke-WrapperChain
         Check 'повтор старого штампу не ставить нового прогону' (@(Markers 'автоживий-').Count -eq 2)
         $bad = Merge 'build.txt' 'пошкоджено'; Invoke-WrapperChain
         Check 'пошкоджений штамп не створює позначки' (@(Markers 'автоживий-').Count -eq 2)
+        # Консоль задачі планувальника розірвана (10.11 23:04: «No process is on the other end of the pipe»): сетер
+        # Console.InputEncoding кидає, але запуск процесу й stdin без BOM не залежать від нього — прохід не рветься.
+        $keyFile = Join-Path $tmp 'key.txt'; [IO.File]::WriteAllText($keyFile, 'ключ', $utf)
+        $keyHash = (& git hash-object --no-filters $keyFile).Trim()
+        # Консоль CI — кодова сторінка без BOM; локально (chcp 65001) її кодування саме додає BOM, тож приймаємо обидва вигляди.
+        [IO.File]::WriteAllText($keyFile, 'ключ', (New-Object Text.UTF8Encoding($true)))
+        $keyHashBom = (& git hash-object --no-filters $keyFile).Trim()
+        function Set-ConsoleInputEncoding($Encoding) { throw 'No process is on the other end of the pipe.' }
+        $viaPublish = Invoke-Native 'git' @('hash-object', '--stdin') $tmp 1 'ключ'
+        Check 'Invoke-Native публікації: сетер кодування кидає — процес запущено, stdin доставлено' ($viaPublish.Code -eq 0 -and $viaPublish.Out.Trim() -cin @($keyHash, $keyHashBom))
         . (Join-Path $SourceDir 'queue_lanes.ps1')
+        function Set-ConsoleInputEncoding($Encoding) { throw 'No process is on the other end of the pipe.' }
+        $viaLanes = Invoke-Native 'git' @('hash-object', '--stdin') $tmp 1 'ключ'
+        Check 'Invoke-Native черги: сетер кодування кидає — процес запущено, stdin доставлено' ($viaLanes.Code -eq 0 -and $viaLanes.Out.Trim() -cin @($keyHash, $keyHashBom))
         function Get-AutoLivePlan { '{}' }
         $context = Add-AutoTaskContext "автоживий-$product" 'Наряд' $built
         Check 'наряд призначає дерево збірки й окремо називає штамп джерел' ($context.Contains("коміт збірки $built") -and $context.Contains("штамп build.txt $product"))

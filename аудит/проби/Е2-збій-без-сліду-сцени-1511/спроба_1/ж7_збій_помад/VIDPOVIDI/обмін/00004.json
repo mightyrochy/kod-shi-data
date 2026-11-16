@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на роботу\", \"place\": \"на роботу\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"на роботу\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"на роботу\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"her_other_words\": {\"kind\": \"reading\"}}, \"event\": \"на роботу\", \"occasion\": \"work\", \"place\": \"office\", \"her_other_words\": [\"помаду оберу сама\"], \"formality\": [\"neat\"], \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#f2dcd6\", \"#ecd0ca\", \"#f6e4df\"], \"hair_hex\": [\"#c3c6cc\", \"#aeb2ba\"], \"eyes_hex\": \"#7fa6c8\", \"height_cm\": 160, \"girths_cm\": {\"shoulders\": 100, \"bust\": 98, \"waist\": 88, \"hips\": 100}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Blouse: straight cut with a soft V-neck, hip length, worn tucked in, ice blue (#cfdcea), silk-blend crepe.\\nTrousers: high-rise, straight leg, ankle length, deep navy (#263449), wool-blend crepe.\\nJacket: single-breasted, slightly shaped, hip length, slate gray (#8a909c), textured wool bouclé.\\nCoat: single-breasted, knee length, with a notched lapel, charcoal (#4a4f5a), soft wool blend.\\nLoafers: almond toe, low block heel, burgundy (#5a2a35), smooth leather.\\nBag: structured medium tote with top handles, burgundy (#5a2a35), matte leather.\\nEarrings: small smooth hoops, silver tone (#c0c0c0), polished metal.\\n\\nThis outfit sits in the neat business band: a blouse with trousers, a textured jacket and loafers. The cool blue, navy and slate palette echoes her silver-gray hair and light blue eyes, while the burgundy shoes and bag add a warm, rich accent against her fair, rosy skin. The high-rise straight trousers and the hip-length jacket create a long, clean vertical line, and the tucked blouse keeps the waist neat without clinging. The knee-length coat covers the whole look for autumn mornings and stays in the same quiet color family, so every piece works together. Lipstick is left for her to choose, and the soft blues and burgundy will suit most shades.\"}],\"usage\":{\"input_tokens\":2272,\"output_tokens\":1296},\"stop_reason\":\"end_turn\"}"
+ }
+}

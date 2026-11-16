@@ -1,0 +1,46 @@
+── ПРОМПТ (7111 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sheath_dress · colour code: black · about it: text н=1
+2 — kind code: blazer · colour code: grey · about it: text н=2
+3 — kind code: pumps · colour code: red · about it: text н=3
+4 — kind code: bag_generic · colour code: black · about it: text н=4
+5 — kind code: earrings · colour code: silvery · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; grey — сірий; red — червоний; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "A black dress in a sheath cut: a straight, close line that gives you a clean, dressy base for the evening.",
+"2": "A fitted grey blazer, single-breasted, with its own belt. It defines the waist and adds structure over the top.",
+"3": "Deep red pumps with a glossy finish. They bring colour and a touch of shine to the look.",
+"4": "A black bag in a simple, classic form. It stays quiet and matches the dress.",
+"5": "Silvery earrings with a bright shine. They add a small sparkle near the face.",
+"6": "The grey blazer sits over the black dress, and the burgundy pumps give the look its one colour accent. The black bag echoes the dress, and the silver earrings are the only metal. The dress and pumps are a little dressier than a typical friend's birthday party, which I chose on purpose: it gives you a festive Saturday-evening look, and the blazer keeps it relaxed. The straight sheath line runs unbroken from shoulder to hem. The fitted blazer with its belt adds a clear waist to that line. In evening light, the glossy pumps and the earrings catch the eye.",
+"7": "Wear the grey blazer open over the black dress and tie its belt loosely at the waist, so the look stays easy and the dress does not read as too formal.",
+"8": "Let the burgundy pumps be the only bright note and keep the rest in black and grey, so the colour stands out.",
+"9": "Keep the silver earrings as your single shiny detail beside the glossy pumps, and add nothing else metallic.",
+"10": "Сукня-футляр трикотажна з сітчастою комбінацією А-подібного крою (AniNadin) AniNadin, Туфлі човники Versace Gianni Ribbon червоні — The burgundy pumps and sheath dress sit one step dressier than a neat evening. For a birthday party that is welcome, since it reads as festive and not overdone.",
+"11": "Жіноча сумка Welfare чорна — The black bag is neutral on purpose, so the orange shoes are the only accent and the outfit does not get loud.",
+"12": "Жіноча сумка Welfare чорна — The bag is black so the dark red pumps carry the only accent.",
+"13": "Жіноча сумка Welfare чорна — The black bag is neutral on purpose, so the orange shoes are the only accent and the outfit stays calm."
+}
+
+── ВІДПОВІДЬ (2147 симв., 21.8 с, HTTP 200) ──
+{"1":"Чорна сукня-футляр: пряма, близька до тіла лінія, що дає тобі чисту ошатну основу для вечора.","2":"Приталений сірий жакет, однобортний, із власним поясом. Він підкреслює талію і додає структури поверх верху.","3":"Червоні туфлі-човники із глянцевим покриттям. Вони додають образу кольору і трохи блиску.","4":"Чорна сумка простої класичної форми. Вона лишається тихою і пасує до сукні-футляр.","5":"Срібні сережки з яскравим блиском. Вони додають біля обличчя невеликого сяйва.","6":"Сірий жакет сидить поверх чорної сукні-футляр, а червоні туфлі-човники дають образу єдиний кольоровий акцент. Чорна сумка повторює сукню-футляр, а срібні сережки — єдиний метал. Сукня-футляр і туфлі-човники трохи ошатніші, ніж зазвичай буває на дні народження подруги, і це мій свідомий вибір: так ти отримуєш святковий образ на суботній вечір, а жакет робить його невимушеним. Пряма лінія сукні-футляр тягнеться суцільно від плеча до подолу. Приталений жакет із поясом додає цій лінії виразну талію. У вечірньому світлі погляд ловлять глянцеві туфлі-човники і сережки.","7":"Носи сірий жакет розстебнутим поверх чорної сукні-футляр і зав'яжи його пояс на талії вільно, щоб образ лишався легким, а сукня-футляр не виглядала надто офіційно.","8":"Нехай червоні туфлі-човники будуть єдиною яскравою нотою, а решту тримай у чорному й сірому, щоб колір вирізнявся.","9":"Тримай срібні сережки єдиною блискучою деталлю поряд із глянцевими туфлями-човниками і нічого іншого металевого не додавай.","10":"Сукня-футляр трикотажна з сітчастою комбінацією А-подібного крою (AniNadin) AniNadin, Туфлі човники Versace Gianni Ribbon червоні — Червоні туфлі-човники і сукня-футляр на один ступінь ошатніші за охайний вечір. Для дня народження це доречно, бо виглядає святково, а не надмірно.","11":"Жіноча сумка Welfare чорна — Чорна сумка навмисно нейтральна, тож червоні туфлі-човники — єдиний акцент, а образ не стає галасливим.","12":"Жіноча сумка Welfare чорна — Сумка чорна, щоб єдиний акцент несли червоні туфлі-човники.","13":"Жіноча сумка Welfare чорна — Чорна сумка навмисно нейтральна, тож червоні туфлі-човники — єдиний акцент, а образ лишається спокійним."}

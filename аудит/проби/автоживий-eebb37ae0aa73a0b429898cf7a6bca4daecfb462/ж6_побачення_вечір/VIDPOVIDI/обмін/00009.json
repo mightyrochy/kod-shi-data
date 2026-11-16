@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"побачення\", \"place\": \"в ресторані\", \"part_of_day\": \"ввечері\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"в ресторані\"}, \"occasion\": {\"kind\": \"her\", \"quote\": \"побачення\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\", \"quote\": \"ввечері\"}}, \"event\": \"побачення в ресторані ввечері, о 19:30\", \"part_of_day\": \"evening\", \"occasion\": \"date\", \"place\": \"restaurant_casual\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Midi wrap skirt, A-line, falling just below the knee, deep burgundy (#6D1F2E), soft crepe\\nFine-knit sweater, slim fit, boat neckline, hip length, cream (#F2E8D8), merino wool\\nCropped textured jacket, straight cut, hip-skimming, charcoal (#3B3B3F), wool bouclé\\nAnkle boots, block heel of about 6 cm, almond toe, black (#1A1A1A), smooth leather\\nCrossbody bag, small structured shape, black (#1A1A1A), leather\\nDrop earrings, small and gold-toned (#C9A24B), polished metal\\nThin scarf, loosely draped at the neck, dusty rose (#C98B8F), silk\\n\\nWhy this outfit works: It sits squarely in the neat band for a restaurant date, with a refined knit, a skirt, a textured jacket and ankle boots, so it looks put together without feeling stiff. The burgundy and cream suit an autumn evening and glow warmly in restaurant lighting, while the dusty rose scarf softens the palette near the face. The jacket gives the layer that a cool October-November evening needs, and the block heel keeps the walk and the evening comfortable. The wrap skirt and the soft knit add a gentle, feminine movement that suits a date.\"}],\"usage\":{\"input_tokens\":2131,\"output_tokens\":441},\"stop_reason\":\"end_turn\"}"
+ }
+}

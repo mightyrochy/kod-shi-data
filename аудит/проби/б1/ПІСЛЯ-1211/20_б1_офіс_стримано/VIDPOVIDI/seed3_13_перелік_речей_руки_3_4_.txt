@@ -1,0 +1,37 @@
+── ПРОМПТ (1939 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Blazer, tailored fit with structured shoulders, color #3a3a3a, wool blend.\nTrousers, straight leg cut at ankle length, color #2b2b2b, heavy twill.\nButton-down shirt, classic collar and relaxed fit, color #f5f0e6, cotton poplin.\nLoafers, low vamp design, color #8a7c68, leather.\nThis outfit delivers a strictly classic aesthetic suitable for a daily office environment while maintaining the restrained elegance requested. The dark neutral palette of the blazer and trousers grounds the look in professional authority, balanced by the softness of the cream shirt. Finished with understated loafers, the ensemble ensures comfort without sacrificing the polished context required for work."}
+
+── ВІДПОВІДЬ (706 симв., 9.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "Tailored fit with structured shoulders",
+      "slot": "outerwear",
+      "color_hex": "#3a3a3a",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "Straight leg cut at ankle length, heavy twill",
+      "slot": "bottom",
+      "color_hex": "#2b2b2b",
+      "worn": true
+    },
+    {
+      "name": "Button-down shirt",
+      "details": "Classic collar and relaxed fit",
+      "slot": "top",
+      "color_hex": "#f5f0e6",
+      "worn": true
+    },
+    {
+      "name": "Loafers",
+      "details": "Low vamp design",
+      "slot": "shoes",
+      "color_hex": "#8a7c68",
+      "worn": true
+    }
+  ]
+}

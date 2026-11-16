@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Проба Stop на штучних транскриптах."""
+import importlib.util
 import json
 import subprocess
 import sys
@@ -37,4 +38,22 @@ with tempfile.TemporaryDirectory() as т:
     assert not р.stdout and р.stderr
     р = subprocess.run([sys.executable, str(хук), т], text=True, encoding='utf-8', capture_output=True, check=True)
     assert 'кінці: 1' in р.stdout
+    шлях.write_text(json.dumps({'type': 'assistant', 'message': {'stop_reason': 'end_turn', 'content': [{'type': 'text', 'text': 'Зараз зроблю.'}]}}), encoding='utf-8')
+    причина = json.loads(запуск(json.dumps({'transcript_path': str(шлях)})).stdout)['reason']
+    assert 'з прив\'язкою' in причина and 'о 14:30' in причина and 'після злиття #123' in причина and 'лише коли потрібне від когось' in причина, причина
+    модуль_спец = importlib.util.spec_from_file_location('хук', хук)
+    модуль = importlib.util.module_from_spec(модуль_спец)
+    модуль_спец.loader.exec_module(модуль)
+    for _, зразок in модуль.ПРИВЯЗКИ:
+        assert модуль.ПРИВЯЗКА.search(зразок), зразок
+    кінець_ходу = {'type': 'assistant', 'message': {'stop_reason': 'end_turn', 'content': [{'type': 'text', 'text': 'Зараз зроблю.'}]}}
+    блок = 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: вільно 6152 з потрібних 8925 MiB; навантаження 0 %'
+    збій = {'type': 'user', 'message': {'content': [{'type': 'text', 'text': блок}]}}
+    лист = {'type': 'user', 'isMeta': True, 'origin': {'kind': 'task-notification'},
+            'message': {'role': 'user', 'content': '<task-notification>\nx\n</task-notification>'}}
+    for назва, записи, очікується in (('збій', [збій, кінець_ходу], 'Без кроку на збій'),
+                                      ('хід не власника', [лист, кінець_ходу], 'Хід почав не власник')):
+        шлях.write_text('\n'.join(json.dumps(x, ensure_ascii=False) for x in записи), encoding='utf-8')
+        причина = json.loads(запуск(json.dumps({'transcript_path': str(шлях)})).stdout)['reason']
+        assert очікується in причина and 'з прив\'язкою' not in причина and 'о 14:30' not in причина, (назва, причина)
 print(f'проба: {len(випадки)} випадків, захист від петлі, субагент, помилка і вимір — гаразд')

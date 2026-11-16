@@ -63,7 +63,8 @@ try {
         $script:Lanes = @('codex','agy'); $script:Limits = @{slots=@{codex=8;agy=8}}
         $script:StartedNames = @(); $RunsDir = $GeminiRunsDir; $RepoDir = $seed; $MarkerMaxAgeDays = 7
         function Save-Skips { }
-        function Add-Skip { }
+        function Add-Skip($M, $Why) { $script:SkipNames += [string]$M.Name }
+        $script:SkipNames = @()
         function Test-SlugBusy { $false }
         function Select-Engine { [pscustomobject]@{Engine=@{Name='codex';Model='test';Effort='high'};Model='test';Quota=@{Blocked=$false;Known=$false;Left=100;Group='test'}} }
         function Get-FreeSlot { '1' }
@@ -83,6 +84,12 @@ try {
     Check 'кінцева /1 знята, нова /2 лишилась' ($refs.Count -eq 1 -and $refs[0] -ceq "refs/heads/$($new.Name)")
     $taken = @(Take)
     Check 'смуга взяла саме /2' ($taken.Count -eq 1 -and $taken[0] -ceq $new.Name -and (Test-Path ($new.Path -replace '\.txt$', '.claim')))
+    # Перевірки ставить диспетчер (слово власника 08.11 15:47): його позначку (p1) смуга бере, давню позначку ланцюга (`/p2`) — ні.
+    $disp = Marker 116 1 '' 'gpt-6.1-terra-high' 'p1'
+    $chainOld = Marker 117 1 '' 'gpt-6.1-terra-high' 'p2'
+    $taken = @(Take)
+    Check 'смуга бере позначку диспетчера (p1)' ($taken -ccontains $disp.Name -and (Test-Path ($disp.Path -replace '\.txt$', '.claim')))
+    Check 'смуга пропускає давню позначку ланцюга (p2): не взято, причина записана в пропусках' ($taken -cnotcontains $chainOld.Name -and $script:SkipNames -ccontains $chainOld.Name -and -not (Test-Path ($chainOld.Path -replace '\.txt$', '.claim')))
     $a = Marker 102 1
     $b = Marker 102 2
     Clean 102
@@ -117,10 +124,15 @@ try {
     $refs = @(Refs 107)
     Check 'узята спроба зберігається без другого запуску' ($refs.Count -eq 1 -and $refs[0] -ceq "refs/heads/$($a.Name)")
     $a = Marker 108 2 '' 'gpt-6.1-terra-high' 'p1'
-    $b = Marker 108 10 '' 'gpt-6.1-terra-high' 'p2'
+    $b = Marker 108 10 '' 'gpt-6.1-terra-high' 'p0'
     Clean 108
     $once = @(Refs 108); Clean 108; $twice = @(Refs 108)
     Check 'інший пріоритет не міняє числовий вибір; повтор сталий' ($once.Count -eq 1 -and $once[0] -ceq "refs/heads/$($b.Name)" -and ($once -join '') -ceq ($twice -join ''))
+    $a = Marker 115 2 '' 'gpt-6.1-terra-high' 'p1'
+    $b = Marker 115 10 '' 'gpt-6.1-terra-high' 'p2'
+    Clean 115
+    $refs = @(Refs 115)
+    Check 'позначка диспетчера (p1) заступає давню позначку ланцюга (p2) з більшою спробою' ($refs.Count -eq 1 -and $refs[0] -ceq "refs/heads/$($a.Name)")
     $script:BlockedModels = @('gpt-6.1-terra-high')
     $a = Marker 109 1 'DONE BLOCKED' 'gemini-4-argon-high'
     $b = Marker 109 2 '' 'gpt-6.1-terra-high'
@@ -156,15 +168,12 @@ function Get-MarkerState($M, [string]$StateDir) {
     })
     function Get-ChainPulls { $script:ErrorPulls }
     function Complete-EngineDrafts { }
-    function Test-RecentReviewHead { $script:ReachedAfterStateRead = $true; $false }
-    $script:ReachedAfterStateRead = $false
     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
     Invoke-WrapperChain
     $refs = @(Refs 113)
     Check 'помилка одного стану зберегла обидві позначки його голови' ($refs.Count -eq 2 -and "refs/heads/$($a.Name)" -cin $refs -and "refs/heads/$($b.Name)" -cin $refs)
     $refs = @(Refs 114)
     Check 'інша голова очищена попри виняток читача' ($refs.Count -eq 1 -and $refs[0] -ceq "refs/heads/$($d.Name)")
-    Check 'прохід ланцюга дійшов до кроку після очищення' $script:ReachedAfterStateRead
     $lines = @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$utf).Trim() } | Where-Object { $_ -cmatch '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED' })
     Check 'рядок винятку читача має тип і функцію першого кадру' (@($lines | Where-Object { $_ -clike 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED UnauthorizedAccessException Get-MarkerState ШЛЯХ *' }).Count -eq 1)
     $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'),$utf)
@@ -188,15 +197,6 @@ function Get-MarkerState($M, [string]$StateDir) {
         function Complete-EngineDrafts { }
         function Get-ChainBuildStamp { '' }
         function Get-ChainBranchWork { '' }
-        function Test-RecentReviewHead { $true }
-        function Test-ReviewedMerge { $false }
-        function Test-ChainCodePull { $true }
-        function Test-ChainEndAnnounced { $true }
-        function Get-ChainPullRisk { 2 }
-        function Test-ChainReviewDone { $false }
-        function Get-ReviewDiff { 'проба' }
-        function Get-ReviewPatchId { 'проба' }
-        function Get-ReviewModels { @($script:TransferTarget) }
         function Test-ModelQuota([string]$Model, $Now) { $Model -ceq 'gpt-6.1-terra-high' }
         function Get-ChainPulls { $script:TransferPull }
         function Get-ChainMarkerState($Ref, $Sha, $Model) {
@@ -212,43 +212,20 @@ function Get-MarkerState($M, [string]$StateDir) {
             @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$utf).Trim() } |
                 Where-Object { $_ -ceq "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #$Number $head" })
         }
-        foreach ($case in @(
-            @{Number=201;Target='gemini-4-argon-high';FailAt=0;Name='запасна модель'},
-            @{Number=202;Target='claude-cloud';FailAt=0;Name='хмара: попереднє читання'},
-            @{Number=203;Target='claude-cloud';FailAt=3;Name='хмара: повторне читання перед передачею'}
-        )) {
-            $n = $case.Number; $label = $case.Name
-            $script:TransferTarget = $case.Target; $script:FailAt = $case.FailAt
-            $script:TransferSlug = "автоперевірка-$n-$head"
-            $old = "refs/heads/gemini-queue/$script:TransferSlug/gpt-6.1-terra-high/1/p2"
-            & git -C $seed push -q origin "${head}:$old"
-            $script:TransferPull = [pscustomobject]@{number=$n;title='Проба';user=@{login='mightyrochy'};
-                head=@{ref='codex/проба';sha=$head;repo=@{full_name=$GitHubRepo}};
-                base=@{ref='main';repo=@{full_name=$GitHubRepo}}}
-            $statePath = Join-Path $WorkDir 'chain.json'
-            $oldKey = "$n $head gpt-6.1-terra-high"; $key = "$n $head $script:TransferTarget"
-            Write-FileAtomic $statePath (@{main=$head;reviewed=@{};reviews=@($oldKey)} | ConvertTo-Json -Depth 5)
-            $script:Unavailable = $true; $script:TransferReads = 0; $script:TransferKind = 'WAIT'
-            Invoke-WrapperChain
-            $first = ConvertFrom-Json ([IO.File]::ReadAllText($statePath,$utf))
-            Check "$label — відкладення не записане в seen і reviewed" ($key -cnotin @($first.reviews) -and $null -eq $first.reviewed.PSObject.Properties[[string]$n])
-            $refs = @(Refs $n)
-            Check "$label — UNKNOWN зберіг стару позначку без хмарної доставки" ($refs.Count -eq 1 -and $refs[0] -ceq $old -and @(CloudLines $n).Count -eq 0)
-            $script:Unavailable = $false
-            Invoke-WrapperChain
-            $second = ConvertFrom-Json ([IO.File]::ReadAllText($statePath,$utf))
-            $refs = @(Refs $n)
-            $delivered = if ($script:TransferTarget -ceq 'claude-cloud') {
-                $refs.Count -eq 0 -and @(CloudLines $n).Count -eq 1 -and (Test-Path -LiteralPath (Get-SeenPath "cloud-review $n $head"))
-            } else {
-                $refs.Count -eq 1 -and $refs[0] -ceq "refs/heads/gemini-queue/$script:TransferSlug/$script:TransferTarget/1/p2"
-            }
-            Check "$label — наступний прохід після відновлення фактично передав роботу" $delivered
-            Check "$label — seen записаний після передачі" ($key -cin @($second.reviews) -and $null -ne $second.reviewed.PSObject.Properties[[string]$n])
-            $beforeRefs = $refs -join '|'; $beforeLines = @(CloudLines $n).Count
-            Invoke-WrapperChain
-            Check "$label — третій прохід не дублює доставку" (((@(Refs $n) -join '|') -ceq $beforeRefs) -and @(CloudLines $n).Count -eq $beforeLines)
-        }
+        # Позначку диспетчера на вичерпаній квоті ланцюг не переносить і в хмару не віддає: перевірки веде диспетчер.
+        $n = 201; $script:TransferTarget = 'gemini-4-argon-high'; $script:FailAt = 0
+        $script:TransferSlug = "автоперевірка-$n-$head"
+        $old = "refs/heads/gemini-queue/$script:TransferSlug/gpt-6.1-terra-high/1/p1"
+        & git -C $seed push -q origin "${head}:$old"
+        $script:TransferPull = [pscustomobject]@{number=$n;title='Проба';user=@{login='mightyrochy'};
+            head=@{ref='codex/проба';sha=$head;repo=@{full_name=$GitHubRepo}};
+            base=@{ref='main';repo=@{full_name=$GitHubRepo}}}
+        Write-FileAtomic (Join-Path $WorkDir 'chain.json') (@{main=$head;reviewed=@{};reviews=@()} | ConvertTo-Json -Depth 5)
+        $script:Unavailable = $false; $script:TransferReads = 0; $script:TransferKind = 'WAIT'
+        Invoke-WrapperChain
+        Invoke-WrapperChain
+        $refs = @(Refs $n)
+        Check 'позначка диспетчера на квоті: ланцюг не переносить її на іншу модель і не віддає хмарі' ($refs.Count -eq 1 -and $refs[0] -ceq $old -and @(CloudLines $n).Count -eq 0)
         # Узяту роботу передавати не треба; це завершене рішення, на відміну від UNKNOWN.
         foreach ($target in @('gemini-4-argon-high','claude-cloud')) {
             $script:TransferTarget = $target; $script:TransferKind = 'TAKEN'

@@ -1,0 +1,45 @@
+── ПРОМПТ (6288 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+8 — назва в тексті н=9
+9 — назва в тексті н=10
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: beige — бежевий; blue — синій.
+
+ТЕКСТИ:
+{
+"1": "Dark-wash straight-leg jeans, full length with a slightly high rise, deep indigo [colour: blue], heavyweight stretch denim with a fleece-free smooth finish\n\nThermal long-sleeve base layer top, fitted crew neck, hip length, warm cream, fine merino wool\n\nChunky turtleneck sweater, relaxed fit, hip length, rust terracotta, soft wool-blend knit\n\nWool-blend coat, single-breasted, knee length, deep forest green, brushed wool with a quilted lining\n\nWaterproof leather ankle boots, lace-up with lug sole, round toe, dark chocolate, treated full-grain leather with a warm fleece lining\n\nWool scarf, wide and long, oatmeal [colour: beige], soft lambswool\n\nKnitted beanie, snug fit, camel, wool with a soft lining\n\nLeather gloves, wrist length, dark chocolate, leather with a warm lining\n\nWool socks, mid-calf, charcoal, thick merino blend\n\nThis outfit is built for a snowy walk at three degrees below zero, with layers that hold heat while you stroll and step in and out of cafés. The waterproof lug-sole boots grip wet snow and shrug off road salt, and the dark denim hides splashes while keeping the look neat and everyday. The terracotta sweater and forest green coat sit beautifully with your copper hair and green eyes, and the warm cream and oatmeal tones soften the face. Layers like the thin thermal top are easy to peel off inside the cafés, so you stay comfortable all evening.",
+"2": "Dark-wash straight-leg jeans",
+"3": "Thermal long-sleeve base layer top",
+"4": "Chunky turtleneck sweater",
+"5": "Wool-blend coat",
+"6": "Waterproof leather ankle boots",
+"7": "Wool scarf",
+"8": "Knitted beanie",
+"9": "Leather gloves",
+"10": "Wool socks"
+}
+
+── ВІДПОВІДЬ (1831 симв., 21.3 с, HTTP 200) ──
+{"1":"Джинси темного прання прямого крою, повної довжини, з трохи високою посадкою, синій, щільний еластичний денім із гладкою поверхнею без флісу\n\nБазовий термотоп із довгим рукавом, приталений, з круглим вирізом, довжиною до стегон, теплий кремовий, тонка мериносова вовна\n\nОб'ємний светр-гольф, вільного крою, довжиною до стегон, іржаво-теракотовий, м'який трикотаж із вовняної суміші\n\nПальто з вовняної суміші, однобортне, довжиною до коліна, глибокий лісовий зелений, начесана вовна зі стьобаною підкладкою\n\nВодонепроникні шкіряні черевики на шнурівці з протекторною підошвою, круглий носок, темно-шоколадні, оброблена шкіра повного зерна з теплою флісовою підкладкою\n\nВовняний шарф, широкий і довгий, бежевий, м'яка вовна ягняти\n\nВ'язана шапка-біні, щільно облягає, кемел, вовна з м'якою підкладкою\n\nШкіряні рукавички, довжиною до зап'ястя, темно-шоколадні, шкіра з теплою підкладкою\n\nВовняні шкарпетки, до середини литки, вугільні, щільна мериносова суміш\n\nЦей образ створений для снігової прогулянки за три градуси морозу: шари тримають тепло, поки ти гуляєш і заходиш до кафе та виходиш із них. Водонепроникні черевики з протекторною підошвою добре тримаються на мокрому снігу й не бояться дорожньої солі, а темний денім приховує бризки та водночас зберігає образ охайним і повсякденним. Теракотовий светр і лісове зелене пальто чудово пасують до твого мідного волосся та зелених очей, а теплі кремові й бежеві відтінки пом'якшують обличчя. Шари, як-от тонкий термотоп, легко зняти всередині кафе, тож тобі буде зручно весь вечір.","2":"Джинси темного прання прямого крою","3":"Базовий термотоп із довгим рукавом","4":"Об'ємний светр-гольф","5":"Пальто з вовняної суміші","6":"Водонепроникні шкіряні черевики","7":"Вовняний шарф","8":"В'язана шапка-біні","9":"Шкіряні рукавички","10":"Вовняні шкарпетки"}

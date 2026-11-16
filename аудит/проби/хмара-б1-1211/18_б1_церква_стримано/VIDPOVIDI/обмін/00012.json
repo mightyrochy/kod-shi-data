@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream blouse, classic fit with a point collar and long sleeves, hip length, color cream #f1ebe0, silk crepe\\nMidi skirt, softly flared A-line cut, falling just below the knee, color deep navy #26354a, fine wool crepe\\nFitted jacket, single-breasted with a rounded neckline, hip length, color slate blue #5b6e82, textured wool tweed\\nSheer tights, matte finish, color dark navy #2b2f3d, fine nylon\\nAnkle boots, almond toe with a low block heel, color deep burgundy #4a2630, smooth leather\\nCoat, straight single-breasted cut, falling just below the knee, color camel #b99a74, soft wool-cashmere blend\\nScarf, large square worn loosely at the neck or lightly over the hair in church, pattern in navy #26354a, cream #f1ebe0 and burgundy #4a2630, silk twill\\nEarrings, small round studs, color pearl white #f4efe6, cultured pearl\\nHandbag, structured top-handle shape, medium size, color deep burgundy #4a2630, grained leather\\n\\nThis outfit is classic and quiet, which suits a church service and keeps the mood restrained. The covered shoulders, long sleeves and below-knee skirt are modest and respectful, and the tweed jacket and wool skirt bring the neat, polished level the day calls for. The slate blue echoes the color of her eyes, and the soft cream near her face goes well with her fair, cool-toned skin and dark hair. The same pieces carry straight on to lunch with her parents, and the camel coat keeps her warm in autumn air without changing the calm palette.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Blouse\\\",\\\"details\\\":\\\"classic fit with a point collar and long sleeves, hip length, silk crepe\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#f1ebe0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Midi skirt\\\",\\\"details\\\":\\\"softly flared A-line cut, falling just below the knee, fine wool crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#26354a\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Fitted jacket\\\",\\\"details\\\":\\\"single-breasted with a rounded neckline, hip length, textured wool tweed\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#5b6e82\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sheer tights\\\",\\\"details\\\":\\\"matte finish, fine nylon\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#2b2f3d\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"almond toe with a low block heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#4a2630\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Coat\\\",\\\"details\\\":\\\"straight single-breasted cut, falling just below the knee, soft wool-cashmere blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#b99a74\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"large square worn loosely at the neck, silk twill, pattern in navy, cream and burgundy\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#26354a\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Earrings\\\",\\\"details\\\":\\\"small round studs, cultured pearl\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#f4efe6\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Handbag\\\",\\\"details\\\":\\\"structured top-handle shape, medium size, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#4a2630\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2224,\"output_tokens\":569},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,44 @@
+── ПРОМПТ (6732 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: top · colour code: grey · about it: text н=1
+2 — kind code: skirt · colour code: grey · about it: text н=2
+3 — kind code: blazer · colour code: grey · about it: text н=3
+4 — kind code: pumps · colour code: black · about it: text н=4
+5 — kind code: bag_generic · colour code: black · about it: text н=5
+6 — kind code: earrings · colour code: silvery · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; grey — сірий; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "A deep, cool charcoal-grey top that works as a quiet base under the blazer.",
+"2": "A straight skirt in a soft mid grey, lighter than the top, with a clean line that falls straight from the hip.",
+"3": "A fitted blazer in a warm dark grey with a belt as part of its design, which shapes the waist and gives the outfit a tailored finish.",
+"4": "Black heeled pumps with a classic shape that lengthen the line of the leg.",
+"5": "A simple black bag with a neat, understated look that stays in the background of the outfit.",
+"6": "Silvery earrings with a bright shine that catch the light near your face.",
+"7": "The black pumps and black bag ground the grey layers, and the silver earrings add the only shine. The belted blazer finishes the look with a tailored line. Over a restrained, classic base, the club's dim evening light and the rock-concert mood bring out the contrast between the dark top, the lighter skirt and the black accessories. The belted blazer marks your waist, and the straight skirt falls in one clean line, so the eye travels down to the legs. The heel stretches that line further. You will be standing rather than walking, which is why I chose pumps over flats, and the dark pair also keeps the look sharp in a crowd. The silver earrings suit your metals and give the grey a cool glint under stage light.",
+"8": "Fasten the blazer's belt at your waist so the fitted line shows over the dark grey top and the straight skirt.",
+"9": "If the club gets hot, open the blazer and let the dark grey top show, keeping the belt in place.",
+"10": "Wear the black pumps with the skirt so the dark shoe and the black bag repeat each other.",
+"11": "Туфлі-човники, ATTICO, замша, колір чорний, Жіноча сумка Welfare чорна, Сережки — You asked for restrained, so I'm leaving out a colour accent on purpose. The texture of the blazer and the silver earrings give the look enough interest.",
+"12": "Туфлі-човники, ATTICO, замша, колір чорний — The black pumps break the leg line, but they keep the whole look classic and neat. If you'll be standing for hours, a block heel or lower pair in black keeps the same effect."
+}
+
+── ВІДПОВІДЬ (2087 симв., 22.9 с, HTTP 200) ──
+{"1":"Глибокий, холодний сірий топ, який слугує тихою основою під блейзером.","2":"Пряма сіра спідниця м'якого відтінку, світліша за топ, із чистою лінією, що спадає прямо від стегна.","3":"Приталений сірий блейзер теплого відтінку з поясом у дизайні, який підкреслює талію і надає образу відточеного завершення.","4":"Чорні туфлі-човники на підборах класичної форми, які подовжують лінію ноги.","5":"Проста чорна сумка з охайним, стриманим виглядом, що залишається на задньому плані образу.","6":"Срібні сережки з яскравим блиском, що ловлять світло біля твого обличчя.","7":"Чорні туфлі-човники та чорна сумка дають сірим шарам опору, а срібні сережки додають єдиний блиск. Блейзер із поясом завершає образ відточеною лінією. На стриманій класичній основі приглушене вечірнє світло клубу й атмосфера рок-концерту підкреслюють контраст між темним топом, світлішою спідницею та чорними аксесуарами. Блейзер із поясом позначає твою талію, а пряма спідниця спадає однією чистою лінією, тож погляд ковзає вниз до ніг. Підбор ще більше витягує цю лінію. Ти будеш радше стояти, ніж ходити, тому я обрала туфлі-човники, а не туфлі на пласкій підошві, а темна пара ще й тримає образ чітким у натовпі. Срібні сережки пасують до твоїх металів і додають сірому холодного відблиску під сценічним світлом.","8":"Зав'яжи пояс блейзера на талії, щоб було видно приталену лінію поверх сірого топа та прямої спідниці.","9":"Якщо в клубі стане спекотно, розстебни блейзер і дай побачити сірий топ, залишивши пояс на місці.","10":"Носи чорні туфлі-човники зі спідницею, щоб темне взуття та чорна сумка повторювали одне одного.","11":"Туфлі-човники, ATTICO, замша, колір чорний, Жіноча сумка Welfare чорна, Сережки — Ти просила стриманий образ, тому колірний акцент я навмисно залишила осторонь. Фактура блейзера та срібні сережки додають образу достатньо цікавості.","12":"Туфлі-човники, ATTICO, замша, колір чорний — Чорні туфлі-човники переривають лінію ноги, але зберігають увесь образ класичним і охайним. Якщо ти стоятимеш годинами, чорна пара на широкому або нижчому підборі дасть той самий ефект."}

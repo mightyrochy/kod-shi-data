@@ -1,0 +1,51 @@
+── ПРОМПТ (2636 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured navy blue wool-blend blazer with notch lapels, cut in a tailored fit to the hip and falling just above the knee, color #000080, fabric: heavy woven wool. Matching navy blue pleated trousers with a mid-rise waist, cut straight through the leg for a clean silhouette, color #000080, fabric: fine virgin wool. A crisp white cotton-poplin button-down shirt underneath with a classic collar and French cuffs, cut standard and slightly relaxed at the hem, color #FFFFFF, fabric: 100% cotton. Polished black leather loafers with a low block heel, cut sleek with a slight square toe, color #000000, fabric: full-grain calfskin leather. A pair of small gold hoop earrings and a slim leather belt in matching black to define the waist, color #D4AF37 (gold) and #000000 (belt), fabric: gold-filled metal and smooth leather. This outfit works by blending structured tailoring with timeless separates to honor your wish for a restrained and classic look suitable for an evening transition from cinema to dinner. The monochromatic navy base keeps the silhouette elongated and elegant under artificial lighting, while the crisp white shirt provides a necessary point of contrast that feels polished yet understated. Choosing wool textures ensures warmth against the rain and wind without appearing bulky, maintaining your preference for simplicity and sophistication throughout the night."}
+
+── ВІДПОВІДЬ (1221 симв., 8.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "navy blue wool-blend with notch lapels, tailored fit to hip and falling just above knee",
+      "slot": "outerwear",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "navy blue pleated with mid-rise waist, cut straight through leg for clean silhouette",
+      "slot": "bottom",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "shirt",
+      "details": "white cotton-poplin button-down with classic collar and French cuffs, standard cut slightly relaxed at hem",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "black leather with low block heel, sleek cut with slight square toe",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "small gold hoops",
+      "slot": "earrings",
+      "color_hex": "#D4AF37",
+      "worn": true
+    },
+    {
+      "name": "belt",
+      "details": "slim black leather defining waist",
+      "slot": "belt",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

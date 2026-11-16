@@ -64,6 +64,7 @@ git add -A; git commit -q -m init; git push -q origin main
 git push -q origin "main:refs/heads/gemini-queue/$SLUG/$MODEL/1"
 cd "$W"; git clone -q origin.git clone; git -C clone config user.name g; git -C clone config user.email g@x
 export FAKE_SCENARIO=$SC FAKE_STATE="$(wp "$W/fake")" FAKE_CLAUDE_LOG="$(wp "$W/claude.log")"
+export CODEX_HOME="$(wp "$W/codexhome")"  # журнал сесій фальшивого Codex — у теці прогону, не в профілі
 GA=$($PY -c "import json,os;print(json.dumps({**dict(RepoDir='$(wp "$W/clone")',RunsDir='$(wp "$W/runs")',OutDir='$(wp "$W/out")',RepoUrl='$(wp "$W/origin.git")',AgyExe='$(stub fake_agy)',CodexExe='$(stub fake_codex)',Mode='$MODE',TurnMinutes=0.05,TotalMinutes=0.5,MaxNudges=3),**json.loads(os.environ.get('EXTRA','{}'))}))")
 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "$GA"; echo "gemini exit=$?"
 [ -n "$HOOK" ] && (cd "$W" && eval "$HOOK")

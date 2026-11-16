@@ -22,7 +22,7 @@ const с = мс => new Promise(р => setTimeout(р, мс));
   const кон = await бр.newContext({viewport: {width: 390, height: 844}, deviceScaleFactor: 2});
   const стор = await кон.newPage();
   await стор.goto('file://' + path.join(КОРІНЬ, 'index.html') + '#міст=https://m.workers.dev&т=tok-a1&модель_мови=нема');
-  await стор.waitForFunction(() => typeof РЕЖИМ !== 'undefined', null, {timeout: 60000});
+  await стор.waitForFunction(() => typeof Екран !== 'undefined', null, {timeout: 60000});
   await стор.evaluate(() => { КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}; });
   await стор.click('#н-далі'); await с(120);
   await стор.click('#н-далі'); await с(120);
