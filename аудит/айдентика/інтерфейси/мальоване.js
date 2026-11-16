@@ -63,7 +63,10 @@
   }
   function lehenda() {
     var sl = ['три пелюстки', 'дві', 'одна', 'вінець', 'серединка'];
-    return '<ul>' + P.map(function (p, i) { return '<li><i class="kr" style="background:' + p[1] + '"></i><b>' + p[0] + '</b><span>' + p[3] + ' · ' + sl[i] + '</span></li>'; }).join('') + '</ul>';
+    function zn(c, i) { /* пелюстка, вінець чи серединка — тим самим знаком, що у квітці */
+      return i < 3 ? K.pelustka(20, c) : '<svg class="pel1" aria-hidden="true" width="20" height="20" viewBox="-10 -10 20 20" stroke="' + B.bura + '" stroke-width="1.5"><circle r="' + (i === 3 ? 8 : 4.2) + '" fill="' + c + '"/>' + (i === 3 ? '<circle r="3.6" fill="' + B.tlo + '"/>' : '') + '</svg>';
+    }
+    return '<ul>' + P.map(function (p, i) { return '<li>' + zn(p[1], i) + '<b>' + p[0] + '</b><span>' + p[3] + ' · ' + sl[i] + '</span></li>'; }).join('') + '</ul>';
   }
   /* зворот поруч із лицем на широкому екрані: що сказано й барви лишаються на очах */
   function zvPidsumok() {
@@ -80,8 +83,8 @@
   function richPl(k, o) {
     o = o || {}; var r = R[k], sv = o.svoje === k, nov = o.nove === k;
     return '<a class="rich' + (nov ? ' nova' : '') + '"' + (o.kudy ? ' data-scena-do="' + o.kudy(k) + '"' : '') + '>' +
-      (sv ? '<span class="foto svoja"><i class="kr" style="background:' + r.barva + '"></i>твоє, з шафи</span>' : foto(k)) +
-      '<span class="slot">' + r.slot + (nov ? ' · нове' : '') + '</span><b>' + (sv ? 'Твоє пальто, кемел' : o.povni && r.povna ? r.povna : r.nazva) + '</b>' +
+      (sv ? '<span class="foto svoja">' + K.pelustka(52, r.barva) + 'твоє, з шафи</span>' : foto(k)) +
+      '<span class="slot">' + K.pelustka(16, r.barva) + r.slot + (nov ? ' · нове' : '') + '</span><b>' + (sv ? 'Твоє пальто, кемел' : o.povni && r.povna ? r.povna : r.nazva) + '</b>' +
       '<span class="kc">' + (sv ? 'не купуємо' : '<i>' + hrn(r.cina) + '</i> · ' + r.kram) + '</span></a>';
   }
   function derevo(n) {
@@ -102,9 +105,11 @@
   function kudy(k) { return k === 'cher' ? 'zamina' : 'rich'; }
 
   /* ───── піч ───── */
+  function znakK(m, i, pol, lyje) { return znakO(m.rechi, 92, { vinets: pol ? B.zhov : null, patoky: !!pol, misce: 1, zerno: 3 + i, id: 'k' + i, klas: lyje ? 'lyje' : '' }); }
   function kahlja(m, i) {
-    return '<a class="kl" data-scena-do="' + (i ? 'druhyj' : 'pislja') + '">' + znakO(m.rechi, 92, { vinets: m.vdjahla ? B.zhov : null, patoky: !!m.vdjahla, misce: 1, zerno: 3 + i, id: 'k' + i }) +
-      imja(m.nazva, 142, 15) + '<span class="pd">' + m.pro + ' · ' + m.data + '</span><span class="st' + (m.vdjahla ? ' je' : '') + '">' + (m.vdjahla ? 'вдягла' : 'ще не вдягала') + '</span></a>';
+    return '<div class="kl" data-i="' + i + '"><a data-scena-do="' + (i ? 'druhyj' : 'pislja') + '" aria-label="' + m.nazva + ': відкрити образ">' + znakK(m, i, m.vdjahla) +
+      imja(m.nazva, 142, 15) + '<span class="pd">' + m.pro + ' · ' + m.data + '</span></a>' +
+      '<button type="button" class="st" aria-pressed="' + !!m.vdjahla + '">' + (m.vdjahla ? 'вдягла' : 'ще не вдягала') + '</button></div>';
   }
 
   window.СЦЕНИ = [
@@ -129,7 +134,7 @@
         '<h2>Спершу — ти, як є</h2><p class="slova">Портрет і фото на повен зріст — раз і назавжди. З них я бачу барви шкіри, очей і волосся та силует; далі питатиму лише про нагоду.</p></div>',
         '<div class="lust-m">' + K.malyunok({ je: { v: 1 }, v: 1, kv: { v: { pol: 1, sklo: 1 } }, portret: v.portret, vb: [340, 66, 300, 322], id: 'zn', pidpys: 'Портрет Оксани в склі люстерка' }) + '</div>' +
         '<h2>' + v.imja + ', бачу тебе</h2>' +
-        '<ul class="oz">' + v.barvy.map(function (b) { return '<li><i class="kr" style="background:' + b[1] + '"></i>' + b[0] + '</li>'; }).join('') + '</ul>' +
+        '<ul class="oz">' + v.barvy.map(function (b) { return '<li>' + K.pelustka(20, b[1]) + b[0] + '</li>'; }).join('') + '</ul>' +
         '<p class="opys">' + v.opys + ' — тобі до лиця тепла гама.</p>' +
         '<div class="dvafoto"><figure><img src="' + v.portret + '" alt="Портрет Оксани"><figcaption>портрет <button type="button">змінити</button></figcaption></figure>' +
         '<figure><img src="' + v.zrist + '" alt="Оксана на повен зріст"><figcaption>на повен зріст <button type="button">змінити</button></figcaption></figure></div>' +
@@ -173,7 +178,7 @@
       var kv = [[P[0][1], P[1][1], P[0][1], P[2][1], P[0][1], P[1][1]], [P[0][1], P[4][1], P[0][1], P[4][1], P[0][1], P[4][1]], [P[0][1], P[4][1], SYN, P[0][1], P[4][1], SYN], [null, null, null, null, null, null]];
       return arkush('zvorot',
         '<h2>Барви</h2><div class="barv">' + kvitkaBarv(196) + lehenda() + '</div>' + lust(bv.chomu) +
-        '<h3>Основа</h3><div class="osn">' + bv.osnovy.map(function (o, i) { return '<button type="button" aria-pressed="' + (i === 0) + '"><i class="kr" style="background:' + kol[o] + '"></i>' + o + '</button>'; }).join('') + '</div>' +
+        '<h3>Основа</h3><div class="osn">' + bv.osnovy.map(function (o, i) { return '<button type="button" aria-pressed="' + (i === 0) + '">' + K.pelustka(20, kol[o]) + o + '</button>'; }).join('') + '</div>' +
         '<h3>Як їх поєднати</h3><div class="skh">' + bv.skhemy.map(function (s, i) {
           return '<button type="button" aria-pressed="' + (i === 0) + '">' + K.znak({ px: 44, barvy: kv[i], rysky: false, sered: i === 3 ? 'none' : B.bura }) + '<span>' + (i === 3 ? 'хай обере люстерко' : s[0]) + (s[1] ? '<small>' + s[1] + '</small>' : '') + '</span></button>';
         }).join('') + '</div>' + dija('<button type="button" class="kn" data-dali>Збирай</button>'), lyceMisce(), 'rozmova');
@@ -263,10 +268,21 @@
     { id: 'moji', nazva: 'Мої образи: піч', html: function () {
       var m = V.moji, vd = m.filter(function (x) { return x.vdjahla; }).length;
       return arkush('zvorot',
-        '<div class="pich-v">' + N('МОЇ ОБРАЗИ', 20) + '<span class="dr">' + m.length + ' образи · ' + vd + ' вдягала</span></div>' +
+        '<div class="pich-v">' + N('МОЇ ОБРАЗИ', 20) + '<span class="dr lich">' + m.length + ' образи · ' + vd + ' вдягала</span></div>' +
         '<div class="pich">' + m.map(kahlja).join('') + '<a class="kl pusta" data-scena-do="rozmova"><i>+</i>новий образ</a></div>' +
-        '<p class="dr">Кахля за кожен образ: пелюстки — барви його речей. Вдягла — вінець полито.</p>',
+        '<p class="dr">Кахля за кожен образ: пелюстки — барви його речей. Вдягла — торкнись «ще не вдягала», і вінець поллється.</p>',
         '<div class="lsh">' + obraz({ n: 1, nazva: V.nahoda.nazva, pro: NAH, rechi: PISLJA, slova: V.sumniv.vidpovid, svoje: 'palt', kudy: kudy }) + '</div>', 'moji');
+    }, pislja: function (k) { /* вдягла — вінець поливається жовтим; не вдягала — лишається лінією */
+      var m = V.moji, lich = k.querySelector('.lich');
+      [].forEach.call(k.querySelectorAll('.kl[data-i]'), function (kl) {
+        var i = +kl.getAttribute('data-i'), b = kl.querySelector('.st');
+        b.onclick = function () {
+          var tak = b.getAttribute('aria-pressed') !== 'true';
+          b.setAttribute('aria-pressed', tak); b.textContent = tak ? 'вдягла' : 'ще не вдягала';
+          kl.querySelector('.znak').outerHTML = znakK(m[i], i, tak, tak);
+          lich.textContent = m.length + ' образи · ' + k.querySelectorAll('.st[aria-pressed=true]').length + ' вдягала';
+        };
+      });
     } },
 
     { id: 'druhyj', nazva: 'Кілька образів: другий', html: function () {

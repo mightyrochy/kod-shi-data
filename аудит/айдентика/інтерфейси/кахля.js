@@ -240,6 +240,15 @@
     return '<svg class="znak' + (o.klas ? ' ' + o.klas : '') + '" xmlns="http://www.w3.org/2000/svg" viewBox="-108 -108 216 ' + vys + '" width="' + px + '" height="' + Math.round(px * vys / 216) + '"' + (o.pidpys ? ' role="img" aria-label="' + o.pidpys + '"' : ' aria-hidden="true"') + ' stroke="' + B.bura + '" stroke-width="' + r1(tov) + '" stroke-linecap="round" stroke-linejoin="round">' + s + '</svg>';
   }
 
+  /* ───── пелюстка окремо: знак однієї барви чи однієї речі — та сама форма, що в квітці ─────
+     px — розмір на екрані; barva — колір (нема — лише лінія); kut — куди дивиться широкий кінець */
+  function pelustka(px, barva, kut) {
+    var a = kut == null ? -1.12 : kut, w = 0.4, s = 50;
+    function pt(r, b) { return [100 * r * Math.cos(b), 100 * r * Math.sin(b)]; }
+    var d = zamk([pt(0.13, a), pt(0.34, a - w), pt(0.52, a - w * 0.68), pt(0.565, a), pt(0.52, a + w * 0.68), pt(0.34, a + w)]), c = pt(0.35, a);
+    return '<svg class="pel1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="' + px + '" height="' + px + '" viewBox="' + r1(c[0] - s / 2) + ' ' + r1(c[1] - s / 2) + ' ' + s + ' ' + s + '"><path d="' + d + '" fill="' + (barva || 'none') + '" stroke="' + BARVY.bura + '" stroke-width="' + r1(1.5 * s / px) + '" stroke-linejoin="round"/></svg>';
+  }
+
   /* ───── полива під складником інтерфейсу ─────
      пляма w × h px: виходить за контур і стікає патьоком; фільтр #fpS — один на сторінку (spilni) */
   function plama(w, h, barva, zerno) {
@@ -255,5 +264,5 @@
     return '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><filter id="fpS" x="-10%" y="-10%" width="120%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="8" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G" result="d"/><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="21" result="t"/><feColorMatrix in="t" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1.1 0 0 0 -0.46" result="w"/><feComposite in="d" in2="w" operator="out"/></filter></defs></svg>';
   }
 
-  root.КАХЛЯ = { A: A, W: 960, H: 1087, BARVY: BARVY, olen: olen, lystok: lystok, vnutr: vnutr, vis: vis, kvitka: kvitka, malyunok: malyunok, znak: znak, plama: plama, spilni: spilni, kr: kr, zamk: zamk, krapla: krapla, rnd: rnd };
+  root.КАХЛЯ = { A: A, W: 960, H: 1087, BARVY: BARVY, olen: olen, lystok: lystok, vnutr: vnutr, vis: vis, kvitka: kvitka, malyunok: malyunok, znak: znak, pelustka: pelustka, plama: plama, spilni: spilni, kr: kr, zamk: zamk, krapla: krapla, rnd: rnd };
 })(typeof window !== 'undefined' ? window : globalThis);
