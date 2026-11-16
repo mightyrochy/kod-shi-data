@@ -354,12 +354,9 @@ def висота_каблука(р):
 
     Доти рядок моделі мав лише `heel: yes` зі слів назви, а число й смуга лежали в записі й не їхали: з 218
     пар каталогу з каблуком від 10 см 214 доходили до моделі так само, як угги на 3 см."""
-    h = р.get("каблук_см")
-    try:
-        if h is not None and float(h) > 0:
-            return _см(h)
-    except (TypeError, ValueError):
-        pass
+    h = р.get("каблук_см")              # число запису (`фід_взуття.число_см`) — float чи нема, як у K-SHO-16
+    if h is not None and float(h) > 0:
+        return _см(h)
     від, до = р.get("каблук_від"), р.get("каблук_до")
     if від is not None or до is not None:
         return [None if від is None else _см(від), None if до is None else _см(до)]
