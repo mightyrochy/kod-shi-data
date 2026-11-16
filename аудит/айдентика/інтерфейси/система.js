@@ -7,7 +7,7 @@
   function sc(n, t) { return '<a href="' + f + '#' + n + '">' + (t || 'сцена ' + n) + '</a>'; }
   function tabl(h, r) { return '<table><thead><tr>' + h.map(function (x) { return '<th>' + x + '</th>'; }).join('') + '</tr></thead><tbody>' + r.map(function (x) { return '<tr>' + x.map(function (y) { return '<td>' + y + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>'; }
   function ul(a) { return '<ul>' + a.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
-  var h = '<header class="sh"><span>Люстерко · приклад ' + S.n + ' з трьох · аркуш системи</span><span><a href="' + f + '">прототип</a> · <a href="../інтерфейси_дизайнера.html">огляд трьох</a></span></header>' +
+  var h = '<header class="sh"><span>Люстерко · ' + (S.shapka || 'приклад ' + S.n + ' з трьох') + ' · аркуш системи</span><span><a href="' + f + '">прототип</a> · <a href="../інтерфейси_дизайнера.html">' + (S.ohljad || 'огляд трьох') + '</a></span></header>' +
     '<h1>' + S.nazva + '</h1><p class="ideja">' + S.ideja + '</p><p class="poz">' + S.pozycija + '</p>' +
     '<h2>Правила, що випливають з ідеї</h2><ol class="prav">' + S.pravyla.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol>' +
     '<h2>Головні екрани</h2><p class="poz">Живі сцени прототипу в розмірі телефона 390 × 844, зменшені на чверть; фото речей вантажаться з крамниць за адресою.</p><div class="ekr">' + S.ekrany.map(function (e) { return '<figure><div class="ram"><iframe title="' + e[1] + '" src="' + f + '?чисто#' + e[0] + '"></iframe></div><figcaption>' + sc(e[0], e[1]) + '</figcaption></figure>'; }).join('') + '</div>' +
@@ -20,7 +20,7 @@
     tabl(['Функція', 'Де живе в цьому прикладі', 'Стан у прототипі'], window.КАРТА.map(function (r) { var v = r[S.kljuch]; return [r.f + '<br><small>' + r.stan + '</small>', v[0], v[1] ? sc(v[1], 'намальовано · сцена ' + v[1]) : 'місце, сцени нема']; })) +
     '<h2>Родовід</h2>' + tabl(['Рішення', 'Взірець або сучасна робота', 'Прийом перенесення', 'Що вийшло'], S.rodovid) +
     '<h3>Чого свідомо не взято</h3>' + ul(S.nevzjato) +
-    '<h2>Три кола: знімок → критика → правка</h2>' + tabl(['Коло', 'Що побачила на знімках', 'Що змінила'], S.kola) +
+    '<h2>' + (S.kil_kil || 'Три кола') + ': знімок → критика → правка</h2>' + tabl(['Коло', 'Що побачила на знімках', 'Що змінила'], S.kola) +
     '<h2>Власна критика</h2>' + ul(S.krytyka);
   document.querySelector('main').innerHTML = h;
 })();
