@@ -224,8 +224,18 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 #збій-панель:has(#збій-стан:empty){display:none}
 #збій-панель .статус{margin:0 0 8px}
 .ряд{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
-/* «Записати вердикт» видно, поки видно картку: росте поле коментаря — кнопка лишається над краєм екрана (вада 12) */
-.ряд-запису{position:sticky;bottom:calc(var(--під-панеллю, 0px) + 8px);z-index:2;pointer-events:none}
+/* «Записати вердикт» видно, поки видно картку (вада 12), і ніколи не лягає на текст відгуку (вада 15984). Причина була в
+   будові: поле росло на весь текст, а кнопка липла до низу вікна ПОВЕРХ нього — довгий відгук неминуче заходив під
+   кнопку. Тепер смуга кнопки — це зайнята смуга низу вікна: поле не вище за вікно мінус ця смуга (довший текст гортається
+   в самому полі, а сторінка й кнопка лишаються на місці), а все, що браузер доводить до видимого (курсор, кінець поля),
+   зупиняється над смугою: --смуга-запису = панель знизу + кнопка 44 + відступи */
+:root{--смуга-запису:calc(var(--панель-у-вікні, 0px) + 60px)}
+html{scroll-padding-bottom:var(--смуга-запису)}
+/* липкий напис «Є новіша версія» (`#нова-версія`, угорі) теж не накриває того, що браузер доводить до видимого */
+html:has(#нова-версія:not([hidden])){scroll-padding-top:56px}
+.ряд-запису{position:sticky;bottom:calc(var(--панель-у-вікні, 0px) + 8px);z-index:2;pointer-events:none}
+.вердикт textarea.поле-вердикту{max-height:max(120px, calc(100vh - var(--смуга-запису) - 16px));
+  max-height:max(120px, calc(100dvh - var(--смуга-запису) - 16px));scroll-margin-bottom:var(--смуга-запису)}
 .ряд-запису>button{pointer-events:auto}
 #сц-мета-зони-плитки[hidden]{display:none}
 .мітка{font:500 20px/1.25 var(--дисплей);font-variation-settings:"CONT" 260;margin:22px 0 8px}
@@ -358,9 +368,12 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .оц-річ .оц-кр{width:16px;height:16px;border-radius:50%;border:1px solid var(--межа-темна);flex:0 0 auto}
 .оц-річ .оц-назва{flex:1 1 auto;min-width:0;font-size:14px;line-height:1.3;overflow-wrap:anywhere}
 .оц-річ .оц-замість{flex:0 0 auto;font-size:12px;color:var(--олівець)}
-/* Рядок 5771: кнопка не тікає під нижню панель — липне над нею, поки в переліку є що гортати (висоту панелі пише `відступПідПанель`) */
+/* «Так, оцінюй» стоїть ПІСЛЯ переліку речей і не липне (вада 15984, той самий механізм, що в `.ряд-запису`): липка кнопка
+   лягала на нижні рядки переліку, який жінка читає, щоб підтвердити, — довгий перелік на першому екрані втрачав рядок
+   під кнопкою. Підтвердити перелік, якого не дочитала, не можна, тож кнопка там, де перелік кінчається; над нижньою
+   панеллю її тримає відступ сторінки (`відступПідПанель`), а до видимого її доводить браузер із `scroll-padding`. */
 .оц-речі{scroll-margin-top:8px}
-.оц-речі .оц-так{margin-top:12px;width:100%;position:sticky;bottom:calc(var(--під-панеллю, 0px) + 10px)}
+.оц-речі .оц-так{margin-top:12px;width:100%;scroll-margin-bottom:var(--смуга-запису)}
 .оц-річ{cursor:pointer;position:relative}
 .оц-річ.відкр{background:var(--полотно-2,transparent)}
 .оц-мін{width:44px;height:44px;border-radius:6px;flex:0 0 auto;border:1px dashed var(--межа-темна)}

@@ -19,6 +19,14 @@
   "hooks": {
     "SessionStart": [
       {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git -C \"$CLAUDE_PROJECT_DIR\" config core.hooksPath .githooks"
+          }
+        ]
+      },
+      {
         "matcher": "compact",
         "hooks": [
           {
@@ -58,10 +66,6 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/хуки/фонові_завдання.py\""
-          },
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/хуки/дошка_поля.py\""
           }
         ]
       },
