@@ -9,7 +9,7 @@ import tempfile
 
 ТЕКА = Path(__file__).resolve().parent
 КОРІНЬ = ТЕКА.parents[2]
-БАЗА = "00d0c5a0d1ba8323b9277c743f8be9ed1d04a93d"
+БАЗА = "ae9676d6a8e47a8bb2e72325ff537004a46dc76b"
 ФАЙЛИ = [КОРІНЬ / "джерела" / ім for ім in ("жнива_промпти.py", "жнива_розбір.py", "жнива_запис.py")]
 
 
