@@ -1215,6 +1215,11 @@ def _опис_keep_by():
                                          "outfit",
     # ── КАРТКА ОБРАЗУ: ЧОГО В НЬОМУ НЕМА І ЩО ДОКЛАВ КОД (ярус 3) ──
     "look_incomplete": "the outfit is incomplete",
+    "set_separate_part_doubling": "a set already contains a top and a bottom, so the separate items duplicate "
+                                  "these parts of the outfit (values: slots — codes of the separate slots)",
+    "outfit_without_shoes": "the outfit has no shoes and is not ready",
+    "only_one_item_not_outfit": "there is only one item, not a complete outfit",
+    "selection_has_no_other_combination": "the selection has no other combination today; the layers still do not stack",
     "several_items_in_one_slot": "several items stand in each of these slots: keep one in each (values: slots "
                                  "— slot codes; without them just \"several items in one slot\")",
     "blocker_reason": "a reason named by the corpus (values: reason — the rule's free text: retell its "
