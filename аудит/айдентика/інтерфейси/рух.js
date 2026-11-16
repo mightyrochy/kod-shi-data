@@ -26,8 +26,10 @@
   }
   window.ФОТО = function (k, dod) {
     var r = V.rechi[k], male = r.w < 300;
-    return '<span class="foto' + (r.pohane ? ' pohane' : '') + (male ? ' male' : '') + ' tlo-' + (r.tlo === 'біле' || r.tlo === 'сіре' ? 'rivne' : 'zhyve') + '" ' + (dod || '') + '>' +
-      '<img data-rich="' + k + '" src="' + r.foto + '" alt="' + r.nazva + ', ' + r.kram + '" loading="lazy"' + (male ? ' style="max-width:' + r.w + 'px;max-height:' + r.h + 'px"' : '') + '></span>';
+    /* male — крамниця дала дрібне фото: показуємо не більшим за справжнє; bezrechi — на фото не річ (знак крамниці): кажемо словами */
+    return '<span class="foto' + (r.pohane ? ' pohane' : '') + (male ? ' male' : '') + (r.tlo === 'нема' ? ' bezrechi' : '') + ' tlo-' + (r.tlo === 'біле' || r.tlo === 'сіре' ? 'rivne' : 'zhyve') + '" ' +
+      (r.tlo === 'нема' ? 'data-nema="' + r.kram + ': ' + r.pohane + '" ' : '') + (dod || '') + '>' +
+      '<img data-rich="' + k + '" src="' + r.foto + '" alt="' + r.nazva + ', ' + r.kram + '" loading="lazy"' + (male ? ' style="--w:' + r.w + 'px;--h:' + r.h + 'px"' : '') + '></span>';
   };
   window.ДАЛІ = function (d) { location.hash = '#' + (Math.max(1, Math.min(window.СЦЕНИ.length, n + 1 + (d || 1)))); };
   window.СЦЕНА = function (id) { for (var i = 0; i < window.СЦЕНИ.length; i++) if (window.СЦЕНИ[i].id === id) { location.hash = '#' + (i + 1); return; } };
