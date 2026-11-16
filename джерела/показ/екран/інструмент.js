@@ -42,6 +42,10 @@ function карткаІнструментаП(р){
   }
   else if (р.tool === 'open_scenario' && р.done)
     текстЖінціП(к, підписЗНазвоюП(['Відкрито сценарій «', назва, '».']), 'tool_scenario_opened_failed');
+  else if (р.tool === 'delete_scenario' && р.чекає_підтвердження){
+    /* перший крок: що саме зникне — назва сценарію (без назви — підпис з датою); видаляє повторний виклик */
+    текстЖінціП(к.appendChild(ел('div')), підписЗНазвоюП(['Видалити сценарій «', назва, '» назавжди? Підтвердь — і він зникне.']), 'tool_scenario_deleted_failed');
+  }
   else if (р.tool === 'delete_scenario' && р.done)
     текстЖінціП(к, підписЗНазвоюП(['Сценарій «', назва, '» видалено.']), 'tool_scenario_deleted_failed');
   else if (р.tool === 'new_scenario' && р.done)
