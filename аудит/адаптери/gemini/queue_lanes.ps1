@@ -480,6 +480,14 @@ function Get-Limits {
         $accepted[$f] = $v
         if ($lane) { $l.slots[$lane] = [int][Math]::Floor($v) } else { $l[$f] = $v }
     }
+    # Межі сторожа GPU-замка лише з файла й лише з джерелом: без джерела (чи файла) сторож не діє; значення в коді не дублюється.
+    foreach ($f in @('gpu_stall_minutes', 'gpu_stall_percent')) {
+        $node = $(if ($v2) { Get-JsonProp $doc $f } else { $null })
+        if (Test-LimitSource ([string](Get-JsonProp $node 'джерело'))) {
+            $v = ConvertTo-Bounded (Get-JsonProp $node 'n') @(0, [double]::MaxValue)
+            if ($null -ne $v) { $l[$f] = $v }
+        }
+    }
     $text = $accepted | ConvertTo-Json -Compress
     $old = $(if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { [System.IO.File]::ReadAllText($prevPath, $script:Utf8) } else { '' })
     if ($prevPath -and $accepted.Count -gt 0 -and $text -cne $old) { Write-FileAtomic $prevPath $text }
@@ -2662,6 +2670,91 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
     $cur = $(if (Test-Path -LiteralPath $path) { [System.IO.File]::ReadAllText($path, $script:Utf8) } else { '' })
     if ($text -cne $cur) { Write-FileAtomic $path $text }
 }
+
+# --- сторож GPU-замка: наряд тримає карту, а вона не працює -----------------------------------------------------------
+# 15.11 GPU-наряд Codex тримав замок понад 640 хв, карта була на 0 % у вимірах 19:39, 19:45, 19:55 UTC (12 % о 19:50), а
+# PID llama-server щоп'ять хвилин ставав новим; `codex_stall_minutes` не спрацював, бо Codex події дає. Сторож лічить лише з
+# вимірів (nvidia-smi — відсоток, лічильник Windows — PID найбільшого власника пам'яті) і записів слотів, без тексту агента;
+# наряду не знімає — знімає диспетчер позначкою «ЗНЯТО». Межі — `gpu_stall_minutes`, `gpu_stall_percent` (`смуги.json`, з джерелом).
+
+function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = '', $Now = $null, [scriptblock]$Sleeps = $null, [scriptblock]$SleepRead = $null) {
+    <# Один вимір ряду. $Holders — наряди із замком GPU (Marker, Since UTC-рядок); $Sample — Percent (-1 — невідомо) і
+    OwnerPid (0 — власника нема). Стан `gpu-watch.json`: позначка, початок замка, початок безперервної бездіяльності карти
+    (вимір не вище gpu_stall_percent; невідомий вимір ряд не рве й не подовжує), останній PID, скільки разів він змінився за
+    замок, за якого ряду бездіяльності рядок уже надіслано. Рядок — раз на ряд бездіяльності, понад gpu_stall_minutes.
+    Повертає об'єкт для #1856 (Marker, LockMinutes, IdleMinutes, PidChanges) чи $null, коли замка GPU нема. #>
+    if (-not $Path) { $Path = Join-Path $script:StateDir 'gpu-watch.json' }
+    if ($null -eq $Now) { $Now = [datetime]::UtcNow }
+    $h = @($Holders | Where-Object { $_ -and [string]$_.Marker } | Select-Object -First 1)
+    if ($h.Count -eq 0) { Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue; return $null }
+    $marker = [string]$h[0].Marker
+    $rx = '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$'
+    $fmt = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    $st = $null
+    if (Test-Path -LiteralPath $Path) { try { $st = [System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    if ($null -ne $st) { $st = ConvertTo-PlainJson $st }
+    if ($null -eq $st -or [string](Get-JsonProp $st 'marker') -cne $marker) {
+        $since = [string]$h[0].Since
+        $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = ''; last_at = ''; sleep_min = 0; idle_unknown = 0; prev_known = 1 }
+    }
+    foreach ($n in @('last_at', 'sleep_min', 'idle_unknown', 'prev_known')) { if ($null -eq $st.PSObject.Properties[$n]) { Add-Member -InputObject $st -NotePropertyName $n -NotePropertyValue $(if ($n -eq 'last_at') { '' } elseif ($n -eq 'prev_known') { 1 } else { 0 }) } }
+    $idleLimit = [double](Get-Limit $script:Limits 'GpuIdleMinutes' 'gpu_stall_minutes')
+    $pctLimit = [double](Get-Limit $script:Limits 'GpuIdlePercent' 'gpu_stall_percent')
+    $pct = [int]$Sample.Percent; $ownerPid = [int]$Sample.OwnerPid
+    # Час від останнього запису журналу LM Studio, хв (-1 — журнал не читається чи не заданий): тривога лише коли й карта стояла,
+    # й викликів моделі нема довше порога; без журналу — не виміряно, тривоги нема.
+    $callAge = $(if ($null -ne $Sample.PSObject.Properties['CallAgeMin']) { [int]$Sample.CallAgeMin } else { -1 })
+    # Сон ноутбука — лише за журналом Windows (події сну, які веде публікатор: `sleep-events.json`; $Sleeps повертає хвилини сну
+    # в проміжку). Проміжок без вимірів і без події сну (пропущені такти TaskScheduler: 14.11 73 хв при MultipleInstances =
+    # IgnoreNew) — не сон: ряд бездіяльності не скидається, хвилини замка не зменшуються. Початок проміжку — останній вимір,
+    # а на першому вимірі — початок замка.
+    # Події сну повні лише до `read_utc` публікатора ($SleepRead): сон після нього міг бути, а запису ще нема, тож тривога на такті до
+    # запису події була б хибною, а сон — втраченим. Час виміру, лічба сну й ряд ідуть за цим моментом, а не за настінним часом;
+    # публікатор не просунувся за останній вимір — стан не міняється, до його запису тривоги нема (15787).
+    $lagged = $false
+    if ($null -ne $SleepRead) {
+        $readTo = $null
+        try { $readTo = & $SleepRead } catch { $readTo = $null }
+        if ($readTo -is [datetime] -and $readTo.ToUniversalTime() -lt $Now) { $Now = $readTo.ToUniversalTime(); $lagged = $true }
+    }
+    $lastAt = $(if ($null -ne (Get-JsonProp $st 'last_at') -and [string]$st.last_at -cmatch $rx) { [datetime]::ParseExact([string]$st.last_at, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) } elseif ([string]$st.lock_since -cmatch $rx) { [datetime]::ParseExact([string]$st.lock_since, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) } else { $null })
+    $stale = $lagged -and $null -ne $lastAt -and $Now -le $lastAt
+    if (-not $stale -and $null -ne $lastAt -and $null -ne $Sleeps -and $Now -gt $lastAt) {
+        $slept = [int](& $Sleeps $lastAt $Now)
+        if ($slept -gt 0) {
+            $st.sleep_min = [int](Get-JsonProp $st 'sleep_min') + $slept
+            $st.idle_since = ''
+            $st.idle_unknown = 0
+        }
+    }
+    # Невідомий вимір ряд не рве й не подовжує (15788): проміжок, чий кінець чи початок без виміру, у бездіяльність не йде.
+    $interval = $(if (-not $stale -and $null -ne $lastAt -and $Now -gt $lastAt) { ($Now - $lastAt).TotalMinutes } else { 0 })
+    if ([string]$st.idle_since -cmatch $rx -and ($pct -lt 0 -or [int]$st.prev_known -eq 0)) { $st.idle_unknown = [double]$st.idle_unknown + $interval }
+    if (-not $stale) { $st.last_at = Get-UtcStamp $Now; $st.prev_known = $(if ($pct -ge 0) { 1 } else { 0 }) }
+    if ($ownerPid -gt 0) {
+        $last = [int]$st.last_pid
+        if ($last -gt 0 -and $last -ne $ownerPid) { $st.pid_changes = [int]$st.pid_changes + 1 }
+        $st.last_pid = $ownerPid
+    }
+    if ($pct -ge 0 -and -not $stale) {
+        if ($pct -le $pctLimit) { if ([string]$st.idle_since -cnotmatch $rx) { $st.idle_since = Get-UtcStamp $Now; $st.idle_unknown = 0 } }
+        else { $st.idle_since = ''; $st.idle_unknown = 0 }
+    }
+    $from = { param([string]$t) [int][Math]::Max(0, [Math]::Floor(($Now - [datetime]::ParseExact($t, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)).TotalMinutes)) }
+    $sleepMin = [int](Get-JsonProp $st 'sleep_min')
+    $lockMin = $(if ([string]$st.lock_since -cmatch $rx) { [Math]::Max(0, (& $from ([string]$st.lock_since)) - $sleepMin) } else { 0 })
+    $idleMin = $(if ([string]$st.idle_since -cmatch $rx) { [Math]::Max(0, (& $from ([string]$st.idle_since)) - [int][Math]::Floor([double]$st.idle_unknown)) } else { 0 })
+    $cause = "$marker $($st.idle_since)"
+    if ([string]$st.idle_since -cmatch $rx -and -not $stale -and $idleLimit -gt 0 -and $idleMin -ge $idleLimit -and $callAge -ge $idleLimit -and [string]$st.sent -cne $cause) {
+        $parts = $marker -split '/'
+        $lane = Get-Lane $parts[2]
+        if ($lane -eq 'agy') { $lane = 'gemini' }
+        if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE $lane/$($parts[1]) ЗАМОК $lockMin СОН $sleepMin БЕЗ_РОБОТИ $idleMin PID_ЗМІН $($st.pid_changes)") { $st.sent = $cause }
+    }
+    Write-FileAtomic $Path ($st | ConvertTo-Json -Compress)
+    [pscustomobject]@{ Marker = $marker; LockMinutes = $lockMin; SleepMinutes = $sleepMin; IdleMinutes = $idleMin; PidChanges = [int]$st.pid_changes; CallAgeMinutes = $callAge }
+}
+
 
 # --- простій увімкненого ноутбука ---------------------------------------------------------------------------------------
 # У ніч на 31.10 ноутбук за 13 год працював ~3 год 15 хв і стояв увімкненим до 2 год 20 хв поспіль, а диспетчер не знав
