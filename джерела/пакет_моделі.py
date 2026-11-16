@@ -625,10 +625,7 @@ import внутрішня_мова as _ВМ_П
                          "the stated dress code, within her palette's lightness and her refusals; «formality» — "
                          "the item's step or steps from…to, the same steps as the occasion: " + _БР_Щ.ЩАБЛІ_ПОРЯДОК_EN + "; «L» — lightness 0 to "
                          "100; «hem_cm» — where the hem falls, cm above the floor; «fabric_bands» — weather bands "
-                         "suited to the fabric; «heel_cm» — heel height as the shop gives it: one number in cm, or the "
-                         "shop's band [from, to] in cm, null — the side the band leaves open; `unknown` — the shop does "
-                         "not give it; «sole» — the sole as the shop names it, `unknown` — not named; "
-                         "«register» — the item's style language",
+                         "suited to the fabric; «register» — the item's style language",
                  як="take items only from here and name each by its «n» alone; fitness for the "
                     "occasion, taste and the unity of the outfit are yours", треба=True),
         # Пул — таблицею (`збирач_промптів.таблиця`): як її читати — рядок раз на

@@ -479,6 +479,10 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
     "hex": "hex of the colour: measured on the photo, or the middle of the shop word's range when `L_from` is word",
     "scheme": "the colour scheme the item fits",
     "also_in": "the same model also comes in these colours",
+    # Річ-запис-речі п.7 (16.11.2026): висота й підошва взуття — з запису (`осі`), раз на пакет, лише коли є
+    "heel_cm": "heel height in cm as the shop gives it: one number, or the shop's band [from, to], null — the side "
+               "the band leaves open; `unknown` — the shop does not give it",
+    "sole": "the sole as the shop names it; `unknown` — the shop does not name it",
 }
 
 
