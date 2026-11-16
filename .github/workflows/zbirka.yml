@@ -15,6 +15,7 @@ on:
       - 'build.txt'
       - '.github/workflows/zbirka.yml'
       - 'аудит/дошка/**'
+      - 'аудит/корені/*.d/**'
   workflow_dispatch:
   # Виклик із кроку самозлиття документа (`samozlyttia.yml`): злиття токеном CI не будить `push`, тож крок викликає
   # цей процес сам. `pislia` — коміт злиття на `main`, `pered` — `main` до злиття (замість `github.event.before`).
@@ -139,6 +140,10 @@ jobs:
         if: steps.zmina.outputs.produkt == 'false'
         run: python3 джерела/прилади/згорнути_дошку.py --лише-перевірити
 
+      - name: файли паспортів згортаються (легкий шлях)
+        if: steps.zmina.outputs.produkt == 'false'
+        run: python3 джерела/прилади/згорнути_паспорти.py --лише-перевірити
+
       # Прилад самозлиття: код називає шлях під дозволеною текою — тест червоний, доки ім'я не внесено в
       # `ІМЕНА_КОДУ` (дошка 15815–15817). Крок на обох шляхах: рішення «документ» стосується й легкого.
       - name: прилад «документ без коду» (імена коду, клас, рішення CI)
@@ -171,6 +176,14 @@ jobs:
       - name: файли дошки згортаються (лише перевірка)
         if: github.event_name == 'pull_request'
         run: python3 джерела/прилади/згорнути_дошку.py --лише-перевірити
+
+      - name: файли паспортів згортаються (лише перевірка)
+        if: github.event_name == 'pull_request'
+        run: python3 джерела/прилади/згорнути_паспорти.py --лише-перевірити
+
+      - name: стенд паспорта-файлу-гілки (ДО → ПІСЛЯ)
+        if: github.event_name == 'pull_request'
+        run: python3 -I джерела/прилади/стенд_паспорта_файл_гілки.py | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -674,6 +687,14 @@ jobs:
           python3 джерела/прилади/згорнути_дошку.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
           exit "${PIPESTATUS[0]}"
 
+      - name: згорнути паспорти
+        id: zghortannia_pasportiv
+        continue-on-error: true
+        run: |
+          set +e
+          python3 джерела/прилади/згорнути_паспорти.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+          exit "${PIPESTATUS[0]}"
+
       - name: закомітити артефакт
         env:
           PRODUKT: ${{ needs.zminy.outputs.produkt }}
@@ -683,7 +704,7 @@ jobs:
           ZVIT="джерела/аудит/ДОСЯЖНІСТЬ.md"
           ART="${RUNNER_TEMP}/publikatsiia"
           if [ "${PRODUKT}" = "false" ]; then
-            MSG="дошка: згорнуто файли аудит/дошка (${SOURCE_SHA})"
+            MSG="дошка й паспорти: згорнуто файли аудит/дошка й аудит/корені/*.d (${SOURCE_SHA})"
           else
             SHTAMP=$(grep -o 'const ЗБІРКА_ПОКАЗУ = "[^"]*"' index.html | head -1 | sed 's/.*= "//; s/"$//')
             if [ "${SHTAMP}" != "${SOURCE_SHA}" ]; then
@@ -722,6 +743,9 @@ jobs:
               git checkout -qf --detach "${MAIN_SHA}"
               python3 джерела/прилади/згорнути_дошку.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY" \
                 || echo "згортання дошки на ${MAIN_SHA}: файли з помилкою лишились — їх покаже збірка їхнього злиття" | tee -a "$GITHUB_STEP_SUMMARY"
+              python3 джерела/прилади/згорнути_паспорти.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+              [ "${PIPESTATUS[0]}" = 0 ] \
+                || echo "згортання паспортів на ${MAIN_SHA}: файли з помилкою лишились — їх покаже збірка їхнього злиття" | tee -a "$GITHUB_STEP_SUMMARY"
               OSNOVA="${MAIN_SHA}"
               KOMIT=""
               echo "main ${MAIN_SHA} новіший за джерела ${SOURCE_SHA} — публікацію складено на його голові" | tee -a "$GITHUB_STEP_SUMMARY"
@@ -735,6 +759,7 @@ jobs:
               fi
               git add -A аудит/БЕКЛОГ.md
               git add -A аудит/дошка 2>/dev/null || true
+              git add -A аудит/корені 2>/dev/null || true
               if git diff --cached --quiet; then
                 echo "артефакт, штамп, звіт і дошка не змінились — коміту нема"
                 exit 0
@@ -751,8 +776,8 @@ jobs:
           echo "п'ять спроб push не пройшли без просування main — публікація не відбулась"
           exit 1
 
-      - name: згортання дошки — помилки
-        if: always() && steps.zghortannia.outcome == 'failure'
+      - name: згортання дошки й паспортів — помилки
+        if: always() && (steps.zghortannia.outcome == 'failure' || steps.zghortannia_pasportiv.outcome == 'failure')
         run: |
-          echo "згортання аудит/дошка не вдалось повністю — файли з помилкою лишились, див. крок «згорнути дошку»" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "згортання аудит/дошка чи аудит/корені/*.d не вдалось повністю — файли з помилкою лишились, див. кроки «згорнути дошку» й «згорнути паспорти»" | tee -a "$GITHUB_STEP_SUMMARY"
           exit 1
