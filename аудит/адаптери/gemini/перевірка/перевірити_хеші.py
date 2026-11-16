@@ -31,6 +31,8 @@ def перевірити_смуги(root):
     смуги = re.search(r"LaneDefaults = \[ordered\]@\{ ([^}]*) \}", код).group(1)
     поля = {'slots.' + k: стелі['slots'] for k in re.findall(r'(\w+) = \d+', смуги)}
     поля.update({k: v for k, v in стелі.items() if k != 'slots'})
+    # Межі сторожа GPU-замка живуть лише в смуги.json (у коді значень і стель нема): тут — лише форма й джерело.
+    поля.update({k: (0, float('inf')) for k in ('gpu_stall_minutes', 'gpu_stall_percent')})
     try:
         дані = json.loads((root / 'смуги.json').read_text(encoding='utf-8'))
     except ValueError as e:
