@@ -1,0 +1,52 @@
+── ПРОМПТ (6873 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: suit · colour code: camel · about it: text н=1
+2 — kind code: blouse · colour code: white · about it: text н=2
+3 — kind code: pumps · colour code: beige · about it: text н=3
+4 — kind code: tote · colour code: beige · about it: text н=4
+5 — kind code: blazer · colour code: khaki · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; camel — кемел; khaki — хакі; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This camel set arrives in a relaxed silhouette that drapes comfortably without feeling bulky, offering ease of movement for a long evening among family.",
+"2": "The white blouse features a bodycon cut and subtle shine, introducing a refined touch that contrasts gently with the softer lines of your suit.",
+"3": "These beige pumps include a heel to lift your posture elegantly, perfect for navigating an upscale restaurant setting while remaining graceful.",
+"4": "The beige tote bag provides ample space and structure, serving as a practical yet polished companion for carrying essentials through the event.",
+"5": "This khaki blazer has a regular cut to layer seamlessly over your blouse, adding warmth and a tailored finish whenever you step into it.",
+"6": "Your camel relaxed suit offers a soft, grounded base for this family celebration, while your white bodycon blouse brings a sleek, modern edge that balances the set's ease. To keep the look effortless and quiet—so nothing draws attention away from the moment—you step into beige pumps with a heel that elongates your line without demanding energy. A spacious beige tote holds everything you need in hand, free of fuss, and a khaki blazer slips over your shoulders as a ready shield against the evening chill. The warm camel and beige tones harmonize beautifully, while the crisp white blouse and earthy khaki add gentle contrast that feels both polished and personal.",
+"7": "Let your relaxed suit hang loosely for comfort, but keep the blouse tucked in to define your waistline without stiffness.",
+"8": "Блуза з лелітками біла — I chose this white blouse to balance the rich camel suit and keep her face looking fresh, answering her need for a calm but elevated look.",
+"9": "Тоут бежевого кольору зі шкіри з лого — This leather tote bag is essential for carrying essentials to a family gathering at a restaurant, addressing her practical needs without adding clutter."
+}
+
+── ВІДПОВІДЬ (2013 симв., 19.0 с, HTTP 200) ──
+{
+"1": "Цей кемел-костюм прибув у вільний силует, який зручно драпірується без відчуття об’ємності, пропонуючи свободу рухів для довгого вечора серед родини.",
+"2": "Біла блуза має облягаючий крій і ледь помітне сяйво, додаючи вишуканий штрих, який м’яко контрастує з більш плавними лініями твого костюму.",
+"3": "Ці бежеві туфлі-човники мають підбор для елегантного підняття постави, ідеальні для пересування в розкішному ресторані, залишаючись при цьому граційною.",
+"4": "Бежева сумка тоут забезпечує достатньо місця та структуру, слугуючи практичним, але вишуканим супутником для носіння необхідних речей протягом заходу.",
+"5": "Цей хакі-блейзер має звичайний крій, щоб бездоганно одягатися поверх твоєї блузи, додаючи тепло та елегантну обробку кожного разу, коли ти його вдягнеш.",
+"6": "Твій кемел-костюм вільного крою пропонує м’який і спокійний фон для цього родинного святкування, а твоя біла облягаюча блуза додає елегантну сучасність, яка збалансовує легкість комплекту. Щоб зберегти образ без зусиль і тихим — щоб ніщо не відволікало увагу від моменту — ти взуваєш бежеві туфлі-човники на підборі, які витягують твою лінію, не потребуючи енергії. Простора сумка тоут у бежевому кольорі тримає все необхідне в руці без зайвого клопоту, а хакі-блейзер легко одягається тобі на плечі як готовий захист від вечірньої прохолоди. Теплі кемел і бежеві тони гармонійно поєднуються між собою, тоді як свіжа біла блуза та землистий хакі додають ніжний контраст, який відчувається одночасно вишукано й особисто.",
+"7": "Дозволь своєму костюму вільного крою звисати для комфорту, але заправ блузу всередину, щоб визначити твою талію без зайвої жорсткості.",
+"8": "Я обрала цю білу блузку з рюшами, щоб збалансувати насичений кемел-костюм і зберегти її обличчя свіжим, відповідаючи її потребі в спокійному, але вишуканому образі.",
+"9": "Ця шкіряна сумка тоут у бежевому кольорі з логотипом є необхідною для носіння речей на родинне зібрання в ресторані, задовольняючи її практичні потреби без зайвого сміття."
+}
