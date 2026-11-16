@@ -224,6 +224,9 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 #збій-панель:has(#збій-стан:empty){display:none}
 #збій-панель .статус{margin:0 0 8px}
 .ряд{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+/* «Записати вердикт» видно, поки видно картку: росте поле коментаря — кнопка лишається над краєм екрана (вада 12) */
+.ряд-запису{position:sticky;bottom:calc(var(--під-панеллю, 0px) + 8px);z-index:2;pointer-events:none}
+.ряд-запису>button{pointer-events:auto}
 #сц-мета-зони-плитки[hidden]{display:none}
 .мітка{font:500 20px/1.25 var(--дисплей);font-variation-settings:"CONT" 260;margin:22px 0 8px}
 
@@ -829,7 +832,9 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
 /* ── КАРТКА ОБРАЗУ: вікно Кричевського. Колаж — плаский аркуш із вирізаним
       краєм (витинанка), без нахилу й тіні. Колір біля фото — лише лінією. ─ */
 #картки{display:block;margin:0;padding:0}
-.картка{--ск:18px;background:var(--аркуш);margin:14px 0 6px;padding:0 0 18px;overflow:hidden}
+/* `clip`, а не лише `hidden`: обрізає так само, але картка не стає власною областю гортання, і «Записати вердикт»
+   (`.ряд-запису`) липне до низу ЕКРАНА, а не картки (вада 12); `hidden` — для браузерів без `clip` */
+.картка{--ск:18px;background:var(--аркуш);margin:14px 0 6px;padding:0 0 18px;overflow:hidden;overflow:clip}
 #картки .картка[hidden]{display:none}
 #картки .картка:not([hidden]){animation:нанизати .34s cubic-bezier(.2,.7,.2,1) both}
 @keyframes нанизати{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
