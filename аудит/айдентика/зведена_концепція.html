@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Люстерко — зведена концепція «Полотно»</title>
+<style>
+@font-face{font-family:"КТ";src:url("../../шрифти/KyivTypeTitling-VarGX.ttf");font-weight:1 1000;font-display:swap}
+@font-face{font-family:"КС";src:url("../../шрифти/KyivTypeSerif-VarGX.ttf");font-weight:1 1000;font-display:swap}
+:root{
+  color-scheme:light;
+  --полотно:#F4F0E8;--аркуш:#FBF9F4;--біле:#fff;--чорне:#1B1A17;--сіре:#676258;--межа:#D9D1C0;--межа2:#B4A98F;
+  --нитка:#8C2232;
+  --вишня:#7A1F2E;--графіт:#4A4B4F;--ніч:#1F2B44;--смарагд:#1F5A46;--барвінок:#6F7FC2;--теракот:#B5553A;--гірчиця:#C39A2E;
+  --кемел:#B98A52;--молоко:#EFE6D6;--беж:#D6C4A4;--попіл:#9A9894;--золото:#C9A24B;--срібло:#C3C6CB;--тло-фото:#E7E1D4;
+  --друк:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --голос:"КС",Georgia,"Times New Roman",serif;--назва:"КТ",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#E9E4D9;color:var(--чорне);font:15px/1.45 var(--друк)}
+.перем{position:absolute;opacity:0;pointer-events:none}
+#н2:checked ~ .стор{--нитка:#24407A}
+#н1:checked ~ .стор label[for="н1"],#н2:checked ~ .стор label[for="н2"]{background:var(--чорне);color:#fff}
+.стор{max-width:1340px;margin:0 auto;padding:28px 24px 80px}
+h1{font:600 34px/1.1 var(--назва);margin:0 0 8px;letter-spacing:.01em}
+h2{font:600 24px/1.15 var(--назва);margin:56px 0 6px}
+.вступ{max-width:860px;font-size:16px}
+.вступ p{margin:8px 0}
+.малий{font-size:13px;color:var(--сіре)}
+.будова{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:18px 0 0;max-width:1260px}
+.будова div{background:var(--аркуш);border-top:2px solid var(--чорне);padding:10px 12px;font-size:14px}
+.будова b{display:block;font:600 17px var(--назва);margin-bottom:2px}
+.будова i{display:block;font-style:normal;color:var(--сіре);font-size:12px;margin-top:4px}
+.нитки{display:flex;gap:0;align-items:center;margin:18px 0 0;font-size:14px;flex-wrap:wrap}
+.нитки span{margin-right:10px}
+.нитки label{border:1px solid var(--чорне);padding:9px 14px;cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px}
+.нитки label + label{border-left:0}
+.нитки label em{width:22px;height:2px;display:inline-block}
+.кадри{display:grid;grid-template-columns:repeat(auto-fill,minmax(0,390px));gap:36px 34px;justify-content:start;margin-top:18px}
+.кадр{min-width:0}
+.під{padding:10px 2px 0;font-size:13.5px;max-width:390px}
+.під b{font:600 17px var(--назва);display:block;margin-bottom:3px}
+.під .зв{color:var(--сіре);font-size:12.5px;margin-top:5px;display:block}
+
+/* телефон 390×844 */
+.тел{width:390px;max-width:100%;height:844px;background:var(--полотно);display:flex;flex-direction:column;overflow:hidden;position:relative;box-shadow:0 0 0 1px var(--межа2),0 10px 30px #0001;font:14px/1.35 var(--друк)}
+.шапка{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 14px}
+.шапка .л{font:600 22px/1 var(--назва);letter-spacing:.02em}
+.шапка .мої{font-size:13px;display:flex;align-items:center;gap:6px;min-height:44px}
+.шапка .мої::before{content:"";width:14px;height:12px;border:1px solid var(--чорне);border-top-width:4px}
+.сволок{flex:none;min-height:50px;display:flex;align-items:center;gap:10px;padding:3px 6px 3px 14px;background:var(--аркуш);border-top:2px solid var(--чорне);border-bottom:1px solid var(--чорне)}
+.сволок .сл{flex:1;font-size:13.5px;line-height:1.5;min-width:0}
+.сволок .сл u{text-decoration:none;border-bottom:1px solid var(--нитка);white-space:nowrap}
+.сволок .сл u.тип{font-style:italic;color:var(--сіре);border-bottom-style:dotted}
+.сволок .сл .нема{font-style:italic;color:var(--сіре)}
+.дія{flex:none;background:var(--чорне);color:#fff;font:600 13.5px var(--друк);padding:0 14px;height:44px;display:flex;align-items:center;white-space:nowrap}
+.дія.тиха{background:none;color:var(--чорне);border:1px solid var(--чорне);font-weight:500}
+.дія.нема{background:none;color:var(--сіре);border:1px dashed var(--межа2);font-weight:400}
+.пол{flex:1;min-height:0;overflow:hidden;padding:10px 14px 0;display:flex;flex-direction:column;gap:10px}
+.поле{flex:none;height:58px;display:flex;align-items:center;gap:8px;padding:0 10px 0 14px;border-top:1px solid var(--межа2);background:var(--аркуш)}
+.поле .вв{flex:1;color:var(--сіре);font-size:14px}
+.поле .фото{width:44px;height:44px;border:1px solid var(--чорне);display:grid;place-items:center}
+.поле .фото::before{content:"";width:18px;height:13px;border:1.5px solid var(--чорне);border-radius:2px;box-shadow:inset 0 0 0 3px var(--аркуш),inset 0 0 0 4.5px var(--чорне)}
+.швидкі{flex:none;display:flex;gap:6px;padding:8px 14px;overflow:hidden;flex-wrap:wrap}
+.чип{border:1px solid var(--чорне);padding:0 12px;min-height:36px;display:inline-flex;align-items:center;font-size:13px;background:var(--аркуш);white-space:nowrap}
+.чип.обр{box-shadow:inset 0 -3px 0 var(--нитка);font-weight:600}
+.чип.тих{border-color:var(--межа2);color:var(--сіре)}
+.ст{font:400 16px/1.36 var(--голос);padding-left:20px;position:relative;margin:0}
+.ст::before{content:"—";position:absolute;left:0;color:var(--нитка)}
+.я{align-self:flex-end;max-width:82%;text-align:right;margin:0;padding-right:9px;border-right:2px solid var(--чорне);font-size:14.5px}
+
+/* ярус */
+.яр{background:var(--аркуш);border:1px solid var(--межа);border-top:0;flex:none}
+.яр::before{content:"";display:block;height:7px;border-top:1px solid var(--чорне);border-bottom:1px solid var(--чорне);background:repeating-linear-gradient(90deg,var(--чорне) 0 1px,transparent 1px 5px)}
+.яг{display:flex;justify-content:space-between;align-items:baseline;padding:8px 10px 2px}
+.яг b{font:600 16px var(--назва);letter-spacing:.06em;text-transform:uppercase}
+.яг span{font-size:12.5px;color:var(--сіре)}
+.ят{padding:4px 10px 10px}
+.зг{display:flex;align-items:baseline;gap:6px;padding:7px 10px;background:var(--аркуш);border:1px solid var(--межа);font-size:13px;flex:none}
+.зг + .зг{margin-top:-11px}
+.зг b{font:600 13px var(--назва);letter-spacing:.06em;text-transform:uppercase}
+.зг .вт,.ряд .вт{flex:1;border-bottom:1px dotted var(--межа2);min-width:12px;transform:translateY(-3px)}
+.зг span:last-child{color:var(--сіре);font-size:12px}
+.ряд{display:flex;align-items:baseline;gap:6px;padding:5px 0;font-size:13.5px}
+.ряд .що{color:var(--сіре)}
+.ряд .зн{text-align:right}
+.ряд i{color:var(--сіре)}
+
+/* речі, мальовані кодом */
+.річ{background:var(--біле);border:1px solid var(--межа);display:grid;place-items:center;flex:none}
+.річ svg{width:92%;height:92%}
+.шар{display:grid;grid-template-columns:62px 1fr;gap:10px;padding:7px 10px;border-top:1px solid var(--межа);align-items:start}
+.шар .річ{width:62px;height:62px}
+.шар .мітка{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--сіре)}
+.шар .мітка span:last-child{letter-spacing:0;text-transform:none;font-size:12px;color:var(--чорне)}
+.шар .наз{display:flex;align-items:baseline;gap:6px;font-size:14px;font-weight:600;margin-top:1px}
+.шар .наз .вт{flex:1;border-bottom:1px dotted var(--межа2);transform:translateY(-3px);min-width:10px}
+.шар .наз em{font-style:normal;font-weight:600;white-space:nowrap}
+.шар .крам{font-size:12px;color:var(--сіре)}
+.шар .чому{font:italic 400 13.5px/1.25 var(--голос);margin-top:1px}
+.шар.обр{box-shadow:inset 2px 0 0 var(--нитка)}
+.шар.стоїть{opacity:.55}
+.разом{display:flex;align-items:baseline;gap:6px;padding:9px 10px;border-top:1px solid var(--чорне);font-weight:600}
+.разом .вт{flex:1;border-bottom:1px dotted var(--межа2);transform:translateY(-3px)}
+
+/* барвна формула й чотири образи */
+.чот{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:4px 10px 10px}
+.обз{font-size:11.5px;line-height:1.2;min-width:0}
+.обз .ф{height:44px;margin-bottom:4px}
+.обз.обр .ф{outline:2px solid var(--нитка);outline-offset:2px}
+.обз b,.рим{font:700 12.5px var(--друк);letter-spacing:0;margin-right:3px}
+.яг b .рим{font-size:15px}
+.обз span.ц{color:var(--чорне);white-space:nowrap}
+.обз span{display:block;color:var(--сіре);margin-top:2px}
+.ф{display:flex;flex-direction:column}
+.ф i{display:block;min-height:2px}
+
+/* кінець полотна */
+.кін{flex:none}
+.кін .ф{height:54px}
+.кін .рап{height:6px;margin:3px 0}
+.рап.побачення{background:repeating-linear-gradient(90deg,var(--чорне) 0 6px,transparent 6px 10px,var(--чорне) 10px 12px,transparent 12px 16px)}
+.рап.робота{background:repeating-linear-gradient(90deg,var(--чорне) 0 4px,transparent 4px 8px)}
+.рап.свято{background:repeating-linear-gradient(90deg,var(--чорне) 0 2px,transparent 2px 4px,var(--чорне) 4px 6px,transparent 6px 14px)}
+.рап.щодня{background:repeating-linear-gradient(90deg,var(--чорне) 0 2px,transparent 2px 12px)}
+.кін .тор{height:10px;background:repeating-linear-gradient(90deg,var(--межа2) 0 1px,transparent 1px 4px)}
+
+/* очікування */
+.основа{height:44px;margin-bottom:4px;background:repeating-linear-gradient(90deg,var(--межа2) 0 1px,transparent 1px 5px);position:relative;border:1px solid var(--межа)}
+.основа::after{content:"";position:absolute;left:0;right:0;top:0;height:var(--тк,40%);background:repeating-linear-gradient(0deg,var(--сіре) 0 1px,var(--межа) 1px 3px);border-bottom:2px solid var(--нитка)}
+.щаблі{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;font:400 13.5px/1.15 var(--назва);color:var(--сіре)}
+.щаблі span{border-top:1px solid var(--межа2);padding-top:5px}
+.щаблі .був{color:var(--чорне);border-top-color:var(--чорне)}
+.щаблі .є{color:var(--чорне);border-top:2px solid var(--нитка)}
+
+/* пара на осі */
+.пара{display:grid;grid-template-columns:1fr 2px 1fr;gap:0 12px;align-items:stretch}
+.пара .вісь{background:var(--нитка)}
+.пара .бік{display:flex;gap:9px;align-items:center;min-width:0}
+.пара .бік .річ{width:56px;height:56px}
+.пара .бік div{font-size:12.5px;line-height:1.25;min-width:0}
+.пара .бік small{display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--сіре)}
+.пара .бік b{display:block}
+
+/* знайомство */
+.вікна{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.вікно{height:128px;background:var(--тло-фото);border:1px solid var(--межа);position:relative;display:grid;place-items:center;overflow:hidden}
+.вікно svg{height:100%}
+.вікно small{position:absolute;left:6px;bottom:5px;font-size:11px;background:var(--аркуш);padding:1px 5px}
+.вікно.пусте{background:none;border:1px dashed var(--межа2);color:var(--сіре);font-size:13px;text-align:center}
+.нит{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px}
+.нит i{display:block;height:5px;margin-bottom:3px}
+.драп{display:grid;grid-template-columns:1fr 1fr;height:104px;position:relative;border:1px solid var(--межа)}
+.драп svg{position:absolute;left:50%;top:6px;height:98px;transform:translateX(-50%)}
+.драп div{display:flex;align-items:flex-end;padding:6px 8px;font-size:12px}
+.драп div + div{justify-content:flex-end}
+.три{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.три .чип{justify-content:center;padding:0 4px;font-size:12.5px;min-height:44px}
+
+/* барви */
+.барви-верх{display:grid;grid-template-columns:96px 1fr;gap:10px}
+.портрет{height:112px;display:grid;place-items:end center;overflow:hidden}
+.портрет svg{height:104px}
+.тканий{display:flex;height:34px;margin:2px 0 4px}
+.тканий i{display:block}
+.сімʼя{display:grid;grid-template-columns:74px 1fr;gap:6px;align-items:center;margin-top:6px;font-size:12px;color:var(--сіре)}
+.сімʼя div{display:flex;gap:5px;flex-wrap:wrap}
+.осн{height:36px;min-width:36px;padding:0 8px 0 30px;border:1px solid var(--межа2);font-size:12px;color:var(--чорне);display:inline-flex;align-items:center;position:relative;background:var(--біле)}
+.осн::before{content:"";position:absolute;left:0;top:0;bottom:0;width:24px;background:var(--к)}
+.осн.обр{border-color:var(--чорне);box-shadow:inset 0 -3px 0 var(--нитка);font-weight:600}
+.схема{display:grid;grid-template-columns:54px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--межа);font-size:13px}
+.схема .ф{height:30px;flex-direction:row}
+.схема small{display:block;color:var(--сіре);font-size:11.5px}
+.схема .кр{width:18px;height:18px;border:1px solid var(--чорне);border-radius:50%}
+.схема.обр .кр{box-shadow:inset 0 0 0 4px var(--аркуш),inset 0 0 0 9px var(--чорне)}
+
+/* сувої */
+.жердка{position:relative;padding:14px 4px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.жердка::before{content:"";position:absolute;left:0;right:0;top:6px;height:3px;background:var(--чорне)}
+.вішак{position:relative;font-size:11.5px;line-height:1.2}
+.вішак::before{content:"";position:absolute;left:50%;top:-10px;width:10px;height:12px;border:1.5px solid var(--чорне);border-bottom:0;border-radius:6px 6px 0 0;transform:translateX(-50%)}
+.вішак .ф{height:58px;margin:4px 8px 5px}
+.вішак b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--сіре);font-weight:500}
+.види{display:flex;gap:16px;font-size:13.5px;border-bottom:1px solid var(--межа2);padding-bottom:6px}
+.види b{box-shadow:0 7px 0 -5px var(--нитка)}
+.види span{color:var(--сіре)}
+.сувій{display:grid;grid-template-columns:70px 1fr;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--межа)}
+.сувій .кін .ф{height:34px}
+.сувій .кін .рап{height:5px;margin:2px 0}
+.сувій .кін .тор{height:7px}
+.сувій b{font:600 16px/1.15 var(--назва);display:block}
+.сувій span{font-size:12px;color:var(--сіре)}
+.сувій em{font-style:normal;color:var(--чорне)}
+.скр{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px}
+.скр div{border:1px solid var(--межа);background:var(--аркуш);padding:6px 6px 5px}
+.скр .рр{display:flex;gap:3px;margin-bottom:4px}
+.скр .річ{width:34px;height:34px;border:0}
+.скр b{display:block}
+.вердикт{font:600 24px/1.1 var(--назва);margin:2px 0 4px}
+.позн{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--чорне);padding:0 5px;white-space:nowrap}
+.позн.куп{border-style:dashed}
+
+/* постать */
+.постать{position:relative;width:104px;flex:none}
+.постать svg{width:104px;height:292px;display:block}
+.шк{display:grid;grid-template-columns:18px 1fr;gap:6px;padding:7px 0;border-top:1px solid var(--межа);font-size:12.5px;line-height:1.25}
+.шк .n{width:18px;height:18px;border:1px solid var(--чорне);border-radius:50%;font-size:10.5px;display:grid;place-items:center}
+.шк b{display:flex;gap:5px;align-items:baseline}
+.шк b .вт{flex:1;border-bottom:1px dotted var(--межа2);transform:translateY(-3px)}
+.шк span{color:var(--сіре);font-size:11.5px}
+
+/* ноутбук 1280×800 */
+.нб-обг{overflow-x:auto;margin-top:18px;padding:1px 1px 14px}
+.нб{width:1280px;height:800px;background:var(--полотно);display:grid;grid-template-columns:252px 1fr 404px;box-shadow:0 0 0 1px var(--межа2),0 10px 30px #0001;font:14px/1.35 var(--друк);overflow:hidden}
+.нб .лів{border-right:1px solid var(--межа2);padding:0 14px;overflow:hidden;display:flex;flex-direction:column;gap:12px}
+.нб .центр{display:flex;flex-direction:column;min-width:0}
+.нб .центр .пол{padding:14px 40px 0;gap:12px}
+.нб .центр .сволок{padding-left:40px;padding-right:34px}
+.нб .центр .поле{padding:0 34px 0 40px}
+.нб .прав{border-left:1px solid var(--чорне);background:var(--аркуш);display:flex;flex-direction:column;overflow:hidden}
+.нб .прав h3{font:600 15px var(--назва);letter-spacing:.06em;text-transform:uppercase;margin:0;padding:15px 14px 4px;display:flex;justify-content:space-between;align-items:baseline}
+.нб .прав h3 span{font:400 12.5px var(--друк);letter-spacing:0;text-transform:none;color:var(--сіре)}
+.нб .чот{gap:14px;padding:6px 12px 12px}
+.нб .чот .ф{height:84px}
+.нб .обз{font-size:12.5px}
+.нб .сувій{grid-template-columns:56px 1fr;gap:10px}
+.нб .сувій b{font-size:14.5px}
+
+.шляхи{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;max-width:820px;margin:10px 0 0}
+.шляхи div{background:var(--аркуш);padding:10px 12px;border-top:2px solid var(--чорне);font-size:14px}
+.шляхи b{font:600 16px var(--назва);display:block}
+table{border-collapse:collapse;font-size:13.5px;max-width:1000px;margin-top:12px;background:var(--аркуш)}
+th,td{border:1px solid var(--межа);padding:6px 9px;text-align:left;vertical-align:top}
+th{font-weight:600;background:var(--полотно)}
+.табл-обг{overflow-x:auto}
+
+@media (max-width:480px){
+  .стор{padding:18px 0 60px}
+  .стор > *:not(.кадри):not(.нб-обг){margin-left:14px;margin-right:14px}
+  h1{font-size:27px} h2{font-size:21px;margin-top:40px}
+  .кадри{gap:26px 0}
+  .під{padding:10px 14px 0}
+  .тел{box-shadow:0 1px 0 var(--межа2),0 -1px 0 var(--межа2)}
+}
+</style>
+</head>
+<body>
+<input class="перем" type="radio" name="нитка" id="н1" checked>
+<input class="перем" type="radio" name="нитка" id="н2">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="тренч" viewBox="0 0 60 60"><path fill="var(--к)" d="M22 5h16l10 6 7 31-6 2-4-16 1 29H14l1-29-4 16-6-2 7-31z"/><path d="M22 5l8 15 8-15M30 20v37" fill="none" stroke="#0005"/><rect x="14" y="30" width="32" height="3.4" fill="#0004"/><circle cx="26" cy="26" r="1" fill="#0006"/><circle cx="34" cy="26" r="1" fill="#0006"/></symbol>
+    <symbol id="пальто" viewBox="0 0 40 80"><path fill="var(--к)" d="M13 4h14l8 5 4 30-5 1-3-16v52H9V24l-3 16-5-1 4-30z"/><path d="M13 4l7 12 7-12M20 16v60" fill="none" stroke="#0005"/><circle cx="23" cy="27" r="1" fill="#0006"/><circle cx="23" cy="38" r="1" fill="#0006"/></symbol>
+    <symbol id="пальто-к" viewBox="0 0 40 80"><path fill="var(--к)" d="M13 4h14l8 5 4 30-5 1-3-16v28H9V24l-3 16-5-1 4-30z"/><path d="M13 4l7 12 7-12M20 16v36" fill="none" stroke="#0005"/><circle cx="23" cy="27" r="1" fill="#0006"/><circle cx="23" cy="38" r="1" fill="#0006"/><path d="M4 76h32" stroke="#B4A98F" stroke-dasharray="2 3"/></symbol>
+    <symbol id="сукня" viewBox="0 0 60 60"><path fill="var(--к)" d="M23 4l4 6h6l4-6 4 3-3 17 9 33H13l9-33-3-17z"/><path d="M22 24h16" stroke="#0004"/></symbol>
+    <symbol id="ботильйони" viewBox="0 0 60 60"><path fill="var(--к)" d="M17 8h14v25l17 8q3 2 3 5v5H24v-6l-7 1z"/><rect x="17" y="45" width="6" height="6" fill="var(--к)"/><path d="M17 14h14" stroke="#fff5"/></symbol>
+    <symbol id="челсі" viewBox="0 0 60 60"><path fill="var(--к)" d="M15 12h15v20l18 9q3 2 3 5v4H15z"/><path d="M19 13l3 15h5l1-15" fill="#fff3"/><rect x="15" y="50" width="36" height="2.5" fill="#0006"/></symbol>
+    <symbol id="лофери" viewBox="0 0 60 60"><path fill="var(--к)" d="M6 42q1-13 15-13l10 7q20 1 23 9v5H6z"/><path d="M22 30l9 6-3 4-10-3z" fill="#fff3"/><rect x="6" y="48" width="48" height="2.5" fill="#0006"/></symbol>
+    <symbol id="балетки" viewBox="0 0 60 60"><path fill="var(--к)" d="M6 44q2-9 12-9 8 6 20 6 14 1 16 6v3H6z"/><path d="M18 36q9 7 20 5" fill="none" stroke="#fff6"/></symbol>
+    <symbol id="сумка" viewBox="0 0 60 60"><path d="M21 26q0-15 9-15t9 15" fill="none" stroke="var(--к)" stroke-width="3"/><rect x="12" y="25" width="36" height="27" rx="3" fill="var(--к)"/><rect x="27" y="31" width="6" height="4" fill="#fff5"/></symbol>
+    <symbol id="сережки" viewBox="0 0 60 60"><g fill="var(--к)"><circle cx="20" cy="16" r="3"/><path d="M20 21l7 16q-7 9-14 0z"/><circle cx="40" cy="16" r="3"/><path d="M40 21l7 16q-7 9-14 0z"/></g></symbol>
+    <symbol id="жакет" viewBox="0 0 60 60"><path fill="var(--к)" d="M22 8h16l11 6 6 30-6 2-4-16v22H15V30l-4 16-6-2 6-30z"/><path d="M22 8l8 18 8-18M30 26v27" fill="none" stroke="#0005"/><circle cx="33" cy="33" r="1.1" fill="#0006"/></symbol>
+    <symbol id="блуза" viewBox="0 0 60 60"><path fill="var(--к)" stroke="#0003" d="M22 8q8 8 16 0l14 8-4 12-7-3v28H19V25l-7 3-4-12z"/></symbol>
+    <symbol id="штани" viewBox="0 0 60 60"><path fill="var(--к)" d="M16 5h28l4 51H35l-5-35-5 35H12z"/><path d="M16 9h28" stroke="#fff4"/></symbol>
+    <symbol id="пояс" viewBox="0 0 60 60"><rect x="4" y="25" width="52" height="10" fill="var(--к)"/><rect x="24" y="22" width="12" height="16" fill="none" stroke="#0008" stroke-width="2"/></symbol>
+    <symbol id="обличчя" viewBox="0 0 80 100"><path fill="var(--волосся,#4A3626)" d="M12 46q0-38 28-38t28 38v36H12z"/><path fill="var(--шкіра,#E3BFA0)" d="M33 66h14v14q14 4 20 20H13q6-16 20-20z"/><ellipse fill="var(--шкіра,#E3BFA0)" cx="40" cy="46" rx="18" ry="24"/><path fill="var(--волосся,#4A3626)" d="M20 44q2-26 22-24 16 2 18 22-12-4-18-14-8 12-22 16z"/></symbol>
+    <symbol id="зріст" viewBox="0 0 60 150"><g fill="var(--к,#8D8676)"><circle cx="30" cy="14" r="9"/><path d="M19 28h22l5 34-5 2-2-16-1 24 4 70h-8l-4-56-4 56h-8l4-70-1-24-2 16-5-2z"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="стор">
+<h1>Люстерко — зведена концепція «Полотно»</h1>
+<div class="вступ">
+  <p>Другий крок задачі про айдентику (15.11.2026): найвдаліше з чотирьох робіт — ChatGPT, Claude, Gemini, Fable — зібране в одну будову. Розбір кожної знахідки й причини «взято, змінено, відкинуто» — у звіті <code>аудит/дослідження_research/айдентика_зведення_2026-11.md</code>; позначки в підписах (Ф2, Г4, К10, Ч6) — номери знахідок з його таблиць.</p>
+  <p><b>Одним реченням:</b> уся робота — одне полотно розмови; над ним сволок тримає те, що стилістка зрозуміла; у полотні образ стоїть строєм по шарах; орнамент з'являється лише там, де записує її дані.</p>
+  <p class="малий">Це макети, а не продукт: речі, обличчя й постать мальовані кодом, назви крамниць і ціни вигадані. Керування набране системним шрифтом (у продукті — Fixel), голос стилістки й заголовки — Kyiv*Type з теки <code>шрифти/</code>. Слова «полотно», «ярус», «сволок», «стрій», «сувій» — назви будови для нас; на екрані жінка їх не бачить.</p>
+</div>
+
+<div class="будова">
+  <div><b>Полотно</b>Одна нагода — одна стрічка згори вниз. Усе, що раніше було окремим екраном, — ярус у ній: з'являється, коли потрібен, правиться на місці, згортається в рядок.<i>Fable, варіант А (Ф2)</i></div>
+  <div><b>Сволок</b>Сталий рядок угорі: що стилістка зараз зрозуміла, і головна дія. Кожне слово відкриває свій ярус; припущене — сірим курсивом.<i>Gemini К2 і К1 (Г4) + Claude К3 (К13) і синтез (К22); поєднання — нове</i></div>
+  <div><b>Стрій</b>Образ — ряди шарів у порядку тіла. Заміна — в тому самому ряду, решта стоїть. Причина речі — біля речі.<i>Fable Б (Ф4), Gemini К1 (Г2) і К3 (Г7), синтез Claude (К21)</i></div>
+  <div><b>Запис</b>Орнаменту три види, і всі — дані: барвна формула образу, кінець полотна, шов між ярусом і розмовою.<i>Fable А (Ф7, Ф3), Claude К2 (К10)</i></div>
+  <div><b>Вісь</b>Де справді є дві речі, вони стоять парою обабіч нитки: «було — стало», «ця чи та». Це і є люстерко.<i>синтез Claude «Пара» (К19), ChatGPT (Ч4)</i></div>
+</div>
+
+<div class="нитки"><span>Нитка бренду (розвилка В):</span><label for="н1"><em style="background:#8C2232"></em>червець</label><label for="н2"><em style="background:#24407A"></em>індиго</label></div>
+
+<h2>Телефон, 390 × 844</h2>
+<p class="малий">Десять кадрів одного полотна. Кадри 1–6 — ті самі дії, що в першому кроці; сьомий — запланована функція, восьмий — чинна оцінка з фото в тій самій будові.</p>
+
+<div class="кадри">
+
+<!-- 1 -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Люстерко</span><span class="мої">Мої образи</span></div>
+  <div class="сволок"><div class="сл"><span class="нема">Ще не знаю, куди ти збираєшся</span></div><span class="дія нема">Зібрати образи</span></div>
+  <div class="пол">
+    <p class="ст">Вітаю. Щоб радити саме тобі, покажи обличчя при денному світлі — далі все в цій розмові.</p>
+    <div class="яр">
+      <div class="яг"><b>Про тебе</b><span>2 з 4 · можна пізніше</span></div>
+      <div class="ят">
+        <div class="вікна">
+          <div class="вікно"><svg viewBox="0 0 80 100"><use href="#обличчя"/></svg><small>обличчя ✓</small></div>
+          <div class="вікно пусте">+ на повен зріст<br><span style="font-size:11.5px">щоб бачити пропорції</span></div>
+        </div>
+        <div class="ряд" style="padding-bottom:2px"><span class="що">Нитки з твого портрета</span></div>
+        <div class="нит">
+          <div><i style="background:#E3BFA0"></i>шкіра · тепла</div>
+          <div><i style="background:#4A3626"></i>волосся · темно-русе</div>
+          <div><i style="background:#5C6B4A"></i>очі · зелено-карі</div>
+        </div>
+      </div>
+    </div>
+    <p class="ст">Одне питання не словами. З якого боку обличчя свіжіше?</p>
+    <div>
+      <div class="драп">
+        <div style="background:var(--золото)">золото</div><div style="background:var(--срібло)">срібло</div>
+        <svg viewBox="0 0 80 100"><use href="#обличчя"/></svg>
+      </div>
+      <div class="три"><span class="чип обр">Ліворуч</span><span class="чип">Праворуч</span><span class="чип тих">Не бачу різниці</span></div>
+    </div>
+    <div class="зг"><b>Обхвати</b><span class="вт"></span><span>зріст 168 · додати решту</span></div>
+  </div>
+  <div class="швидкі"><span class="чип">На роботу</span><span class="чип">Побачення</span><span class="чип">Свято</span><span class="чип">Щодня</span><span class="чип тих">Інше…</span></div>
+  <div class="поле"><span class="вв">Напиши, куди йдеш, або покажи річ</span><span class="фото"></span></div>
+</div>
+<div class="під"><b>1. Знайомство й фото</b>Знайомство — не анкета перед входом, а перший ярус того самого полотна. Під фото одразу видно, що з нього взято. «Золото чи срібло» — її обличчя між двома площинами: єдине місце, де колір стоїть упритул до зображення, бо драпірування саме цим і є. Нагоду можна назвати вже зараз — плитки над полем.
+<span class="зв">Звідки: ярус у полотні — Fable А1 (Ф2); нитки з портрета — Fable (Ф9); обличчя між площинами — Claude «Вербівка» (К9); користь вводу біля вводу — ChatGPT (Ч7); порожній сволок — нове.</span></div>
+</div>
+
+<!-- 2 -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Люстерко</span><span class="мої">Мої образи</span></div>
+  <div class="сволок"><div class="сл"><u>побачення</u> · <u>пт, вечір</u> · <u>дощ, +8°</u> · <u class="тип">помітно</u> · <u class="тип">вишневий</u></div><span class="дія">Зібрати образи</span></div>
+  <div class="пол">
+    <div class="зг"><b>Про тебе</b><span class="вт"></span><span>тепла · 168 см · змінити</span></div>
+    <p class="я">У п'ятницю побачення, вечеря в ресторані. Хочу гарно, але щоб не мерзнути.</p>
+    <p class="ст">У п'ятницю ввечері дощ і плюс вісім. Зберу з верхнім одягом, у якому не соромно зайти до зали.</p>
+    <div class="яр">
+      <div class="яг"><b>Нагода</b><span>торкнися рядка, щоб змінити</span></div>
+      <div class="ят">
+        <div class="ряд"><span class="що">Куди</span><span class="вт"></span><span class="зн">побачення, ресторан</span></div>
+        <div class="ряд"><span class="що">Коли</span><span class="вт"></span><span class="зн">п'ятниця, вечір</span></div>
+        <div class="ряд"><span class="що">Погода</span><span class="вт"></span><span class="зн">дощ, +8° <i>з прогнозу</i></span></div>
+        <div class="ряд"><span class="що">Увага</span><span class="вт"></span><span class="зн"><i>помітно — так думаю я</i></span></div>
+        <div class="ряд"><span class="що">Барви</span><span class="вт"></span><span class="зн"><i>вишневий — як минулого разу</i></span></div>
+        <div class="ряд"><span class="що">Гроші</span><span class="вт"></span><span class="зн"><i>не казала</i></span></div>
+      </div>
+    </div>
+    <p class="ст">Два слова я припустила сама — вони сірі. Хочеш помітно чи спокійніше?</p>
+  </div>
+  <div class="швидкі"><span class="чип">Так, помітно</span><span class="чип">Спокійніше</span><span class="чип">Інші барви</span><span class="чип тих">Обери сама</span></div>
+  <div class="поле"><span class="вв">Напиши або покажи річ</span><span class="фото"></span></div>
+</div>
+<div class="під"><b>2. Розмова зі стилісткою</b>Жінка пише як є; стилістка відповідає антиквою з рискою, без бульбашок. Зрозуміле складається в сволок і не тікає під час прокрутки: чорне — сказала вона, сірий курсив — припустила стилістка. Слово в сволоку й рядок ярусу — одне й те саме: дотик відкриває правку. «Зібрати образи» завжди під пальцем.
+<span class="зв">Звідки: сволок — Gemini «Сволок і плахта», «Лінза наміру» (Г4); «що зрозуміла — видно й правиться дотиком» — Claude К3 (К13); припущене курсивом — синтез Claude «Сторінка» (К22); рядки з відточієм — Claude «Кіновар» (К5); два голоси — ChatGPT/NAMU (Ч3), Fable (Ф10).</span></div>
+</div>
+
+<!-- 3 -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Люстерко</span><span class="мої">Мої образи</span></div>
+  <div class="сволок"><div class="сл"><u>побачення</u> · <u>пт, вечір</u> · <u>дощ, +8°</u> · <u>помітно</u> · <u style="border-bottom-width:2px">вишневий</u></div><span class="дія">Зібрати образи</span></div>
+  <div class="пол">
+    <div class="зг"><b>Нагода</b><span class="вт"></span><span>побачення, пт · змінити</span></div>
+    <div class="яр">
+      <div class="яг"><b>Барви</b><span>згорнути</span></div>
+      <div class="ят">
+        <div class="барви-верх">
+          <div class="портрет" style="background:var(--вишня)"><svg viewBox="0 0 80 100"><use href="#обличчя"/></svg></div>
+          <div>
+            <div class="ряд" style="padding-top:0"><span class="що">Основа й барви до неї</span></div>
+            <div class="тканий"><i style="flex:6;background:var(--вишня)"></i><i style="flex:3;background:var(--графіт)"></i><i style="flex:1;background:var(--золото)"></i></div>
+            <div style="font-size:12px;color:var(--сіре)">вишневий 6 · графіт 3 · золотистий 1</div>
+            <span class="чип обр" style="margin-top:8px">Хай обере стилістка</span>
+          </div>
+        </div>
+        <div class="сімʼя"><span>Спокійні</span><div><span class="осн" style="--к:#1B1A17">чорний</span><span class="осн" style="--к:var(--графіт)">графіт</span><span class="осн" style="--к:var(--беж)">беж</span></div></div>
+        <div class="сімʼя"><span>Теплі</span><div><span class="осн обр" style="--к:var(--вишня)">вишневий</span><span class="осн" style="--к:var(--теракот)">теракот</span><span class="осн" style="--к:var(--гірчиця)">гірчичний</span></div></div>
+        <div class="сімʼя"><span>Холодні</span><div><span class="осн" style="--к:var(--ніч)">темно-синій</span><span class="осн" style="--к:var(--смарагд)">смарагд</span><span class="осн" style="--к:var(--барвінок)">барвінковий</span></div></div>
+        <div style="margin-top:9px">
+          <div class="схема обр"><div class="ф"><i style="flex:6;background:var(--вишня)"></i><i style="flex:3;background:#9B3B49"></i><i style="flex:1;background:#C98A8F"></i></div><div>Споріднені<small>найходовіша: багато речей у крамницях</small></div><span class="кр"></span></div>
+          <div class="схема"><div class="ф"><i style="flex:6;background:var(--вишня)"></i><i style="flex:3;background:var(--графіт)"></i><i style="flex:1;background:var(--смарагд)"></i></div><div>Навпроти<small>сміливіша: один яскравий штрих</small></div><span class="кр"></span></div>
+          <div class="схема"><div class="ф"><i style="flex:6;background:var(--вишня)"></i><i style="flex:3;background:var(--гірчиця)"></i><i style="flex:1;background:var(--ніч)"></i></div><div>Трійка<small>рідша: речей менше, але можна</small></div><span class="кр"></span></div>
+        </div>
+      </div>
+    </div>
+    <p class="ст">Вишневий біля обличчя тобі тепло. Лишаю його основою, графіт — на верх.</p>
+  </div>
+  <div class="поле"><span class="вв">Напиши або покажи річ</span><span class="фото"></span></div>
+</div>
+<div class="під"><b>3. Палітра</b>Не окремий екран, а ярус, який розгорнувся зі слова «вишневий» у сволоку; нагода й розмова лишаються на місці. Портрет стоїть на обраній основі — видно те, заради чого її обирають. Тканий рядок показує пропорцію 6 : 3 : 1, а не три кружечки. Основи — родинами; усе можливе доступне, рідша схема підписана, чому вона рідша.
+<span class="зв">Звідки: обличчя на тлі основи — Claude К3 (К14); пропорція смугами — Claude К2 (К10), Gemini (Г15), Fable А3; палітра не викидає з образу — Gemini «Берег» (Г9); чипи родинами, «хай обере стилістка», доступність рідших — чинні правила продукту.</span></div>
+</div>
+
+<!-- 3б -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Люстерко</span><span class="мої">Мої образи</span></div>
+  <div class="сволок"><div class="сл"><u>побачення</u> · <u>пт, вечір</u> · <u>дощ, +8°</u> · <u>помітно</u> · <u>вишневий</u></div><span class="дія тиха">Зупинити</span></div>
+  <div class="пол">
+    <div>
+      <div class="зг"><b>Про тебе</b><span class="вт"></span><span>тепла · 168 см · змінити</span></div>
+      <div class="зг" style="margin-top:-1px"><b>Нагода</b><span class="вт"></span><span>побачення, пт, дощ · змінити</span></div>
+      <div class="зг" style="margin-top:-1px"><b>Барви</b><span class="вт"></span><span>вишневий · графіт · золотистий · змінити</span></div>
+    </div>
+    <p class="я">Помітно. Збирай.</p>
+    <div class="яр">
+      <div class="яг"><b style="font-variation-settings:'CONT' 520">Образи</b><span>тчуться · з'являться всі разом</span></div>
+      <div class="чот" style="padding-bottom:6px">
+        <div class="обз"><div class="основа" style="--тк:52%"></div></div>
+        <div class="обз"><div class="основа" style="--тк:52%"></div></div>
+        <div class="обз"><div class="основа" style="--тк:52%"></div></div>
+        <div class="обз"><div class="основа" style="--тк:52%"></div></div>
+      </div>
+      <div class="ят">
+        <div class="щаблі">
+          <span class="був" style="font-variation-settings:'CONT' 0">Ще туманно</span>
+          <span class="є" style="font-variation-settings:'CONT' 520;font-weight:600">Проступають обриси</span>
+          <span style="font-variation-settings:'CONT' 760">Вимальо&shy;вується</span>
+          <span style="font-variation-settings:'CONT' 1000">Готово</span>
+        </div>
+      </div>
+    </div>
+    <p class="ст">Шукаю верхній одяг під дощ, щоб закривав сукню. У твоєму розмірі є шість — приміряю до вишневого.</p>
+    <p class="ст" style="color:var(--сіре);font-size:14.5px">Поки тчеться, можеш дописати — візьму до уваги, не починаючи спочатку.</p>
+  </div>
+  <div class="швидкі"><span class="чип">Без підборів</span><span class="чип">До 12 000 ₴</span><span class="чип тих">Нічого, чекаю</span></div>
+  <div class="поле"><span class="вв">Допиши, якщо згадала ще щось</span><span class="фото"></span></div>
+</div>
+<div class="під"><b>3б. Поки образи тчуться</b>Очікування — в тому самому ярусі, де з'являться образи: чотири основи, на які лягає піткання; жодного образу не видно наперед — усі чотири постануть разом. Чотири щаблі — чинні статуси верстата; контраст літер заголовка росте разом зі щаблем, тож літера «проступає» разом з образом. Стилістка каже людською мовою, що саме зараз робить.
+<span class="зв">Звідки: верстат як власний момент — ChatGPT (Ч9), етап 2 Claude; статуси — Claude «Люстерко в рушнику» (К16) і чинний продукт; вісь контрасту шрифту як голос стану — синтез Claude (К25); «усі разом» — п.21; на противагу «першому ескізу» Gemini (Г11).</span></div>
+</div>
+
+<!-- 4 -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Люстерко</span><span class="мої">Мої образи</span></div>
+  <div class="сволок"><div class="сл"><u>побачення</u> · <u>пт, вечір</u> · <u>дощ, +8°</u> · <u>помітно</u> · <u>вишневий</u></div><span class="дія тиха">Зібрати інші</span></div>
+  <div class="пол" style="padding-top:8px;gap:8px">
+    <p class="ст" style="font-size:15px">Чотири образи. Другий — мій перший вибір: тепло, і сукню видно, щойно знімеш тренч.</p>
+    <div class="яр">
+      <div class="яг"><b>Образи</b><span>порівняти два</span></div>
+      <div class="чот">
+        <div class="обз"><div class="ф"><i style="flex:5;background:var(--беж)"></i><i style="flex:4;background:var(--вишня)"></i><i style="flex:2;background:#5A3A2A"></i><i style="flex:.6;background:var(--золото)"></i></div><b>I</b>Тепло й спокійно<span>11 900 ₴</span></div>
+        <div class="обз обр"><div class="ф"><i style="flex:5;background:var(--графіт)"></i><i style="flex:4;background:var(--вишня)"></i><i style="flex:2;background:#1B1A17"></i><i style="flex:.6;background:var(--золото)"></i></div><b>II</b>Вечеря, трохи сміливо<span>13 400 ₴</span></div>
+        <div class="обз"><div class="ф"><i style="flex:6;background:var(--ніч)"></i><i style="flex:3;background:var(--вишня)"></i><i style="flex:2;background:#1B1A17"></i></div><b>III</b>Під дощ, без підборів<span>10 800 ₴</span></div>
+        <div class="обз"><div class="ф"><i style="flex:7;background:#1B1A17"></i><i style="flex:2;background:var(--вишня)"></i><i style="flex:1.5;background:#1B1A17"></i><i style="flex:.6;background:var(--срібло)"></i></div><b>IV</b>Чорне з вишневим<span>12 600 ₴</span></div>
+      </div>
+      <div class="шар"><div class="річ" style="--к:var(--графіт)"><svg><use href="#тренч"/></svg></div><div><div class="мітка"><span>Верхній одяг</span><span>не ця · закріпити</span></div><div class="наз"><span>Тренч графітовий</span><span class="вт"></span><em>4 200 ₴</em></div><div class="чому">— дощ і +8°: закриває сукню до коліна</div><div class="крам">Ткаля · розмір M є</div></div></div>
+      <div class="шар"><div class="річ" style="--к:var(--вишня)"><svg><use href="#сукня"/></svg></div><div><div class="мітка"><span>Сукня</span><span>не ця · закріпити</span></div><div class="наз"><span>Сукня міді вишнева</span><span class="вт"></span><em>3 200 ₴</em></div><div class="чому">— твоя основа; талія на своєму місці</div><div class="крам">Гніздо · розмір M є</div></div></div>
+      <div class="шар"><div class="річ" style="--к:#1B1A17"><svg><use href="#ботильйони"/></svg></div><div><div class="мітка"><span>Взуття</span><span>не ця · закріпити</span></div><div class="наз"><span>Ботильйони, підбор 6 см</span><span class="вт"></span><em>3 900 ₴</em></div><div class="чому">— довша лінія ноги під міді</div><div class="крам">Кроки · 38 є</div></div></div>
+      <div class="шар"><div class="річ" style="--к:#1B1A17"><svg><use href="#сумка"/></svg></div><div><div class="мітка"><span>Сумка</span><span>не ця · закріпити</span></div><div class="наз"><span>Сумка мала чорна</span><span class="вт"></span><em>1 500 ₴</em></div><div class="чому">— не сперечається з сукнею</div><div class="крам">Лозина</div></div></div>
+      <div class="шар"><div class="річ" style="--к:var(--золото)"><svg><use href="#сережки"/></svg></div><div><div class="мітка"><span>Оздоби</span><span>не ця · закріпити</span></div><div class="наз"><span>Сережки золотисті</span><span class="вт"></span><em>600 ₴</em></div><div class="чому">— тепле біля обличчя</div><div class="крам">Дукач</div></div></div>
+      <div class="разом"><span>Разом</span><span class="вт"></span><span>13 400 ₴</span></div>
+    </div>
+  </div>
+  <div class="поле" style="gap:10px"><span class="вв">Напиши, що змінити</span><span class="дія">Вдягну це</span></div>
+</div>
+<div class="під"><b>4. Образ із речами каталогу</b>Усі чотири образи з'являються разом — стрічкою барвних формул: смуги в порядку тіла й за часткою кожної речі, з назвою за наміром і сумою. Під стрічкою — стрій обраного: кожна річ у своєму ряду на білому, з ціною через відточіє й причиною голосом стилістки. Кольорове на екрані — лише одяг і формули; нитка бренду — тонка лінія обраного.
+<span class="зв">Звідки: шари зі сталим місцем — Fable «Стрій» (Ф4); смуги-регістри, сукня об'єднує два шари — Gemini «Гута» (Г2, Г3); причина біля речі — Gemini «Берег» (Г7); формула за часткою речей — Claude «Вербівка» (К10); біле під фото — Gemini (Г1); назви за наміром — ChatGPT (Ч6); колір належить одягові — Claude (К24); чотири разом — правило продукту п.21.</span></div>
+</div>
+
+<!-- 5а -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Люстерко</span><span class="мої">Мої образи</span></div>
+  <div class="сволок"><div class="сл"><u>побачення</u> · <u>пт, вечір</u> · <u>дощ, +8°</u> · <u>помітно</u> · <u>вишневий</u> · <u>без підборів</u></div><span class="дія тиха">Зібрати інші</span></div>
+  <div class="пол" style="padding-top:8px;gap:8px">
+    <div class="яр">
+      <div class="яг"><b>Образ <span class="рим">II</span></b><span>Вечеря, трохи сміливо</span></div>
+      <div class="шар стоїть" style="padding-top:5px;padding-bottom:5px"><div class="річ" style="--к:var(--графіт);height:38px;width:62px"><svg><use href="#тренч"/></svg></div><div><div class="наз" style="font-weight:500"><span>Тренч графітовий</span><span class="вт"></span><em>4 200 ₴</em></div><div class="крам">стоїть</div></div></div>
+      <div class="шар стоїть" style="padding-top:5px;padding-bottom:5px"><div class="річ" style="--к:var(--вишня);height:38px;width:62px"><svg><use href="#сукня"/></svg></div><div><div class="наз" style="font-weight:500"><span>Сукня міді вишнева</span><span class="вт"></span><em>3 200 ₴</em></div><div class="крам">стоїть</div></div></div>
+      <div class="шар обр" style="display:block">
+        <div class="мітка"><span>Взуття · що не так?</span><span>скасувати</span></div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 8px"><span class="чип">Колір</span><span class="чип">Форма</span><span class="чип обр">Незручно</span><span class="чип">Ціна</span><span class="чип тих">Не казати</span></div>
+        <p class="ст" style="font-size:15px;margin-bottom:8px">Зрозуміла: без підборів. Ось три пари до цієї ж сукні.</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;font-size:12px;line-height:1.25">
+          <div><div class="річ" style="--к:#1B1A17;height:66px"><svg><use href="#лофери"/></svg></div>Лофери чорні<br><b>2 900 ₴</b></div>
+          <div><div class="річ" style="--к:#1B1A17;height:66px;outline:2px solid var(--нитка);outline-offset:1px"><svg><use href="#челсі"/></svg></div><b>Челсі чорні</b><br><b>3 400 ₴</b></div>
+          <div><div class="річ" style="--к:var(--вишня);height:66px"><svg><use href="#балетки"/></svg></div>Балетки вишневі<br><b>2 100 ₴</b></div>
+        </div>
+        <div class="пара" style="margin-top:12px">
+          <div class="бік"><div class="річ" style="--к:#1B1A17"><svg><use href="#ботильйони"/></svg></div><div><small>було</small><b>Ботильйони</b>3 900 ₴</div></div>
+          <div class="вісь"></div>
+          <div class="бік"><div class="річ" style="--к:#1B1A17"><svg><use href="#челсі"/></svg></div><div><small>стало</small><b>Челсі</b>3 400 ₴</div></div>
+        </div>
+        <div style="font-size:12.5px;margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span style="color:var(--сіре)">Змінюю лише взуття в цьому образі.</span><span class="чип" style="min-height:32px">І надалі без підборів</span></div>
+      </div>
+      <div class="шар стоїть" style="padding-top:5px;padding-bottom:5px"><div class="річ" style="--к:#1B1A17;height:38px;width:62px"><svg><use href="#сумка"/></svg></div><div><div class="наз" style="font-weight:500"><span>Сумка мала чорна</span><span class="вт"></span><em>1 500 ₴</em></div><div class="крам">стоїть</div></div></div>
+      <div class="шар стоїть" style="padding-top:5px;padding-bottom:5px"><div class="річ" style="--к:var(--золото);height:38px;width:62px"><svg><use href="#сережки"/></svg></div><div><div class="наз" style="font-weight:500"><span>Сережки золотисті</span><span class="вт"></span><em>600 ₴</em></div><div class="крам">стоїть</div></div></div>
+      <div class="разом"><span>Разом</span><span class="вт"></span><span>12 900 ₴ <span style="font-weight:400;color:var(--сіре)">(−500)</span></span></div>
+    </div>
+  </div>
+  <div class="поле" style="gap:10px"><span class="вв">Напиши, що змінити</span><span class="дія">Вдягну це</span></div>
+</div>
+<div class="під"><b>5а. Відгук: «не ця»</b>Дотик до ряду питає, що саме не так, — від цього залежить заміна. Заміни з'являються в тому самому ряду; решта шарів пригасає й стоїть. «Було — стало» обабіч нитки — люстерко в дії. Масштаб зміни названо словами: лише це взуття тут; «і надалі» — окрема, свідома дія, яка дописує слово в сволок.
+<span class="зв">Звідки: заміна одного шару, решта стоїть — ChatGPT (Ч4, Ч5), Gemini «Гута» (Г2), синтез Claude «Примірочна» (К21), Fable Б5 (Ф4); «чому не ця» й масштаб зміни — ChatGPT (Ч8), Gemini (Г6); пара на осі — синтез Claude «Пара» (К19), змінено: лише там, де речей дві.</span></div>
+</div>
+
+<!-- 5б -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Люстерко</span><span class="мої">Мої образи</span></div>
+  <div class="сволок"><div class="сл"><u>побачення</u> · <u>пт, вечір</u> · <u>вдягну II</u></div><span class="дія тиха">Нова нагода</span></div>
+  <div class="пол">
+    <p class="я">Беру другий, із челсі.</p>
+    <div>
+      <div class="зг"><b>Про тебе</b><span class="вт"></span><span>тепла · 168 см</span></div>
+      <div class="зг" style="margin-top:-1px"><b>Нагода</b><span class="вт"></span><span>побачення, пт, дощ</span></div>
+      <div class="зг" style="margin-top:-1px"><b>Барви</b><span class="вт"></span><span>вишневий · графіт · золотистий</span></div>
+      <div class="зг" style="margin-top:-1px"><b>Образ <span class="рим">II</span></b><span class="вт"></span><span>5 речей · 12 900 ₴ · розгорнути</span></div>
+    </div>
+    <p class="ст">Гарного вечора. Полотно згорнула — лежить у «Моїх образах» під цим кінцем.</p>
+    <div class="кін">
+      <div class="рап побачення"></div>
+      <div class="ф"><i style="flex:5;background:var(--графіт)"></i><i style="flex:4;background:var(--вишня)"></i><i style="flex:2;background:#1B1A17"></i><i style="flex:.6;background:var(--золото)"></i></div>
+      <div class="рап побачення"></div>
+      <div class="тор"></div>
+    </div>
+    <div style="font:600 19px/1.15 var(--назва)">Вечеря, трохи сміливо<div style="font:400 12.5px var(--друк);color:var(--сіре);margin-top:3px">побачення · п'ятниця 20.11 · ще не вдягала</div></div>
+    <div class="яр">
+      <div class="яг"><b>Після</b><span>у суботу спитаю сама</span></div>
+      <div class="ят">
+        <div class="ряд" style="padding-top:0"><span class="що">Як було в цьому?</span></div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="чип">Вдягла, добре</span><span class="чип">Вдягла, щось не так</span><span class="чип тих">Не вдягла</span></div>
+      </div>
+    </div>
+    <p class="ст" style="color:var(--сіре);font-size:14.5px">Що скажеш — запам'ятаю для наступних образів, а не лише для цього.</p>
+  </div>
+  <div class="швидкі"><span class="чип">На роботу</span><span class="чип">Свято</span><span class="чип">Щодня</span><span class="чип тих">Інше…</span></div>
+  <div class="поле"><span class="вв">Напиши, куди далі, або покажи річ</span><span class="фото"></span></div>
+</div>
+<div class="під"><b>5б. Відгук: «вдягну це»</b>Рішення завершує полотно: яруси згортаються в рядки, а внизу тчеться кінець — смуги в кольорах обраного образу й у пропорції речей, рапорт (довга-коротка риска) — «побачення». Це єдина велика оздоба на екрані, і її породили дані жінки. «Вдягла» з датою — найчесніший відгук; про масштаб («для наступних образів») сказано словами.
+<span class="зв">Звідки: тканий кінець як запис — Fable А5 (Ф7); «оздоба з її палітри» — Claude «Вербівка» й «Люстерко в рушнику» (К8, К15), змінено: не над кожним екраном, а раз наприкінці; «вдягла» з датою — етап 3 Claude (К26); масштаб зміни — ChatGPT (Ч8). Чи читається рапорт як нагода — під перевірку на людях.</span></div>
+</div>
+
+<!-- 6 -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Мої образи</span><span style="font-size:13px;min-height:44px;display:flex;align-items:center">← до розмови</span></div>
+  <div class="сволок"><div class="сл"><span class="нема">На жердці три образи · сьогодні — «Офіс, зустріч»</span></div><span class="дія">Нова нагода</span></div>
+  <div class="пол">
+    <div style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--сіре)">На жердці — наготовлене</div>
+    <div class="жердка">
+      <div class="вішак"><div class="ф"><i style="flex:5;background:var(--попіл)"></i><i style="flex:2;background:var(--молоко)"></i><i style="flex:4;background:#1B1A17"></i></div><b>сьогодні</b>Офіс, зустріч</div>
+      <div class="вішак"><div class="ф"><i style="flex:5;background:var(--графіт)"></i><i style="flex:4;background:var(--вишня)"></i><i style="flex:2;background:#1B1A17"></i><i style="flex:.6;background:var(--золото)"></i></div><b>пт 20.11</b>Вечеря, трохи сміливо</div>
+      <div class="вішак"><div class="ф"><i style="flex:5;background:var(--кемел)"></i><i style="flex:4;background:var(--ніч)"></i><i style="flex:2;background:#5A3A2A"></i></div><b>нд 22.11</b>Прогулянка з дітьми</div>
+    </div>
+    <div class="види"><b>Нагоди · 12</b><span>Мої речі · 9</span><span>Про мене</span></div>
+    <div>
+      <div class="сувій"><div class="кін"><div class="рап робота"></div><div class="ф"><i style="flex:5;background:var(--попіл)"></i><i style="flex:2;background:var(--молоко)"></i><i style="flex:4;background:#1B1A17"></i></div><div class="тор"></div></div><div><b>Зустріч із клієнтом, без офіціозу</b><span>робота · <em>вдягла 12.11 і 16.11</em></span></div></div>
+      <div class="сувій"><div class="кін"><div class="рап свято"></div><div class="ф"><i style="flex:7;background:var(--смарагд)"></i><i style="flex:2;background:#1B1A17"></i><i style="flex:1;background:var(--золото)"></i></div><div class="тор"></div></div><div><b>День народження мами</b><span>свято · <em>вдягла 02.11</em> · «добре»</span></div></div>
+      <div class="сувій"><div class="кін"><div class="рап щодня"></div><div class="ф"><i style="flex:5;background:var(--кемел)"></i><i style="flex:4;background:var(--ніч)"></i><i style="flex:2;background:#5A3A2A"></i></div><div class="тор"></div></div><div><b>Субота, місто, зручно</b><span>щодня · не вдягала · 3 образи всередині</span></div></div>
+      <div class="сувій" style="border-bottom:0"><div class="кін"><div class="рап побачення"></div><div class="ф"><i style="flex:6;background:var(--ніч)"></i><i style="flex:3;background:var(--вишня)"></i><i style="flex:2;background:#1B1A17"></i></div><div class="тор"></div></div><div><b>Кіно, пізній сеанс</b><span>побачення · <em>вдягла 24.10</em> · «щось не так: взуття»</span></div></div>
+    </div>
+    <div style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--сіре)">Мої речі — показані стилістці</div>
+    <div class="скр">
+      <div><div class="рр"><div class="річ" style="--к:var(--смарагд)"><svg><use href="#сукня"/></svg></div><div class="річ" style="--к:#1B1A17"><svg><use href="#ботильйони"/></svg></div></div><b>Святкове</b>2 речі</div>
+      <div><div class="рр"><div class="річ" style="--к:var(--попіл)"><svg><use href="#жакет"/></svg></div><div class="річ" style="--к:#1B1A17"><svg><use href="#штани"/></svg></div><div class="річ" style="--к:var(--молоко)"><svg><use href="#блуза"/></svg></div></div><b>Щоденне</b>6 речей</div>
+      <div><div class="рр"><div class="річ" style="--к:var(--золото)"><svg><use href="#сережки"/></svg></div></div><b>Дрібне</b>1 річ</div>
+    </div>
+  </div>
+  <div class="поле"><span class="вв">Знайти образ: «те зелене на свято»</span><span class="фото"></span></div>
+</div>
+<div class="під"><b>6. Бібліотека</b>Єдине, що лежить поза полотном, — згорнуті полотна. Кожен сувій впізнається за кінцем ще до того, як прочитано назву; назва — за наміром; під нею — «вдягла» з датами й відгук. Угорі — жердка: що наготовлено на сьогодні й найближчі дні. «Мої речі» — те, що жінка показала стилістці, розкладене як у скрині: святкове, щоденне, дрібне.
+<span class="зв">Звідки: сувої з кінцями — Fable А6 (Ф8); назви за наміром — ChatGPT (Ч6); «вдягла» з датою — Claude (К26); жердка й скриня — Fable «Скриня» (Ф13, Ф14), змінено: не дім, а види сувоїв; слово власника 03.11 про вішак для гардероба; пошук словами в полі — нове.</span></div>
+</div>
+
+<!-- 7 -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Люстерко</span><span class="мої">Мої образи</span></div>
+  <div class="сволок"><div class="сл"><u>пальто кемел, 6 800 ₴</u> · <u class="тип">на щодень</u> · <u>купити чи ні</u></div><span class="дія">Образи з ним</span></div>
+  <div class="пол">
+    <div style="align-self:flex-end;display:flex;gap:9px;align-items:flex-end"><p class="я" style="max-width:none">Бачила таке пальто<br>за 6 800. Брати?</p><div class="річ" style="--к:var(--кемел);width:58px;height:92px"><svg><use href="#пальто"/></svg></div></div>
+    <div class="яр">
+      <div class="яг"><b>Річ</b><span>інша річ · порівняти кілька</span></div>
+      <div class="ят">
+        <div class="вердикт">Бери, але коротше</div>
+        <div class="ряд"><span class="що">Колір</span><span class="вт"></span><span class="зн">кемел — теплий, як ти</span></div>
+        <div class="ряд"><span class="що">На тобі</span><span class="вт"></span><span class="зн">до литки вкорочує при 168 см</span></div>
+        <div class="ряд"><span class="що">З чим</span><span class="вт"></span><span class="зн">з 4 твоїми речами · 2 образи</span></div>
+        <div class="пара" style="margin-top:10px">
+          <div class="бік"><div class="річ" style="--к:var(--кемел);height:88px"><svg><use href="#пальто"/></svg></div><div><small>ця</small><b>до литки</b>6 800 ₴<br><span style="color:var(--сіре)">твоє фото</span></div></div>
+          <div class="вісь"></div>
+          <div class="бік"><div class="річ" style="--к:var(--кемел);height:88px"><svg><use href="#пальто-к"/></svg></div><div><small>чи та</small><b>до коліна</b>5 900 ₴<br><span style="color:var(--сіре)">Ткаля · M є</span></div></div>
+        </div>
+      </div>
+    </div>
+    <p class="ст">Колір твій, і до вишневої сукні він пасує. Але ця довжина ділить тебе навпіл — до коліна ти в ньому вища. У каталозі таких п'ять.</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="чип">Ще коротші · 5</span><span class="чип">Що в мене з ним носити</span><span class="чип тих">Усе одно беру цю</span></div>
+  </div>
+  <div class="поле"><span class="вв">Напиши або покажи ще одну річ</span><span class="фото"></span></div>
+</div>
+<div class="під"><b>7. Купити чи ні (заплановане, перша функція плану)</b>Та сама розмова, те саме поле з фото — нового місця нема. Річ лягає в сволок, а відповідь — ярус «Річ»: вердикт словами, три рядки чому, і дві речі на осі — її й ближча до неї з каталогу. Пошук речі з розмови — той самий ярус із варіантами. «Усе одно беру цю» — її право: стилістка показує, а не забороняє.
+<span class="зв">Звідки: ярус «Річ» з трьома рядками — Fable А7 (Ф11); та сама форма для всіх функцій — Fable (Ф6); пара «ця чи та» на осі — синтез Claude (К19); стилістка показує, а не судить — Claude (К18), Gemini (Г5); функція — <code>аудит/ПЛАН.md</code>, етап «Функції».</span></div>
+</div>
+
+<!-- 8 -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Люстерко</span><span class="мої">Мої образи</span></div>
+  <div class="сволок"><div class="сл"><u>співбесіда</u> · <u>завтра, ранок</u> · <u>мій образ із фото</u></div><span class="дія тиха">Зібрати схожі</span></div>
+  <div class="пол">
+    <div style="align-self:flex-end;display:flex;gap:9px;align-items:flex-end"><p class="я" style="max-width:none">Так іду на співбесіду.<br>Як?</p>
+      <div class="вікно" style="width:62px;height:96px"><svg viewBox="0 0 60 150"><use href="#зріст" style="--к:#CDBBA6"/><rect x="18" y="29" width="24" height="36" fill="var(--попіл)"/><rect x="26" y="29" width="8" height="20" fill="#F4F1EA"/><path d="M21 66h18l3 60h-8l-4-46-4 46h-8z" fill="#1B1A17"/></svg></div>
+    </div>
+    <div class="яр">
+      <div class="яг"><b>З фото</b><span>ось що я бачу — перевір</span></div>
+      <div class="шар" style="padding-top:6px;padding-bottom:6px"><div class="річ" style="--к:var(--попіл);height:46px"><svg><use href="#жакет"/></svg></div><div><div class="мітка"><span>Верх</span><span>не так</span></div><div class="наз"><span>Жакет сірий, вільний</span></div><div class="чому">— колір спокійний, але ховає талію</div></div></div>
+      <div class="шар" style="padding-top:6px;padding-bottom:6px"><div class="річ" style="--к:#F4F1EA;height:46px"><svg><use href="#блуза"/></svg></div><div><div class="мітка"><span>Під ним</span><span>не так</span></div><div class="наз"><span>Блуза біла</span></div><div class="чому">— світле біля обличчя: добре</div></div></div>
+      <div class="шар" style="padding-top:6px;padding-bottom:6px"><div class="річ" style="--к:#1B1A17;height:46px"><svg><use href="#штани"/></svg></div><div><div class="мітка"><span>Низ</span><span>не так</span></div><div class="наз"><span>Штани чорні прямі</span></div><div class="чому">— рівна лінія, тримає образ</div></div></div>
+      <div class="шар" style="padding-top:6px;padding-bottom:6px"><div class="річ" style="height:46px;border-style:dashed;background:none"></div><div><div class="мітка"><span>Взуття</span><span>додати фото</span></div><div style="color:var(--сіре);font-size:13.5px;margin-top:3px">На фото нема взуття: про нього не судила.</div></div></div>
+      <div style="display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--межа)"><span class="дія" style="height:40px">Усе так</span><span class="дія тиха" style="height:40px">Поправити перелік</span></div>
+    </div>
+    <p class="ст">Тримається. Одне: застебни жакет на ґудзик або додай пояс — талія повернеться, і сіре стане зібранішим.</p>
+    <div class="пара">
+      <div class="бік"><div class="річ" style="--к:var(--попіл)"><svg><use href="#жакет"/></svg></div><div><small>як є</small><b>вільний</b>ховає талію</div></div>
+      <div class="вісь"></div>
+      <div class="бік"><div class="річ" style="--к:#1B1A17"><svg><use href="#пояс"/></svg></div><div><small>з поясом</small><b>Пояс чорний</b>480 ₴ · Лозина</div></div>
+    </div>
+  </div>
+  <div class="швидкі"><span class="чип">Покажи пояси</span><span class="чип">Зберегти як образ</span></div>
+  <div class="поле"><span class="вв">Напиши або покажи річ</span><span class="фото"></span></div>
+</div>
+<div class="під"><b>8. Оцінка образу з фото (впроваджене, в новій будові)</b>Фото йде в те саме поле. Розпізнане лягає тим самим строєм, що й зібраний образ, — жінка спершу підтверджує перелік, а чого на фото нема, про те стилістка прямо каже, що не судила. Порада — словами й парою на осі: «як є» і «з поясом». Підтверджені речі стилістка пропонує покласти в «Мої речі» — так росте гардероб.
+<span class="зв">Звідки: розпізнане шарами, «на фото нема взуття» — Fable Б7 (Ф12) і чинне правило картки оцінки; той самий вигляд для нового й оціненого — Fable (Ф6); гардероб із фото — слово власника 03.11; пара — синтез Claude (К19).</span></div>
+</div>
+
+</div>
+
+<h2>Ноутбук, 1280 × 800</h2>
+<p class="малий">Не збільшений телефон: три колонки з різною роботою. На вузькому екрані кадр гортається вбік.</p>
+<div class="нб-обг">
+<div class="нб">
+  <div class="лів">
+    <div class="шапка" style="padding:0;height:52px"><span class="л" style="font-size:26px">Люстерко</span></div>
+    <div style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--сіре)">На жердці</div>
+    <div class="жердка" style="grid-template-columns:1fr 1fr">
+      <div class="вішак"><div class="ф"><i style="flex:5;background:var(--попіл)"></i><i style="flex:2;background:var(--молоко)"></i><i style="flex:4;background:#1B1A17"></i></div><b>сьогодні</b>Офіс, зустріч</div>
+      <div class="вішак"><div class="ф"><i style="flex:5;background:var(--кемел)"></i><i style="flex:4;background:var(--ніч)"></i><i style="flex:2;background:#5A3A2A"></i></div><b>нд 22.11</b>Прогулянка</div>
+    </div>
+    <div class="види" style="gap:10px;font-size:12.5px;white-space:nowrap"><b>Нагоди · 12</b><span>Мої речі · 9</span><span>Про мене</span></div>
+    <div>
+      <div class="сувій" style="box-shadow:-14px 0 0 var(--аркуш),14px 0 0 var(--аркуш),-16px 0 0 var(--нитка);background:var(--аркуш)"><div class="кін"><div class="рап побачення"></div><div class="ф" style="background:repeating-linear-gradient(0deg,var(--межа) 0 2px,transparent 2px 5px)"></div><div class="тор"></div></div><div><b>Побачення, п'ятниця</b><span>тчеться зараз</span></div></div>
+      <div class="сувій"><div class="кін"><div class="рап робота"></div><div class="ф"><i style="flex:5;background:var(--попіл)"></i><i style="flex:2;background:var(--молоко)"></i><i style="flex:4;background:#1B1A17"></i></div><div class="тор"></div></div><div><b>Зустріч із клієнтом</b><span>робота · <em>вдягла 16.11</em></span></div></div>
+      <div class="сувій"><div class="кін"><div class="рап свято"></div><div class="ф"><i style="flex:7;background:var(--смарагд)"></i><i style="flex:2;background:#1B1A17"></i><i style="flex:1;background:var(--золото)"></i></div><div class="тор"></div></div><div><b>День народження мами</b><span>свято · <em>вдягла 02.11</em></span></div></div>
+      <div class="сувій"><div class="кін"><div class="рап щодня"></div><div class="ф"><i style="flex:5;background:var(--кемел)"></i><i style="flex:4;background:var(--ніч)"></i><i style="flex:2;background:#5A3A2A"></i></div><div class="тор"></div></div><div><b>Субота, місто, зручно</b><span>щодня · не вдягала</span></div></div>
+      <div class="сувій" style="border-bottom:0"><div class="кін"><div class="рап побачення"></div><div class="ф"><i style="flex:6;background:var(--ніч)"></i><i style="flex:3;background:var(--вишня)"></i><i style="flex:2;background:#1B1A17"></i></div><div class="тор"></div></div><div><b>Кіно, пізній сеанс</b><span>побачення · <em>вдягла 24.10</em></span></div></div>
+    </div>
+  </div>
+  <div class="центр">
+    <div class="сволок" style="margin-top:0;border-top:0;min-height:52px"><div class="сл" style="font-size:14.5px"><u>побачення, ресторан</u> · <u>п'ятниця, вечір</u> · <u>дощ, +8°</u> · <u>помітно</u> · <u>вишневий</u> · <u class="тип">гроші: не казала</u></div><span class="дія тиха">Зібрати інші</span></div>
+    <div class="пол">
+      <div>
+        <div class="зг"><b>Про тебе</b><span class="вт"></span><span>тепла · 168 см · змінити</span></div>
+        <div class="зг" style="margin-top:-1px"><b>Нагода</b><span class="вт"></span><span>побачення, ресторан · п'ятниця, вечір · дощ, +8° · змінити</span></div>
+        <div class="зг" style="margin-top:-1px"><b>Барви</b><span class="вт"></span><span>вишневий 6 · графіт 3 · золотистий 1 · змінити</span></div>
+      </div>
+      <p class="я" style="max-width:60%">Хочу помітно. Але щоб можна було йти пішки від метро.</p>
+      <p class="ст" style="max-width:520px">Тоді чотири образи. Другий — мій перший вибір: тепло, і сукню видно, щойно знімеш тренч. Третій — якщо підбори зовсім ні.</p>
+      <div class="яр">
+        <div class="яг"><b>Образи</b><span>порівняти два</span></div>
+        <div class="чот">
+          <div class="обз"><div class="ф"><i style="flex:5;background:var(--беж)"></i><i style="flex:4;background:var(--вишня)"></i><i style="flex:2;background:#5A3A2A"></i><i style="flex:.6;background:var(--золото)"></i></div><b>I</b>Тепло й спокійно<span>пальто беж, сукня, чоботи</span><span class="ц">11 900 ₴</span></div>
+          <div class="обз обр"><div class="ф"><i style="flex:5;background:var(--графіт)"></i><i style="flex:4;background:var(--вишня)"></i><i style="flex:2;background:#1B1A17"></i><i style="flex:.6;background:var(--золото)"></i></div><b>II</b>Вечеря, трохи сміливо<span>тренч, сукня, ботильйони</span><span class="ц">13 400 ₴</span></div>
+          <div class="обз"><div class="ф"><i style="flex:6;background:var(--ніч)"></i><i style="flex:3;background:var(--вишня)"></i><i style="flex:2;background:#1B1A17"></i></div><b>III</b>Під дощ, без підборів<span>плащ, светр, штани, челсі</span><span class="ц">10 800 ₴</span></div>
+          <div class="обз"><div class="ф"><i style="flex:7;background:#1B1A17"></i><i style="flex:2;background:var(--вишня)"></i><i style="flex:1.5;background:#1B1A17"></i><i style="flex:.6;background:var(--срібло)"></i></div><b>IV</b>Чорне з вишневим<span>пальто, сукня чорна, шаль</span><span class="ц">12 600 ₴</span></div>
+        </div>
+      </div>
+      <p class="я" style="max-width:60%">А в другому можна без підборів?</p>
+      <p class="ст" style="max-width:520px">Можна. Праворуч у ряду «Взуття» — три пари без підборів до тієї ж сукні; решта образу стоїть.</p>
+    </div>
+    <div class="швидкі" style="padding-left:40px"><span class="чип">Лофери</span><span class="чип">Челсі</span><span class="чип">Балетки вишневі</span><span class="чип тих">Обери сама</span></div>
+    <div class="поле"><span class="вв">Напиши, що змінити, або покажи річ</span><span class="фото"></span></div>
+  </div>
+  <div class="прав">
+    <h3>На верстаті <span>образ II · Вечеря, трохи сміливо</span></h3>
+    <div class="шар"><div class="річ" style="--к:var(--графіт)"><svg><use href="#тренч"/></svg></div><div><div class="мітка"><span>Верхній одяг</span><span>не ця · закріпити</span></div><div class="наз"><span>Тренч графітовий</span><span class="вт"></span><em>4 200 ₴</em></div><div class="чому">— дощ і +8°: закриває сукню до коліна</div><div class="крам">Ткаля · розмір M є</div></div></div>
+    <div class="шар"><div class="річ" style="--к:var(--вишня)"><svg><use href="#сукня"/></svg></div><div><div class="мітка"><span>Сукня</span><span>закріплено ●</span></div><div class="наз"><span>Сукня міді вишнева</span><span class="вт"></span><em>3 200 ₴</em></div><div class="чому">— твоя основа; талія на своєму місці</div><div class="крам">Гніздо · розмір M є</div></div></div>
+    <div class="шар обр"><div class="річ" style="--к:#1B1A17"><svg><use href="#ботильйони"/></svg></div><div><div class="мітка"><span>Взуття · міняємо</span><span>скасувати</span></div><div class="наз"><span>Ботильйони, підбор 6 см</span><span class="вт"></span><em>3 900 ₴</em></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11.5px;line-height:1.2;margin-top:6px">
+        <div><div class="річ" style="--к:#1B1A17;height:50px"><svg><use href="#лофери"/></svg></div>Лофери<br><b>2 900 ₴</b></div>
+        <div><div class="річ" style="--к:#1B1A17;height:50px"><svg><use href="#челсі"/></svg></div>Челсі<br><b>3 400 ₴</b></div>
+        <div><div class="річ" style="--к:var(--вишня);height:50px"><svg><use href="#балетки"/></svg></div>Балетки<br><b>2 100 ₴</b></div>
+      </div></div></div>
+    <div class="шар"><div class="річ" style="--к:#1B1A17"><svg><use href="#сумка"/></svg></div><div><div class="мітка"><span>Сумка</span><span>не ця · закріпити</span></div><div class="наз"><span>Сумка мала чорна</span><span class="вт"></span><em>1 500 ₴</em></div><div class="чому">— не сперечається з сукнею</div></div></div>
+    <div class="шар"><div class="річ" style="--к:var(--золото)"><svg><use href="#сережки"/></svg></div><div><div class="мітка"><span>Оздоби</span><span>не ця · закріпити</span></div><div class="наз"><span>Сережки золотисті</span><span class="вт"></span><em>600 ₴</em></div><div class="чому">— тепле біля обличчя</div></div></div>
+    <div class="разом" style="margin-top:auto"><span>Разом</span><span class="вт"></span><span>13 400 ₴</span></div>
+    <div style="display:flex;gap:8px;padding:0 10px 12px"><span class="дія" style="flex:1;justify-content:center">Вдягну це</span><span class="дія тиха">Перезібрати довкола сукні</span></div>
+  </div>
+</div>
+</div>
+<div class="під" style="max-width:860px"><b>Ноутбук</b>Ліворуч — сувої й жердка (те, що на телефоні за «Мої образи»); у центрі — полотно зі сволоком на всю ширину; праворуч — «на верстаті»: стрій обраного образу, який не тікає, поки триває розмова. Розмова й образ видно водночас: сказане в центрі одразу міняє ряд праворуч. «Закріплено» тримає сукню, поки решту перезбирають.
+<span class="зв">Звідки: три колонки — Fable, ноутбук варіанта А (Ф22); два сталі поверхи «Вертепу» (Ф21) враховано правою колонкою; закріпити й перезібрати — Fable Б5 (Ф5); сволок — Gemini (Г4).</span></div>
+
+<h2>Три розвилки — де сильне не поєднується</h2>
+<p class="малий">Обидва шляхи й чим вони різняться для жінки; порада — в розділі 5 звіту.</p>
+
+<div class="кадри">
+
+<!-- А -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Люстерко</span><span class="мої">Мої образи</span></div>
+  <div class="сволок"><div class="сл"><u>побачення</u> · <u>пт, вечір</u> · <u>дощ, +8°</u> · <u>спершу з мого</u></div><span class="дія тиха">Зібрати інші</span></div>
+  <div class="пол" style="padding-top:8px;gap:8px">
+    <p class="ст" style="font-size:15px">Три речі в тебе вже є. Докупити треба лише сукню — і образ готовий.</p>
+    <div class="яр">
+      <div class="яг"><b>Образ <span class="рим">II</span></b><span>3 твої · 2 докупити</span></div>
+      <div class="шар"><div class="річ" style="--к:var(--графіт)"><svg><use href="#тренч"/></svg></div><div><div class="мітка"><span>Верхній одяг</span><span class="позн">моє</span></div><div class="наз"><span>Твій сірий тренч</span></div><div class="чому">— той, що з фото 03.11</div></div></div>
+      <div class="шар обр"><div class="річ" style="--к:var(--вишня)"><svg><use href="#сукня"/></svg></div><div><div class="мітка"><span>Сукня</span><span class="позн куп">докупити</span></div><div class="наз"><span>Сукня міді вишнева</span><span class="вт"></span><em>3 200 ₴</em></div><div class="чому">— цього кольору в тебе ще нема</div><div class="крам">Гніздо · розмір M є</div></div></div>
+      <div class="шар"><div class="річ" style="--к:#1B1A17"><svg><use href="#челсі"/></svg></div><div><div class="мітка"><span>Взуття</span><span class="позн">моє</span></div><div class="наз"><span>Твої чорні челсі</span></div><div class="чому">— без підборів, як ти любиш</div></div></div>
+      <div class="шар"><div class="річ" style="--к:#1B1A17"><svg><use href="#сумка"/></svg></div><div><div class="мітка"><span>Сумка</span><span class="позн">моє</span></div><div class="наз"><span>Твоя мала чорна</span></div></div></div>
+      <div class="шар"><div class="річ" style="--к:var(--золото)"><svg><use href="#сережки"/></svg></div><div><div class="мітка"><span>Оздоби</span><span class="позн куп">докупити</span></div><div class="наз"><span>Сережки золотисті</span><span class="вт"></span><em>600 ₴</em></div><div class="крам">Дукач · можна й без них</div></div></div>
+      <div class="разом"><span>Докупити</span><span class="вт"></span><span>3 800 ₴ <span style="font-weight:400;color:var(--сіре)">замість 12 900</span></span></div>
+    </div>
+  </div>
+  <div class="поле" style="gap:10px"><span class="вв">Напиши, що змінити</span><span class="дія">Вдягну це</span></div>
+</div>
+<div class="під"><b>Розвилка А. Дім від нагоди чи від речі</b>На кадрі — порада: дім лишається полотном, а коли в «Моїх речах» набралось, стилістка починає зі свого; у строї — «моє» й «докупити», ціна лише за те, чого бракує.
+<span class="зв">Від нагоди (Fable А): образ першого ж дня без жодного фото речей, але це суцільна покупка. Від речі (Fable В «Скриня»): дешевше й чесніше, проте без гардероба з фото дім порожній, а три сталі місця — знову навігація. Гардероб потребує розпізнавання речей із фото (власник 03.11).</span></div>
+</div>
+
+<!-- Б -->
+<div class="кадр">
+<div class="тел">
+  <div class="шапка"><span class="л">Люстерко</span><span class="мої">Мої образи</span></div>
+  <div class="сволок"><div class="сл"><u>побачення</u> · <u>пт, вечір</u> · <u>дощ, +8°</u> · <u>помітно</u> · <u>вишневий</u></div><span class="дія тиха">Зібрати інші</span></div>
+  <div class="пол" style="padding-top:8px;gap:8px">
+    <div class="яр">
+      <div class="яг"><b>Образ <span class="рим">II</span></b><span>рядами · <b style="font:600 12.5px var(--друк);letter-spacing:0;text-transform:none;color:var(--чорне);box-shadow:0 5px 0 -3px var(--нитка)">на постаті</b></span></div>
+      <div style="display:flex;gap:12px;padding:6px 10px 10px">
+        <div class="постать">
+          <svg viewBox="0 0 104 292">
+            <circle cx="52" cy="22" r="14" fill="#DCCDB8"/>
+            <path d="M46 36h12v8H46z" fill="#DCCDB8"/>
+            <path d="M34 44h36l12 22-4 78-9 2 1 60H34l1-60-9-2-4-78z" fill="#4A4B4F"/>
+            <path d="M44 44l8 22 8-22z" fill="#7A1F2E"/>
+            <path d="M52 66v140" stroke="#0005"/>
+            <rect x="35" y="112" width="34" height="5" fill="#0004"/>
+            <path d="M36 206h32l3 22H33z" fill="#7A1F2E"/>
+            <path d="M38 228h10v30H38zM56 228h10v30H56z" fill="#DCCDB8"/>
+            <path d="M36 256h13v14h8v8H36zM55 256h13v14h8v8H55z" fill="#1B1A17"/>
+            <rect x="78" y="126" width="18" height="16" rx="2" fill="#1B1A17"/>
+            <path d="M82 126q0-22-8-58" fill="none" stroke="#1B1A17" stroke-width="1.5"/>
+            <circle cx="39" cy="26" r="2.2" fill="#C9A24B"/><circle cx="65" cy="26" r="2.2" fill="#C9A24B"/>
+            <g font-family="system-ui,sans-serif" font-size="9.5" text-anchor="middle">
+              <circle cx="12" cy="90" r="8" fill="#FBF9F4" stroke="#1B1A17"/><text x="12" y="93.5">1</text><path d="M20 90h8" stroke="#1B1A17"/>
+              <circle cx="12" cy="216" r="8" fill="#FBF9F4" stroke="#1B1A17"/><text x="12" y="219.5">2</text><path d="M20 216h14" stroke="#1B1A17"/>
+              <circle cx="12" cy="268" r="8" fill="#FBF9F4" stroke="var(--нитка)" stroke-width="2"/><text x="12" y="271.5">3</text><path d="M20 268h15" stroke="#1B1A17"/>
+              <circle cx="94" cy="160" r="8" fill="#FBF9F4" stroke="#1B1A17"/><text x="94" y="163.5">4</text><path d="M90 153v-10" stroke="#1B1A17"/>
+              <circle cx="92" cy="26" r="8" fill="#FBF9F4" stroke="#1B1A17"/><text x="92" y="29.5">5</text><path d="M84 26h-16" stroke="#1B1A17"/>
+            </g>
+          </svg>
+          <div style="font-size:11px;color:var(--сіре);text-align:center;margin-top:4px">силует з твоїх мірок,<br>не фото</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div class="шк" style="border-top:0"><span class="n">1</span><div><b><span>Тренч графітовий</span><span class="вт"></span>4 200</b><span>Ткаля · закриває сукню до коліна</span></div></div>
+          <div class="шк"><span class="n">2</span><div><b><span>Сукня міді</span><span class="вт"></span>3 200</b><span>Гніздо · край на долоню з-під тренча</span></div></div>
+          <div class="шк"><span class="n" style="border:2px solid var(--нитка)">3</span><div><b><span>Ботильйони, 6 см</span><span class="вт"></span>3 900</b><span>Кроки · довша лінія ноги</span>
+            <div style="display:flex;gap:4px;margin-top:5px"><div class="річ" style="--к:#1B1A17;width:40px;height:40px"><svg><use href="#лофери"/></svg></div><div class="річ" style="--к:#1B1A17;width:40px;height:40px"><svg><use href="#челсі"/></svg></div><div class="річ" style="--к:var(--вишня);width:40px;height:40px"><svg><use href="#балетки"/></svg></div></div></div></div>
+          <div class="шк"><span class="n">4</span><div><b><span>Сумка мала</span><span class="вт"></span>1 500</b><span>Лозина</span></div></div>
+          <div class="шк"><span class="n">5</span><div><b><span>Сережки</span><span class="вт"></span>600</b><span>Дукач · тепле біля обличчя</span></div></div>
+        </div>
+      </div>
+      <div class="разом"><span>Разом</span><span class="вт"></span><span>13 400 ₴</span></div>
+    </div>
+    <p class="ст" style="font-size:15px">Дивись на довжини: тренч до коліна, сукня — на долоню нижче. Тому й підбор: без нього низ стає важчим.</p>
+  </div>
+  <div class="поле" style="gap:10px"><span class="вв">Напиши, що змінити</span><span class="дія">Вдягну це</span></div>
+</div>
+<div class="під"><b>Розвилка Б. Образ рядами чи на постаті</b>На кадрі — другий шлях: постать зліва, речі номерами. Видно те, про що стилістка радить найчастіше, — довжини й пропорцію цілим. Але кожна річ дрібна, тканини не видно, підписи тісні, а для постаті потрібні маски речей, яких у продукті ще нема.
+<span class="зв">Рядами (кадр 4; Gemini «Гута», Fable шари): річ велика, з ціною й причиною, працює вже з фото крамниць. На постаті (Fable «Стрій» Б4; синтез Claude «Примірочна»): видно силует. Силует з мірок, а не власне фото — застереження етапу 3 Claude (К27). Порада: телефон — рядами, постать — перемикачем, коли з'являться маски.</span></div>
+</div>
+
+<!-- В -->
+<div class="кадр">
+<div class="тел" style="height:auto;padding-bottom:14px">
+  <div style="--нитка:#8C2232">
+    <div class="шапка"><span class="л">Червець</span><span style="font-size:12.5px;color:var(--сіре)">#8C2232 · 7,7 : 1 на полотні</span></div>
+    <div class="сволок"><div class="сл"><u>побачення</u> · <u>пт, вечір</u> · <u class="тип">помітно</u></div><span class="дія">Зібрати образи</span></div>
+    <div class="пол" style="padding-bottom:12px">
+      <p class="ст">Вишневий біля обличчя тобі тепло. Лишаю його основою.</p>
+      <div style="display:grid;grid-template-columns:86px 1fr;gap:12px;align-items:center">
+        <div class="обз обр" style="padding:4px"><div class="ф"><i style="flex:5;background:var(--графіт)"></i><i style="flex:4;background:var(--вишня)"></i><i style="flex:2;background:#1B1A17"></i></div></div>
+        <div class="пара"><div class="бік"><div class="річ" style="--к:var(--вишня);width:48px;height:48px"><svg><use href="#сукня"/></svg></div></div><div class="вісь"></div><div class="бік"><div class="річ" style="--к:#B5322F;width:48px;height:48px"><svg><use href="#сукня"/></svg></div></div></div>
+      </div>
+      <div style="display:flex;gap:6px"><span class="чип обр">Незручно</span><span class="чип">Ціна</span><span style="font-size:12.5px;align-self:center;border-left:3px solid #A6452F;padding-left:6px">⚠ Немає зв'язку</span></div>
+    </div>
+  </div>
+  <div style="--нитка:#24407A;border-top:1px solid var(--межа2)">
+    <div class="шапка"><span class="л">Індиго</span><span style="font-size:12.5px;color:var(--сіре)">#24407A · 8,8 : 1 на полотні</span></div>
+    <div class="сволок"><div class="сл"><u>побачення</u> · <u>пт, вечір</u> · <u class="тип">помітно</u></div><span class="дія">Зібрати образи</span></div>
+    <div class="пол" style="padding-bottom:4px">
+      <p class="ст">Вишневий біля обличчя тобі тепло. Лишаю його основою.</p>
+      <div style="display:grid;grid-template-columns:86px 1fr;gap:12px;align-items:center">
+        <div class="обз обр" style="padding:4px"><div class="ф"><i style="flex:5;background:var(--графіт)"></i><i style="flex:4;background:var(--вишня)"></i><i style="flex:2;background:#1B1A17"></i></div></div>
+        <div class="пара"><div class="бік"><div class="річ" style="--к:var(--вишня);width:48px;height:48px"><svg><use href="#сукня"/></svg></div></div><div class="вісь"></div><div class="бік"><div class="річ" style="--к:#B5322F;width:48px;height:48px"><svg><use href="#сукня"/></svg></div></div></div>
+      </div>
+      <div style="display:flex;gap:6px"><span class="чип обр">Незручно</span><span class="чип">Ціна</span><span style="font-size:12.5px;align-self:center;border-left:3px solid #A6452F;padding-left:6px">⚠ Немає зв'язку</span></div>
+    </div>
+  </div>
+</div>
+<div class="під"><b>Розвилка В. Нитка: червець чи індиго</b>Той самий фрагмент двічі; перемикач угорі сторінки міняє нитку на всіх кадрах. Червець теплий і рідний до чорно-червоної вишивки, але поруч із червоною річчю й повідомленням про помилку їх легко сплутати — тому він лише лінія, а помилка має знак і текст. Індиго спокійний, як чорнило, з помилкою не плутається, але холодніший і нагадує посилання.
+<span class="зв">Звідки: червець ниткою, не заливкою — синтез Claude (К20, К24); індиго як голос стилістки — Gemini «Берег» (Г16; джерело про вибійку не звірене); дві фарби з ролями — Claude «Кіновар» (К4).</span></div>
+</div>
+
+</div>
+
+<h2>Чого на екранах більше нема</h2>
+<div class="шляхи">
+  <div><b>Прибрано з нинішнього показу</b>Фактура зірок, витинанка-вазон, скошені кути, намистини з двома крапками, золото як акцент, вкладки «Сценарій / Образи / Оцінити / Профіль». Вісім прийомів одночасно — діагноз усіх чотирьох робіт (Ч2, К1).</div>
+  <div><b>Не взято з чотирьох робіт</b>Мальований овал дзеркала з рушником (Claude К3); кольорові площини поруч з одягом (Claude К2); буквиці й ¶ (Claude К1); фацет 1 px, сітка-плахта, берег на 112 px (Gemini); написи-метафори й оцінки «9.6 / 10» (Gemini); карта-берег позначками 6 px і плахта 5 × 5 (Fable); «модний застосунок» з винною кнопкою (ChatGPT).</div>
+</div>
+
+<h2>Кожен прийом — звідки</h2>
+<div class="табл-обг">
+<table>
+<tr><th>Прийом</th><th>Робота</th><th>Що зникне, якщо прибрати</th></tr>
+<tr><td>Одне полотно з ярусами</td><td>Fable А «Рушник»</td><td>одне вікно; нова функція знову стає екраном</td></tr>
+<tr><td>Сволок: зрозуміле й головна дія</td><td>Gemini К2, К1 + Claude К3, синтез «Сторінка»; поєднання — нове</td><td>видно, що стилістка зрозуміла; кнопка, яка не тоне</td></tr>
+<tr><td>Стрій рядами-шарами, заміна в ряду</td><td>Fable Б, Gemini К1, синтез Claude «Примірочна», ChatGPT</td><td>заміна однієї речі на місці</td></tr>
+<tr><td>Причина речі в її ряду</td><td>Gemini К3 «Берег», змінено</td><td>зрозуміло, чому саме ця річ</td></tr>
+<tr><td>Барвна формула, чотири образи разом</td><td>Claude К2 «Вербівка»; далі Gemini, Fable</td><td>видно всі чотири одразу й чим різняться</td></tr>
+<tr><td>Кінець полотна, сувої</td><td>Fable А5, А6; ідея «оздоба з її даних» — Claude К2, К3</td><td>впізнавання збереженого без читання</td></tr>
+<tr><td>Шов-мережка лише між ярусом і розмовою</td><td>Fable, правило 1; синтез Claude</td><td>межа «картка стилістки / розмова»</td></tr>
+<tr><td>Пара на осі</td><td>синтез Claude «Пара», змінено; ChatGPT</td><td>порівняння «було — стало», «ця чи та»</td></tr>
+<tr><td>Дві фарби й нитка-лінія</td><td>Claude К1 «Кіновар», синтез Claude</td><td>око не знає, що веде; кнопка сперечається з одягом</td></tr>
+<tr><td>Два голоси письма</td><td>ChatGPT (NAMU), Claude, Gemini, Fable</td><td>не видно, хто говорить</td></tr>
+<tr><td>Нитки з портрета; обличчя між площинами; портрет на основі</td><td>Fable А1; Claude К2; Claude К3</td><td>навіщо фото й що дає основа</td></tr>
+<tr><td>Жердка, «моє / докупити», святкове-щоденне-дрібне</td><td>Fable В «Скриня», змінено</td><td>гардероб і наготовлене на дні</td></tr>
+<tr><td>Ярус «Річ», ярус «З фото»</td><td>Fable А7, Б7</td><td>заплановані функції в тому самому вікні</td></tr>
+<tr><td>Три колонки ноутбука</td><td>Fable, ноутбук А</td><td>образ тікає під час розмови</td></tr>
+<tr><td>Порожній сволок; слово сволока = двері ярусу; пошук образу словами</td><td>нове</td><td>—</td></tr>
+</table>
+</div>
+<p class="малий" style="margin-top:14px">Не перевірено на людях: чи знаходять сволок, чи впізнають сувій за кінцем, чи читається рапорт як нагода. Контраст за формулою WCAG: чорне #1B1A17 на полотні #F4F0E8 — 15,3 : 1; сіре #676258 — 5,3 : 1 на полотні й 5,8 : 1 на аркуші #FBF9F4; нитки — у розвилці В.</p>
+</div>
+</body>
+</html>
