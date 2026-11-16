@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"own\": \"<id from her_items or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\", \"\\\"her_items\\\" — her own items; an item of the description that is one of them gets its id in \\\"own\\\"\"]}, \"description\": \"White canvas sneakers, classic low-top silhouette with rounded toe, crisp white (#FFFFFF), durable cotton-synthetic blend.\\nRelaxed-fit long sleeve tee, straight cut through the body, heather grey (#B0B0B0), soft jersey knit.\\nHigh-waisted wide-leg trousers, tapered at the ankle, charcoal grey (#36454F), lightweight technical twill.\\n\\nThis outfit perfectly balances the need for mobility with children against the requirement to look neat while running errands. The white sneakers fulfill her specific wish to wear them, creating a fresh, playful contrast that feels effortless in an autumn park setting. The relaxed tee and flowy trousers allow for comfortable walking on grass or pavement without feeling overly dressed up for a quick grocery stop.\", \"her_items\": [{\"id\": \"її-с1\", \"name\": \"білі кеди\"}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Relaxed-fit long sleeve tee\\\",\\n      \\\"details\\\": \\\"straight cut through the body, heather grey, soft jersey knit\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#B0B0B0\\\",\\n      \\\"own\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"High-waisted wide-leg trousers\\\",\\n      \\\"details\\\": \\\"tapered at the ankle, charcoal grey, lightweight technical twill\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"own\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"White canvas sneakers\\\",\\n      \\\"details\\\": \\\"classic low-top silhouette with rounded toe, crisp white, durable cotton-synthetic blend\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#FFFFFF\\\",\\n      \\\"own\\\": \\\"її-с1\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":570,\"output_tokens\":252},\"stop_reason\":\"end_turn\"}"
+ }
+}

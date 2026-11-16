@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Black wool sheath dress, knee-length cut, solid matte black (hex #000000), heavy woven wool with a subtle herringbone texture.\\nCream silk blouse, classic pointed collar, relaxed fit, pale cream (hex #FFFDD0), smooth satin weave.\\nCharcoal grey tailored blazer, structured shoulders, single-button closure, waist-length jacket, dark charcoal grey (hex #36454F), sharp wool blend with fine pinstripes.\\nBlack leather pumps, pointed toe, 7-centimeter heel, glossy finish, calfskin leather (hex #1A1A1A).\\nBlack silk opera gloves, elbow-length, satin weave, deep black (hex #0B0B0B), smooth and slightly stiffened cotton blend lining.\\n\\nThis ensemble meets the formal dress code required for an evening at the theatre by combining a structured blazer with a refined sheath dress and elegant pumps. The addition of silk opera gloves elevates the look to a ceremonial level, perfectly honoring the traditional atmosphere of a classic stage performance. All pieces are crafted from premium, dark fabrics suitable for autumn weather, ensuring warmth without sacrificing the polished silhouette needed for such an occasion.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"sheath dress\\\",\\n      \\\"details\\\": \\\"knee-length cut, solid matte black, heavy woven wool with a subtle herringbone texture\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"classic pointed collar, relaxed fit, smooth satin weave\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFDD0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"structured shoulders, single-button closure, waist-length jacket, sharp wool blend with fine pinstripes\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pumps\\\",\\n      \\\"details\\\": \\\"pointed toe, 7-centimeter heel, glossy finish\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#1A1A1A\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"opera gloves\\\",\\n      \\\"details\\\": \\\"elbow-length, satin weave, smooth and slightly stiffened cotton blend lining\\\",\\n      \\\"slot\\\": \\\"accessory\\\",\\n      \\\"color_hex\\\": \\\"#0B0B0B\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":602,\"output_tokens\":355},\"stop_reason\":\"end_turn\"}"
+ }
+}

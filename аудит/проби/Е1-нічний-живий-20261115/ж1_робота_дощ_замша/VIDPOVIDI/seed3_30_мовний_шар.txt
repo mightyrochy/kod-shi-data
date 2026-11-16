@@ -1,0 +1,73 @@
+── ПРОМПТ (8641 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: vest · colour code: grey · about it: text н=1
+2 — kind code: longsleeve · colour code: taupe · about it: text н=2
+3 — kind code: jeans · colour code: graphite · about it: text н=3
+4 — kind code: coat · colour code: beige · about it: text н=4
+5 — kind code: dress_shoes · colour code: brown · about it: text н=5
+6 — kind code: bag_generic · colour code: yellow · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; graphite — графіт; grey — сірий; taupe — тауп; yellow — жовтий.
+
+ТЕКСТИ:
+{
+"1": "This fitted grey vest features subtle vertical stripes that add just enough visual interest for the office without overpowering your silhouette. Its clean lines and structured shape keep you looking polished while walking through rain or busy hours.",
+"2": "The fitted taupe long-sleeve top offers a neutral base that complements the vest’s grey tones without competing. Its tailored cut ensures your shoulders remain defined and your overall look stays streamlined as you move through your day.",
+"3": "These graphite skinny jeans provide a sleek foundation that balances the volume of the coat and vest above. Their dark tone grounds the outfit, ensuring your legs appear elongated even in wet autumn weather.",
+"4": "The beige double-breasted coat adds warmth and sophistication to your ensemble, its soft hue harmonizing with the grey and taupe tones below. The built-in hood is perfect for sudden rain showers while keeping your silhouette sharp under a collar.",
+"5": "Brown dress shoes bring a polished finish that elevates your entire look without feeling too formal for walking to work. Their sturdy construction supports you as you navigate wet streets, blending comfort with professional style.",
+"6": "A cheerful yellow bag injects a playful contrast against the more muted tones of your outfit, adding a pop of color that brightens your day without disrupting the overall balance.",
+"7": "This vest in a soft grey with vertical stripes sets a quiet, office-appropriate rhythm that plays well with your graphite jeans. The fitted long-sleeve top underneath keeps your silhouette clean and your shoulders defined, while the beige double-breasted coat adds a touch of warmth for those rainy autumn days at work. To ground the look, I chose brown dress shoes that offer structure and polish without sacrificing comfort as you walk through the day.",
+"8": "Tuck in the fitted long-sleeve top so the vest sits perfectly centered and your waist stays defined.",
+"9": "Wear the beige coat open to let the grey pinstripes show, creating a crisp vertical line that elongates your figure.",
+"10": "Жіноче вовняне пальто бежеве з англійським коміром и ґудзиками Stella Polare — The day is rainy; without this coat I cannot stand outside safely.",
+"11": "Туфлі Casadei коричневі — You wished for ankle boots specifically; these suede loafers are the closest safe match to your wish that fits a rainy day better than dress shoes.",
+"12": "Жилетка в смужку — I accept this finding because the grey vest adds necessary visual weight to your tonal base, ensuring the outfit feels substantial enough for a work occasion rather than too light.",
+"13": "Жіноче вовняне пальто бежеве з англійським коміром и ґудзиками Stella Polare — The day is rainy; a rain layer is required for safety and comfort.",
+"14": "Туфлі Casadei коричневі — You requested ankle boots; these suede loafers satisfy that wish better than dress shoes on a wet surface.",
+"15": "Туфлі Casadei коричневі — Your wish for ankle boots dictates a change from the usual dress shoe; suede loafers provide that foot height with less formality, better for your neat occasion.",
+"16": "Жіноче вовняне пальто бежеве з англійським коміром и ґудзиками Stella Polare — Rainy day requires an outer layer to keep you dry.",
+"17": "Туфлі Casadei коричневі — You wished for ankle boots; suede loafers are the practical compromise that meets your wish.",
+"18": "Скінні джинси з декорованими стразами кишенями — These jeans provide the missing bottom layer; they offer a casual contrast that softens the formality of the trench coat."
+}
+
+── ВІДПОВІДЬ (3677 симв., 32.1 с, HTTP 200) ──
+```json
+{
+  "1": "Ця приталена сіра жилетка має ледь помітні вертикальні смужки, які додають достатньо візуального інтересу для офісу без перевантаження силуету. Її чисті лінії та структурований крій змушують тебе виглядати охайно під час прогулянки дощем або у напружені години.",
+  "2": "Приталений топ із довгим рукавом кольору тауп пропонує нейтральну основу, яка гармоніює з сірими тонами жилетки без конкуренції. Його пошитий крій гарантує, що твої плечі залишаються чітко окресленими, а загальний вигляд зберігається струнким протягом дня.",
+  "3": "Ці графітові скінні джинси забезпечують елегантну основу, яка збалансовує об’єм пальта та жилетки зверху. Їхній темний тон заземлює образ, гарантуючи, що твої ноги виглядають видовженими навіть у дощову осінню погоду.",
+  "4": "Бежеве двобортне пальто додає тепла й елегантності твоєму ансамблю, його м’який відтінок гармоніює з сірими та кольорами тауп знизу. Вбудований капюшон ідеальний для раптових дощів, зберігаючи при цьому твій силует чітким під коміром.",
+  "5": "Коричневі туфлі-човники завершують весь вигляд з елегантністю без надмірної офіційності для прогулянки на роботу. Їхня міцна конструкція підтримує тебе, коли ти долаєш мокрі вулиці, поєднуючи комфорт із професійним стилем.",
+  "6": "Весела жовта сумка додає грайливий контраст більш приглушеним тонам твого вбрання, надаючи йому яскравості без порушення загальної гармонії.",
+  "7": "Ця жилетка з м’якого сірого кольору у вертикальну смужку задає тихий ритм, який добре поєднується з твоїми графітовими джинсами. Приталений топ із довгим рукавом під нею зберігає силует чистим і чітко окреслює плечі, а бежеве двобортне пальто додає тепла у дощові осінні робочі дні. Щоб завершити образ, я обрала коричневі туфлі-човники, які надають структуру та елегантність без шкоди для комфорту під час ходьби.",
+  "8": "Заправ топ із довгим рукавом у жилетку так, щоб вона ідеально сиділа по центру, а твоя талія залишалася окресленою.",
+  "9": "Носи бежеве пальто розстебнутим, щоб показати сірі смужки, створюючи чітку вертикальну лінію, яка видовжує твою фігуру.",
+  "10": "Жіноче вовняне пальто кольору кемел з англійським коміром і ґудзиками Stella Polare — Сьогодні дощ; без цього пальта я не можу безпечно перебувати на вулиці.",
+  "11": "Коричневі замшеві лофери Casadei — Ти хотіла черевики, ці замшеві лофери є найближчим практичним варіантом до твого бажання, який краще підходить для дощового дня, ніж туфлі-човники.",
+  "12": "Жилетка в смужку — Я приймаю цей вибір, адже сіра жилетка додає необхідної візуальної ваги твоєму тональному фону, гарантуючи, що образ здається достатньо вагомим для робочої нагоди, а не надто легким.",
+  "13": "Жіноче вовняне пальто кольору кемел з англійським коміром і ґудзиками Stella Polare — Сьогодні дощ; потрібен захисний шар, щоб залишатися сухою.",
+  "14": "Коричневі замшеві лофери Casadei — Ти просила черевики, ці замшеві лофери задовольняють це бажання краще, ніж туфлі-човники на мокрій поверхні.",
+  "15": "Коричневі замшеві лофери Casadei — Твоє бажання мати черевики вимагає зміни від звичайних туфель; замшеві лофери надають потрібну висоту стопи, але менш офіційного вигляду, що краще підходить для твоєї ділової нагоди.",
+  "16": "Жіноче вовняне пальто кольору кемел з англійським коміром і ґудзиками Stella Polare — Дощовий день вимагає верхнього шару, щоб залишатися сухою.",
+  "17": "Коричневі замшеві лофери Casadei — Ти хотіла черевики; замшеві лофери є практичним компромісом, який задовольняє твоє бажання.",
+  "18": "Скінні джинси з декорованими стразами кишенями — Ці джинси забезпечують відсутній нижній шар; вони пропонують невимушений контраст, що пом’якшує офіційність тренча."
+}
+```

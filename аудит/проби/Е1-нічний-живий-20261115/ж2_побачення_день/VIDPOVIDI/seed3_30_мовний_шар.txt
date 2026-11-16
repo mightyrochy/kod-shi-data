@@ -1,0 +1,65 @@
+── ПРОМПТ (8502 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: white
+2 — kind code: shirt · colour code: beige · about it: text н=1
+3 — kind code: tote · colour code: brown · about it: text н=2
+4 — kind code: trousers · colour code: grey · about it: text н=3
+5 — kind code: loafers · colour code: brown · about it: text н=4
+6 — kind code: vest · colour code: grey · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; grey — сірий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This bodycon beige shirt fits snugly against your frame, offering clean lines that highlight your silhouette while keeping things understated. Its neutral tone pairs beautifully with both the grey vest and trousers below.",
+"2": "The brown tote bag brings practicality and warmth to your outfit, its leather-like finish complementing the loafers and adding a touch of sophistication without being too formal.",
+"3": "Your straight-leg grey check trousers bring structure to the ensemble, balancing the fitted top pieces with their relaxed yet tailored drape. The subtle pattern adds depth without competing for attention.",
+"4": "These brown loafers round out the look with understated elegance—their deep color ties together the earthy tones of the shirt and bag, grounding your entire outfit in a way that feels effortless and stylish.",
+"5": "The grey pinstripe vest sits perfectly over the beige shirt, introducing texture through its vertical lines while maintaining a sleek profile. Its fitted cut enhances your waistline and bridges the gap between casual and refined for your date.",
+"6": "You have gathered a thoughtful ensemble for your date at the restaurant today. You wear a fitted grey pinstripe vest over a bodycon beige shirt; I chose this layered look because it adds just enough visual interest to keep you looking polished yet relaxed throughout your afternoon. Your straight grey check trousers ground the outfit with a classic silhouette, while the brown loafers in a deep, warm hue offer a solid anchor that feels perfect for walking around. The brown tote bag balances the tonal mix with rich earthy tones, and you carry the white embroidered blazer over your arm as an easy option if it gets chilly outside. This combination works because it combines clean lines with subtle texture—stripes, checks, and embroidery—making you look put-together without feeling stiff. It’s ideal for a casual but refined evening in town, where comfort meets elegance naturally.",
+"7": "Wear the fitted vest over the bodycon shirt to define your waist without adding bulk, letting the blouse peek through at the neckline for soft contrast.",
+"8": "Keep the blazer draped casually over one arm rather than buttoning it up, maintaining a relaxed posture that suits an afternoon date.",
+"9": "Піджак жіночий з коміром-стійкою та поясом демісезонний — White blazer provides a crisp, structured outer layer that elevates the casual base; embroidery detail adds interest.",
+"10": "Сорочка з об’ємними квітами-жоржинами бежева — Beige shirt acts as a fitted top layer, creating a seamless transition between the blazer and any bottom layers.",
+"11": "Шопер “MOON MINI” коричневий — Brown faux leather belt anchors the look with a pop of color and texture, breaking up the neutrals.",
+"12": "Шопер “MOON MINI” коричневий, Лофери жіночі, ATTICO, замша, колір темно-коричневий — Although this remark notes that your chosen 'neutrals_plus_accent' scheme is technically all neutral, I accept it because your intent for a date at 13:00 calls for a clean, bright foundation; the faux leather belt acts as the necessary warm accent to serve your mood and break the monotony of plain neutrals.",
+"13": "Сорочка з об’ємними квітами-жоржинами бежева — Beige shirt adds a third piece to dress the look, introducing texture and formality suitable for a date.",
+"14": "Піджак жіночий з коміром-стійкою та поясом демісезонний — White blazer adds a contrasting layer for formality and visual interest, breaking up the dark tones."
+}
+
+── ВІДПОВІДЬ (3593 симв., 31.7 с, HTTP 200) ──
+```json
+{
+  "1": "Ця приталена бежева сорочка щільно облягає твою фігуру, пропонуючи чіткі лінії, які підкреслюють силует і водночас залишаються стриманими. Її нейтральний тон чудово поєднується як із сірим жилетом, так і зі штанами нижче.",
+  "2": "Коричнева сумка-тоут додає практичності та тепла твоєму образу, її шкіряна обробка доповнює лофери й надає нотку вишуканості без зайвої офіційності.",
+  "3": "Твої прямі сірі штани в клітинку структурують ансамбль, збалансовуючи приталені верхні частини своєю розслабленою, але охайною драпіровкою. Легкий візерунок додає глибини без боротьби за увагу.",
+  "4": "Ці коричневі лофери завершують образ стриманою елегантністю — їхній глибокий колір пов’язує разом земляні тони сорочки та сумки, роблячи весь твій наряд таким, що здається без зусиль і стильно.",
+  "5": "Сірий жилет у смужку сидить ідеально поверх бежевої сорочки, додаючи текстуру завдяки вертикальним лініям, зберігаючи при цьому елегантний профіль. Його приталений крій підкреслює твою талію й створює місток між повсякденним і вишуканим для твоєї зустрічі.",
+  "6": "Ти зібрала продуманий ансамбль на сьогоднішню зустріч у ресторані. Ти одягла приталений сірий жилет у смужку поверх бежевої сорочки-облягання; я обрала цей багатошаровий образ, тому що він додає достатньо візуального інтересу, щоб ти виглядала охайною, але розслабленою протягом дня. Твої прямі сірі штани в клітинку структурують наряд класичним силуетом, а коричневі лофери глибокого теплого відтінку пропонують міцну основу, яка ідеально підходить для прогулянок. Коричнева сумка-тоут збалансовує тональний мікс багатими земляними тонами, а білий вишитий блейзер ти тримаєш на руці як легкий варіант у разі похолодання надворі. Ця комбінація працює тому, що поєднує чисті лінії з ледь помітною текстурою — смужки, клітинка та вишивка — роблячи тебе охайною без відчуття скутості. Це ідеально для невимушеного, але вишуканого вечора в місті, де комфорт зустрічається з елегантністю природно.",
+  "7": "Одягни жилет поверх сорочки-облягання, щоб підкреслити талію без додавання об’єму, дозволивши блузці трохи виглядати на вирізі для м’якого контрасту.",
+  "8": "Тримай блейзер недбало накинутим на одне плече замість того, щоб застібати його, зберігаючи розслаблену поставу, яка підходить для денної зустрічі.",
+  "9": "Жіночий демісезонний блейзер з коміром-стійкою та поясом — Білий блейзер надає чіткий структурований верхній шар, який підкреслює повсякденну основу; вишивка додає інтересу.",
+  "10": "Бежева сорочка з об’ємними квітами-жоржинами — Бежева сорочка слугує приталеним верхнім шаром, створюючи безшовний перехід між блейзером і будь-якими нижніми шарами.",
+  "11": "Коричневий шопер “MOON MINI” — Коричневий ремінь зі штучної шкіри підкреслює образ яскравим кольором і текстурою, розбиваючи нейтральні тони.",
+  "12": "Коричневий шопер “MOON MINI”, Жіночі лофери ATTICO з замші темно-коричневого кольору — Хоча цей коментар зазначає, що твоя обрана схема «нейтральний плюс акцент» технічно є повністю нейтральною, я погоджуюся на це, тому що твій задум для зустрічі о 13:00 вимагає чистої та світлої основи; ремінь зі штучної шкіри слугує необхідним теплим акцентом, щоб відповідати твоєму настрою й розбити монотонність простих нейтральних кольорів.",
+  "13": "Бежева сорочка з об’ємними квітами-жоржинами — Бежева сорочка додає третій елемент до образу, вводячи текстуру та формальність, що підходять для зустрічі.",
+  "14": "Жіночий демісезонний блейзер з коміром-стійкою та поясом — Білий блейзер додає контрастний шар для урочистості й візуального інтересу, розбиваючи темні тони."
+}
+```

@@ -1,0 +1,64 @@
+── ПРОМПТ (7715 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: cardigan · colour code: grey · about it: text н=1
+2 — kind code: jeans · colour code: grey · about it: text н=2
+3 — kind code: boots · colour code: brown · about it: text н=3
+4 — kind code: sheepskin_coat · colour code: camel · about it: text н=4
+5 — kind code: bag_generic · colour code: turquoise · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; camel — кемел; grey — сірий; turquoise — бірюзовий.
+
+ТЕКСТИ:
+{
+"1": "This fitted cardigan in grey offers a sleek, professional top that pairs perfectly with your jeans. Its tailored cut follows your lines closely, creating a neat foundation for the outer layers.",
+"2": "Straight-cut jeans in grey provide a structured, modern bottom that balances the softer textures of your coat and cardigan. Their clean line keeps the silhouette streamlined for walking.",
+"3": "Brown heeled boots offer both style and practicality for snowy mornings. The heel adds a touch of formality, while their design ensures you stay warm and grounded during your commute.",
+"4": "This relaxed camel sheepskin coat serves as your perfect winter shield against the cold. Its soft texture contrasts beautifully with your grey base layers, adding warmth without sacrificing elegance.",
+"5": "The turquoise bag provides a vibrant pop of color that brightens your cool-toned outfit and adds a playful yet sophisticated detail to your work-ready ensemble.",
+"6": "I have put together a practical and polished look for your morning walk to work in the snow. The grey fitted cardigan provides a neat silhouette that you can layer easily under the relaxed camel sheepskin coat, which will keep you warm while walking those twenty minutes. Your straight-cut grey jeans ground the outfit in cool tones, while the brown boots add a rich contrast perfect for the frosty weather. I chose this combination because it balances the warmth you need against the cold with a clean, professional finish suitable for work.",
+"7": "Let the collar of the coat remain open or let your cardigan peek out slightly to define your neckline without bulk.",
+"8": "Walk confidently in these boots; their height and grip are ideal for snowy streets.",
+"9": "The grey on top and bottom creates a seamless vertical line that lengthens your figure despite the volume of the outer layer.",
+"10": "Дублянка прямого крою, комір-стійка (Chloe) Chloe — Added outerwear (sheepskin coat) to fix 'no_outer_layer' for the snowy conditions.",
+"11": "Міні-сумочка Бірюзовий Розквіт — Added a bag_generic as a third piece to fix 'too_few_items' and add necessary accessories.",
+"12": "Дублянка прямого крою, комір-стійка (Chloe) Chloe — The sheepskin coat in this outfit acts as your necessary outer layer against the frost and snow, satisfying the weather requirement while keeping the rest of your silhouette light enough for a 20-minute walk.",
+"13": "Джинси з манжетами із середньою посадкою — Using wide trousers to create an anchor point below the waist, visually lengthening the legs and addressing the body knot.",
+"14": "Дублянка прямого крою, комір-стійка (Chloe) Chloe — Added outerwear (sheepskin coat) to fix 'no_outer_layer' and satisfy the frost weather requirements."
+}
+
+── ВІДПОВІДЬ (2708 симв., 24.7 с, HTTP 200) ──
+```json
+{
+  "1": "Цей приталений сірий кардиган пропонує елегантний, професійний верх, який ідеально поєднується з твоїми джинсами. Його кроїний крій щільно повторює лінії тіла, створюючи охайну основу для зовнішніх шарів.",
+  "2": "Прямі сірі штани забезпечують структуроване, сучасне низу, яке збалансовує м’які текстури твого пальта та кардигану. Їхня чиста лінія зберігає силует струнким для ходьби.",
+  "3": "Коричневі чоботи на підборах пропонують як стиль, так і практичність у сніжні ранки. Підбор додає нотку офіційності, а їхній дизайн гарантує, що ти залишаєшся в теплі та стійкою під час поїздки.",
+  "4": "Цей розслаблений кемел дублянка слугує твоїм ідеальним зимовим захистом від холоду. Його м’яка текстура чудово контрастує з твоїми сірими базовими шарами, додаючи тепла без втрати елегантності.",
+  "5": "Бірюзова сумка надає яскравий колірний акцент, який освіжає твій холодний образ і додає грайливу та вишукану деталь до твоєї робочої сукні.",
+  "6": "Я підібрала практичний і охайний образ для твоєї ранкової прогулянки на роботу в снігу. Сірий приталений кардиган створює чіткий силует, який ти легко можеш одягнути під розслаблену кемел дублянку, яка зігріє тебе під час двадцятихвилинної прогулянки. Твої прямі сірі штани заземлюють образ у холодних тонах, а коричневі чоботи додають багатий контраст, ідеальний для морозної погоди. Я обрала цю комбінацію, тому що вона збалансовує необхідне тепло проти холоду з чистим, професійним фінішем, який підходить для роботи.",
+  "7": "Залиш комір пальта відкритим або дай трохи виглянути кардигану, щоб визначити лінію шиї без об’ємності.",
+  "8": "Йди впевнено у цих чоботях; їхня висота та зчеплення ідеальні для снігових вулиць.",
+  "9": "Сірий колір зверху й знизу створює безшовну вертикальну лінію, яка подовжує твою фігуру, незважаючи на об’єм верхнього шару.",
+  "10": "Пальто прямого крою з коміром-стійкою (Chloe) Chloe — Додала верхній одяг (дублянку), щоб виправити 'no_outer_layer' для сніжних умов.",
+  "11": "Мініатюрна сумка Бірюзовий Розквіт — Додала сумку, щоб виправити 'too_few_items' і додати необхідні аксесуари.",
+  "12": "Пальто прямого крою з коміром-стійкою (Chloe) Chloe — Ця дублянка в образі слугує твоїм необхідним верхнім шаром проти морозу та снігу, задовольняючи вимоги погоди, зберігаючи при цьому решту силуету достатньо легким для двадцятихвилинної прогулянки.",
+  "13": "Штани з манжетами із середньою посадкою — Використовую широкі штани, щоб створити точку опори нижче талії, візуально подовжуючи ноги та вирішуючи вузол тіла.",
+  "14": "Пальто прямого крою з коміром-стійкою (Chloe) Chloe — Додала верхній одяг (дублянку), щоб виправити 'no_outer_layer' і задовольнити вимоги морозної погоди."
+}
+```

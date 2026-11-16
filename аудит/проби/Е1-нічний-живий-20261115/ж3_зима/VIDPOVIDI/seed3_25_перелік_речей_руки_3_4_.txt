@@ -1,0 +1,37 @@
+── ПРОМПТ (2244 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Fitted wool-blend blazer, structured lapel, knee-length hem, charcoal grey (#36454F), virgin wool.\nRib-knit silk-cotton turtleneck, close neck, hip-length cut, cream white (#F5F5DC), lightweight cotton-silk blend.\nHigh-waisted pleated trousers, tapered leg, ankle length, navy blue (#000080), heavy stretch twill.\nAnkle boots with a low block heel, rounded toe, mid-calf shaft, chocolate brown (#3B241D), smooth leather sole for traction on salted roads.\n\nThis ensemble adheres to the requested \"neat\" work dress code while providing essential warmth against -10°C and snow through heavy wool and insulated layers. The dark charcoal and navy palette ensures a polished professional appearance that blends seamlessly with wintry surroundings, avoiding any distracting light colors. Practical details like the structured blazer prevent wind chill during your twenty-minute walk, and the rubberized leather soles offer necessary grip on slippery, salted sidewalks without sacrificing style."}
+
+── ВІДПОВІДЬ (801 симв., 5.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "fitted wool-blend with structured lapel and knee-length hem",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "turtleneck",
+      "details": "rib-knit silk-cotton with close neck and hip-length cut",
+      "slot": "top",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted pleated with tapered leg and ankle length",
+      "slot": "bottom",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "ankle boots with low block heel, rounded toe, and mid-calf shaft",
+      "slot": "shoes",
+      "color_hex": "#3B241D",
+      "worn": true
+    }
+  ]
+}

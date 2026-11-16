@@ -1,0 +1,52 @@
+── ПРОМПТ (6914 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: black · about it: text н=1
+2 — kind code: coat · colour code: silvery · about it: text н=2
+3 — kind code: blouse · colour code: terracotta · about it: text н=3
+4 — kind code: skirt · colour code: silvery · about it: text н=4
+5 — kind code: bag_generic · colour code: brown · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; silvery — срібний; terracotta — теракотовий.
+
+ТЕКСТИ:
+{
+"1": "This black fitted blazer serves as a structured top that anchors your casual look with its clean lines and tailored cut.",
+"2": "The relaxed silvery coat features a hood and raglan sleeves, offering a comfortable outer layer that you can wear open or closed depending on the day's needs.",
+"3": "This fitted terracotta blouse adds a warm, earthy tone to your ensemble, softening the look with its neat silhouette.",
+"4": "The silvery pencil skirt provides a streamlined shape that balances the volume of the coat while maintaining a polished appearance for your outing.",
+"5": "This brown bag complements the warm tones in your outfit and is practical enough to hold everything you need for a trip to the park and supermarket.",
+"6": "You are all ready for a walk in the park with the kids and a quick stop at the supermarket. I chose this black fitted blazer as your perfect casual top to start the day, followed by the cozy silvery hooded coat which you can wear over everything or open when it gets warm outside. Inside, the fitted terracotta blouse brings a soft color that fits your everyday look, while the silvery pencil skirt gives a clean, polished line that works even for running errands. You finished the look with your own favorite white sneakers and this brown bag to carry essentials. The combination of black, terracotta, and silver creates a harmonious palette that feels relaxed yet put-together, just right for your autumn outing.",
+"7": "Wear the hooded coat over the blazer and blouse so you can easily zip it up or leave it open as the temperature changes in the park.",
+"8": "Довге жіноче вовняне пальто з кашеміром і норковим хутром, силует на запах, класичний стиль Bella Bicchi — The coat worn over the blazer serves as a deliberate protective layer against autumn air while remaining easy to remove if you warm up walking with the children, turning a potential formality into a practical utility for your day."
+}
+
+── ВІДПОВІДЬ (2055 симв., 17.9 с, HTTP 200) ──
+```json
+{
+"1": "Цей чорний приталений блейзер слугує структурованою кофтою, яка підкреслює твій повсякденний образ своїми чіткими лініями та елегантним кроєм.",
+"2": "Вільне срібне пальто має каптур і рукави реглан, пропонуючи зручний верхній шар, який ти можеш носити розстебнутим або застебнутим залежно від потреб дня.",
+"3": "Ця приталена теракотова блузка додає теплого, землистого тону твоєму вбранню, пом’якшуючи образ своїм охайним силуетом.",
+"4": "Срібна спідниця-олівець надає стрункий силует, який збалансовує об’єм пальта та зберігає витончений вигляд для твоєї прогулянки.",
+"5": "Ця коричнева сумка доповнює теплі тони у твоєму образі й достатньо практична, щоб потримати все необхідне для відвідування парку та супермаркету.",
+"6": "Ти вже готова до прогулянки в парку з дітьми та швидкої зупинки в супермаркеті. Я підібрала тобі цей чорний приталений блейзер як ідеальну повсякденну кофту, щоб розпочати день, а потім затишне срібне пальто з капюшоном, яке ти можеш одягнути поверх усього або розстебнути, коли стане тепліше. Всередині приталена теракотова блузка додає м’якого кольору до твого повсякденного образу, а срібна спідниця-олівець дарує чисту та витончену лінію, яка підходить навіть для походів у справах. Ти завершила образ своїми улюбленими білими кросівками та цією коричневою сумкою, щоб носити з собою необхідне. Поєднання чорного, теракотового й срібного створює гармонійну палітру, яка виглядає невимушено, але водночас зі смаком — саме те, що потрібно для твоєї осінньої прогулянки.",
+"7": "Одягни пальто з капюшоном поверх блейзера та блузки, щоб ти могла легко застебнути його або залишити відкритим залежно від зміни температури в парку.",
+"8": "Довге жіноче вовняне пальто з кашеміром і норковим хутром, силует на запах, класичний стиль Bella Bicchi — Пальто, одягнене поверх блейзера, слугує продуманим захисним шаром від осіннього повітря та залишається легким для зняття, якщо тобі стане жарко під час прогулянки з дітьми, перетворюючи потенційну урочистість на практичну функціональність для твого дня."
+}
+```

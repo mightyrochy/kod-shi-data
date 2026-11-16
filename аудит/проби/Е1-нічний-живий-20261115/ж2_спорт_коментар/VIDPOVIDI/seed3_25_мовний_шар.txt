@@ -1,0 +1,43 @@
+── ПРОМПТ (6487 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: two_piece_set · colour code: black · about it: text н=1
+2 — kind code: dress_shoes · colour code: red · about it: text н=2
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This black two-piece set offers a sleek, streamlined silhouette perfect for active mornings and casual afternoons. Its solid dark tone provides a calm, grounding base that works beautifully in daylight, while the matching top and bottom keep your lines clean and uninterrupted. The neutral shade allows your own movement to take center stage, whether you are stretching on the mat or walking through a city street.",
+"2": "These red dress shoes bring a vibrant contrast to your black outfit, their rich hue standing out as a confident accent against the autumn light. The shiny finish adds a touch of elegance that elevates the casual feel of the set without feeling too formal, making them ideal for transitioning from yoga practice to meeting friends over coffee. Their design supports easy movement while keeping your look polished and put-together.",
+"3": "Your morning yoga and afternoon coffee date feel right in this black two-piece set, its clean lines keeping your movement free while the deep tone grounds you against the autumn daylight. The red dress shoes bring a lively pop to the neutral base, their shine catching the light as you walk from class to cafe, turning your everyday outing into something effortlessly spirited.",
+"4": "Wear the set relaxed but intentional, letting the black top and bottom flow together without needing extra definition at the waist.",
+"5": "Let the red shoes anchor your look; they add a confident splash of color that pairs naturally with gold or silver jewelry if you choose to wear some.",
+"6": "Атласний костюм чорний, LeBERDES Туфлі червоні — Your chosen colour scheme calls for this neutrals-plus-accent formula; I accept that the single red shoe acts as the intended focal point rather than a flaw."
+}
+
+── ВІДПОВІДЬ (1913 симв., 16.9 с, HTTP 200) ──
+{
+"1": "Цей чорний комплект з двох частин пропонує елегантний, струмкий силует, ідеальний для активних ранків та невимушених пополуднів. Його однотонний темний відтінок створює спокійну, стабільну основу, яка чудово виглядає при денному світлі, а відповідні верхня й нижня частини зберігають твої лінії чистими та безперервними. Нейтральний колір дозволяє твоєму руху стати головним акцентом, будь ти розтягуєшся на килимку або прогулюєшся міською вулицею.",
+"2": "Ці червоні туфлі-човники додають яскравий контраст до твого чорного образу, їхній насичений колір виділяється як впевнений акцент проти осіннього світла. Блискуча обробка надає нотку елегантності, яка підкреслює невимушений характер комплекту без надмірної офіційності, роблячи їх ідеальними для переходу від занять йогою до зустрічі з друзями за кавою. Їхній дизайн забезпечує легкий рух, зберігаючи твій вигляд охайним та зібраним.",
+"3": "Твої ранкові заняття йогою та пополуднева зустріч за кавою відчуваються правильно в цьому чорному комплекті з двох частин, чисті лінії якого дають свободу руху, а глибокий відтінок стабілізує тебе на тлі осіннього світла. Червоні туфлі-човники додають до нейтральної основи жвавий акцент, їхній блиск ловить сонячне проміння, коли ти йдеш з класу в кафе, перетворюючи твій повсякденний похід на щось без зусиль енергійне.",
+"4": "Одягни комплект вільно та невимушено, дозволяючи чорному верху та низу гармонійно поєднуватися без потреби у додатковому визначенні лінії талії.",
+"5": "Нехай червоні туфлі стануть основою твого образу; вони додають впевнений сплеск кольору, який природно доповнюється золотими або срібними прикрасами, якщо ти вирішиш їх одягнути.",
+"6": "Атласний костюм чорного кольору LeBERDES. Червоні туфлі — Я приймаю обрану тобою колірну схему; ця формула нейтральних відтінків плюс акцент; я погоджуюсь, що єдина червона туфелька діє як передбачуваний фокусний пункт, а не недолік."
+}

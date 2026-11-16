@@ -1,0 +1,56 @@
+── ПРОМПТ (6713 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — about it: text н=1
+2 — kind code: tote · colour code: milky
+3 — kind code: ring · colour code: golden · about it: text н=2
+4 — kind code: earrings · colour code: silvery · about it: text н=3
+5 — kind code: plimsolls · colour code: purple · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: golden — золотий; milky — молочний; purple — фіолетовий; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "A linen sundress you already own, offering breathability and a relaxed drape perfect for an autumn walk in daylight.",
+"2": "A golden ring with a warm metallic finish that catches light softly against the neutral tones of your outfit.",
+"3": "Silvery earrings featuring a cool metallic sheen that provides delicate sparkle near the face without overpowering the simple style.",
+"4": "Purple plimsolls combining comfort and casual style to keep you moving easily through your day while adding a touch of color.",
+"5": "This outfit brings together a linen sundress you already own with a new bag, ring, earrings, and shoes to take you on a comfortable walk. The dress is made of linen for a breathable feel as autumn settles in. A tote bag offers practical space for your day's essentials without weighing you down. Silver earrings and a golden ring provide just enough sparkle to catch the light without overpowering the simple texture of the fabric. Purple plimsolls keep you grounded and ready for movement throughout the outing.",
+"6": "Tuck the dress into the tote if you prefer to carry it hands-free, letting the bag hang from your shoulder or across your body as needed.",
+"7": "Let the silver earrings balance the golden ring so both metals shine together without clashing.",
+"8": "Wear the purple shoes barefoot or with simple socks depending on how the weather feels on your feet that day.",
+"9": "Амора — I accept this mono-object silhouette finding because your explicit wish for 'Amora'—a sundress—is the primary intent here, making this specific code of conduct serve your goal rather than limit it.",
+"10": "Амора — I accept this bare-arms-in-cold-season finding because your intent for 'Amora' and your request for a cozy, comfortable walk overrides the need for full sleeves on an autumn day."
+}
+
+── ВІДПОВІДЬ (1829 симв., 16.7 с, HTTP 200) ──
+```json
+{
+  "1": "Лляна сукня-сорочка, яку ти вже маєш, дарує дихаючість і розслаблений силует, що чудово підійде для осінньої прогулянки вдень.",
+  "2": "Золота каблучка з теплим металевим покриттям, яка м’яко відбиває світло на тлі нейтральних тонів твого образу.",
+  "3": "Срібні сережки з прохолодним металевим блиском, що додають делікатного сяйва біля обличчя без перевантаження простого стилю.",
+  "4": "Фіолетові кеди, які поєднують комфорт і невимушений стиль, щоб ти могла легко рухатися протягом дня та додати образу трохи кольору.",
+  "5": "Цей образ об’єднав лляну сукню-сорочку, яку ти вже маєш, з новою сумкою, каблучкою, сережками та взуттям для комфортної прогулянки. Сукня виготовлена з льону для дихаючого відчуття під час осінньої погоди. Спортивна сумка пропонує практичне місце для твоїх речей на день без зайвого обтяження. Срібні сережки та золота каблучка додають достатньо блиску, щоб відбивати світло, не перевантажуючи простий фактурний матеріал. Фіолетові кеди тримають тебе впевнено і готову до руху протягом усієї прогулянки.",
+  "6": "Засунь сукню у спортивну сумку, якщо ти віддаєш перевагу носити її на плечі або через тіло за потреби.",
+  "7": "Нехай срібні сережки збалансують золоту каблучку так, щоб обидва метали сяяли разом без конфлікту.",
+  "8": "Одягни фіолетові кеди босоніж або з простими шкарпетками залежно від того, як почуватимуться твої ноги в той день.",
+  "9": "Амора — я приймаю це рішення щодо моно-об’єкта силуету, тому що твоя конкретна вимога «Амора» — сукня-сорочка — є головним наміром тут, і цей код поведінки служить твоїй меті, а не обмежує її.",
+  "10": "Амора — я приймаю це рішення щодо оголених рук у холодну пору року, тому що твоя мета для «Амори» та твоє прохання про затишну, комфортну прогулянку переважають необхідність повних рукавів в осінній день."
+}
+```
