@@ -285,14 +285,13 @@ def подовження_ноги(t, речі):
 
 
 def хвилини_пішки(v):
-    """Хвилини дороги пішки з паспорта (`дорога_пішки_хв`): додатне число або None (не сказано)."""
-    if isinstance(v, bool) or not isinstance(v, (int, float, str)):
+    """Хвилини дороги пішки з паспорта (`дорога_пішки_хв`): додатне число або None (не сказано).
+
+    Паспорт пише це поле числом (`паспорт_нагоди.ЧИСЛА_ШАРУ`, `float`), а що не взялося числом — рядком
+    `не_взято_кодом` там само; тут іншого виду нема, тож і розбору рядка нема."""
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
         return None
-    try:
-        х = float(v)
-    except ValueError:
-        return None
-    return х if х > 0 else None
+    return float(v) if v > 0 else None
 
 
 def бракує_входу(тривалість_год=None, поверхня=None, дорога_пішки_хв=None):
