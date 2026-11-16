@@ -161,9 +161,10 @@ Scenario 'в зміна замка' {
     [void](& $tick $first 40 0 5)
     [void](& $tick $first 60 0 5); [void](& $tick $first 80 0 5)
     $w = & $tick $first 90 0 5
-    Check "в невідомий вимір ряд не рве: без роботи $($w.IdleMinutes) хв, рядок надіслано" ($w.IdleMinutes -eq 90 -and @(Read-Box).Count -eq 1)
+    # 15788: невідомий вимір ряд не рве й не подовжує — 40 хв проміжку навколо відмови nvidia-smi у бездіяльність не йдуть.
+    Check "в невідомий вимір ряд не рве й не подовжує: без роботи $($w.IdleMinutes) хв (очікується 50), рядка нема" ($w.IdleMinutes -eq 50 -and @(Read-Box).Count -eq 0)
     $w = & $tick $next 95 0 9
-    Check "в новий власник замка — ряд і лічильник PID з нуля: замок $($w.LockMinutes), без роботи $($w.IdleMinutes), PID ×$($w.PidChanges)" ($w.Marker -ceq $other -and $w.LockMinutes -eq 25 -and $w.IdleMinutes -eq 0 -and $w.PidChanges -eq 0 -and @(Read-Box).Count -eq 1)
+    Check "в новий власник замка — ряд і лічильник PID з нуля: замок $($w.LockMinutes), без роботи $($w.IdleMinutes), PID ×$($w.PidChanges)" ($w.Marker -ceq $other -and $w.LockMinutes -eq 25 -and $w.IdleMinutes -eq 0 -and $w.PidChanges -eq 0 -and @(Read-Box).Count -eq 0)
 }
 
 # --- (г) рядок у розділі GPU стану ноутбука (#1856) -----------------------------------------------------------------------------
