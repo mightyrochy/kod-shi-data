@@ -9,6 +9,7 @@ import csv
 import hashlib
 import io
 import json
+import re
 from pathlib import Path
 import urllib.request
 
@@ -160,7 +161,7 @@ def запит_моделі(вхід, річ, модель):
             if hashlib.sha256(байти).hexdigest() != кадр["sha256"]:
                 raise ValueError(f"Кадр змінився: {кадр['файл']}")
         else:
-            with urllib.request.urlopen(кадр["url"], timeout=60) as відповідь:
+            with urllib.request.urlopen(urllib.request.Request(кадр["url"], headers={"User-Agent": "Mozilla/5.0"}), timeout=60) as відповідь:
                 байти = відповідь.read()
         with Image.open(io.BytesIO(байти)) as зображення:
             зображення = зображення.convert("RGB")
@@ -174,19 +175,21 @@ def запит_моделі(вхід, річ, модель):
         {"role": "user", "content": зміст}], **вхід["параметри"]}
 
 
-def прогнати(модель, вихід):
+def прогнати(модель, вихід, продовжити=False):
     """Запускає лише явно обрану спробу, зупиняється при збої чи усіченні.
 
     Завантаження й вивантаження належать сесії з GPU, яка завантажила модель.
     Старі відповіді й частково записаний прогін не перезаписуються.
     """
-    if вихід.exists():
+    if вихід.exists() and not продовжити:
         raise ValueError("Для нової спроби потрібен новий файл виходу")
     вхід = прочитати_json(ТЕКА / "наступний_вхід.json")
     if вхід["словник_sha256"] != hashlib.sha256((ТЕКА / "словник_iscc_267.tsv").read_bytes()).hexdigest():
         raise ValueError("Словник змінився після підготовки входу")
-    результати = {}
+    результати = прочитати_json(вихід) if продовжити and вихід.exists() else {}
     for річ in вхід["речі"]:
+        if str(річ["номер"]) in результати:
+            continue
         запит = urllib.request.Request("http://127.0.0.1:1234/v1/chat/completions",
             data=json.dumps(запит_моделі(вхід, річ, модель)).encode("utf-8"),
             headers={"Content-Type": "application/json"})
@@ -194,7 +197,9 @@ def прогнати(модель, вихід):
             сире = json.loads(відповідь.read())
         if сире["choices"][0]["finish_reason"] == "length":
             raise ValueError(f"Річ {річ['номер']}: відповідь усічено")
-        результати[str(річ["номер"])] = json.loads(сире["choices"][0]["message"]["content"])
+        текст = сире["choices"][0]["message"]["content"].strip()
+        текст = re.sub(r"^```(?:json)?\s*|\s*```$", "", текст)
+        результати[str(річ["номер"])] = json.loads(текст)
         записати_json(вихід, результати)
         записати_json(вихід.with_suffix(".метадані.json"), {
             "модель": модель, "параметри": вхід["параметри"],
@@ -211,11 +216,12 @@ def головна():
     парсер.add_argument("--підготувати", action="store_true")
     парсер.add_argument("--прогін", metavar="МОДЕЛЬ")
     парсер.add_argument("--вихід", type=Path)
+    парсер.add_argument("--продовжити", action="store_true", help="дописати відсутні речі до наявного виходу")
     аргументи = парсер.parse_args()
     if аргументи.прогін:
         if аргументи.вихід is None:
             парсер.error("--прогін потребує --вихід з новою назвою файлу")
-        прогнати(аргументи.прогін, аргументи.вихід)
+        прогнати(аргументи.прогін, аргументи.вихід, аргументи.продовжити)
         return
     if аргументи.словник:
         print(f"Словник: {len(блоки.оновити_словник())} блоків")

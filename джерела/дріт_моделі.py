@@ -845,7 +845,7 @@ def випадок(в, день=None):
             сл = v.get("слоти") or {}
             на = lambda x, c: ({"code": c, "only_on": [код("slot", s) for s in сл[x]]} if сл.get(x) else c)
             v = {кк: vv for кк, vv in (
-                ("types", [_межа_типу(x) for x in (v.get("типи") or [])]),
+                ("types", [на(x, _межа_типу(x)) for x in (v.get("типи") or [])]),
                 ("fabrics", [на(x, код("fabric", x)) for x in (v.get("тканини") or [])]),
                 ("prints", [на(x, код("pattern", x)) for x in (v.get("принти") or [])]),
                 ("colors", [на(x, код("color_class", x) if _ВМ.код("color_class", x) else код("color_name", x))
