@@ -29,8 +29,20 @@
   в  цитата чи слово стилістці — гілка пише в `quote/уривок/цитата/слова_ходу/her_*`;
   г  інше (названо): `raise` (причина повтору/помилки), предикат (`return isinstance…` — доля у викликача), підміна
      значення, виклик іншої функції.
+КЛАСИ ПРАВИЛ, виправлені за вадами перевірки 16221–16224 (16.11 23:06 UTC, PR #4129), кожен — правило класу, не перелік:
+  16221  «читає значення» ≠ «описує його»: корінь у `type(…)`, `isinstance(…)`, `_як_звати(…)`, у повідомленні
+         (`"…%s" % …`) і в `raise` — це текст про відкинуте; заперечна перевірка з `return [помилка]`/`raise` під нею — (г);
+  16222  охоронений `if` без `else` (позитивна перевірка): відкинуте мовчки не йде далі — (а); долею лічиться лише те,
+         що стоїть одразу після нього (слід, вихід), а не решта блоку чи звичайний `return` результату;
+  16223  запасне значення умовного виразу — останнє `else` ланцюга `[v] if str else v if list else []` — (а); відсів значення
+         в умові, чий корінь далі не читається (перепризначення імені циклом, генератором, лямбдою — інше значення), — (а);
+  16224  (в) — лише коли гілка кладе саме відкинуте значення в канал цитати; гілка з іншого джерела — не (в).
+Додано з двох вибірок очима: відкинуте — за ПОЛЯРНІСТЮ перевірки (тіло позитивної перевірки з роботою — прийняте);
+корінь поля `об.get("k")` — лише той самий доступ чи ціла `об`; відсів у генераторі з коренем із зовнішньої області
+читається далі; присвоєння-предикат, що вживається в умовному виразі.
+`--самоперевірка` — фікстура на кожен клас (код виходу 1 при розбіжності).
 Запуск з кореня: `python3 аудит/проби/Лічба-Е2-втрата-слова-доля-відкинутого/лічба.py [--таблиця ФАЙЛ] [--звірка]
-[--два-значення]`; останній рядок — `перевірок: N · відкидають: M · а: … · б: … · в: … · г: … · веде далі: K`."""
+[--два-значення] [--самоперевірка] [--нова-вибірка]`; останній рядок — `перевірок: N · відкидають: M · а: … · б: … · в: … · г: … · веде далі: K`."""
 import ast, collections, glob, json, os, re, sys, warnings
 warnings.simplefilter('ignore')
 КОРІНЬ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -474,11 +486,36 @@ def читає_імʼя(вузли, імʼя):
 ОПИСОВІ_ВИКЛИКИ = {'type', 'isinstance', 'repr', 'len', 'id', 'callable', '_як_звати', '_тип_en'}
 
 
-def читає_значення(вузли, імʼя):
+def ключ_доступу(е, імʼя):
+    """Перевірка поля `об.get("k")`/`об["k"]` → текст ключа: далі значення «читає» лише той самий доступ до поля чи ціла
+    `об` (передана, повернена, переписана), а не будь-яке інше поле (`об.get("інше")`)."""
+    х, ключ = е, None
+    while True:
+        if isinstance(х, ast.Subscript):
+            if isinstance(х.value, ast.Name) and х.value.id == імʼя:
+                ключ = ast.unparse(х.slice)
+            х = х.value
+        elif isinstance(х, ast.Call) and isinstance(х.func, ast.Attribute) and х.func.attr == 'get' and х.args:
+            if isinstance(х.func.value, ast.Name) and х.func.value.id == імʼя:
+                ключ = ast.unparse(х.args[0])
+            х = х.func.value
+        elif isinstance(х, (ast.Attribute, ast.Starred)):
+            х = х.value
+        else:
+            return ключ
+
+
+def читає_значення(вузли, імʼя, ключ=None):
     if not імʼя:
         return False
 
     def ход(х):
+        if ключ is not None:
+            if isinstance(х, ast.Subscript) and isinstance(х.value, ast.Name) and х.value.id == імʼя:
+                return ast.unparse(х.slice) == ключ or ход(х.slice)
+            if isinstance(х, ast.Call) and isinstance(х.func, ast.Attribute) and х.func.attr == 'get' and х.args \
+                    and isinstance(х.func.value, ast.Name) and х.func.value.id == імʼя:
+                return ast.unparse(х.args[0]) == ключ or any(ход(а) for а in х.args)
         if isinstance(х, ast.Name):
             return х.id == імʼя and isinstance(х.ctx, ast.Load)
         if isinstance(х, (ast.Raise, ast.JoinedStr)):
@@ -680,12 +717,14 @@ def класифікувати(fn, пер, E, вид, поз):
     if р is None:
         return 'г', 'контекст не розпізнано', None
     корінь = ім_кореня(E)
+    ключ = ключ_доступу(E, корінь)
+    чит = lambda вузли: читає_значення(вузли, корінь, ключ)
     if isinstance(р, ast.If) and (х is р.test):
         def природа(гілка):
             """accept — гілка читає значення (веде далі); reject — не читає й лише скидає/пише слід/кидає виняток."""
             if not гілка:
                 return 'порожня'
-            if читає_значення(без_слідових(гілка), корінь):
+            if чит(без_слідових(гілка)):
                 return 'accept'
             return 'reject'
         тіло, інакше = р.body, р.orelse
@@ -703,14 +742,14 @@ def класифікувати(fn, пер, E, вид, поз):
         діап = діапазон_гілки(гілка)
         if not гілка:
             шлях = відкинуте_проходження(б, р)
-            if шлях and not читає_значення(без_слідових(шлях), корінь):
+            if шлях and not чит(без_слідових(шлях)):
                 д, пояс = доля(шлях, корінь)
                 if д == 'г' and пояс.startswith('інше') and isinstance(шлях[-1], ast.Return):
                     # звичайний результат функції після охоронюваного блоку: значення туди не потрапило (16222)
                     return 'а', 'проходить до загального результату: ' + пояс[6:50], діапазон_гілки(шлях)
                 return д, 'проходить далі: ' + пояс, діапазон_гілки(шлях)
             після = стейтменти_після(б, р)
-            if читає_значення(після, корінь):
+            if чит(після):
                 return 'далі', 'проходить нижче без гілки (корінь «%s» читається далі)' % корінь, None
             return 'а', 'відсів без гілки (корінь «%s» далі не читається)' % корінь, None
         д, пояс = доля(гілка, корінь)
@@ -721,7 +760,7 @@ def класифікувати(fn, пер, E, вид, поз):
         while isinstance(вираз, ast.IfExp) and читає_імʼя([вираз.test], корінь):
             заперечено = isinstance(вираз.test, ast.UnaryOp) and isinstance(вираз.test.op, ast.Not)
             вираз = вираз.body if заперечено else вираз.orelse
-        if читає_значення([вираз], корінь):
+        if чит([вираз]):
             return 'далі', 'підміна читає той самий корінь', None
         if isinstance(вираз, ast.Constant) and isinstance(вираз.value, str) and re.fullmatch(r'[a-z][a-z_:()=, %s]{5,}', вираз.value):
             return 'б', 'підміна кодом причини «%s»' % вираз.value[:40], (вираз.lineno, getattr(вираз, 'end_lineno', вираз.lineno))
@@ -738,10 +777,12 @@ def класифікувати(fn, пер, E, вид, поз):
         ст = р
         while ст in б and not isinstance(ст, ast.stmt):
             ст = б[ст]
+        if isinstance(ст, ast.Assign) and any(isinstance(ц, ast.Name) and ц.id == корінь for ц in ст.targets):
+            return 'а', 'відсів у генераторі, результат замінює «%s» (відкинуте не читається далі)' % корінь, None
         локальні = set(fn.параметри) | {н.id for у in ast.walk(fn.вузол) if isinstance(у, (ast.Assign, ast.For, ast.AnnAssign))
                                         for н in ast.walk(у.targets[0] if isinstance(у, ast.Assign) else у.target)
                                         if isinstance(н, ast.Name)}
-        if корінь in локальні and читає_значення(стейтменти_після(б, ст), корінь):
+        if корінь in локальні and чит(стейтменти_після(б, ст)):
             return 'далі', 'відсів у генераторі, але значення читається далі (корінь «%s»)' % корінь, None
         return 'а', 'відсів у генераторі (корінь «%s» далі не читається)' % корінь, None
     if isinstance(р, ast.While):
@@ -754,6 +795,16 @@ def класифікувати(fn, пер, E, вид, поз):
         N = р.targets[0].id
         для = [x for x in ast.walk(fn.вузол) if isinstance(x, ast.If) and x.lineno > р.lineno
                and any(isinstance(y, ast.Name) and y.id == N for y in ast.walk(x.test))]
+        вирази = [x for x in ast.walk(fn.вузол) if вид != 'перелік·пошук' and isinstance(x, ast.IfExp) and x.lineno >= р.lineno
+                  and any(isinstance(y, ast.Name) and y.id == N for y in ast.walk(x.test))]
+        if вирази and (not для or min(x.lineno for x in вирази) <= min(x.lineno for x in для)):          # `якщо_рядок = isinstance(с, str)` → `"" if якщо_рядок else …`: умовний вираз, не `if`
+            в_ = min(вирази, key=lambda x: x.lineno)
+            заперечено = isinstance(в_.test, ast.UnaryOp) and isinstance(в_.test.op, ast.Not)
+            вираз = в_.body if (поз and заперечено) or (not поз and not заперечено) else в_.orelse
+            if чит([вираз]):
+                return 'далі', 'результат перевірки в «%s», умовний вираз читає значення' % N, None
+            д, пояс = доля([ast.Return(value=вираз)], корінь)
+            return д, 'через «%s» (умовний вираз): %s' % (N, пояс), None
         if для:
             ф = min(для, key=lambda x: x.lineno)
             заперечено = isinstance(ф.test, ast.UnaryOp) and isinstance(ф.test.op, ast.Not)
@@ -761,7 +812,7 @@ def класифікувати(fn, пер, E, вид, поз):
             гілка = ф.orelse if (поз and not заперечено) or (not поз and заперечено) else ф.body
             if not гілка:
                 після = стейтменти_після(б, ф)
-                if читає_значення(після, корінь):
+                if чит(після):
                     return 'далі', 'результат перевірки в «%s», далі значення читається' % N, None
                 return 'а', 'відсів без гілки (результат у «%s»)' % N, None
             д, пояс = доля(гілка, корінь)
@@ -1055,6 +1106,14 @@ def самоперевірка(мод=None):
     return поганих
 
 
+ВІДОМІ_МІСЦЯ = ('мовний_шар.py:4695 мовний_шар.py:4843 мовний_шар.py:926 дріт_моделі.py:808 мовний_шар.py:5004 мовний_шар.py:1939 '
+                'мовний_шар.py:1524 мовний_шар.py:4935 мовний_шар.py:1049 дріт_моделі.py:1747 дріт_моделі.py:1762 міст_вхід.py:662 '
+                'протокол.py:240 протокол.py:252 протокол.py:262 conversation_tools.py:274 мовний_шар.py:799 мовний_шар.py:4104 '
+                'мовний_шар.py:1894 дріт_моделі.py:1768 мовний_шар.py:342 мовний_шар.py:4650 мовний_шар.py:5259 '
+                'розбір_відповідей.py:658 розбір_відповідей.py:1845 руки_без_коду.py:498 руки_без_коду.py:518 '
+                'language_contract.py:60 схема_відповіді.py:325')
+
+
 def головна():
     арги = sys.argv[1:]
     if '--самоперевірка' in арги:
@@ -1073,6 +1132,23 @@ def головна():
                     x['вираз'].replace('|', '/').replace('`', "'")))
     if '--два-значення' in арги:
         два_значення(р)
+        return
+    if '--нова-вибірка' in арги:
+        # 40 місць з іншим seed (1611), без 40 зі `--звірка` (seed 16207) і без місць, названих у звірках 16.11
+        # (#4118: 6; #4129: 8; рядки 16221–16224: решта названих); кожне — з кодом навколо для очей
+        import random
+        random.seed(16207)
+        раніше = {(x['файл'], x['рядок'], x['вираз']) for x in random.sample(р, min(40, len(р)))}
+        названі = {м for м in ВІДОМІ_МІСЦЯ.split()}
+        пул = [x for x in р if (x['файл'], x['рядок'], x['вираз']) not in раніше
+               and '%s:%d' % (os.path.basename(x['файл']), x['рядок']) not in названі]
+        random.seed(1611)
+        for i, x in enumerate(random.sample(пул, 40), 1):
+            рядки = open(x['файл'], encoding='utf-8').read().split('\n')
+            print('#%d %s:%d · %s · E=%s · доля=%s · %s' % (i, x['файл'].replace('джерела/', ''), x['рядок'],
+                                                          x['вираз'][:80], x['E'][:40], x['доля'], x['пояснення'][:90]))
+            for к in range(x['рядок'] - 2, x['рядок'] + 4):
+                print('    %d %s' % (к, рядки[к - 1][:170]))
         return
     if '--звірка' in арги:
         import random
