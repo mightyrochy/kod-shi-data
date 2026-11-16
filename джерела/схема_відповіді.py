@@ -332,6 +332,16 @@ def скелет_мовного_шару():
     форма = форма_мовного_шару(визначення=False)
     поля = форма["properties"]["update"]["properties"]
     return {
+        "need": " | ".join(форма["properties"]["need"]["enum"]),
+        "text": [{"about": ["update field codes (" + ", ".join(поля) + ") or her_question"],
+                  "recorded": ["the about codes this sentence says are recorded; the others it says are not"],
+                  "her_words": ["her whole words from a quote, or a whole tile label, that this sentence restates"],
+                  "says": "one sentence of your reply, never a lone word"}],
+        "invite_topics": ["advice topic codes, up to three"], "invite": "one soft invitation, or empty",
+        "ask_code": " | ".join(форма["properties"]["ask_code"]["enum"]), "ask": "one short question, or empty",
+        "header": {" | ".join(форма["properties"]["header"]["properties"]): "that value in a few Ukrainian words"},
+        "tool": _ІНСТР.скелет(),
+        # `update` — лише зміни паспорта: частини ходу стоять перед ним (дошка 15737, рішення менеджера 16.11)
         "update": {
             "formality": "the code of one step of the ladder, on every turn once the kind of outing is known",
             "formality_reason": " | ".join(мова.ТАБЛИЦЯ["formality_reason"]) + "; the reason of that same ladder step",
@@ -347,15 +357,6 @@ def скелет_мовного_шару():
                        + "".join("; %s also with \"%s\": \"%s\" when her words name it" % ((о["поле"],) + о["названа"])
                                  for о in мова.ПОЛЯ_ПАСПОРТА.values() if о.get("названа")),
         },
-        "need": " | ".join(форма["properties"]["need"]["enum"]),
-        "text": [{"about": ["update field codes (" + ", ".join(поля) + ") or her_question"],
-                  "recorded": ["the about codes this sentence says are recorded; the others it says are not"],
-                  "her_words": ["her whole words from a quote, or a whole tile label, that this sentence restates"],
-                  "says": "one sentence of your reply, never a lone word"}],
-        "invite_topics": ["advice topic codes, up to three"], "invite": "one soft invitation, or empty",
-        "ask_code": " | ".join(форма["properties"]["ask_code"]["enum"]), "ask": "one short question, or empty",
-        "header": {" | ".join(форма["properties"]["header"]["properties"]): "that value in a few Ukrainian words"},
-        "tool": _ІНСТР.скелет(),
     }
 
 
