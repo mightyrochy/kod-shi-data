@@ -327,18 +327,51 @@ def осі(зона, рч=None):
         свідки = (р.get("каблук_є"), р.get("каблук"))
         є = True if True in свідки else (False if False in свідки else None)
         вих["heel"] = "none" if є is False else (U if є is None else "yes")
-        if р.get("каблук_форма"):
+        # Вид і клас каблука: коди картки (`картка_взуття`, поля запису `каблук_вид`, `каблук_рівень`) старші за
+        # слово назви; картка й назва мовчать — ключа нема, картка каже словами поза таблицею — `not_read`
+        # (Річ-запис-речі п.7, крок 2: шпилька `ж-09146` доходила до стилістки як «каблук є, висота невідома»)
+        if р.get("каблук_вид"):
+            вих["heel_shape"] = _коди(р["каблук_вид"])
+        elif р.get("каблук_форма"):
             вих["heel_shape"] = код_переліку(_КАБЛУК_ФОРМА, р["каблук_форма"])
-        if р.get("каблук_висота"):
+        elif вих["heel"] != "none" and _невідомо(р, "вид") != U:
+            вих["heel_shape"] = "not_read"
+        if р.get("каблук_рівень"):
+            вих["heel_height"] = _коди(р["каблук_рівень"])
+        elif р.get("каблук_висота"):
             вих["heel_height"] = код_переліку(_КАБЛУК_ВИСОТА, р["каблук_висота"])
         # смуга крамниці «до 4 см (або без підборів)» при `heel: none` — теж факт запису й їде (110 пар
         # каталогу); `unknown` — лише паре, що має чи може мати каблук
         висота = висота_каблука(р)
+        if висота == U:
+            висота = _невідомо(р, "висота")
         if висота != U or вих["heel"] != "none":
             вих["heel_cm"] = висота
     if р.get("слот") == "взуття":
-        вих["sole"] = код_переліку(_ПІДОШВА, р["підошва"]) if р.get("підошва") else U
+        # підошва: коди картки (`підошва_коди`) і основа зі слів картки про підошву (`підошва`), без повтору
+        коди = list(р.get("підошва_коди") or ())
+        if р.get("підошва") and код_переліку(_ПІДОШВА, р["підошва"]) not in коди:
+            коди.append(код_переліку(_ПІДОШВА, р["підошва"]))
+        вих["sole"] = _коди(коди) if коди else _невідомо(р, "підошва")
+        # нових ключів, яких картка не називає, у рядку нема (шапка каже: нема ключа — `unknown`): `unknown` на кожній
+        # парі пулу коштував би ~2–3 % входу (повтор записаних входів, `аудит/проби/річ-запис-речі-п7-картка/`)
+        for ключ, поле, ознака in (("wear_season", "сезон_пари", "сезон"), ("lining", "підкладка_коди", "підкладка")):
+            if р.get(поле):
+                вих[ключ] = _коди(р[поле])
+            elif _невідомо(р, ознака) != U:
+                вих[ключ] = "not_read"
     return вих
+
+
+def _коди(коди):
+    """Один код — рядком, кілька — списком (крамниця назвала кілька)."""
+    return коди[0] if len(коди) == 1 else list(коди)
+
+
+def _невідомо(р, ознака):
+    """`not_read` — картка називає ознаку словами, яких таблиця читань не має (`картка_не_прочитано` запису);
+    інакше `unknown` — картка ознаки не називає."""
+    return "not_read" if ознака in (р.get("картка_не_прочитано") or ()) else U
 
 
 def _см(v):
@@ -481,9 +514,18 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
     "also_in": "the same model also comes in these colours",
     # Річ-запис-речі п.7 (16.11.2026): висота й підошва взуття — з запису (`осі`), раз на пакет, лише коли є
     "heel_cm": "heel height in cm as the shop gives it: one number, or the shop's band [from, to], null — the side "
-               "the band leaves open; `unknown` — the shop does not give it",
-    "sole": "the sole as the shop names it; `unknown` — the shop does not name it",
+               "the band leaves open",
+    "sole": "the sole's material or form as the shop names it",
+    "wear_season": "seasons the shop names for wearing the pair; *_collection — only the collection's season is named",
+    "lining": "the lining as the shop names it; none — the shop says unlined",
 }
+# Два стани «нема коду» для ознак взуття (`heel_shape`, `heel_cm`, `sole`, `wear_season`, `lining`): шапка пояснює їх
+# один раз, коли хоч одна така ознака в переліку є (Річ-запис-речі п.7, дошка 15879: легенда казала «крамниця не
+# називає» й тоді, коли картка називала словами, яких код не читав)
+КЛЮЧІ_ВЗУТТЯ = ("heel_shape", "heel_cm", "sole", "wear_season", "lining")
+СТАНИ_ВЗУТТЯ = ("shoe unknown|not_read", "for heel_shape, heel_cm, sole, wear_season, lining: `unknown` or the key "
+                "absent from a shoe row — the shop's card does not name it; `not_read` — the card names it in words "
+                "not yet coded")
 
 
 def легенда_ключів(перелік=None):
@@ -491,6 +533,8 @@ def легенда_ключів(перелік=None):
     ключі без пояснення в назві (`ОПИС_КЛЮЧІВ`) — лише ті, що в переліку є."""
     є = {к for r in (перелік or []) if isinstance(r, dict) for к in r}
     вих = {к: т for к, т in ОПИС_КЛЮЧІВ.items() if к in є}
+    if є.intersection(КЛЮЧІ_ВЗУТТЯ):
+        вих[СТАНИ_ВЗУТТЯ[0]] = СТАНИ_ВЗУТТЯ[1]
     for ключ, типове in ТИПОВІ_ПУЛУ.items():
         вих[ключ] = "%s; absent = %s" % (ОПИС_ТИПОВИХ[ключ], str(типове).lower())
         if ключ == "in_arc":
