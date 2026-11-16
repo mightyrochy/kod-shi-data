@@ -632,6 +632,7 @@ class ЗмінаОбєкта:
         self.повертає_власне = {}           # (мод, функція) → {мітки}: функція сама розбирає відповідь (без параметрів)
         self.зміни = {}                     # (мод, функція) → {ключ гілки: (рядок, що, зразок)}
         self.змінилось = False
+        self.тіло = {}                      # (мод, функція) → вузол функції, що проходиться
         self.звідки = {}                    # (функція, параметр) → (модуль, функція, рядок) першого виклику з міткою
 
     # ── вирази ──
@@ -716,19 +717,62 @@ class ЗмінаОбєкта:
     # ── операторів ──
     def виведений(self, мод, ім, вузол, env):
         """Вираз-копія зі зміною: `dict(о, …)`, `{**о, …}`, `{к: … for … in о.items()}` — (вузол, що робить) чи None."""
+        батьки = {id(д): в for в in ast.walk(вузол) for д in ast.iter_child_nodes(в)}
         for в in ast.walk(вузол):
             if isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id == "dict" and в.args \
-                    and "О" in self.мітки(мод, ім, в.args[0], env) and (в.keywords or len(в.args) > 1):
+                    and "О" in self.мітки(мод, ім, в.args[0], env) and (в.keywords or len(в.args) > 1) \
+                    and not self.лише_для_звірки(мод, ім, в, вузол, батьки, env):
                 return в, "виводить новий обʼєкт відповіді з дописаним чи заміненим"
             if isinstance(в, ast.Dict) and len(в.keys) > 1 \
-                    and any(к is None and "О" in self.мітки(мод, ім, з, env) for к, з in zip(в.keys, в.values)):
+                    and any(к is None and "О" in self.мітки(мод, ім, з, env) for к, з in zip(в.keys, в.values)) \
+                    and not self.лише_для_звірки(мод, ім, в, вузол, батьки, env):
                 return в, "виводить новий обʼєкт відповіді з дописаним чи заміненим"
             if isinstance(в, ast.DictComp) and any(
                     isinstance(г.iter, ast.Call) and isinstance(г.iter.func, ast.Attribute)
                     and г.iter.func.attr in {"items", "keys"} and "О" in self.мітки(мод, ім, г.iter.func.value, env)
-                    for г in в.generators):      # покажчик за чужими ключами (`{id: частина for … in список}`) — не обʼєкт відповіді
+                    for г in в.generators) and not self.лише_для_звірки(мод, ім, в, вузол, батьки, env):   # покажчик за чужими ключами (`{id: частина for … in список}`) — не обʼєкт відповіді
                 return в, "виводить обʼєкт відповіді без частини ключів чи з іншими ключами"
         return None
+
+    def лише_для_звірки(self, мод, ім, в, корінь, батьки, env):
+        """Виведений обʼєкт `в` — аргумент виклику, чий результат не несе обʼєкта відповіді (`розбіжності(результат, dict(о,
+        …), схема)`: звірка читає свій другий аргумент і повертає власний запис): код будує обʼєкт для читання, відповіддю
+        він не стає й не міняється (15910). Виклик, що повертає обʼєкт чи його текст, — зміна, як і раніше; так само, коли
+        виведений обʼєкт — не частина виразу (присвоєно чи повернено прямо)."""
+        вузол = в
+        while вузол is not корінь and id(вузол) in батьки:
+            вузол = батьки[id(вузол)]
+            if isinstance(вузол, ast.Call) and not (isinstance(вузол.func, ast.Name) and вузол.func.id == "dict"):
+                if not (self.мітки(мод, ім, вузол, env) & {"О", "ОТ"}):
+                    return True
+        return False
+
+    def звірка_далі(self, мод, ім, ст, виведений, env):
+        """`х = dict(о, …)` (виведений обʼєкт присвоєно прямо імені), після чого `х` лише аргумент викликів, чий результат не
+        несе обʼєкта відповіді, — той самий обʼєкт для звірки (`оновлення = dict(оновлення, **{…})` → `розбіжності(р,
+        оновлення, схема)`): ні повернення, ні запису, ні читання поза викликом — не зміна (15910)."""
+        ф = self.тіло.get((мод.ім, ім))
+        if ф is None or not isinstance(ст, ast.Assign) or ст.value is not виведений or len(ст.targets) != 1 \
+                or not isinstance(ст.targets[0], ast.Name):
+            return False
+        імя = ст.targets[0].id
+        батьки = {id(д): в for в in ast.walk(ф) for д in ast.iter_child_nodes(в)}
+        вжито = [в for в in ast.walk(ф) if isinstance(в, ast.Name) and в.id == імя and isinstance(в.ctx, ast.Load)
+                 and в.lineno > ст.end_lineno]
+        if not вжито:
+            return False
+        тимчасове = dict((к, set(в)) for к, в in env.items())
+        тимчасове[імя] = {"О"}
+        for в in вжито:
+            виклик = батьки.get(id(в))
+            if isinstance(виклик, ast.keyword):
+                виклик = батьки.get(id(виклик))
+            if not isinstance(виклик, ast.Call) or виклик.func is в \
+                    or (isinstance(виклик.func, ast.Name) and виклик.func.id == "dict"):
+                return False
+            if self.мітки(мод, ім, виклик, тимчасове) & {"О", "ОТ"}:
+                return False
+        return True
 
     def відбір_ключів(self, мод, ім, вузол, env):
         """Відбір ключів обʼєкта відповіді за власним переліком винятків: `[x for … if x in о and x not in перелік]`, де
@@ -760,7 +804,7 @@ class ЗмінаОбєкта:
                 if isinstance(ц, ast.Subscript) and о(self.корінь(ц)):
                     return "пише ключ у обʼєкт відповіді"
             з = self.виведений(мод, ім, ст.value, env) if ст.value is not None else None
-            if з:
+            if з and not self.звірка_далі(мод, ім, ст, з[0], env):
                 return з[1]
         if isinstance(ст, (ast.Assign, ast.Return, ast.AnnAssign)) and getattr(ст, "value", None) is not None \
                 and self.відбір_ключів(мод, ім, ст.value, env) is not None:
@@ -792,12 +836,41 @@ class ЗмінаОбєкта:
             return []
         return [ст]
 
-    def призначити(self, ціль, мітки, env):
+    def призначити(self, ціль, мітки, env, по_елементах=None):
+        """`по_елементах` — мітки кожного елемента кортежу цілі, коли значення розкладається поелементно
+        (`а, б = х, у`; `for а, б in zip(х, у)`): мітка обʼєкта відповіді — лише тому, хто з нього походить. Без нього
+        (значення — одне ціле, `а, б = розбір(…)`) усі елементи цілі несуть мітки значення."""
         if isinstance(ціль, ast.Name):
             env[ціль.id] = set(мітки)
         elif isinstance(ціль, (ast.Tuple, ast.List)):
+            if по_елементах is not None and len(по_елементах) == len(ціль.elts):
+                for е, м in zip(ціль.elts, по_елементах):
+                    self.призначити(е.value if isinstance(е, ast.Starred) else е, м, env)
+                return
             for е in ціль.elts:
                 self.призначити(е.value if isinstance(е, ast.Starred) else е, мітки, env)
+
+    def по_елементах(self, мод, ім, ціль, значення, env):
+        """Мітки кожного елемента значення, що розпаковується в кортеж цілі, — рахуються до присвоєння (обмін `а, б = б, а`
+        читає старі значення); None, коли значення не розкладається поелементно."""
+        if not isinstance(ціль, (ast.Tuple, ast.List)):
+            return None
+        if isinstance(значення, (ast.Tuple, ast.List)) and len(значення.elts) == len(ціль.elts) \
+                and not any(isinstance(е, ast.Starred) for е in значення.elts + ціль.elts):
+            return [self.мітки(мод, ім, е, env) for е in значення.elts]
+        return None
+
+    def по_елементах_циклу(self, мод, ім, ціль, вираз, env):
+        """Те саме для `for а, б in zip(х, у)`: елемент цілі — елемент відповідного переліку; `for а, б in enumerate(х)` —
+        лічильник без мітки, елемент із переліку."""
+        if not (isinstance(ціль, (ast.Tuple, ast.List)) and isinstance(вираз, ast.Call) and isinstance(вираз.func, ast.Name)
+                and not вираз.keywords and not any(isinstance(а, ast.Starred) for а in вираз.args + ціль.elts)):
+            return None
+        if вираз.func.id == "zip" and len(вираз.args) == len(ціль.elts):
+            return [self.перебір(мод, ім, а, env) for а in вираз.args]
+        if вираз.func.id == "enumerate" and len(ціль.elts) == 2 and len(вираз.args) in (1, 2):
+            return [set(), self.перебір(мод, ім, вираз.args[0], env)]
+        return None
 
     @staticmethod
     def злити(*середовища):
@@ -811,6 +884,22 @@ class ЗмінаОбєкта:
                 вих[к] = м
         return вих
 
+    @staticmethod
+    def обʼєднати(*середовища):
+        """Обʼєднання станів: змінна несе мітку, коли її несе хоч один шлях (на відміну від `злити`): після `try` шлях з
+        розібраним у тілі обʼєктом лишається шляхом до наступних операторів."""
+        вих = {}
+        for е in середовища:
+            for к, м in е.items():
+                if м:
+                    вих.setdefault(к, set()).update(м)
+        return вих
+
+    @staticmethod
+    def обриває(оператори):
+        """Список закінчується оператором, після якого керування не йде далі по тексту."""
+        return bool(оператори) and isinstance(оператори[-1], (ast.Return, ast.Raise, ast.Continue, ast.Break))
+
     def блок(self, мод, ім, ст_список, env, ключ, гілки, повернення):
         """Проходить оператори по порядку; `env` міняється на місці; `гілки` збирає першу зміну кожної гілки."""
         for ст in ст_список:
@@ -820,8 +909,9 @@ class ЗмінаОбєкта:
                 гілки[ключ] = (ст.lineno, що, ast.unparse(ст).split("\n")[0][:70])
             if isinstance(ст, ast.Assign):
                 м = self.мітки(мод, ім, ст.value, env)
-                for ц in ст.targets:
-                    self.призначити(ц, м, env)
+                пари = [(ц, self.по_елементах(мод, ім, ц, ст.value, env)) for ц in ст.targets]
+                for ц, п in пари:
+                    self.призначити(ц, м, env, п)
             elif isinstance(ст, (ast.AnnAssign, ast.AugAssign)) and ст.value is not None:
                 м = self.мітки(мод, ім, ст.value, env)
                 self.призначити(ст.target, м | (set(env.get(ст.target.id, ())) if isinstance(ст, ast.AugAssign)
@@ -839,7 +929,7 @@ class ЗмінаОбєкта:
             elif isinstance(ст, (ast.For, ast.AsyncFor)):
                 м = self.перебір(мод, ім, ст.iter, env)
                 для = dict((к, set(в)) for к, в in env.items())
-                self.призначити(ст.target, м, для)
+                self.призначити(ст.target, м, для, self.по_елементах_циклу(мод, ім, ст.target, ст.iter, env))
                 self.блок(мод, ім, ст.body, для, ("блок", id(ст.body)), гілки, повернення)
                 self.блок(мод, ім, ст.body, для, ("блок", id(ст.body)), гілки, повернення)   # другий оберт: змінні циклу
                 self.блок(мод, ім, ст.orelse, для, ключ, гілки, повернення)
@@ -852,14 +942,31 @@ class ЗмінаОбєкта:
             elif isinstance(ст, (ast.With, ast.AsyncWith)):
                 self.блок(мод, ім, ст.body, env, ("блок", id(ст.body)), гілки, повернення)
             elif isinstance(ст, ast.Try):
-                частини = [ст.body] + [х.body for х in ст.handlers] + [ст.orelse, ст.finalbody]
-                списки = []
-                for ч in частини:
-                    е = dict((к, set(в)) for к, в in env.items())
-                    self.блок(мод, ім, ч, е, ("блок", id(ч)) if ч else ключ, гілки, повернення)
-                    списки.append(е)
+                # послідовно: тіло → `else`; обробник стартує зі стану до `try`, обʼєднаного зі станом після тіла (виняток міг
+                # статись будь-де); після `try` — обʼєднання станів кінців шляхів, що не обривають функцію чи ітерацію
+                # (`return`/`raise`/`continue`/`break` в кінці); `finally` — по зібраному стані
+                до = dict((к, set(в)) for к, в in env.items())
+                тіло = dict((к, set(в)) for к, в in env.items())
+                self.блок(мод, ім, ст.body, тіло, ("блок", id(ст.body)), гілки, повернення)
+                кінці = []
+                звичайний = dict((к, set(в)) for к, в in тіло.items())
+                if ст.orelse:
+                    self.блок(мод, ім, ст.orelse, звичайний, ("блок", id(ст.orelse)), гілки, повернення)
+                if not self.обриває(ст.body) and not self.обриває(ст.orelse):
+                    кінці.append(звичайний)
+                старт = self.обʼєднати(до, тіло)
+                for х in ст.handlers:
+                    е = dict((к, set(в)) for к, в in старт.items())
+                    if х.name:
+                        е.pop(х.name, None)
+                    self.блок(мод, ім, х.body, е, ("блок", id(х.body)), гілки, повернення)
+                    if not self.обриває(х.body):
+                        кінці.append(е)
+                після = self.обʼєднати(*кінці) if кінці else self.обʼєднати(до, тіло)
+                if ст.finalbody:
+                    self.блок(мод, ім, ст.finalbody, після, ("блок", id(ст.finalbody)), гілки, повернення)
                 env.clear()
-                env.update(self.злити(*списки))
+                env.update(після)
             elif isinstance(ст, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 е = dict((к, set(в)) for к, в in env.items())
                 for п in ст.args.posonlyargs + ст.args.args + ст.args.kwonlyargs:
@@ -894,6 +1001,7 @@ class ЗмінаОбєкта:
                 ключ = (мод.ім, ім)
                 env = {п: set(м) for п, м in self.параметри.get(ключ, {}).items()}
                 гілки, повернення = {}, set()
+                self.тіло[ключ] = ф
                 self.блок(мод, ім, ф.body, env, ("блок", id(ф.body)), гілки, повернення)
                 self.зміни[ключ] = гілки
                 if повернення - self.повертає.get(ключ, set()):
@@ -1893,6 +2001,64 @@ def _тест_перетворення_ід():
     assert "без перетворення на номер для дроту" in місця2[0][3]
 
 
+ВИПАДКИ_ВАД_ВИМІРУ = [
+    # 15902: мітка обʼєкта відповіді — лише тому елементу кортежу, що з нього походить
+    ("15902 кортеж: власний запис коду поруч з обʼєктом — не місце",
+     "import json\ndef п(d):\n    об = json.loads(d['відповідь_моделі'])\n    вих = {}\n    вузол, сире = вих, об\n"
+     "    вузол['x'] = 1\n    return вузол\n", 0),
+    ("15902 кортеж: розпакований обʼєкт відповіді — місце",
+     "import json\ndef п(d):\n    об = json.loads(d['відповідь_моделі'])\n    вих = {}\n    вузол, сире = вих, об\n"
+     "    сире['x'] = 1\n    return вузол\n", 1),
+    ("15902 zip: власний запис коду поруч з елементами обʼєкта — не місце",
+     "import json\ndef п(d):\n    об = json.loads(d['відповідь_моделі'])\n    вих = [{}]\n"
+     "    for ч, готова in zip(об.get('parts'), вих):\n        готова['x'] = ч.get('x')\n    return вих\n", 0),
+    ("15902 zip: елемент обʼєкта відповіді — місце",
+     "import json\ndef п(d):\n    об = json.loads(d['відповідь_моделі'])\n    вих = [{}]\n"
+     "    for готова, ч in zip(вих, об.get('parts')):\n        ч['x'] = 1\n    return вих\n", 1),
+    # 15903: мітки з тіла `try` живуть після нього
+    ("15903 try з return в обробнику: зміна розібраного обʼєкта — місце",
+     "import json\ndef п(d):\n    try:\n        об = json.loads(d['відповідь_моделі'])\n    except ValueError:\n"
+     "        return None\n    об['x'] = 1\n    return об\n", 1),
+    ("15903 try з continue в обробнику, у циклі — місце",
+     "import json\ndef п(списки):\n    for d in списки:\n        try:\n            об = json.loads(d['відповідь_моделі'])\n"
+     "        except ValueError:\n            continue\n        об['x'] = 1\n", 1),
+    ("15903 try, обробник підставляє своє: на шляху успіху обʼєкт відповіді — місце",
+     "import json\ndef п(d):\n    try:\n        об = json.loads(d['відповідь_моделі'])\n    except ValueError:\n"
+     "        об = {}\n    об['x'] = 1\n    return об\n", 1),
+    ("15903 try над власними даними коду — не місце",
+     "def п(d):\n    об = {}\n    try:\n        об['a'] = 1\n    except KeyError:\n        pass\n    об['x'] = 1\n"
+     "    return об\n", 0),
+    # 15910: обʼєкт для звірки схемою не стає відповіддю
+    ("15910 обʼєкт для звірки — аргумент виклику, що його лише читає: не місце",
+     "import json\ndef розбіжності(р, сирий):\n    об = сирий if isinstance(сирий, dict) else {}\n    вих = dict(р)\n"
+     "    вих['а'] = об.get('a')\n    return вих\n"
+     "def п(d):\n    об = json.loads(d['відповідь_моделі'])\n    р = {'в': 1}\n"
+     "    return розбіжності(dict(р), dict(об.get('update') or {}, **{к: з for к, з in об.items() if к != 'update'}))\n", 0),
+    ("15910 обʼєкт для звірки присвоєно імені й лише переданий читачеві: не місце",
+     "import json\ndef розбіжності(р, сирий):\n    об = сирий if isinstance(сирий, dict) else {}\n    вих = dict(р)\n"
+     "    вих['а'] = об.get('a')\n    return вих\n"
+     "def п(d):\n    об = json.loads(d['відповідь_моделі'])\n    оновлення = об.get('update') or {}\n"
+     "    оновлення = dict(оновлення, **{к: з for к, з in об.items() if к != 'update'})\n"
+     "    return розбіжності({'в': 1}, оновлення)\n", 0),
+    ("15910 виведений обʼєкт повернено прямо — місце",
+     "import json\ndef п(d):\n    об = json.loads(d['відповідь_моделі'])\n    return dict(об, x=1)\n", 1),
+    ("15910 виведений обʼєкт — аргумент виклику, що його повертає — місце",
+     "import json\ndef той_самий(о):\n    return о\n"
+     "def п(d):\n    об = json.loads(d['відповідь_моделі'])\n    return той_самий(dict(об, x=1))\n", 1),
+    ("15910 обʼєкт, присвоєний імені й повернений далі, — місце",
+     "import json\ndef п(d):\n    об = json.loads(d['відповідь_моделі'])\n    об = dict(об, x=1)\n    return об\n", 1),
+]
+
+
+def _тест_п4_вади_виміру():
+    """Вади виміру п.4(в) (рядки дошки 15902, 15903, 15910): розпакування кортежу й `zip`, стан міток після `try`, обʼєкт для
+    звірки. Кожен випадок — (назва, код, скільки місць); тест падає на першому, що розійшовся."""
+    for назва, код, скільки in ВИПАДКИ_ВАД_ВИМІРУ:
+        а = Аналіз({"синтетика": ast.parse(код)}, {"відповідь_моделі"}, set(), {}).виконати()
+        є = [м[3] for м in Структура(а).зміни_обʼєкта()]
+        assert len(є) == скільки, "%s: місць %d, очікувано %d: %r" % (назва, len(є), скільки, є)
+
+
 def _тест_п4_обєкт_відповіді():
     """Проби п.4(в): місце — зміна обʼєкта відповіді після розбору, куди б не писав слід; читання й власні записи коду — ні."""
     def місця(код):
@@ -2326,17 +2492,20 @@ def main():
         _тест_запасного_ходу_у_викликачах()
         _тест_п3_зупинки()
         _тест_п4_обєкт_відповіді()
+        _тест_п4_вади_виміру()
         print("тест винятку: ОК")
         print("тест перетворення ід: ОК")
         print("тест запасного ходу у викликачах: ОК")
         print("тест п.3 зупинки (д, е, є): ОК")
         print("тест п.4 (в) зміна обʼєкта відповіді: ОК")
+        print("тест п.4 (в) вади виміру 15902/15903/15910: ОК (%d випадків)" % len(ВИПАДКИ_ВАД_ВИМІРУ))
         return 0
     _тест_винятку()
     _тест_перетворення_ід()
     _тест_запасного_ходу_у_викликачах()
     _тест_п3_зупинки()
     _тест_п4_обєкт_відповіді()
+    _тест_п4_вади_виміру()
     м, м_виняток, інфо, а, конуси, js, ендп, клієнти = зібрати()
     вивести(м, м_виняток, інфо, а, конуси, js, ендп, клієнти)
     return 0
