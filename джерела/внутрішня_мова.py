@@ -1846,7 +1846,9 @@ def _опис_keep_by():
     "wear_cost_no_duration_surface": "the code does not count the wearing cost for the feet: it is unknown "
                                      "how many hours and on what she will walk",
     # ── погода й матеріал (`суд_погода`, `аксесуари_погода`) ──────────────────────
-    "sole_grip_unknown_ice": "the card does not say whether the sole grips on ice, and today there is black ice "
+    # лід не стверджується: заяву дає смуга морозу (`суд_погода`, K-WEA-06), а не її слово про ожеледь — «а сьогодні
+    # ожеледиця» вона читала, сказавши лише «сніг» (живий-як-людина-4, с8; корінь Е2-опора-пояснення)
+    "sole_grip_unknown_ice": "the card does not say whether the sole grips on ice, which a frosty day may bring "
                              "(values: item — the item: item_id, kind and colour codes; item_id)",
     "no_light_outer_layer_in_catalogue": "no light outer layer for this occasion was found in the catalogue",
     "fabric_season_not_judged_indoors": "the code does not judge fabric seasonality indoors (values: slot — "
@@ -1887,8 +1889,11 @@ def _опис_keep_by():
                                    "apply it to: it does not know her under-bust girth or neck length (values: item — the item: item_id, kind and colour codes; item_id)",
     "outer_shoulder_not_measured": "the card does not carry the outer layer's shoulder width, so the code does not "
                                    "judge whether the shoulder fits (values: item — the item: item_id, kind and colour codes; item_id)",
+    # сіль не стверджується: заяву дає й сіль, виведена з морозу й снігу (`верхнє_догляд`, `сольова_сльота`), — «чи
+    # витримає сіль на дорогах» вона читала, не сказавши про сіль (нічний 15.11, ж3_зима; корінь Е2-опора-пояснення)
     "outer_composition_unknown_salt": "the card does not name the outer layer's composition, so the code does not "
-                                      "know whether road salt damages it (values: item — the item: item_id, kind and colour codes; item_id)",
+                                      "know whether it stands road salt, if the roads she walks are salted (values: "
+                                      "item — the item: item_id, kind and colour codes; item_id)",
     # ── річ: розмір, крій і знімок (`суд_річ`) ───────────────────────────────────
     "size_is_label_not_fit": "a shop size is a number, not a fit: without the garment's measurements the code "
                              "does not know how the item fits (values: sizes — sizes by slot: slot — slot "
@@ -2445,10 +2450,13 @@ def _опис_keep_by():
     "possible_rain_no_rain_layer": "rain is only possible, and no outer layer of the look keeps it off (values: "
                                    "precipitation — the precipitation code)",
     "rain_outer_layer_over_look": "an outer layer that keeps off rain — a trench, a raincoat or a parka — over "
-                                  "this look, or keep the look and say why it holds this day",
+                                  "this look, or keep the look only when a known property of its items holds this "
+                                  "day, and name that property",
     "smooth_protected_leather_or_rubber_or_treat": "replace it with smooth protected leather or rubber, or "
                                                    "treat it with a water repellent and accept the risk",
-    "keep_look_say_why_it_holds_day": "keep the look and say why it holds this day",
+    # лишити образ — лише на відомій властивості його речей: «чому тримає день» без неї модель вигадувала обставину
+    "keep_look_say_why_it_holds_day": "keep the look only when a known property of its items holds this day, and name "
+                                      "that property",
     "face_contrast_above_her_own": "the step of lightness between the item near the face and her skin is larger "
                                    "than the step her own colouring carries, so the item draws the eye before "
                                    "the face; this describes the item, not her looks (values: jump — the "

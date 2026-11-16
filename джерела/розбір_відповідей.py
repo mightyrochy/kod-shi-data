@@ -116,18 +116,22 @@ import colorspace as _cs
         # вимагає обережних кроків» на сніг і двадцять хвилин пішки (с8) — складання й ремонт фото не бачили, і
         # «свідомого вибору» не було. Тепер така річ — `swap` з підставою `day`; пояснення лишається тому, що
         # з днем лише сперечається.
-        _ВИМ.поле("day", як="when the known item properties support it, in the last part of «text» say how this outfit "
-                    "lives through her day. An item its photo shows unfit for her weather or way there is «swap»; "
-                    "for anything else that argues with the day (hours on her feet, the place), say in one plain "
-                    "sentence why you still chose it and what it means for her day, never handing that decision "
-                    "back to her"),
+        # Обставини її дня (корінь Е2-опора-пояснення, крок «обставини»): «day» несе лише сказане нею
+        # (`дріт_моделі.день_її_слів`), і пояснення — лише про факт «day» і відому властивість речі: «а сьогодні
+        # ожеледиця», «Road salt and slush», «morning light» опис казав їй з виведеного й без вимоги умови.
+        _ВИМ.поле("day", як="only what she said about her day. When the known item properties support it, in the last "
+                    "part of «text» say how this outfit lives through the facts listed in «day». An item its photo "
+                    "shows unfit for her weather or way there is «swap»; for an item whose known property argues "
+                    "with a fact listed in «day», say in one plain sentence why you still chose it and what it means "
+                    "for her day, never handing that decision back to her. Weather, road, place, light or time of "
+                    "day that «day» does not carry is not a fact of her day"),
         # ОПИС-1 (K-PAL-11/14/15): «найдальші» й «комбінація», якщо йдуть у КОЖЕН опис, дають
         # «маленька оливкова чи зелена деталь» навіть на похороні й поради додати річ, якої в образі
-        # нема. Тож лише те, що стосується речей образу.
+        # нема. Тепер палітра опису — лише метал, названий нею (`дріт_моделі.палітра_опису`; корінь
+        # Е2-опора-пояснення, крок «обставини»): найдальших і поєднання опис не дістає.
         _ЗП.Поле("palette", "her palette",
                  як="in the last part of «text», in prose: discuss metal only with jewelry or metal details "
-                    "in this outfit; call a colour «farthest» from her only if an outfit item carries it; "
-                    "an optional combination uses only outfit items, never additions"),
+                    "in this outfit"),
         # K-BOD-02, K-SIL-03 (аудит/ПРОДУКТ.md п.4): її фігура кодами — ті самі, що в брифі складання.
         # П.17: річ образу — вибір стилістки; річ проти фігури — пояснити, рішення не віддавати.
         # «cuts_best_on_her: belted» при вільному светрі без пояса давало «tuck in just the front hem
