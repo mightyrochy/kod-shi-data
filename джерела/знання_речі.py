@@ -7,7 +7,6 @@ source — його чинний писач. Явна відсутність є 
 """
 import внутрішня_мова as _ВМ
 import колір_річ as _К
-import colorspace as _cs
 import palettes as _ПЛ
 
 СТАТУСИ = ("measured", "range", "unknown", "not_applicable")
@@ -158,13 +157,12 @@ def колір_кадру(x):
     """Код `color_name` кольору, виміряного на кадрі речі (`palettes.назва` її hex — те саме вікно, що підписує
     палітру), або None. Не код слова крамниці: слово вікно виміру приймає й тоді, коли кадр ближчий до іншого кольору
     (сумка «brown» з виміром `#4a2b2c` — бордова на фото, берет «black» з `#584c4d` — сірий), тож про колір каже кадр."""
-    hx = _К.hex_кольору(x)
-    if not hx:
+    if not _К.hex_кольору(x):
         return None
-    try:
-        к = _ВМ.код("color_name", _ПЛ.назва(_cs.hx("#" + str(hx).lstrip("#")))[0])
-    except ValueError:
+    точка = _К.точка_кольору(x)   # хибний hex — точки нема (None), без обробника збою
+    if точка is None:
         return None
+    к = _ВМ.код("color_name", _ПЛ.назва(точка)[0])
     return к if к and not _ВМ.невідомо(к) else None
 
 
