@@ -1604,32 +1604,63 @@ def про_заміну(вузол):
     return False
 
 
-def є_писар_тексту(вузол):
-    """Функція пише `текст`/`проза`/`як_носити` значенням із виклику писаря з реєстру."""
+def записи_тексту(вузол):
+    """Значення `текст`/`проза`/`як_носити` у піддереві: ключ dict, ключовий аргумент, запис за ключем."""
+    вих = []
     for в in ast.walk(вузол):
-        значення, ключі = None, set()
         if isinstance(в, ast.Assign):
-            значення = в.value
-            for ц in в.targets:
-                if isinstance(ц, ast.Subscript) and isinstance(ц.slice, ast.Constant):
-                    ключі.add(ц.slice.value)
+            if any(isinstance(ц, ast.Subscript) and isinstance(ц.slice, ast.Constant)
+                   and ц.slice.value in КЛЮЧІ_ПРОЗИ for ц in в.targets):
+                вих.append(в.value)
         elif isinstance(в, ast.Dict):
-            for к, з in zip(в.keys, в.values):
-                if isinstance(к, ast.Constant) and к.value in КЛЮЧІ_ПРОЗИ and з is not None:
-                    ключі.add(к.value)
-                    значення = з
+            вих.extend(з for к, з in zip(в.keys, в.values)
+                       if isinstance(к, ast.Constant) and к.value in КЛЮЧІ_ПРОЗИ and з is not None)
         elif isinstance(в, ast.Call):
-            for к in в.keywords:
-                if к.arg in КЛЮЧІ_ПРОЗИ:
-                    ключі.add(к.arg)
-                    значення = к.value
-        if ключі & КЛЮЧІ_ПРОЗИ and значення is not None:
-            for в2 in ast.walk(значення):
-                if isinstance(в2, ast.Call):
-                    назва = в2.func.id if isinstance(в2.func, ast.Name) else getattr(в2.func, 'attr', '')
-                    if назва in ПИСАРІ_ТЕКСТУ_СКЛАДУ:
-                        return True
+            вих.extend(к.value for к in в.keywords if к.arg in КЛЮЧІ_ПРОЗИ)
+    return вих
+
+
+def значення_писаря(з):
+    """Значення тексту — сам виклик писаря з реєстру чи `None`; будь-що довкола (`or`, `if`, прозу) — ні."""
+    if isinstance(з, ast.Constant) and з.value is None:
+        return True
+    if isinstance(з, ast.Call):
+        назва = з.func.id if isinstance(з.func, ast.Name) else getattr(з.func, 'attr', '')
+        return назва in ПИСАРІ_ТЕКСТУ_СКЛАДУ
     return False
+
+
+def вузли_шляху(дерево, с):
+    """Оператори шляху рішення `с`: його оператор, простий код перед ним у блоці й усе після нього до `return` на
+    кожному рівні вкладення (гілка поруч і складений оператор перед ним — інший шлях, не беруться)."""
+    батько = {д: в for в in ast.walk(дерево) for д in ast.iter_child_nodes(в)}
+    о = с
+    while not isinstance(о, ast.stmt) and о in батько:
+        о = батько[о]
+    вих = [о]
+    складені = (ast.If, ast.For, ast.While, ast.Try, ast.With, ast.AsyncFor, ast.AsyncWith, ast.Match)
+    while о in батько:
+        б = батько[о]
+        блок = next((л for п in ('body', 'orelse', 'finalbody') if isinstance(л := getattr(б, п, None), list)
+                     and о in л), None)
+        if блок is not None:
+            і = блок.index(о)
+            вих.extend(х for х in блок[:і] if not isinstance(х, складені))
+            for х in блок[і + 1:]:
+                вих.append(х)
+                if isinstance(х, (ast.Return, ast.Raise)):
+                    return вих
+        if isinstance(б, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            break
+        о = б
+    return вих
+
+
+def є_писар_на_шляху(дерево, с):
+    """Текст картки на шляху рішення `с` пише писар: на шляху є запис тексту, і кожен — виклик писаря чи `None`
+    (проза відповіді чи `писар(...) or проза` на цьому шляху — не писар, хоч в іншій гілці він є)."""
+    значення = [з for в in вузли_шляху(дерево, с) for з in записи_тексту(в)]
+    return bool(значення) and all(значення_писаря(з) for з in значення)
 
 
 def рішення_без_застосування(м):
@@ -1661,7 +1692,7 @@ def кандидати_прози(м):
     for с in рішення_без_застосування(м):
         ф = м.охопна(с)
         межа = ф if ф is not None else м.дерево
-        if not про_заміну(межа) or є_писар_тексту(межа):
+        if not про_заміну(межа) or є_писар_на_шляху(м.дерево, с):
             continue
         вих.append(Кандидат(
             м.шлях, с.lineno, 'шлях прози', f'стан={с.value}', функція=ф.name if ф is not None else '',
