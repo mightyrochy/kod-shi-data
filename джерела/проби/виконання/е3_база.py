@@ -7,11 +7,11 @@ import subprocess
 import sys
 
 
-def встановити(коміт):
-    """Підставити код бази під час імпорту, не змінюючи робочих файлів."""
+def встановити(коміт, модулі=('реєстр_сила', 'суд_погода')):
+    """Підставити код бази під час імпорту, не змінюючи робочих файлів; `модулі` — які саме."""
     class База(importlib.abc.MetaPathFinder, importlib.abc.Loader):
         def find_spec(self, fullname, path=None, target=None):
-            if fullname in ('реєстр_сила', 'суд_погода'):
+            if fullname in модулі:
                 return importlib.util.spec_from_loader(fullname, self)
 
         def create_module(self, spec):
