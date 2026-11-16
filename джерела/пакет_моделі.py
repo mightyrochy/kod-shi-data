@@ -506,9 +506,11 @@ import внутрішня_мова as _ВМ_П
                        "by its «type»",
     "образи[].речі": "«n», e.g. \"%s\"" % ПРИКЛАД_НОМЕРА,      # «alone» — у правилі `РЯДОК_ЛИШЕ_НОМЕР`
     # «the choice is hers» — лише про її бажання; за свою річ стилістка каже, чому вона
+    # пояснення — лише з відомої властивості речі проти факту «day» (корінь Е2-опора-пояснення, крок «обставини»)
     "образи[].день": "one sentence, up to 25 words: how this outfit lives through her day; where something she "
                      "asked for herself argues with the day, say so gently — that part is hers to decide; where "
-                     "an item you chose argues with the day, say why you still chose it",
+                     "a known property of an item you chose argues with a fact listed in «day», say why you still "
+                     "chose it",
     # «alone» уже каже правило `РЯДОК_ЛИШЕ_НОМЕР` (повтор, корінь Е2-промпти)
     "образи[].свідомо[].річ": "«n»",
     # Полюс — один код. Склеєних («tonal_column|ease_the_knot») і власних назв («tone_on_tone», «free_1»)
