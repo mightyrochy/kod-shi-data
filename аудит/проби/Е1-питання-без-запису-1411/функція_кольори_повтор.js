@@ -12,7 +12,7 @@ const ф = (н, у, що) => { рядки.push((у ? '✓ ' : '✗ ') + н + (у
   const p = await (await b.newContext({viewport: {width: 390, height: 844}})).newPage();
   const помилки = []; p.on('pageerror', e => помилки.push(String(e)));
   await p.goto('file://' + шлях + '#міст=http://localhost:8787&т=tok-a1');
-  await p.waitForFunction(() => document.getElementById('сцн-новий') && typeof document.getElementById('сцн-новий').onclick === 'function', null, {timeout: 60000});
+  await p.waitForFunction(() => typeof Екран !== 'undefined' && !!Екран.стан.вхід, null, {timeout: 60000});
   await p.evaluate(async () => {
     await писатиКв(ключФото('портрет'), 'портрет-заглушка');
     блобВБазу = async () => ({тип: 'image/jpeg', дані: 'AAAA', ширина: 1568, висота: 1176, якість: 0.85});
@@ -42,7 +42,7 @@ const ф = (н, у, що) => { рядки.push((у ? '✓ ' : '✗ ') + н + (у
   const А = await p.evaluate(() => АКТИВНИЙ);
   await p.evaluate(async () => { await створитиПрофіль(); });
   await мостЦілий(ГОТОВО);
-  await p.evaluate(() => { const к = document.getElementById('кол-повтор'); return к.onclick && к.onclick({currentTarget: к}); });
+  await p.evaluate(() => { const к = document.getElementById('кол-повтор'); к.click(); });
   с = await стан();
   ф('збій А → профіль Б: у Б повтор прихований, кольори А не застосовані', доступнийА && с.повтор_прихов && !с.шкіра, [доступнийА, с]);
   await p.evaluate(a => перемкнути(a), А);
@@ -51,11 +51,11 @@ const ф = (н, у, що) => { рядки.push((у ? '✓ ' : '✗ ') + н + (у
   await p.evaluate(() => { КОЛІР = {шкіра:null,волосся:null,очі:null,кільце:null,точки:null}; });
   await мод(); await мостЗлам(); await клік('кол-зчитати'); await чекати(() => !document.getElementById('кол-повтор').hidden);
   await p.evaluate(() => { window._кінець = null; містП = () => new Promise(р => { window._кінець = р; }); });
-  const повтор = p.evaluate(() => { const к = document.getElementById('кол-повтор'); return к.onclick({currentTarget: к}); });
+  const повтор = p.evaluate(() => { const к = document.getElementById('кол-повтор'); к.click(); });
   await p.waitForFunction(() => window._кінець, null, {timeout: 15000});
   await p.evaluate(async () => { містП = async () => { throw new Error('новий збій'); }; await зчитатиКольориЗПортрета(); });
   await p.evaluate(() => window._кінець({стан: 'готово', шкіра: ['#111111'], волосся: ['#222222'], очі: '#333333', зони: {}}));
-  await повтор;
+  await повтор; await p.waitForTimeout(500);   // .click() не чекає обробника, як чекав виклик onclick до #3703
   с = await стан();
   ф('новий запуск під час повтору: кнопка повтору знову доступна (не disabled), старі кольори не застосовані', !с.повтор_прихов && !с.повтор_disabled && с.шкіра !== '#111111', с);
   await мостЦілий(ГОТОВО);

@@ -1,6 +1,7 @@
 // ОЦІНКА-Ж16: #820 у справжньому Chromium на зібраній сторінці (код 964c637a0601 = 9ad76ee2, пачка 25): плитки відчуття «Коли й погода»,
 // ошатність «Свято» без місця, паспорт К7, рядок речей без анімації. Аргумент — тека з index.html.
-// Збірка: cd джерела && python3 build_артефакт.py . /tmp/с25/index.html показ-повний (на дереві 9ad76ee2);
+// Збірка: у хмарі CPython 3.12.1 нема (образ: 3.11/3.12.3/3.13) — `uv python install 3.12.1` (≈4 с) і `LYUSTERKO_PYC_PYTHON=$(uv python find 3.12.1)` перед `python3 build_артефакт.py`;
+// cd джерела && python3 build_артефакт.py . /tmp/с25/index.html показ-повний (на дереві 9ad76ee2);
 // запуск: NODE_PATH=$(npm root -g) node аудит/проби/плитки_820_chromium.js /tmp/с25
 const {chromium} = require("playwright");
 (async () => {

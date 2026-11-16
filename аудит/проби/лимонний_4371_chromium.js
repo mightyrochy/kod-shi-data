@@ -1,6 +1,7 @@
 // Рядок 4371: код кольору hex без її слова (`мовний_шар._код_кольору` → `palettes._назва`) у справжньому Chromium на
 // зібраній сторінці — hex знахідки й речі каталогу (JSON [{id, крамниця, lab, назва}]), Python — воркер моста самої сторінки.
-// Збірка: cd джерела && LYUSTERKO_CATALOG=повний python3 build_артефакт.py . <тека>/index.html показ-повний
+// Збірка: у хмарі CPython 3.12.1 нема (образ: 3.11/3.12.3/3.13) — `uv python install 3.12.1` (≈4 с) і `LYUSTERKO_PYC_PYTHON=$(uv python find 3.12.1)` перед `python3 build_артефакт.py`;
+// cd джерела && LYUSTERKO_CATALOG=повний python3 build_артефакт.py . <тека>/index.html показ-повний
 // Запуск: NODE_PATH=джерела/node_modules node аудит/проби/лимонний_4371_chromium.js <тека> <тека pyodide> <речі.json>
 const {chromium} = require("playwright"), fs = require("fs"), path = require("path");
 const [КОРІНЬ, PYO, РЕЧІ] = process.argv.slice(2), БАЗА = "http://127.0.0.1:8765";

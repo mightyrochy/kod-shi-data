@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Люстерко · приклад 1 «Полотно»</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Arsenal:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+/* ПОЛОТНО. Розмова тчеться, як рушник: довге тихе полотно, що густішає до образу й кінчається підписом із датою.
+   Числа: рушник 1839 р. — понад половину довжини порожня; рукав буковинської сорочки — 32 : 13 : 55. */
+:root{
+  --pol:#E9E7E2;   /* полотно: льон рушника 1839 р. (#E6E0D9), на крок світліший і сіріший — щоб фото на білому тлі не стояло латкою */
+  --bil:#F9F7F3;   /* вибілене: підкладка під фото */
+  --mar:#A97975;   /* марена на льоні: площини */
+  --hus:#8A3A32;   /* марена густа: її слова, текстом */
+  --ink:#2E2623;   /* слова стилістки */
+  --pop:#6B5F58;   /* попіл: підписи */
+  --syn:#4A6072;   /* вицвіла синь вибійки: одне місце — її рішення */
+  --k:4px;         /* крок сітки = одна нитка */
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--pol)}
+body{font:400 17px/1.47 Arsenal,'Segoe UI',sans-serif;color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.tkan{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.5}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+a{color:inherit}
+img{display:block}
+
+/* згорток: те, що вже виткано (ліворуч на широкому, рядком угорі на телефоні) */
+.zhortok{position:relative;z-index:2;display:flex;align-items:baseline;justify-content:space-between;padding:20px 24px 0}
+.znak{font-weight:700;font-size:15px;letter-spacing:.22em;text-transform:lowercase}
+.zhortok .do{font-size:15px;color:var(--pop);border-bottom:2px dotted currentColor;padding-bottom:1px;text-decoration:none}
+.zhortok .shyr{display:none}
+
+#korin{position:relative;z-index:1;padding:0 24px 148px;max-width:430px;margin:0 auto}
+.tyho{padding-top:44px}
+.s,.v{margin:0 0 20px;max-width:31ch;text-wrap:pretty}
+.s{margin-right:auto}
+.v{color:var(--hus);margin-left:auto;padding-left:0;width:78%}
+.v+.s,.s+.v{margin-top:28px}
+.vel{font-size:34px;line-height:1.1;letter-spacing:-.005em;max-width:13em;margin-bottom:24px;text-wrap:balance}
+.pid{font-size:14px;line-height:1.35;color:var(--pop);letter-spacing:.02em}
+.pid b{color:var(--ink);font-weight:700}
+.shov{border:0;border-top:2px dotted rgba(107,95,88,.55);margin:28px 0 12px}   /* шов-мережка: рядок дірочок */
+
+/* дії: густа смуга — головна; слово з дірочками — друга */
+.dali{display:flex;flex-direction:column;gap:14px;margin-top:32px}
+.smuha{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 20px;background:rgba(138,58,50,.93);color:var(--bil);font-weight:700;letter-spacing:.02em}
+.smuha:active{background:var(--ink)}
+.smuha i{font-style:normal;opacity:.85}
+.slovo{align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;border-bottom:2px dotted var(--pop);color:var(--ink)}
+.slova{display:flex;flex-wrap:wrap;gap:6px 18px}
+.slova .slovo{min-height:40px}
+.slovo.je{color:var(--hus);border-bottom:2px solid var(--hus)}
+
+/* край, де тчеться: поле розмови внизу, під великим пальцем */
+.kraj{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:10px 24px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(rgba(232,225,216,0),var(--pol) 26%)}
+.kraj div{display:flex;align-items:center;gap:12px;max-width:382px;margin:0 auto;border-top:2px solid var(--ink);padding-top:10px}
+.kraj span{flex:1;color:var(--pop);min-height:44px;display:flex;align-items:center}
+.kraj span.je{color:var(--hus)}
+.kraj span.je:after{content:'';width:2px;height:22px;background:var(--hus);margin-left:2px;animation:blym 1s steps(2) infinite}
+.mik{width:44px;height:44px;border-radius:50%;background:var(--hus);flex:none;position:relative}
+.mik:after{content:'';position:absolute;inset:14px 18px;border-radius:4px;background:var(--bil)}
+.mik.chuje{box-shadow:0 0 0 6px rgba(169,121,117,.35)}
+@keyframes blym{50%{opacity:0}}
+
+/* фото: одяг — єдине густе на екрані; інтерфейс його не фарбує */
+.foto{display:block;position:relative;background:var(--bil);overflow:hidden;aspect-ratio:2/3}
+.foto img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
+.foto.tlo-rivne{background:var(--pol)}
+.foto.tlo-rivne img{object-fit:contain;mix-blend-mode:multiply} /* річ на рівному тлі лягає просто на полотно */
+.foto.male{display:grid;place-items:center}
+.foto.male img{width:auto;height:auto;max-width:min(100%,var(--w));max-height:min(100%,var(--h))}
+.foto.bezrechi img,.foto.nema-foto img,button.foto img{display:none}
+.foto.bezrechi:after,.foto.nema-foto:after,button.foto:after{content:attr(data-nema);position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:8px;font-size:13px;line-height:1.3;color:var(--pop)}
+button.foto{background:none;outline:1.5px dashed var(--mar);outline-offset:-2px}
+.foto.zrist{aspect-ratio:9/16}.foto.portret{aspect-ratio:3/4}
+.foto.vona img{object-position:50% 20%}
+.svoje:before{content:'своє';position:absolute;z-index:1;left:0;top:0;background:var(--hus);color:var(--bil);font-size:13px;font-weight:700;letter-spacing:.06em;padding:2px 8px}
+
+/* густе місце: блок фото з пругом-шашечкою обабіч — лише тут, як у рушника */
+.huste-misce{display:grid;grid-template-columns:8px 1fr 8px;gap:6px;margin:8px -14px 0}
+.prug{background:repeating-conic-gradient(rgba(169,121,117,.8) 0 25%,transparent 0 50%) 0 0/8px 8px}
+.blok{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.blok .foto:first-child{grid-column:span 2;grid-row:span 2}
+.nazva-obrazu{font-size:44px;line-height:1;font-weight:700;letter-spacing:-.01em;margin:8px 0 4px}
+
+/* перелік речей */
+.rechi{list-style:none;padding:0;margin:20px 0 0}
+.rechi li{display:grid;grid-template-columns:48px 1fr auto;gap:2px 12px;padding:14px 0;border-top:2px dotted rgba(107,95,88,.45)}
+.rechi .foto{grid-row:span 3;width:48px}
+.rechi a{font-weight:700;text-decoration:none;line-height:1.25}
+.rechi .cina{font-variant-numeric:tabular-nums;white-space:nowrap}
+.rechi .kram{grid-column:2/4;font-size:14px;color:var(--pop)}
+.rechi p{grid-column:2/4;font-size:15px;line-height:1.4;margin-top:4px}
+.rechi .dii{grid-column:2/4;display:flex;gap:18px;font-size:15px;margin-top:2px}
+.rechi .dii button{min-height:40px;border-bottom:2px dotted var(--pop)}
+.rechi li.zmin a:after{content:' · змінено';color:var(--hus);font-weight:400;font-size:14px}
+.rechi li.sv .cina{color:var(--hus)}
+.suma{display:flex;justify-content:space-between;border-top:2px solid var(--ink);padding-top:12px;margin-top:4px;font-weight:700}
+
+/* «що я зрозуміла»: три густоти рукава 32 : 13 : 55 */
+.rukav{margin:8px -14px 0}
+.ustavka{background:rgba(138,58,50,.93);color:var(--bil);padding:20px 20px 22px}
+.ustavka .pid{color:rgba(247,243,238,.85)}
+.ustavka h2{font-size:30px;line-height:1.1;margin:6px 0 8px;letter-spacing:-.005em}
+.morshch{padding:12px 20px 12px;display:flex;gap:10px;align-items:baseline;justify-content:space-between;border-bottom:2px solid var(--ink);background:linear-gradient(var(--ink),var(--ink)) 0 0/100% 0 no-repeat}
+.morshch:before{content:none}
+.rukav .shash{height:8px;background:repeating-conic-gradient(rgba(169,121,117,.85) 0 25%,transparent 0 50%) 0 0/8px 8px}
+.morshch small{font-size:13px;letter-spacing:.04em;color:var(--pop)}
+.pole{padding:6px 14px 0}
+.rjad{display:grid;grid-template-columns:104px 1fr;gap:0 12px;padding:11px 0;font-size:15px;line-height:1.35;border-bottom:1px solid rgba(107,95,88,.25);min-height:44px}
+.rjad b{font-weight:400;color:var(--pop)}
+.rjad q{grid-column:2;color:var(--hus);font-size:14px;quotes:'«' '»'}
+.rjad.pry{border-left:4px solid var(--syn);margin-left:-14px;padding-left:10px}
+.rjad.pry em{grid-column:2;font-style:normal;font-size:14px;color:var(--syn)}
+.rjad .dii{grid-column:2;display:flex;gap:18px;margin-top:2px}
+.rjad .dii button{min-height:40px;border-bottom:2px dotted var(--syn);color:var(--syn);font-weight:700}
+.rjad .try{grid-column:2;display:flex;gap:16px;margin-top:4px}
+.rjad .try button{min-height:40px;color:var(--pop);border-bottom:2px dotted transparent}
+.rjad .try .je{color:var(--hus);border-bottom:2px solid var(--hus);font-weight:700}
+
+/* барви: смуги за часткою, як тканий кінець */
+.barvy{margin:8px -14px 0}
+.barvy div{display:flex;justify-content:space-between;align-items:center;padding:0 16px;font-size:14px;letter-spacing:.02em;color:var(--bil)}
+.barvy div.svitla{color:var(--ink)}
+
+/* чекання: рядки на порожньому полотні (прориси з рушників 1839 р. і поч. ХХ ст.) */
+.tkannja{margin-top:8px}
+.rjadok{padding:0 0 30px}
+.rjadok i{display:block;height:14px;background:url(../взірці/обводи/strilky.svg) 0 50%/auto 12px repeat-x;opacity:.8;filter:saturate(.42) brightness(1.18);margin-bottom:8px}
+.rjadok:nth-child(even) i{background-image:url(../взірці/обводи/rysky.svg);background-size:auto 9px}
+.rjadok.tche i{width:58%;animation:tche 7s linear infinite}
+.rjadok.bude i{background:none;border-top:2px dotted rgba(107,95,88,.35);height:0;margin:6px 0 14px}
+.rjadok.bude{color:var(--pop)}
+.rjadok.rvane i{width:31%;animation:none}
+.rjadok small{display:block;font-size:14px;color:var(--pop)}
+@keyframes tche{from{width:4%}to{width:96%}}
+
+/* кандидати заміни: троє поруч */
+.troje{display:grid;grid-template-columns:1fr;margin:8px 0 0}
+.troje article{display:grid;grid-template-columns:104px 1fr;column-gap:14px;align-content:start;font-size:16px;line-height:1.3;padding:10px 0 6px 10px;border-top:1px solid var(--mar);border-left:4px solid transparent}
+.troje .foto{aspect-ratio:1;grid-row:1/5}
+.troje p{color:var(--pop);margin:2px 0 2px;font-size:15px}
+.troje .radzhu{border-left-color:var(--hus)}
+.troje button{justify-self:start}
+.troje button{min-height:44px;border-bottom:2px dotted var(--pop);align-self:flex-start}
+.troje .radzhu button{color:var(--hus);border-bottom:2px solid var(--hus);font-weight:700}
+.para{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:16px 0 0}
+.para figcaption{font-size:14px;color:var(--pop);margin-top:6px;line-height:1.3}
+.vyrok{background:var(--hus);color:var(--bil);font-size:30px;font-weight:700;padding:14px 20px;margin:8px -14px 16px}
+.prychyny{list-style:none;padding:0}
+.prychyny li{padding:8px 0 8px 22px;font-size:15px;position:relative}
+.prychyny li:before{content:'';position:absolute;left:0;top:16px;width:8px;height:8px;background:repeating-conic-gradient(var(--hus) 0 25%,transparent 0 50%) 0 0/8px 8px}
+
+/* мої образи: згортки з тканим підписом */
+.zhortky{list-style:none;padding:0;margin:0 0 8px}
+.zhortky li{padding:22px 0;border-top:2px dotted rgba(107,95,88,.45)}
+.zhortky h3{font-size:30px;line-height:1.1;margin:10px 0 2px}
+.zhortky .ryad{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:12px}
+.pidpys{display:flex;gap:14px;align-items:center;color:var(--hus)}
+.pidpys svg{height:21px;width:auto;opacity:.8}
+.kinec{margin:36px 0 0;padding-top:20px;border-top:2px solid var(--hus)}
+.pult{position:fixed;z-index:9;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:rgba(46,38,35,.86);color:#fff;font:12px/1 system-ui,sans-serif;padding:4px 6px;border-radius:14px;white-space:nowrap}
+.pult button{width:28px;height:24px;color:#fff;font-size:16px;text-align:center}.pult b{font-weight:400}.pult a{color:#fff;opacity:.7;margin:0 6px}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--hus);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+/* широкий екран: повішений рушник — річ посередині, два кінці обабіч */
+@media (min-width:1000px){
+  body{display:grid;grid-template-columns:minmax(220px,1fr) minmax(400px,480px) minmax(420px,560px) minmax(24px,1fr);column-gap:56px;padding:0 40px}
+  .zhortok{grid-column:1;display:block;padding:44px 0 0;position:sticky;top:0;align-self:start;max-width:260px;justify-self:end;width:100%}
+  .zhortok .do{display:none}.zhortok .shyr{display:block;margin-top:44px}
+  .zhortok .shyr h4{font-size:14px;font-weight:400;color:var(--pop);margin-bottom:6px}
+  .zhortok .shyr p{padding:14px 0;border-top:2px dotted rgba(107,95,88,.45)}
+  .zhortok .shyr p b{display:block;font-size:22px;line-height:1.15}
+  .zhortok .shyr p span{font-size:14px;color:var(--pop)}
+  #korin{grid-column:2/4;display:grid;grid-template-columns:minmax(400px,480px) minmax(420px,560px);column-gap:56px;max-width:none;margin:0;padding:0 0 140px;align-items:start}
+  .tyho{padding-top:96px}
+  .huste{padding-top:44px;position:sticky;top:0}
+  .tyho:only-child{grid-column:1}
+  .huste-misce,.rukav,.barvy,.troje,.vyrok{margin-left:0;margin-right:0}
+  body{grid-template-rows:1fr auto;min-height:100vh}
+  .zhortok{grid-row:1/3}
+  .kraj{grid-column:2;grid-row:2;position:sticky;bottom:0;left:auto;right:auto;padding:10px 0 20px;margin-top:-120px}
+  .kraj div{max-width:none}
+  .nazva-obrazu{font-size:64px}
+  .rechi li{grid-template-columns:56px 1fr auto}.rechi .foto{width:56px}
+}
+</style>
+</head>
+<body>
+<svg class="tkan" aria-hidden="true"><filter id="tk" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".02 .85" numOctaves="2" seed="4" result="a"/><feTurbulence type="fractalNoise" baseFrequency=".85 .02" numOctaves="2" seed="9" result="b"/><feBlend in="a" in2="b" mode="multiply"/><feColorMatrix values="0 0 0 0 .36  0 0 0 0 .33  0 0 0 0 .30  0 0 0 -1.6 .78"/></filter><rect width="100%" height="100%" filter="url(#tk)"/></svg>
+
+<header class="zhortok">
+  <span class="znak">люстерко</span>
+  <a class="do" href="#11" data-scena-do="moji">мої образи · 3</a>
+  <div class="shyr">
+    <h4>виткане раніше</h4>
+    <p><b>Співбесіда</b><span>банк, другий тур · 8·X·2026 · вдягла</span></p>
+    <p><b>Субота з дітьми</b><span>парк і кав’ярня · 27·IX·2026 · вдягла</span></p>
+    <p><span>оціни мій образ з фото · під цю річ · купити чи ні — усе кажеш у розмові</span></p>
+  </div>
+</header>
+<main id="korin"></main>
+<footer class="kraj"><div><span id="pole">Скажи або напиши…</span><button class="mik" aria-label="диктувати"></button></div></footer>
+
+<script src="вміст.js"></script>
+<script src="рух.js"></script>
+<script>
+(function(){
+var V=window.ВМІСТ,R=V.rechi,F=window.ФОТО,hrn=V.hrn;
+/* тканий підпис: цифри й літери східцями, як «1839 · М П» на рушнику */
+var G={'0':'01110100011000110001100011000101110','1':'00100011000010000100001000010001110','2':'01110100010000100110010001000011111','3':'11110000010000101110000010000111110','4':'10001100011000111111000010000100001','5':'11111100001111000001000011000101110','6':'01110100001000011110100011000101110','7':'11111000010001000100001000010000100','8':'01110100011000101110100011000101110','9':'01110100011000101111000010000101110','X':'10001100010101000100010101000110001','I':'01110001000010000100001000010001110','V':'10001100011000110001010100101000100','·':'00000000000000000100000000000000000','О':'01110100011000110001100011000101110','К':'10001100101010011000101001001010001',' ':'00000000000000000000000000000000000'};
+function tkaty(t){var x=0,p='';for(var i=0;i<t.length;i++){var g=G[t[i]]||G[' '];for(var j=0;j<35;j++)if(g[j]==='1')p+='M'+(x+j%5)+' '+((j/5)|0)+'h1v1h-1z';x+=t[i]===' '?3:6}return '<svg viewBox="0 0 '+x+' 7" shape-rendering="crispEdges" role="img" aria-label="'+t+'"><path fill="currentColor" d="'+p+'"/></svg>'}
+function rep(i){var r=V.rozmova[i];return '<p class="'+r.h+'">'+r.t+'</p>'}
+function blok(ks,sv){return '<div class="huste-misce"><i class="prug"></i><div class="blok">'+ks.map(function(k){return F(k,k===sv?'class="x"':'').replace('class="foto','class="foto'+(k===sv?' svoje':''))}).join('')+'</div><i class="prug"></i></div>'}
+function spysok(ks,o){o=o||{};var s=0;return '<ul class="rechi">'+ks.map(function(k){var r=R[k],sv=k===o.sv;if(!sv)s+=r.cina;
+  return '<li class="'+(k===o.zm?'zmin':'')+(sv?' sv':'')+'">'+F(k)+'<a href="'+r.url+'" target="_blank" rel="noopener" title="'+(r.povna||r.nazva)+'">'+r.nazva+'</a><span class="cina">'+(sv?'своє':hrn(r.cina))+'</span><span class="kram">'+r.kram+' ↗</span><p>'+r.chomu+'</p><span class="dii"><button data-scena-do="sumniv">не ця</button><button data-scena-do="sumniv">замінити</button><button>'+(sv?'каталожна':'маю свою')+'</button></span></li>'}).join('')+'</ul><p class="suma"><span>разом</span><span>'+hrn(s)+'</span></p>'}
+function pole(t,je,chuje){document.getElementById('pole').textContent=t;document.getElementById('pole').className=je?'je':'';document.querySelector('.mik').className='mik'+(chuje?' chuje':'')}
+function vona(k,cl){return '<span class="foto vona '+cl+'"><img src="'+V.vona[k]+'" alt=""></span>'}
+
+window.СЦЕНИ=[
+{id:'pochatok',nazva:'порожній початок',html:function(){pole('Або одразу: куди збираєшся?');return '<section class="tyho"><p class="vel">Покажи себе — і скажи, куди йдеш.</p><p class="s">Я — люстерко, що відповідає. З портрета візьму твої барви, з фото на повен зріст — лінії. Далі лише розмова.</p></section>'+
+ '<section class="huste"><div class="para" style="align-items:end"><button class="foto portret" data-nema="портрет · торкнись" data-dali></button><button class="foto zrist" data-nema="на повен зріст · торкнись" data-dali></button></div><p class="pid" style="margin-top:14px">Нема фото під рукою? Назви свої барви словами — теж зберу.</p></section>'}},
+{id:'znajomstvo',nazva:'знайомство й фото',html:function(){pole('Скажи або напиши…');return '<section class="tyho"><p class="s">Бачу тебе, '+V.vona.imja+'. '+V.vona.opys+' — запам’ятала, більше не питатиму.</p><p class="s">Куди збираємось?</p><div class="slova">'+V.plytky.map(function(p){return '<button class="slovo" data-dali>'+p+'</button>'}).join('')+'</div></section>'+
+ '<section class="huste"><div class="para" style="align-items:end">'+vona('portret','portret')+vona('zrist','zrist')+'</div><p class="pid" style="margin-top:14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">'+V.vona.barvy.map(function(b){return '<span style="display:inline-flex;gap:6px;align-items:center"><i style="width:18px;height:18px;background:'+b[1]+';display:inline-block"></i>'+b[0]+'</span>'}).join('')+'</p><p class="pid" style="margin-top:8px">обхвати '+V.vona.obkhvaty+' · <button class="slovo" style="min-height:32px">виправити</button></p></section>'}},
+{id:'rozmova',nazva:'розмова, диктування',html:function(){pole(V.rozmova[3].dykt,1,1);return '<section class="tyho">'+rep(0)+rep(1)+rep(2)+'<p class="pid" style="text-align:right">диктуєш — текст унизу можна виправити рукою, перш ніж сказати</p><div class="dali"><button class="smuha" data-dali>Сказати <i>→</i></button></div></section>'}},
+{id:'zrozumila',nazva:'«що я зрозуміла»',html:function(){pole('Виправ словами або торкнись рядка');var z=V.zrozumila;
+ function rjad(r){return r.ska?'<div class="rjad"><b>'+r.k+'</b><span>'+r.v+'</span><q>'+r.ska+'</q>'+(r.k==='Увага'?'<span class="try"><button>тихо</button><button class="je">звично</button><button>помітно</button></span>':'')+'</div>':'<div class="rjad pry"><b>'+r.k+'</b><span>'+r.v+'</span><em>'+r.chomu+'</em><span class="dii"><button>так</button><button>прибрати</button></span></div>'}
+ return '<section class="tyho">'+rep(3)+rep(4)+'</section><section class="huste"><div class="rukav"><div class="ustavka"><span class="pid">зрозуміла так</span><h2>Хрестини.<br>Ти — хрещена.</h2><span>'+z[1].v+' · субота</span></div><div class="shash"></div><div class="morshch"><small>на цьому тримається</small><b>'+z[3].v+'</b></div>'+
+ '<div class="pole">'+[z[2],z[4],z[5]].map(rjad).join('')+'<hr class="shov"><p class="pid" style="color:var(--syn)">далі — не твої слова, а мої припущення. Скажи «так» чи прибери.</p>'+z.slice(6).map(rjad).join('')+'</div></div>'+
+ '<div class="dali"><button class="smuha" data-scena-do="chekannja">Усе так — збирай <i>→</i></button><button class="slovo" data-dali>барви: обрала я — глянь</button></div></section>'}},
+{id:'barvy',nazva:'барви',html:function(){pole('«Хочу більше зеленого» — теж можна словами');var b=V.barvy;return '<section class="tyho"><p class="s">'+b.chomu+'</p></section><section class="huste"><div class="barvy">'+b.plamy.map(function(p){return '<div class="'+(p[1]==='#EFE7DA'||p[1]==='#C39A78'?'svitla':'')+'" style="background:'+p[1]+';height:'+(p[2]*13+18)+'px"><span>'+p[0]+'</span><span>'+p[3]+'</span></div>'}).join('')+'</div>'+
+ '<p class="pid" style="margin:10px 0 24px">смуга така завширшки, скільки цієї барви буде на тобі</p><p class="pid">основа</p><div class="slova">'+b.osnovy.map(function(o,i){return '<button class="slovo'+(i?'':' je')+'">'+o+'</button>'}).join('')+'</div>'+
+ '<p class="pid" style="margin-top:20px">як барви стоять одна до одної</p>'+b.skhemy.map(function(s){return '<p style="margin-top:2px"><button class="slovo'+(s[2]?' je':'')+'">'+s[0]+'</button>'+(s[1]?' <span class="pid">— '+s[1]+'</span>':'')+'</p>'}).join('')+'<div class="dali"><button class="smuha" data-dali>Збирай із цими <i>→</i></button></div></section>'}},
+{id:'chekannja',nazva:'чекання збирання',html:function(){pole('Можна говорити далі — доплету');var k=V.chekannja.kroky;return '<section class="tyho"><p class="vel">Збираю. Ще хвилини дві.</p><p class="s">Можеш піти — покличу, щойно буде готово. Усе сказане лишається тут.</p><button class="slovo je">покликати мене ✓</button><p class="pid" style="margin-top:20px">1:42 з приблизно 3:40</p></section>'+
+ '<section class="huste"><div class="tkannja">'+k.map(function(x,i){return '<div class="rjadok '+(i<3?'':i===3?'tche':'bude')+'"><i></i>'+x[0]+(i<3&&x[1]?'<small>'+x[1]+'</small>':'')+'</div>'}).join('')+'</div></section>'},pislja:function(){}},
+{id:'obraz',nazva:'образ',html:function(){pole('Щось не так? Скажи — переплету');var o=V.obraz;return '<section class="tyho"><p class="pid">'+V.nahoda.povna+' · '+V.nahoda.koly+'</p><h1 class="nazva-obrazu">'+V.nahoda.nazva+'</h1></section><section class="huste">'+blok(o.rechi)+'<p class="s" id="sl" style="margin-top:20px;max-width:none">'+o.slova+' <button class="slovo" style="min-height:28px" onclick="this.parentNode.firstChild.textContent=ВМІСТ.obraz.dovhi+\' \';this.remove()">докладніше</button></p>'+spysok(o.rechi)+
+ '<div class="dali"><button class="smuha" data-scena-do="pislja">Вдягну — зберегти <i>→</i></button><button class="slovo" data-dali>не зовсім…</button></div></section>'}},
+{id:'sumniv',nazva:'сумнів і заміна',html:function(){pole('Або опиши, яких хочеш');var s=V.sumniv,c=R[s.rich];return '<section class="tyho"><p class="v">'+s.slova+'</p><p class="s">Чую. Ось три пари замість них — кожну я вже приміряла до цього образу. Решта речей стоїть, як стояла.</p><p class="pid">зараз: '+c.nazva+' · '+hrn(c.cina)+'</p></section>'+
+ '<section class="huste"><div class="troje">'+s.zaminy.map(function(k,i){var r=R[k];return '<article class="'+(i?'':'radzhu')+'">'+F(k)+'<b>'+r.nazva+'</b><span>'+hrn(r.cina)+'</span><p>'+r.chomu+'</p><button data-dali>'+(i?'взяти':'взяти — раджу')+'</button></article>'}).join('')+'</div><div class="dali"><button class="slovo" data-dali="-1">лишити черевики</button></div></section>'}},
+{id:'pislja',nazva:'після заміни · підпис',html:function(){pole('Скажи або напиши…');var s=V.sumniv,ks=V.moji[0].rechi;return '<section class="tyho"><p class="v">'+s.svoje.slova+'</p><p class="s">'+s.svoje.vidpovid+' '+s.vidpovid+'</p><h1 class="nazva-obrazu">'+V.nahoda.nazva+'</h1></section><section class="huste">'+blok(ks,'palt')+spysok(ks,{zm:'lofe',sv:'palt'})+
+ '<div class="kinec"><div class="pidpys">'+tkaty(V.nahoda.data)+tkaty('О К')+'</div><p class="pid" style="margin-top:10px">Збережено з підписом: день, нагода, ти. Знайдеш у «моїх образах».</p></div><div class="dali"><button class="smuha" data-scena-do="moji">Мої образи <i>→</i></button></div></section>'}},
+{id:'kupyty',nazva:'купити чи ні',html:function(){pole('Покажи ще одну — порівняю');var k=V.kupyty,r=R[k.rich],p=R[k.porivn];return '<section class="tyho"><p class="v">'+k.slova+'</p><div style="width:38%;margin:0 0 20px auto">'+F(k.rich)+'</div><p class="pid" style="text-align:right">'+r.nazva+' · '+r.kram+' · '+hrn(r.cina)+'</p></section>'+
+ '<section class="huste"><p class="vyrok">'+k.vyrok+'.</p><ul class="prychyny">'+k.chomu.map(function(c){return '<li>'+c+'</li>'}).join('')+'</ul><div class="para"><figure>'+F(k.rich)+'<figcaption>та, що в крамниці · '+hrn(r.cina)+'</figcaption></figure><figure>'+F(k.porivn)+'<figcaption>твоя з образу «Хрещена» · '+hrn(p.cina)+'</figcaption></figure></div>'+
+ '<p class="pid" style="margin-top:24px">якщо хочеш саме таку барву — менші</p><div class="troje" style="margin-top:8px">'+k.skhozhi.map(function(x){return '<article>'+F(x)+'<b>'+R[x].nazva+'</b><span>'+hrn(R[x].cina)+'</span></article>'}).join('')+'</div><div class="dali"><button class="slovo">усе ж беру — додай до моїх речей</button></div></section>'}},
+{id:'moji',nazva:'мої образи',html:function(){pole('«Що вдягти завтра на роботу?»');return '<section class="tyho"><p class="vel">Виткане.</p><p class="s">Три образи. Кожен підписано днем і нагодою — як рушник роком.</p></section><section class="huste"><ul class="zhortky">'+V.moji.map(function(m){return '<li><div class="pidpys">'+tkaty(m.data)+'</div><h3>'+m.nazva+'</h3><span class="pid">'+m.pro+(m.vdjahla?' · <b>вдягла</b>':' · ще попереду')+'</span><div class="ryad">'+m.rechi.map(function(k){return F(k)}).join('')+'</div></li>'}).join('')+'</ul>'+
+ '<div class="slova"><button class="slovo" data-scena-do="svij">оціни мій образ з фото</button><button class="slovo">під цю річ</button><button class="slovo" data-scena-do="kupyty">купити чи ні</button><button class="slovo">мої речі · буде</button></div></section>'}},
+{id:'pomylka',nazva:'помилка',html:function(){pole('Скажи або напиши…');var k=V.chekannja.kroky;return '<section class="tyho"><p class="vel">Нитка урвалась.</p><p class="s">'+V.pomylka+'</p><div class="dali"><button class="smuha" data-scena-do="chekannja">Спробувати ще раз <i>→</i></button><button class="slovo" data-scena-do="zrozumila">змінити щось у нагоді</button></div></section>'+
+ '<section class="huste"><div class="tkannja">'+k.slice(0,3).map(function(x,i){return '<div class="rjadok '+(i<2?'':'tche rvane')+'"><i></i>'+x[0]+(i<2?'<small>'+x[1]+'</small>':'<small>урвалось о 2:10 — це зберегла</small>')+'</div>'}).join('')+'</div></section>'}},
+{id:'svij',nazva:'оцінка свого образу',html:function(){pole('Виправ, якщо я не так розгледіла');var s=V.svij;return '<section class="tyho"><p class="v">'+s.slova_v+'</p><div style="width:52%;margin:0 0 20px auto">'+vona('svij','zrist')+'</div></section><section class="huste"><p class="s">Бачу на фото — так?</p><div class="slova">'+s.rozpiznala.map(function(x){return '<button class="slovo je">'+x+' ✓</button>'}).join('')+'<button class="slovo">+ додати</button></div><hr class="shov"><p class="pid" style="color:var(--syn)">'+s.nema+' на фото не видно — про них не суджу</p><p class="s" style="margin-top:16px;max-width:none">'+s.dobre+' '+s.porada+'</p><div class="dali"><button class="slovo">'+s.dija+'</button></div></section>'}}
+];
+})();
+</script>
+</body>
+</html>
