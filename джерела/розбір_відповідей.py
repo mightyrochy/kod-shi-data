@@ -127,11 +127,11 @@ import colorspace as _cs
                     "day that «day» does not carry is not a fact of her day"),
         # ОПИС-1 (K-PAL-11/14/15): «найдальші» й «комбінація», якщо йдуть у КОЖЕН опис, дають
         # «маленька оливкова чи зелена деталь» навіть на похороні й поради додати річ, якої в образі
-        # нема. Тож лише те, що стосується речей образу.
+        # нема. Тепер палітра опису — лише метал, названий нею (`дріт_моделі.палітра_опису`; корінь
+        # Е2-опора-пояснення, крок «обставини»): найдальших і поєднання опис не дістає.
         _ЗП.Поле("palette", "her palette",
                  як="in the last part of «text», in prose: discuss metal only with jewelry or metal details "
-                    "in this outfit; call a colour «farthest» from her only if an outfit item carries it; "
-                    "an optional combination uses only outfit items, never additions"),
+                    "in this outfit"),
         # K-BOD-02, K-SIL-03 (аудит/ПРОДУКТ.md п.4): її фігура кодами — ті самі, що в брифі складання.
         # П.17: річ образу — вибір стилістки; річ проти фігури — пояснити, рішення не віддавати.
         # «cuts_best_on_her: belted» при вільному светрі без пояса давало «tuck in just the front hem
