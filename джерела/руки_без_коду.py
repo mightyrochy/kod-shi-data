@@ -71,8 +71,8 @@ def головний_колір(вибір):
     б = (вибір or {}).get("база")
     if not б:
         return None
-    слово = str(б).split("·")[0]
-    о = {"name": _ВМ.код("color_name", слово) or слово}
+    слово = (вибір or {}).get("база_назва")
+    о = {"name": (_ВМ.код("color_name", слово) or слово) if слово else _ВМ.UNKNOWN}
     if (вибір or {}).get("база_hex"):
         о["hex"] = вибір["база_hex"]
     о["chosen_by"] = ("her_item_photo" if вибір.get("база_з_речі")
