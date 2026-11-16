@@ -25,7 +25,9 @@
 
    Запуск (мережа не потрібна, крім одноразового наповнення кеша Pyodide):
      sh аудит/проби/стенд_pyodide_кеш.sh /tmp/pyodide          # один раз
-     cd джерела && LYUSTERKO_CATALOG=повний python3 build_артефакт.py . /tmp/стенд/index.html показ-повний
+     # байткод збирає лише CPython 3.12.1; у хмарному образі його нема (там 3.11/3.12.3/3.13) — один раз:
+     #   uv python install 3.12.1   (≈4 с; перевірено 16.11)
+     cd джерела && LYUSTERKO_PYC_PYTHON=$(uv python find 3.12.1) LYUSTERKO_CATALOG=повний python3 build_артефакт.py . /tmp/стенд/index.html показ-повний
      CHROMIUM=/opt/pw-browsers/chromium NODE_PATH=<тека з playwright> \
        node аудит/проби/рв6_стенд.js http://127.0.0.1:8765 /tmp/стенд /tmp/pyodide <сід>
    Аргументи: <база> <корінь зі зібраним index.html> <тека pyodide v0.26.4> <сід, типово 3>.

@@ -1,5 +1,6 @@
 // Рядок 5211: аркуш «Чого я хочу від образу» функцією в Chromium 390×844 на зібраній сторінці.
-// Запуск: зібрати сторінку (`cd джерела && python3 build_артефакт.py . <тека>/index.html показ-повний`), віддати теку
+// Запуск: у хмарі CPython 3.12.1 нема (образ: 3.11/3.12.3/3.13) — `uv python install 3.12.1` (≈4 с) і `LYUSTERKO_PYC_PYTHON=$(uv python find 3.12.1)` перед `python3 build_артефакт.py`;
+// зібрати сторінку (`cd джерела && python3 build_артефакт.py . <тека>/index.html показ-повний`), віддати теку
 // http-сервером і `NODE_PATH=джерела/node_modules node аудит/проби/аркуш_мети_5211.js http://127.0.0.1:<порт>/index.html <тека>`.
 const { chromium } = require('playwright');
 const fs = require('fs');

@@ -8,7 +8,7 @@ const шлях = require('path').resolve(process.argv[2]);
   const b = await chromium.launch();
   const p = await (await b.newContext({viewport: {width: 390, height: 844}})).newPage();
   await p.goto('file://' + шлях + '#міст=http://localhost:8787&т=tok-a1');
-  await p.waitForFunction(() => document.getElementById('сцн-новий') && typeof document.getElementById('сцн-новий').onclick === 'function', null, {timeout: 60000});
+  await p.waitForFunction(() => typeof Екран !== 'undefined' && !!Екран.стан.вхід, null, {timeout: 60000});
   const вих = {};
   for (const [назва, вітер, реаг] of [['сильний вітер, реагенти є', '2', '1'], ['безвітря, реагентів нема', '0', '0'], ['плитки не торкались', '', '']]) {
     вих[назва] = await p.evaluate(async ([в, р]) => {
