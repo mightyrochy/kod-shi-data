@@ -31,7 +31,7 @@ if __name__ == "__main__":
         assert "смуга_погоди" not in п["цитати_полів"] and "quote" not in ПП.походження_поля(п, "смуга_погоди")
         в = Д.випадок(ПМ.випадок_для_пакета(п, ""))
         assert "weather_band" not in (в.get("field_quotes") or {}) and "quote" not in в["sources"]["weather_band"]
-        assert {"ключ": "смуга_погоди", "текст": С.смуга_словами(код), "звідки": "плитка", "код": код} \
+        assert {"ключ": "смуга_погоди", "текст": С.смуга_словами(код).capitalize(), "звідки": "плитка", "код": код} \
             in П.паспорт_шматками_людині(п)
         assert "темп_c" not in п["картка_запиту"]
         assert "темп_c" not in п and "темп_c" not in н and "temperature_c" not in С.день_кодами(н)
