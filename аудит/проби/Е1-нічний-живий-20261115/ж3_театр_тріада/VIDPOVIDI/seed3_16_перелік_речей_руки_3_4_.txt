@@ -1,0 +1,44 @@
+── ПРОМПТ (2304 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green silk blouse with a relaxed fit, knee-length tunic style, #066847, pure silk.\nCharcoal grey wool-blend wide-leg trousers, full length, #36454F, merino wool.\nCream cashmere oversized cardigan, hip-length duster, #FFFDD0, fine gauge knit.\nTan leather ankle boots, mid-calf shaft, #C19A6B, smooth calfskin.\nGold geometric stud earrings, medium size, #FFD700, polished brass and crystal.\n\nThis ensemble balances the artistic atmosphere of the autumn evening at the theatre with a neat dress code while respecting her preference for comfort and warmth. The rich emerald silk blouse provides a touch of elegance that stands out against the neutral trousers, creating a sophisticated yet approachable look suitable for an indoor cultural event. Layering the cream cashmere cardigan ensures coziness in the cool season without adding bulk, allowing freedom of movement throughout the performance. The tan ankle boots and gold accessories tie the outfit together with autumnal warmth and subtle sparkle that catches the artificial stage lights."}
+
+── ВІДПОВІДЬ (917 симв., 6.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "relaxed fit, knee-length tunic style, pure silk",
+      "slot": "top",
+      "color_hex": "#066847",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "wide-leg, full length, merino wool",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "cardigan",
+      "details": "hip-length duster, fine gauge knit",
+      "slot": "outerwear",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "ankle boots, mid-calf shaft, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "geometric studs, medium size, polished brass and crystal",
+      "slot": "earrings",
+      "color_hex": "#FFD700",
+      "worn": true
+    }
+  ]
+}
