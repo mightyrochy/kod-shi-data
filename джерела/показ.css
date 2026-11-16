@@ -224,6 +224,9 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 #збій-панель:has(#збій-стан:empty){display:none}
 #збій-панель .статус{margin:0 0 8px}
 .ряд{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+/* «Записати вердикт» видно, поки видно картку: росте поле коментаря — кнопка лишається над краєм екрана (вада 12) */
+.ряд-запису{position:sticky;bottom:calc(var(--під-панеллю, 0px) + 8px);z-index:2;pointer-events:none}
+.ряд-запису>button{pointer-events:auto}
 #сц-мета-зони-плитки[hidden]{display:none}
 .мітка{font:500 20px/1.25 var(--дисплей);font-variation-settings:"CONT" 260;margin:22px 0 8px}
 
@@ -632,7 +635,7 @@ button.текст{min-height:44px;background:none;border:0;color:var(--чорн�
 button.мал{min-height:44px;padding:10px 14px;font-size:14px}
 button:disabled{opacity:.45;cursor:default}
 button.зі-стрілкою{display:inline-flex;align-items:center;justify-content:center;gap:10px}
-details.розкривач{margin-top:14px}
+details.розкривач{margin-top:14px;scroll-margin-top:16px}
 summary{min-height:24px}
 details.розкривач summary{cursor:pointer;font-size:14px;color:var(--чорнило);list-style:none;
   text-decoration:underline;text-decoration-color:var(--золото);text-underline-offset:4px}
@@ -784,6 +787,8 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
    зсуву розкладки: внутрішня тінь, а не товща рамка. Її власний вибір (`.вибр`) його перекриває. */
 .чип.стилістка{border-color:var(--чорнило);box-shadow:inset 0 0 0 1px var(--чорнило)}
 .чип.стилістка.вибр{box-shadow:none}
+/* смуга гами, чиї основи зараз показано, коли гаму не обирав ніхто: пунктир — не її вибір і не вибір стилістки */
+.чип.показана{border-style:dashed;border-color:var(--чорнило)}
 /* плашка основи малює рамку не бордюром, а кільцем `clip-path` (`--кайма-колір`): тінь там обрізана */
 #пал-основа .чип.стилістка:has(.зразки){--кайма-колір:var(--чорнило)}
 #пал-рідші{margin:10px 0 0;display:flex;flex-direction:column;gap:6px}
@@ -827,7 +832,9 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
 /* ── КАРТКА ОБРАЗУ: вікно Кричевського. Колаж — плаский аркуш із вирізаним
       краєм (витинанка), без нахилу й тіні. Колір біля фото — лише лінією. ─ */
 #картки{display:block;margin:0;padding:0}
-.картка{--ск:18px;background:var(--аркуш);margin:14px 0 6px;padding:0 0 18px;overflow:hidden}
+/* `clip`, а не лише `hidden`: обрізає так само, але картка не стає власною областю гортання, і «Записати вердикт»
+   (`.ряд-запису`) липне до низу ЕКРАНА, а не картки (вада 12); `hidden` — для браузерів без `clip` */
+.картка{--ск:18px;background:var(--аркуш);margin:14px 0 6px;padding:0 0 18px;overflow:hidden;overflow:clip}
 #картки .картка[hidden]{display:none}
 #картки .картка:not([hidden]){animation:нанизати .34s cubic-bezier(.2,.7,.2,1) both}
 @keyframes нанизати{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -910,8 +917,9 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
 /* «На фото нема …» картки оцінки (рядки 6555, 8112, п.9) — шрифтом і кеглем тексту картки («Що вдало»), а не рубленим
    16 px; повний перелік у видимому тексті, на вузькому екрані переноситься на кілька рядків і не обрізається */
 .оц-нема-на-фото{font:400 15.5px/1.55 var(--голос);font-variation-settings:"CONT" 140;overflow-wrap:anywhere}
-.задум div{position:relative;padding-left:18px;font:400 15.5px/1.55 var(--голос);font-variation-settings:"CONT" 140;margin-top:4px}
-.задум div::before{content:"";position:absolute;left:0;top:11px;width:4px;height:4px;border-radius:50%;
+.задум div,.задум p.задум-чекає{position:relative;padding-left:18px;font:400 15.5px/1.55 var(--голос);font-variation-settings:"CONT" 140;margin:4px 0 0}
+.задум p.задум-чекає{color:var(--олівець)}
+.задум div::before,.задум p.задум-чекає::before{content:"";position:absolute;left:0;top:11px;width:4px;height:4px;border-radius:50%;
   background:var(--чорнило);box-shadow:6px 0 0 var(--чорнило)}
 .вердикт{margin:22px 18px 0;padding-top:22px;position:relative}
 .вердикт::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--мережка);opacity:.9}
@@ -989,6 +997,8 @@ img.образ{max-width:100%;border:1px solid var(--межа);display:block}
 .пейджер .пж-лічба span{min-width:0}
 .пейджер .пж-оц{font-size:12px;color:var(--олівець)}
 .пейджер .пж-оц:empty{display:none}
+.пейджер .пж-запис{font-size:12px;color:var(--чорнило)}
+.пейджер .пж-запис:empty{display:none}
 #пейджер button{width:44px;height:44px;padding:0;font:400 24px/1 var(--дисплей);border-radius:50%;clip-path:none;
   border:1px solid var(--межа-темна);--кайма-колір:transparent}
 #пейджер button::after{display:none}

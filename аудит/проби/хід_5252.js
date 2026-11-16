@@ -39,22 +39,22 @@ const пауза = мс => new Promise(р => setTimeout(р, мс));
   const t0 = Date.now();
   await с.goto(БАЗА + '/index.html#міст=' + БАЗА + '/міст&т=tok&модель_мови=gemini-3.8-flash', { waitUntil: 'load', timeout: 180000 });
   await с.click('dialog button:has-text("Так, використовувати")', { timeout: 30000 }).catch(() => console.log('діалогу мосту нема'));
-  await с.waitForFunction(() => typeof РЕЖИМ !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
+  await с.waitForFunction(() => typeof Екран !== 'undefined' && !!(document.getElementById('н-далі') || {}).onclick, null, { timeout: 180000 });
   /* знайомство руками — як стенд */
   await с.click('#кол-блок details.розкривач > summary');
   await с.fill('#кол-відповідь', 'шкіра 1 #d9a88f\nшкіра 2 #caa08b\nшкіра 3 #be8f7b\nволосся #d2b37c\nволосся #69513d\nочі #597d81\nкільце #30474c');
   await с.click('#кол-читати');
   await с.fill('[id="пр-імʼя"]', '1'); await с.check('#пр-згода');
-  await с.click('#н-далі'); await с.waitForFunction(() => ЕКРАН === 1, null, { timeout: 30000 });
-  await с.click('#н-далі'); await с.waitForFunction(() => ЕКРАН === 2, null, { timeout: 30000 });
+  await с.click('#н-далі'); await с.waitForFunction(() => Екран.стан.крок === 1, null, { timeout: 30000 });
+  await с.click('#н-далі'); await с.waitForFunction(() => Екран.стан.крок === 2, null, { timeout: 30000 });
   for (const [і, v] of [['мр-плечі', 108], ['мр-груди', 104], ['мр-талія', 78], ['мр-стегна', 106], ['мр-зріст', 167]]) await с.fill('#' + і, String(v));
   await с.click('#н-далі');
-  await с.waitForFunction(() => РЕЖИМ === 'сценарій' && ПРОФІЛЬ_СТВОРЕНО, null, { timeout: 60000 });
+  await с.waitForFunction(() => Екран.стан.режим === 'сценарій' && ПРОФІЛЬ_СТВОРЕНО, null, { timeout: 60000 });
   if (process.env.RELOAD){
     await с.reload({ waitUntil: 'commit' });
     await с.click('dialog button:has-text("Так, використовувати")', { timeout: 5000 }).catch(() => {});
     await с.waitForSelector('#сц-приклади button.приклад', { state: 'visible', timeout: 180000 });
-    console.log('перевідкрито, підказка видна за', Date.now() - t0, 'мс · режим', await с.evaluate(() => РЕЖИМ));
+    console.log('перевідкрито, підказка видна за', Date.now() - t0, 'мс · режим', await с.evaluate(() => Екран.стан.режим));
   }
   /* 4.1-Б-3: Python у воркері — підйом лічиться на `піднятиВоркерМостуП`, готовність — `МІСТ_ГОТОВИЙ_П` */
   await с.evaluate(() => { window.__підйоми = 0; window.__міст = []; const пп = піднятиВоркерМостуП;
@@ -106,7 +106,7 @@ const пауза = мс => new Promise(р => setTimeout(р, мс));
       return р; }; function d2(x){ return JSON.parse(JSON.stringify(x || null)); } });
     await с.waitForFunction(() => window.__запити.length > 0, null, { timeout: 90000 }).catch(() => {});
     await пауза(300);
-    console.log('зібрати за', Date.now() - tz, 'мс:', JSON.stringify(await с.evaluate(() => ({режим: РЕЖИМ,
+    console.log('зібрати за', Date.now() - tz, 'мс:', JSON.stringify(await с.evaluate(() => ({режим: Екран.стан.режим,
       статус: ((document.getElementById('зб-статус') || {}).textContent || '').slice(0, 160),
       поля: Object.fromEntries(['сц-нагода', 'сц-місце', 'сц-дрес'].map(і => [і, document.getElementById(і).value])),
       паспорт: !!ПАСПОРТ_П, запити: window.__запити, діагноз: (typeof ЗБ !== 'undefined' && ЗБ && ЗБ.діагноз) ? ЗБ.діагноз.slice(0, 8) : null }))),

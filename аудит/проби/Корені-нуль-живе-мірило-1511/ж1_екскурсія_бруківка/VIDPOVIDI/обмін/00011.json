@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Dark straight-leg jeans, full length with a slight stretch, in indigo blue (#2B3A55), mid-weight stretch denim\\nLong-sleeve crew-neck knit top, relaxed fit, hip length, in oatmeal beige (#D8CBB5), soft merino-cotton blend\\nLightweight cardigan, open front, mid-thigh length, in forest green (#3E5A47), chunky cotton-wool knit\\nLight trench-style jacket, straight cut, knee-skimming length, in warm sand (#C2A878), water-resistant cotton gabardine\\nLeather sneakers, low-top, cushioned rubber sole with good grip for cobblestones, in off-white (#EFEBE3), smooth leather\\nCrossbody bag, compact with a zip closure, in cognac brown (#9C5B34), pebbled leather\\nSoft scarf, lightweight and oversized, in muted burgundy (#7A3B45), wool-viscose blend\\nCushioned no-show socks in light grey (#BDBDBD), breathable cotton blend\\n\\nThis outfit is built for nine hours on your feet over cobblestones, so the sneakers with grippy, cushioned soles keep every step comfortable and stable. At +12 °C the layers do the work: the knit and cardigan hold warmth, and the trench blocks the wind, so you can take pieces off as the day warms up or add the scarf when you pause in the shade. The dark denim and neutral earthy tones stay neat and everyday-appropriate, while the burgundy scarf and cognac bag add a little warmth of color that suits an autumn old-town setting. The hands-free crossbody keeps your essentials secure while you explore, take photos, and move through crowds.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Dark straight-leg jeans\\\",\\\"details\\\":\\\"full length, slight stretch, straight leg, mid-weight stretch denim\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#2B3A55\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Long-sleeve crew-neck knit top\\\",\\\"details\\\":\\\"relaxed fit, hip length, long sleeves, soft merino-cotton blend\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#D8CBB5\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Lightweight cardigan\\\",\\\"details\\\":\\\"open front, mid-thigh length, chunky cotton-wool knit\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#3E5A47\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Light trench-style jacket\\\",\\\"details\\\":\\\"straight cut, knee-skimming length, water-resistant cotton gabardine\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#C2A878\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Leather sneakers\\\",\\\"details\\\":\\\"low-top, cushioned rubber sole with good grip, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#EFEBE3\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Crossbody bag\\\",\\\"details\\\":\\\"compact, zip closure, pebbled leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#9C5B34\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Soft scarf\\\",\\\"details\\\":\\\"lightweight, oversized, wool-viscose blend\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#7A3B45\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Cushioned no-show socks\\\",\\\"details\\\":\\\"no-show, breathable cotton blend\\\",\\\"slot\\\":\\\"socks\\\",\\\"color_hex\\\":\\\"#BDBDBD\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2246,\"output_tokens\":542},\"stop_reason\":\"end_turn\"}"
+ }
+}

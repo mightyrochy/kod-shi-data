@@ -8,6 +8,7 @@ from collections import OrderedDict
 import hashlib
 import json
 import face_contrast as _KC
+import місце_речі as _МР
 from колір_простір_перетворення import hx
 from колір_простір_надійність import ДЖЕРЕЛО_ФОТО_ТИПОВЕ, reliability, надійність_контрасту, MIN_TO_EMIT
 
@@ -164,8 +165,22 @@ def класи(F, source=None):
     return dict(контраст=ознаки(F, source)["контраст"].get("рівень"),
                 глибина=palettes.осі(F, source)["коди"]["value"],
                 очі=колір_річ.сім_я(tuple(очі[k] for k in ("L", "a", "b"))) if очі.get("L") is not None else None,
-                сивина={k: float(f.get("C") or 0.0) < _ахроматична_межа() for k, f in F.items()
+                сивина={k: сиве(f) for k, f in F.items()
                         if k.startswith("волосся") and isinstance(f, dict) and f.get("C") is not None})
+
+
+# Чорне — не сиве (K-TIME-01: «grey becomes a neutral in place of black/brown»): ахроматичне волосся темніше за межу
+# чорного ISCC-NBS — чорне. Блок 267 black — нейтраль Мансела V 0–2.5 (`дані_корпусу/ISCC-NBS_вікна.txt`), 266 dark
+# gray — від V 2.5; V → Y — поліном ASTM D1535 (як `лабораторія/колір_сім_ї_грані_області`), Y → L* — CIE.
+V_ЧОРНОГО = 2.5
+_Y_ЧОРНОГО = sum(к * V_ЧОРНОГО ** (i + 1) for i, к in enumerate((1.1914, -0.22533, 0.23352, -0.020484, 0.00081939)))
+L_ЧОРНОГО = 116.0 * (_Y_ЧОРНОГО / 100.0) ** (1.0 / 3.0) - 16.0   # ≈ 25.3
+
+
+def сиве(f):
+    """Чи голос волосся сивий (K-PAL-13, K-TIME-01): ахроматичний (C* нижче `colorspace.ACHROMATIC_C`) і не чорний
+    (L* від `L_ЧОРНОГО`). Одне визначення для класу рис і прийому палітри (`palettes`)."""
+    return float(f.get("C") or 0.0) < _ахроматична_межа() and float(f.get("L") or 0.0) >= L_ЧОРНОГО
 
 
 def _ахроматична_межа():
@@ -208,17 +223,21 @@ def _контраст_рис(F):
     шк = (F or {}).get("шкіра") or {}
     if шк.get("L") is None:
         return None
-    вол = [v["L"] for k, v in F.items() if k.startswith("волосся") and isinstance(v, dict)
-           and v.get("L") is not None]
+    # Волосся — голос біля обличчя з запису місця голосів (Е3-місце-речі п.4), не середнє L* усіх пасом; кілька
+    # голосів без місця — розкиду рис код не знає (None, «без входу»).
+    голос = _МР.волосся_біля_обличчя(F)
+    if голос["джерело"] != "нема" and голос["місце"] is None:
+        return None
+    L_в = (голос["ознака"] or {}).get("L")
     очі = (F.get("очі") or {}).get("L")
     риси = {}
-    if вол:
-        риси["волосся"] = _мішельсон(шк["L"], sum(вол) / len(вол))
+    if L_в is not None:
+        риси["волосся"] = _мішельсон(шк["L"], L_в)
     if очі is not None:
         риси["очі"] = _мішельсон(шк["L"], очі)
     if not риси:
         return None
-    L = [float(шк["L"])] + ([sum(вол) / len(вол)] if вол else []) + ([float(очі)] if очі is not None else [])
+    L = [float(шк["L"])] + ([float(L_в)] if L_в is not None else []) + ([float(очі)] if очі is not None else [])
     M = _мішельсон(max(L), min(L))       # розкид рис, не зважене середнє
     екв = None
     if float(шк["L"]) < L_ШКІРИ_ПОРОГІВ:
@@ -246,12 +265,28 @@ def _контраст(F, source):
                     макіяж=F.get("_макіяж"))
     R = reliability(source)
     шк = F.get("шкіра")
-    hair = [v for k, v in F.items() if k.startswith("волосся") and not k.startswith("_")]
-    if not шк or not hair:
+    # Волосся — голос біля обличчя з запису місця голосів (`місце_речі.волосся_біля_обличчя`), не середнє всіх
+    # пасом (Е3-місце-речі п.4): поділене на мідну й світлу половини волосся біля одного боку обличчя дає інший
+    # розрив зі шкірою, ніж біля другого. Кілька голосів без місця — контраст «без входу».
+    голос = _МР.волосся_біля_обличчя(F)
+    if not шк or голос["джерело"] == "нема":
         return dict(доступно=False, чому="нема шкіри або волосся у профілі",
                     джерело="типове", довіра=0.0, значення=None, контраст_рис=_контраст_рис(F))
-    Lh = sum(h["L"] for h in hair)/len(hair)
-    розкид_волосся = round((sum((h["L"] - Lh) ** 2 for h in hair) / len(hair)) ** 0.5 or 0.0, 1)
+    if голос["місце"] is None:
+        return dict(доступно=False, значення=None, рівень=None, value_gap=None, gap_рівня=None,
+                    L_шкіри=шк.get("L"), L_волосся=None, L_обличчя=None, контраст_рис=None,
+                    colour_contrast=None, розкид=None, джерело=_походження(F, source), довіра=0.0,
+                    надійність_контрасту=dict(надійність=0.0),
+                    місце_волосся={к: з for к, з in голос.items() if к != "ознака"},
+                    чому="контраст без входу: " + голос["чому"], макіяж=F.get("_макіяж"))
+    hair = [голос["ознака"]]
+    Lh = float(голос["ознака"]["L"])
+    # власний перепад світлоти у волоссі — між голосами, чиє місце зміряно маскою кадру (смуга обрамлення й маса),
+    # а не між голосами, де лежить яких код не знає
+    відомі = [float(F[ім]["L"]) for ім, з in _МР.голоси_волосся(F).items()
+              if з["джерело"] == "вимір" and F[ім].get("L") is not None]
+    сер = sum(відомі) / len(відомі) if відомі else 0.0
+    розкид_волосся = round((sum((L - сер) ** 2 for L in відомі) / len(відомі)) ** 0.5, 1) if len(відомі) > 1 else 0.0
     _se_рис = [f.get("se_L") for f in [шк] + hair if isinstance(f, dict) and f.get("se_L")]
     розкид_особи = max(_se_рис) if _se_рис else None
     gap = round(abs(Lh - шк["L"]), 1)

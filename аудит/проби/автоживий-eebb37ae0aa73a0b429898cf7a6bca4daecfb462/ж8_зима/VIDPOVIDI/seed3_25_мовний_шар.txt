@@ -1,0 +1,49 @@
+── ПРОМПТ (7347 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sweater · colour code: chocolate · about it: text н=1
+2 — kind code: trousers · colour code: brown · about it: text н=2
+3 — kind code: fur_coat · colour code: chocolate · about it: text н=3
+4 — kind code: boots · colour code: chocolate · about it: text н=4
+5 — kind code: bag_generic · colour code: brown · about it: text н=5
+6 — kind code: scarf_generic · colour code: chocolate · about it: text н=6
+7 — kind code: beanie · colour code: beige · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; chocolate — шоколадний.
+
+ТЕКСТИ:
+{
+"1": "A sweater in deep chocolate brown, a quiet base that sets the colour for the whole outfit.",
+"2": "Straight-cut trousers in brown with a check pattern. The straight cut keeps the line of the leg simple and even.",
+"3": "A fur coat in chocolate brown with a regular cut. It is the outer layer that ties the outfit together in one rich colour.",
+"4": "Boots in dark chocolate brown, the deepest tone in the outfit, which grounds the look at the bottom.",
+"5": "A brown bag that stays within the same warm family as the rest of the outfit.",
+"6": "A scarf in chocolate brown, in the same shade family as the sweater, coat and boots.",
+"7": "A beige beanie, the lightest item in the outfit and the one that adds brightness by your face.",
+"8": "I built this around deep browns, with the beige beanie as the one light note near your face. That keeps the look neat and calm for an office day, and the straight trousers under the regular-cut coat give a clean, uninterrupted line from shoulder to boot. I kept only the sweater under the coat, which is fewer layers than a day this frosty usually asks for. So on your twenty-minute walk in the snow, the scarf and beanie are what you rely on, and the coat stays closed.",
+"9": "Wear the scarf at your neck, tucked into the coat opening, so its chocolate joins the sweater and the coat instead of standing alone.",
+"10": "Let the hems of the checked trousers fall over the boots, so the leg reads as one dark line down to the ground.",
+"11": "Keep the beanie on for the whole walk and pull it down evenly, so the beige frames your face.",
+"12": "Гольф “S” шоколадний, Соболяча шуба з укороченим рукавом — Two layers are thin on paper for deep frost, but the full-length fur coat is a heavy layer, and you get to the office on foot and then come inside. The tall leather boots and the maxi-length trousers cover your legs.",
+"13": "Шарф жіночий з ніжної напіввовняної пряжі зимовий — The chocolate scarf carries no colour of its own. It stays in the column and works as warmth by your face, not as a second focus.",
+"14": "Чоботи SAFARI шкіряні з відкритим мисом — Tall leather boots with a solid trouser line are right for snow and road salt, so I would not trade them for a better-looking leg line."
+}
+
+── ВІДПОВІДЬ (2081 симв., 27.2 с, HTTP 200) ──
+{"1":"Светр глибокого шоколадного кольору — спокійна основа, яка задає колір усьому образу.","2":"Штани прямого крою коричневого кольору з малюнком у клітинку. Прямий крій робить лінію ноги простою та рівною.","3":"Шуба шоколадного кольору звичайного крою. Це верхній шар, який об'єднує образ в одному насиченому кольорі.","4":"Чоботи шоколадного кольору — найглибший тон в образі, що надає образу опори внизу.","5":"Коричнева сумка, яка залишається в тій самій теплій гамі, що й решта образу.","6":"Шарф шоколадного кольору, тієї самої гами відтінків, що светр, шуба й чоботи.","7":"Бежеве біні — найсвітліша річ в образі, яка додає яскравості біля твого обличчя.","8":"Я зібрала це навколо глибоких коричневих тонів, а бежеве біні — єдина світла нота біля твого обличчя. Це робить образ охайним і спокійним для офісного дня, а прямі штани під шубою звичайного крою дають чисту, нерозірвану лінію від плеча до чобота. Під шубою я залишила лише светр, а це менше шарів, ніж зазвичай потрібно в такий морозний день. Тож на двадцятихвилинній прогулянці по снігу ти покладаєшся на шарф і біні, а шуба лишається застібнутою.","9":"Носи шарф на шиї, заправивши його у виріз шуби, щоб його шоколадний колір поєднався зі светром і шубою, а не стояв осібно.","10":"Опусти низ штанин у клітинку на чоботи, щоб нога виглядала як одна темна лінія до самої землі.","11":"Не знімай біні всю прогулянку й натягни його рівно, щоб бежевий колір обрамляв твоє обличчя.","12":"Гольф “S” шоколадний, Соболяча шуба з укороченим рукавом — Два шари на папері тонкі для сильного морозу, але шуба повної довжини — важкий шар, а ти йдеш до офісу пішки, а потім заходиш досередини. Високі шкіряні чоботи та штани максі-довжини закривають ноги.","13":"Шарф жіночий з ніжної напіввовняної пряжі зимовий — Шоколадний шарф не має власного кольору. Він лишається в колонці й працює як тепло біля твого обличчя, а не як другий акцент.","14":"Чоботи SAFARI шкіряні з відкритим мисом — Високі шкіряні чоботи з цільною лінією штанів доречні для снігу й дорожньої солі, тож я б не міняла їх на ефектнішу лінію ноги."}
