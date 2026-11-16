@@ -34,7 +34,7 @@ $newEnv = {
 }
 # Події сну, як їх веде публікатор (`sleep-events.json`): сон 11:30–15:29 UTC (Power-Troubleshooter/1) і не-сон «вимкнено й запущено» 06:00–06:30.
 [void][IO.Directory]::CreateDirectory("$tmp/pub")
-[IO.File]::WriteAllText("$tmp/pub/sleep-events.json", (@{ read_utc = '2026-11-15T20:00:00.0000000+00:00'; events = @(
+[IO.File]::WriteAllText("$tmp/pub/sleep-events.json", (@{ read_utc = '2099-01-01T00:00:00.0000000+00:00'; events = @(
     @{ key = 'a'; from = '2026-11-15T11:30:00.0000000+00:00'; to = '2026-11-15T15:29:00.0000000+00:00'; source = 'Power-Troubleshooter/1'; announced = $true },
     @{ key = 'b'; from = '2026-11-15T06:00:00.0000000+00:00'; to = '2026-11-15T06:30:00.0000000+00:00'; source = 'heartbeat/boot'; announced = $true }) } | ConvertTo-Json -Depth 5 -Compress), $utf)
 function Read-Box { @(Get-ChildItem -LiteralPath $script:TestBox -Filter '*.txt' -File -ErrorAction SilentlyContinue | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() }) }
@@ -192,6 +192,47 @@ Scenario 'г стан' {
     Check "г журнала LM Studio нема — рядка диспетчерові нема, в #1856 «не виміряно»: $($row2 -join ' | ')" (@(Read-Box).Count -eq 0 -and $row2.Count -eq 1 -and $row2[0] -like '*виклики моделі: не виміряно*')
     $none = @(Get-GpuStateLines @() @() | Where-Object { $_ -like '- замок тримає *' })
     Check 'г замка нема — рядка «замок тримає» нема' ($none.Count -eq 0)
+}
+
+# --- (е) 15787: після пробудження стан оновлюється раніше, ніж публікатор запише подію сну ------------------------------------------
+Scenario 'е сон ще не записано' {
+    . $newEnv 'e'
+    $PublishDir = "$tmp/pub-e"; [void][IO.Directory]::CreateDirectory($PublishDir)
+    $pubE = { param([string]$Read, [bool]$WithEvent) [IO.File]::WriteAllText("$PublishDir/sleep-events.json", (@{ read_utc = $Read; events = $(if ($WithEvent) { @(@{ key = 'a'; from = '2026-11-15T11:30:00.0000000+00:00'; to = '2026-11-15T15:29:00.0000000+00:00'; source = 'Power-Troubleshooter/1'; announced = $true }) } else { @() }) } | ConvertTo-Json -Depth 5 -Compress), $utf) }
+    $send = { param($l) [bool](Add-Line $l) }
+    $holder = @([pscustomobject]@{ Marker = $marker; Since = '2026-11-15T08:59:00Z' })
+    $sl = { param($f, $t) Get-SleepOverlap $f $t }; $rd = { Get-SleepRead }
+    $tk = { param([int]$Min, [int]$Call) Update-GpuWatch $holder ([pscustomobject]@{ Percent = 0; OwnerPid = 9; CallAgeMin = $Call }) $send "$tmp/e/state/gpu-watch.json" $day.AddMinutes($Min) $sl $rd }
+    & $pubE '2026-11-15T11:30:00.0000000+00:00' $false
+    for ($m = 9 * 60; $m -le 11 * 60 + 30; $m += 10) { [void](& $tk $m 2) }   # до сну карта на 0 %, але виклики моделі йшли
+    # Ноутбук прокинувся о 15:29, такт 15:30 раніше за запис події: публікатор прочитав журнал лише до 11:30.
+    $w = & $tk (15 * 60 + 30) 240
+    Check "е ДО: такт до запису події сну — тривоги нема (було б СОН 0, БЕЗ_РОБОТИ 390); рядків $(@(Read-Box).Count)" (@(Read-Box).Count -eq 0)
+    # Публікатор записав подію й прочитав журнал до 15:31; такт 15:32.
+    & $pubE '2026-11-15T15:31:00.0000000+00:00' $true
+    $w = & $tk (15 * 60 + 32) 240
+    Check "е ПІСЛЯ: щойно подія з'явилась — сон пораховано ($($w.SleepMinutes) хв), ряд скинуто ($($w.IdleMinutes) хв), тривоги нема" ($w.SleepMinutes -eq 239 -and $w.IdleMinutes -lt 5 -and @(Read-Box).Count -eq 0)
+    # Публікатор не просунувся за останній вимір: стан не міняється.
+    & $pubE '2026-11-15T15:31:00.0000000+00:00' $true
+    $w2 = & $tk (15 * 60 + 40) 240
+    Check "е публікатор стоїть — стан не міняється, тривоги нема (сон $($w2.SleepMinutes), без роботи $($w2.IdleMinutes))" ($w2.SleepMinutes -eq 239 -and @(Read-Box).Count -eq 0)
+}
+
+# --- (ж) 15788: невідомий вимір ряд не рве й не подовжує ---------------------------------------------------------------------------
+Scenario 'ж невідомий вимір' {
+    . $newEnv 'z'
+    $send = { param($l) [bool](Add-Line $l) }
+    $holder = @([pscustomobject]@{ Marker = $marker; Since = '2026-11-15T18:59:00Z' })
+    $tk = { param([int]$Min, [int]$Pct) Update-GpuWatch $holder ([pscustomobject]@{ Percent = $Pct; OwnerPid = 5; CallAgeMin = 120 }) $send "$tmp/z/state/gpu-watch.json" $day.AddMinutes($Min) }
+    [void](& $tk (19 * 60) 0)
+    for ($m = 19 * 60 + 5; $m -le 20 * 60 + 30; $m += 5) { $w = & $tk $m -1 }
+    Check "ж ДО: один вимір 0 % о 19:00 і 18 невідомих до 20:30 — тривоги нема (було б БЕЗ_РОБОТИ 90); без роботи $($w.IdleMinutes) хв, рядків $(@(Read-Box).Count)" ($w.IdleMinutes -eq 0 -and @(Read-Box).Count -eq 0)
+    [void](& $tk (20 * 60 + 35) 0)
+    $w = & $tk (20 * 60 + 40) 0
+    Check "ж ПІСЛЯ: ряд не порвано, відновлений вимір рахується далі — без роботи $($w.IdleMinutes) хв (очікується 5), тривоги нема" ($w.IdleMinutes -eq 5 -and @(Read-Box).Count -eq 0)
+    # Вимір працює 15 хв, ряд справді триває 90 хв — тривога йде.
+    for ($m = 20 * 60 + 45; $m -le 22 * 60 + 15; $m += 5) { $w = & $tk $m 0 }
+    Check "ж далі виміри без розривів — рядок раз після 90 хв відомої бездіяльності (без роботи $($w.IdleMinutes) хв)" (@(Read-Box).Count -eq 1)
 }
 
 # --- (д) рядок наглядової: гілки claude/прочитано-ноутбук і claude/лист-ноутбуку-* ------------------------------------------------

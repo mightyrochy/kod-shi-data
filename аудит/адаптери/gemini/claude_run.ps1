@@ -599,6 +599,20 @@ function Get-SleepOverlap([datetime]$From, [datetime]$To) {
     } catch { 0 }
 }
 
+function Get-SleepRead {
+    <# До якого моменту публікатор прочитав журнал Windows (`read_utc` у `sleep-events.json`): сон після нього міг бути, а запису ще
+    нема. Файла нема чи він не читається — $null (сон тоді вважається повним, як у Get-SleepOverlap). #>
+    try {
+        $path = Join-Path $PublishDir 'sleep-events.json'
+        if (-not (Test-Path -LiteralPath $path)) { return $null }
+        $j = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+        $r = $j.read_utc
+        if ($r -is [datetime]) { return $r.ToUniversalTime() }
+        if (-not [string]$r) { return $null }
+        [datetimeoffset]::Parse([string]$r, [cultureinfo]::InvariantCulture).UtcDateTime
+    } catch { $null }
+}
+
 function Get-GpuStateLines($LockedBy, $Holders = @()) {
     $gpu = Get-GpuTelemetry
     $watchSample = [pscustomobject]@{ Percent = $(if ($gpu.Error) { -1 } else { $gpu.Percent }); OwnerPid = 0; CallAgeMin = -1 }
@@ -630,7 +644,7 @@ function Get-GpuStateLines($LockedBy, $Holders = @()) {
     # Сторож замка: той самий вимір ряду, що й рядки вище; рядок диспетчерові — раз на ряд бездіяльності (Update-GpuWatch).
     try {
         if ($Holders.Count) { $watchSample.CallAgeMin = [int](Get-LmsCallAge) }
-        $w = Update-GpuWatch $Holders $watchSample { param($l) [bool](Add-Line $l) } '' $null { param($f, $t) Get-SleepOverlap $f $t }
+        $w = Update-GpuWatch $Holders $watchSample { param($l) [bool](Add-Line $l) } '' $null { param($f, $t) Get-SleepOverlap $f $t } { Get-SleepRead }
         if ($null -ne $w) { $lines += "- замок тримає $($w.Marker) $($w.LockMinutes) хв (без сну; сон $($w.SleepMinutes) хв); карта без роботи $(if ($gpu.Error) { '?' } else { $w.IdleMinutes }) хв; PID сервера змінювався $($w.PidChanges) разів; виклики моделі: $(if ($w.CallAgeMinutes -lt 0) { 'не виміряно (журнал LM Studio не читається)' } else { 'останній ' + $w.CallAgeMinutes + ' хв тому' })" }
     } catch { Write-Log "сторож GPU: $($_.Exception.Message)"; $lines += '- замок тримає: не виміряно (збій — claude-run.log)' }
     $lines
