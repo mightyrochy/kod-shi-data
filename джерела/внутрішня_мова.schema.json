@@ -4093,7 +4093,7 @@
          "properties": {
           "as_new": {
            "type": "boolean",
-           "description": "true — a new saved case; else the open one is updated"
+           "description": "true — a new one; else updates the open one"
           }
          }
         }
@@ -4492,6 +4492,47 @@
          }
         }
        }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "set_palette"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "gamut": {
+           "type": "string",
+           "minLength": 1,
+           "description": "from palette_options"
+          },
+          "base": {
+           "type": "string",
+           "minLength": 1,
+           "description": "from palette_options"
+          }
+         }
+        }
+       }
+      },
+      {
+       "properties": {
+        "name": {
+         "const": "looks"
+        },
+        "args": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "id": {
+           "type": "string",
+           "minLength": 1,
+           "description": "from saved_looks"
+          }
+         }
+        }
+       }
       }
      ],
      "properties": {
@@ -4505,7 +4546,9 @@
         "switch_profile",
         "confirm_case",
         "set_weather_feel",
-        "find_item"
+        "find_item",
+        "set_palette",
+        "looks"
        ]
       },
       "args": {
@@ -5086,6 +5129,10 @@
           "description": "the choice is hers: waterproof it beforehand, or take smooth leather or a textile"
          },
          {
+          "const": "waterproof_before_wet_day",
+          "description": "not in this weather untreated: waterproof it beforehand, three times with full drying in between"
+         },
+         {
           "const": "item_suits",
           "description": "the item suits her"
          },
@@ -5304,6 +5351,22 @@
          {
           "const": "look_incomplete",
           "description": "the outfit is incomplete"
+         },
+         {
+          "const": "set_separate_part_doubling",
+          "description": "a set already contains a top and a bottom, so the separate items duplicate these parts of the outfit (values: slots — codes of the separate slots)"
+         },
+         {
+          "const": "outfit_without_shoes",
+          "description": "the outfit has no shoes and is not ready"
+         },
+         {
+          "const": "only_one_item_not_outfit",
+          "description": "there is only one item, not a complete outfit"
+         },
+         {
+          "const": "selection_has_no_other_combination",
+          "description": "the selection has no other combination today; the layers still do not stack"
          },
          {
           "const": "several_items_in_one_slot",
@@ -6147,7 +6210,7 @@
          },
          {
           "const": "calf_girth_not_measured",
-          "description": "her calf girth is unknown, so how the edges of shoes and of a hem land on the calf is not measured; there is a field for it in \"Extended measurements\""
+          "description": "her calf girth is unknown, so how the edges of shoes and of a hem land on the calf is not measured; she can enter it herself: tab \"Profile\", row \"Extended measurements\", field \"Calf\" (cm)"
          },
          {
           "const": "calf_not_widest_point",
@@ -6482,6 +6545,10 @@
           "description": "or lean on texture contrast: the items carry different texture labels, and whether the difference is visible the code does not measure (values: textures — how many different labels)"
          },
          {
+          "const": "keep_look_on_texture_contrast",
+          "description": "keep the look and lean on the texture of her items: their texture labels differ, and whether the difference is visible the code does not measure — a visual call (values: textures — how many different labels)"
+         },
+         {
           "const": "more_than_one_loud_colour",
           "description": "the outfit has more than one loud colour (values: loud_from — the chroma from which a colour counts as loud)"
          },
@@ -6543,7 +6610,7 @@
          },
          {
           "const": "loud_elements_over_budget",
-          "description": "there are more loud elements than the ceiling, and the rest of the outfit does not get to be a background; hair and frames count on a par with the items, and each item of an echo counts (values: count — how many are loud, ceiling — the ceiling; face — which facial features are loud too: hair, glasses; keep — slot codes of the declared loud element with its echo, quiet — slot codes of the other loud items, keep_by — who declared it: scheme — the palette scheme's accent, zone — her focus zone, her_wish — her own choice)"
+          "description": "there are more loud elements than the ceiling, and the rest of the outfit does not get to be a background; hair and frames count on a par with the items, and each item of an echo counts (values: count — how many are loud, ceiling — the ceiling; face — which facial features are loud too: hair, glasses; keep — slot codes of the declared loud element with its echo, quiet — slot codes of the other loud items, keep_by — who declared it: scheme — the palette scheme's accent, her_wish — her own choice)"
          },
          {
           "const": "keep_one_loud_mute_rest",
@@ -6775,7 +6842,7 @@
          },
          {
           "const": "focus_count_over_ceiling",
-          "description": "the outfit has more focuses than the ceiling: equal focuses put each other out, and the outfit reads busy; one colour repeated in several items is one focus (an echo), and a texture alone is not a focus (values: count — how many focuses, ceiling — the ceiling; keep — slot codes of the focus declared by the palette scheme or the focus zone, quiet — slot codes of the other focuses, keep_by — who declared it: scheme, zone or deliberate — your own declared move)"
+          "description": "the outfit has more focuses than the ceiling: equal focuses put each other out, and the outfit reads busy; one colour repeated in several items is one focus (an echo), and a texture alone is not a focus (values: count — how many focuses, ceiling — the ceiling)"
          },
          {
           "const": "keep_one_focus_quiet_rest",
@@ -7138,12 +7205,20 @@
           "description": "rain is only possible, and no outer layer of the look keeps it off — carry a rain layer in case it starts (values: precipitation — the precipitation code)"
          },
          {
+          "const": "possible_rain_no_rain_layer",
+          "description": "rain is only possible, and no outer layer of the look keeps it off (values: precipitation — the precipitation code)"
+         },
+         {
           "const": "rain_outer_layer_over_look",
           "description": "an outer layer that keeps off rain — a trench, a raincoat or a parka — over this look, or keep the look and say why it holds this day"
          },
          {
           "const": "smooth_protected_leather_or_rubber_or_treat",
           "description": "replace it with smooth protected leather or rubber, or treat it with a water repellent and accept the risk"
+         },
+         {
+          "const": "keep_look_say_why_it_holds_day",
+          "description": "keep the look and say why it holds this day"
          },
          {
           "const": "face_contrast_above_her_own",
@@ -7420,6 +7495,10 @@
          {
           "const": "warm_layer_under_or_instead_of_trench",
           "description": "an insulated layer under the trench or instead of it, or declare the wool version"
+         },
+         {
+          "const": "declare_wool_trench",
+          "description": "declare the wool version of the trench — then it is a different case"
          },
          {
           "const": "layer_closes_wet_windy_regime",
@@ -7976,6 +8055,10 @@
          {
           "const": "build_from_coat_or_colour_on_top",
           "description": "build the look from the coat inward, or move colour to scarf, hat or bag, visible over the coat"
+         },
+         {
+          "const": "build_from_coat_inward",
+          "description": "build the look from the coat inward"
          },
          {
           "const": "light_flare_in_wind",
