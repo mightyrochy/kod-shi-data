@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на роботу\", \"place\": \"на роботу\", \"movement\": \"пішки\", \"weather_band\": \"мінус п'ятнадцять\", \"vetoes\": \"підборів\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\", \"quote\": \"підборів\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"підборів\"}]}, \"place\": {\"kind\": \"reading\", \"quote\": \"на роботу\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"на роботу\"}, \"precipitation\": {\"kind\": \"her\", \"quote\": \"сніг\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"shoe_request\": {\"kind\": \"derived\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"пішки\"}, \"weather_band\": {\"kind\": \"reading\", \"quote\": \"мінус п'ятнадцять\"}}, \"event\": \"йду на роботу пішки\", \"movement\": \"walk\", \"weather_band\": \"deep_frost\", \"precipitation\": \"snow\", \"refusals\": {\"types\": [\"heels\"]}, \"occasion\": \"work\", \"place\": \"office\", \"shoe_request\": \"no_heel\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"road_salt\": true}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Merino turtleneck, fitted with a slim cut, hip length, charcoal grey #4A4F57, fine merino wool\\nTrousers, straight high-waisted cut, full length to the ankle bone, deep navy #1F2A44, wool-blend flannel with a soft brushed finish\\nTextured blazer, relaxed single-breasted cut, hip length, heathered grey-brown #6B645C, wool tweed with a lining\\nLong coat, straight cut with a insulated lining, mid-calf length, dark camel #8A6A4A, double-faced wool with a down-fill quilted interior\\nAnkle boots, flat with a lugged rubber sole, round toe, ankle height, black #1A1A1A, waterproof leather with a warm fleece lining\\nScarf, wide and oversized, long, burgundy #6D1F2F, soft lambswool\\nKnit beanie, snug fit with a folded cuff, burgundy #6D1F2F, wool with a fleece lining\\nGloves, classic cut, wrist length, black #1A1A1A, leather with a cashmere lining\\nTote bag, structured, medium size, black #1A1A1A, grained leather that resists salt and snow\\n\\nThis outfit keeps the neat office look of a turtleneck, tailored trousers and a textured blazer, while the layers hold in warmth on a long walk in deep frost. The flat boots with a grippy rubber sole and a waterproof finish handle snow and road salt with no heel at all. The long insulated coat covers the legs and the wind-exposed areas, and the scarf, beanie and gloves protect the places that feel the cold most. The muted navy, grey and camel with a burgundy accent look polished at the desk and stay coordinated once the coat comes off.\"}],\"usage\":{\"input_tokens\":2287,\"output_tokens\":845},\"stop_reason\":\"end_turn\"}"
+ }
+}
