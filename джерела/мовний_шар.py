@@ -1633,7 +1633,8 @@ def _ключі_речі(р):
     вих = dict(слот=с, тип=_ВМ.ключ("item_type", р.get("item_type")),
                колір=_ВМ.ключ("color_name", р.get("color_name")), клас_кольору=_ВМ.ключ("color_class", р.get("color_class")),
                тканина=_ВМ.ключ("fabric", р.get("fabric")), візерунок=_ВМ.ключ("pattern", р.get("pattern")),
-               довжина=_ВМ.ключ("length", р.get("length")), ознака=_ВМ.ключ("feature", р.get("feature")))
+               довжина=_ВМ.ключ("length", р.get("length")), ознака=_ВМ.ключ("feature", р.get("feature")),
+               як_носить=_ВМ.ключ("wear", р.get("wear")))
     вих = {к: v for к, v in вих.items() if v}
     return dict(вих, фраза=_фраза(р), **({"уривок": р["quote"]} if р.get("quote") else {})) if вих else {}
 
@@ -3358,8 +3359,9 @@ _ПОЛЯ_EN = {
     # Свята-приклади (новорічна вечірка й корпоратив — свята сцен) — тепер родом випадку
     # Що дає місяць (дата, місяць, свято одного місяця — з цим словом цитатою), каже правило події (R6): там його
     # модель і заповнює; тут — лише чого місяцем не буває.
-    "month": "the month of the event, only when her words date it (the event rule); a weekday, «today», «tomorrow» "
-             "or an event of any month — absent",
+    "month": "the month of the event, only when her words date it (the event rule); an event of any month — absent",
+    # День тижня — своє поле (корінь Е2-втрата-слова, 16027: «в суботу» 11 сцен, 0 дійшло — поля не було)
+    "weekday": "the day of the event she names: a weekday, «today» or «tomorrow»",
     # «return only its code, never degrees» — R5 («Values are only the codes»); «K-WEA-01 with the P-5 split» —
     # мітки бази знань, не вимога; знято (Е2-промпти, п.1)
     "weather_band": "the weather band, from the degrees she names (digits or words) or her feeling of "
@@ -3474,7 +3476,7 @@ _ПОЛЯ_EN = {
 }
 _РЕЧІ_EN = {"slot": "part of the look", "item_type": "item type", "fabric": "fabric", "pattern": "pattern",
             "color_class": "colour class", "color_name": "colour name", "zone": "body zone she keeps covered",
-            "feature": "item feature", "length": "item length"}
+            "feature": "item feature", "length": "item length", "wear": "how she wears it"}
 _БЕЗ_У_РОЗМОВІ = _ПП.поля_виду("поза_розмовою")    # пари несуть цитату самі; про що питання — `need`
 
 
