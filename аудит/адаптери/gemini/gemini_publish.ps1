@@ -808,6 +808,7 @@ $script:OutboxTemplates = @(
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО [A-Z0-9_]{2,40} ×[0-9]{1,5}: (?:gemini|codex|claude)/$script:SlugCore(?:, (?:gemini|codex|claude)/$script:SlugCore){0,4}(?: …)?\z"
     '\AGEMINI ОБГОРТКА: ТРИВОГА (?:AUTH (?:AGY|CODEX|CLAUDE|CLOUD)|ISOLATION (?:WHOAMI|NET_SESSION|PROFILES|DRIVES|ENV)|DISK FULL|ENGINE (?:AGY|CODEX|CLAUDE))\z'
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z'
+    $script:GpuIdleLineTemplate
     '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_]+(?:,[A-Z0-9_]+)* (?:20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|-))?\z'
     $script:HoldLineTemplate
     '\AGEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #[1-9][0-9]{0,8} [0-9a-f]{40}\z'
