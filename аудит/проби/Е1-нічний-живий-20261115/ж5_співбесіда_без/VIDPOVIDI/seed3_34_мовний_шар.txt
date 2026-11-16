@@ -1,0 +1,63 @@
+── ПРОМПТ (8485 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: grey · about it: text н=1
+2 — kind code: two_piece_set · colour code: white · about it: text н=2
+3 — kind code: boots · colour code: chocolate · about it: text н=3
+4 — kind code: backpack · colour code: brown · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: brown — коричневий; chocolate — шоколадний; grey — сірий; white — білий.
+
+ТЕКСТИ:
+{
+"1": "This grey bodycon blazer brings a sleek, architectural line to your ensemble. Its tailored fit provides the professional structure needed for an interview setting, while the neutral tone keeps you looking sharp and focused on your conversation rather than your clothes.",
+"2": "The white two-piece set with stripes forms a crisp foundation under your blazer. Its straight cut ensures a clean, unbroken line that works seamlessly with the outer layer, offering comfort and a polished base for your presentation.",
+"3": "These chocolate boots add depth and stability to your outfit. Their solid color grounds the lighter tones above while maintaining an elegant profile suitable for walking through a busy office environment.",
+"4": "The brown backpack is a practical choice that completes your look with rich, earthy warmth. It pairs naturally with your boots to create a cohesive transition from the professional top half to your daily needs.",
+"5": "Your look is ready for the bank interview, built with precision and polish. The grey bodycon blazer acts as your tailored shell, providing the sharp, professional structure expected in an office environment. Underneath, the white two-piece set with stripes offers a clean foundation; its straight cut ensures a fluid line that balances the fitted nature of the outer layer without adding unnecessary bulk. You carry this sophisticated yet composed energy forward with the chocolate boots and brown backpack, grounding your look in rich, autumnal tones that feel confident and grounded. This combination respects the formality of a job interview while keeping you comfortable and prepared for a long day.",
+"6": "Keep the blazer buttoned or partially open to maintain that neat, put-together silhouette from the moment you walk through the door.",
+"7": "Ковбойки високі шоколадні замшеві KOSIV на флісі — I swapped the missing shoes for chocolate suede knee-high boots to ground the cool grey and add warmth suitable for autumn daylight.",
+"8": "Рюкзак жіночий, ATTICO, шкіра, колір темно-коричневий — I added a brown leather backpack as a necessary third piece to complete the outfit structure before adding the shirt.",
+"9": "Сірий вовняний жакет на блискавці, Костюм: жилет приталеного крою; штани завужені, з підкатами, пасок комбінований з гумовою стрічкою, посадка висока (Max Mara) Max Mara, Ковбойки високі шоколадні замшеві KOSIV на флісі, Рюкзак жіночий, ATTICO, шкіра, колір темно-коричневий — I accept this register gate as a deliberate choice to ground the structured blazer in your casual morning routine, ensuring you don't feel overdressed while maintaining professional polish.",
+"10": "Ковбойки високі шоколадні замшеві KOSIV на флісі — I swapped the missing shoes for chocolate suede knee-high boots to ground the coat and add warmth suitable for autumn daylight.",
+"11": "Рюкзак жіночий, ATTICO, шкіра, колір темно-коричневий — I kept only the essential brown leather backpack as a third piece, avoiding adding shoes to let the polka dot set remain the hero of the outfit.",
+"12": "Рюкзак жіночий, ATTICO, шкіра, колір темно-коричневий — I added a brown leather backpack as a necessary third piece to complete the outfit structure before adding any other items.",
+"13": "Сірий вовняний жакет на блискавці — I added the fitted midi skirt to balance the shoulders and create a complete outfit base before adding the blazer.",
+"14": "Ковбойки високі шоколадні замшеві KOSIV на флісі — I swapped the missing shoes for chocolate suede knee-high boots to ground the look and add warmth suitable for autumn daylight."
+}
+
+── ВІДПОВІДЬ (3673 симв., 31.2 с, HTTP 200) ──
+```json
+{
+  "1": "Цей сірий приталений блейзер додає вишукану, архітектурну лінію до твого образу. Його індивідуальний крій забезпечує професійну структуру, необхідну для співбесіди, а нейтральний тон дозволяє тобі виглядати стильно та зосереджено на розмові, а не на одязі.",
+  "2": "Білий комплект з двох частин у смужку створює чітку основу під твій блейзер. Його прямий крій забезпечує чисту лінію, яка бездоганно поєднується із зовнішнім шаром, пропонуючи комфорт і вишуканий базис для твоєї презентації.",
+  "3": "Ці шоколадні чоботи додають глибини та стабільності до твого вбрання. Їхній однотонний колір підкреслює світліші тони зверху, зберігаючи елегантний профіль, який ідеально підходить для ходьби у жвавому офісному середовищі.",
+  "4": "Коричневий рюкзак — це практичний вибір, який завершує твій образ теплими, землистими відтінками. Він природно поєднується з твоїми чоботями, створюючи гармонійний перехід від професійної верхньої частини до повсякденних потреб.",
+  "5": "Твій образ готовий для співбесіди в банку — створений із точністю та вишуканістю. Сірий приталений блейзер слугує твоїм індивідуальним «панциром», забезпечуючи гострий, професійний силует, який очікується у офісному середовищі. Під ним білий комплект з двох частин у смужку пропонує чисту основу; його прямий крій гарантує плавний баланс між приталеним характером верхнього шару без зайвого об’єму. Ти продовжуєш цю вишукану та впевнену енергію за допомогою шоколадних чобіт і коричневого рюкзака, підкреслюючи свій образ насиченими осінніми тонами, які відчуваються впевнено й ґрунтовно. Ця комбінація поважає формальність співбесіди на роботу, зберігаючи при цьому твій комфорт і готовність до довгого дня.",
+  "6": "Застебни блейзер або частково розстебни його, щоб зберегти охайний, зібраний силует від моменту, як ти переступиш поріг.",
+  "7": "Ковбойки високі шоколадні замшеві KOSIV на флісі — Я замінила відсутнє взуття на шоколадні замшеві ковбойки до колін, щоб підкреслити прохолодний сірий і додати тепла, яке пасує освітленню.",
+  "8": "Рюкзак жіночий, ATTICO, шкіра, темно-коричневий — Я додала коричневий шкіряний рюкзак як необхідну третю деталь для завершення структури образу перед тим, як додати сорочку.",
+  "9": "Сірий вовняний жакет на блискавці; Костюм: приталений жилет; завужені штани з підкатами, пасок комбінований з гумовою стрічкою, висока посадка (Max Mara); Ковбойки високі шоколадні замшеві KOSIV на флісі; Рюкзак жіночий, ATTICO, шкіра, темно-коричневий — Я приймаю цей образ як свідомий вибір для того, щоб підкреслити структурований блейзер у твоїй повсякденній ранковій рутині, забезпечуючи тобі відчуття неперевантаженості при збереженні професійного вигляду.",
+  "10": "Ковбойки високі шоколадні замшеві KOSIV на флісі — Я замінила відсутнє взуття на шоколадні замшеві ковбойки до колін, щоб підкреслити пальто та додати тепла, яке пасує освітленню.",
+  "11": "Рюкзак жіночий, ATTICO, шкіра, темно-коричневий — Я залишила лише необхідний коричневий шкіряний рюкзак як третю деталь, уникаючи додавання взуття, щоб дозволити комплекту з горошком залишатися головним елементом образу.",
+  "12": "Рюкзак жіночий, ATTICO, шкіра, темно-коричневий — Я додала коричневий шкіряний рюкзак як необхідну третю деталь для завершення структури образу перед тим, як додати будь-які інші речі.",
+  "13": "Сірий вовняний жакет на блискавці — Я додала приталену міді спідницю, щоб збалансувати плечі та створити повну основу для образу перед тим, як додати блейзер.",
+  "14": "Ковбойки високі шоколадні замшеві KOSIV на флісі — Я замінила відсутнє взуття на шоколадні замшеві ковбойки до колін, щоб підкреслити образ і додати тепла, яке пасує освітленню."
+}
+```
