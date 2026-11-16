@@ -34,7 +34,7 @@ def main():
     raw = ET.parse(gzip.open(tree / "каталог_повний.xml.gz")).getroot()
     cards = {o.get("id"): {p.get("name", "").strip().lower(): p.text or "" for p in o.findall("param")}
              for o in raw.findall(".//offer")}
-    coverage, differences, skipped = Counter(), [], []
+    coverage, differences, skipped, euro = Counter(), [], [], []
     fields = {"каблук_вид": "heel_shape", "каблук_рівень": "heel_height", "підошва_коди": "sole",
               "сезон_пари": "wear_season", "підкладка_коди": "lining"}
     for item_id, record in by_id.items():
@@ -45,6 +45,9 @@ def main():
             continue
         expected = table.ознаки(params)
         row = wire.осі({}, dict(record, слот="взуття"))
+        if any(v.casefold().strip() == "єврохутро" for k, v in params.items() if "підклад" in k):
+            euro.append({"id": item_id, "url": record.get("url"), "картка": "Єврохутро",
+                         "підкладка_коди": record.get("підкладка_коди"), "lining": row.get("lining")})
         for key, row_key in fields.items():
             if key not in expected:
                 continue
@@ -108,6 +111,7 @@ def main():
                       "розбіжності_кодів_картки_й_рядка": differences,
                       "пари_поза_звіркою_автора": skipped,
                       "втрати_незалежного_читання": lost,
+                      "єврохутро": euro,
                       "складене_поле_поза_таблицею": compound,
                       "картки": examples, "непрочитані_значення": states}, ensure_ascii=False, indent=2)
     if output:
