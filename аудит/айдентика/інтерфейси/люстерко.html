@@ -107,8 +107,8 @@ img{display:block}
 .polycja .foto.tlo-zhyve{background:var(--bile)}
 .polycja.try{grid-template-columns:repeat(3,1fr)}
 .polycja figure{position:relative}
-.polycja figcaption{font-size:11px;line-height:1.2;margin-top:4px;text-align:center}
-.polycja .zm:after,.polycja .sv:after{content:'нове';position:absolute;left:0;top:0;background:var(--emal);color:#fff;font:600 11px/1 'Fixel Text',sans-serif;padding:3px 5px}
+.polycja figcaption{font-size:13px;line-height:1.2;margin-top:4px;text-align:center}
+.polycja .zm:after,.polycja .sv:after{content:'нове';position:absolute;left:0;top:0;background:var(--emal);color:#fff;font:600 12px/1 'Fixel Text',sans-serif;padding:3px 5px}
 .polycja .sv:after{content:'своє';background:var(--zel)}
 
 .spysok{margin-top:6px;background:var(--sklo);position:relative}
@@ -125,9 +125,12 @@ img{display:block}
 
 /* зворот дзеркала: збережене — як напис на звороті */
 .zvorot{background:var(--sol);aspect-ratio:2/3;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:12px;gap:6px}
+.zvorot .dribni{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:100%;margin-top:10px}
+.zvorot .dribni .foto{aspect-ratio:1;background:none}
+.zvorot .dribni .foto.tlo-rivne img{mix-blend-mode:multiply}
 .zvorot b{font:600 22px/1.05 'Fixel Display',sans-serif;text-wrap:balance}
 .zvorot span{font-size:13px}
-.zvorot em{font-style:normal;font-size:12px;display:inline-flex;align-items:center;gap:5px;margin-top:6px}
+.zvorot em{font-style:normal;font-size:13px;display:inline-flex;align-items:center;gap:5px;margin-top:6px}
 .kom{display:inline-block;width:9px;height:9px;background:var(--emal);flex:none}
 .kom.z{background:var(--zel)}.kom.c{background:var(--ceh)}.kom.o{background:none;box-shadow:inset 0 0 0 1px var(--sire)}
 .kom.zhyva{animation:blym 1.1s steps(2) infinite}
@@ -253,7 +256,7 @@ window.СЦЕНИ=[
  return '<p class="vona-kazhe na-osi">«'+k.slova+'»</p><div class="os pid" style="margin-top:6px"><span class="l">у крамниці</span><span class="p">уже маєш · з образу «Хрещена»</span></div><div class="os" style="margin-top:8px"><div class="l">'+F(k.rich,'style="aspect-ratio:1"')+'<p style="margin-top:8px">'+r.nazva+'</p><p>'+hrn(r.cina)+'</p></div><div class="p">'+F(k.porivn,'style="aspect-ratio:1"')+'<p style="margin-top:8px">'+p.nazva+'</p><p>'+hrn(p.cina)+'</p></div><b class="znak" style="--y:88px">чи</b></div>'+
  '<h1 class="naz vel na-osi" style="margin-top:14px">'+k.vyrok+'</h1><ul class="prychyny">'+k.chomu.map(function(c,i){return '<li><i class="kom '+(i<2?'z':'c')+'"></i>'+c+'</li>'}).join('')+'</ul><p class="pid na-osi" style="margin-top:8px">хочеш саме цю барву — менші</p><div class="polycja try">'+k.skhozhi.map(function(x){return '<figure>'+F(x)+'<figcaption>'+hrn(R[x].cina)+'</figcaption></figure>'}).join('')+'</div><div class="dii"><button class="kn druha">Усе ж беру</button></div>'}},
 {id:'moji',nazva:'мої образи',html:function(){sh({s:'Три образи. Ліворуч — як виглядав, праворуч — зворот: коли, куди й чи вдягла.',pole:'«Що вдягти завтра на роботу?»'});
- return '<h1 class="naz na-osi">Мої образи</h1>'+V.moji.map(function(m){return '<div class="os" style="margin-top:14px"><div class="l">'+F(m.rechi[0])+'</div><div class="p"><div class="zvorot"><b>'+m.nazva+'</b><span>'+m.pro+'</span><span>'+m.data+'</span><em><i class="kom '+(m.vdjahla?'z':'o')+'"></i>'+(m.vdjahla?'вдягла':'ще попереду')+'</em></div></div></div>'}).join('')+
+ return '<h1 class="naz na-osi">Мої образи</h1>'+V.moji.map(function(m){return '<div class="os" style="margin-top:14px"><div class="l">'+F(m.rechi[0])+'</div><div class="p"><div class="zvorot"><b>'+m.nazva+'</b><span>'+m.pro+'</span><span>'+m.data+'</span><em><i class="kom '+(m.vdjahla?'z':'o')+'"></i>'+(m.vdjahla?'вдягла':'ще попереду')+'</em><div class="dribni">'+m.rechi.slice(1).map(function(k){return F(k)}).join('')+'</div></div></div></div>'}).join('')+
  '<p class="pid na-osi" style="margin-top:22px">ще вмію</p><div class="plytky" style="margin-top:0"><button class="pl" data-scena-do="svij">оцінити твій образ з фото</button><button class="pl">зібрати під одну річ</button><button class="pl" data-scena-do="kupyty">сказати, купити чи ні</button><button class="pl">мої речі · буде</button></div>'}},
 {id:'pomylka',nazva:'помилка',html:function(){var k=V.chekannja.kroky;sh({do:5,s:V.pomylka,pole:'Скажи або напиши…'});
  return '<div class="os"><div class="l">'+vona('zrist')+'</div><div class="p">'+vona('zrist','vidbyttja stalo')+'</div><b class="znak pyt">×</b></div><h1 class="naz na-osi" style="margin-top:10px">Не зібрала</h1><p class="na-osi" style="max-width:320px;font-size:15px;padding-top:0">Крамниці довго не відповідають. Твої слова й барви на місці.</p>'+

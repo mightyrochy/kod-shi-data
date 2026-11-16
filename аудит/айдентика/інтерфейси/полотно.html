@@ -11,8 +11,8 @@
 /* ПОЛОТНО. Розмова тчеться, як рушник: довге тихе полотно, що густішає до образу й кінчається підписом із датою.
    Числа: рушник 1839 р. — понад половину довжини порожня; рукав буковинської сорочки — 32 : 13 : 55. */
 :root{
-  --pol:#E8E1D8;   /* полотно: небілений льон рушника 1839 р. */
-  --bil:#F7F3EE;   /* вибілене: підкладка під фото */
+  --pol:#E9E7E2;   /* полотно: льон рушника 1839 р. (#E6E0D9), на крок світліший і сіріший — щоб фото на білому тлі не стояло латкою */
+  --bil:#F9F7F3;   /* вибілене: підкладка під фото */
   --mar:#A97975;   /* марена на льоні: площини */
   --hus:#8A3A32;   /* марена густа: її слова, текстом */
   --ink:#2E2623;   /* слова стилістки */
@@ -40,7 +40,7 @@ img{display:block}
 .s{margin-right:auto}
 .v{color:var(--hus);margin-left:auto;padding-left:0;width:78%}
 .v+.s,.s+.v{margin-top:28px}
-.vel{font-size:30px;line-height:1.13;letter-spacing:-.005em;max-width:13em;margin-bottom:24px;text-wrap:balance}
+.vel{font-size:34px;line-height:1.1;letter-spacing:-.005em;max-width:13em;margin-bottom:24px;text-wrap:balance}
 .pid{font-size:14px;line-height:1.35;color:var(--pop);letter-spacing:.02em}
 .pid b{color:var(--ink);font-weight:700}
 .shov{border:0;border-top:2px dotted rgba(107,95,88,.55);margin:28px 0 12px}   /* шов-мережка: рядок дірочок */
@@ -74,6 +74,7 @@ img{display:block}
 .foto.male img{width:auto;height:auto;max-width:min(100%,var(--w));max-height:min(100%,var(--h))}
 .foto.bezrechi img,.foto.nema-foto img,button.foto img{display:none}
 .foto.bezrechi:after,.foto.nema-foto:after,button.foto:after{content:attr(data-nema);position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:8px;font-size:13px;line-height:1.3;color:var(--pop)}
+button.foto{background:none;outline:1.5px dashed var(--mar);outline-offset:-2px}
 .foto.zrist{aspect-ratio:9/16}.foto.portret{aspect-ratio:3/4}
 .foto.vona img{object-position:50% 20%}
 .svoje:before{content:'своє';position:absolute;z-index:1;left:0;top:0;background:var(--hus);color:var(--bil);font-size:13px;font-weight:700;letter-spacing:.06em;padding:2px 8px}
@@ -138,13 +139,12 @@ img{display:block}
 @keyframes tche{from{width:4%}to{width:96%}}
 
 /* кандидати заміни: троє поруч */
-.troje{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px -14px 0}
-.troje article{display:flex;flex-direction:column;font-size:14px;line-height:1.3}
-.troje .foto{aspect-ratio:3/4}
-.troje b{margin-top:8px}
-.troje p{color:var(--pop);margin:4px 0 8px;flex:1}
-.troje .radzhu{border-top:4px solid var(--hus);padding-top:0}
-.troje article:not(.radzhu){border-top:4px solid transparent}
+.troje{display:grid;grid-template-columns:1fr;margin:8px 0 0}
+.troje article{display:grid;grid-template-columns:104px 1fr;column-gap:14px;align-content:start;font-size:16px;line-height:1.3;padding:10px 0 6px 10px;border-top:1px solid var(--mar);border-left:4px solid transparent}
+.troje .foto{aspect-ratio:1;grid-row:1/5}
+.troje p{color:var(--pop);margin:2px 0 2px;font-size:15px}
+.troje .radzhu{border-left-color:var(--hus)}
+.troje button{justify-self:start}
 .troje button{min-height:44px;border-bottom:2px dotted var(--pop);align-self:flex-start}
 .troje .radzhu button{color:var(--hus);border-bottom:2px solid var(--hus);font-weight:700}
 .para{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:16px 0 0}
@@ -190,7 +190,7 @@ img{display:block}
 </style>
 </head>
 <body>
-<svg class="tkan" aria-hidden="true"><filter id="tk" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".02 .85" numOctaves="2" seed="4" result="a"/><feTurbulence type="fractalNoise" baseFrequency=".85 .02" numOctaves="2" seed="9" result="b"/><feBlend in="a" in2="b" mode="multiply"/><feColorMatrix values="0 0 0 0 .42  0 0 0 0 .33  0 0 0 0 .27  0 0 0 -1.6 .78"/></filter><rect width="100%" height="100%" filter="url(#tk)"/></svg>
+<svg class="tkan" aria-hidden="true"><filter id="tk" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".02 .85" numOctaves="2" seed="4" result="a"/><feTurbulence type="fractalNoise" baseFrequency=".85 .02" numOctaves="2" seed="9" result="b"/><feBlend in="a" in2="b" mode="multiply"/><feColorMatrix values="0 0 0 0 .36  0 0 0 0 .33  0 0 0 0 .30  0 0 0 -1.6 .78"/></filter><rect width="100%" height="100%" filter="url(#tk)"/></svg>
 
 <header class="zhortok">
   <span class="znak">люстерко</span>

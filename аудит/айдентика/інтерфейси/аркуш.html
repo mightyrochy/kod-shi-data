@@ -229,10 +229,10 @@ window.СЦЕНИ=[
 {id:'chekannja',nazva:'чекання збирання',html:function(){var k=V.chekannja.kroky;kol('складаю аркуш','Можна говорити далі — врахую');
  return st('<h2>Складаю. Ще хвилини дві</h2><p class="t">Можеш піти — покличу, щойно аркуш буде готовий. <button class="sl je" style="min-height:28px">покликати ✓</button></p>',
  '<p class="sc">ескіз стає речами: дві вже знайшла</p>'+tabl(V.obraz.rechi,{stan:{cher:'barva',sumk:'barva',pala:'zhde',sere:'zhde'},bezsumy:1}),bereh(5),'<p class="pid">1:42 з приблизно 3:40</p><ol class="kroky">'+k.map(function(x,i){return '<li class="'+(i<3?'':i===3?'zaraz':'bude')+'"><span>'+x[0]+(i<3?'<em>'+x[1]+'</em>':'')+'</span></li>'}).join('')+'</ol>')}},
-{id:'obraz',nazva:'образ',html:function(){var o=V.obraz;kol('аркуш 3 · '+V.nahoda.povna,'Щось не так? Припиши — перескладу');
+{id:'obraz',nazva:'образ',html:function(){var o=V.obraz;kol('аркуш 3 · хрестини','Щось не так? Припиши — перескладу');
  return st('<p class="ep">Хочу бути гарною, але не як на весілля. І на підборах цілий день не вистою.<small>твої слова · '+V.nahoda.koly+'</small></p><h1>'+V.nahoda.nazva+'</h1>',
  tabl(o.rechi),bereh(5),'<p class="t ja" id="ja">'+o.slova.replace('Тихий образ','Я склала тихий образ')+' <button class="sl" style="min-height:26px" onclick="this.parentNode.firstChild.textContent=ВМІСТ.obraz.dovhi.replace(\'Тихий образ\',\'Я склала тихий образ\')+\' \';this.remove()">докладніше</button></p>'+perelik(o.rechi)+'<div class="knop"><button class="kn" data-scena-do="pislja">Вдягну — вписати в зошит</button><button class="sl" data-dali>є ще один аркуш →</button></div>')}},
-{id:'dva',nazva:'кілька образів — аркуші',html:function(){var o=V.druhyj;kol('аркуш 4 · '+V.nahoda.povna,'Котрий? Або скажи, що не так');
+{id:'dva',nazva:'кілька образів — аркуші',html:function(){var o=V.druhyj;kol('аркуш 4 · хрестини','Котрий? Або скажи, що не так');
  return st('<div class="hort" style="margin-top:0"><button data-dali="-1">← аркуш 3 · Хрещена</button><span>2 з 2</span></div><h1 style="margin-top:14px">'+o.nazva+'</h1>',
  tabl(o.rechi),bereh(5),'<p class="t ja">'+o.slova.replace('Те саме','Я склала те саме')+'</p><p class="pid">Фото зеленої сукні крамниця дала дрібне — показую не більшим, ніж воно є.</p>'+perelik(o.rechi)+'<div class="knop"><button class="kn" data-scena-do="pislja">Вдягну цей</button></div>')}},
 {id:'sumniv',nazva:'сумнів і заміна',html:function(){var s=V.sumniv,o=V.obraz;kol('аркуш 3 · заміна','Або опиши, яких хочеш');
