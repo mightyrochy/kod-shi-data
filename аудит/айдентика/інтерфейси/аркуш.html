@@ -156,6 +156,9 @@ p.ja:before{content:'— ';}
 .berehy{display:none}
 .pult{position:fixed;z-index:9;top:4px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:rgba(28,26,23,.88);color:#fff;font:12px/1 system-ui,sans-serif;padding:4px 6px;border-radius:14px;white-space:nowrap}
 .pult button{width:28px;height:24px;color:#fff;font-size:16px;text-align:center}.pult b{font-weight:400}.pult a{color:#fff;opacity:.7;margin:0 6px}
+.kl.tyk{cursor:pointer}
+.per li.tut{background:var(--pap2);box-shadow:-8px 0 0 var(--pap2),8px 0 0 var(--pap2)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--cyn);outline-offset:3px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 
 /* широкий екран: розворот — ліворуч текст, праворуч таблиця; розмова — на березі */
@@ -203,12 +206,14 @@ function bereh(n,shche){var h='<aside class="berehy"><h6>на березі — �
 function tabl(ks,o){o=o||{};var s=0,h='<div class="tabl">';ks.forEach(function(k,i){var r=R[k],m=MISCE[k],st=(o.stan||{})[k]||'foto',lit='<b class="ch">'+AB[i]+'</b>';if(k!==o.moje)s+=r.cina;
   if(st==='barva')h+='<div class="kl ploshch '+m+(r.barva==='#EFE7DA'||r.barva==='#C39A78'||r.barva==='#D8D2C8'?' sv':'')+'" style="background:'+r.barva+'">'+r.slot+'</div>';
   else if(st==='zhde')h+='<div class="kl zhde '+m+'">'+r.slot+'</div>';
-  else h+='<div class="kl '+m+(k===o.moje?' moje':'')+(k===o.nove?' nove':'')+(o.tykho&&k!==o.tykho?' tykho':'')+'">'+lit+F(k)+'</div>'});
+  else h+='<div data-lit="'+i+'" class="kl '+m+(o.bezsumy?'':' tyk')+(k===o.moje?' moje':'')+(k===o.nove?' nove':'')+(o.tykho&&k!==o.tykho?' tykho':'')+'">'+lit+F(k)+'</div>'});
  return h+(o.bezsumy?'':'<div class="kl suma"><span class="sc">разом</span><b>'+hrn(s)+'</b></div>')+'</div>'}
 function perelik(ks,o){o=o||{};return '<ol class="per">'+ks.map(function(k,i){var r=R[k],mj=k===o.moje;return '<li class="'+(mj?'moje':'')+'"><b class="ch">'+AB[i]+'</b><a href="'+r.url+'" target="_blank" rel="noopener" title="'+(r.povna||r.nazva)+'">'+r.nazva+'</a><span class="cina">'+(mj?'моє':hrn(r.cina))+'</span><small>'+r.kram+' ↗'+(k===o.nove?' · замість черевиків':'')+'</small><p>'+r.chomu+'</p><span class="dii"><button class="sl" data-scena-do="sumniv">не ця</button><button class="sl">'+(mj?'узяти з крамниці':'маю свою')+'</button></span></li>'}).join('')+'</ol>'}
 /* аркуш: голова (її слова, назва) → таблиця з постаттю → тіло (слова стилістки, перелік). На широкому — розворот: ліворуч голова й тіло, праворуч таблиця, далі берег. */
 function st(l,p,b,t){return '<section class="stor hol">'+l+'</section>'+(p?'<section class="stor pr">'+p+'</section>':'')+(t?'<section class="stor tilo">'+t+'</section>':'')+(b||'')}
 
+/* торкнулась речі в таблиці — перелік гортається до її рядка з причиною */
+document.addEventListener('click',function(e){var k=e.target.closest('.kl.tyk');if(!k)return;var li=document.querySelectorAll('.per li')[+k.getAttribute('data-lit')];if(!li)return;[].forEach.call(document.querySelectorAll('.per li.tut'),function(x){x.classList.remove('tut')});li.classList.add('tut');li.scrollIntoView({behavior:'smooth',block:'center'})});
 window.СЦЕНИ=[
 {id:'pochatok',nazva:'порожній початок',html:function(){kol('аркуш перший','Або одразу: куди збираєшся?');
  return st('<p class="t bukv" style="font-size:24px;line-height:1.2">Покажи себе — і скажи, куди йдеш.</p><p class="t" style="clear:both;padding-top:8px">Я — люстерко, що відповідає. Складу для тебе аркуш: ти посередині, довкола — речі з українських крамниць, кожна на своєму місці й зі своєю причиною.</p>',
