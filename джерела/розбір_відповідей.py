@@ -110,11 +110,15 @@ import colorspace as _cs
         # «the choice is hers» про БУДЬ-ЩО, що сперечається з днем, модель ставила в кінець більшості
         # карток — про речі, які обрала сама («сітка… наскільки це важливо в церкві, вирішуєш ти»).
         # Своє рішення стилістка не віддає жінці назад.
+        # Прогін3-погода-й-дорога: «why you still chose it» на річ, яку фото показало не для дня, давало «шпилька
+        # вимагає обережних кроків» на сніг і двадцять хвилин пішки (с8) — складання й ремонт фото не бачили, і
+        # «свідомого вибору» не було. Тепер така річ — `swap` з підставою `day`; пояснення лишається тому, що
+        # з днем лише сперечається.
         _ВИМ.поле("day", як="when the known item properties support it, in the last part of «text» say how this outfit "
-                    "lives through her day; when something "
-                    "you chose argues with the day (weather, hours on her feet, the place), say in one plain "
-                    "sentence why you still chose it and what that means for her day; describe the chosen "
-                    "items without proposing a different composition; never hand that decision back to her"),
+                    "lives through her day. An item its photo shows unfit for her weather or way there is «swap»; "
+                    "for anything else that argues with the day (hours on her feet, the place), say in one plain "
+                    "sentence why you still chose it and what it means for her day, never handing that decision "
+                    "back to her"),
         # ОПИС-1 (K-PAL-11/14/15): «найдальші» й «комбінація», якщо йдуть у КОЖЕН опис, дають
         # «маленька оливкова чи зелена деталь» навіть на похороні й поради додати річ, якої в образі
         # нема. Тож лише те, що стосується речей образу.
@@ -170,10 +174,10 @@ import colorspace as _cs
         _ЗП.Поле("swap_spares", "the item you named for replacement, your reason, and the spares of the "
                                 "same kind the code checked in its place; every spare has «photos» like "
                                 "the items of the outfit",
-                 як="look at the photos of the spares and choose the one that serves this outfit and her "
-                    "occasion best, or none; describe the outfit with your choice in place — the chosen "
-                    "spare instead of the item; the card tells her separately what you replaced and why, so "
-                    "«text» does not; answer «swap» again with «item», «why» and «to»"),
+                 як="look at the photos of the spares and choose the one that serves this outfit, her "
+                    "occasion and her day best, or none; describe the outfit with your choice in place — the "
+                    "chosen spare instead of the item; the card tells her separately what you replaced and why, "
+                    "so «text» does not; answer «swap» again with «item», «why» and «to»"),
     ),
     правила=(
         # ОПИС-1: вигадані речі («простий світлий топ» без топа, «золоті сережки» без сережок,
@@ -208,9 +212,9 @@ import colorspace as _cs
         "«it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a "
         "decision to her only about what she asked for herself: her words in «case», an item marked «hers».",
         "Only when a photo shows that an item is not what this outfit needs — a clearly different colour, "
-        "another kind of item, or unfit for her occasion — and that matters for this outfit, name that one "
-        "item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in "
-        "doubt, leave «swap» out.",
+        "another kind of item, unfit for her occasion or her day — and that matters for this outfit, name "
+        "that item in «swap»: the code then looks for a replacement of the same kind. When in doubt, "
+        "leave «swap» out.",
         _ЗП.КІНЕЦЬ_ВІДПОВІДІ_EN,
     ),
     вихід="ОПИС_ВІДПОВІДЬ_V1",
@@ -246,8 +250,8 @@ import colorspace as _cs
                       "with other clothes in the frame is no reason; when in doubt, leave it out",
         "заміна.річ": "«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty "
                       "reason — the usual case",
-        "заміна.чому": "why the photo warrants replacing this item: a clearly different colour, "
-                       "another kind of item or a mismatch with her occasion",
+        "заміна.чому": "why the photo warrants replacing it: a clearly different colour, another kind "
+                       "of item, a mismatch with her occasion or her day",
         "заміна.на": "only with «swap_spares» in the input: «n» of the spare you choose; leave it out to "
                      "keep the item",
     },
