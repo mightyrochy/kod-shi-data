@@ -164,6 +164,12 @@ class Стадії(unittest.TestCase):
         з['розділи']['day'] = {'weather_band': 'cold'}
         self.assertEqual(self.стадія(з, ряд('weather_band')), 'читач')
 
+    def test_холод_без_паспорта_не_лічиться_бракум_входу(self):
+        з = запис(паспорт=None, паспорта_нема=True, діагноз=['control · no_input=K-OUT-33=сценарій.смуга_погоди: none_or_cold_x'],
+                  оновлення={'р': [{'weather_band': 'cold'}]})
+        з['розділи']['day'] = {'weather_band': 'cold'}
+        self.assertEqual(self.стадія(з, ряд('weather_band')), 'дійшло')
+
     def test_інша_причина_не_брак_входу(self):
         з = запис(діагноз=['control · no_input=X=сценарій.нагода: sport_or_home'])
         з['розділи']['case'] = {'occasion': 'sport'}
@@ -227,6 +233,38 @@ class Записи(unittest.TestCase):
         # `place` нема в схемі синтетичного промпта; `setting` модель записала, а діагнозу сторінки (паспорта) нема —
         # писач чи читач не розрізнено
         self.assertEqual(за_полем, {'день': 'схема', 'setting': 'писач_чи_читач', 'place': 'схема'})
+
+    def test_gemini_обміни_до_записів_і_стадій(self):
+        тека = tempfile.mkdtemp()
+        дерево(тека)
+        р = К.Реєстри(тека)
+        сцена = os.path.join(тека, 'модель-м', 'стенд', 'службове', 'с1')
+        os.makedirs(сцена)
+
+        def обмін(прохід, промпт, відповідь, статус=200):
+            запит = json.dumps({'model': 'м', 'messages': [{'role': 'user', 'content': [{'type': 'text', 'text': промпт}]}]})
+            пов = json.dumps({'content': [{'type': 'text', 'text': відповідь}]})
+            return {'початок': 'т', 'прохід': прохід, 'запит': запит, 'статус': статус, 'відповідь': пов}
+        чат = '{"x": 1, "her_new_message": "в суботу надворі", "codes": "update field codes (setting, occasion)"}'
+        складання = '{"outfits_wanted": 1, "case":{"event":"е","occasion":"wedding"},"day":{"place":"x"}}'
+        рядки = [обмін(1, чат, '{"update": {"setting": {"quote": "надворі", "value": "outdoor"}}}'),
+                 обмін(1, складання, '{}'),
+                 обмін(2, чат, '{"update": {"setting": {"quote": "надворі", "value": "outdoor"}}}'),   # складання не дійшло
+                 обмін(3, чат, '', 502)]                                                                # без відповіді моделі
+        with open(os.path.join(сцена, 'обміни.jsonl'), 'w', encoding='utf-8') as ф:
+            ф.write('\n'.join(json.dumps(x, ensure_ascii=False) for x in рядки) + '\n')
+        with open(os.path.join(сцена, 'руки.jsonl'), 'w', encoding='utf-8') as ф:
+            ф.write(json.dumps({'прохід': 1, 'поломка_руки_2': {'діагноз': ['control · no_input=K-OUT-33=сценарій.смуга_погоди: none_or_cold_x']}}) + '\n')
+        записи, не_виміряно = К.записи_gemini(тека)
+        self.assertEqual([(з['прогін'], з['прохід']) for з in записи], [('модель-м', 1), ('модель-м', 2)])
+        self.assertEqual([к for к, _ in не_виміряно], [('модель-м', 'с1', 3)])
+        self.assertTrue(all(з['паспорта_нема'] for з in записи))
+        таблиця = {'в суботу надворі': [ряд('setting', 'надворі'), ряд('weather_band', 'мороз')]}
+        за = {(x['запис'][2], x['поле']): x['стадія'] for x in К.лічба(записи, таблиця, р)[0]}
+        # прохід 1: setting модель написала, стилістка його не отримала — паспорта нема, писач чи читач не розрізнено;
+        # weather_band поза схемою синтетичного промпта. Прохід 2: складання образів у записі нема.
+        self.assertEqual(за, {(1, 'setting'): 'писач_чи_читач', (1, 'weather_band'): 'схема',
+                              (2, 'setting'): 'складання_нема', (2, 'weather_band'): 'схема'})
 
     def test_репліка_без_рядка_читання_не_мовчить(self):
         з = запис(репліки=['невідома репліка'], оновлення={'невідома репліка': [{}]})
