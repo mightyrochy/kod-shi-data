@@ -1,0 +1,50 @@
+── ПРОМПТ (6456 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: sheepskin_coat · colour code: brown · about it: text н=1
+2 — kind code: dress_generic · colour code: chocolate · about it: text н=2
+3 — kind code: boots · colour code: chocolate · about it: text н=3
+4 — kind code: scarf_generic · colour code: black · about it: text н=4
+5 — kind code: bag_generic · colour code: chocolate · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; chocolate — шоколадний.
+
+ТЕКСТИ:
+{
+"1": "The fitted brown sheepskin coat adds essential warmth for autumn while its tailored cut maintains a polished look without sacrificing comfort during your stroll.",
+"2": "A flowing chocolate dress serves as the perfect foundation for your casual walk, offering comfortable movement and a sleek silhouette that transitions effortlessly from day to evening.",
+"3": "Chocolate boots ground the outfit with practical height and style, seamlessly matching your bag to create a unified, sophisticated line from head to toe.",
+"4": "Your geometric-pattern scarf introduces an interesting visual element near your face, breaking up the solid colors of your outfit with playful texture and detail.",
+"5": "The chocolate bag completes the ensemble with understated elegance, its rich tone echoing the shades in your dress and boots for a cohesive, timeless feel.",
+"6": "I chose a chocolate dress as your base, layered under a fitted brown sheepskin coat for warmth on this autumn walk. Your shoes and bag in matching chocolate tones anchor the look with quiet confidence, while your geometric-pattern scarf adds a playful texture near your face. The outfit works because the deep earthy colors suit your casual daytime mood and create a harmonious, understated palette that feels perfect for an evening out or a relaxed day.",
+"7": "Wrap your geometric-pattern scarf loosely around your neck to frame your face and add soft texture against the smooth fabrics of your dress and coat."
+}
+
+── ВІДПОВІДЬ (1532 симв., 13.9 с, HTTP 200) ──
+```json
+{
+  "1": "Коричневий приталений тренч з овчини додає необхідного тепла для осені, а його елегантний крій зберігає вишуканий вигляд без шкоди для комфорту під час твоєї прогулянки.",
+  "2": "Повітряна шоколадна сукня стане ідеальною основою для твого невимушеного променаду, забезпечуючи зручний рух та елегантний силует, який легко перейде від дня до вечора.",
+  "3": "Шоколадні чоботи завершують образ практичною висотою та стилем, бездоганно поєднуючи твою сумку для створення єдиної витонченої лінії від голови до ніг.",
+  "4": "Твій шарф з геометричним візерунком додає цікавий акцент біля обличчя, розбавляючи однотонні кольори твоєї сукні грайливою текстурою та деталями.",
+  "5": "Шоколадна сумка завершує ансамбль стриманою елегантністю, її насичений тон перегукується з відтінками у твоїх чоботях і сукні для створення гармонійного позачасового відчуття.",
+  "6": "Я обрала шоколадну сукню як основу, одягнену під приталений коричневий тренч з овчини для тепла на цій осінній прогулянці. Твої взуття та сумка у відповідних шоколадних тонах заземлюють образ тихою впевненістю, а твій шарф з геометричним візерунком додає грайливу текстуру біля обличчя. Образ працює тому, що глибокі земляні кольори підходять твоєму невимушеному денному настрою та створюють гармонійну стриману палітру, яка ідеально підходить для вечора або розслабленого дня.",
+  "7": "Недбало обгорни шарф з геометричним візерунком навколо шиї, щоб обрамити твоє обличчя та додати м'яку текстуру на тлі гладких тканин твоєї сукні та тренча."
+}
+```
