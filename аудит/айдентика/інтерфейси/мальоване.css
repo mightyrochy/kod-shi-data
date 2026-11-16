@@ -1,10 +1,11 @@
 /* «Мальоване люстерко»: лице — чисте (вона й одяг), зворот — мальований, як косівська кахля.
    Барви — три поливи кахлі Петра Кошака (1911) і бура лінія; шрифт — Geologica (OFL 1.1), написи — Misto кривими. */
 :root{--tlo:#FAF6EA;--bila:#fff;--bura:#4B2A1B;--tin:#775D4F;--zel:#1F9A6C;--zhov:#E8B32A;--lin:rgba(75,42,27,.3);
-  --f:Geologica,system-ui,-apple-system,'Segoe UI',sans-serif;--p:24px;--hid:60px}
+  --f:Geologica,system-ui,-apple-system,'Segoe UI',sans-serif;--p:24px;--hid:60px;--pult:0px}
+body:has(.pult){--pult:34px}
 *{box-sizing:border-box;margin:0}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--tlo);color:var(--bura);font:400 16px/1.5 var(--f);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{background:var(--tlo);color:var(--bura);font:400 17px/1.5 var(--f);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 a{color:inherit;text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
 img,svg{display:block}
@@ -19,7 +20,7 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 .imja{display:grid;justify-items:start}
 
 /* каркас: два боки однієї речі */
-.ark{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.ark{min-height:100vh;min-height:calc(100dvh - var(--pult));display:flex;flex-direction:column}
 .verh{display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 var(--p);flex:none}
 .verh .lz{display:flex;align-items:center;height:44px}
 .verh .ja{display:flex;align-items:center;justify-content:center;width:48px;height:48px;margin-right:-4px}
@@ -60,32 +61,32 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 .slot .pel1{vertical-align:-3px;margin:0 4px 0 -2px}
 
 /* початок: зворот люстерка */
-.poch{min-height:100vh;min-height:100dvh;padding:16px var(--p) 14px;display:flex;flex-direction:column;max-width:540px;margin:0 auto}
+.poch{min-height:100vh;min-height:calc(100dvh - var(--pult));padding:16px var(--p) 14px;display:flex;flex-direction:column;max-width:540px;margin:0 auto}
 .poch .mal{margin:0 -14px}
 .poch .kah{width:100%;height:auto;max-height:54vh;max-height:54dvh}
 .poch .sl{flex:1;display:flex;flex-direction:column;margin-top:14px}
 .poch .napys{max-width:100%;height:auto}
-.poch .zakl{font-size:18px;line-height:1.45;margin:18px 0 20px;max-width:21em}
+.poch .zakl{font-size:19px;line-height:1.45;margin:18px 0 20px;max-width:21em}
 .poch .nyz{margin-top:auto;display:flex;flex-direction:column}
 .poch .tyh{align-self:center;margin-top:4px}
 .pid{font-size:11.5px;letter-spacing:.02em;color:var(--tin);text-align:center;margin:6px 0 0}
 
 /* знайомство: її лице в люстерку */
 .lust-m{width:230px;margin:0 auto -6px}.lust-m .kah{width:100%;height:auto}
-.oz{list-style:none;padding:0;display:flex;gap:16px;font-size:14px;margin:0 0 6px}
+.oz{list-style:none;padding:0;display:flex;gap:16px;font-size:15px;margin:0 0 6px}
 .oz li{display:flex;align-items:center;gap:5px}
 .opys{font-size:17px;line-height:1.4;margin:0 0 16px}
 .dvafoto{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 14px}
 .dvafoto img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:3px}
-.dvafoto figcaption,.obkh{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--tin);min-height:40px}
+.dvafoto figcaption,.obkh{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--tin);min-height:44px}
 .obkh{border-top:1px solid var(--lin);border-bottom:1px solid var(--lin);margin:0 0 8px;font-size:15px;color:var(--bura);gap:10px}
 .obkh .dr{margin-right:auto}
-.dvafoto button,.obkh button{text-decoration:underline;text-underline-offset:3px;min-height:40px;padding:0 0 0 12px;font-size:13.5px;color:var(--bura)}
+.dvafoto button,.obkh button{text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 0 0 12px;font-size:13px;color:var(--bura)}
 
 /* розмова: її слова — в лінії, слова люстерка — від знака */
-.hv{border:1.5px solid var(--bura);border-radius:4px 18px 18px 18px;padding:11px 14px 12px;margin:0 36px 18px 0;font-size:16px;line-height:1.45}
+.hv{border:1.5px solid var(--bura);border-radius:4px 18px 18px 18px;padding:11px 14px 12px;margin:0 36px 18px 0;font-size:17px;line-height:1.45}
 .hv .dr{display:block;margin-top:5px}
-.hl{position:relative;margin:0 0 18px 40px;font-size:16px;line-height:1.45}
+.hl{position:relative;margin:0 0 18px 40px;font-size:17px;line-height:1.45}
 .hl>.znak{position:absolute;left:-40px;top:-3px}
 .hl>.kn{margin-top:14px}
 .plyt{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 10px;margin:0 0 24px}
@@ -95,8 +96,8 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 /* що я зрозуміла: крапка — сказала, кільце — припустила */
 .zr-v{margin:4px 0 12px}
 .zr-v .imja{margin:7px 0 13px}
-.pro{font-size:14px;line-height:1.35;color:var(--tin)}
-.leg{font-size:13.5px;color:var(--tin);margin:0 0 10px;display:flex;flex-wrap:wrap;gap:2px 16px}
+.pro{font-size:15px;line-height:1.35;color:var(--tin)}
+.leg{font-size:13px;color:var(--tin);margin:0 0 10px;display:flex;flex-wrap:wrap;gap:2px 16px}
 .leg span{display:inline-flex;align-items:center}
 .zr{list-style:none;padding:0;margin:0 0 8px;border-top:1.5px solid var(--bura)}
 .zr li{position:relative;padding:11px 0 12px 26px;border-bottom:1px solid var(--lin);display:grid;gap:1px}
@@ -105,27 +106,27 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 .zr .k{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--tin)}
 .zr .v{font-size:17px;line-height:1.35}
 .zr .hol .v{font-weight:600}
-.zr .dz{font-size:13.5px;line-height:1.4;color:var(--tin)}
+.zr .dz{font-size:13px;line-height:1.4;color:var(--tin)}
 .zr .dii{margin-top:7px}
-.zr .dii button{min-height:38px;padding:0 15px;border-radius:19px;box-shadow:inset 0 0 0 1.5px var(--bura);font-size:14px}
+.zr .dii button{min-height:44px;padding:0 16px;border-radius:22px;box-shadow:inset 0 0 0 1.5px var(--bura);font-size:15px}
 .zr li.nema .v{text-decoration:line-through;color:var(--tin)}
 .zr li.nema .dz{display:none}
 .zr.kor{margin-bottom:20px}.zr.kor li{padding:7px 0 8px 24px}.zr.kor li::before{top:12px;width:9px;height:9px}.zr.kor .v{font-size:15px}
 
 /* барви: квітка */
 .barv{display:grid;justify-items:center;gap:10px;margin:0 0 20px}
-.barv ul{list-style:none;padding:0;font-size:14.5px;line-height:1.3;display:grid;gap:4px;width:100%;border-top:1px solid var(--lin);padding-top:10px}
+.barv ul{list-style:none;padding:0;font-size:15px;line-height:1.3;display:grid;gap:4px;width:100%;border-top:1px solid var(--lin);padding-top:10px}
 .barv li{display:grid;grid-template-columns:20px 5.4em 1fr;column-gap:8px;align-items:center;min-height:24px}
 .barv li b{font-weight:500}
 .barv li span{color:var(--tin);font-size:13px}
 .barv.ryad{grid-template-columns:auto 1fr;justify-items:start;align-items:center;gap:22px}
 .barv.ryad ul{border:0;padding:0}
 .osn{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
-.osn button{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 15px 0 10px;border-radius:22px;box-shadow:inset 0 0 0 1.5px var(--lin);font-size:14.5px}
+.osn button{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 15px 0 10px;border-radius:22px;box-shadow:inset 0 0 0 1.5px var(--lin);font-size:15px}
 .osn button[aria-pressed=true],.skh button[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--bura);font-weight:600}
 .skh{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 0 8px}
-.skh button{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;text-align:left;min-height:66px;padding:8px 10px;border-radius:5px;box-shadow:inset 0 0 0 1.5px var(--lin);font-size:14.5px;line-height:1.25}
-.skh small{display:block;font-size:12px;font-weight:400;color:var(--tin);line-height:1.25;margin-top:2px}
+.skh button{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;text-align:left;min-height:66px;padding:8px 10px;border-radius:5px;box-shadow:inset 0 0 0 1.5px var(--lin);font-size:15px;line-height:1.25}
+.skh small{display:block;font-size:13px;font-weight:400;color:var(--tin);line-height:1.25;margin-top:2px}
 
 /* чекання: люстерко малює — лінія, полива, випал */
 .chek-m{margin:0 -14px}
@@ -146,7 +147,7 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 .krok-n i.je{background:var(--bura);box-shadow:none}
 .krok-n span{margin-left:6px}
 .krok-t{font-size:19px;font-weight:600;line-height:1.25;min-height:48px}
-.krok-f{min-height:20px;margin:2px 0 12px;font-size:14px}
+.krok-f{min-height:20px;margin:2px 0 12px;font-size:15px}
 .znajd{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:0 0 16px}
 .znajd .m6{display:block;aspect-ratio:3/4;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--lin);overflow:hidden}
 .znajd .foto{opacity:0;transition:opacity .9s}
@@ -166,12 +167,12 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 .slova.dovhi.vse{display:block}
 .slova.dovhi+.tyh{margin-bottom:8px}
 .sitka{display:grid;grid-template-columns:repeat(2,1fr);gap:20px 12px;margin:0 0 20px}
-.rich{display:block;font-size:14px;line-height:1.3;min-width:0}
+.rich{display:block;font-size:15px;line-height:1.3;min-width:0}
 .rich .foto{margin-bottom:8px}
 .rich b{font-weight:500;font-size:15px;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.kc{display:block;color:var(--tin);font-size:13.5px;margin-top:1px}
+.kc{display:block;color:var(--tin);font-size:13px;margin-top:1px}
 .kc i{font-style:normal;color:var(--bura)}
-.kc.cina{font-size:16px;margin:-8px 0 16px}
+.kc.cina{font-size:17px;margin:-8px 0 16px}
 .rich.nova .slot{color:var(--bura);font-weight:600}
 .foto{display:block;position:relative;aspect-ratio:3/4;background:var(--bila);overflow:hidden;border-radius:3px}
 .foto img{width:100%;height:100%;object-fit:cover;object-position:50% 0}
@@ -180,17 +181,17 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 .sitka .foto.male img,.zbl .foto.male img,.para .foto.male img{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:auto;height:auto;max-width:calc(100% - 20px);max-height:calc(100% - 64px)}
 .sitka .foto.male:not(.nema-foto)::after,.zbl .foto.male:not(.nema-foto)::after,.para .foto.male:not(.nema-foto)::after{content:attr(data-prym);position:absolute;left:8px;right:8px;bottom:8px;font-size:11.5px;line-height:1.3;color:var(--tin);text-align:center}
 .foto.bezrechi img,.foto.nema-foto img{display:none}
-.foto.bezrechi::after,.foto.nema-foto::after{content:attr(data-nema);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px;text-align:center;font-size:12px;line-height:1.3;color:var(--tin);background:var(--tlo);box-shadow:inset 0 0 0 1.5px var(--lin);border-radius:3px}
+.foto.bezrechi::after,.foto.nema-foto::after{content:attr(data-nema);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px;text-align:center;font-size:13px;line-height:1.3;color:var(--tin);background:var(--tlo);box-shadow:inset 0 0 0 1.5px var(--lin);border-radius:3px}
 .foto.svoja{background:none;box-shadow:inset 0 0 0 1.5px var(--lin);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--tin)}
 .rich.pusta .foto{background:none;box-shadow:inset 0 0 0 1.5px var(--lin)}
 .rich.pusta .foto img{opacity:0;transition:opacity .9s}
 .rich.pusta.je .foto{background:var(--bila)}.rich.pusta.je .foto img{opacity:1}
 .razom{display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid var(--bura);padding-top:12px;margin:0 0 22px;font-size:15px}
-.razom b{font-size:22px;font-weight:600;letter-spacing:-.01em}
-.razom s{color:var(--tin);font-size:14px;font-weight:400;margin-right:8px}
+.razom b{font-size:24px;font-weight:600;letter-spacing:-.01em}
+.razom s{color:var(--tin);font-size:15px;font-weight:400;margin-right:8px}
 .derevo{margin:0 0 8px}
 .derevo div{display:flex;gap:8px;margin-top:8px}
-.derevo a{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 12px 0 7px;border-radius:22px;font-size:14px;box-shadow:inset 0 0 0 1.5px var(--lin);white-space:nowrap}
+.derevo a{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 12px 0 7px;border-radius:22px;font-size:15px;box-shadow:inset 0 0 0 1.5px var(--lin);white-space:nowrap}
 .derevo a[aria-current]{box-shadow:inset 0 0 0 2px var(--bura);font-weight:600}
 .derevo .shche{color:var(--tin)}
 .zber{display:flex;align-items:baseline;font-size:15px;line-height:1.4;font-weight:500;margin:0 0 16px;padding:11px 0 12px;border-top:1px solid var(--lin);border-bottom:1px solid var(--lin)}
@@ -198,11 +199,11 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 
 /* сумнів і заміна */
 .zam{list-style:none;padding:0;display:grid;gap:18px;margin:4px 0 22px}
-.zam li{display:grid;grid-template-columns:104px 1fr;gap:14px;align-items:start;font-size:14.5px;line-height:1.38}
-.zam b{font-weight:600;font-size:15.5px;display:block}
-.zam .rz{display:block;font-size:13.5px;color:var(--tin);margin-bottom:5px}
+.zam li{display:grid;grid-template-columns:104px 1fr;gap:14px;align-items:start;font-size:15px;line-height:1.38}
+.zam b{font-weight:600;font-size:15px;display:block}
+.zam .rz{display:block;font-size:13px;color:var(--tin);margin-bottom:5px}
 .zam .kn{margin-top:10px}
-.zam .radzhu{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;margin-bottom:3px}
+.zam .radzhu{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;margin-bottom:3px}
 .zam .radzhu::before{content:'';width:9px;height:9px;border-radius:50%;background:var(--bura)}
 
 /* купити чи ні; свій образ */
@@ -215,7 +216,7 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 .prych .zn2{display:flex;gap:6px;margin-top:6px}
 .para{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .troje{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
-.troje .rich b{font-size:13.5px}
+.troje .rich b{font-size:13px}
 .svij{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:end;margin:0 0 18px}
 .svij img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:3px}
 .svij .iodna{font-size:17px;font-weight:600;margin:0 0 8px}
@@ -230,19 +231,24 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 .znak.lyje .vin{animation:lyje 1.5s ease-out both}
 @keyframes lyje{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
 .kl .imja{margin-top:8px}
-.kl .pd{font-size:12.5px;line-height:1.35;color:var(--tin);margin-top:7px}
-.kl .st{font-size:13px;line-height:1.35;display:flex;align-items:center;gap:6px;min-height:40px;align-self:stretch;text-align:left;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:var(--lin)}
+.kl .pd{font-size:13px;line-height:1.35;color:var(--tin);margin-top:7px}
+.kl .st{font-size:13px;line-height:1.35;display:flex;align-items:center;gap:6px;min-height:44px;align-self:stretch;text-align:left;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:var(--lin)}
 .kl .st::before{content:'';width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--bura);flex:none}
 .kl .st[aria-pressed=true]::before{background:var(--bura)}
-.kl.pusta{align-items:center;justify-content:center;text-align:center;font-size:14.5px;color:var(--tin);gap:10px}
+.kl.pusta{align-items:center;justify-content:center;text-align:center;font-size:15px;color:var(--tin);gap:10px}
 .kl.pusta i{width:44px;height:44px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--bura);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:24px;font-weight:300;color:var(--bura);line-height:1}
 .kl.mal-k{justify-content:center}
 .kl .kah{width:100%;height:auto}
 
-/* перемикач сцен прототипу (не частина інтерфейсу) */
-.pult{position:fixed;z-index:50;top:5px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;background:#222;color:#fff;border-radius:16px;padding:2px 9px;font:12px/1 system-ui,sans-serif;opacity:.88;white-space:nowrap;max-width:97vw}
-.pult button{color:#fff;width:28px;height:28px;font-size:18px}.pult a{color:#fff;text-decoration:underline}
-.pult b{font-weight:400;max-width:42vw;overflow:hidden;text-overflow:ellipsis}
+/* перемикач сцен прототипу — окрема темна смуга над інтерфейсом, не його частина */
+body:has(.pult){display:flex;flex-direction:column}
+.pult{order:-1;position:sticky;top:0;z-index:50;height:34px;display:flex;align-items:center;justify-content:center;gap:8px;background:#222;color:#fff;padding:0 8px;font:12px/1 system-ui,sans-serif;white-space:nowrap}
+.pult button{color:#fff;width:34px;height:34px;font-size:19px}.pult a{color:#fff;text-decoration:underline}
+.pult b{font-weight:400;max-width:46vw;overflow:hidden;text-overflow:ellipsis}
+/* перевірка «сховай назву й усі слова»: ?безслів в адресі */
+.bezsliv body *,.bezsliv body *::before,.bezsliv body *::after{color:transparent!important;text-decoration-color:transparent!important}
+.bezsliv .hid a:not([aria-current]):not(.nove)::before{box-shadow:inset 0 0 0 1.5px var(--tin)}
+.bezsliv .napys,.bezsliv .imja,.bezsliv .pult{visibility:hidden!important}
 
 /* широкий екран: обидва боки поруч, між ними — держак люстерка */
 @media(min-width:1000px){
@@ -264,9 +270,9 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
   .dija .kn{max-width:340px}
   .poch{max-width:1280px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:72px;align-items:center;padding:24px 56px}
   .poch .mal{margin:0;justify-self:end;width:100%;max-width:680px}
-  .poch .kah{max-height:88vh;max-height:88dvh}
+  .poch .kah{max-height:88vh;max-height:calc(88dvh - var(--pult))}
   .poch .sl{margin:0;max-width:440px;flex:none}
-  .poch .zakl{font-size:21px;margin:24px 0 28px}
+  .poch .zakl{font-size:24px;margin:24px 0 28px}
   .poch .nyz{margin-top:0}
   .poch .tyh{align-self:flex-start;margin-top:10px}
   .pid{text-align:left;margin-top:36px}
@@ -274,5 +280,6 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
   .mal-zl{max-width:360px}
   .lust-m{margin-left:0}
   .kl{min-height:250px}
+  .kl.mal-k .kah{max-height:226px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

@@ -3,6 +3,7 @@
 (function () {
   var V = window.ВМІСТ, K = window.КАХЛЯ, R = V.rechi, N = window.НАПИС, B = K.BARVY, taj = [];
   var ad = decodeURIComponent(location.search), krokZ = (/крок=(\d)/.exec(ad) || [])[1];
+  if (/безслів/.test(ad)) document.documentElement.classList.add('bezsliv');
   var TYHO = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var POVNYJ = { l: 0, p: 1, v: 1, kv: { v: { pol: 1, sklo: 1 }, l: { pol: 0 }, p: { pol: 1 } } };
   function mal(o) { var r = {}, k; for (k in POVNYJ) r[k] = POVNYJ[k]; for (k in o) r[k] = o[k]; return K.malyunok(r); }
