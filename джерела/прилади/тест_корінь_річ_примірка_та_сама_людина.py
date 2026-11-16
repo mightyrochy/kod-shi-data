@@ -1,14 +1,32 @@
 # -*- coding: utf-8 -*-
 """Штучні шляхи пікселів: джерело, перенесення, суд, видимий і прихований показ."""
 import json
+from concurrent.futures import ProcessPoolExecutor
+import os
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 
-from корінь_річ_примірка_та_сама_людина import лічба
+from корінь_річ_примірка_та_сама_людина import лічба, обсяг
+
+
+def порахувати_копію(файли, було, стало):
+    """Лічить незалежне псування всього обсягу продукту в окремому дереві.
+
+    Графи потребують CPU, тому кожна копія має свій процес; головний процес
+    чекає всі результати й перевіряє кожний у його підвипадку.
+    """
+    with tempfile.TemporaryDirectory() as т:
+        for шлях, вміст in файли.items():
+            копія = Path(т) / шлях
+            копія.parent.mkdir(parents=True, exist_ok=True)
+            if шлях == 'джерела/показ/повернення.js':
+                вміст = вміст.replace(було, стало)
+            копія.write_text(вміст, encoding='utf-8')
+        звіт = лічба(т)
+        return звіт['місць'], [р for р in звіт['входи'] if р['місце']]
 
 
 class Прилад(unittest.TestCase):
@@ -258,6 +276,40 @@ class Прилад(unittest.TestCase):
         """Другий аргумент callback з'єднує запис та читання елемента."""
         self.перевірити({'а.js': 'const a=[];[generate_image()].forEach((x,i)=>a[i]=x);\njudge(a[0]);'}, 1)
 
+    def test_числова_позиція_з_DOM(self):
+        """Числова позиція з вузла веде до тієї самої картки, навіть коли його текст невідомий."""
+        for перетворення in ('Number', 'parseInt', 'parseFloat'):
+            with self.subTest(перетворення):
+                self.перевірити({'а.js': (
+                    'const cards=[{}];\n'
+                    f"function position(node){{return {перетворення}(node.id.split('-').pop());}}\n"
+                    'function draw(index){cards[index].picture=generate_image();}\n'
+                    'draw(position(button));\n'
+                    "const img=document.createElement('img');img.src=cards[0].picture;\n"
+                    'document.body.appendChild(img);')}, 1)
+                self.перевірити({'а.js': f'judge({перетворення}(generate_image()));'}, 0)
+
+    def test_показ_за_ключами_стану(self):
+        """Малювач читає позиції зі стану через Proxy, заморожування й Object.keys."""
+        self.перевірити({'а.js': (
+            'const state=Object.create(null), view=new Proxy(state, {}), cards=[{}];\n'
+            "cards[Number(button.id)].picture=generate_image();\n"
+            'Object.assign(state, {events:Object.freeze({[Number(button.id)]:1})});\n'
+            'for (const index of Object.keys(view.events)){\n'
+            " const img=document.createElement('img');img.src=cards[index].picture;\n"
+            ' document.body.appendChild(img);\n}')}, 1)
+
+    def test_ключі_не_пікселі_й_не_прочитані_поля(self):
+        """Ключі не несуть зображень, а читання відсутнього поля не створює ключа."""
+        self.перевірити({'а.js': 'judge(Object.keys({picture:generate_image()}));'}, 0)
+        self.перевірити({'а.js': (
+            'const record={}, out={};const missing=record.picture;\n'
+            'Object.keys(record).forEach(key=>out[key]=generate_image());judge(out.picture);')}, 0)
+        self.перевірити({'а.js': (
+            'const record={}, out={};const clone={...record};const copy=Object.assign({},clone);\n'
+            "const keys=Object.keys(copy);record.picture='original';\n"
+            'keys.forEach(key=>out[key]=generate_image());judge(out.picture);')}, 1)
+
     def test_spread_не_аліас(self):
         """Запис у розгорнуту копію не змінює оригінал."""
         self.перевірити({'а.js': 'const original={};const clone={...original};\nclone.picture=generate_image();\njudge(original.picture);'}, 0)
@@ -411,22 +463,27 @@ class Прилад(unittest.TestCase):
         """Копії справжнього дерева зі зламаним поверненням (наряд Річ-примірка-прилад-контракт) — 3 місця."""
         корінь = Path(__file__).resolve().parents[2]
         файл = корінь / 'джерела' / 'показ' / 'повернення.js'
-        if not файл.is_file():
-            self.skipTest('нема кроку повернення в дереві')
+        self.assertTrue(файл.is_file(), 'нема кроку повернення в дереві: ' + str(файл))
         текст = файл.read_text(encoding='utf-8')
         копії = {
             'сирий кадр генератора': ('const кадр = кадрУPNGП(р.пікс, р.ш, р.в);', 'const кадр = кадрУPNGП(г.пікс, г.ш, г.в);'),
             'data: кадру генератора': ('const кадр = кадрУPNGП(р.пікс, р.ш, р.в);', "const кадр = 'data:' + джерело.data;"),
             'маска повернення порожня': ('К[і] = (лишається && кг !== КЛ_П.одяг && кг !== КЛ_П.інше) ? 1 : 0;', 'К[і] = 0;'),
         }
-        for назва, (було, стало) in копії.items():
-            with self.subTest(назва), tempfile.TemporaryDirectory() as т:
-                self.assertEqual(текст.count(було), 1, 'крок повернення змінився — онови копію: ' + було)
-                shutil.copytree(корінь / 'джерела', Path(т) / 'джерела',
-                                ignore=shutil.ignore_patterns('node_modules', '__pycache__', '.git'))
-                (Path(т) / 'джерела' / 'показ' / 'повернення.js').write_text(текст.replace(було, стало), encoding='utf-8')
-                звіт = лічба(т)
-                self.assertEqual(звіт['місць'], 3, [р for р in звіт['входи'] if р['місце']])
+        # Прилад читає лише цей обсяг; каталоги, зображення й залежності не потрібні.
+        # Кожне псування — з оригінального тексту, без спільних змінюваних файлів.
+        файли, _ = обсяг(корінь)
+        with ProcessPoolExecutor(max_workers=min(len(копії), os.cpu_count() or 1)) as пул:
+            результати = {}
+            for назва, (було, стало) in копії.items():
+                with self.subTest(назва):
+                    self.assertEqual(текст.count(було), 1,
+                                     'псування «' + назва + '» не застосоване: очікується один рядок ' + було)
+                    результати[назва] = пул.submit(порахувати_копію, файли, було, стало)
+            for назва, результат in результати.items():
+                with self.subTest(назва):
+                    кількість, місця = результат.result()
+                    self.assertEqual(кількість, 3, місця)
 
 
 if __name__ == '__main__':
