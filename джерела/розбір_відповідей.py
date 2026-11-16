@@ -10,6 +10,7 @@ import re
 import re as _re_ід
 import json as _json_ід
 import протокол as _ПР
+import реєстр_сила as _РС
 import фрази_формату as _ФФ
 import спільні_вимоги as _ВИМ
 from пакет_моделі import номери_речей, скелет_схеми
@@ -110,11 +111,15 @@ import colorspace as _cs
         # «the choice is hers» про БУДЬ-ЩО, що сперечається з днем, модель ставила в кінець більшості
         # карток — про речі, які обрала сама («сітка… наскільки це важливо в церкві, вирішуєш ти»).
         # Своє рішення стилістка не віддає жінці назад.
+        # Прогін3-погода-й-дорога: «why you still chose it» на річ, яку фото показало не для дня, давало «шпилька
+        # вимагає обережних кроків» на сніг і двадцять хвилин пішки (с8) — складання й ремонт фото не бачили, і
+        # «свідомого вибору» не було. Тепер така річ — `swap` з підставою `day`; пояснення лишається тому, що
+        # з днем лише сперечається.
         _ВИМ.поле("day", як="when the known item properties support it, in the last part of «text» say how this outfit "
-                    "lives through her day; when something "
-                    "you chose argues with the day (weather, hours on her feet, the place), say in one plain "
-                    "sentence why you still chose it and what that means for her day; describe the chosen "
-                    "items without proposing a different composition; never hand that decision back to her"),
+                    "lives through her day. An item its photo shows unfit for her weather or way there is «swap»; "
+                    "for anything else that argues with the day (hours on her feet, the place), say in one plain "
+                    "sentence why you still chose it and what it means for her day, never handing that decision "
+                    "back to her"),
         # ОПИС-1 (K-PAL-11/14/15): «найдальші» й «комбінація», якщо йдуть у КОЖЕН опис, дають
         # «маленька оливкова чи зелена деталь» навіть на похороні й поради додати річ, якої в образі
         # нема. Тож лише те, що стосується речей образу.
@@ -170,10 +175,10 @@ import colorspace as _cs
         _ЗП.Поле("swap_spares", "the item you named for replacement, your reason, and the spares of the "
                                 "same kind the code checked in its place; every spare has «photos» like "
                                 "the items of the outfit",
-                 як="look at the photos of the spares and choose the one that serves this outfit and her "
-                    "occasion best, or none; describe the outfit with your choice in place — the chosen "
-                    "spare instead of the item; the card tells her separately what you replaced and why, so "
-                    "«text» does not; answer «swap» again with «item», «why» and «to»"),
+                 як="look at the photos of the spares and choose the one that serves this outfit, her "
+                    "occasion and her day best, or none; describe the outfit with your choice in place — the "
+                    "chosen spare instead of the item; the card tells her separately what you replaced and why, "
+                    "so «text» does not; answer «swap» again with «item», «why» and «to»"),
     ),
     правила=(
         # ОПИС-1: вигадані речі («простий світлий топ» без топа, «золоті сережки» без сережок,
@@ -208,9 +213,9 @@ import colorspace as _cs
         "«it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a "
         "decision to her only about what she asked for herself: her words in «case», an item marked «hers».",
         "Only when a photo shows that an item is not what this outfit needs — a clearly different colour, "
-        "another kind of item, or unfit for her occasion — and that matters for this outfit, name that one "
-        "item in «swap»: the code then looks for a replacement of the same kind. This is rare; when in "
-        "doubt, leave «swap» out.",
+        "another kind of item, unfit for her occasion or her day — and that matters for this outfit, name "
+        "that item in «swap»: the code then looks for a replacement of the same kind. When in doubt, "
+        "leave «swap» out.",
         _ЗП.КІНЕЦЬ_ВІДПОВІДІ_EN,
     ),
     вихід="ОПИС_ВІДПОВІДЬ_V1",
@@ -246,8 +251,8 @@ import colorspace as _cs
                       "with other clothes in the frame is no reason; when in doubt, leave it out",
         "заміна.річ": "«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty "
                       "reason — the usual case",
-        "заміна.чому": "why the photo warrants replacing this item: a clearly different colour, "
-                       "another kind of item or a mismatch with her occasion",
+        "заміна.чому": "why the photo warrants replacing it: a clearly different colour, another kind "
+                       "of item, a mismatch with her occasion or her day",
         "заміна.на": "only with «swap_spares» in the input: «n» of the spare you choose; leave it out to "
                      "keep the item",
     },
@@ -1195,7 +1200,14 @@ def ід_з_тексту(текст, кандидати=None, каталог=Non
 
 СВІДОМО_РЕГ = _re_ід.compile(r"^\s*(?:СВІДОМО|Свідомо|свідомо|НАВМИСНО|Навмисно|навмисно)\s*[:—–-]\s*(.+?)\s*$", _re_ід.M)
 _СЛУЖБОВИЙ_НОМЕР = _re_ід.compile(r"#(?![0-9a-fA-F]{6}\b)\d+")   # шестизначний hex-колір не є службовим номером
-СВІДОМИЙ_МНОЖНИК = 0.6   # той самий коефіцієнт, що K-KOH-03 дає ОДНОМУ свідомому розриву (T3)
+# Той самий коефіцієнт, що K-KOH-03 дає ОДНОМУ свідомому розриву (T3, конвенція корпусу): запис із тіром
+# і правилом-власником, а не голий літерал, — його читає `перезважити(частка=…)`.
+РЕЄСТР_СВІДОМОГО = {
+    "свідомий_множник": dict(t="T3", val=0.6, прав=["K-KOH-03"],
+                             суть="частка ваги, що лишається знахідці, проти якої жінка оголосила свідомий розрив",
+                             де="застосувати_свідомі()"),
+}
+СВІДОМИЙ_МНОЖНИК = РЕЄСТР_СВІДОМОГО["свідомий_множник"]["val"]
 
 def свідомі_розриви(текст):
     """Рядки «СВІДОМО: <річ> — <чому>» з ПРОЗОВОЇ відповіді моделі. Бриф давно велить
@@ -1409,9 +1421,7 @@ def застосувати_свідомі(знахідки, розриви, ре
                 _речі_р = {str(x) for x in (р.get("ід_речей") or ([р["ід"]] if р.get("ід") else []))}
                 if _речі_р and not (_речі_р & речі_зн):
                     continue
-                z["сила_нп"] = round(z["сила_нп"] * СВІДОМИЙ_МНОЖНИК, 3)
-                z["свідомий"] = р["текст"]
-                z["сила_нп_джерело"] = (z.get("сила_нп_джерело") or "") + "; свідомий розрив ×%.1f (K-KOH-03, T3)" % СВІДОМИЙ_МНОЖНИК
+                z = dict(_РС.перезважити(z, None, частка=СВІДОМИЙ_МНОЖНИК), свідомий=р["текст"])
                 р["послаблено"] += 1
                 break
         вих.append(z)

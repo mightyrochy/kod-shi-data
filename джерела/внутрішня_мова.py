@@ -1309,7 +1309,15 @@ def _опис_keep_by():
                                         "reason — what the photo of «was» showed: colour — its colour there is "
                                         "clearly not the one the shop named (say that it is the colour that "
                                         "differs), kind — it is another kind of item, occasion — it does not "
-                                        "suit her occasion)",
+                                        "suit her occasion, day — it would not stand her weather or her way there)",
+    # Прогін3-погода-й-дорога: фото показало річ не для її погоди чи дороги, а перевіреної заміни того самого роду
+    # нема — річ лишилась; картка каже прямо, чого бракує, а не радить ступати обережно (`заміна_з_фото.бракує_для_дня`)
+    "photo_item_not_for_day_no_spare": "the photo of this item showed it will not stand her day — her weather or her "
+                                       "way there; among her selection no other item of the same kind passed the "
+                                       "check, so it stays, and what the outfit lacks is an item of this kind made "
+                                       "for such a day (values: item — the item as item_id, kind and colour codes: "
+                                       "name it in a few words of your own; the rest — the known facts of her day "
+                                       "as codes: weather_band, precipitation, movement, surface, activity, setting)",
     "selection_removed_this_layer": "the layer named above is exactly the one removed from the stylist's outfit",
     "set_already_has_top_and_bottom": "the set already has its own top and bottom, so a separate item there "
                                       "would be a second one in the same place (values: slot — slot code)",

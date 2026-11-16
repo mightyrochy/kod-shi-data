@@ -289,6 +289,7 @@ class Аналіз:
         self.параметри, self.повертає, self.події = {}, {}, {}
         self.приймальники = {}      # (мод, функція) → рядок першої події читання
         self.тримає_м = set()       # функції, де хоч одна змінна несе текст моделі
+        self.змінні = {}            # (мод, функція) → мітки змінних на останньому проході (п.4(в) бере з них текст моделі)
         for мод in self.м.values():
             for ім, ф in мод.функції.items():
                 self.засіяти(мод, ім, ф)
@@ -471,6 +472,7 @@ class Аналіз:
                         зм.setdefault(в.target.id, set()).update(м)
         if any(М in м or any(л[0] == "Р" for л in м) for м in зм.values()):
             self.тримає_м.add((мод.ім, ім))
+        self.змінні[(мод.ім, ім)] = зм
         for в in для_мітки:
             if isinstance(в, ast.Return) and в.value is not None:
                 м = {л for л in self.мітки(мод, в.value, зм) if л[0] != "Ж"}
@@ -595,6 +597,319 @@ class Аналіз:
 
 # ── PYTHON: СТРУКТУРА (без потоку) ────────────────────────────────────────────
 ЗНАКИ_JSON = {"}", "]", "{", "[", ",", '"', ":", '\\"'}
+
+
+# ── п.4(в): ЗМІНА ОБʼЄКТА ВІДПОВІДІ ПІСЛЯ РОЗБОРУ ─────────────────────────────
+class ЗмінаОбєкта:
+    """Клас «код міняє обʼєкт відповіді моделі» (рішення менеджера 16.11 на рядок 15737; паспорт `Е2-межі`): місце —
+    точка, де після приймання код переносить, перейменовує, прибирає чи додає ключ обʼєкта відповіді або зводить список у
+    ньому до значення, куди б не писав слід — у `нотатки`, `перенесено` чи нікуди. Ознака — будова коду, а не імʼя
+    змінної чи слово в рядку: потік мітки «обʼєкт відповіді» (`О`) по операторах у порядку їх виконання (присвоєння
+    перекриває мітку, гілки зливаються), далі по викликах і поверненнях.
+
+    Мітка `О` — результат розбору тексту моделі (`json.loads`, `протокол.розбір…`, `.прочитати` реєстру над текстом із
+    мітками `М`/`Р` потоку `Аналіз`), його копії (`dict(о)`, `о.copy()`), частини (`о[к]`, `о.get(к)`, змінна циклу по
+    `о.items()`), виведені обʼєкти (`{к: … for … in о.items()}`, `{**о, …}`), текст із такого обʼєкта (`json.dumps`) і
+    його новий розбір. Мітку несе й параметр функції, якщо хоч один виклик передає в нього такий вираз, і результат
+    функції, якщо вона повертає такий вираз.
+
+    Зміна: `о[к] = …`, `del о[к]`, `о.pop/update/setdefault/clear`, `о[к].append/extend/…`, виведений обʼєкт зі зміною —
+    `dict(о, …)`, `{**о, …}` або `{к: … for … in о.items()}`, присвоєний чи повернений. Читання (`о.get`, `о[к]`,
+    `isinstance`, порівняння) і запис у власну структуру коду (`частини[к] = …` без мітки на ній) — не зміна. Одне місце
+    на гілку (блок; плечі одного `if…elif…else` — одна гілка), на першій зміні."""
+
+    ПИШУТЬ_ЦІЛИЙ = {"pop", "popitem", "update", "setdefault", "clear"}
+    ПИШУТЬ_ЕЛЕМЕНТ = {"append", "extend", "insert", "remove", "sort", "reverse"}
+    ПРОХОДЯТЬ_ОБʼЄКТ = {"get", "copy", "items", "values", "keys", "pop", "setdefault"}
+    ПРОХОДЯТЬ_ВИКЛИК = {"list", "tuple", "sorted", "reversed", "dict", "set", "frozenset", "next", "iter", "enumerate",
+                         "zip", "filter", "map", "min", "max"}
+
+    def __init__(self, аналіз, функції):
+        self.а = аналіз
+        self.функції = функції              # [(модуль, імʼя, вузол)]
+        self.параметри = {}                 # (мод, функція) → {параметр: {мітки}}
+        self.повертає = {}                  # (мод, функція) → {мітки}: з параметрами, що їм передали обʼєкт
+        self.повертає_власне = {}           # (мод, функція) → {мітки}: функція сама розбирає відповідь (без параметрів)
+        self.зміни = {}                     # (мод, функція) → {ключ гілки: (рядок, що, зразок)}
+        self.змінилось = False
+        self.звідки = {}                    # (функція, параметр) → (модуль, функція, рядок) першого виклику з міткою
+
+    # ── вирази ──
+    def мітки(self, мод, ім, в, env):
+        """Мітки виразу: підмножина {"З" — перелік ключів, складений обʼєднанням переліків, "О" — обʼєкт відповіді чи його частина, "К" — запис коду, що тримає такі частини
+        (`dict(оновлення=нове)`, `{"фото": о.get("photo")}`: код складає своє, а не міняє обʼєкт), "ОТ" — текст з обʼєкта}."""
+        if в is None:
+            return set()
+        if isinstance(в, ast.Name):
+            return set(env.get(в.id, ()))
+        if isinstance(в, ast.Subscript):     # частина обʼєкта чи частина записа, що тримає його частини, — знову обʼєкт відповіді
+            return {"О"} if self.мітки(мод, ім, в.value, env) & {"О", "К"} else set()
+        if isinstance(в, (ast.Starred, ast.Await, ast.NamedExpr)):
+            return self.мітки(мод, ім, в.value, env)
+        if isinstance(в, (ast.Tuple, ast.List, ast.Set)):
+            return set().union(set(), *(self.мітки(мод, ім, е, env) for е in в.elts))
+        if isinstance(в, ast.BoolOp):
+            return set().union(*(self.мітки(мод, ім, з, env) for з in в.values))
+        if isinstance(в, ast.IfExp):
+            return self.мітки(мод, ім, в.body, env) | self.мітки(мод, ім, в.orelse, env)
+        if isinstance(в, ast.Dict):      # `{**о, …}` — копія обʼєкта; `{к: о.get(…)}` — запис коду з частинами (`К`), не обʼєкт
+            if any(к is None and "О" in self.мітки(мод, ім, з, env) for к, з in zip(в.keys, в.values)):
+                return {"О"}
+            return {"К"} if any("О" in self.мітки(мод, ім, з, env) for з in в.values) else set()
+        if isinstance(в, (ast.DictComp, ast.ListComp, ast.SetComp, ast.GeneratorExp)):
+            # виведений обʼєкт: перебір обʼєкта відповіді чи елемент, що бере з нього (перебір переліку літералів —
+            # не перебір обʼєкта: `for к in ("wants", "vetoes")` дає ключі, а не частини)
+            елементи = [в.key, в.value] if isinstance(в, ast.DictComp) else [в.elt]
+            return {"О"} if any("О" in self.перебір(мод, ім, г.iter, env) for г in в.generators) \
+                or any("О" in self.мітки(мод, ім, е, env) for е in елементи) else set()
+        if isinstance(в, ast.BinOp) and isinstance(в.op, ast.BitOr):   # перелік ключів, складений обʼєднанням кількох переліків
+            лише_переліки = lambda е: isinstance(е, (ast.Set, ast.SetComp)) or "З" in self.мітки(мод, ім, е, env) \
+                or (isinstance(е, ast.Call) and isinstance(е.func, ast.Name) and е.func.id in {"set", "frozenset"})
+            return {"З"} if лише_переліки(в.left) and лише_переліки(в.right) else set()
+        if isinstance(в, ast.Call):
+            return self.мітки_виклику(мод, ім, в, env)
+        return set()
+
+    def перебір(self, мод, ім, вираз, env):
+        """Мітки того, що дає цикл чи вкладення по `вираз`: літерал переліку (`("a", "b")`, `[р1, р2]`) — не обʼєкт."""
+        return set() if isinstance(вираз, (ast.Tuple, ast.List, ast.Set)) else self.мітки(мод, ім, вираз, env)
+
+    def мітки_виклику(self, мод, ім, в, env):
+        а = self.а
+        ф = в.func
+        арг = [self.мітки(мод, ім, x, env) for x in в.args]
+        власні = self.мітки(мод, ім, ф.value, env) if isinstance(ф, ast.Attribute) else set()
+        б, н = а.бібліотека(мод, в)
+        джерело = lambda x: self.текст_моделі(мод, ім, x, env)
+        if (б in {"json", "ast"} and н in {"loads", "literal_eval"}) or н in РОЗБІР_ПРОТОКОЛУ \
+                or (isinstance(ф, ast.Attribute) and ф.attr in МЕТОДИ_РЕЄСТРУ):
+            return {"О"} if в.args and джерело(в.args[0]) else set()
+        if б == "json" and н == "dumps":
+            return {"ОТ"} if арг and "О" in арг[0] else set()
+        if isinstance(ф, ast.Attribute) and ф.attr in self.ПРОХОДЯТЬ_ОБʼЄКТ:
+            return власні & {"О"}
+        if isinstance(ф, ast.Name) and ф.id == "dict":
+            if арг and "О" in арг[0]:
+                return {"О"}
+            return {"К"} if any("О" in м for м in арг) or any("О" in self.мітки(мод, ім, к.value, env) for к in в.keywords) \
+                else set()
+        if isinstance(ф, ast.Name) and ф.id in self.ПРОХОДЯТЬ_ВИКЛИК and арг:
+            return set().union(*арг) & {"О"}
+        if б == "copy" and н in {"copy", "deepcopy"} and арг:
+            return арг[0] & {"О"}
+        ц = а.ціль(мод, в)
+        if ц:
+            # результат функції — обʼєкт відповіді, коли вона сама його розбирає, або коли обʼєкт (чи запис із його
+            # частинами) передано їй у цьому виклику: той самий хелпер на каталозі чи на даних коду мітки не несе
+            власне = set(self.повертає_власне.get(ц, ()))
+            if any(м & {"О", "К"} for м in арг) or any(self.мітки(мод, ім, к.value, env) & {"О", "К"} for к in в.keywords):
+                власне |= set(self.повертає.get(ц, ()))
+            return власне
+        return set()
+
+    def текст_моделі(self, мод, ім, в, env):
+        """Вираз — текст, чий розбір дає обʼєкт відповіді: мітки сирого тексту `Аналіз` або текст зі зібраного обʼєкта."""
+        зм = self.а.змінні.get((мод.ім, ім)) or {}
+        м = self.а.мітки(мод, в, зм)
+        return М in м or any(л[0] == "Р" for л in м) or "ОТ" in self.мітки(мод, ім, в, env)
+
+    # ── операторів ──
+    def виведений(self, мод, ім, вузол, env):
+        """Вираз-копія зі зміною: `dict(о, …)`, `{**о, …}`, `{к: … for … in о.items()}` — (вузол, що робить) чи None."""
+        for в in ast.walk(вузол):
+            if isinstance(в, ast.Call) and isinstance(в.func, ast.Name) and в.func.id == "dict" and в.args \
+                    and "О" in self.мітки(мод, ім, в.args[0], env) and (в.keywords or len(в.args) > 1):
+                return в, "виводить новий обʼєкт відповіді з дописаним чи заміненим"
+            if isinstance(в, ast.Dict) and len(в.keys) > 1 \
+                    and any(к is None and "О" in self.мітки(мод, ім, з, env) for к, з in zip(в.keys, в.values)):
+                return в, "виводить новий обʼєкт відповіді з дописаним чи заміненим"
+            if isinstance(в, ast.DictComp) and any(
+                    isinstance(г.iter, ast.Call) and isinstance(г.iter.func, ast.Attribute)
+                    and г.iter.func.attr in {"items", "keys"} and "О" in self.мітки(мод, ім, г.iter.func.value, env)
+                    for г in в.generators):      # покажчик за чужими ключами (`{id: частина for … in список}`) — не обʼєкт відповіді
+                return в, "виводить обʼєкт відповіді без частини ключів чи з іншими ключами"
+        return None
+
+    def відбір_ключів(self, мод, ім, вузол, env):
+        """Відбір ключів обʼєкта відповіді за власним переліком винятків: `[x for … if x in о and x not in перелік]`, де
+        `перелік` складено обʼєднанням переліків (`a | set(b) | {…}`): код сам вирішує, які ключі обʼєкта відповіді не
+        вважати чужими, — допуск ключів поза схемою, а не читання (читання — `x not in поля`, один перелік схеми)."""
+        for в in ast.walk(вузол):
+            if not isinstance(в, (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.DictComp)):
+                continue
+            умови = [у for г in в.generators for ум in г.ifs for у in (ум.values if isinstance(ум, ast.BoolOp) else [ум])]
+            є_в_о = any(isinstance(у, ast.Compare) and len(у.ops) == 1 and isinstance(у.ops[0], ast.In)
+                        and "О" in self.мітки(мод, ім, у.comparators[0], env) for у in умови)
+            поза = any(isinstance(у, ast.Compare) and len(у.ops) == 1 and isinstance(у.ops[0], ast.NotIn)
+                       and "З" in self.мітки(мод, ім, у.comparators[0], env) for у in умови)
+            if є_в_о and поза:
+                return в
+        return None
+
+    @staticmethod
+    def корінь(в):
+        while isinstance(в, (ast.Subscript, ast.Attribute)):
+            в = в.value
+        return в
+
+    def зміна(self, мод, ім, ст, env):
+        """(рядок, що робить) для простого оператора, що міняє обʼєкт відповіді, інакше None."""
+        о = lambda в: "О" in self.мітки(мод, ім, в, env)
+        if isinstance(ст, (ast.Assign, ast.AugAssign, ast.AnnAssign)):
+            for ц in (ст.targets if isinstance(ст, ast.Assign) else [ст.target]):
+                if isinstance(ц, ast.Subscript) and о(self.корінь(ц)):
+                    return "пише ключ у обʼєкт відповіді"
+            з = self.виведений(мод, ім, ст.value, env) if ст.value is not None else None
+            if з:
+                return з[1]
+        if isinstance(ст, (ast.Assign, ast.Return, ast.AnnAssign)) and getattr(ст, "value", None) is not None \
+                and self.відбір_ключів(мод, ім, ст.value, env) is not None:
+            return "допускає ключі обʼєкта відповіді поза схемою: відбір за переліком винятків, складеним з кількох переліків"
+        if isinstance(ст, ast.Delete):
+            return "прибирає ключ з обʼєкта відповіді" if any(
+                isinstance(ц, ast.Subscript) and о(self.корінь(ц)) for ц in ст.targets) else None
+        if isinstance(ст, ast.Return) and ст.value is not None:
+            з = self.виведений(мод, ім, ст.value, env)
+            return з[1] if з else None
+        if isinstance(ст, ast.Expr) and isinstance(ст.value, ast.Call) and isinstance(ст.value.func, ast.Attribute):
+            м, н = ст.value.func.attr, ст.value.func.value
+            if м in self.ПИШУТЬ_ЦІЛИЙ and о(н):
+                return "міняє обʼєкт відповіді (`.%s`)" % м
+            if м in self.ПИШУТЬ_ЕЛЕМЕНТ and isinstance(н, ast.Subscript) and о(self.корінь(н)):
+                return "міняє список у обʼєкті відповіді (`.%s`)" % м
+        return None
+
+    @staticmethod
+    def вирази_оператора(ст):
+        """Вирази самого оператора без вкладених блоків (їх проходить `блок` рекурсивно)."""
+        if isinstance(ст, (ast.If, ast.While)):
+            return [ст.test]
+        if isinstance(ст, (ast.For, ast.AsyncFor)):
+            return [ст.iter]
+        if isinstance(ст, (ast.With, ast.AsyncWith)):
+            return [х.context_expr for х in ст.items]
+        if isinstance(ст, (ast.Try, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            return []
+        return [ст]
+
+    def призначити(self, ціль, мітки, env):
+        if isinstance(ціль, ast.Name):
+            env[ціль.id] = set(мітки)
+        elif isinstance(ціль, (ast.Tuple, ast.List)):
+            for е in ціль.elts:
+                self.призначити(е.value if isinstance(е, ast.Starred) else е, мітки, env)
+
+    @staticmethod
+    def злити(*середовища):
+        """Після розгалуження змінна несе мітку, лише коли несуть її всі гілки: змінна, що в одній гілці — обʼєкт відповіді,
+        а в іншій — власна структура (`в` обробника моста), далі не вважається обʼєктом відповіді. Зміну в самій гілці
+        це не ховає: її видно в гілці."""
+        вих = {}
+        for к in set().union(*(set(е) for е in середовища)):
+            м = set.intersection(*(set(е.get(к, ())) for е in середовища))
+            if м:
+                вих[к] = м
+        return вих
+
+    def блок(self, мод, ім, ст_список, env, ключ, гілки, повернення):
+        """Проходить оператори по порядку; `env` міняється на місці; `гілки` збирає першу зміну кожної гілки."""
+        for ст in ст_список:
+            self.виклики_у(мод, ім, self.вирази_оператора(ст), env)
+            що = self.зміна(мод, ім, ст, env)
+            if що and (ключ not in гілки or ст.lineno < гілки[ключ][0]):
+                гілки[ключ] = (ст.lineno, що, ast.unparse(ст).split("\n")[0][:70])
+            if isinstance(ст, ast.Assign):
+                м = self.мітки(мод, ім, ст.value, env)
+                for ц in ст.targets:
+                    self.призначити(ц, м, env)
+            elif isinstance(ст, (ast.AnnAssign, ast.AugAssign)) and ст.value is not None:
+                м = self.мітки(мод, ім, ст.value, env)
+                self.призначити(ст.target, м | (set(env.get(ст.target.id, ())) if isinstance(ст, ast.AugAssign)
+                                             and isinstance(ст.target, ast.Name) else set()), env)
+            elif isinstance(ст, ast.Return) and ст.value is not None:
+                повернення.update(self.мітки(мод, ім, ст.value, env))
+            elif isinstance(ст, ast.If):
+                корінь = ключ if isinstance(ключ, tuple) and ключ[0] == "if" else ("if", id(ст))
+                ліве = dict((к, set(м)) for к, м in env.items())
+                self.блок(мод, ім, ст.body, ліве, корінь, гілки, повернення)
+                праве = dict((к, set(м)) for к, м in env.items())
+                self.блок(мод, ім, ст.orelse, праве, корінь, гілки, повернення)
+                env.clear()
+                env.update(self.злити(ліве, праве))
+            elif isinstance(ст, (ast.For, ast.AsyncFor)):
+                м = self.перебір(мод, ім, ст.iter, env)
+                для = dict((к, set(в)) for к, в in env.items())
+                self.призначити(ст.target, м, для)
+                self.блок(мод, ім, ст.body, для, ("блок", id(ст.body)), гілки, повернення)
+                self.блок(мод, ім, ст.body, для, ("блок", id(ст.body)), гілки, повернення)   # другий оберт: змінні циклу
+                self.блок(мод, ім, ст.orelse, для, ключ, гілки, повернення)
+                env.update(self.злити(env, для))
+            elif isinstance(ст, ast.While):
+                для = dict((к, set(в)) for к, в in env.items())
+                self.блок(мод, ім, ст.body, для, ("блок", id(ст.body)), гілки, повернення)
+                self.блок(мод, ім, ст.body, для, ("блок", id(ст.body)), гілки, повернення)
+                env.update(self.злити(env, для))
+            elif isinstance(ст, (ast.With, ast.AsyncWith)):
+                self.блок(мод, ім, ст.body, env, ("блок", id(ст.body)), гілки, повернення)
+            elif isinstance(ст, ast.Try):
+                частини = [ст.body] + [х.body for х in ст.handlers] + [ст.orelse, ст.finalbody]
+                списки = []
+                for ч in частини:
+                    е = dict((к, set(в)) for к, в in env.items())
+                    self.блок(мод, ім, ч, е, ("блок", id(ч)) if ч else ключ, гілки, повернення)
+                    списки.append(е)
+                env.clear()
+                env.update(self.злити(*списки))
+            elif isinstance(ст, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                е = dict((к, set(в)) for к, в in env.items())
+                for п in ст.args.posonlyargs + ст.args.args + ст.args.kwonlyargs:
+                    е[п.arg] = set()
+                self.блок(мод, ім, ст.body, е, ("блок", id(ст.body)), гілки, повернення)
+
+    def виклики_у(self, мод, ім, вирази, env):
+        """Мітки аргументів кожного виклику у виразах — у параметри викликаної функції (потік по викликах)."""
+        for вираз in вирази:
+            for в in ast.walk(вираз):
+                if not isinstance(в, ast.Call):
+                    continue
+                ц = self.а.ціль(мод, в)
+                if not ц:
+                    continue
+                цф = self.а.м[ц[0]].функції[ц[1]]
+                п = [x.arg for x in цф.args.posonlyargs + цф.args.args]
+                if п and п[0] in {"self", "cls"}:
+                    п = п[1:]
+                пари = list(zip(п, в.args)) + [(к.arg, к.value) for к in в.keywords if к.arg in п]
+                for назва, вираз_арг in пари:
+                    м = self.мітки(мод, ім, вираз_арг, env)
+                    if м - self.параметри.get(ц, {}).get(назва, set()):
+                        self.параметри.setdefault(ц, {}).setdefault(назва, set()).update(м)
+                        self.звідки.setdefault((ц, назва), (мод.ім, ім, в.lineno))
+                        self.змінилось = True
+
+    def виконати(self):
+        for _ in range(10):
+            self.змінилось = False
+            for мод, ім, ф in self.функції:
+                ключ = (мод.ім, ім)
+                env = {п: set(м) for п, м in self.параметри.get(ключ, {}).items()}
+                гілки, повернення = {}, set()
+                self.блок(мод, ім, ф.body, env, ("блок", id(ф.body)), гілки, повернення)
+                self.зміни[ключ] = гілки
+                if повернення - self.повертає.get(ключ, set()):
+                    self.повертає.setdefault(ключ, set()).update(повернення)
+                    self.змінилось = True
+                if self.параметри.get(ключ):       # той самий прохід без параметрів: що функція повертає з власного розбору
+                    власне = set()
+                    self.блок(мод, ім, ф.body, {}, ("блок", id(ф.body)), {}, власне)
+                else:
+                    власне = повернення
+                if власне - self.повертає_власне.get(ключ, set()):
+                    self.повертає_власне.setdefault(ключ, set()).update(власне)
+                    self.змінилось = True
+            if not self.змінилось:
+                break
+        return self
 
 
 def батьки(ф):
@@ -849,6 +1164,15 @@ class Структура:
                 if записи and змінює:
                     вих.append((мод.ім, ім, записи[0].lineno, "гілка ремонту: запис у `нотатки` й зміна даних відповіді в одному "
                                 "блоці — код сам називає це ремонтом форми відповіді"))
+        return вих
+
+    # п.4(в): код міняє обʼєкт відповіді моделі після розбору (клас із рішення менеджера 16.11, рядок 15737)
+    def зміни_обʼєкта(self):
+        аналіз = ЗмінаОбєкта(self.а, [(мод, ім, ф) for мод, ім, ф in self.функції()]).виконати()
+        вих = []
+        for (мод, ім), гілки in аналіз.зміни.items():
+            for рядок, що, зразок in гілки.values():
+                вих.append((мод, ім, рядок, "код міняє обʼєкт відповіді моделі: %s — `%s`" % (що, зразок)))
         return вих
 
     # п.4(а): функція з текстом моделі дописує/екранує знаки JSON у вихідному буфері — одна гілка ремонту на функцію
@@ -1569,6 +1893,79 @@ def _тест_перетворення_ід():
     assert "без перетворення на номер для дроту" in місця2[0][3]
 
 
+def _тест_п4_обєкт_відповіді():
+    """Проби п.4(в): місце — зміна обʼєкта відповіді після розбору, куди б не писав слід; читання й власні записи коду — ні."""
+    def місця(код):
+        а = Аналіз({"синтетика": ast.parse(код)}, {"відповідь_моделі"}, set(), {}).виконати()
+        return [м[3] for м in Структура(а).зміни_обʼєкта()]
+    перенос = (            # частина ходу з `update` піднята нагору: слід — `перенесено`, обʼєкт відповіді міняється
+        "import json\n"
+        "def прийняти(d):\n"
+        "    об = json.loads(d['відповідь_моделі'])\n"
+        "    оновлення = об.get('update') or {}\n"
+        "    перенесено = [к for к in ('need', 'text') if к in оновлення]\n"
+        "    if перенесено:\n"
+        "        об = dict(об, **{к: оновлення[к] for к in перенесено})\n"
+        "    return об, перенесено\n"
+    )
+    assert len(місця(перенос)) == 1, "обʼєкт зі зміною й слідом `перенесено` — місце: %r" % місця(перенос)
+    список_у_значення = (  # список → одне значення в копії обʼєкта, без жодного сліду
+        "import json\n"
+        "def прийняти(d):\n"
+        "    об = json.loads(d['відповідь_моделі'])\n"
+        "    нове = dict(об)\n"
+        "    for к, v in об.items():\n"
+        "        if isinstance(v, list):\n"
+        "            нове[к] = v[0]\n"
+        "    return нове\n"
+    )
+    assert len(місця(список_у_значення)) == 1, "список → значення без сліду — місце: %r" % місця(список_у_значення)
+    прибирає_і_передає = (  # зміна через виклик: функція отримує обʼєкт і прибирає ключ
+        "import json\n"
+        "def зняти(о):\n"
+        "    о.pop('header', None)\n"
+        "def прийняти(d):\n"
+        "    об = json.loads(d['відповідь_моделі'])\n"
+        "    зняти(об)\n"
+        "    return об\n"
+    )
+    assert len(місця(прибирає_і_передає)) == 1, "`.pop` обʼєкта в хелпері — місце: %r" % місця(прибирає_і_передає)
+    лише_читає = (         # читання, власний запис коду з частин обʼєкта, перебір переліку літералів — не місце
+        "import json\n"
+        "def прийняти(d):\n"
+        "    об = json.loads(d['відповідь_моделі'])\n"
+        "    частини = {}\n"
+        "    частини['need'] = об.get('need')\n"
+        "    запис = {'фото': об.get('photo')}\n"
+        "    запис['чия'] = 'невідомо'\n"
+        "    нові = {к: частини[к] for к in ('need',) if к in частини}\n"
+        "    чужі = [к for к in об if к not in ('need', 'text')]\n"
+        "    return частини, запис, нові, чужі\n"
+    )
+    assert місця(лише_читає) == [], "читання без зміни обʼєкта — не місце: %r" % місця(лише_читає)
+    хелпер_на_даних_коду = (   # той самий хелпер, але обʼєкт відповіді йому не передано, — не місце
+        "def зняти(о):\n"
+        "    о.pop('header', None)\n"
+        "def інше():\n"
+        "    зняте = {'header': 1}\n"
+        "    зняти(зняте)\n"
+        "    return зняте\n"
+    )
+    assert місця(хелпер_на_даних_коду) == [], "зміна власних даних коду — не місце: %r" % місця(хелпер_на_даних_коду)
+    допуск_ключів = (      # відбір ключів обʼєкта за переліком винятків, складеним з кількох переліків
+        "import json\n"
+        "ПОЛЯ = ('a',)\n"
+        "ЧАСТИНИ = ('need', 'text')\n"
+        "def чужі(оновлення):\n"
+        "    луна = {к for к in ПОЛЯ} | set(ЧАСТИНИ) | {'quote'}\n"
+        "    return [к for к in dict.fromkeys(['x']) if к in оновлення and к not in луна]\n"
+        "def прийняти(d):\n"
+        "    об = json.loads(d['відповідь_моделі'])\n"
+        "    return чужі(об)\n"
+    )
+    assert len(місця(допуск_ключів)) == 1, "допуск ключів поза схемою — місце: %r" % місця(допуск_ключів)
+
+
 def _тест_запасного_ходу_у_викликачах():
     """П.3(б, г): запасний хід у викликачі (міжпроцедурно) — не місце; без нього ні у функції, ні у викликачах — місце."""
     низ = (
@@ -1734,7 +2131,7 @@ def зібрати():
                 м.додати(файл, п["рядок"], 4, "текст моделі правиться (%s) до розбору — ремонт формату" % п["дія"], "Б")
         elif п["вид"] == "слова" and not в_реєстрі:
             м.додати(файл, п["рядок"], 7, "код читає її слова: %s" % п["дія"], "Б")
-    for мод, ім, рядок, чому in ст.нотатки() + ст.знаки_json():
+    for мод, ім, рядок, чому in ст.нотатки() + ст.знаки_json() + ст.зміни_обʼєкта():
         м.додати(файл_модуля(мод), рядок, 4, чому, "Б")
     читачі = {(п["модуль"], п["функція"]) for п in a_події_відсортовані(а) if п["вид"] in {"парс", "реєстр"} and п["модуль"] not in РЕЄСТР_МОД}
     внутрішні = {x for x in читачі if any(x != y and x in конус(y, ребра) for y in читачі)}
@@ -1928,15 +2325,18 @@ def main():
         _тест_перетворення_ід()
         _тест_запасного_ходу_у_викликачах()
         _тест_п3_зупинки()
+        _тест_п4_обєкт_відповіді()
         print("тест винятку: ОК")
         print("тест перетворення ід: ОК")
         print("тест запасного ходу у викликачах: ОК")
         print("тест п.3 зупинки (д, е, є): ОК")
+        print("тест п.4 (в) зміна обʼєкта відповіді: ОК")
         return 0
     _тест_винятку()
     _тест_перетворення_ід()
     _тест_запасного_ходу_у_викликачах()
     _тест_п3_зупинки()
+    _тест_п4_обєкт_відповіді()
     м, м_виняток, інфо, а, конуси, js, ендп, клієнти = зібрати()
     вивести(м, м_виняток, інфо, а, конуси, js, ендп, клієнти)
     return 0
