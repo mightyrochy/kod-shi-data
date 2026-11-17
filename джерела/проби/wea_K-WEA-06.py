@@ -4,15 +4,15 @@
 import sys, pathlib, json
 _К = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_К))
-import feed as Ф, bridge as B, accessory as АК
+import feed as Ф, bridge as B, пара_взуття as ПАРА
 вх = json.load(open(_К / "стенд_вх.json", encoding="utf-8"))
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml"); вх["гілка"] = 0
 вх["сценарій"].update(смуга_погоди='frost', опади="сніг")
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = B.каталог_останнього_пакета()
 гладкі = [c for c in кат if c.get("слот") == "взуття"
-          and any(g in (c.get("підошва") or "").lower() for g in АК.ГЛАДКА_ПІДОШВА)]
-без = [c for c in кат if c.get("слот") == "взуття" and not c.get("підошва")]
+          and ПАРА.підошва_гладка(c)]
+без = [c for c in кат if c.get("слот") == "взуття" and ПАРА.підошва_гладка(c) is None]
 print("пар із гладкою підошвою:", len(гладкі), "· без слова про підошву:", len(без))
 сукня = next(c["id"] for c in кат if c.get("слот") == "сукня")
 def прогін(взуття, t):
