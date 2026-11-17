@@ -1845,6 +1845,9 @@ def _опис_keep_by():
                                      "count the wearing cost for the feet (values: item — the item: item_id, kind and colour codes; item_id)",
     "wear_cost_no_duration_surface": "the code does not count the wearing cost for the feet: it is unknown "
                                      "how many hours and on what she will walk",
+    # поверхню вона назвала, часу на ногах — ні: умовної години код не бере (дошка 16198)
+    "wear_cost_no_duration": "the code does not count the wearing cost for the feet: it is known on what she will "
+                             "walk, but not how many hours she will be on her feet or how long she will walk",
     # ── погода й матеріал (`суд_погода`, `аксесуари_погода`) ──────────────────────
     # лід не стверджується: заяву дає смуга морозу (`суд_погода`, K-WEA-06), а не її слово про ожеледь — «а сьогодні
     # ожеледиця» вона читала, сказавши лише «сніг» (живий-як-людина-4, с8; корінь Е2-опора-пояснення)
@@ -3815,7 +3818,7 @@ def визначення_заяв(коди):
 МЕТАДАНІ_ЗАЯВ = {
     **{к: dict(recipient="journal") for к in ЗАЯВИ if к.startswith("no_input_")},
     **{к: dict(recipient="journal") for к in ("areas_not_measured", "which_white_suits_unknown",
-        "wear_cost_no_duration_surface", "leg_proportion_template_crotch",
+        "wear_cost_no_duration_surface", "wear_cost_no_duration", "leg_proportion_template_crotch",
         "vertical_balance_not_judged", "calf_girth_not_measured", "her_register_unknown",
         "print_motif_scale_unknown",
         "chroma_clash_skipped_no_area", "unmeasured_accents_not_grouped", "area_share_error_unknown")},
