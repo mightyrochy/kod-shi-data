@@ -15,7 +15,7 @@ def виміряти():
     промпт = json.loads(М.промпт_розмови({}))
     поля = ("goal_extra", "goal_zones", "registers")
     рядки = [р for р in промпт["task"]["codes"] if any(р.startswith("- " + п + " —") for п in поля)]
-    форма = '{"quote": the fragment of her words, "value": [codes]}'
+    форма = '{"quote": her fragment, "value": [codes]}'
     print("Форма списку з цитатою: %d/%d" % (sum(форма in р for р in рядки), len(рядки)))
     if len(sys.argv) < 2:
         return

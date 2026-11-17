@@ -231,6 +231,11 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     "month": {"january": "січень", "february": "лютий", "march": "березень", "april": "квітень",
               "may": "травень", "june": "червень", "july": "липень", "august": "серпень",
               "september": "вересень", "october": "жовтень", "november": "листопад", "december": "грудень"},
+    # День тижня події з її слів («в суботу», «завтра») — факт її дня для стилістки (корінь Е2-втрата-слова, 16027):
+    # слова «сьогодні» й «завтра» — коди, а не дата: календаря код не рахує
+    "weekday": {"monday": "понеділок", "tuesday": "вівторок", "wednesday": "середа", "thursday": "четвер",
+                "friday": "пʼятниця", "saturday": "субота", "sunday": "неділя", "today": "сьогодні",
+                "tomorrow": "завтра"},
     # Порядок — від найхолоднішої смуги до найтеплішої; градуси тлумачить лише модель.
     "weather_band": {к: к for к in ("deep_frost", "frost", "cold", "cool", "mild", "warm", "hot")},
     # Смуга вітру — від найтихішої до найсильнішої; межі — сухопутні ознаки шкали Бофорта (`сценарій.СМУГИ_ВІТРУ`),
@@ -330,6 +335,9 @@ _ЛАПКИ_ДОВКОЛА = re.compile(r'^["«„“”]\s*([^"«»„“”]*?
     # `large_print` (Ч-4, K-LNG-04): масштаб принта фід не читає, тож ключ ядра — у режимі
     # «преференція» (`паспорт_нагоди.ВЕТО_СЛОВА`): межа не розширюється на всі принти.
     "feature": {"heels": "підбори", "large_print": "великий принт"},
+    # Як вона носить річ («шарфом під підборіддям», «берет, під яким усе волосся сховане») — ознака бажання для
+    # стилістки (корінь Е2-втрата-слова, лічба 16.11: 2 сцени, 0 дійшло — поля не було, 15937)
+    "wear": {"near_face": "біля_обличчя", "covers_hair": "волосся_сховане"},
     "own_item_status": {"has": "певна", "maybe": "непевна", "not_wanted": "відмова"},
     # Теми поради, які обирає КОД (`паспорт_нагоди.порада_коду`), і те, без чого образ не
     # збирається (K-IO-01, `сценарій.ВИЗНАЧАЛЬНІ`): у повідомленні жінці — лише кодами.
@@ -489,7 +497,8 @@ def погода_заяви(смуга_погоди):
     return {"weather_band": смуга_погоди} if смуга_погоди in ТАБЛИЦЯ["weather_band"] else {}
 
 _БАЖАННЯ_ПОЛЯ = (("тип", "item_type"), ("слот", "slot"), ("колір", "color_name"), ("клас_кольору", "color_class"),
-                 ("тканина", "fabric"), ("візерунок", "pattern"), ("довжина", "length"), ("ознака", "feature"))
+                 ("тканина", "fabric"), ("візерунок", "pattern"), ("довжина", "length"), ("ознака", "feature"),
+                 ("як_носить", "wear"))
 
 
 def бажання_кодом(б):
@@ -579,6 +588,7 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
     # Ч-4: довжина речі, яку вона назвала («міні», «в підлогу», «кроп»), — вхід послаблень брифа
     # (`brief.послаблення`) замість регулярок по її словах; ключі — ті самі, що в речей каталогу
     "length": _перелік("length", "довжина речі"),
+    "wear": _перелік("wear", "як вона цю річ носить"),
     # ЦИТАТА (М-1, механіка цитування): річ тримається дослівним уривком її слів, а не словником
     # коду; річ без цитати в її словах шов не бере (`мовний_шар._тримається`)
     "quote": {"type": "string", "description": "дослівний уривок її слів про цю річ"},
@@ -830,6 +840,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     # (`показ.рядокБезОпису`), — кошик В п.12. Тепер код каже КОДАМИ, речення пише мовна модель.
     "card_without_description": "рядок на місці «Чому цей образ», коли пояснення до образу не "
                                 "вийшло: що саме сталось і що на картці однаково правдиве",
+    # Е2-опора-пояснення, доробка кроку «кадри»: пояснення є, але фото речей до стилістки не дійшли
+    "card_description_without_photos": "рядок під поясненням «Чому цей образ», коли фото речей образу до "
+                                       "стилістки не дійшли і пояснення написано без них: чесно сказати, "
+                                       "що воно з даних про речі, а не з того, як речі виглядають на фото",
 }
 
 # ЗАЯВИ: код → ЩО САМЕ сказано. Це ВИЗНАЧЕННЯ для моделі, не готова фраза. Числа й назви
@@ -1077,12 +1091,18 @@ def _опис_keep_by():
     "heel_cost_long_walk": "the heel of this pair is a noticeable cost for the feet on a long walk",
     "heel_cost_long_day": "the heel of this pair is a noticeable cost for the feet over a long day on her "
                           "feet",
+    # дорога пішки — та сама змінна тривалості, що в K-END-01 (тема-10, K-WEA-07): ціна за її хід пішки
+    "heel_cost_on_walk": "the heel of this pair is a noticeable cost for the feet on her way on foot (values: "
+                         "walk_min — minutes she walks on foot, heel_cm — heel height in cm)",
     "not_a_ban_her_choice": "this is not a ban: the choice is hers",
     "flat_pair_removes_cost": "a low-heeled pair removes this cost",
     "swap_pair_example": "such a pair, for example: she can take it along and change shoes when she wants",
     # ── КАРТКА ОБРАЗУ: МАТЕРІАЛ У ПОГОДУ ЦЬОГО ДНЯ ───────────────
-    "material_on_salted_road": "the named materials spoil on a salted road when untreated (values: materials "
-                               "— material codes)",
+    # сіль не стверджується: заяву дає й сіль, виведена з морозу й снігу (`сценарій.сіль_на_дорозі`), а не лише її слово
+    # про реагенти — ж8_зима нічного 15.11 («мінус десять і сніг») читала про посипану сіллю дорогу (корінь
+    # Е2-опора-пояснення, крок «походження»; дошка 16227)
+    "material_on_salted_road": "the named materials spoil when untreated if the road is salted, which a snowy frost "
+                               "may bring (values: materials — material codes)",
     "material_in_rain": "the named materials soak and spoil in rain when untreated (values: materials — "
                         "material codes)",
     "impregnate_or_smooth_leather": "the choice is hers: waterproof it three times with drying in between, or "
@@ -1311,13 +1331,18 @@ def _опис_keep_by():
                                         "differs), kind — it is another kind of item, occasion — it does not "
                                         "suit her occasion, day — it would not stand her weather or her way there)",
     # Прогін3-погода-й-дорога: фото показало річ не для її погоди чи дороги, а перевіреної заміни того самого роду
-    # нема — річ лишилась; картка каже прямо, чого бракує, а не радить ступати обережно (`заміна_з_фото.бракує_для_дня`)
-    "photo_item_not_for_day_no_spare": "the photo of this item showed it will not stand her day — her weather or her "
-                                       "way there; among her selection no other item of the same kind passed the "
-                                       "check, so it stays, and what the outfit lacks is an item of this kind made "
-                                       "for such a day (values: item — the item as item_id, kind and colour codes: "
-                                       "name it in a few words of your own; the rest — the known facts of her day "
-                                       "as codes: weather_band, precipitation, movement, surface, activity, setting)",
+    # нема — річ лишилась; картка каже прямо, чого бракує, а не радить ступати обережно. Е3-заміна-з-перевіркою
+    # (умова «г», 16.11): той самий рядок — для кожної підстави й кожного рішення «заміни не буде»
+    # (`заміна_з_фото.текст_складу`): доти так було лише для «day», а решта лишала на картці «я замінюю сукню»
+    "photo_item_unfit_no_swap": "the photo of this item showed a reason it does not serve this outfit, and no "
+                                "checked replacement of the same kind took its place, so it stays; what the outfit "
+                                "lacks is an item of this kind without that flaw (values: item — the item as "
+                                "item_id, kind and colour codes: name it in a few words of your own; reason — what "
+                                "its photo showed: colour — its colour there is clearly not the one the shop named "
+                                "(say that it is the colour that differs), kind — it is another kind of item, "
+                                "occasion — it does not suit her occasion, day — it would not stand her weather or "
+                                "her way there; with day, the known facts of her day as codes: weather_band, "
+                                "precipitation, movement, surface, activity, setting)",
     "selection_removed_this_layer": "the layer named above is exactly the one removed from the stylist's outfit",
     "set_already_has_top_and_bottom": "the set already has its own top and bottom, so a separate item there "
                                       "would be a second one in the same place (values: slot — slot code)",
@@ -1827,8 +1852,13 @@ def _опис_keep_by():
                                      "count the wearing cost for the feet (values: item — the item: item_id, kind and colour codes; item_id)",
     "wear_cost_no_duration_surface": "the code does not count the wearing cost for the feet: it is unknown "
                                      "how many hours and on what she will walk",
+    # поверхню вона назвала, часу на ногах — ні: умовної години код не бере (дошка 16198)
+    "wear_cost_no_duration": "the code does not count the wearing cost for the feet: it is known on what she will "
+                             "walk, but not how many hours she will be on her feet or how long she will walk",
     # ── погода й матеріал (`суд_погода`, `аксесуари_погода`) ──────────────────────
-    "sole_grip_unknown_ice": "the card does not say whether the sole grips on ice, and today there is black ice "
+    # лід не стверджується: заяву дає смуга морозу (`суд_погода`, K-WEA-06), а не її слово про ожеледь — «а сьогодні
+    # ожеледиця» вона читала, сказавши лише «сніг» (живий-як-людина-4, с8; корінь Е2-опора-пояснення)
+    "sole_grip_unknown_ice": "the card does not say whether the sole grips on ice, which a frosty day may bring "
                              "(values: item — the item: item_id, kind and colour codes; item_id)",
     "no_light_outer_layer_in_catalogue": "no light outer layer for this occasion was found in the catalogue",
     "fabric_season_not_judged_indoors": "the code does not judge fabric seasonality indoors (values: slot — "
@@ -1869,8 +1899,11 @@ def _опис_keep_by():
                                    "apply it to: it does not know her under-bust girth or neck length (values: item — the item: item_id, kind and colour codes; item_id)",
     "outer_shoulder_not_measured": "the card does not carry the outer layer's shoulder width, so the code does not "
                                    "judge whether the shoulder fits (values: item — the item: item_id, kind and colour codes; item_id)",
+    # сіль не стверджується: заяву дає й сіль, виведена з морозу й снігу (`верхнє_догляд`, `сольова_сльота`), — «чи
+    # витримає сіль на дорогах» вона читала, не сказавши про сіль (нічний 15.11, ж3_зима; корінь Е2-опора-пояснення)
     "outer_composition_unknown_salt": "the card does not name the outer layer's composition, so the code does not "
-                                      "know whether road salt damages it (values: item — the item: item_id, kind and colour codes; item_id)",
+                                      "know whether it stands road salt, if the roads she walks are salted (values: "
+                                      "item — the item: item_id, kind and colour codes; item_id)",
     # ── річ: розмір, крій і знімок (`суд_річ`) ───────────────────────────────────
     "size_is_label_not_fit": "a shop size is a number, not a fit: without the garment's measurements the code "
                              "does not know how the item fits (values: sizes — sizes by slot: slot — slot "
@@ -1906,6 +1939,11 @@ def _опис_keep_by():
                                         "being asked a second time, so this outfit has no explanation",
     "description_did_not_arrive": "the explanation for this outfit did not arrive: the connection broke on "
                                   "the last step",
+    # ── опис без кадрів (Е2-опора-пояснення; пояснення є, а фото речей до стилістки не дійшли) ──
+    "description_written_without_photos": "the explanation of this outfit was written without the photos of "
+                                          "its items: they did not reach the stylist, so the text rests on the "
+                                          "data about the items (names, colours, materials), not on how the "
+                                          "items look in the pictures",
     "items_prices_links_are_true": "the items, the prices and the links on this card are true, so the outfit "
                                    "can be judged without the explanation",
     "name_occasion_or_place": "she chooses an occasion or a place on the scenario screen, or says in words "
@@ -2427,10 +2465,13 @@ def _опис_keep_by():
     "possible_rain_no_rain_layer": "rain is only possible, and no outer layer of the look keeps it off (values: "
                                    "precipitation — the precipitation code)",
     "rain_outer_layer_over_look": "an outer layer that keeps off rain — a trench, a raincoat or a parka — over "
-                                  "this look, or keep the look and say why it holds this day",
+                                  "this look, or keep the look only when a known property of its items holds this "
+                                  "day, and name that property",
     "smooth_protected_leather_or_rubber_or_treat": "replace it with smooth protected leather or rubber, or "
                                                    "treat it with a water repellent and accept the risk",
-    "keep_look_say_why_it_holds_day": "keep the look and say why it holds this day",
+    # лишити образ — лише на відомій властивості його речей: «чому тримає день» без неї модель вигадувала обставину
+    "keep_look_say_why_it_holds_day": "keep the look only when a known property of its items holds this day, and name "
+                                      "that property",
     "face_contrast_above_her_own": "the step of lightness between the item near the face and her skin is larger "
                                    "than the step her own colouring carries, so the item draws the eye before "
                                    "the face; this describes the item, not her looks (values: jump — the "
@@ -2655,10 +2696,13 @@ def _опис_keep_by():
     "take_away_possible_add_not": "taking away is possible, adding is not",
     "too_big_alter_too_small_drop": "too big: keep it with a note \"for alteration\"; too small: drop it, "
                                     "repair is impossible",
-    "salt_slush_warmer_wears_faster": "salty slush: what warms better wears out faster",
+    # сольова сльота не стверджується: її виводить `верхнє_догляд.сольова_сльота` з морозу й снігу (дошка 16227)
+    "salt_slush_warmer_wears_faster": "in salty slush, which a snowy frost may bring, what warms better wears out "
+                                      "faster",
     "clean_after_each_outing_or_sturdier_layer": "clean it after every outing; for slush a sturdier outer "
                                                  "layer, and keep the wool for dry frost",
-    "suede_under_salt_no_home_cleaning": "suede under salt: no home cleaning",
+    "suede_under_salt_no_home_cleaning": "if road salt reaches suede, which a snowy frost may bring, it is not cleaned "
+                                         "at home",
     "professional_cleaning_or_suede_spray": "professional cleaning rather than at home; a protective spray in "
                                             "thin coats after each wetting is only a hint",
     # ── ОБІЦЯНКА СХЕМИ ПАЛІТРИ (П-6: K-COL-03) ──
@@ -2956,7 +3000,7 @@ def _опис_keep_by():
     "outer_layer_kept_despite_warmth": "the outer layer stays although the temperature band alone would not "
                                       "ask for it (values: weather_band — the weather band code; held_by — "
                                       "dress_code when the dressiness band or the dress code holds it, "
-                                      "weather_or_outdoors when rain, wind or the street below +22 °C does)",
+                                      "weather_or_outdoors when rain, wind or the street in a cooler band than the warm one does)",
     "outer_layer_removed_by_temperature": "the outer layer was removed by the temperature band: it asks for "
                                          "one layer on the torso, so the empty kind is not a gap in the "
                                          "catalogue (values: weather_band — the weather band code)",
@@ -3096,7 +3140,7 @@ def _опис_keep_by():
     # ── добір у пулі мосту (`міст_пакет`) ──────────────────────────────────────────
     "kind_topped_up_to_minimum": "the kind was topped up: the windows of the palette held fewer items than "
                                  "the outfit needs, and without this kind there is no outfit (shoes and a bag "
-                                 "the occasion demands, an outer layer the cold below +10 °C, a top and a "
+                                 "the occasion demands, an outer layer the cold of the cool band and colder, a top and a "
                                  "bottom are what an outfit is). The added items travel with \"in_arc: "
                                  "false\" — a named step outside the palette, not a hidden one (values: had, "
                                  "need, added, now)",
@@ -3789,7 +3833,7 @@ def визначення_заяв(коди):
 МЕТАДАНІ_ЗАЯВ = {
     **{к: dict(recipient="journal") for к in ЗАЯВИ if к.startswith("no_input_")},
     **{к: dict(recipient="journal") for к in ("areas_not_measured", "which_white_suits_unknown",
-        "wear_cost_no_duration_surface", "leg_proportion_template_crotch",
+        "wear_cost_no_duration_surface", "wear_cost_no_duration", "leg_proportion_template_crotch",
         "vertical_balance_not_judged", "calf_girth_not_measured", "her_register_unknown",
         "print_motif_scale_unknown",
         "chroma_clash_skipped_no_area", "unmeasured_accents_not_grouped", "area_share_error_unknown")},

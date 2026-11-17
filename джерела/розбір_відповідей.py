@@ -58,9 +58,11 @@ import colorspace as _cs
         # принт»), хоч крамниця його знає, — колір речі без фото береться звідси, без посилання на джерело
         # Е2-вхід-опису-кодами (ПС-22): назва з крамниці несла вид і колір словами, і модель брала їх звідти —
         # річ міняла вид і колір; тепер річ — номер і поля кодами, ті самі, що бачила стилістка складання
-        _ЗП.Поле("outfit", "chosen items, each numbered «n», with known properties as codes: «kind», «type», cut, "
-                           "fabric, material, length, sleeve, pattern, details and colour («color» code, measured "
-                           "«hex»). Codes guide photo reading or describe an item without photos; absent properties are unknown",
+        # Е2-опора-пояснення (п.1): речі йдуть лише тим, що продукт знає (`знання_речі.певне`) — вид і колір, виміряний
+        # на кадрі; крою, тканини, довжини й кольору слова крамниці на дроті нема: їх ніхто не звіряв із кадром
+        _ЗП.Поле("outfit", "chosen items, each numbered «n», with known properties as codes: «kind», «type» and the "
+                           "colour measured on its photo («color» code, «hex»). Codes guide photo reading or describe "
+                           "an item without photos; absent properties are unknown",
                  треба=True),
         _ЗП.Поле("outfit.items[].photos",
                  "this item's photo numbers; preceding blocks are labelled «Photo N — …:» with the item's «n». "
@@ -87,8 +89,7 @@ import colorspace as _cs
                     "«looks …, but …»; this is no reason for «wrong_photos» or «swap»: the card already tells "
                     "her about the photo"),
         _ЗП.Поле("outfit.items[].no_photo", "this item has no photo of its own among the others",
-                 як="describe it by its codes — «kind», «type», «color» and the rest; do not take another "
-                    "item's photo for it"),
+                 як="describe it only by its codes; do not take another item's photo for it"),
         _ЗП.Поле("outfit.items[].hers", "her own item from her photo, not a product",
                  як="do not offer to buy it and do not mention a price or a shop; say how the other items "
                     "work with it"),
@@ -115,18 +116,22 @@ import colorspace as _cs
         # вимагає обережних кроків» на сніг і двадцять хвилин пішки (с8) — складання й ремонт фото не бачили, і
         # «свідомого вибору» не було. Тепер така річ — `swap` з підставою `day`; пояснення лишається тому, що
         # з днем лише сперечається.
-        _ВИМ.поле("day", як="when the known item properties support it, in the last part of «text» say how this outfit "
-                    "lives through her day. An item its photo shows unfit for her weather or way there is «swap»; "
-                    "for anything else that argues with the day (hours on her feet, the place), say in one plain "
-                    "sentence why you still chose it and what it means for her day, never handing that decision "
-                    "back to her"),
+        # Обставини її дня (корінь Е2-опора-пояснення, крок «обставини»): «day» несе лише сказане нею
+        # (`дріт_моделі.день_її_слів`), і пояснення — лише про факт «day» і відому властивість речі: «а сьогодні
+        # ожеледиця», «Road salt and slush», «morning light» опис казав їй з виведеного й без вимоги умови.
+        _ВИМ.поле("day", як="only what she said about her day. When the known item properties support it, in the last "
+                    "part of «text» say how this outfit lives through the facts listed in «day». An item its photo "
+                    "shows unfit for her weather or way there is «swap»; for an item whose known property argues "
+                    "with a fact listed in «day», say in one plain sentence why you still chose it and what it means "
+                    "for her day, never handing that decision back to her. Weather, road, place, light or time of "
+                    "day that «day» does not carry is not a fact of her day"),
         # ОПИС-1 (K-PAL-11/14/15): «найдальші» й «комбінація», якщо йдуть у КОЖЕН опис, дають
         # «маленька оливкова чи зелена деталь» навіть на похороні й поради додати річ, якої в образі
-        # нема. Тож лише те, що стосується речей образу.
+        # нема. Тепер палітра опису — лише метал, названий нею (`дріт_моделі.палітра_опису`; корінь
+        # Е2-опора-пояснення, крок «обставини»): найдальших і поєднання опис не дістає.
         _ЗП.Поле("palette", "her palette",
                  як="in the last part of «text», in prose: discuss metal only with jewelry or metal details "
-                    "in this outfit; call a colour «farthest» from her only if an outfit item carries it; "
-                    "an optional combination uses only outfit items, never additions"),
+                    "in this outfit"),
         # K-BOD-02, K-SIL-03 (аудит/ПРОДУКТ.md п.4): її фігура кодами — ті самі, що в брифі складання.
         # П.17: річ образу — вибір стилістки; річ проти фігури — пояснити, рішення не віддавати.
         # «cuts_best_on_her: belted» при вільному светрі без пояса давало «tuck in just the front hem
@@ -179,6 +184,16 @@ import colorspace as _cs
                     "occasion and her day best, or none; describe the outfit with your choice in place — the "
                     "chosen spare instead of the item; the card tells her separately what you replaced and why, "
                     "so «text» does not; answer «swap» again with «item», «why» and «to»"),
+        # Е3-заміна-з-перевіркою (умова «г», 16.11): опис складу, який код уже вирішив після пропозиції заміни. Доти
+        # на картку йшла проза відповіді, що заміну пропонувала, — «я замінюю сукню» під тією самою сукнею, коли заміни
+        # не сталося; а перепитаний без цього поля опис пропонував би ту саму заміну знову
+        _ЗП.Поле("swap_decided", "after a «swap» was proposed, the code has decided this outfit: «item» — «n» of the "
+                                 "item in question, «outcome» — «stays» (it remains in the outfit) or «replaced» (it "
+                                 "took the place of the proposed item)",
+                 як="describe the outfit exactly as it is now; the card tells her separately what was replaced, or "
+                    "that the item stays and what the outfit lacks, so «text» and «how_to_wear» do not speak of "
+                    "replacing anything; do not answer «swap»",
+                 вихід_без=("заміна",)),
     ),
     правила=(
         # ОПИС-1: вигадані речі («простий світлий топ» без топа, «золоті сережки» без сережок,
@@ -251,8 +266,12 @@ import colorspace as _cs
                       "with other clothes in the frame is no reason; when in doubt, leave it out",
         "заміна.річ": "«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty "
                       "reason — the usual case",
-        "заміна.чому": "why the photo warrants replacing it: a clearly different colour, another kind "
-                       "of item, a mismatch with her occasion or her day",
+        # Е3-заміна-з-перевіркою (16.11): опис поля називав підстави словами, а схема приймає лише код
+        # (`протокол.ПІДСТАВИ_ЗАМІНИ`) — модель писала «colour: its creamy near-white shade…», і код відмовляв за
+        # формою (`reason_not_in_list`, п'ять разів за ніч 07.11). Поле називає коди, речення — ні
+        "заміна.чому": "one code for what the photo shows, and nothing else: «colour» — a clearly different "
+                       "colour, «kind» — another kind of item, «occasion» — unfit for her occasion, «day» — unfit "
+                       "for her weather or her way there",
         "заміна.на": "only with «swap_spares» in the input: «n» of the spare you choose; leave it out to "
                      "keep the item",
     },
@@ -353,13 +372,13 @@ def _місця_в_ід(об, склад):
 def опис_обʼєкт(речі, образ=None, задум=None, випадок=None, свідомі=None, фото_є=True,
                 канал_3=None, палітра=None, день=None, день_образу=None, неповний=None,
                 межі=None, мова_тексту=None, випадок_коди=None, заміна_запасні=None, макіяж=None,
-                тіло=None):
+                тіло=None, рішення_заміни=None):
     """Четвертий виклик: `ОПИС_V1` — обраний образ обʼєктом коду (його перевіряє схема,
     його кладе звіт); моделі його несе `промпт_опису` англійським дротом.
 
-    `речі` — `[{н, назва, слот, тип?, частина?, магазин, колір?, код_кольору?, hex?, кадр_колір?, ознаки?, фото,
-    фото_номери}]`, як віддає `bridge.опис`; `ознаки` — поля речі пулу (`пакет_моделі.річ_пулу`), які дріт
-    несе кодами замість назви (`дріт_моделі._ознаки_опису`). Скільки фото: речей — усі, що в
+    `речі` — `[{н, назва, слот, тип?, частина?, магазин, колір?, код_кольору?, hex?, кадр_колір?, фото,
+    фото_номери}]`, як віддає `bridge.опис`; що з цього бачить модель, вирішує складач
+    `знання_речі.певне` (лише властивості з певністю). Скільки фото: речей — усі, що в
     образі; на річ — одне-двоє. Тому річ і несе `фото_номери`: без них модель не
     знає, котре зображення чиє, і описує чуже взуття. Адреса фото (`фото`) у промпт
     не йде: зображення стоять перед обʼєктом блоками, а рядок адреси моделі нічого не
@@ -372,6 +391,8 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     шаром, Ukrainian без нього (показ шле `мова_тексту`, як рукам 3–4).
     `заміна_запасні` — ФОТО-1: `{річ: н, чому, запасні: [речі тими самими полями, що образ]}`, лише
     в зайвому виклику, коли опис назвав річ для заміни, а код знайшов запасні (`заміна_з_фото`).
+    `рішення_заміни` — `{н, стан: stays | replaced}`: опис складу, який код вирішив після пропозиції заміни
+    (`swap_decided`); з ним відповідь не просить `swap` і не пише про заміну — картка каже про неї своїм рядком.
     `тіло` — її фігура кодами (`hypergraph.тіло_для_опису`): без неї промпт не несе поля.
     `свідомі` — `[{н, заяви}]`: річ, яку стилістка поставила проти знахідки коду, і заяви тієї знахідки.
     """
@@ -381,8 +402,6 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         for к in ("слот", "тип", "частина", "магазин", "колір", "код_кольору", "hex", "кадр_колір"):
             if x.get(к):
                 з[к] = str(x[к])
-        if isinstance(x.get("ознаки"), dict) and x["ознаки"]:
-            з["ознаки"] = dict(x["ознаки"])
         ном = [int(n) for n in (x.get("фото_номери") or [])]
         if ном:
             з["фото_номери"] = ном
@@ -443,6 +462,8 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         об["палітра"] = dict(палітра)
     if isinstance(заміна_запасні, dict) and заміна_запасні.get("запасні"):
         об["заміна_запасні"] = заміна_запасні
+    if isinstance(рішення_заміни, dict) and рішення_заміни.get("н") and рішення_заміни.get("стан"):
+        об["рішення_заміни"] = dict(н=str(рішення_заміни["н"]), стан=str(рішення_заміни["стан"]))
     об["завдання"] = {"мова": str(мова_тексту or _ЗП.МОВА_EN), "відповідь": ОПИС.вихід}
     return об
 
@@ -648,7 +669,7 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
             # поля), тож без них відкидається лише «на» (сирим — у `на_відкинуто`), а річ іде тим самим
             # шляхом, що заміна без «на»; відмова — коли не резолвилась річ або «на» відповіді на запасні
             _на_зайве = not запасні and not _на
-            # річ, що резолвилась, лишається й при відмові: її запис `про_речі` знімає `без_прози_заміни`
+            # річ, що резолвилась, лишається й при відмові: рядок картки про неї пише `заміна_з_фото.текст_складу`
             р["заміна"] = (dict(річ=_рі[0], чому=_причина_зміни, **_на_річ,
                                 **({"на_відкинуто": str(_зм["на"])} if _на_зайве else {}))
                            if len(_рі) == 1 and (_на or _на_зайве) else
@@ -688,28 +709,6 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
             instead=" ".join(([ПОВТОР_НАЗВАНОГО_EN % ", ".join("«%s»" % w for w in _поза[:8])] if _поза else [])
                              + ([ПОВТОР_НЕ_ОПИСАНО_EN % ", ".join("«%s»" % w for w in _не[:8])] if _не else []))),
             ensure_ascii=False)
-    return р
-
-
-def без_прози_заміни(р):
-    """Опис назвав річ у `swap`, а заміни з цієї відповіді не буде → той самий розбір без запису `про_речі`
-    цієї речі (за її id), з `текст` і `проза` без його абзацу; знятий запис — у `про_речі_знято`.
-
-    `swap` сумки код відхилив, а її запис лишився —
-    «Її потрібно замінити для гармонії» під річчю, яка на картці. Слів запису код не читає (п.12), тож знімає
-    його цілим, без повторного виклику моделі (п.21). Прийнята заміна сюди не доходить: картку тоді описує
-    відповідь на запасні (`від_моделі` з `заміна_запасні`), і цей розбір не показується."""
-    ід = str(((р or {}).get("заміна") or {}).get("річ") or "")
-    знято = [x for x in (р.get("про_речі") or []) if ід and str(x.get("id")) == ід]
-    if not знято:
-        return р
-    лишились = [x for x in р["про_речі"] if x not in знято]
-    _абзаци = "\n".join(x["текст"] for x in р["про_речі"])
-    _власний = (р.get("текст") or "")[len(_абзаци) + 1:] if (р.get("текст") or "").startswith(_абзаци + "\n") else None
-    р = dict(р, про_речі=лишились, про_речі_знято=[dict(id=ід, чому="swap_not_applied")])
-    if _власний is not None:
-        р["текст"] = "\n".join([x["текст"] for x in лишились] + [_власний])
-        р["проза"] = "\n".join([р["текст"]] + list(р.get("як_носити") or [])).strip() or None
     return р
 
 

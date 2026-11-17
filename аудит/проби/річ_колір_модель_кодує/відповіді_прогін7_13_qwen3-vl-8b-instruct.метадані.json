@@ -1,0 +1,16 @@
+{
+  "модель": "qwen3-vl-8b-instruct",
+  "параметри": {
+    "temperature": 0.0,
+    "max_tokens": 2000
+  },
+  "розмір_кадру": [
+    640,
+    640
+  ],
+  "крок1_промпт": "Describe the fabric colours of the target garment across ALL supplied gallery images.\nIgnore the background, skin, mannequins, hangers and other garments. Distinguish fabric\ncolour from illumination, shadows, shine and transparency. Do not return hexadecimal colours.\nFor each visible fabric colour choose ONE tone from this closed list and give its area fraction\n(fractions must sum to 1; at most 3 colours). Tone \"neutral\" means white, gray or black fabric,\nincluding slightly tinted ones.\nTones: pink, neutral, red, yellowish pink, brownish pink, reddish orange, reddish brown, orange, brownish orange, brown, orange yellow, yellowish brown, yellow, olive brown, greenish yellow, olive, yellow green, olive green, yellowish green, green, bluish green, greenish blue, blue, purplish blue, violet, purple, reddish purple, purplish pink, purplish red\nGive a nuanced Ukrainian shade name in \"назва\" and a Ukrainian pattern name in \"принт\",\nor null if there is no pattern. Do not infer text content that is not legible.\nReturn only valid JSON with this structure:\n{\"назва\":\"…\",\"принт\":null,\"кольори\":[{\"тон\":\"<tone from the list>\",\"частка\":0.8},{\"тон\":\"<tone from the list>\",\"частка\":0.2}]}\nThe values in the JSON structure illustrate syntax only.",
+  "крок2_промпт_приклад": "Describe the fabric colours of the target garment across ALL supplied gallery images.\nIgnore the background, skin, mannequins, hangers and other garments. Distinguish fabric\ncolour from illumination, shadows, shine and transparency. Do not return hexadecimal colours.\nYou earlier named one fabric colour of this garment with tone \"pink\" (about 0.8 of the fabric area).\nChoose its lightness and its saturation, each from the closed list below (saturation runs from most saturated (vivid) to least (weak / grayish)).\n\"lightness\": [\"light\", \"medium\", \"dark\"]\n\"saturation\": [\"vivid\", \"strong\", \"moderate\", \"weak\", \"grayish\"]\nReturn only valid JSON: {\"lightness\":\"<from the list>\",\"saturation\":\"<from the list>\"}",
+  "тонів": 29,
+  "готово": 13,
+  "словник_sha256": "f3ba188e3cad3b5af2444d3fed4f6f470b523c2c824cb419c07d225640ef9e96"
+}
