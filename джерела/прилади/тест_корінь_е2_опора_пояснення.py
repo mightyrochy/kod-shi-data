@@ -58,6 +58,8 @@ def _словник():
         '(values: item — the item)",',
         '    "possible_wet_note": "the card does not say whether the sole grips, and today there is rain on the road",',
         '    "salt_slush_warmer_wears_faster": "salty slush: what warms better wears out faster",',
+        '    "salted_road_by_band": "the card does not say whether the sole grips, and today there is salt on the road '
+        '(values: item — the item)",',
         '    "maybe_ice_note_for_her": "the card does not say whether the sole grips, and today there is black ice, '
         'may be",',
         '    "windy_day_without_exit": "the weather is rough, and today it is windy for the whole walk",',
@@ -104,6 +106,13 @@ def сніг_за_температурою(температура):
 def сніг_за_її_словами(її_слова):
     if "сніг" in її_слова:
         return [_ВМ.заява("heavy_snow_by_her_words")]
+    return []
+
+
+def сіль_виведена_зі_смуги(реагенти, смуга_погоди, опади):
+    сльота = сольова_сльота(реагенти, смуга_погоди, опади)
+    if сльота:
+        return [_ВМ.заява("salted_road_by_band")]
     return []
 
 
@@ -182,10 +191,17 @@ _КОДИ_ДНЯ = (("place", "місце", "place_field"), ("format", "форм
 _КОДИ_З_ДЖЕРЕЛОМ = (("surface", "поверхня"),)
 
 
+def _звідки_поля(с):
+    if not (с.get("джерело") or с.get("відомості")):
+        return "her_words"
+    return с["джерело"]
+
+
 def день_кодами(с):
     д = {}
     for ключ, ім, _ in _КОДИ_ДНЯ:
         д[ключ] = с[ім]
+    д["from"] = _звідки_поля(с)
     return д, _з_джерелом(с)
 
 
@@ -195,6 +211,44 @@ def _з_джерелом(с):
         д[ключ] = с[ім]
     д["surface_source"] = с["джерело"]
     return д
+'''
+# ── JS (п.6): лічба дійшлих кадрів має вирішувати шлях відповіді, а не лише згадуватись у тілі ──
+СУД_ПОКАЗУ = '''
+async function модельП(промпт, фото){
+  const р = await fetch('/v1/messages', {method: 'POST', body: JSON.stringify({промпт, фото})});
+  return р.json();
+}
+function дійшлоКадрівП(відповідь){ return відповідь.headers.get('x-images-dropped'); }
+function записатиДіагноз(діагноз, дійшло){ діагноз.дійшло = дійшло; }
+async function лише_пише_діагноз(фото, діагноз){
+  return модельП('опиши', фото).then(т => {
+    записатиДіагноз(діагноз, дійшлоКадрівП(т));
+    return т;
+  });
+}
+async function рішення_в_умові(фото){
+  const т = await модельП('опиши', фото);
+  if (дійшлоКадрівП(т) < фото.length) {
+    return модельП('опиши без фото', []);
+  }
+  return т;
+}
+async function передає_лічбу_далі(фото){
+  const т = await модельП('опиши', фото);
+  return {т, дійшло: дійшлоКадрівП(т)};
+}
+async function модельЗаСписком(промпт, фото){
+  const ід = фото.map(ф => ({ід: ф.ід}));
+  const р = await fetch('/v1/messages', {method: 'POST', body: JSON.stringify({промпт, ід})});
+  return р.json();
+}
+async function лише_ід_кадрів(фото){
+  return модельЗаСписком('опиши', фото);
+}
+async function текст_про_кадр(фото){
+  const підписКадру = 'нема_фото';
+  return модельП(підписКадру);
+}
 '''
 ВОРКЕР = '''
 async function віддати(відповідь, фото){
@@ -211,7 +265,7 @@ class Прилад(unittest.TestCase):
         д = os.path.join(cls.тека.name, "джерела")
         for ім, т in (("дріт_моделі.py", ДРІТ), ("внутрішня_мова.py", ВНУТРІШНЯ), ("суд_погода.py", СУД),
                       ("мовний_шар.py", МОВНИЙ_ШАР), ("сценарій.py", СЦЕНАРІЙ), ("промпт.py", ПРОМПТ), ("проби/проба.py", ПРОБА), ("показ/сторінка.js", ПОКАЗ),
-                      ("показ/воркер.js", ВОРКЕР)):
+                      ("показ/воркер.js", ВОРКЕР), ("показ/суд.js", СУД_ПОКАЗУ)):
             шлях = os.path.join(д, ім)
             os.makedirs(os.path.dirname(шлях), exist_ok=True)
             with open(шлях, "w", encoding="utf-8") as ф:
@@ -236,7 +290,7 @@ class Прилад(unittest.TestCase):
         with open(os.path.join(cls.тека.name, ф), encoding="utf-8") as фл:
             рядки = фл.read().splitlines()
         лінія = рядки[р - 1]
-        for х in sorted({"sole_grip_unknown_ice", "wet_grip_unknown_rain", "possible_wet_note", "salt_slush_warmer_wears_faster",
+        for х in sorted({"sole_grip_unknown_ice", "wet_grip_unknown_rain", "possible_wet_note", "salt_slush_warmer_wears_faster", "salted_road_by_band",
                          "windy_day_without_exit", "keep_look_say_why_it_holds_day"}, key=len):
             if х in лінія:
                 return х
@@ -391,6 +445,26 @@ class Прилад(unittest.TestCase):
                   "today there is light rain", "today there is thick ice"):
             self.assertTrue(any(р.search(т) for р, _ in К.ОБСТАВИНИ.values()), т)
         self.assertFalse(any(р.search("if the sole does not know the snow") for р, _ in К.ОБСТАВИНИ.values()))
+
+    # ── крок «зміст» (16205, 16227, 16228): правило за формою потоку значення, а не за збігом слова ──
+    def test_п6_зміст_лічба_лише_записана_в_діагноз_не_знімає_місце(self):
+        self.assertTrue(self.лічиться("джерела/показ/суд.js", "return модельП('опиши', фото).then(", 6) or
+                        self.лічиться("джерела/показ/суд.js", "модельП('опиши', фото).then(", 6))
+
+    def test_п6_зміст_лічба_в_умові_шляху_чи_з_відповіддю_знімає_місце(self):
+        self.assertFalse(self.лічиться("джерела/показ/суд.js", "const т = await модельП('опиши', фото);", 6))
+        self.assertFalse(self.лічиться("джерела/показ/суд.js", "return модельП('опиши без фото', []);", 6))
+
+    def test_п6_зміст_ід_кадрів_і_текст_про_кадр_не_кадри(self):
+        self.assertFalse(self.лічиться("джерела/показ/суд.js", "return модельЗаСписком('опиши', фото);", 6))
+        self.assertFalse(self.лічиться("джерела/показ/суд.js", "return модельП(підписКадру);", 6))
+
+    def test_п3_зміст_сльота_виведена_зі_смуги_лічиться_а_збіг_імені_ні(self):
+        self.assertIn(("джерела/внутрішня_мова.py", "salted_road_by_band", 3), self.місця)
+        self.assertNotIn(("джерела/внутрішня_мова.py", "salt_slush_warmer_wears_faster", 3), self.місця)
+
+    def test_п2_зміст_її_слова_за_відсутності_відомостей_лічиться(self):
+        self.assertTrue(self.лічиться("джерела/сценарій.py", 'return "her_words"', 2))
 
     # ── підсумок ──
     def test_підсумок_за_пунктами_збігається_з_переліком(self):
