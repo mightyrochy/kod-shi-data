@@ -89,6 +89,62 @@ jobs:
           fi
           python3 джерела/прилади/храповик_кореня.py --база "${BASE}" --ознака-стенда "$GITHUB_OUTPUT"
 
+      # Стенди й самоперевірки приладів коренів (`тест_корінь_*.py`, `корінь_*.py --самоперевірка`; рядки дошки 16041,
+      # 16089): раніше CI лише компілював їх, і хибне місце приладу проходило, коли випадку нема. Крок іде, коли PR чіпає
+      # `джерела/прилади/` чи цей workflow; діф, якого не розібрано (не коміт злиття), — іде. Перелік бере запускач з файлів.
+      - name: чи зачіпає PR прилади коренів
+        id: prylady
+        if: github.event_name == 'pull_request'
+        run: |
+          zapusk=true
+          if git rev-parse -q --verify HEAD^2 >/dev/null; then
+            zapusk=false
+            while IFS= read -r -d '' shliakh; do
+              case "${shliakh}" in
+                джерела/прилади/*|.github/workflows/khrapovyk.yml) zapusk=true ;;
+              esac
+            done < <(git -c core.quotepath=off diff --name-only --no-renames -z HEAD^1 HEAD)
+          fi
+          echo "zapusk=${zapusk}" >> "$GITHUB_OUTPUT"
+
+      - name: стенди й самоперевірки приладів коренів
+        if: ${{ !cancelled() && steps.prylady.outputs.zapusk == 'true' }}
+        run: |
+          # Перелік — glob за файлами. Запуск з кореня репозиторію й без `-I`: прилади імпортують сусідні модулі зі своєї теки.
+          # Усе виконується до кінця; впалі названо наприкінці, код кроку 1, коли впав хоч один чи перелік порожній.
+          shopt -s nullglob
+          stendy=(джерела/прилади/тест_корінь_*.py)
+          samoperevirky=()
+          for prylad in джерела/прилади/корінь_*.py; do
+            if grep -q -- '--самоперевірка' "${prylad}"; then samoperevirky+=("${prylad}"); fi
+          done
+          zhurnal="${RUNNER_TEMP}/stendy_koreniv.log"
+          : > "${zhurnal}"
+          vpaly=()
+          vykonaty() {
+            local vyd="$1" fail="$2" poch kod
+            shift 2
+            poch=${SECONDS}
+            vyvid=$(timeout 900 python3 "${fail}" "$@" 2>&1) && kod=0 || kod=$?
+            if [ "${kod}" -eq 0 ]; then
+              echo "ОК   ${vyd}: ${fail}, $((SECONDS - poch)) с" | tee -a "${zhurnal}"
+            else
+              echo "ВПАВ ${vyd}: ${fail}, код ${kod}, $((SECONDS - poch)) с" | tee -a "${zhurnal}"
+              printf '%s\n' "${vyvid}" | tail -n 12 | cut -c1-200 | sed 's/^/    | /' | tee -a "${zhurnal}"
+              vpaly+=("${vyd} ${fail} (код ${kod})")
+            fi
+          }
+          pochatok=${SECONDS}
+          for fail in "${stendy[@]}"; do vykonaty стенд "${fail}"; done
+          for fail in "${samoperevirky[@]}"; do vykonaty самоперевірка "${fail}" --самоперевірка; done
+          pidsumok="виконано стендів ${#stendy[@]}, самоперевірок ${#samoperevirky[@]}, за $((SECONDS - pochatok)) с; впало ${#vpaly[@]}"
+          echo "---" | tee -a "${zhurnal}"
+          echo "${pidsumok}" | tee -a "${zhurnal}"
+          for vpav in "${vpaly[@]}"; do echo "  впав: ${vpav}" | tee -a "${zhurnal}"; done
+          { echo '```'; cat "${zhurnal}"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          if [ $((${#stendy[@]} + ${#samoperevirky[@]})) -eq 0 ]; then echo "перелік порожній — не зелений"; exit 1; fi
+          if [ "${#vpaly[@]}" -ne 0 ]; then exit 1; fi
+
       - name: стенд храповика (випадки мірила)
         if: ${{ !cancelled() && steps.obsiah.outputs.lichyty != 'false' && steps.khrapovyk.outputs['стенд'] != 'false' }}
         run: |
