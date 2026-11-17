@@ -2,7 +2,7 @@
 
 Кадри й аркуші — поза репозиторієм (тека в аргументі): у репозиторії лишаються адреси кадрів у `важкі_речі.tsv`.
 
-    python аудит/звіти/опис-речі-кодом/кадри_важких.py /tmp/важкі
+    python аудит/звіти/опис-речі-кодом/кадри_важких.py /tmp/важкі [важкі_речі_2.tsv]
 """
 import csv
 import io
@@ -16,9 +16,9 @@ from PIL import Image
 ВИСОТА = 760
 
 
-def головне(куди):
+def головне(куди, перелік="важкі_речі.tsv"):
     куди.mkdir(parents=True, exist_ok=True)
-    with open(ТЕКА / "важкі_речі.tsv", encoding="utf-8") as ф:
+    with open(ТЕКА / перелік, encoding="utf-8") as ф:
         for р in csv.DictReader(ф, delimiter="\t"):
             кадри = []
             for адреса in р["кадри"].split()[:3]:
@@ -42,4 +42,4 @@ def головне(куди):
 
 
 if __name__ == "__main__":
-    головне(Path(sys.argv[1]))
+    головне(Path(sys.argv[1]), *sys.argv[2:3])
