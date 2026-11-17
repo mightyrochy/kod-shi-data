@@ -105,4 +105,14 @@ $s = New-ScheduledTaskSettingsSet @set -ExecutionTimeLimit ([TimeSpan]::Zero)
 Register-ScheduledTask -TaskName 'claude-run' -Action $a -Trigger $t -Settings $s -Principal $p -Force | Out-Null
 Get-ScheduledTask claude-run | ForEach-Object { "claude-run: $($_.State), інтервал $($_.Triggers[0].Repetition.Interval), межа часу $($_.Settings.ExecutionTimeLimit)" }
 
+# Тримач світла — той самий скрипт, користувач і контекст задачі, що й claude-run (Add-Type з P/Invoke тут працює), але
+# постійний процес; повтор тригера перезапускає його після виходу чи падіння, IgnoreNew — водночас один. Stop/Start —
+# щоб новий код узявся одразу, а не після перезапуску ноутбука.
+Step 'Тримач світла: реєстрація задачі claude-light'
+$a = New-ScheduledTaskAction -Execute 'conhost.exe' -Argument "--headless powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$cr\claude_run.ps1`" -Light"
+Register-ScheduledTask -TaskName 'claude-light' -Action $a -Trigger $t -Settings $s -Principal $p -Force | Out-Null
+Stop-ScheduledTask -TaskName 'claude-light' -ErrorAction SilentlyContinue
+Start-ScheduledTask -TaskName 'claude-light'
+Get-ScheduledTask claude-light | ForEach-Object { "claude-light: $($_.State), інтервал $($_.Triggers[0].Repetition.Interval), межа часу $($_.Settings.ExecutionTimeLimit)" }
+
 Write-Host "`nГОТОВО: частина власника пройдена. Далі — за ЩО_НАТИСНУТИ.md (крок 2: користувач gemini)." -ForegroundColor Green

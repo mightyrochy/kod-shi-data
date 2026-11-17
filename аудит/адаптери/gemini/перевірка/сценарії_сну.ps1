@@ -155,7 +155,7 @@ try {
             $noBundleRetry=Status '20261102-023000-000000000007' 'AGY_ERROR' $noBundle.id $false
             Save-Status $noBundleRetry;$result=Get-Line $noBundleRetry.id
             [pscustomobject]@{Name='повтор без нових комітів завершується ЗАБЛОКОВАНО';Ok=($result.Outbox -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/сон AGY_ERROR')}
-            $off = 'GEMINI ОБГОРТКА: СВІТЛА НЕМА 2026-11-16T15:44:52Z ПРИЗУПИНЕНО 9'
+            $off = 'GEMINI ОБГОРТКА: СВІТЛА НЕМА 2026-11-16T15:44:52Z'
             $on = 'GEMINI ОБГОРТКА: СВІТЛО Є 2026-11-17T07:26:10Z ПАУЗА З 2026-11-16T15:44:52Z'
             [pscustomobject]@{Name='рядки про світло — за шаблоном вихідних (не в карантин)';Ok=((Test-OutboxLine $off) -ceq '' -and (Test-OutboxLine $on) -ceq '')}
             [pscustomobject]@{Name='рядок про світло зі зайвим текстом чи без часу зникнення — карантин NO_TEMPLATE';Ok=((Test-OutboxLine ($off + ' ще')) -ceq 'NO_TEMPLATE' -and (Test-OutboxLine 'GEMINI ОБГОРТКА: СВІТЛО Є 2026-11-17T07:26:10Z') -ceq 'NO_TEMPLATE')}
@@ -384,19 +384,23 @@ try {
         . (Join-Path $src 'claude_run.ps1') -WorkDir "$tmp/cl-w" -RepoDir "$tmp/cl-r" -OutboxDir "$tmp/cl-box" -PublishDir "$tmp/cl-pub" -LaneDir "$tmp/cl-lanes" -OffWaitMinutes 0.05 -NoStatus
         foreach ($d in @($WorkDir,$OutboxDir,"$PublishDir/state")) { [void][IO.Directory]::CreateDirectory($d) }
         $script:Events = New-Object Collections.ArrayList
-        $script:Deliver = ''
-        function Write-Log([string]$Text) { }
+        $script:Log = New-Object Collections.ArrayList
+        $script:Deliver = ''; $script:Battery = @($false); $script:Refuse = $false; $script:Ver = @('')
+        function Write-Log([string]$Text) { [void]$script:Log.Add($Text) }
         function Invoke-HealthBeat { }
         function Clear-GpuForPause { }
         function Get-PauseTargets { @(11, 12) }
         function Set-ProcessPause([int]$Id, [bool]$On) { $true }
-        function Set-KeepAwake([bool]$On) { [void]$script:Events.Add("тримання $On"); $true }
+        function Set-KeepAwake([bool]$On) { [void]$script:Events.Add("тримання $On"); -not ($On -and $script:Refuse) }
         function Test-OnBattery { $b = $script:Battery[0]; if ($script:Battery.Count -gt 1) { $script:Battery = $script:Battery[1..($script:Battery.Count - 1)] }; $b }
-        function Get-Outbox { @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName).Trim() }) }
+        function Get-VersionSwitch { $v = $script:Ver[0]; if ($script:Ver.Count -gt 1) { $script:Ver = $script:Ver[1..($script:Ver.Count - 1)] }; $v }
+        function Get-Outbox { @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File | Sort-Object Name | ForEach-Object { [IO.File]::ReadAllText($_.FullName).Trim() }) }
         function Start-Sleep {
-            <# Чекання доставки (-Seconds) публікатор закриває станом o-<id>.json з $script:Deliver; чекання світла (-Milliseconds) — ні. #>
+            <# Такт тримача (-Seconds 1), чекання доставки (-Seconds 10: публікатор закриває стан o-<id>.json з
+            $script:Deliver) і чекання світла паузою (-Milliseconds). #>
             param([int]$Seconds, [int]$Milliseconds)
             if ($Milliseconds) { [void]$script:Events.Add('світло-чекання'); return }
+            if ($Seconds -eq 1) { [void]$script:Events.Add('такт'); return }
             [void]$script:Events.Add('доставка-чекання ' + (@(Get-Outbox).Count))
             Microsoft.PowerShell.Utility\Start-Sleep -Milliseconds 50
             if ($script:Deliver) {
@@ -405,39 +409,69 @@ try {
                 }
             }
         }
-        function Invoke-Outage([string]$Delivered, [bool]$Planner = $true) {
-            <# Одна пауза: світла нема, світло є; $Delivered — стан o-<id>.json, який запише публікатор під час чекання. #>
+        function Tick([bool]$Battery, [string]$Delivered = '') {
+            <# Один такт тримача з чистими подіями й журналом; повертає події через « | ». #>
+            $script:Events.Clear(); $script:Log.Clear(); $script:Deliver = $Delivered; $script:Battery = @($Battery)
+            Step-Light
+            $script:Events -join ' | '
+        }
+        function Clear-Box {
+            <# Порожні тека вихідних і стани публікатора. #>
             Get-ChildItem -LiteralPath $OutboxDir -File -ErrorAction SilentlyContinue | Remove-Item -Force
             Get-ChildItem -LiteralPath "$PublishDir/state" -File -ErrorAction SilentlyContinue | Remove-Item -Force
-            $script:Events.Clear(); $script:Deliver = $Delivered; $script:Battery = @($true, $true, $false)
-            $script:PauseMachine = $Planner
-            $script:PauseLineAction = $(if ($Planner) { { param([string]$Line, [bool]$Wait) Write-PauseLine $Line $Wait } } else { $null })
-            Wait-PowerPause
         }
         function Run {
-            <# Рядки про світло: пише лише планувальник; ноутбук неспаний до доставки (чи межі), потім відпущений. #>
-            $held = 'тримання True | доставка-чекання 1 | тримання False | світло-чекання | тримання False'
-            Invoke-Outage '{"line":"x","sent":true,"attempts":1}'
-            $lines = @(Get-Outbox)
-            $offLine = @($lines | Where-Object { $_ -cmatch '^GEMINI ОБГОРТКА: СВІТЛА НЕМА ' })
-            $onLine = @($lines | Where-Object { $_ -cmatch '^GEMINI ОБГОРТКА: СВІТЛО Є ' })
-            [pscustomobject]@{Name="світла нема: один рядок із часом UTC і числом призупинених (2): $($offLine -join '')";Ok=($lines.Count -eq 2 -and $offLine.Count -eq 1 -and $offLine[0] -cmatch $script:PowerOffLineTemplate -and $offLine[0].EndsWith(' ПРИЗУПИНЕНО 2'))}
-            $from = $offLine[0].Substring($offLine[0].IndexOf('НЕМА ') + 5, 20)
-            [pscustomobject]@{Name="світло є: один рядок, час зникнення той самий: $($onLine -join '')";Ok=($onLine.Count -eq 1 -and $onLine[0] -cmatch $script:PowerOnLineTemplate -and $onLine[0].EndsWith(" ПАУЗА З $from"))}
-            $ev = $script:Events -join ' | '
-            [pscustomobject]@{Name="ноутбук неспаний від паузи до доставки першого рядка (у теці один), потім відпущений: $ev";Ok=($ev -ceq $held)}
-            Invoke-Outage '{"line":"x","sent":false,"attempts":3}'
-            $ev = $script:Events -join ' | '
-            [pscustomobject]@{Name="перший прохід публікатора скінчив спроби без доставки — тримання знято, довше не чекає: $ev";Ok=($ev -ceq $held)}
-            Invoke-Outage ''
-            $ev = $script:Events -join ' | '
-            [pscustomobject]@{Name="публікатор мовчить — тримання знімається за -OffWaitMinutes, рядки лишаються в теці, пауза йде далі: $ev";Ok=($ev -cmatch '^тримання True \| доставка-чекання 1( \| доставка-чекання 1)* \| тримання False \| світло-чекання \| тримання False$' -and @(Get-Outbox).Count -eq 2)}
-            Invoke-Outage '{"line":"x","sent":true,"attempts":1}' $false
-            [pscustomobject]@{Name='не планувальник: рядків нема, ноутбук не тримається';Ok=(@(Get-Outbox).Count -eq 0 -and ($script:Events -join ' | ') -ceq 'світло-чекання')}
-            $script:Events.Clear(); $script:Battery = @($true, $true, $false)
-            $script:PauseMachine = $true; $script:PauseLineAction = $null
+            <# Тримач світла: запит на мережі заздалегідь; світла нема — рядок, доставка, лише тоді запит відпущено;
+            світло є — рядок і запит знову. Пише лише тримач: пауза рушія рядків не пише й ноутбука не тримає. #>
+            $ok = '{"line":"x","sent":true,"attempts":1}'
+            $script:LightHeld = $false; $script:LightRefused = $false
+            $ev = Tick $false
+            [pscustomobject]@{Name="на мережі запит тримається заздалегідь, рядків нема: $ev";Ok=($ev -ceq 'тримання True' -and $script:LightHeld -and @(Get-Outbox).Count -eq 0)}
+            $ev = Tick $false
+            [pscustomobject]@{Name="другий такт на мережі запиту не чіпає: '$ev'";Ok=($ev -ceq '' -and $script:LightHeld)}
+            $ev = Tick $true $ok
+            $lines = @(Get-Outbox); $off = Read-LightOff
+            [pscustomobject]@{Name="світла нема: один рядок за шаблоном, без числа процесів: $($lines -join '')";Ok=($lines.Count -eq 1 -and $off -and $lines[0] -cmatch $script:PowerOffLineTemplate -and $lines[0].EndsWith(" НЕМА $off"))}
+            [pscustomobject]@{Name="світла нема → рядок → доставка → запит відпущено: $ev; $($script:Log[-1])";Ok=($ev -ceq 'доставка-чекання 1 | тримання False' -and -not $script:LightHeld -and $script:Log[-1] -cmatch 'запит відпущено — доставлено$')}
+            $ev = Tick $true $ok
+            [pscustomobject]@{Name="на батареї після сказаного — ні рядка, ні запиту: '$ev'";Ok=($ev -ceq '' -and @(Get-Outbox).Count -eq 1)}
+            $ev = Tick $false
+            $lines = @(Get-Outbox); $on = @($lines | Where-Object { $_ -cmatch $script:PowerOnLineTemplate })
+            [pscustomobject]@{Name="світло є: рядок із часом зникнення, запит знову тримається: $ev; $($on -join '')";Ok=($lines.Count -eq 2 -and $on.Count -eq 1 -and $on[0].EndsWith(" ПАУЗА З $off") -and $ev -ceq 'тримання True' -and $script:LightHeld -and -not (Read-LightOff))}
+            Clear-Box
+            $ev = Tick $true ''
+            [pscustomobject]@{Name="доставки нема до -OffWaitMinutes — запит відпущено, причина в журналі: $($script:Log[-1])";Ok=($ev -cmatch '^доставка-чекання 1( \| доставка-чекання 1)* \| тримання False$' -and -not $script:LightHeld -and $script:Log[-1] -cmatch 'запит відпущено — не доставлено до межі чекання' -and @(Get-Outbox).Count -eq 1)}
+            [void](Tick $false); Clear-Box
+            $ev = Tick $true '{"line":"x","sent":false,"attempts":3}'
+            [pscustomobject]@{Name="перший прохід публікатора без доставки — запит відпущено, довше не чекає: $ev";Ok=($ev -ceq 'доставка-чекання 1 | тримання False' -and $script:Log[-1] -cmatch 'перший прохід публікатора')}
+            [void](Tick $false); Clear-Box; Set-LightHold $false
+            $ev = Tick $true $ok
+            [pscustomobject]@{Name="тримач стартував уже на батареї — запит лише на час доставки: $ev";Ok=($ev -ceq 'тримання True | доставка-чекання 1 | тримання False' -and @(Get-Outbox).Count -eq 1)}
+            $ev = Tick $true $ok
+            [pscustomobject]@{Name="перезапуск на батареї після сказаного — тиша (light.txt): '$ev'";Ok=($ev -ceq '' -and @(Get-Outbox).Count -eq 1)}
+            [void](Tick $false); Clear-Box; Set-LightHold $false
+            $script:Refuse = $true; $script:LightRefused = $false
+            $ev = Tick $false
+            $refused = @($script:Log | Where-Object { $_ -cmatch 'НЕ ПРИЙНЯТО' }).Count
+            $ev += ' / ' + (Tick $false)
+            $refused += @($script:Log | Where-Object { $_ -cmatch 'НЕ ПРИЙНЯТО' }).Count
+            [pscustomobject]@{Name="запит не прийнято — тримач пробує щотакту, журнал каже раз: $ev; $refused";Ok=($ev -ceq 'тримання True / тримання True' -and -not $script:LightHeld -and $refused -eq 1)}
+            $script:Refuse = $false
+            # Пауза рушія (навіть планувальника) лише заморожує: ні рядків, ні запиту.
+            $script:Events.Clear(); $script:Battery = @($true, $true, $false); $script:PauseMachine = $true
             Wait-PowerPause
-            [pscustomobject]@{Name='планувальник без дії запису: рядків нема, ноутбук не тримається';Ok=(@(Get-Outbox).Count -eq 0 -and ($script:Events -join ' | ') -ceq 'світло-чекання')}
+            $ev = $script:Events -join ' | '
+            [pscustomobject]@{Name="пауза планувальника рядків не пише й ноутбука не тримає: $ev";Ok=($ev -ceq 'світло-чекання' -and @(Get-Outbox).Count -eq 0)}
+            # Постійний процес: нова версія — вихід із відпущеним запитом; другий тримач при живому першому — одразу вихід.
+            Set-LightHold $false; $script:Events.Clear(); $script:Battery = @($false); $script:Ver = @('', 'aaaaaaaa → bbbbbbbb')
+            $code = Invoke-Light
+            $ev = $script:Events -join ' | '
+            [pscustomobject]@{Name="нова версія — тримач виходить кодом 0 і відпускає запит: $code; $ev";Ok=($code -eq 0 -and $ev -ceq 'тримання True | такт | тримання False' -and -not $script:LightHeld)}
+            $lock = Open-Lock (Join-Path $WorkDir 'light.lock')
+            $script:Events.Clear(); $script:Ver = @('')
+            $code = Invoke-Light
+            $lock.Dispose()
+            [pscustomobject]@{Name="другий тримач при живому першому (light.lock) виходить, нічого не чіпаючи: $code";Ok=($code -eq 0 -and $script:Events.Count -eq 0)}
         }
         Export-ModuleMember -Function Run
     }
