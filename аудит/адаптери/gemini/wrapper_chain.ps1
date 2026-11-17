@@ -245,6 +245,18 @@ function Test-LiveModels($Config) {
     $false
 }
 
+function Set-QueueTracking([string]$Queue, [string]$Sha = '') {
+    <# Після успішного push у `gemini-queue/*` (`$Sha` — поставлена позначка, порожньо — знята) ставить локальне посилання
+    `refs/remotes/origin/…` у те саме, що тепер на origin. Клон `repo.git` — `init --bare` без `remote.origin.fetch`, і push
+    сам цих посилань не оновлює: без цього прийом станів того ж проходу (Receive-RunState, Remove-FinishedMarkers) бачив би
+    позначки, як їх залишив останній fetch, і відкидав би стан позначки, яку ланцюг поставив уже після нього. Збій тут не
+    скасовує вже виконаного push — наступний fetch --prune вирівняє посилання. #>
+    if ($Queue -cnotmatch '^gemini-queue/\S+$' -or $Queue.Contains('..') -or ($Sha -and $Sha -cnotmatch $script:ShaPattern)) { throw 'CHAIN_FORMAT' }
+    $ref = "refs/remotes/origin/$Queue"
+    $r = $(if ($Sha) { Invoke-Git @('update-ref',$ref,$Sha) -AllowFail } else { Invoke-Git @('update-ref','-d',$ref) -AllowFail })
+    if ($r.Code -ne 0) { Write-WrapperLog "ланцюг: локальне посилання $Queue не оновлено ($(([string](Get-Prop $r 'Err')).Trim())) — вирівняє наступний fetch" }
+}
+
 function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$Gpu, [ValidateRange(1,999)][int]$Attempt = 1, [string]$Cond = '') {
     <# Створює сталу позначку один раз; порівняння lease не дозволяє затерти чужу/вже взяту спробу. `$Cond` — умови наявної
     позначки, що переноситься на іншу модель (строк і пріоритет лишаються); без нього — `p2` чи `p2-gpu`. #>
@@ -255,6 +267,7 @@ function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$
     if ($r.Out.Trim()) { return }
     $r = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=${ref}:",'origin',"${Main}:$ref") -AllowFail
     if ($r.Code -ne 0) { throw 'CHAIN_PUSH' }
+    Set-QueueTracking ($ref -replace '^refs/heads/','') $Main
     Write-WrapperLog "ланцюг: поставлено $ref на $Main"
 }
 
@@ -590,6 +603,7 @@ function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [date
     foreach ($m in $old) {
         $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',":refs/heads/$($m.Ref)") -AllowFail
         if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
+        Set-QueueTracking $m.Ref
         Write-WrapperLog "ланцюг: $($m.Ref) знято — квота постачальника вичерпана, роботу бере $Model"
     }
     $true
@@ -777,6 +791,7 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
         $d = Invoke-Git $a -AllowFail
         if ($d.Code -ne 0) { Write-WrapperLog "ланцюг: зняття $($batch.Count) позначок не вдалося — повтор наступним проходом"; continue }
         foreach ($m in $batch) {
+            Set-QueueTracking $m.Ref
             Write-WrapperLog "ланцюг: $($m.Ref) знято — $($m.Why)"
             if ($m.Cc) { $Seen.Remove($m.Key) }
         }
@@ -798,6 +813,7 @@ function Request-CloudReview([string]$Number, [string]$Head) {
     foreach ($m in $markers) {
         $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',":refs/heads/$($m.Ref)") -AllowFail
         if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
+        Set-QueueTracking $m.Ref
         Write-WrapperLog "ланцюг: $($m.Ref) знято — перевірку бере хмарний Claude"
     }
     # Позначка «відправлено» — після рядка: збій між ними повторить рядок, а не загубить його.
