@@ -840,6 +840,10 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     # (`показ.рядокБезОпису`), — кошик В п.12. Тепер код каже КОДАМИ, речення пише мовна модель.
     "card_without_description": "рядок на місці «Чому цей образ», коли пояснення до образу не "
                                 "вийшло: що саме сталось і що на картці однаково правдиве",
+    # Е2-опора-пояснення, доробка кроку «кадри»: пояснення є, але фото речей до стилістки не дійшли
+    "card_description_without_photos": "рядок під поясненням «Чому цей образ», коли фото речей образу до "
+                                       "стилістки не дійшли і пояснення написано без них: чесно сказати, "
+                                       "що воно з даних про речі, а не з того, як речі виглядають на фото",
 }
 
 # ЗАЯВИ: код → ЩО САМЕ сказано. Це ВИЗНАЧЕННЯ для моделі, не готова фраза. Числа й назви
@@ -1929,6 +1933,11 @@ def _опис_keep_by():
                                         "being asked a second time, so this outfit has no explanation",
     "description_did_not_arrive": "the explanation for this outfit did not arrive: the connection broke on "
                                   "the last step",
+    # ── опис без кадрів (Е2-опора-пояснення; пояснення є, а фото речей до стилістки не дійшли) ──
+    "description_written_without_photos": "the explanation of this outfit was written without the photos of "
+                                          "its items: they did not reach the stylist, so the text rests on the "
+                                          "data about the items (names, colours, materials), not on how the "
+                                          "items look in the pictures",
     "items_prices_links_are_true": "the items, the prices and the links on this card are true, so the outfit "
                                    "can be judged without the explanation",
     "name_occasion_or_place": "she chooses an occasion or a place on the scenario screen, or says in words "
