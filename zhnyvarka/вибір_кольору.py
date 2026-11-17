@@ -61,7 +61,7 @@ def _вузли_свотчів(кор):
     вихід, бачені = [], set()
     for ел in кор.select(СВОТЧІ):
         група = ел.name not in ("img", "button", "input", "label", "a") and (
-            len(ел.find_all("img")) > 1 or any(
+            len(ел.find_all("img")) > 1 or ел.select_one("[data-color-value], button[data-onevalue]") is not None or any(
                 re.search(r"(?:colou?rs|swatches|[-_](?:list|image|name))$", к, re.I) for к in ел.get("class") or []))
         вузли = []
         if група:

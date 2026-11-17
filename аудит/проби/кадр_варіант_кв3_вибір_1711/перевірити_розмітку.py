@@ -54,6 +54,7 @@ def main():
         ("зразок кольору у дочірньому span", сторінка('<span class="product-color" aria-label="білий"><span style="background:rgb(255,255,255)"></span></span>' + сестра % "/dress-67890/"), True),
         ("зразок у CSS background", сторінка('<div class="clr_color" style="background:center url(/white.jpg)"></div>' + сестра % "/dress-67890/"), True),
         ("радіо та буквальний перехід на сестру", сторінка('<input checked data-color-value="білий" type="radio"><div onclick="location.href = \'/dress-67890/\'"><input data-color-value="чорний" type="radio"></div>'), True),
+        ("заглушка контейнера не є ще однією опцією", сторінка('<div class="color"><img src="/no-image.jpg" alt="червоний"><input checked data-color-value="білий" type="radio"><div onclick="location.href = \'/dress-67890/\'"><input data-color-value="чорний" type="radio"></div></div>'), True),
         ("одна кнопка", сторінка(кнопки([73])), True),
         ("активна серед двох без прив'язки кадрів", сторінка(кнопки([73, 80])), False),
         ("TREE бачить другий колір поза кнопками", сторінка(кнопки([73]) + оферти % json.dumps(дерево)), False),
@@ -79,7 +80,7 @@ def main():
     assert факти_вибору(BeautifulSoup(html, "lxml"), АДРЕСА)["свотчі"][0]["активний"] is False
     html = '<base href="https://s.ua/">' + сторінка('<span class="product-color"><img src="image/white.jpg"></span>')
     assert ж.факти_з_картки(html, АДРЕСА, {})["свотчі"][0]["фото"] == "https://s.ua/image/white.jpg"
-    print("кадр_варіант_кв3_вибір_кольору: 25 перевірок — ОК")
+    print("кадр_варіант_кв3_вибір_кольору: 26 перевірок — ОК")
 
 
 if __name__ == "__main__":
