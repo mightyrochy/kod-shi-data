@@ -245,11 +245,10 @@ import colorspace as _cs
         # тож межа — тут: запис має лише свою річ, а як речі поєднуються — «text» (речі образу, звірені «named»)
         # Е2-опора-пояснення, крок «без опису речі»: запис речі — чому вона тут для неї, а не опис її вигляду
         "про_речі[].текст": "why this item alone is here for her, in a sentence or two, as far as the input supports "
-                            "it: what it does for her occasion, her day, her figure or what she asked — not its "
-                            "colour, cut, fabric or details. It "
-                            "belongs to her outfit; never call it excluded. No other clothing or accessory, whether "
-                            "from its photo or «outfit»: combinations belong to «text». Her figure only through line "
-                            "and cut, never a shape code or «…-shape»",
+                            "it: what it does for her occasion, her day, her figure or what she asked — not how it "
+                            "looks. It belongs to her outfit; never call it excluded. No other clothing or "
+                            "accessory, whether from its photo or «outfit»: combinations belong to «text». Her figure "
+                            "only through line and cut, never a shape code or «…-shape»",
         "текст": "prose for her after the items: (1) optional, only when it adds something — how the "
                  "shoes, the outer layer and the accessories go with the rest, in one or two sentences; "
                  "(2) why it works, briefly and only where supported, taking from «day», «palette», «makeup» and «missing» "
