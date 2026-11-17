@@ -89,6 +89,7 @@ class Модуль:
         с.рядки = с.текст.split('\n')
         с.імпорти = {}                # локальне імʼя → (модуль, імʼя | None)
         с.сталі = set()               # імена сталих рівня модуля (присвоєння)
+        с.рядкові = {}                # стала рівня модуля → рядок чи число (`ВЕРДИКТ_ОБРАЗІВ = "вердикт"`)
         с.функції = {}                # імʼя → Fn
         for н in с.дерево.body:
             if isinstance(н, ast.Import):
@@ -100,6 +101,10 @@ class Модуль:
             elif isinstance(н, (ast.Assign, ast.AnnAssign)):
                 цілі = н.targets if isinstance(н, ast.Assign) else [н.target]
                 знач = н.value
+                if isinstance(знач, ast.Constant) and isinstance(знач.value, (str, int)) and not isinstance(знач.value, bool):
+                    for ц in цілі:
+                        if isinstance(ц, ast.Name):
+                            с.рядкові[ц.id] = знач.value
                 if isinstance(знач, (ast.Dict, ast.Set, ast.List, ast.Tuple, ast.Call, ast.Constant, ast.SetComp,
                                       ast.DictComp, ast.ListComp, ast.GeneratorExp, ast.BinOp, ast.Attribute)):
                     for ц in цілі:
@@ -137,13 +142,47 @@ def вирішити(мод, виклик):
             return мод.функції[f.id]
         if f.id in мод.імпорти:
             м, і = мод.імпорти[f.id]
-            if м in МОДУЛІ and і in МОДУЛІ[м].функції:
-                return МОДУЛІ[м].функції[і]
+            if м in МОДУЛІ and і:
+                return функція_модуля(МОДУЛІ[м], і)
     elif isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name) and f.value.id in мод.імпорти:
         м, і = мод.імпорти[f.value.id]
         цілий = і or м
-        if цілий in МОДУЛІ and f.attr in МОДУЛІ[цілий].функції:
-            return МОДУЛІ[цілий].функції[f.attr]
+        if цілий in МОДУЛІ:
+            return функція_модуля(МОДУЛІ[цілий], f.attr)
+    return None
+
+
+def стала(мод, е, глибина_=0):
+    """Ключ-стала: літерал, стала рівня модуля (`КЛЮЧ`) чи модуля імпорту (`_ПР.ВЕРДИКТ_ОБРАЗІВ`) → значення; інакше
+    None. Ключ-стала без цього читався «невідомим ключем» і зливав усі поля словника (`перемішати_дріт`, вердикт на
+    дроті — клас похибки вибірки 1712)."""
+    if isinstance(е, ast.Constant):
+        return е.value if isinstance(е.value, (str, int)) and not isinstance(е.value, bool) else None
+    if глибина_ > 4:
+        return None
+    if isinstance(е, ast.Name):
+        if е.id in мод.рядкові:
+            return мод.рядкові[е.id]
+        if е.id in мод.імпорти:
+            м, і = мод.імпорти[е.id]
+            if м in МОДУЛІ and і:
+                return стала(МОДУЛІ[м], ast.Name(і), глибина_ + 1)
+        return None
+    if isinstance(е, ast.Attribute) and isinstance(е.value, ast.Name) and е.value.id in мод.імпорти:
+        м, і = мод.імпорти[е.value.id]
+        if і is None and м in МОДУЛІ:
+            return стала(МОДУЛІ[м], ast.Name(е.attr), глибина_ + 1)
+    return None
+
+
+def функція_модуля(мод, імʼя, глибина_=0):
+    """Функція `імʼя` модуля, і крізь `from x import імʼя` (`pipeline` віддає функції інших модулів далі)."""
+    if імʼя in мод.функції:
+        return мод.функції[імʼя]
+    if глибина_ < 4 and імʼя in мод.імпорти:
+        м, і = мод.імпорти[імʼя]
+        if м in МОДУЛІ and і:
+            return функція_модуля(МОДУЛІ[м], і, глибина_ + 1)
     return None
 
 
@@ -295,13 +334,14 @@ Fn.корінь_повернення = False
 ЗАПИТ = (Ø, True, None)
 М_A = (frozenset('A'), False, None)
 М_B = (frozenset('B'), False, None)
-ГЛИБИНА, ШИРИНА = 4, 40
+ГЛИБИНА, ШИРИНА = 6, 40
 
 
 def М_(м):
     return (м, False, None) if м else ЧИСТЕ
 
 
+@__import__('functools').lru_cache(maxsize=None)
 @__import__('functools').lru_cache(maxsize=None)
 def глибина(в):
     return 0 if в[2] is None else 1 + max((глибина(х) for _, х in в[2]), default=0)
@@ -315,13 +355,31 @@ def усе_м(в):
     return м
 
 
-def обріз(в):
-    """Межа форми: глибше ГЛИБИНА чи ширше ШИРИНА — згортається в один рівень `*` з М усього піддерева."""
+def зрізати(в, н):
+    """Форма до глибини `н`: глибші рівні — одним полем `*` із М свого піддерева, а сам вузол лишається своїм (верхні
+    поля лишаються полями). Доти глибше згортання ставило М піддерева на сам вузол, і запис коду з полем моделі десь
+    усередині (`виконання` вердикту з ід речей) читався відповіддю моделі (клас похибки вибірки 1712)."""
     if в[2] is None:
         return в
-    if len(в[2]) > ШИРИНА or глибина(в) > ГЛИБИНА:
-        у = усе_м(в)
-        return (в[0], в[1], frozenset({('*', М_(у))}) if у else None) if (у or в[0] or в[1]) else ЧИСТЕ
+    if н == 0:
+        у = frozenset().union(*(усе_м(х) for _, х in в[2]))
+        р = any(х[1] for _, х in в[2])
+        return (в[0], в[1], frozenset({('*', (у, р, None))})) if (у or р) else ((в[0], в[1], None) if (в[0] or в[1]) else ЧИСТЕ)
+    пари = frozenset((к, х) for к, х in ((к, зрізати(х, н - 1)) for к, х in в[2]) if х != ЧИСТЕ)
+    return (в[0], в[1], пари or None) if (пари or в[0] or в[1]) else ЧИСТЕ
+
+
+@__import__('functools').lru_cache(maxsize=None)
+def обріз(в):
+    """Межа форми: рівень ширший за ШИРИНА — його поля зливаються в `*` (лише цей рівень); глибше ГЛИБИНА — нижні
+    рівні листком. Доти вся форма згорталась в один `*` з М усього піддерева, і запис коду з одним полем моделі
+    читався моделлю в кожному полі (клас похибки вибірки 1712)."""
+    if в[2] is None:
+        return в
+    if len(в[2]) > ШИРИНА:
+        в = (в[0], в[1], frozenset({('*', Jвсі(х for _, х in в[2]))}))
+    if глибина(в) > ГЛИБИНА + 1:
+        в = зрізати(в, ГЛИБИНА)
     return в
 
 
@@ -353,12 +411,14 @@ def Jвсі(вв):
 
 
 ВКЛАДЕНІ_ДЖЕРЕЛА = {      # ключ запиту → форма, де сира відповідь лежить глибше (місця JS — у звіті)
-    'відповіді_шару': Ш({'*': Ш({'відповідь_моделі': М_A})}),
+    'відповіді_шару': Ш({'*': ЗАПИТ}),                  # кожен елемент — запит шару з тими самими ключами
     'вибір_речей': Ш({'відповіді': Ш({'*': Ш({'текст': М_A})})}),
     'вибір_повноти': Ш({'текст': М_A, 'вердикт': М_B}),
 }
 
 
+РОЗШИРЕНЬ = collections.Counter()
+НЕВІДОМІ = collections.Counter()               # виклик поза продуктом, що віддав М (для звіту)
 ХТО_КЛИКАВ = collections.defaultdict(set)       # функція → {(викликач, файл, рядок, параметри з М)} — для `--звідки`
 ДЖЕРЕЛА_МІСЦЯ = collections.defaultdict(set)     # (файл, рядок) → ключі: місця, де значення стає М (для звіту)
 
@@ -368,7 +428,14 @@ def джерельний(а, к):
 
 
 def читати(а, к):
-    """Поле `к` (рядок, число чи None — невідомий ключ) значення `а`."""
+    """Поле `к` (рядок, число чи None — невідомий ключ) значення `а`. Поле, назване у формі, — саме це поле, без М
+    верху: верх із М і формою — злиття гілок (запис коду ⊔ текст моделі, `в` у `від_моделі` після розбору прози рук),
+    і поле `вітрина` з такого злиття — поле запису коду, а не відповідь моделі (клас похибки вибірки 1712)."""
+    if а[2] is not None and isinstance(к, (str, int)):
+        явне = dict(а[2]).get(к)
+        if явне is not None and явне != ЧИСТЕ:
+            return J(явне, (М_A if к in КЛЮЧІ_A else М_B if к in КЛЮЧІ_B else ВКЛАДЕНІ_ДЖЕРЕЛА.get(к, ЧИСТЕ))
+                     if а[1] and isinstance(к, str) else ЧИСТЕ)
     р = М_(а[0])
     if а[1] and isinstance(к, str):
         р = J(р, М_A if к in КЛЮЧІ_A else М_B if к in КЛЮЧІ_B else ВКЛАДЕНІ_ДЖЕРЕЛА.get(к, ЧИСТЕ))
@@ -382,12 +449,12 @@ def читати(а, к):
 
 
 def ітерувати(а):
-    """Елемент при обході: М — М; список/кортеж — елементи (`*`, номери); словник коду — ключі (код)."""
-    р = М_(а[0])
-    for к, в in (а[2] or ()):
-        if к == '*' or isinstance(к, int):
-            р = J(р, в)
-    return р
+    """Елемент при обході: М — М; список/кортеж — елементи (`*`, номери); словник коду — ключі (код). Елементи, названі
+    у формі, — лише вони, без М верху (те саме злиття гілок, що в `читати`)."""
+    ел = Jвсі(в for к, в in (а[2] or ()) if к == '*' or isinstance(к, int))
+    if ел != ЧИСТЕ:
+        return ел
+    return М_(а[0])
 
 
 def значення_(а):
@@ -409,9 +476,21 @@ def з_choices(е):
                  'isspace', 'islower', 'isupper', 'istitle', 'count', 'index', 'find', 'rfind', 'format', 'format_map',
                  'issubset', 'issuperset', 'isdisjoint', '__contains__'}
 МУТАТОРИ = {'append', 'add', 'insert', 'extend', 'update', 'appendleft', 'extendleft'}
+РЕГУЛЯРНІ_МЕТОДИ = {'match', 'search', 'fullmatch', 'finditer', 'findall', 'sub', 'subn', 'split', 'group', 'groups',
+                    'groupdict', 'expand', 'normalize', 'casefold'}
+ПЕРЕНОС_АРГУМЕНТУ = {'злам': 2}          # `поломки_ядро.злам(код, точка, справне, …)` поза обсягом віддає `справне`
+ВБУДОВАНІ_МЕТОДИ = {'get', 'pop', 'setdefault', 'items', 'values', 'keys', 'copy', 'join', 'format', 'sort', 'index',
+                    'count', 'append', 'add', 'insert', 'extend', 'update', 'remove', 'discard', 'clear', 'strip',
+                    'split', 'replace', 'lower', 'upper', 'startswith', 'endswith', 'match', 'search', 'sub', 'group'}
+МЕТОДИ = {}                              # імʼя методу класу продукту → Fn, коли імʼя єдине
 
 
-def шлях_приймача(е):
+def ключ_(мод, е):
+    к = стала(мод, е) if мод is not None else (е.value if isinstance(е, ast.Constant) else None)
+    return к if isinstance(к, (str, int)) else '*'
+
+
+def шлях_приймача(е, мод=None):
     """`x["a"].setdefault("b", [])` → ('x', ['a', 'b']); інше (атрибути, виклики) → None."""
     ключі = []
     while True:
@@ -419,11 +498,11 @@ def шлях_приймача(е):
             return е.id, ключі[::-1]
         if isinstance(е, ast.Subscript):
             с_ = е.slice
-            ключі.append(с_.value if isinstance(с_, ast.Constant) and isinstance(с_.value, (str, int)) else '*')
+            ключі.append(ключ_(мод, с_))
             е = е.value
         elif isinstance(е, ast.Call) and isinstance(е.func, ast.Attribute) and е.func.attr in ('setdefault', 'get') and е.args:
             а = е.args[0]
-            ключі.append(а.value if isinstance(а, ast.Constant) and isinstance(а.value, (str, int)) else '*')
+            ключі.append(ключ_(мод, а))
             е = е.func.value
         else:
             return None
@@ -435,9 +514,13 @@ def шлях_приймача(е):
 
 def аналіз(g, кт):
     """Повернення функції `g` за абстрактних аргументів `кт` (контекстно; понад 8 контекстів — один широкий)."""
-    if any(в != ЧИСТЕ for в in кт) and len(КОНТЕКСТИ[g]) >= 8 and кт not in КОНТЕКСТИ[g]:
+    if any(в != ЧИСТЕ for в in кт) and len(КОНТЕКСТИ[g]) >= 6 and кт not in КОНТЕКСТИ[g]:
         ш = ШИРОКИЙ.get(g, tuple(ЧИСТЕ for _ in кт))
         кт = tuple(J(а, б) for а, б in zip(ш, кт))
+        if кт != ш:
+            РОЗШИРЕНЬ[g] += 1
+            if РОЗШИРЕНЬ[g] > int(os.environ.get("LICHBA_CAP", "3")):           # межа росту: далі форма параметра — лише верхні поля
+                кт = tuple(зрізати(в, 1) for в in кт)
         ШИРОКИЙ[g] = кт
     ключ = (g, кт)
     if ключ in МЕМО:
@@ -445,6 +528,8 @@ def аналіз(g, кт):
     if ключ in В_РОБОТІ or len(СТЕК) > 40:
         return В_РОБОТІ.get(ключ, ЧИСТЕ)
     КОНТЕКСТИ[g].add(кт)
+    if os.environ.get('LICHBA_PROGRESS') and len(МЕМО) % 2000 == 0:
+        print('аналізів %d · %s' % (len(МЕМО), g.імʼя), file=sys.stderr, flush=True)
     В_РОБОТІ[ключ] = ЧИСТЕ
     СТЕК.append(ключ)
     а = Аналіз(g, кт)
@@ -459,11 +544,111 @@ def аналіз(g, кт):
     return а.ret
 
 
+СТРУКТУРНІ = {}
+РЕЄСТР_РОЗБОРУ = {}         # назва схеми відповіді → {'розбір'|'сторож': Fn} (`схеми_розбору.РОЗБІР`)
+
+
+def fn_з_виразу(мод, е):
+    if isinstance(е, ast.Name):
+        return функція_модуля(мод, е.id)
+    if isinstance(е, ast.Attribute) and isinstance(е.value, ast.Name) and е.value.id in мод.імпорти:
+        м, і = мод.імпорти[е.value.id]
+        if і is None and м in МОДУЛІ:
+            return функція_модуля(МОДУЛІ[м], е.attr)
+    return None
+
+
+def зібрати_реєстр_розбору():
+    """`схеми_розбору.РОЗБІР` — реєстр розбору відповіді моделі: `схема.виконати_розбір(текст)` викликає
+    `self.розбір`, і без реєстру потік від відповіді моделі не заходив у самі розбори (і вертав вхід як є)."""
+    РЕЄСТР_РОЗБОРУ.clear()
+    мод = МОДУЛІ.get('схеми_розбору')
+    if мод is None:
+        return
+    for н in мод.дерево.body:
+        if isinstance(н, ast.Assign) and any(isinstance(ц, ast.Name) and ц.id == 'РОЗБІР' for ц in н.targets) \
+                and isinstance(н.value, ast.Dict):
+            for к, в in zip(н.value.keys, н.value.values):
+                if isinstance(к, ast.Constant) and isinstance(в, ast.Call):
+                    РЕЄСТР_РОЗБОРУ[к.value] = {кв.arg: fn_з_виразу(мод, кв.value) for кв in в.keywords
+                                               if fn_з_виразу(мод, кв.value) is not None}
+
+
+def структурна(fn):
+    """Рекурсивний обхід значення по полях, що вертає ту саму будову (`без_ід_глибоко(x)`, `_без_правила(x)`:
+    `x` | `{k: f(v) for k, v in x.items()}` | `[f(v) for v in x]` | перетворення листка `g(x)`) → імʼя параметра;
+    інакше None. Його повернення — сам аргумент: контексти рекурсії зливали вердикт коду з його листками, і кожне
+    поле вердикта на дроті читалось відповіддю моделі (клас похибки вибірки 1712)."""
+    if fn in СТРУКТУРНІ:
+        return СТРУКТУРНІ[fn]
+    СТРУКТУРНІ[fn] = None
+    if not fn.параметри or fn.параметри[0] == 'self':
+        return None
+    п = fn.параметри[0]
+    сам = fn.імʼя
+    повернення = [н.value for н in ast.walk(fn.вузол) if isinstance(н, ast.Return) and н.value is not None]
+    if not повернення:
+        return None
+    викликає_себе = any(isinstance(н, ast.Call) and isinstance(н.func, ast.Name) and н.func.id == сам
+                        for н in ast.walk(fn.вузол))
+    if not викликає_себе:
+        return None
+
+    def лист(е, ім):
+        if isinstance(е, ast.Name):
+            return е.id == ім
+        if isinstance(е, ast.IfExp):
+            return лист(е.body, ім) and лист(е.orelse, ім)
+        if isinstance(е, ast.Call):
+            арги = е.args + [к.value for к in е.keywords]
+            return bool(арги) and лист(арги[0], ім) and all(not isinstance(а, ast.Name) or а.id != ім for а in арги[1:])
+        return False
+
+    def будова(е):
+        if лист(е, п):
+            return True
+        if isinstance(е, ast.IfExp):
+            return будова(е.body) and будова(е.orelse)
+        if isinstance(е, (ast.DictComp, ast.ListComp, ast.GeneratorExp, ast.SetComp)) and len(е.generators) == 1:
+            г = е.generators[0]
+            it = г.iter
+            if isinstance(it, ast.Call) and isinstance(it.func, ast.Attribute) and it.func.attr in ('items', 'values'):
+                it = it.func.value
+            if not (isinstance(it, ast.Name) and it.id == п):
+                return False
+            ел = г.target.elts[-1] if isinstance(г.target, ast.Tuple) else г.target
+            if not isinstance(ел, ast.Name):
+                return False
+            тіло = е.value if isinstance(е, ast.DictComp) else е.elt
+            return лист(тіло, ел.id) or (isinstance(тіло, ast.IfExp) and all(
+                лист(х, ел.id) or isinstance(х, ast.Name) and х.id == ел.id for х in (тіло.body, тіло.orelse)))
+        if isinstance(е, ast.Call) and isinstance(е.func, ast.Name) and е.func.id in ('list', 'tuple', 'dict') and е.args:
+            return будова(е.args[0])
+        return False
+    if all(будова(е) for е in повернення):
+        СТРУКТУРНІ[fn] = п
+    return СТРУКТУРНІ[fn]
+
+
+def злити(а, б):
+    """Середовище після злиття двох гілок; None — гілка не доходить (return, raise)."""
+    if а is None:
+        return б
+    if б is None:
+        return а
+    return {к: J(а.get(к, ЧИСТЕ), б.get(к, ЧИСТЕ)) for к in а.keys() | б.keys()}
+
+
 class Аналіз:
-    """Одна функція за одного контексту: середовище імен (без порядку, до нерухомої точки), повернення."""
+    """Одна функція за одного контексту: середовище імен за порядком тексту (присвоєння імені замінює значення,
+    гілки зливаються, цикл — до нерухомої точки), значення кожного виразу в місці, де його обчислено, повернення.
+    Крок 16239: середовище без порядку зливало в одне імʼя все, що йому присвоювали у великій функції (`об`, `в`,
+    `р` у `від_моделі` — і відповідь моделі, і запис коду), тож корінь брав запис коду."""
     def __init__(с, fn, кт):
         с.fn, с.кт = fn, кт
         с.env = {}
+        с.бачено = {}
+        с.схеми = {}             # імʼя → назва схеми відповіді (None — невідома) після `схема_за_назвою(…)`
         for п, в in zip(fn.параметри, кт):
             if в != ЧИСТЕ:
                 с.env[п] = в
@@ -471,33 +656,32 @@ class Аналіз:
         с.є_м = any(в != ЧИСТЕ for в in кт)
 
     def прогін(с):
-        for _ in range(4):
-            було = (dict(с.env), с.ret)
-            с.викон(с.fn.вузол.body)
-            if (с.env, с.ret) == було:
-                break
-        с.є_м = с.є_м or any(усе_м(в) or в[1] for в in с.env.values())
+        с.викон(с.fn.вузол.body)
+        с.є_м = с.є_м or any(усе_м(в) or в[1] for в in с.бачено.values())
 
     def т(с, е):
-        """Чи E — значення з відповіді моделі (для `знайти_перевірки`)."""
-        return bool(с.ev(е)[0])
+        """Чи E — значення з відповіді моделі в тому місці, де його перевіряють (для `знайти_перевірки`)."""
+        return bool(с.бачено.get(е, ЧИСТЕ)[0])
 
     def джерело(с, е):
-        return ''.join(sorted(с.ev(е)[0]))
+        return ''.join(sorted(с.бачено.get(е, ЧИСТЕ)[0]))
 
     # ── присвоєння ──
     def до(с, імʼя, в):
-        if в != ЧИСТЕ:
-            с.env[імʼя] = J(с.env.get(імʼя, ЧИСТЕ), в)
+        if в == ЧИСТЕ:
+            с.env.pop(імʼя, None)
+        else:
+            с.env[імʼя] = в
 
     def зберегти(с, приймач, в):
-        шл = шлях_приймача(приймач)
+        """Запис у поле контейнера не замінює контейнер, а додає до нього."""
+        шл = шлях_приймача(приймач, с.fn.мод)
         if шл is None or в == ЧИСТЕ:
             return
         корінь, ключі = шл
         for к in reversed(ключі):
             в = Ш({к: в})
-        с.до(корінь, в)
+        с.env[корінь] = J(с.env.get(корінь, ЧИСТЕ), в)
 
     def присвоїти(с, ц, в):
         if isinstance(ц, ast.Name):
@@ -510,14 +694,37 @@ class Аналіз:
                     с.присвоїти(ці, читати(в, і))
         elif isinstance(ц, ast.Subscript):
             с.ev(ц.slice)
-            к = ц.slice.value if isinstance(ц.slice, ast.Constant) and isinstance(ц.slice.value, (str, int)) else '*'
+            к = ключ_(с.fn.мод, ц.slice)
             с.зберегти(ц.value, Ш({к: в}))
         elif isinstance(ц, ast.Starred):
             с.присвоїти(ц.value, в)
 
     # ── стейтменти ──
+    def гілка(с, тіло, env):
+        с.env = dict(env) if env is not None else None
+        с.викон(тіло)
+        return с.env
+
+    def петля(с, до_, тіло, ціль=None, iter_=None):
+        """Тіло циклу до нерухомої точки середовища на вході; після — злиття входу (нуль обертів) і виходу."""
+        вхід = dict(до_)
+        вихід = None
+        for _ in range(4):
+            с.env = dict(вхід)
+            if ціль is not None:
+                с.присвоїти(ціль, ітерувати(с.ev(iter_)))
+            с.викон(тіло)
+            вихід = с.env
+            нове = злити(вхід, вихід)
+            if нове == вхід:
+                break
+            вхід = нове
+        return злити(вхід, вихід)
+
     def викон(с, тіло):
         for s in тіло:
+            if с.env is None:
+                return
             t = type(s)
             if t in (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef):
                 continue
@@ -525,23 +732,29 @@ class Аналіз:
                 в = с.ev(s.value)
                 for ц in s.targets:
                     с.присвоїти(ц, в)
+                    if isinstance(ц, ast.Name):
+                        сх = с.назва_схеми(s.value)
+                        if сх is not False:
+                            с.схеми[ц.id] = сх
+                        else:
+                            с.схеми.pop(ц.id, None)
             elif t is ast.AnnAssign:
                 if s.value is not None:
                     с.присвоїти(s.target, с.ev(s.value))
             elif t is ast.AugAssign:
-                с.присвоїти(s.target, с.ev(s.value))
+                в = с.ev(s.value)
+                с.присвоїти(s.target, J(с.env.get(s.target.id, ЧИСТЕ), в) if isinstance(s.target, ast.Name) else в)
             elif t in (ast.For, ast.AsyncFor):
-                с.присвоїти(s.target, ітерувати(с.ev(s.iter)))
-                с.викон(s.body)
+                с.env = с.петля(с.env, s.body, s.target, s.iter)
                 с.викон(s.orelse)
             elif t is ast.While:
                 с.ev(s.test)
-                с.викон(s.body)
+                с.env = с.петля(с.env, [ast.Expr(s.test)] + s.body)
                 с.викон(s.orelse)
             elif t is ast.If:
                 с.ev(s.test)
-                с.викон(s.body)
-                с.викон(s.orelse)
+                до_ = с.env
+                с.env = злити(с.гілка(s.body, до_), с.гілка(s.orelse, до_))
             elif t in (ast.With, ast.AsyncWith):
                 for і in s.items:
                     в = с.ev(і.context_expr)
@@ -549,28 +762,45 @@ class Аналіз:
                         с.присвоїти(і.optional_vars, в)
                 с.викон(s.body)
             elif t.__name__ in ('Try', 'TryStar'):
-                с.викон(s.body)
+                до_ = с.env
+                після = с.гілка(s.body, до_)
+                будь_де = злити(до_, після)      # виняток — з будь-якого місця тіла
+                після = с.гілка(s.orelse, після)
                 for h in s.handlers:
-                    с.викон(h.body)
-                с.викон(s.orelse)
-                с.викон(s.finalbody)
+                    після = злити(після, с.гілка(h.body, будь_де))
+                с.env = після if після is not None else None
+                if s.finalbody:
+                    с.env = с.гілка(s.finalbody, злити(після, будь_де) if після is None else після)
+                    if після is None:
+                        с.env = None
             elif t is ast.Return:
                 if s.value is not None:
                     с.ret = J(с.ret, с.ev(s.value))
+                с.env = None
             elif t is ast.Expr:
                 с.ev(s.value)
             elif t is ast.Raise:
                 if s.exc is not None:
                     с.ev(s.exc)
+                с.env = None
             elif t is ast.Assert:
                 с.ev(s.test)
             elif t.__name__ == 'Match':
                 с.ev(s.subject)
+                до_ = с.env
+                після = до_
                 for кейс in s.cases:
-                    с.викон(кейс.body)
+                    після = злити(після, с.гілка(кейс.body, до_))
+                с.env = після
 
     # ── вирази ──
     def ev(с, е):
+        р = с.ev_(е)
+        if р != ЧИСТЕ:
+            с.бачено[е] = J(с.бачено.get(е, ЧИСТЕ), р)
+        return р
+
+    def ev_(с, е):
         t = type(е)
         if t is ast.Name:
             return с.env.get(е.id, ЧИСТЕ)
@@ -583,13 +813,14 @@ class Аналіз:
             сл = е.slice
             if isinstance(сл, ast.Slice):
                 return б
-            if isinstance(сл, ast.Constant):
-                if сл.value == 'content' and з_choices(е.value):
+            кс = стала(с.fn.мод, сл)
+            if кс is not None:
+                if кс == 'content' and з_choices(е.value):
                     ДЖЕРЕЛА_МІСЦЯ[(с.fn.мод.шлях, е.lineno)].add('choices→message→content')
                     return М_A
-                if джерельний(б, сл.value):
-                    ДЖЕРЕЛА_МІСЦЯ[(с.fn.мод.шлях, е.lineno)].add(сл.value)
-                return читати(б, сл.value)
+                if джерельний(б, кс):
+                    ДЖЕРЕЛА_МІСЦЯ[(с.fn.мод.шлях, е.lineno)].add(кс)
+                return читати(б, кс)
             с.ev(сл)
             return читати(б, None)
         if t is ast.Call:
@@ -624,8 +855,8 @@ class Аналіз:
                 if к is None:
                     д = {'**': J(д.get('**', ЧИСТЕ), вв)} | д
                     continue
-                кк = к.value if isinstance(к, ast.Constant) and isinstance(к.value, (str, int)) else '*'
-                if not isinstance(к, ast.Constant):
+                кк = ключ_(с.fn.мод, к)
+                if кк == '*':
                     с.ev(к)
                 д[кк] = J(д.get(кк, ЧИСТЕ), вв)
             розгорнуте = д.pop('**', ЧИСТЕ)
@@ -637,13 +868,36 @@ class Аналіз:
                 return Ш({'*': Jвсі(ітерувати(с.ev(х.value)) if isinstance(х, ast.Starred) else с.ev(х) for х in е.elts)})
             return Ш({і: с.ev(х) for і, х in enumerate(е.elts)})
         if t in (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.DictComp):
+            зовні = dict(с.env)                  # імена генератора — своя область
+            try:
+                return с.генератор(е, t)
+            finally:
+                с.env = зовні
+        return с.ev_інше(е, t)
+
+    def генератор(с, е, t):
+        if True:
             for г in е.generators:
                 с.присвоїти(г.target, ітерувати(с.ev(г.iter)))
                 for у in г.ifs:
                     с.ev(у)
             if t is ast.DictComp:
+                # копія словника з відсівом ключів (`{к: в for к, в in X.items() if …}`) — той самий X: поле лишається
+                # своїм полем (і запит — запитом), а не зливається в «будь-який ключ» (клас похибки вибірки 1712)
+                г = е.generators[0]
+                if (len(е.generators) == 1 and isinstance(г.iter, ast.Call) and isinstance(г.iter.func, ast.Attribute)
+                        and г.iter.func.attr == 'items' and isinstance(г.target, ast.Tuple) and len(г.target.elts) == 2
+                        and all(isinstance(х, ast.Name) for х in г.target.elts) and isinstance(е.key, ast.Name)
+                        and е.key.id == г.target.elts[0].id):
+                    джерело_ = с.ev(г.iter.func.value)
+                    if isinstance(е.value, ast.Name) and е.value.id == г.target.elts[1].id:
+                        return джерело_
+                    if джерело_[1]:
+                        return J((Ø, True, None), Ш({'*': с.ev(е.value)}))
                 return Ш({'*': J(с.ev(е.key), с.ev(е.value))})
             return Ш({'*': с.ev(е.elt)})
+
+    def ev_інше(с, е, t):
         if t is ast.NamedExpr:
             в = с.ev(е.value)
             с.присвоїти(е.target, в)
@@ -662,25 +916,76 @@ class Аналіз:
         g = вирішити(с.fn.мод, е)
         f = е.func
         if g is not None:
-            кт = [ЧИСТЕ] * len(g.параметри)
-            if not any(isinstance(а, ast.Starred) for а in е.args):
-                for і, в in enumerate(ав[:len(кт)]):
-                    кт[і] = в
-            for к, в in кв.items():
-                if к in g.параметри:
-                    кт[g.параметри.index(к)] = в
-            if any(усе_м(в) for в in кт):
-                ХТО_КЛИКАВ[g].add((с.fn.імʼя, с.fn.мод.шлях, е.lineno, tuple(п for п, в in zip(g.параметри, кт) if усе_м(в))))
-            return аналіз(g, tuple(кт))
+            return с.до_функції(g, ав, кв, е)
         if isinstance(f, ast.Attribute):
-            модульний = isinstance(f.value, ast.Name) and f.value.id in с.fn.мод.імпорти and f.value.id not in с.env
+            модульний = isinstance(f.value, ast.Name) and f.value.id in с.fn.мод.імпорти and f.value.id not in (с.env or {})
             if модульний:
                 return с.вбудована(f.attr, ав, кв)
-            return с.метод(f.attr, с.ev(f.value), ав, кв, е)
+            if f.attr in ('виконати_розбір', 'перевірити'):
+                сх = с.назва_схеми(f.value)
+                if сх is not False:
+                    с.ev(f.value)
+                    return с.розбір_схеми(сх, f.attr, ав, кв, е)
+            п = с.ev(f.value)
+            мт = МЕТОДИ.get(f.attr)
+            if мт is not None and f.attr not in ВБУДОВАНІ_МЕТОДИ | РЯДКОВІ_МЕТОДИ | РЕГУЛЯРНІ_МЕТОДИ | МУТАТОРИ:
+                # метод класу продукту (за єдиним іменем): `схема.прочитати(відповідь)` — self — приймач
+                return с.до_функції(мт, [п] + ав, кв, е, зсув=True)
+            return с.метод(f.attr, п, ав, кв, е)
         if isinstance(f, ast.Name):
             return с.вбудована(f.id, ав, кв)
         с.ev(f)
-        return М_(frozenset().union(*(в[0] for в in ав + list(кв.values()))) if ав or кв else Ø)
+        return с.невідомий('(вираз)', ав + list(кв.values()))
+
+    def назва_схеми(с, е):
+        """Вираз схеми відповіді → її назва (None — невідома: `визначити_схему(d)`); не схема — False."""
+        if isinstance(е, ast.Name):
+            return с.схеми.get(е.id, False)
+        if isinstance(е, ast.Call) and ім_виклику(е) in ('схема_за_назвою', 'визначити_схему'):
+            if ім_виклику(е) == 'схема_за_назвою' and е.args:
+                к = стала(с.fn.мод, е.args[0])
+                return к if isinstance(к, str) else None
+            return None
+        if isinstance(е, ast.Subscript) and isinstance(е.value, ast.Name) and е.value.id == 'СХЕМИ_ВІДПОВІДІ':
+            к = стала(с.fn.мод, е.slice)
+            return к if isinstance(к, str) else None
+        return False
+
+    def розбір_схеми(с, сх, метод, ав, кв, е):
+        роль = 'розбір' if метод == 'виконати_розбір' else 'сторож'
+        записи = [РЕЄСТР_РОЗБОРУ[сх]] if сх in РЕЄСТР_РОЗБОРУ else ([] if сх is not None else list(РЕЄСТР_РОЗБОРУ.values()))
+        р = ЧИСТЕ
+        for зап in записи:
+            g = зап.get(роль)
+            if g is not None:
+                р = J(р, с.до_функції(g, ав, кв, е))
+        if роль == 'розбір' and (сх is None or роль not in РЕЄСТР_РОЗБОРУ.get(сх, {})):
+            р = J(р, ав[0] if ав else ЧИСТЕ)      # схема без розбору вертає вхід як є
+        return р
+
+    def до_функції(с, g, ав, кв, е, зсув=False):
+        стр = структурна(g)
+        if стр is not None and g is с.fn:
+            # обхід самого себе по полях — та сама будова: поле лишається полем, листок — листком
+            return ав[0] if ав else ЧИСТЕ
+        кт = [ЧИСТЕ] * len(g.параметри)
+        if not any(isinstance(а, ast.Starred) for а in е.args):
+            for і, в in enumerate(ав[:len(кт)]):
+                кт[і] = в
+        for к, в in кв.items():
+            if к in g.параметри:
+                кт[g.параметри.index(к)] = в
+        if any(усе_м(в) for в in кт):
+            ХТО_КЛИКАВ[g].add((с.fn.імʼя, с.fn.мод.шлях, е.lineno, tuple(п for п, в in zip(g.параметри, кт) if усе_м(в))))
+        р = аналіз(g, tuple(кт))
+        return кт[0] if стр is not None else р
+
+    def невідомий(с, ім, усі):
+        """Виклик поза продуктом і поза переліком переносу: новий запис коду, а не те саме значення (крок 16239: М
+        несе рух даних, а не обчислення). Обірване М лічиться для звіту."""
+        if any(в[0] or усе_м(в) for в in усі):
+            НЕВІДОМІ[ім] += 1
+        return ЧИСТЕ
 
     def вбудована(с, ім, ав, кв):
         усі = ав + list(кв.values())
@@ -691,7 +996,9 @@ class Аналіз:
             return J(ав[0] if ав else ЧИСТЕ, J(кв.pop(None, ЧИСТЕ), Ш({к: в for к, в in кв.items() if к})))
         if ім in ('list', 'tuple', 'set', 'frozenset', 'sorted', 'reversed', 'deque', 'OrderedDict', 'Counter'):
             return J(М_(ав[0][0]), Ш({'*': ітерувати(ав[0])})) if ав else ЧИСТЕ
-        if ім in ('str', 'int', 'float', 'abs', 'round', 'Decimal', 'Fraction', 'normalize', 'unescape', 'dumps', 'escape',
+        if ім == 'dumps':          # рядок JSON несе ту саму будову, що й значення: `loads(dumps(x))` — це x, а не М скрізь
+            return ав[0] if ав else ЧИСТЕ
+        if ім in ('str', 'int', 'float', 'abs', 'round', 'Decimal', 'Fraction', 'normalize', 'unescape', 'escape',
                   'sub', 'match', 'fullmatch', 'search', 'findall', 'finditer', 'split', 'quote', 'unquote'):
             return М_(м)
         if ім == 'enumerate':
@@ -713,15 +1020,20 @@ class Аналіз:
         if ім in ('deepcopy', 'copy'):
             return ав[0] if ав else ЧИСТЕ
         if ім in ('loads', 'literal_eval'):
-            return J(М_(ав[0][0]), ЗАПИТ if ав[0][1] else ЧИСТЕ) if ав else ЧИСТЕ
+            return ав[0] if ав else ЧИСТЕ
         if ім in ('getattr',):
             return М_(ав[0][0]) if ав else ЧИСТЕ
-        return М_(м)
+        if ім in ПЕРЕНОС_АРГУМЕНТУ:
+            і = ПЕРЕНОС_АРГУМЕНТУ[ім]
+            return ав[і] if len(ав) > і else кв.get('справне', ЧИСТЕ)
+        if ім == 'fromkeys':
+            return Ш({'*': ітерувати(ав[0])}) if ав else ЧИСТЕ
+        return с.невідомий(ім, усі)
 
     def метод(с, ім, п, ав, кв, е):
         f = е.func
         if ім in ('get', 'pop'):
-            к = е.args[0].value if е.args and isinstance(е.args[0], ast.Constant) else None
+            к = стала(с.fn.мод, е.args[0]) if е.args else None
             if к == 'content' and з_choices(f.value):
                 ДЖЕРЕЛА_МІСЦЯ[(с.fn.мод.шлях, е.lineno)].add('choices→message→content')
                 return М_A
@@ -729,7 +1041,7 @@ class Аналіз:
                 ДЖЕРЕЛА_МІСЦЯ[(с.fn.мод.шлях, е.lineno)].add(к)
             return J(читати(п, к), ав[1] if len(ав) > 1 else ЧИСТЕ)
         if ім == 'setdefault':
-            к = е.args[0].value if е.args and isinstance(е.args[0], ast.Constant) else '*'
+            к = ключ_(с.fn.мод, е.args[0]) if е.args else '*'
             if len(ав) > 1:
                 с.зберегти(f.value, Ш({к: ав[1]}))
             return J(читати(п, к if к != '*' else None), ав[1] if len(ав) > 1 else ЧИСТЕ)
@@ -757,8 +1069,11 @@ class Аналіз:
             return М_(ітерувати(ав[0])[0]) if ав else ЧИСТЕ
         if ім in БУЛЕВІ_МЕТОДИ:
             return ЧИСТЕ
-        усі = [п] + ав + list(кв.values())
-        return М_(frozenset().union(*(в[0] for в in усі)))
+        if ім in РЕГУЛЯРНІ_МЕТОДИ:        # шматок того самого тексту: `_RE.match(текст)`, `м.group(1)`
+            return М_(frozenset().union(п[0], *(в[0] for в in ав)))
+        if ім == 'fromkeys':
+            return Ш({'*': ітерувати(ав[0])}) if ав else ЧИСТЕ
+        return с.невідомий('.' + ім, [п] + ав + list(кв.values()))
 
 
 def ендпойнти():
@@ -788,7 +1103,7 @@ def ендпойнти():
 def потік_від_моделі():
     """Аналіз: ендпойнти з ЗАПИТ у першому параметрі, потім кожна функція продукту з чистими аргументами (джерело (2)
     і повернення М із глибини). → [Аналіз] із М у середовищі."""
-    for таб in (МЕМО, В_РОБОТІ, ШИРОКИЙ, КОНТЕКСТИ, ДЖЕРЕЛА_МІСЦЯ, ХТО_КЛИКАВ):
+    for таб in (МЕМО, В_РОБОТІ, ШИРОКИЙ, КОНТЕКСТИ, ДЖЕРЕЛА_МІСЦЯ, ХТО_КЛИКАВ, РОЗШИРЕНЬ, НЕВІДОМІ):
         таб.clear()
     del АНАЛІЗИ[:]
     sys.setrecursionlimit(20000)
@@ -1575,6 +1890,17 @@ def зібрати():
             print('пропущено (синтаксис):', ф, file=sys.stderr)
     табличні_параметри()
     зібрати_сліди()
+    зібрати_реєстр_розбору()
+    МЕТОДИ.clear()
+    усі_методи = collections.defaultdict(list)
+    for мод in МОДУЛІ.values():
+        for кл in ast.walk(мод.дерево):
+            if isinstance(кл, ast.ClassDef):
+                for н in кл.body:
+                    if isinstance(н, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                        fn = мод.функції.get(н.name)
+                        усі_методи[н.name].append(fn if fn is not None and fn.вузол is н else Fn(мод, н))
+    МЕТОДИ.update({ім: фф[0] for ім, фф in усі_методи.items() if len(фф) == 1 and фф[0].параметри[:1] == ['self']})
     # (1) потік від відповіді моделі (16239): перевірки на значенні з джерел будовою, у кожному контексті
     сирі = collections.OrderedDict()
     for а in потік_від_моделі():
