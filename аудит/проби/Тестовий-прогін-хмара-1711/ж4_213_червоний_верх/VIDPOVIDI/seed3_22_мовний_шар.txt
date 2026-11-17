@@ -1,0 +1,38 @@
+── ПРОМПТ (5463 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: hoodie · about it: text н=1
+2 — kind: jeans · about it: text н=2
+3 — kind: scarf_generic · about it: text н=3
+4 — kind: sneakers · about it: text н=4
+5 — kind: tote · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This is the red top you asked for, and it is the centre of the outfit. Its loose cut gives you an easy line for a relaxed meeting with friends.",
+"2": "The slim jeans narrow toward the ankle, which balances the roomy top and keeps one clear line through the figure. Their worn, detailed look suits a casual meetup.",
+"3": "The scarf brings a dark, quiet colour up to your face, so the red top stands out more. It also finishes the look in an everyday way.",
+"4": "Sneakers keep the outfit practical for a day of walking and sitting in cafes. They match the relaxed mood of meeting friends.",
+"5": "The roomy tote holds what you need for a day out with friends. Its calm olive shade stays in the background and lets the red top lead.",
+"6": "I built this around the red top you asked for, and the rest stays calm so that it is the one bright spot. The slim jeans, the dark scarf and the sneakers keep it an easy everyday look for meeting friends, and the tote carries your things without adding another accent.",
+"7": "Wear the scarf around your neck over the top, so its dark colour sits by your face and frames the red."
+}
+
+── ВІДПОВІДЬ (1165 симв., 14.8 с, HTTP 200) ──
+{"1":"Це червоний топ, який ти просила, і він — центр образу. Його вільний крій дає тобі легку лінію для невимушеної зустрічі з друзями.","2":"Вузькі джинси звужуються до щиколотки, що врівноважує просторий топ і веде одну чітку лінію через фігуру. Їхній потертий вигляд із деталями пасує до невимушеної зустрічі.","3":"Шарф підносить до твого обличчя темний, спокійний колір, тож червоний топ виділяється більше. Він також завершує образ у повсякденному дусі.","4":"Кросівки роблять образ практичним на день прогулянок і посиденьок у кав'ярнях. Вони пасують до невимушеного настрою зустрічі з друзями.","5":"Містка сумка-шопер вмістить усе потрібне на день назовні з друзями. Її спокійний оливковий відтінок лишається на другому плані й дає червоному топу вести.","6":"Я побудувала все навколо червоного топа, який ти просила, а решта лишається спокійною, щоб він був єдиною яскравою плямою. Вузькі джинси, темний шарф і кросівки тримають його легким повсякденним образом для зустрічі з друзями, а сумка-шопер несе твої речі, не додаючи ще одного акценту.","7":"Носи шарф навколо шиї поверх топа, щоб його темний колір був біля твого обличчя й обрамляв червоний."}
