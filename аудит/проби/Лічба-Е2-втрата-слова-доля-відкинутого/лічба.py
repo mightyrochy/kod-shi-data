@@ -276,6 +276,527 @@ def міжфункційно():
 Fn.корінь_повернення = False
 
 
+# ───────────────────────── ПОТІК ВІД ВІДПОВІДІ МОДЕЛІ (крок 16239) ─────────────────────────
+# Джерела — будовою, а не іменами параметрів. Значення «відповідь моделі» (М) народжується лише там, де продукт
+# одержує текст моделі:
+#   (1) запит мосту — параметр `вхід` ендпойнтів `bridge.виклик`/`виклик_а` (словник ім → функція): сам запит — запис
+#       коду (ЗАПИТ), його поля — теж, крім ключів нижче, куди показ кладе сиру відповідь моделі (A) чи повертає
+#       розбір її відповіді, який раніше віддав міст (B; місця JS — у звіті `потік.md`);
+#   (2) відповідь сервера моделі форми OpenAI: `…["choices"][0]["message"]["content"]` (жнива, прогін каталогу).
+# Далі потік іде присвоєннями, циклами, викликами функцій продукту (контекстно: аргументи → параметри → повернення)
+# з точністю до поля: запис, який склав код (`dict(причина=…, що=знач)`, `не_взято.append(…)`), — форма, де М лише
+# в тих полях, куди його поклали; перевірка поля коду (`запис["причина"]`) — не перевірка відповіді моделі.
+# Повідомлення (`"…%s" % знач`, f-рядок, `.format`), `len/type/isinstance` і порівняння — опис коду, не М.
+КЛЮЧІ_A = {'відповідь_моделі', 'перша_відповідь', 'json_моделі', 'текст_моделі', 'тексти_моделі', 'перелік_речей'}
+КЛЮЧІ_B = {'паспорт_з', 'коментар_з', 'власні', 'частини', 'попередня', 'сценарій_плитки', 'вибір_стилістки',
+           'попередній_вердикт', 'вибір_над'}
+Ø = frozenset()
+ЧИСТЕ = (Ø, False, None)
+ЗАПИТ = (Ø, True, None)
+М_A = (frozenset('A'), False, None)
+М_B = (frozenset('B'), False, None)
+ГЛИБИНА, ШИРИНА = 4, 40
+
+
+def М_(м):
+    return (м, False, None) if м else ЧИСТЕ
+
+
+@__import__('functools').lru_cache(maxsize=None)
+def глибина(в):
+    return 0 if в[2] is None else 1 + max((глибина(х) for _, х in в[2]), default=0)
+
+
+@__import__('functools').lru_cache(maxsize=None)
+def усе_м(в):
+    м = в[0]
+    for _, х in (в[2] or ()):
+        м = м | усе_м(х)
+    return м
+
+
+def обріз(в):
+    """Межа форми: глибше ГЛИБИНА чи ширше ШИРИНА — згортається в один рівень `*` з М усього піддерева."""
+    if в[2] is None:
+        return в
+    if len(в[2]) > ШИРИНА or глибина(в) > ГЛИБИНА:
+        у = усе_м(в)
+        return (в[0], в[1], frozenset({('*', М_(у))}) if у else None) if (у or в[0] or в[1]) else ЧИСТЕ
+    return в
+
+
+def Ш(д):
+    пари = frozenset((к, в) for к, в in д.items() if в != ЧИСТЕ)
+    return обріз((Ø, False, пари)) if пари else ЧИСТЕ
+
+
+@__import__('functools').lru_cache(maxsize=None)
+def J(а, б):
+    if а == ЧИСТЕ or а == б:
+        return б
+    if б == ЧИСТЕ:
+        return а
+    м, р = а[0] | б[0], а[1] or б[1]
+    if а[2] is None or б[2] is None:
+        return (м, р, а[2] if б[2] is None else б[2])
+    д = dict(а[2])
+    for к, в in б[2]:
+        д[к] = J(д[к], в) if к in д else в
+    return обріз((м, р, frozenset(д.items())))
+
+
+def Jвсі(вв):
+    р = ЧИСТЕ
+    for в in вв:
+        р = J(р, в)
+    return р
+
+
+ВКЛАДЕНІ_ДЖЕРЕЛА = {      # ключ запиту → форма, де сира відповідь лежить глибше (місця JS — у звіті)
+    'відповіді_шару': Ш({'*': Ш({'відповідь_моделі': М_A})}),
+    'вибір_речей': Ш({'відповіді': Ш({'*': Ш({'текст': М_A})})}),
+    'вибір_повноти': Ш({'текст': М_A, 'вердикт': М_B}),
+}
+
+
+ДЖЕРЕЛА_МІСЦЯ = collections.defaultdict(set)     # (файл, рядок) → ключі: місця, де значення стає М (для звіту)
+
+
+def джерельний(а, к):
+    return а[1] and isinstance(к, str) and (к in КЛЮЧІ_A or к in КЛЮЧІ_B or к in ВКЛАДЕНІ_ДЖЕРЕЛА)
+
+
+def читати(а, к):
+    """Поле `к` (рядок, число чи None — невідомий ключ) значення `а`."""
+    р = М_(а[0])
+    if а[1] and isinstance(к, str):
+        р = J(р, М_A if к in КЛЮЧІ_A else М_B if к in КЛЮЧІ_B else ВКЛАДЕНІ_ДЖЕРЕЛА.get(к, ЧИСТЕ))
+    if а[2] is not None:
+        д = dict(а[2])
+        if к is None:
+            р = J(р, Jвсі(д.values()))
+        else:
+            р = J(р, J(д.get(к, ЧИСТЕ), д.get('*', ЧИСТЕ)))
+    return р
+
+
+def ітерувати(а):
+    """Елемент при обході: М — М; список/кортеж — елементи (`*`, номери); словник коду — ключі (код)."""
+    р = М_(а[0])
+    for к, в in (а[2] or ()):
+        if к == '*' or isinstance(к, int):
+            р = J(р, в)
+    return р
+
+
+def значення_(а):
+    return J(М_(а[0]), Jвсі(в for _, в in (а[2] or ())))
+
+
+def з_choices(е):
+    """`…["choices"][0]["message"]` — тіло відповіді сервера моделі форми OpenAI."""
+    кл = {х.value for х in ast.walk(е) if isinstance(х, ast.Constant) and isinstance(х.value, str)}
+    return 'choices' in кл and 'message' in кл
+
+
+ОПИСОВІ_ВБУДОВАНІ = {'len', 'type', 'isinstance', 'issubclass', 'repr', 'id', 'callable', 'bool', 'hasattr', 'hash',
+                     'any', 'all', 'print', 'range', 'open', 'vars', 'dir', 'locals', 'globals', 'object', 'super'}
+РЯДКОВІ_МЕТОДИ = {'strip', 'lstrip', 'rstrip', 'lower', 'upper', 'casefold', 'title', 'capitalize', 'replace', 'split',
+                  'rsplit', 'splitlines', 'partition', 'rpartition', 'group', 'groups', 'groupdict', 'encode', 'decode',
+                  'removeprefix', 'removesuffix', 'translate', 'expandtabs', 'zfill', 'ljust', 'rjust', 'center'}
+БУЛЕВІ_МЕТОДИ = {'startswith', 'endswith', 'isdigit', 'isnumeric', 'isalpha', 'isalnum', 'isidentifier', 'isdecimal',
+                 'isspace', 'islower', 'isupper', 'istitle', 'count', 'index', 'find', 'rfind', 'format', 'format_map',
+                 'issubset', 'issuperset', 'isdisjoint', '__contains__'}
+МУТАТОРИ = {'append', 'add', 'insert', 'extend', 'update', 'appendleft', 'extendleft'}
+
+
+def шлях_приймача(е):
+    """`x["a"].setdefault("b", [])` → ('x', ['a', 'b']); інше (атрибути, виклики) → None."""
+    ключі = []
+    while True:
+        if isinstance(е, ast.Name):
+            return е.id, ключі[::-1]
+        if isinstance(е, ast.Subscript):
+            с_ = е.slice
+            ключі.append(с_.value if isinstance(с_, ast.Constant) and isinstance(с_.value, (str, int)) else '*')
+            е = е.value
+        elif isinstance(е, ast.Call) and isinstance(е.func, ast.Attribute) and е.func.attr in ('setdefault', 'get') and е.args:
+            а = е.args[0]
+            ключі.append(а.value if isinstance(а, ast.Constant) and isinstance(а.value, (str, int)) else '*')
+            е = е.func.value
+        else:
+            return None
+
+
+МЕМО, В_РОБОТІ, ШИРОКИЙ, КОНТЕКСТИ, АНАЛІЗИ = {}, {}, {}, collections.defaultdict(set), []
+СТЕК = []
+
+
+def аналіз(g, кт):
+    """Повернення функції `g` за абстрактних аргументів `кт` (контекстно; понад 8 контекстів — один широкий)."""
+    if any(в != ЧИСТЕ for в in кт) and len(КОНТЕКСТИ[g]) >= 8 and кт not in КОНТЕКСТИ[g]:
+        ш = ШИРОКИЙ.get(g, tuple(ЧИСТЕ for _ in кт))
+        кт = tuple(J(а, б) for а, б in zip(ш, кт))
+        ШИРОКИЙ[g] = кт
+    ключ = (g, кт)
+    if ключ in МЕМО:
+        return МЕМО[ключ]
+    if ключ in В_РОБОТІ or len(СТЕК) > 40:
+        return В_РОБОТІ.get(ключ, ЧИСТЕ)
+    КОНТЕКСТИ[g].add(кт)
+    В_РОБОТІ[ключ] = ЧИСТЕ
+    СТЕК.append(ключ)
+    а = Аналіз(g, кт)
+    try:
+        а.прогін()
+    finally:
+        СТЕК.pop()
+        del В_РОБОТІ[ключ]
+    МЕМО[ключ] = а.ret
+    if а.є_м:
+        АНАЛІЗИ.append(а)
+    return а.ret
+
+
+class Аналіз:
+    """Одна функція за одного контексту: середовище імен (без порядку, до нерухомої точки), повернення."""
+    def __init__(с, fn, кт):
+        с.fn, с.кт = fn, кт
+        с.env = {}
+        for п, в in zip(fn.параметри, кт):
+            if в != ЧИСТЕ:
+                с.env[п] = в
+        с.ret = ЧИСТЕ
+        с.є_м = any(в != ЧИСТЕ for в in кт)
+
+    def прогін(с):
+        for _ in range(4):
+            було = (dict(с.env), с.ret)
+            с.викон(с.fn.вузол.body)
+            if (с.env, с.ret) == було:
+                break
+        с.є_м = с.є_м or any(усе_м(в) or в[1] for в in с.env.values())
+
+    def т(с, е):
+        """Чи E — значення з відповіді моделі (для `знайти_перевірки`)."""
+        return bool(с.ev(е)[0])
+
+    def джерело(с, е):
+        return ''.join(sorted(с.ev(е)[0]))
+
+    # ── присвоєння ──
+    def до(с, імʼя, в):
+        if в != ЧИСТЕ:
+            с.env[імʼя] = J(с.env.get(імʼя, ЧИСТЕ), в)
+
+    def зберегти(с, приймач, в):
+        шл = шлях_приймача(приймач)
+        if шл is None or в == ЧИСТЕ:
+            return
+        корінь, ключі = шл
+        for к in reversed(ключі):
+            в = Ш({к: в})
+        с.до(корінь, в)
+
+    def присвоїти(с, ц, в):
+        if isinstance(ц, ast.Name):
+            с.до(ц.id, в)
+        elif isinstance(ц, (ast.Tuple, ast.List)):
+            for і, ці in enumerate(ц.elts):
+                if isinstance(ці, ast.Starred):
+                    с.присвоїти(ці.value, Ш({'*': ітерувати(в)}))
+                else:
+                    с.присвоїти(ці, читати(в, і))
+        elif isinstance(ц, ast.Subscript):
+            с.ev(ц.slice)
+            к = ц.slice.value if isinstance(ц.slice, ast.Constant) and isinstance(ц.slice.value, (str, int)) else '*'
+            с.зберегти(ц.value, Ш({к: в}))
+        elif isinstance(ц, ast.Starred):
+            с.присвоїти(ц.value, в)
+
+    # ── стейтменти ──
+    def викон(с, тіло):
+        for s in тіло:
+            t = type(s)
+            if t in (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef):
+                continue
+            if t is ast.Assign:
+                в = с.ev(s.value)
+                for ц in s.targets:
+                    с.присвоїти(ц, в)
+            elif t is ast.AnnAssign:
+                if s.value is not None:
+                    с.присвоїти(s.target, с.ev(s.value))
+            elif t is ast.AugAssign:
+                с.присвоїти(s.target, с.ev(s.value))
+            elif t in (ast.For, ast.AsyncFor):
+                с.присвоїти(s.target, ітерувати(с.ev(s.iter)))
+                с.викон(s.body)
+                с.викон(s.orelse)
+            elif t is ast.While:
+                с.ev(s.test)
+                с.викон(s.body)
+                с.викон(s.orelse)
+            elif t is ast.If:
+                с.ev(s.test)
+                с.викон(s.body)
+                с.викон(s.orelse)
+            elif t in (ast.With, ast.AsyncWith):
+                for і in s.items:
+                    в = с.ev(і.context_expr)
+                    if і.optional_vars is not None:
+                        с.присвоїти(і.optional_vars, в)
+                с.викон(s.body)
+            elif t.__name__ in ('Try', 'TryStar'):
+                с.викон(s.body)
+                for h in s.handlers:
+                    с.викон(h.body)
+                с.викон(s.orelse)
+                с.викон(s.finalbody)
+            elif t is ast.Return:
+                if s.value is not None:
+                    с.ret = J(с.ret, с.ev(s.value))
+            elif t is ast.Expr:
+                с.ev(s.value)
+            elif t is ast.Raise:
+                if s.exc is not None:
+                    с.ev(s.exc)
+            elif t is ast.Assert:
+                с.ev(s.test)
+            elif t.__name__ == 'Match':
+                с.ev(s.subject)
+                for кейс in s.cases:
+                    с.викон(кейс.body)
+
+    # ── вирази ──
+    def ev(с, е):
+        t = type(е)
+        if t is ast.Name:
+            return с.env.get(е.id, ЧИСТЕ)
+        if t is ast.Constant:
+            return ЧИСТЕ
+        if t is ast.Attribute:
+            return М_(с.ev(е.value)[0])
+        if t is ast.Subscript:
+            б = с.ev(е.value)
+            сл = е.slice
+            if isinstance(сл, ast.Slice):
+                return б
+            if isinstance(сл, ast.Constant):
+                if сл.value == 'content' and з_choices(е.value):
+                    ДЖЕРЕЛА_МІСЦЯ[(с.fn.мод.шлях, е.lineno)].add('choices→message→content')
+                    return М_A
+                if джерельний(б, сл.value):
+                    ДЖЕРЕЛА_МІСЦЯ[(с.fn.мод.шлях, е.lineno)].add(сл.value)
+                return читати(б, сл.value)
+            с.ev(сл)
+            return читати(б, None)
+        if t is ast.Call:
+            return с.виклик(е)
+        if t is ast.BoolOp:
+            return Jвсі(с.ev(х) for х in е.values)
+        if t is ast.IfExp:
+            с.ev(е.test)
+            return J(с.ev(е.body), с.ev(е.orelse))
+        if t is ast.Compare:
+            с.ev(е.left)
+            for х in е.comparators:
+                с.ev(х)
+            return ЧИСТЕ
+        if t is ast.UnaryOp:
+            в = с.ev(е.operand)
+            return ЧИСТЕ if isinstance(е.op, ast.Not) else в
+        if t is ast.BinOp:
+            л, п = с.ev(е.left), с.ev(е.right)
+            if isinstance(е.op, ast.Mod) and isinstance(е.left, ast.Constant) and isinstance(е.left.value, str):
+                return ЧИСТЕ
+            return J(л, п)
+        if t is ast.JoinedStr:
+            for х in е.values:
+                if isinstance(х, ast.FormattedValue):
+                    с.ev(х.value)
+            return ЧИСТЕ
+        if t is ast.Dict:
+            д = {}
+            for к, в in zip(е.keys, е.values):
+                вв = с.ev(в)
+                if к is None:
+                    д = {'**': J(д.get('**', ЧИСТЕ), вв)} | д
+                    continue
+                кк = к.value if isinstance(к, ast.Constant) and isinstance(к.value, (str, int)) else '*'
+                if not isinstance(к, ast.Constant):
+                    с.ev(к)
+                д[кк] = J(д.get(кк, ЧИСТЕ), вв)
+            розгорнуте = д.pop('**', ЧИСТЕ)
+            return J(розгорнуте, Ш(д))
+        if t in (ast.List, ast.Set):
+            return Ш({'*': Jвсі(ітерувати(с.ev(х.value)) if isinstance(х, ast.Starred) else с.ev(х) for х in е.elts)})
+        if t is ast.Tuple:
+            if any(isinstance(х, ast.Starred) for х in е.elts):
+                return Ш({'*': Jвсі(ітерувати(с.ev(х.value)) if isinstance(х, ast.Starred) else с.ev(х) for х in е.elts)})
+            return Ш({і: с.ev(х) for і, х in enumerate(е.elts)})
+        if t in (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.DictComp):
+            for г in е.generators:
+                с.присвоїти(г.target, ітерувати(с.ev(г.iter)))
+                for у in г.ifs:
+                    с.ev(у)
+            if t is ast.DictComp:
+                return Ш({'*': J(с.ev(е.key), с.ev(е.value))})
+            return Ш({'*': с.ev(е.elt)})
+        if t is ast.NamedExpr:
+            в = с.ev(е.value)
+            с.присвоїти(е.target, в)
+            return в
+        if t in (ast.Await, ast.Starred, ast.YieldFrom, ast.FormattedValue):
+            return с.ev(е.value)
+        if t is ast.Yield:
+            в = с.ev(е.value) if е.value is not None else ЧИСТЕ
+            с.ret = J(с.ret, Ш({'*': в}))
+            return ЧИСТЕ
+        return ЧИСТЕ
+
+    def виклик(с, е):
+        ав = [ітерувати(с.ev(а.value)) if isinstance(а, ast.Starred) else с.ev(а) for а in е.args]
+        кв = {к.arg: с.ev(к.value) for к in е.keywords}
+        g = вирішити(с.fn.мод, е)
+        f = е.func
+        if g is not None:
+            кт = [ЧИСТЕ] * len(g.параметри)
+            if not any(isinstance(а, ast.Starred) for а in е.args):
+                for і, в in enumerate(ав[:len(кт)]):
+                    кт[і] = в
+            for к, в in кв.items():
+                if к in g.параметри:
+                    кт[g.параметри.index(к)] = в
+            return аналіз(g, tuple(кт))
+        if isinstance(f, ast.Attribute):
+            модульний = isinstance(f.value, ast.Name) and f.value.id in с.fn.мод.імпорти and f.value.id not in с.env
+            if модульний:
+                return с.вбудована(f.attr, ав, кв)
+            return с.метод(f.attr, с.ev(f.value), ав, кв, е)
+        if isinstance(f, ast.Name):
+            return с.вбудована(f.id, ав, кв)
+        с.ev(f)
+        return М_(frozenset().union(*(в[0] for в in ав + list(кв.values()))) if ав or кв else Ø)
+
+    def вбудована(с, ім, ав, кв):
+        усі = ав + list(кв.values())
+        м = frozenset().union(*(в[0] for в in усі)) if усі else Ø
+        if ім in ОПИСОВІ_ВБУДОВАНІ:
+            return ЧИСТЕ
+        if ім == 'dict':
+            return J(ав[0] if ав else ЧИСТЕ, J(кв.pop(None, ЧИСТЕ), Ш({к: в for к, в in кв.items() if к})))
+        if ім in ('list', 'tuple', 'set', 'frozenset', 'sorted', 'reversed', 'deque', 'OrderedDict', 'Counter'):
+            return J(М_(ав[0][0]), Ш({'*': ітерувати(ав[0])})) if ав else ЧИСТЕ
+        if ім in ('str', 'int', 'float', 'abs', 'round', 'Decimal', 'Fraction', 'normalize', 'unescape', 'dumps', 'escape',
+                  'sub', 'match', 'fullmatch', 'search', 'findall', 'finditer', 'split', 'quote', 'unquote'):
+            return М_(м)
+        if ім == 'enumerate':
+            return Ш({'*': Ш({0: ЧИСТЕ, 1: ітерувати(ав[0])})}) if ав else ЧИСТЕ
+        if ім == 'zip':
+            return Ш({'*': Ш({і: ітерувати(а) for і, а in enumerate(ав)})})
+        if ім == 'next':
+            return J(ітерувати(ав[0]) if ав else ЧИСТЕ, ав[1] if len(ав) > 1 else ЧИСТЕ)
+        if ім == 'iter':
+            return ав[0] if ав else ЧИСТЕ
+        if ім == 'filter':
+            return Ш({'*': ітерувати(ав[1])}) if len(ав) > 1 else ЧИСТЕ
+        if ім == 'map':
+            return Ш({'*': М_(ітерувати(ав[-1])[0])}) if ав else ЧИСТЕ
+        if ім in ('min', 'max'):
+            return J(ітерувати(ав[0]) if len(ав) == 1 else Jвсі(ав), кв.get('default', ЧИСТЕ))
+        if ім == 'sum':
+            return М_(ітерувати(ав[0])[0]) if ав else ЧИСТЕ
+        if ім in ('deepcopy', 'copy'):
+            return ав[0] if ав else ЧИСТЕ
+        if ім in ('loads', 'literal_eval'):
+            return J(М_(ав[0][0]), ЗАПИТ if ав[0][1] else ЧИСТЕ) if ав else ЧИСТЕ
+        if ім in ('getattr',):
+            return М_(ав[0][0]) if ав else ЧИСТЕ
+        return М_(м)
+
+    def метод(с, ім, п, ав, кв, е):
+        f = е.func
+        if ім in ('get', 'pop'):
+            к = е.args[0].value if е.args and isinstance(е.args[0], ast.Constant) else None
+            if к == 'content' and з_choices(f.value):
+                ДЖЕРЕЛА_МІСЦЯ[(с.fn.мод.шлях, е.lineno)].add('choices→message→content')
+                return М_A
+            if джерельний(п, к):
+                ДЖЕРЕЛА_МІСЦЯ[(с.fn.мод.шлях, е.lineno)].add(к)
+            return J(читати(п, к), ав[1] if len(ав) > 1 else ЧИСТЕ)
+        if ім == 'setdefault':
+            к = е.args[0].value if е.args and isinstance(е.args[0], ast.Constant) else '*'
+            if len(ав) > 1:
+                с.зберегти(f.value, Ш({к: ав[1]}))
+            return J(читати(п, к if к != '*' else None), ав[1] if len(ав) > 1 else ЧИСТЕ)
+        if ім == 'items':
+            return J(М_(п[0]), Ш({'*': Ш({0: ЧИСТЕ, 1: значення_(п)})}))
+        if ім == 'values':
+            return J(М_(п[0]), Ш({'*': значення_(п)}))
+        if ім == 'keys':
+            return М_(п[0])
+        if ім in ('copy', '__copy__'):
+            return п
+        if ім in МУТАТОРИ:
+            if ім in ('append', 'add', 'appendleft') and ав:
+                с.зберегти(f.value, Ш({'*': ав[0]}))
+            elif ім == 'insert' and len(ав) > 1:
+                с.зберегти(f.value, Ш({'*': ав[1]}))
+            elif ім in ('extend', 'extendleft') and ав:
+                с.зберегти(f.value, Ш({'*': ітерувати(ав[0])}))
+            elif ім == 'update':
+                с.зберегти(f.value, J(ав[0] if ав else ЧИСТЕ, Ш({к: в for к, в in кв.items() if к})))
+            return ЧИСТЕ
+        if ім in РЯДКОВІ_МЕТОДИ:
+            return М_(п[0])
+        if ім == 'join':
+            return М_(ітерувати(ав[0])[0]) if ав else ЧИСТЕ
+        if ім in БУЛЕВІ_МЕТОДИ:
+            return ЧИСТЕ
+        усі = [п] + ав + list(кв.values())
+        return М_(frozenset().union(*(в[0] for в in усі)))
+
+
+def ендпойнти():
+    """Функції, які кличе показ: значення словника `bridge.виклик` і виклики з `вхід` у `bridge.виклик_а`."""
+    б = МОДУЛІ.get('bridge')
+    res = []
+    if б is None:
+        return res
+    for ім in ('виклик', 'виклик_а'):
+        fn = б.функції.get(ім)
+        if fn is None:
+            continue
+        for х in ast.walk(fn.вузол):
+            імена = []
+            if isinstance(х, ast.Dict):
+                імена = [в.id for в in х.values if isinstance(в, ast.Name)]
+            elif isinstance(х, ast.Call) and isinstance(х.func, ast.Name) and any(
+                    isinstance(а, ast.Name) and а.id == 'вхід' for а in х.args) and х.func.id not in ('виклик',):
+                імена = [х.func.id]
+            for і in імена:
+                g = вирішити(б, ast.Call(func=ast.Name(id=і, ctx=ast.Load()), args=[], keywords=[]))
+                if g is not None and g not in res:
+                    res.append(g)
+    return res
+
+
+def потік_від_моделі():
+    """Аналіз: ендпойнти з ЗАПИТ у першому параметрі, потім кожна функція продукту з чистими аргументами (джерело (2)
+    і повернення М із глибини). → [Аналіз] із М у середовищі."""
+    for таб in (МЕМО, В_РОБОТІ, ШИРОКИЙ, КОНТЕКСТИ, ДЖЕРЕЛА_МІСЦЯ):
+        таб.clear()
+    del АНАЛІЗИ[:]
+    sys.setrecursionlimit(20000)
+    for g in ендпойнти():
+        аналіз(g, (ЗАПИТ,) + tuple(ЧИСТЕ for _ in g.параметри[1:]))
+    for мод in МОДУЛІ.values():
+        for fn in sorted(set(мод.функції.values()), key=lambda f: f.вузол.lineno):
+            аналіз(fn, tuple(ЧИСТЕ for _ in fn.параметри))
+    return АНАЛІЗИ
+
+
 # ───────────────────────── перевірки ─────────────────────────
 _ВГЛИБ = set()
 
@@ -392,12 +913,16 @@ def знайти_перевірки(fn, п):
     for н in ast.walk(fn.вузол):
         if isinstance(н, ast.Call) and isinstance(н.func, ast.Name) and н.func.id == 'isinstance' and len(н.args) == 2:
             if п.т(н.args[0]):
-                res.append((н, н.args[0], 'форма', полярність(н)))
+                # `isinstance(E, bool)` — виняток типу (bool ⊂ int): істина = відкинуто, полярність обернена (16233)
+                виняток = isinstance(н.args[1], ast.Name) and н.args[1].id == 'bool'
+                res.append((н, н.args[0], 'форма', полярність(н) != виняток))
         elif isinstance(н, ast.Compare):
             if len(н.ops) == 1 and isinstance(н.ops[0], (ast.In, ast.NotIn)):
                 л, ц = н.left, н.comparators[0]
                 if isinstance(л, ast.Constant):
                     continue
+                if isinstance(ц, (ast.Tuple, ast.List, ast.Set)) and ц.elts and all(порожнє_значення(х) for х in ц.elts):
+                    continue      # `E not in (None, "")` — непорожність, не перевірка значення (16233)
                 if п.т(л) and not п.т(ц) and табличний(fn, ц):
                     поз = полярність(н) == isinstance(н.ops[0], ast.In)
                     res.append((н, л, 'перелік', поз))
@@ -593,7 +1118,7 @@ def доля(гілка, корінь=None):
                 імена = х.value
             elif isinstance(х, ast.keyword) and х.arg:        # `dict(…, причина="…")` — слід названий ключем
                 імена = х.arg
-            if імена and СЛІД.search(імена):
+            if імена and (СЛІД.search(імена) or імена in СЛІД_КОДУ):
                 return 'б', 'слід: ' + імена[:40]
     # порожня
     усі_порожні = True
@@ -614,17 +1139,52 @@ def доля(гілка, корінь=None):
     return 'г', 'інше: ' + цілий[:60].replace('\n', ' ')
 
 
+# Імена сліду З КОДУ (16237): приймачі й ключі, куди продукт кладе код причини (`сторож.append(dict(чому="code_outside_list"))`,
+# `причина="not_json_object: …"`), — доповнюють СЛІД, щоб гілка, яка пише в такий запис, лічилася (б), а не (а).
+СЛІД_КОДУ = set()
+КОД_ПРИЧИНИ = re.compile(r'^[a-z][a-z0-9]*(_[a-z0-9]+)+([:;( =].*)?$', re.S)
+
+
+def код_причини(в):
+    return isinstance(в, ast.Constant) and isinstance(в.value, str) and len(в.value) < 90 and bool(КОД_ПРИЧИНИ.match(в.value))
+
+
+def зібрати_сліди():
+    СЛІД_КОДУ.clear()
+    for мод in МОДУЛІ.values():
+        if мод.імʼя not in МОДУЛЬ_ЧИЯ:
+            continue
+        for н in ast.walk(мод.дерево):
+            if isinstance(н, ast.Call) and isinstance(н.func, ast.Attribute) and н.func.attr in МУТАТОРИ \
+                    and any(код_причини(х) for а in н.args for х in ast.walk(а)):
+                шл = шлях_приймача(н.func.value)
+                if шл:
+                    СЛІД_КОДУ.add(str(шл[1][-1]) if шл[1] else шл[0])
+            elif isinstance(н, ast.keyword) and н.arg and (код_причини(н.value) or isinstance(н.value, ast.BinOp)
+                                                             and код_причини(н.value.left)):
+                СЛІД_КОДУ.add(н.arg)
+            elif isinstance(н, ast.Dict):
+                for к, в in zip(н.keys, н.values):
+                    if isinstance(к, ast.Constant) and isinstance(к.value, str) and (код_причини(в) or isinstance(в, ast.BinOp) and код_причини(в.left)):
+                        СЛІД_КОДУ.add(к.value)
+    СЛІД_КОДУ.discard('*')
+
+
+def слідове(текст):
+    return bool(СЛІД.search(текст)) or any(т in СЛІД_КОДУ for т in re.findall(r'\w+', текст))
+
+
 def без_слідових(гілка):
     """Гілка без стейтментів-слідів (`…не_взято.append(…)`, `незнайомі += …`): вони значення не ведуть далі."""
     res = []
     for х in гілка:
         if isinstance(х, ast.Expr) and isinstance(х.value, ast.Call) and isinstance(х.value.func, ast.Attribute) \
                 and х.value.func.attr in ('append', 'extend', 'add', 'update', 'setdefault') \
-                and СЛІД.search(ast.unparse(х.value.func.value)):
+                and слідове(ast.unparse(х.value.func.value)):
             continue
-        if isinstance(х, ast.AugAssign) and СЛІД.search(ast.unparse(х.target)):
+        if isinstance(х, ast.AugAssign) and слідове(ast.unparse(х.target)):
             continue
-        if isinstance(х, ast.Assign) and any(СЛІД.search(ast.unparse(ц)) for ц in х.targets):
+        if isinstance(х, ast.Assign) and any(слідове(ast.unparse(ц)) for ц in х.targets):
             continue            # `причина = "…"`, `р["помилки"] = …` — слід, не ведення значення
         res.append(х)
     return res
@@ -697,7 +1257,137 @@ def відкинуте_проходження(б, вузол):
     return res
 
 
+def імена_цілі(ц):
+    return {н.id for н in ast.walk(ц) if isinstance(н, ast.Name)} if ц is not None else set()
+
+
+def пошук_першого(б, р, корінь):
+    """16238: `for о in …: if <перевірка о>: return о / break` — пошук першого придатного, невідповідне не відкинуто."""
+    цикл = б.get(р)
+    if isinstance(цикл, (ast.For, ast.AsyncFor)) and р in цикл.body and корінь in імена_цілі(цикл.target):
+        return any(isinstance(х, (ast.Return, ast.Break)) for s_ in р.body for х in ast.walk(s_))
+    return False
+
+
+def цілим(fn, вузли, імʼя):
+    """Чи `імʼя` читається цілим (передано, повернено, розкладено), а не лише інше поле `імʼя["k"]`/`.get("k")`,
+    опис (`len`, `isinstance`) чи належність (`x in імʼя`)."""
+    б = fn.батьки
+    for в in вузли:
+        for х in ast.walk(в):
+            if not (isinstance(х, ast.Name) and х.id == імʼя and isinstance(х.ctx, ast.Load)):
+                continue
+            р = б.get(х)
+            if isinstance(р, ast.Subscript) and р.value is х and isinstance(р.slice, ast.Constant):
+                continue
+            if isinstance(р, ast.Attribute) and р.value is х:
+                ррр = б.get(р)
+                if isinstance(ррр, ast.Call) and р.attr in ('get', 'items', 'keys', 'values', 'pop') and ррр.args[:1] \
+                        and isinstance(ррр.args[0], ast.Constant):
+                    continue
+                if р.attr in БУЛЕВІ_МЕТОДИ or р.attr in МУТАТОРИ:
+                    continue
+            if isinstance(р, ast.Call) and ім_виклику(р) in ОПИСОВІ_ВБУДОВАНІ and х in р.args:
+                continue
+            if isinstance(р, ast.Compare) and any(isinstance(о, (ast.In, ast.NotIn)) for о in р.ops):
+                continue
+            return True
+    return False
+
+
+def контейнер_далі(fn, ст, корінь, після=None):
+    """16238: відкинуте лишається в контейнері, що йде далі — корінь узято з C (`for корінь in …C…` чи
+    `корінь = …C…`), і C після перевірки читається цілим. → імʼя C чи None."""
+    б = fn.батьки
+    while ст in б and not isinstance(ст, ast.stmt):
+        ст = б[ст]
+    джерела = []
+    х = ст
+    while х in б:
+        х = б[х]
+        if isinstance(х, (ast.For, ast.AsyncFor)) and корінь in імена_цілі(х.target):
+            джерела.append(х.iter)
+            break
+    for н in ast.walk(fn.вузол):
+        if isinstance(н, ast.Assign) and н.lineno <= ст.lineno and any(корінь in імена_цілі(ц) for ц in н.targets):
+            джерела.append(н.value)
+    локальні = set(fn.параметри) | {н.id for у in ast.walk(fn.вузол) if isinstance(у, (ast.Assign, ast.For, ast.AnnAssign))
+                                    for н in ast.walk(у.targets[0] if isinstance(у, ast.Assign) else у.target)
+                                    if isinstance(н, ast.Name)}
+    кандидати = {н.id for д in джерела for н in ast.walk(д) if isinstance(н, ast.Name) and н.id in локальні and н.id != корінь}
+    після = стейтменти_після(б, ст) if після is None else після
+    for к in sorted(кандидати):
+        if цілим(fn, після, к):
+            return к
+    return None
+
+
+def носії_відмови(fn, пер, діап):
+    """Імена, які гілка відкинутого пише (присвоєння, `+=`, `.append`), і ціль присвоєння, в якому стоїть перевірка
+    (`вердикт = … if <перевірка> else None`)."""
+    б = fn.батьки
+    н_ = set()
+    ст = пер
+    while ст in б and not isinstance(ст, ast.stmt):
+        ст = б[ст]
+    if isinstance(ст, ast.Assign):
+        for ц in ст.targets:
+            н_ |= імена_цілі(ц)
+    if діап:
+        for х in ast.walk(fn.вузол):
+            if not (діап[0] <= getattr(х, 'lineno', 0) <= діап[1]):
+                continue
+            if isinstance(х, ast.Assign):
+                for ц in х.targets:
+                    шл = шлях_приймача(ц) if not isinstance(ц, ast.Name) else (ц.id, [])
+                    if шл:
+                        н_.add(шл[0])
+            elif isinstance(х, ast.AugAssign) and isinstance(х.target, ast.Name):
+                н_.add(х.target.id)
+            elif isinstance(х, ast.Call) and isinstance(х.func, ast.Attribute) and х.func.attr in МУТАТОРИ:
+                шл = шлях_приймача(х.func.value)
+                if шл:
+                    н_.add(шл[0])
+    return н_, ст
+
+
+def слід_нижче(fn, пер, діап):
+    """16237: доля в усій функції — нижче за тією самою умовою (той самий текст перевірки) чи змінною, яку пише гілка
+    відкинутого: гілка нижче пише слід (СЛІД, імена сліду з коду) чи повертає запис із цією змінною. → (рядок, що)."""
+    носії, ст = носії_відмови(fn, пер, діап)
+    текст = ast.unparse(пер)
+    for s_ in стейтменти_після(fn.батьки, ст):
+        for х in ast.walk(s_):
+            if not isinstance(х, (ast.If, ast.While, ast.IfExp)):
+                continue
+            тест = х.test
+            та_сама = any(ast.unparse(у) == текст for у in ast.walk(тест) if isinstance(у, type(пер)))
+            через = sorted({у.id for у in ast.walk(тест) if isinstance(у, ast.Name) and у.id in носії})
+            if not (та_сама or через):
+                continue
+            гілки = [s_] if isinstance(х, ast.IfExp) else [х.body, х.orelse]
+            for г in гілки:
+                г = г if isinstance(г, list) else [г]
+                if г and доля(г)[0] == 'б':
+                    return х.lineno, 'та сама умова' if та_сама else 'через «%s»' % через[0]
+                for у in г:
+                    for z in ast.walk(у):
+                        if isinstance(z, ast.Return) and isinstance(z.value, (ast.Dict, ast.Call)) and через \
+                                and читає_імʼя([z.value], через[0]):
+                            return х.lineno, 'запис відмови з «%s»' % через[0]
+    return None
+
+
 def класифікувати(fn, пер, E, вид, поз):
+    д, пояс, діап = класифікувати_місцево(fn, пер, E, вид, поз)
+    if д in ('а', 'г') and not пояс.startswith(('raise', 'except: raise', 'предикат', 'assert')):
+        н = слід_нижче(fn, пер, діап)
+        if н:
+            return 'б', 'слід нижче (рядок %d, %s); місцево: %s' % (н[0], н[1], пояс[:50]), діап
+    return д, пояс, діап
+
+
+def класифікувати_місцево(fn, пер, E, вид, поз):
     """→ (доля, пояснення, діапазон рядків відкинутої гілки | None).
     Відкинута гілка — за ПОЛЯРНІСТЮ перевірки: позитивна → `else` (чи проходження далі), негативна → тіло; «веде далі» —
     лише коли ця гілка читає саме значення (а не описує його типом чи повідомленням, див. `читає_значення`)."""
@@ -741,12 +1431,22 @@ def класифікувати(fn, пер, E, вид, поз):
             гілка = []
         діап = діапазон_гілки(гілка)
         if not гілка:
+            # 16238: без гілки відкинутого — (а) лише коли умова — відмова, а не пошук першого придатного, і відкинуте не
+            # лишається в контейнері, що йде далі
+            if поз and пошук_першого(б, р, корінь):
+                return 'далі', 'пошук першого придатного: невідповідне — не відмова', None
+            с_ = контейнер_далі(fn, р, корінь)
+            if с_:
+                return 'далі', 'відкинуте лишається в «%s», що йде далі' % с_, None
             шлях = відкинуте_проходження(б, р)
             if шлях and not чит(без_слідових(шлях)):
                 д, пояс = доля(шлях, корінь)
                 if д == 'г' and пояс.startswith('інше') and isinstance(шлях[-1], ast.Return):
-                    # звичайний результат функції після охоронюваного блоку: значення туди не потрапило (16222)
-                    return 'а', 'проходить до загального результату: ' + пояс[6:50], діапазон_гілки(шлях)
+                    # звичайний результат функції після охоронюваного блоку: значення туди не потрапило (16222);
+                    # (а) — лише коли цей результат порожній, інакше — підміна непорожнім (16238)
+                    if порожнє_значення(шлях[-1].value):
+                        return 'а', 'проходить до загального результату: ' + пояс[6:50], діапазон_гілки(шлях)
+                    return 'г', 'проходить до непорожнього загального результату: ' + пояс[6:50], діапазон_гілки(шлях)
                 return д, 'проходить далі: ' + пояс, діапазон_гілки(шлях)
             після = стейтменти_після(б, р)
             if чит(після):
@@ -762,6 +1462,9 @@ def класифікувати(fn, пер, E, вид, поз):
             вираз = вираз.body if заперечено else вираз.orelse
         if чит([вираз]):
             return 'далі', 'підміна читає той самий корінь', None
+        с_ = контейнер_далі(fn, р, корінь, [вираз])
+        if с_:
+            return 'далі', 'підміна несе контейнер «%s» з відкинутим далі' % с_, None
         if isinstance(вираз, ast.Constant) and isinstance(вираз.value, str) and re.fullmatch(r'[a-z][a-z_:()=, %s]{5,}', вираз.value):
             return 'б', 'підміна кодом причини «%s»' % вираз.value[:40], (вираз.lineno, getattr(вираз, 'end_lineno', вираз.lineno))
         д, пояс = доля([ast.Expr(value=вираз)] if порожнє_значення(вираз) is False else [ast.Return(value=вираз)], корінь)
@@ -769,7 +1472,17 @@ def класифікувати(fn, пер, E, вид, поз):
         return д, 'підміна: ' + пояс, діап
     if isinstance(р, ast.comprehension):
         if not поз:
-            return 'далі', 'умова в генераторі виключає протилежне (негативна перевірка)', None
+            # негативна перевірка у фільтрі (16233): істина перевірки — відкинуте, і саме воно проходить фільтр, тобто
+            # генератор збирає відкинуті; доля — куди йде результат генератора
+            ст = р
+            while ст in б and not isinstance(ст, ast.stmt):
+                ст = б[ст]
+            цілі = [ast.unparse(ц) for ц in getattr(ст, 'targets', [getattr(ст, 'target', None)]) if ц is not None]
+            if isinstance(ст, ast.Expr) and isinstance(ст.value, ast.Call) and isinstance(ст.value.func, ast.Attribute):
+                цілі.append(ast.unparse(ст.value.func.value))
+            if any(слідове(ц) for ц in цілі):
+                return 'б', 'відкинуті зібрано генератором у слід «%s»' % цілі[0][:30], None
+            return 'далі', 'відкинуті проходять фільтр (негативна перевірка): генератор їх лишає', None
         if корінь in {н.id for н in ast.walk(р.target) if isinstance(н, ast.Name)}:
             return 'а', 'відсів у генераторі (елемент зникає)', None
         # корінь із зовнішньої області (`next((x[к] for к in … if isinstance(x, dict)), None)`): значення не зникає,
@@ -814,6 +1527,11 @@ def класифікувати(fn, пер, E, вид, поз):
                 після = стейтменти_після(б, ф)
                 if чит(після):
                     return 'далі', 'результат перевірки в «%s», далі значення читається' % N, None
+                if пошук_першого(б, ф, корінь):
+                    return 'далі', 'пошук першого придатного (через «%s»): невідповідне — не відмова' % N, None
+                с_ = контейнер_далі(fn, ф, корінь)
+                if с_:
+                    return 'далі', 'відкинуте лишається в «%s», що йде далі' % с_, None
                 return 'а', 'відсів без гілки (результат у «%s»)' % N, None
             д, пояс = доля(гілка, корінь)
             return д, 'через «%s»: %s' % (N, пояс), діапазон_гілки(гілка)
@@ -853,8 +1571,17 @@ def зібрати():
         except SyntaxError:
             print('пропущено (синтаксис):', ф, file=sys.stderr)
     табличні_параметри()
+    зібрати_сліди()
+    # (1) потік від відповіді моделі (16239): перевірки на значенні з джерел будовою, у кожному контексті
+    сирі = collections.OrderedDict()
+    for а in потік_від_моделі():
+        for пер, E, вид, поз in знайти_перевірки(а.fn, а):
+            к = (а.fn.мод.шлях, пер.lineno, вид, джерело_шляху(пер)[:70].replace('\n', ' '))
+            було = сирі.get(к)
+            сирі[к] = (а.fn, пер, E, вид, поз, (було[5] if було else '') + а.джерело(E))
+    # (2) корінь за іменем (лічба до кроку 16239) — лише щоб назвати окремим рядком «запис коду» те, що вона брала
     міжфункційно()
-    рядки = []
+    за_іменем = collections.OrderedDict()
     for мод in МОДУЛІ.values():
         if мод.імʼя not in МОДУЛЬ_ЧИЯ:
             continue
@@ -862,12 +1589,20 @@ def зібрати():
             п = Потік(fn)
             п.прогін(fn.вузол)
             for пер, E, вид, поз in знайти_перевірки(fn, п):
-                д, пояс, діап = класифікувати(fn, пер, E, вид, поз)
-                if вид == 'перелік·пошук' and д == 'г' and пояс.startswith(('предикат', 'контекст', 'вираз', 'assert')):
-                    continue      # пошук у таблиці як переклад значення, не як перевірка в умові
-                рядки.append(dict(файл=мод.шлях, рядок=пер.lineno, функція=fn.імʼя, поле=поле_з(E), чия=чия(мод.імʼя),
-                                  вид=вид, E=джерело_шляху(E), доля=д, пояснення=пояс, діапазон=діап, вираз=джерело_шляху(пер)[:70].replace('\n', ' '),
-                                  вузол=пер, fn=fn))
+                к = (мод.шлях, пер.lineno, вид, джерело_шляху(пер)[:70].replace('\n', ' '))
+                if к not in сирі and к not in за_іменем:
+                    за_іменем[к] = (fn, пер, E, вид, поз, '')
+    рядки = []
+    for корінь, набір in (('модель', сирі), ('запис коду', за_іменем)):
+        for (шлях, _, _, _), (fn, пер, E, вид, поз, дж) in набір.items():
+            fn.батьки = {д: н for н in ast.walk(fn.вузол) for д in ast.iter_child_nodes(н)}
+            д, пояс, діап = класифікувати(fn, пер, E, вид, поз)
+            if вид == 'перелік·пошук' and д == 'г' and пояс.startswith(('предикат', 'контекст', 'вираз', 'assert')):
+                continue      # пошук у таблиці як переклад значення, не як перевірка в умові
+            рядки.append(dict(файл=шлях, рядок=пер.lineno, функція=fn.імʼя, поле=поле_з(E), чия=чия(fn.мод.імʼя),
+                              вид=вид, E=джерело_шляху(E), доля=д, пояснення=пояс, діапазон=діап,
+                              вираз=джерело_шляху(пер)[:70].replace('\n', ' '), вузол=пер, fn=fn, корінь=корінь,
+                              джерело='A' if 'A' in дж else 'B' if 'B' in дж else ''))
     # слід у викликача: (а) із `return <порожнє>` у функції — дивимось, чи біля кожного виклику (8 рядків униз, без
     # коментарів) стоїть слід (СЛІД); це лише ознака для звірки очима, у долю (а) не вноситься
     виклики = collections.defaultdict(list)
@@ -1000,8 +1735,8 @@ def два_значення(р):
             if діап:
                 відкинуто = 'так' if any(os.path.abspath(os.path.join(КОРІНЬ, x['файл'])) == ш and діап[0] <= л <= діап[1]
                                           for ш, л in виконано[порядок:]) else 'ні'
-            print('  %s:%d · %s · %s · доля(стат.) %s · відкинуту гілку виконано: %s\n      E=%s → %s' % (
-                x['файл'], x['рядок'], x['вид'], x['вираз'][:60], x['доля'], відкинуто, x['E'][:50], знач))
+            print('  %s:%d · %s · %s · корінь %s · доля(стат.) %s · відкинуту гілку виконано: %s\n      E=%s → %s' % (
+                x['файл'], x['рядок'], x['вид'], x['вираз'][:60], x.get('корінь', ''), x['доля'], відкинуто, x['E'][:50], знач))
     return
 
 
@@ -1010,6 +1745,9 @@ def два_значення(р):
 # доля, яку названо ПРАВИЛЬНО очима. Старі правила (main до цього кроку) називали: 16221 — «веде далі», 16222 — «г»,
 # 16223 — «веде далі», 16224 — «в». `--самоперевірка` друкує кожну фікстуру й виходить з кодом 1 при розбіжності.
 ФІКСТУРИ_ТЕКСТ = '''
+import json as json_
+
+
 def ф_16221_тип(об, шлях):
     if not isinstance(об, dict):
         return [("wrong_type(got=%s)" % type(об).__name__)]
@@ -1071,8 +1809,109 @@ def ф_16224_чужий_запис(об):
     уривок = об.get("quote")
     вих["quote"] = уривок
     return вих
+
+
+ВЕРДИКТИ_Ф = ("так", "ні")
+СХЕМИ_Ф = {"а": 1, "типова": 2}
+
+
+def ф_16237_слід_нижче(об):
+    сторож = []
+    вердикт = об.get("verdict") if об.get("verdict") in ВЕРДИКТИ_Ф else None
+    if об.get("verdict") not in (None, "") and вердикт is None:
+        сторож.append(dict(де="verdict", чому="code_outside_list", що=об.get("verdict")))
+    return dict(вердикт=вердикт, сторож=сторож)
+
+
+def ф_16237_та_сама_умова(об):
+    т = об.get("text") if isinstance(об, dict) else None
+    if т:
+        return dict(текст=т)
+    return dict(текст="", причина="no_text" if т == "" else "not_json_object")
+
+
+def ф_16238_контейнер(вердикт):
+    for о in вердикт["образи"]:
+        if isinstance(о.get("структура"), dict):
+            о["структура"] = dict(о["структура"], ок=1)
+    return вердикт
+
+
+def ф_16238_пошук(вердикт, ід):
+    for о in (вердикт.get("образи") or []):
+        if isinstance(о, dict) and о.get("ід") == ід:
+            return о
+    return None
+
+
+def ф_16238_непорожній(відповідь):
+    if відповідь in СХЕМИ_Ф:
+        return СХЕМИ_Ф[відповідь]
+    return СХЕМИ_Ф["типова"]
+
+
+def ф_16233_збирає_вади(виклик):
+    вади = ["tool.%s: not a key" % к for к in виклик if к not in ("name", "args")]
+    return вади
+
+
+def ф_16233_непорожні(об):
+    return {к: в for к, в in об.items() if в not in (None, "")}
+
+
+def ф_16239_запис_коду(вердикт):
+    for о in вердикт.get("образи") or []:
+        if not isinstance(о, dict):
+            continue
+    return вердикт
+
+
+def ф_16239_поле_запиту(відповідь):
+    d = json_.loads(відповідь)
+    тексти = d.get("тексти")
+    if not isinstance(тексти, dict):
+        return None
+    return тексти
+
+
+def ф_16239_поле_моделі_в_записі(об):
+    запис = dict(причина="value_not_string", що=об.get("k"))
+    if запис["причина"] in ("value_not_string", "x"):
+        return None
+    return запис
+
+
+def вхід_ф(вхід):
+    d = json_.loads(вхід)
+    об = json_.loads(d["відповідь_моделі"])
+    ф_16221_тип(об, "")
+    ф_16221_перелік(об)
+    ф_16222_охоронений_if(об)
+    ф_16223_запасне_значення(об)
+    ф_16223_відсів_нижче(об)
+    ф_16223_змінна_циклу(об)
+    ф_16224_інше_джерело(об, об, "подія")
+    ф_16224_чужий_запис(об)
+    ф_16237_слід_нижче(об)
+    ф_16237_та_сама_умова(об)
+    ф_16238_контейнер(об)
+    ф_16238_пошук(об, d.get("ід"))
+    ф_16238_непорожній(об.get("схема"))
+    ф_16233_збирає_вади(об)
+    ф_16233_непорожні(об)
+    ф_16239_запис_коду(dict(образи=[dict(ід=1)], тексти=d.get("тексти")))
+    ф_16239_поле_запиту(вхід)
+    return ф_16239_поле_моделі_в_записі(об)
 '''
-# (функція, перевірка) → очікувана доля; `далі` — «веде далі»
+ФІКСТУРИ_МІСТ = '''
+from мовний_шар import вхід_ф
+
+
+def виклик(ім, вхід):
+    return {"ф": вхід_ф}[ім](вхід)
+'''
+# (функція, перевірка) → очікувана доля; `далі` — «веде далі», `код` — рядок «запис коду» (корінь не з відповіді
+# моделі), `нема` — не перевірка значення
 ФІКСТУРИ = [
     ('16221', 'ф_16221_тип', 'isinstance(об, dict)', 'г'),
     ('16221', 'ф_16221_перелік', 'об not in ПЕРЕЛІК_Ф', 'г'),
@@ -1082,20 +1921,32 @@ def ф_16224_чужий_запис(об):
     ('16223', 'ф_16223_змінна_циклу', 'isinstance(ц, str)', 'а'),
     ('16224', 'ф_16224_інше_джерело', 'isinstance(об, dict)', 'г'),
     ('16224', 'ф_16224_чужий_запис', 'isinstance(ош, (list, tuple))', 'а'),
+    ('16237', 'ф_16237_слід_нижче', "об.get('verdict') in ВЕРДИКТИ_Ф", 'б'),
+    ('16237', 'ф_16237_та_сама_умова', 'isinstance(об, dict)', 'б'),
+    ('16238', 'ф_16238_контейнер', "isinstance(о.get('структура'), dict)", 'далі'),
+    ('16238', 'ф_16238_пошук', 'isinstance(о, dict)', 'далі'),
+    ('16238', 'ф_16238_непорожній', 'відповідь in СХЕМИ_Ф', 'г'),
+    ('16233', 'ф_16233_збирає_вади', "к not in ('name', 'args')", 'б'),
+    ('16233', 'ф_16233_непорожні', "в not in (None, '')", 'нема'),
+    ('16239', 'ф_16239_запис_коду', 'isinstance(о, dict)', 'код'),
+    ('16239', 'ф_16239_поле_запиту', 'isinstance(тексти, dict)', 'код'),
+    ('16239', 'ф_16239_поле_моделі_в_записі', "запис['причина'] in ('value_not_string', 'x')", 'код'),
 ]
 
 
 def самоперевірка(мод=None):
-    """Фікстури → класифікація; `мод` — модуль лічби (для порівняння зі старою версією). → число розбіжностей."""
+    """Фікстури → класифікація; `мод` — модуль лічби (для порівняння зі старою версією: фікстури й місток — звідси).
+    → число розбіжностей."""
     import tempfile
     мод = мод or sys.modules[__name__]
     з = tempfile.mkdtemp()
-    шлях = os.path.join(з, 'мовний_шар.py')
+    шлях, міст = os.path.join(з, 'мовний_шар.py'), os.path.join(з, 'bridge.py')
     open(шлях, 'w', encoding='utf-8').write(ФІКСТУРИ_ТЕКСТ)
-    мод.файли = lambda: [шлях]
+    open(міст, 'w', encoding='utf-8').write(ФІКСТУРИ_МІСТ)
+    мод.файли = lambda: [міст, шлях]
     мод.МОДУЛІ.clear()
     рядки = мод.зібрати()
-    за = {(x['функція'], x['вираз']): x['доля'] for x in рядки}
+    за = {(x['функція'], x['вираз']): ('код' if x.get('корінь') == 'запис коду' else x['доля']) for x in рядки}
     поганих = 0
     for клас, функція, вираз, очікується in ФІКСТУРИ:
         одержано = за.get((функція, вираз), 'нема')
@@ -1114,65 +1965,103 @@ def самоперевірка(мод=None):
                 'language_contract.py:60 схема_відповіді.py:325')
 
 
+ЗВІРЕНІ = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'звірені_раніше.json')
+
+
+def ключ_звірки(x):
+    return (os.path.basename(x['файл']), x['функція'], x['вираз'])
+
+
+def вибірка(рядки, seed, n, без=()):
+    """`n` місць лічби (корінь з відповіді моделі, ядро) з `seed`, без звірених раніше (ЗВІРЕНІ: 140 місць трьох
+    вибірок і названі місця — за файлом, функцією й виразом, бо рядки зсунулись) і без `без`."""
+    import random
+    звірені = {(x['файл'], x['функція'], x['вираз']) for x in json.load(open(ЗВІРЕНІ, encoding='utf-8'))}
+    пул = [x for x in рядки if ключ_звірки(x) not in звірені and ключ_звірки(x) not in без]
+    random.seed(seed)
+    return пул, random.sample(пул, n)
+
+
+def друк_рядків(назва, рр):
+    ч = collections.Counter(x['доля'] for x in рр)
+    print('%s: перевірок %d · відкидають %d · а: %d · б: %d · в: %d · г: %d · веде далі: %d' % (
+        назва, len(рр), sum(ч[к] for к in 'абвг'), ч['а'], ч['б'], ч['в'], ч['г'], ч['далі']))
+
+
 def головна():
     арги = sys.argv[1:]
     if '--самоперевірка' in арги:
         sys.exit(1 if самоперевірка() else 0)
-    р = зібрати()
+    усі = зібрати()
+    р = [x for x in усі if x['корінь'] == 'модель' and x['чия'] != 'поза ядром']      # лічба: корінь з моделі, ядро
+    код = [x for x in усі if x['корінь'] == 'запис коду']
+    поза = [x for x in усі if x['корінь'] == 'модель' and x['чия'] == 'поза ядром']
     відкидають, далі, ч = підсумок(р)
     if '--таблиця' in арги:
         шлях = арги[арги.index('--таблиця') + 1]
         with open(шлях, 'w', encoding='utf-8') as ф:
-            ф.write('| файл:рядок | поле | чия відповідь | вид | доля | що робить гілка відкинутого | перевірка |\n|---|---|---|---|---|---|---|\n')
-            for x in sorted(р, key=lambda x: (x['файл'], x['рядок'])):
-                ф.write('| `%s:%d` | %s | %s | %s | %s | %s%s | `%s` |\n' % (
-                    x['файл'].replace('джерела/', ''), x['рядок'], x['поле'], x['чия'], x['вид'],
+            ф.write('| файл:рядок | поле | корінь | чия відповідь | вид | доля | що робить гілка відкинутого | перевірка |\n'
+                    '|---|---|---|---|---|---|---|---|\n')
+            for x in sorted(усі, key=lambda x: (x['файл'], x['рядок'])):
+                ф.write('| `%s:%d` | %s | %s | %s | %s | %s | %s%s | `%s` |\n' % (
+                    x['файл'].replace('джерела/', ''), x['рядок'], x['поле'],
+                    {'модель': 'модель·' + (x['джерело'] or '?')}.get(x['корінь'], x['корінь']), x['чия'], x['вид'],
                     {'далі': 'веде далі'}.get(x['доля'], x['доля']), x['пояснення'].replace('|', '/'),
                     (' · слід у викликачі: %d з %d' % x['слід_у_викликача']) if x.get('слід_у_викликача') else '',
                     x['вираз'].replace('|', '/').replace('`', "'")))
     if '--два-значення' in арги:
-        два_значення(р)
+        два_значення(усі)
         return
-    if '--нова-вибірка' in арги:
-        # 40 місць з іншим seed (1611), без 40 зі `--звірка` (seed 16207) і без місць, названих у звірках 16.11
-        # (#4118: 6; #4129: 8; рядки 16221–16224: решта названих); кожне — з кодом навколо для очей
-        import random
-        random.seed(16207)
-        раніше = {(x['файл'], x['рядок'], x['вираз']) for x in random.sample(р, min(40, len(р)))}
-        названі = {м for м in ВІДОМІ_МІСЦЯ.split()}
-        пул = [x for x in р if (x['файл'], x['рядок'], x['вираз']) not in раніше
-               and '%s:%d' % (os.path.basename(x['файл']), x['рядок']) not in названі]
-        random.seed(1611)
-        for i, x in enumerate(random.sample(пул, 40), 1):
+    if '--джерела' in арги:
+        print('ендпойнти (bridge.виклик, bridge.виклик_а; перший параметр — ЗАПИТ показу):')
+        for g in ендпойнти():
+            print('  %s:%d %s' % (g.мод.шлях, g.вузол.lineno, g.імʼя))
+        print('місця, де значення стає відповіддю моделі (поле запиту з КЛЮЧІ_A/КЛЮЧІ_B/ВКЛАДЕНІ_ДЖЕРЕЛА чи '
+              'choices→message→content):')
+        for (ф, л), кк in sorted(ДЖЕРЕЛА_МІСЦЯ.items()):
+            print('  %s:%d %s' % (ф, л, ', '.join(sorted(кк))))
+        return
+    if '--вибірка' in арги:
+        і = арги.index('--вибірка')
+        seed, n = int(арги[і + 1]), int(арги[і + 2])
+        без = set()
+        if '--без' in арги:
+            for с_ in арги[арги.index('--без') + 1].split(','):
+                без |= {ключ_звірки(x) for x in вибірка(р, int(с_.split(':')[0]), int(с_.split(':')[1]))[1]}
+        пул, вв = вибірка(р, seed, n, без)
+        print('пул %d (лічба %d без звірених раніше%s)' % (len(пул), len(р), ' і без ' + арги[арги.index('--без') + 1] if без else ''))
+        for k, x in enumerate(вв, 1):
             рядки = open(x['файл'], encoding='utf-8').read().split('\n')
-            print('#%d %s:%d · %s · E=%s · доля=%s · %s' % (i, x['файл'].replace('джерела/', ''), x['рядок'],
-                                                          x['вираз'][:80], x['E'][:40], x['доля'], x['пояснення'][:90]))
-            for к in range(x['рядок'] - 2, x['рядок'] + 4):
-                print('    %d %s' % (к, рядки[к - 1][:170]))
-        return
-    if '--звірка' in арги:
-        import random
-        random.seed(16207)
-        for x in random.sample(р, min(40, len(р))):
-            print('%s:%d · %s · %s · %s · %s · %s · %s' % (x['файл'], x['рядок'], x['функція'], x['поле'], x['вид'], x['доля'], x['пояснення'], x['вираз']))
+            print('#%d %s:%d · %s · %s · E=%s · джерело %s · ДОЛЯ=%s · %s' % (
+                k, x['файл'].replace('джерела/', ''), x['рядок'], x['функція'], x['вираз'][:90], x['E'][:40],
+                x['джерело'], x['доля'], x['пояснення'][:150]))
+            for к in range(max(1, x['рядок'] - 3), min(len(рядки), x['рядок'] + 9)):
+                print('    %d%s %s' % (к, '>' if к == x['рядок'] else ' ', рядки[к - 1][:180]))
         return
     print('модулів у обсязі: %d · функцій: %d' % (len(МОДУЛІ), sum(len(set(м.функції.values())) for м in МОДУЛІ.values())))
     for ф, e, t in схеми():
         print('схема %s: enum-вузлів %d, type-вузлів %d (декларація; перевіряє код з таблиці)' % (ф, e, t))
+    print('ендпойнтів показу: %d · місць джерела: %d (`--джерела`)' % (len(ендпойнти()), len(ДЖЕРЕЛА_МІСЦЯ)))
     for вид in ('форма', 'перелік', 'перелік·пошук'):
         print('вид %s: перевірок %d · відкидають %d' % (вид, sum(1 for x in р if x['вид'] == вид),
                                                       sum(1 for x in відкидають if x['вид'] == вид)))
     for чиє in sorted(set(x['чия'] for x in р)):
         print('чия %s: перевірок %d · відкидають %d' % (чиє, sum(1 for x in р if x['чия'] == чиє),
                                                       sum(1 for x in відкидають if x['чия'] == чиє)))
+    for дж, назва in (('A', 'сира відповідь моделі (поле запиту чи choices)'), ('B', 'повернене показом з попереднього виклику')):
+        print('джерело %s — %s: перевірок %d · відкидають %d' % (дж, назва, sum(1 for x in р if x['джерело'] == дж),
+                                                                 sum(1 for x in відкидають if x['джерело'] == дж)))
     г_ = collections.Counter(('raise' if x['пояснення'].startswith('raise') else 'предикат/присвоєння/assert' if x['пояснення'].startswith(('предикат', 'assert', 'вираз')) else 'інше (названо у таблиці)') for x in відкидають if x['доля'] == 'г')
     print('г за підкласом: ' + ', '.join('%s %d' % (k, v) for k, v in sorted(г_.items())))
+    print('б через слід нижче (16237): %d' % sum(1 for x in відкидають if x['доля'] == 'б' and x['пояснення'].startswith('слід нижче')))
     аз = [x for x in відкидають if x['доля'] == 'а']
     ар = [x for x in аз if x.get('слід_у_викликача')]
     print('а з `return <порожнє>`: %d; з них поруч з викликом є слід у ≥1 виклику: %d, у жодному: %d, викликів не знайдено: %d' % (
         sum(1 for x in аз if x.get('слід_у_викликача') is not None), sum(1 for x in ар if x['слід_у_викликача'][0] > 0),
         sum(1 for x in аз if x.get('слід_у_викликача') is not None and x['слід_у_викликача'][1] > 0 and x['слід_у_викликача'][0] == 0),
         sum(1 for x in аз if x.get('слід_у_викликача') is not None and x['слід_у_викликача'][1] == 0)))
+    друк_рядків('поза ядром (корінь з відповіді моделі; поза лічбою)', поза)
+    друк_рядків('запис коду (корінь лічби до 16239 за іменем, не з відповіді моделі; поза лічбою)', код)
     print('перевірок: %d · відкидають: %d · а: %d · б: %d · в: %d · г: %d · веде далі: %d' % (
         len(р), len(відкидають), ч['а'], ч['б'], ч['в'], ч['г'], len(далі)))
 
