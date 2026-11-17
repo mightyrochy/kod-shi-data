@@ -1094,8 +1094,11 @@ def _опис_keep_by():
     "flat_pair_removes_cost": "a low-heeled pair removes this cost",
     "swap_pair_example": "such a pair, for example: she can take it along and change shoes when she wants",
     # ── КАРТКА ОБРАЗУ: МАТЕРІАЛ У ПОГОДУ ЦЬОГО ДНЯ ───────────────
-    "material_on_salted_road": "the named materials spoil on a salted road when untreated (values: materials "
-                               "— material codes)",
+    # сіль не стверджується: заяву дає й сіль, виведена з морозу й снігу (`сценарій.сіль_на_дорозі`), а не лише її слово
+    # про реагенти — ж8_зима нічного 15.11 («мінус десять і сніг») читала про посипану сіллю дорогу (корінь
+    # Е2-опора-пояснення, крок «походження»; дошка 16227)
+    "material_on_salted_road": "the named materials spoil when untreated if the road is salted, which a snowy frost "
+                               "may bring (values: materials — material codes)",
     "material_in_rain": "the named materials soak and spoil in rain when untreated (values: materials — "
                         "material codes)",
     "impregnate_or_smooth_leather": "the choice is hers: waterproof it three times with drying in between, or "
@@ -2681,10 +2684,13 @@ def _опис_keep_by():
     "take_away_possible_add_not": "taking away is possible, adding is not",
     "too_big_alter_too_small_drop": "too big: keep it with a note \"for alteration\"; too small: drop it, "
                                     "repair is impossible",
-    "salt_slush_warmer_wears_faster": "salty slush: what warms better wears out faster",
+    # сольова сльота не стверджується: її виводить `верхнє_догляд.сольова_сльота` з морозу й снігу (дошка 16227)
+    "salt_slush_warmer_wears_faster": "in salty slush, which a snowy frost may bring, what warms better wears out "
+                                      "faster",
     "clean_after_each_outing_or_sturdier_layer": "clean it after every outing; for slush a sturdier outer "
                                                  "layer, and keep the wool for dry frost",
-    "suede_under_salt_no_home_cleaning": "suede under salt: no home cleaning",
+    "suede_under_salt_no_home_cleaning": "if road salt reaches suede, which a snowy frost may bring, it is not cleaned "
+                                         "at home",
     "professional_cleaning_or_suede_spray": "professional cleaning rather than at home; a protective spray in "
                                             "thin coats after each wetting is only a hint",
     # ── ОБІЦЯНКА СХЕМИ ПАЛІТРИ (П-6: K-COL-03) ──
