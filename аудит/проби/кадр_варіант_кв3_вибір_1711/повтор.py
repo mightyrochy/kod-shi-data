@@ -1,5 +1,9 @@
 """Повтор кв3 на тому самому кеші: писач → канонічний запис → читач кожного кадру."""
 import importlib.util
+import collections
+import csv
+import gzip
+import json
 from pathlib import Path
 import sys
 
@@ -24,6 +28,33 @@ def причини(факти, ж):
 
 
 вимір.причини = причини
+
+
+def підсумок(записи, результати, вихід):
+    """Зберігає всі результати та лічбу за фактичним джерелом доказу, включно з офертами."""
+    лічби = collections.defaultdict(collections.Counter)
+    for р in результати.values():
+        д = вимір.urlsplit(р["адреса"]).netloc
+        ключ = ("доведено:" + р["джерело"] if р["стан"] == "доведено" else
+                "невідомо:" + р["причина"] if р["стан"] == "невідомо" else р["стан"])
+        лічби[д][ключ] += 1
+        лічби[д]["записів"] += 1
+    разом = sum(лічби.values(), collections.Counter())
+    assert разом["записів"] == len(результати) == len(записи) == 13882
+    поля = ["крамниця", "записів"] + sorted(set(разом) - {"записів"})
+    вихід.mkdir(parents=True, exist_ok=True)
+    with (вихід / "лічба.tsv").open("w", encoding="utf-8", newline="") as потік:
+        писач = csv.DictWriter(потік, поля, delimiter="\t", lineterminator="\n")
+        писач.writeheader()
+        for д, л in [*sorted(лічби.items()), ("РАЗОМ", разом)]:
+            писач.writerow(dict(крамниця=д, **{п: л[п] for п in поля[1:]}))
+    with gzip.open(вихід / "результати.jsonl.gz", "wt", encoding="utf-8") as потік:
+        for р in sorted(результати.values(), key=lambda р: р["ід"]):
+            потік.write(json.dumps(р, ensure_ascii=False) + "\n")
+    print(json.dumps(разом, ensure_ascii=False), flush=True)
+
+
+вимір.підсумок = підсумок
 
 if __name__ == "__main__":
     кв2.база.main()
