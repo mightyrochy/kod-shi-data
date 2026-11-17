@@ -95,6 +95,11 @@ try {
     Update-CodexQuota { param($q) $q.refused = '2026-11-13T09:30:00Z'; $q.reset = '' }
     $now = Read-CodexQuota
     Check 'після звільнення замка вимір і відмова в одному файлі: refused лишився, limits і read з''явились' ($now.refused -ceq '2026-11-13T09:30:00Z' -and $now.read -match '^20' -and @($now.limits).Count -eq 1)
+    # Відмова Codex без часу скидання — збій рушія лише при вимірі із залишком у кожному вікні; нуль, порожнє й невимірене квоту не знімають.
+    $zeroWin = @([pscustomobject]@{ id = 'codex'; windows = @([pscustomobject]@{ left = 72 }, [pscustomobject]@{ left = 0 }) })
+    Check 'Test-CodexMeasuredLeft: вимір 88 і 51 % — так; нуль у вікні, порожній, без виміру — ні' ((Test-CodexMeasuredLeft $now.limits) -and -not (Test-CodexMeasuredLeft $zeroWin) -and -not (Test-CodexMeasuredLeft @()) -and -not (Test-CodexMeasuredLeft $null))
+    # 429 — код HTTP, окреме число: у ідентифікаторі сесії чи довшому числі це не відмова за лімітом.
+    Check 'Get-ErrorCode: 429 як код HTTP — QUOTA; 429 усередині ідентифікатора й числа 1429 — ні' ((Get-ErrorCode 'unexpected status 429 Too Many Requests' 'codex') -ceq 'QUOTA' -and (Get-ErrorCode '{"status":429}' 'codex') -ceq 'QUOTA' -and (Get-ErrorCode 'thread 019a4290-bb stream closed after 1429 ms' 'codex') -ceq 'AGY_ERROR')
     # Старіший знімок паралельного слота не затирає новішого виміру.
     $newer = $now.read
     $old = Get-Content -LiteralPath (Join-Path $day 'rollout-a.jsonl') -Raw
