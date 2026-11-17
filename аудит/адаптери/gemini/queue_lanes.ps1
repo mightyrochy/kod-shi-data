@@ -40,7 +40,6 @@ $script:TreeJobs = @{}  # pid процесу Start-Tree → його задач�
 $script:PausedTotal = [timespan]::Zero  # пауз живлення цього процесу (Wait-PowerPause)
 $script:Pausing = $false
 $script:PauseMachine = $false  # планувальник claude-run ставить на паузу й LM Studio та ComfyUI
-$script:PauseLineAction = $null  # лише планувальник claude-run: { param($Line, $Wait) } — рядок у теку вихідних, з $Wait — до доставки
 $script:GpuLease = $null  # замок GPU-оренди процесу наряду (Start-GpuModels → Exit-GpuLease)
 # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
 $script:VersionDir = $PSScriptRoot
@@ -1161,8 +1160,10 @@ namespace GeminiWrapper {
         // AcLine: 0 — від батареї, 1 — від мережі, 255 — невідомо (тоді не пауза).
         public static bool OnBattery() { Status s; return GetSystemPowerStatus(out s) && s.AcLine == 0; }
 
-        // ES_CONTINUOUS | ES_SYSTEM_REQUIRED тримає систему неспаною, поки цей потік не зніме вимогу (ES_CONTINUOUS без другого прапора).
-        public static bool KeepAwake(bool on) { return SetThreadExecutionState(on ? 0x80000001u : 0x80000000u) != 0; }
+        // ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED, поки цей потік не зніме вимогу (ES_CONTINUOUS без
+        // інших прапорів). Дисплей — бо Modern Standby починається, коли гасне дисплей, а запит «система потрібна» на
+        // батареї Windows знімає за 5 хв після спливу тайм-ауту сну (НАЛАШТУВАННЯ.md, «Тримач світла»).
+        public static bool KeepAwake(bool on) { return SetThreadExecutionState(on ? 0x80000003u : 0x80000000u) != 0; }
 
         public static bool Pause(int id, bool on) {
             IntPtr p = OpenProcess(0x0800, false, id);  // SUSPEND_RESUME
@@ -1199,7 +1200,8 @@ function Test-OnBattery {
 }
 
 function Set-KeepAwake([bool]$On) {
-    <# Тримати ноутбук неспаним (чи відпустити) для потоку, що кличе: лише Windows; $false — вимогу не прийнято. #>
+    <# Тримати ноутбук неспаним з увімкненим дисплеєм (чи відпустити) для потоку, що кличе: лише Windows; $false —
+    вимогу не прийнято. Кличе лише тримач світла (claude_run.ps1 -Light). #>
     if (-not $script:OnWindows) { return $false }
     try { Add-PowerType; [GeminiWrapper.Power]::KeepAwake($On) } catch { $false }
 }
@@ -1264,60 +1266,34 @@ function Clear-GpuForPause {
     }
 }
 
-function Test-PauseNotifier {
-    <# Цей процес — планувальник claude-run і вміє писати в теку вихідних: gemini-run теж ставить паузу, але двох однакових
-    рядків про одне світло диспетчерові не треба. #>
-    $script:PauseMachine -and $null -ne $script:PauseLineAction
-}
-
-function Send-PauseLine([string]$Line, [bool]$Wait) {
-    <# Рядок про світло диспетчерові ($script:PauseLineAction: запис у теку вихідних; з $Wait — ще й чекання доставки).
-    Збій запису не зриває паузу: процеси мусять відновитись. #>
-    if (-not (Test-PauseNotifier)) { return }
-    try { & $script:PauseLineAction $Line $Wait }
-    catch { Write-Log "пауза: рядок для диспетчера не записано: $($_.Exception.Message)" }
-}
-
 function Wait-PowerPause {
     <# Світла нема — робота стоїть (власник 09.11): процеси Get-PauseTargets призупинено, а цикл, що кличе паузу, далі
     не йде (нові позначки не стартують), доки не повернеться мережа; тоді процеси продовжують з того самого місця.
     Без роботи ноутбук на батареї спить у Modern Standby й сам бачить, що світло повернулось: будильник із гібернації
     08.11 кожним пробудженням відновлював роботу на відеокарті й коштував 2–3 % батареї. Перед заморожуванням
     планувальник звільняє відеокарту (Clear-GpuForPause). Час паузи не йде в межі.
-    Диспетчер мусить знати, коли ноутбук недоступний і чому (власник 17.11): планувальник пише рядок «світла нема» після
-    заморожування й тримає ноутбук неспаним, доки рядок не доставлено (Send-PauseLine з $Wait), і рядок «світло є», коли
-    процеси відновлено. Тримання знімається до самої паузи: без роботи на батареї ноутбук спить (власник 09.11). #>
+    Диспетчерові про світло пише й ноутбук до доставки тримає не пауза, а один тримач світла (claude_run.ps1 -Light):
+    пауза рушія починається, лише коли рушій помітив батарею, а 17.11 Windows заснула за 3 с. #>
     # Серцебиття всередині паузи може дійти до Invoke-Native — друга пауза всередині першої нічого не робить.
     if ($script:Pausing -or -not (Test-OnBattery)) { return }
     $script:Pausing = $true
-    $offUtc = [datetime]::UtcNow
-    $stamp = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-    $hold = Test-PauseNotifier
-    if ($hold) { [void](Set-KeepAwake $true) }
     try {
         Clear-GpuForPause
         $from = Get-UnbiasedTime
         $paused =@(foreach ($i in Get-PauseTargets) { if (Set-ProcessPause $i $true) { $i } })
         Write-Log "пауза: світла нема (живлення від батареї), призупинено процесів $($paused.Count)"
-        $back = $false
         try {
-            Send-PauseLine "GEMINI ОБГОРТКА: СВІТЛА НЕМА $($offUtc.ToString($stamp)) ПРИЗУПИНЕНО $($paused.Count)" $true
-            if ($hold) { [void](Set-KeepAwake $false) }
             # Світло перевіряється раз на інтервал опитування черги: у паузі нема роботи, яку треба будити частіше.
             $poll = [timespan]::FromMinutes((Get-Limit $script:Limits 'PollMinutes' 'poll_minutes'))
             while (Test-OnBattery) { Start-Sleep -Milliseconds $poll.TotalMilliseconds; Invoke-HealthBeat }
-            $back = $true
         } finally {
             foreach ($i in $paused) { [void](Set-ProcessPause $i $false) }
             $span = (Get-UnbiasedTime) - $from
             $script:PausedTotal += $span
-            $script:Pausing = $false
             Write-Log ("пауза знята: світло є через {0:N1} хв, відновлено процесів {1}" -f $span.TotalMinutes, $paused.Count)
-            if ($back) { Send-PauseLine "GEMINI ОБГОРТКА: СВІТЛО Є $([datetime]::UtcNow.ToString($stamp)) ПАУЗА З $($offUtc.ToString($stamp))" $false }
         }
     } finally {
         $script:Pausing = $false
-        if ($hold) { [void](Set-KeepAwake $false) }
     }
 }
 
