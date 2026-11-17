@@ -114,17 +114,17 @@ try {
     $rec = @(Records)[-1]
     Check 'CHAIN_API: Message винятку — точно код' ($err.Exception.Message -ceq 'CHAIN_API' -and $err.Exception.Message -cmatch '^CHAIN_[A-Z_]+$')
     Check 'CHAIN_API: у журналі код виходу й stderr gh' (@(Records).Count -eq $before + 1 -and $rec.code -ceq 'CHAIN_API' -and $rec.exit_code -eq 1 -and $rec.stderr.Contains('HTTP 502: Bad Gateway') -and $rec.stderr.Contains($url))
-    $lines = Chain-Lines
+    $lines = @(Chain-Lines)
     Check 'CHAIN_API: у рядку диспетчерові лише HTTP 502, без stderr і адреси' ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API HTTP 502' -and (Test-OutboxLine $lines[0]) -ceq '')
     [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="gh: HTTP 503: Service Unavailable ($url)`n"}))
-    Check 'CHAIN_API: інший stderr за годину — не новий рядок, але новий запис журналу' ((Chain-Lines).Count -eq 1 -and @(Records).Count -eq $before + 2 -and @(Records)[-1].stderr.Contains('HTTP 503'))
+    Check 'CHAIN_API: інший stderr за годину — не новий рядок, але новий запис журналу' (@(Chain-Lines).Count -eq 1 -and @(Records).Count -eq $before + 2 -and @(Records)[-1].stderr.Contains('HTTP 503'))
     Reset-ChainLines
     $err = Fail-ChainApi ([pscustomobject]@{Code=-1;Out='';Err='межа часу'})
-    $rec = @(Records)[-1]; $lines = Chain-Lines
+    $rec = @(Records)[-1]; $lines = @(Chain-Lines)
     Check 'CHAIN_API: межа часу — журнал і рядок «межа часу»' ($err.Exception.Message -ceq 'CHAIN_API' -and $rec.exit_code -eq -1 -and $rec.stderr -ceq 'межа часу' -and $lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API межа часу' -and (Test-OutboxLine $lines[0]) -ceq '')
     Reset-ChainLines
     [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="dial tcp: lookup api.github.com: no such host`n"}))
-    $lines = Chain-Lines
+    $lines = @(Chain-Lines)
     Check 'CHAIN_API: stderr без коду HTTP — рядок без ознаки, текст лише в журналі' ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API' -and @(Records)[-1].stderr.Contains('no such host'))
     $secret = New-ChainFailure 'CHAIN_PUSH' ([pscustomobject]@{Code=128;Out='';Err="fatal: unable to access 'https://user:token123@github.com/o/r/': HTTP 502"})
     Check 'stderr у Data — адреса без входу' ($secret.Message -ceq 'CHAIN_PUSH' -and $secret.Data['ExitCode'] -eq 128 -and -not ([string]$secret.Data['Stderr']).Contains('token123') -and ([string]$secret.Data['Stderr']).Contains('https://github.com/o/r/'))
@@ -133,7 +133,7 @@ try {
     $script:Native = [pscustomobject]@{Code=1;Out='';Err="gh: HTTP 502: Bad Gateway ($url)"}
     try { [void](Invoke-ChainApi 'repos/o/r/pulls/12') } catch { $pullErr = $_ }
     Write-ChainPullFailure $pullErr '12' $head
-    $lines = Chain-Lines
+    $lines = @(Chain-Lines)
     Check 'один PR: рядок з HTTP 502, журнал із stderr, прохід не зупинено' ($lines.Count -eq 1 -and $lines[0] -ceq "GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API PR 12 $head HTTP 502" -and (Test-OutboxLine $lines[0]) -ceq '' -and @(Records)[-1].stderr.Contains('HTTP 502'))
     $pushErr = New-ChainFailure 'CHAIN_PUSH' ([pscustomobject]@{Code=1;Out='';Err='rejected'})
     $rethrown = $null
