@@ -1629,7 +1629,8 @@ _ПОХІДНЕ_ВІД = {"viewing_distance": "occasion", "temperature": "temper
 # нічого не питають. Ознака — реєстр кодів заяв, не слова; її входи (обхват литки, довжина стопи) тут не стоять.
 ВХОДИ_БЕЗ_ПИСАЧА = frozenset({
     "outer_ease_not_in_feed", "outer_shoulder_not_measured", "item_insole_length_unknown", "shoe_size_not_checked",
-    "leg_proportion_template_crotch", "wear_cost_no_duration_surface", "items_register_unknown",
+    "leg_proportion_template_crotch", "wear_cost_no_duration_surface", "wear_cost_no_duration",
+    "items_register_unknown",
     "dividing_line_item_length_unknown"})
 
 
