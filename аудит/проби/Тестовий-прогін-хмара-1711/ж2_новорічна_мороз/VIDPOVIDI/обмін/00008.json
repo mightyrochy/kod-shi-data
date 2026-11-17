@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"Новорічна вечірка\", \"place\": \"в ресторані\", \"month\": \"Новорічна\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"в ресторані\"}, \"month\": {\"kind\": \"reading\", \"quote\": \"Новорічна\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"Новорічна вечірка\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"weather_band\": {\"kind\": \"reading\"}}, \"event\": \"Новорічна вечірка в ресторані\", \"part_of_day\": \"evening\", \"weather_band\": \"frost\", \"occasion\": \"celebration\", \"place\": \"restaurant_casual\", \"month\": \"december\", \"formality_branch\": \"social\", \"formality\": [\"smart\"], \"season\": \"winter\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Black velvet midi dress, fitted bodice with a gently flared skirt, long sleeves, a modest V-neckline, hem falling just below the knee, color deep black #1A1A1A, stretch velvet\\nOpaque tights, 80 denier, color black #101010, soft matte microfiber\\nLong wool-blend coat, straight cut, tailored fit, mid-calf length, color charcoal #36454F, brushed wool with a touch of cashmere\\nBlock-heeled ankle boots, almond toe, 7 cm heel, color black #111111, smooth leather with a suede-lined interior\\nClutch bag, structured envelope shape, small size, color antique gold #B08D57, satin-finish metallic leather\\nDrop earrings, slim teardrop shape, color polished gold #D4AF37, gold-plated metal with small crystal accents\\nKnit scarf, wide and soft, draped loosely, color warm ivory #F2E8D5, merino wool\\n\\nThis outfit works because velvet gives the dress an evening richness that suits a New Year's party in a restaurant, while the clean midi silhouette keeps it polished and in line with a smart dress code. The black base lets the gold clutch and earrings stand out and catch the artificial restaurant lighting. Opaque tights, a wool coat and a merino scarf keep you warm through the frost, and the block-heeled boots make walking in the cold and sitting through a long dinner comfortable. The ivory scarf softens the dark palette and adds a bright accent near the face.\"}],\"usage\":{\"input_tokens\":2215,\"output_tokens\":501},\"stop_reason\":\"end_turn\"}"
+ }
+}

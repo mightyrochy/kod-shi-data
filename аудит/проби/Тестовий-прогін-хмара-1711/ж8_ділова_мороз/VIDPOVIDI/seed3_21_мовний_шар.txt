@@ -1,0 +1,43 @@
+── ПРОМПТ (6530 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: sweater · about it: text н=1
+2 — kind: trousers · about it: text н=2
+3 — kind: coat · about it: text н=3
+4 — kind: boots · about it: text н=4
+5 — kind: bag_generic · about it: text н=5
+6 — kind: scarf_generic · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "A sweater is the calm, businesslike top for your meeting, and tucked in at the front it marks your waist so the outfit keeps its anchor.",
+"2": "The wide, creased trousers fall in one long straight line, which suits an office meeting and gives your figure an uninterrupted vertical.",
+"3": "The long, double-breasted coat gives you a smart outer line for the walk to a business meeting, and its collar can be raised to add a vertical near your face. It is a strong piece that works with many of your outfits.",
+"4": "The tall boots with a solid sole suit a 20-minute walk in snow and frost, and they extend the line of your leg while staying formal enough for the office.",
+"5": "The bag adds one clear accent of colour so a business outfit in quiet tones still feels personal and alive.",
+"6": "The scarf brings colour close to your face and gives the neckline a finished, considered look for a meeting.",
+"7": "The long coat and the tall boots frame the grey trousers into one calm vertical, and the pink bag is the single bright note against all that grey and brown. For a business meeting after a 20-minute walk in frost and snow, I chose a polished, quiet palette and boots with a sturdy sole that you can walk in comfortably. The wide trousers and long coat carry a lot of volume, so I want one place where your waist shows. That keeps the straight line from swallowing you, and it lets the outfit read as deliberate rather than just big.",
+"8": "Tuck the front of the sweater into the trousers so the waist shows under the wide leg; wear the coat open once you are inside.",
+"9": "Raise the coat collar on the walk: it adds a vertical near your face and sharpens the silhouette.",
+"10": "Wear the scarf at your neck, inside the coat lapels, so its colour sits near your face and finishes the line.",
+"11": "Жіноче вовняне пальто з англійським коміром на ґудзиках Stella Polare, LeBERDES Чоботи зимові коричневі, Штани JIL класичні широкого крою, Сумка жіноча Le Bambino Chaîne — The alpaca coat and leather boots are the most expensive pieces, but they are what keep you warm and neat in frost and salt, so the cost is well placed here."
+}
+
+── ВІДПОВІДЬ (2018 симв., 20.8 с, HTTP 200) ──
+{"1":"Светр — спокійний діловий верх для твоєї зустрічі, а заправлений спереду він підкреслює талію, тож образ має опору.","2":"Широкі штани з заломами падають однією довгою прямою лінією, що пасує до офісної зустрічі й дає твоїй фігурі безперервну вертикаль.","3":"Довге двобортне пальто дає тобі елегантну верхню лінію для прогулянки на ділову зустріч, а його комір можна підняти, щоб додати вертикаль біля обличчя. Це сильна річ, яка поєднується з багатьма твоїми образами.","4":"Високі чоботи з міцною підошвою підходять для 20-хвилинної прогулянки снігом і морозом, і вони подовжують лінію ноги, залишаючись достатньо формальними для офісу.","5":"Сумка додає один виразний колірний акцент, тож діловий образ у стриманих тонах лишається особистим і живим.","6":"Шарф приносить колір ближче до обличчя й надає вирізу завершеного, продуманого вигляду для зустрічі.","7":"Довге пальто й високі чоботи обрамляють сірі штани в одну спокійну вертикаль, а рожева сумка — єдина яскрава нота серед усього цього сірого й коричневого. Для ділової зустрічі після 20-хвилинної прогулянки в мороз і сніг я обрала вишукану, стриману палітру та чоботи з міцною підошвою, в яких тобі зручно йти. Широкі штани й довге пальто несуть багато об'єму, тож я хочу, щоб десь було видно твою талію. Тоді пряма лінія не поглине тебе, а образ виглядатиме продуманим, а не просто великим.","8":"Заправ перед светра в штани, щоб було видно талію під широкою холошею; опинившись усередині, носи пальто розстебнутим.","9":"Підніми комір пальта під час прогулянки: він додає вертикаль біля обличчя й підкреслює силует.","10":"Носи шарф на шиї, під лацканами пальто, щоб його колір був біля обличчя й завершував лінію.","11":"Жіноче вовняне пальто з англійським коміром на ґудзиках Stella Polare, LeBERDES Чоботи зимові коричневі, Штани JIL класичні широкого крою, Сумка жіноча Le Bambino Chaîne — Пальто з альпаки та шкіряні чоботи — найдорожчі речі, але саме вони дають тобі тепло й охайний вигляд на морозі й солі, тож тут вартість виправдана."}
