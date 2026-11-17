@@ -116,4 +116,12 @@ Q="$(cat "${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-rate-429/runs/quota-codex.js
 [[ "$Q" == *'"refused":"20'* && "$Q" == *'"reset":"20'* && "$Q" == *'"used":100,"left":0'* && "$Q" == *'"left":40'* ]] && echo "ok   codex-rate-429-keeps-both" || { echo "FAIL codex-rate-429-keeps-both: $Q"; bad=1; }
 # відмова квоти відповіддю не є: у записі кінця наряду часу відповіді нема
 grep -lE '"engine_answer_utc":"20' "${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-rate-429/out"/2*.json >/dev/null 2>&1 && { echo "FAIL codex-429-no-answer-time"; bad=1; } || echo "ok   codex-429-no-answer-time"
+# відмова Codex без часу скидання (429 без «try again»), а вимір після ходу показує залишок у кожному вікні: збій рушія, не квота —
+# відмови в quota-codex.json і рядка QUOTA0 нема, позначка чекає повтору тією самою смугою (ланцюг її не переносить)
+EXTRA='{"EnableCodex":true}' FAKE_CODEX_RATE=12.5,49 "$H/сценарії_прогону.sh" m9v-codex-429-measured quota429 print gpt-6.1-sol >/dev/null 2>&1
+R="${TMPDIR:-/tmp}/gemini-obhortka/m9v-codex-429-measured"
+Q="$(cat "$R/runs/quota-codex.json" 2>/dev/null)"
+[[ "$Q" == *'"left":88'* && "$Q" != *'"refused"'* ]] && echo "ok   codex-429-measured-no-refusal" || { echo "FAIL codex-429-measured-no-refusal: $Q"; bad=1; }
+[[ "$(delivered "$R/claude.log")" != *QUOTA0* ]] && echo "ok   codex-429-measured-no-quota0" || { echo "FAIL codex-429-measured-no-quota0: $(delivered "$R/claude.log")"; bad=1; }
+grep -qE '^WAIT .*"retakes":1' "$R"/out/marker-state/*.txt 2>/dev/null && echo "ok   codex-429-measured-wait" || { echo "FAIL codex-429-measured-wait"; bad=1; }
 exit $bad

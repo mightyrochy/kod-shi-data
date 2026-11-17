@@ -185,6 +185,31 @@ try {
     & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
     Invoke-WrapperChain
     Check 'нічний, codex з квотою: дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    # Відмова Codex без часу скидання — квота лише тоді, коли останній вимір не показує залишку в кожному вікні (heartbeat.codex.limits);
+    # відмова з часом скидання — квота завжди, як було. Дозвіл після кожного перенесення повертається на codex.
+    function SetCodexRefused([string]$Reset, $Limits) {
+        $v = @{refused=(Stamp -0.5);reset=$Reset}
+        if ($null -ne $Limits) { $v.read = (Stamp -0.2); $v.limits = $Limits }
+        [IO.File]::WriteAllText("$OutDir/heartbeat.json", ((@{codex=$v}) | ConvertTo-Json -Compress -Depth 6), $utf)
+    }
+    function CodexLimits([int[]]$Left) { , @(@{id='codex';windows=@(foreach ($l in $Left) { @{m=300;used=(100-$l);left=$l;reset=(Stamp 1)} })}) }
+    function BackToCodex {
+        foreach ($m in @(SlugMarkers $night)) { & git -C $seed push -q origin ":$m" }
+        & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+    }
+    SetClaude $false
+    SetCodexRefused '' (CodexLimits 72, 72); Invoke-WrapperChain
+    Check 'нічний, відмова codex без часу скидання, вимір 72 і 72 % вільних: збій рушія, дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    $moved = @(
+        @{Why='відмова без часу скидання, виміру нема: квота, як було'; Reset=''; Limits=$null},
+        @{Why='відмова без часу скидання, одне вікно виміру на 0 %: квота'; Reset=''; Limits=(CodexLimits 72, 0)},
+        @{Why='відмова з часом скидання, вимір 72 % вільних: справжня квота'; Reset=(Stamp 140); Limits=(CodexLimits 72, 72)})
+    foreach ($c in $moved) {
+        SetCodexRefused $c.Reset $c.Limits; Invoke-WrapperChain
+        Check "нічний, $($c.Why): дозвіл перейшов на Claude" (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/cc-claude-sonnet-5-5-medium/1/gpu-p8$')
+        BackToCodex
+    }
+    "  мірило: відмова codex без часу скидання, вимір 72 % вільних — було перенесення на Claude, стало: лишається на codex"
     SetCodex $true; SetClaude $true; Invoke-WrapperChain
     Check 'нічний, обидва на квоті: дозвіл чекає на codex, не переходить' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
     & git -C $seed push -q origin ":$(@(SlugMarkers $night)[0])"
