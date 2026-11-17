@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\", \"\\\"intent\\\" — what matters most to her: comfort_first (comfort and freedom of movement), context_optimal (fitting the place and the event), statement (standing out), fashion_forward (a bold fashion look, at least two sources of interest), editorial (an editorial construction, at least one source of interest); count limits do not apply to fashion_forward or editorial\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на ювілей\", \"place\": \"ресторан\", \"intent\": \"я не хочу щоб вона знов щось сказала\", \"weekday\": \"в суботу\", \"host_context\": \"до свекрухи на ювілей\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"host_context\": {\"kind\": \"reading\", \"quote\": \"до свекрухи на ювілей\"}, \"formality_branch\": {\"kind\": \"reading\"}, \"weekday\": {\"kind\": \"reading\", \"quote\": \"в суботу\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"ресторан\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"на ювілей\"}, \"intent\": {\"kind\": \"reading\", \"quote\": \"я не хочу щоб вона знов щось сказала\"}, \"intent_quote\": {\"kind\": \"default\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"language_model_note\": {\"kind\": \"reading\"}}, \"event\": \"до свекрухи на ювілей там буде ресторан і вся родина\", \"occasion\": \"celebration\", \"place\": \"restaurant_casual\", \"weekday\": \"saturday\", \"formality_branch\": \"social\", \"host_context\": true, \"intent_quote\": \"я не хочу щоб вона знов щось сказала\", \"formality\": [\"smart\"], \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#deb295\", \"#d8a98c\", \"#e2ba9f\"], \"hair_hex\": \"#e5cd99\", \"eyes_hex\": \"#759087\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}, \"intent\": \"context_optimal\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Midi wrap dress, A-line cut, hem just below the knee, deep forest green (#2F4F3E), matte crepe with a soft drape and long sleeves\\n\\nTailored blazer, single-breasted, hip length, soft camel (#B98F63), fine wool-blend with a subtle texture\\n\\nPointed-toe block-heel pumps, 6 cm heel, ankle height, warm taupe (#8B7765), smooth leather\\n\\nStructured top-handle bag, small, cognac (#9A5B32), smooth leather\\n\\nThin gold-tone belt or delicate drop earrings, small, gold (#C9A24B), polished metal\\n\\nSheer tights, natural nude (#C9A184), fine knit\\n\\nWhy this outfit works: The forest green wrap dress is classic and polished, so it reads as respectful and put together at a family celebration at a restaurant, with nothing in it that invites comment. Its deep tone suits your warm skin, golden hair and grey-green eyes, and the wrap shape defines the waist while the skirt skims the hips gently. The camel blazer adds a smart layer for an autumn Saturday, and the modest knee-below length and long sleeves keep the look conservative. Taupe pumps, a cognac bag and soft gold details keep the palette warm and cohesive, with comfortable heels for a long meal.\"}],\"usage\":{\"input_tokens\":2623,\"output_tokens\":440},\"stop_reason\":\"end_turn\"}"
+ }
+}
