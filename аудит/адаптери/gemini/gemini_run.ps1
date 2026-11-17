@@ -521,6 +521,23 @@ function Get-CodexReset([string]$Text) {
     0
 }
 
+# Останній вимір Codex (`limits` у quota-codex.json): $true, коли він має вікна й у кожному залишок більший за нуль. Тоді відмова
+# без часу скидання — збій рушія, а не вичерпана квота: справжню відмову Codex подає з часом скидання (Get-CodexReset). Нуль у
+# вікні, невимірене чи порожнє — $false: вимір нічого не доводить, відмова лишається квотою. Ту саму перевірку веде
+# Test-CodexMeasuredLeft у wrapper_chain.ps1 (публікатор не вантажить цього файлу).
+function Test-CodexMeasuredLeft($Limits) {
+    $any = $false
+    foreach ($l in @($Limits)) {
+        foreach ($w in @(Get-JsonProp $l 'windows')) {
+            if ($null -eq $w) { continue }
+            $left = 0.0
+            if (-not [double]::TryParse([string](Get-JsonProp $w 'left'), 'Float', [cultureinfo]::InvariantCulture, [ref]$left) -or $left -le 0) { return $false }
+            $any = $true
+        }
+    }
+    $any
+}
+
 # Каталог даних Codex: `CODEX_HOME`, інакше `.codex` профілю (так його шукає сам Codex).
 function Get-CodexHome {
     if ($env:CODEX_HOME) { return $env:CODEX_HOME }
@@ -742,7 +759,8 @@ function Get-ErrorCode([string]$Text, [string]$EngineName = 'agy', [string]$Effo
         $listsEfforts = $Text -cmatch ('Supported values are:.*(?<![\p{L}\p{N}_-])(?:xhigh|minimal)(?![\p{L}\p{N}_-])')
         if ($Text -match 'reasoning[._ -]?effort' -or ($badValue -and ($namesEffort -or $listsEfforts))) { return 'EFFORT_INVALID' }
     }
-    if ($Text -match '429|RESOURCE_EXHAUSTED|[Qq]uota|[Uu]sage limit|[Rr]ate limit') { return 'QUOTA' }
+    # 429 — код HTTP, окреме число: у ідентифікаторі, хеші чи довшому числі події (`…a4290…`, `1429`) це не відмова за лімітом.
+    if ($Text -match '(?<![\p{L}\p{N}_-])(?<![0-9][.,])429(?![\p{L}\p{N}_-])(?![.,][0-9])|RESOURCE_EXHAUSTED|[Qq]uota|[Uu]sage limit|[Rr]ate limit') { return 'QUOTA' }
     if ($Text -match 'authentication required|[Nn]ot logged in|[Pp]lease (?:log ?in|sign in)|authentication_error|\b401\b') {
         Add-HealthAlert 'AUTH' $EngineName.ToUpperInvariant(); return 'AUTH'
     }
@@ -1445,9 +1463,11 @@ function Invoke-Task($M, $Job) {
 # Відмова за квотою посеред прогону (429): позначка повертається в чергу до скидання (agy — з /usage, Codex — з тексту
 # відмови, нема — quota_wait_minutes), зроблене лишається в гілці, повтор почне з її голови. Понад MaxRetakes — кінець
 # із кодом QUOTA, як до смуг. $true — позначка чекає.
+# Відмова Codex без часу скидання при вимірі із залишком у кожному вікні (Test-CodexMeasuredLeft) — збій рушія: відмови й
+# рядка QUOTA0 нема (їх читають ланцюг і диспетчер як вичерпану квоту), код — AGY_ERROR, повтор — тією самою смугою.
 function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    $until = 0L; $group = 'CODEX'
+    $until = 0L; $group = 'CODEX'; $engineFailure = $false
     if ($Sel.Engine.Name -eq 'agy') {
         $q = Get-Quota $Sel.Model -Fresh
         $group = $(if ($q.Group) { $q.Group } else { 'AGY' })
@@ -1462,15 +1482,22 @@ function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
                 Where-Object { $_ -match '(?i)usage[ _]limit|try again|resets?_(?:at|in_seconds)' } | Select-Object -Last 1) -join '')
         } catch { $null = $_ }
         $until = Get-CodexReset ($Res.Tail + "`n" + $err + "`n" + $ev)
-        $refused = Get-UtcStamp (Get-Date)
-        $reset = $(if ($until -gt 0) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($until).UtcDateTime) } else { '' })
-        try { Update-CodexQuota { param($cq) $cq.refused = $refused; $cq.reset = $reset } } catch { Write-Log "квота codex: $($_.Exception.Message)" }
+        $engineFailure = ($until -le 0 -and (Test-CodexMeasuredLeft ((Read-CodexQuota)['limits'])))
+        if ($engineFailure) {
+            $Status.code = 'AGY_ERROR'
+            Write-Log "codex: відмова без часу скидання, а вимір показує залишок у кожному вікні — збій рушія, не квота"
+        } else {
+            $refused = Get-UtcStamp (Get-Date)
+            $reset = $(if ($until -gt 0) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds($until).UtcDateTime) } else { '' })
+            try { Update-CodexQuota { param($cq) $cq.refused = $refused; $cq.reset = $reset } } catch { Write-Log "квота codex: $($_.Exception.Message)" }
+        }
     }
     $known = $until -gt 0
     if (-not $known) { $until = $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) }
     $f = Get-Facts $M $Status.start
     $n = Set-MarkerWait $M $until @{ retake = $true; group = $group; head = $(if ($f.Ahead -gt 0) { $f.Head } else { '' }) }
-    if ($null -eq $n) { Write-Log "квота: $($M.Name) — повернень у чергу понад $script:MaxRetakes, кінець QUOTA"; return $false }
+    if ($null -eq $n) { Write-Log "квота: $($M.Name) — повернень у чергу понад $script:MaxRetakes, кінець $($Status.code)"; return $false }
+    if ($engineFailure) { return $true }
     Write-QuotaStatus $M (New-RunId (Get-MarkerKey $M)) $group $until @{ engine = $Sel.Engine.Name; turns = $Status.turns; retake = $n }
     $true
 }

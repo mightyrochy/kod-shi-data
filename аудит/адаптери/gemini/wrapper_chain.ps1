@@ -294,8 +294,26 @@ function Test-QuotaRefused($Refused, $Reset, [datetimeoffset]$Now) {
     ($null -ne $at -and $at -le $Now -and $at -gt $Now.AddMinutes(-60))
 }
 
+function Test-CodexMeasuredLeft($Limits) {
+    <# $true — останній вимір Codex (`limits` у `codex` heartbeat.json) має вікна, і в кожному залишок більший за нуль.
+    Нуль у вікні, невимірене чи порожнє — $false: вимір нічого не доводить. Те саме веде gemini_run.ps1 (публікатор його не
+    вантажить), коли вирішує, чи відмова Codex без часу скидання — квота. #>
+    $any = $false
+    foreach ($l in @($Limits)) {
+        if ($null -eq $l) { continue }
+        foreach ($w in @(Get-Prop $l 'windows')) {
+            if ($null -eq $w) { continue }
+            $left = 0.0
+            if (-not [double]::TryParse([string](Get-Prop $w 'left'), 'Float', [cultureinfo]::InvariantCulture, [ref]$left) -or $left -le 0) { return $false }
+            $any = $true
+        }
+    }
+    $any
+}
+
 function Test-ModelQuota([string]$Model, [datetimeoffset]$Now) {
-    <# $true — постачальник моделі на квоті за файлами, які смуги вже ведуть: Codex — `codex` у heartbeat.json (gemini_run),
+    <# $true — постачальник моделі на квоті за файлами, які смуги вже ведуть: Codex — `codex` у heartbeat.json (gemini_run;
+    відмова без часу скидання при вимірі із залишком у кожному вікні — збій рушія, не квота),
     Claude — quota-claude.json (claude_run, поруч із gemini-publish), agy — pools.json (gemini_run): усі групи саме цієї
     моделі на 0 % (Get-ModelGroups, як QUOTA0_<група> у смузі); групи моделі не розпізнано — доступний, як у смузі;
     pools.json без слів назви (до цієї зміни) — усі групи на 0 %. Не прочитано — доступний, як було до квот. Хмарний
@@ -305,6 +323,7 @@ function Test-ModelQuota([string]$Model, [datetimeoffset]$Now) {
         $hb = Read-QuotaJson $OutDir 'heartbeat.json'
         $c = $(if ($null -ne $hb) { Get-Prop $hb 'codex' } else { $null })
         if ($null -eq $c) { return $false }
+        if ($null -eq (ConvertFrom-QuotaStamp (Get-Prop $c 'reset')) -and (Test-CodexMeasuredLeft (Get-Prop $c 'limits'))) { return $false }
         return (Test-QuotaRefused (Get-Prop $c 'refused') (Get-Prop $c 'reset') $Now)
     }
     if ($Provider -ceq 'claude') {
