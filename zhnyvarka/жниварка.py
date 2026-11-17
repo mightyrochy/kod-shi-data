@@ -83,6 +83,7 @@ import argparse, collections, concurrent.futures, csv, datetime, functools, gzip
 import xml.etree.ElementTree as ET
 from urllib.parse import urljoin, urlparse, urlunparse, parse_qs, parse_qsl, urlencode, quote
 from ідентичність_сторінки import ідентифікатор_сторінки, ідентифікатор_запису
+from вибір_кольору import факти_вибору, переліки_кольору
 
 try:
     import requests
@@ -1376,9 +1377,9 @@ def свідчення_одного_кольору(ф, url):
     """Сторінка свідчить про один колір: колір власного варіанта JSON-LD, єдиний колір варіантів, єдиний свотч, єдине
     значення вибору — або товар крамниці з `один_колір.tsv`, де сторінка не дає жодного переліку кольорів (рішення 05.11:
     товар без опції кольору — власник кадру доведено даними платформи)."""
-    переліки = [{str(в.get("колір")).strip().lower() for в in ф.get("варіанти") or [] if в.get("колір")},
-                {(x.get("назва") or x.get("hex") or x.get("фото") or "").strip().lower() for x in ф.get("свотчі") or []},
-                set(ф.get("кольори_вибору") or [])]
+    if ф.get("вибір_пошкоджено"):
+        return False
+    переліки = переліки_кольору(ф)
     if ф.get("колір_ld") or any(len(п) == 1 for п in переліки):
         return True
     return bool(ф.get("є_товар")) and not any(переліки) and _без_вибору_кольору(urlparse(url or "").netloc)
@@ -1391,9 +1392,7 @@ def _власник_сторінки(ф, url):
     (14949). Форма доказу — `woo:один_колір`: джерело `картка:один_колір`, товар = id запису, кадри = галерея запису."""
     невідомо = json.dumps("невідомо", ensure_ascii=False)
     товар = ідентифікатор_запису(ф, url)
-    переліки = [{str(в.get("колір")).strip().lower() for в in ф.get("варіанти") or [] if в.get("колір")},
-                {(x.get("назва") or x.get("hex") or x.get("фото") or "").strip().lower() for x in ф.get("свотчі") or []},
-                set(ф.get("кольори_вибору") or [])]
+    переліки = переліки_кольору(ф)
     галерея = чисті_фото(ф.get("фото"), url, ф.get("артикул"))
     свідчення = свідчення_одного_кольору(ф, url)
     if not (ф.get("є_товар") and url and товар and галерея and свідчення) or any(len(п) > 1 for п in переліки):
@@ -1408,10 +1407,7 @@ def колір_голова_списку(ф):
     колір запису (рішення менеджера 13.11). Одне значення чи сторінка без варіацій — дані самої речі."""
     if ф.get("колір_ld") or ф.get("власник_кадру") != json.dumps("невідомо", ensure_ascii=False):
         return False
-    переліки = [{str(в.get("колір")).strip().lower() for в in ф.get("варіанти") or [] if в.get("колір")},
-                {(x.get("назва") or x.get("hex") or x.get("фото") or "").strip().lower() for x in ф.get("свотчі") or []
-                 if not x.get("сестра")},
-                set(ф.get("кольори_вибору") or [])]
+    переліки = переліки_кольору(ф)
     return any(len(п) > 1 for п in переліки)
 
 
@@ -1899,29 +1895,7 @@ def факти_з_картки(html_текст, url, селектори=None):
         рядки_т = [r for r in рядки_т if len(r) >= 3]
         if len(рядки_т) >= 2 and re.search(r"розмір|size|обхват|груд|талі|стегн|довжин|рукав|плеч|\bсм\b", " ".join(рядки_т[0]), re.I):
             ф["таблиця_мірок"] = " ; ".join(" | ".join(r) for r in рядки_т)[:800]; break
-    # свотчі кольору: елемент зі стилем background/data-hex або картинкою, підпис з title/alt/тексту
-    for ел in кор.select('[class*="swatch"], [class*="color"], [class*="colour"], [class*="kolir"], [class*="colir"], [data-color], [data-hex]'):
-        стиль = ел.get("style") or ""
-        hex_ = None
-        м = re.search(r"#([0-9a-f]{6}|[0-9a-f]{3})\b", стиль + " " + str(ел.get("data-color") or "") + " " + str(ел.get("data-hex") or ""), re.I)
-        if м:
-            hex_ = м.group(1).lower()
-            hex_ = "#" + ("".join(c * 2 for c in hex_) if len(hex_) == 3 else hex_)
-        else:
-            м = re.search(r"rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)", стиль)
-            if м:
-                hex_ = "#%02x%02x%02x" % tuple(int(x) for x in м.groups())
-        img = ел.find("img") if ел.name != "img" else ел
-        кар = канонічна(img.get("data-src") or img.get("src") or "", url_бази) if img else None
-        if not hex_ and not кар:
-            continue
-        підпис = розекранувати(ел.get("title") or ел.get("aria-label") or ел.get("data-title") or ел.get("data-value") or
-                              (img.get("alt") if img else "") or _текст(ел, 30))[:40]
-        активний = bool(re.search(r"active|selected|checked|current", " ".join(ел.get("class") or []) + " " + str(ел.get("aria-checked") or ""), re.I))
-        посилання = ел if ел.name == "a" else (ел.find_parent("a") or ел.find("a"))
-        сестра = bool(посилання is not None and _інша_сторінка(посилання.get("href"), url))     # свотч іншого товару, не варіація цього
-        if len(ф["свотчі"]) < 20:
-            ф["свотчі"].append(dict(назва=підпис or None, hex=hex_, фото=кар, активний=активний, сестра=сестра))
+    ф.update(факти_вибору(кор, url))
     ф["кольори_вибору"] = _кольори_вибору(кор, url)
     # склад з блоку, який рецепт крамниці назвав селектором, — сильніше за пари; з довільного тексту сторінки не беремо
     if селектори.get("склад"):
