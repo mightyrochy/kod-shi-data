@@ -189,11 +189,17 @@ function Wait-LineSent([string]$Id, [datetime]$Until, [switch]$FirstPass) {
 
 # --- світло (тримач, -Light) --------------------------------------------------------------------------------------
 
-function Read-LightOff {
-    <# Час UTC зникнення світла, про яке диспетчерові вже написано «світла нема», а «світло є» ще ні, або ''. Файл
-    `light.txt` переживає сон, перезапуск тримача й нову версію: «світло є» йде рівно раз і з тим самим часом. #>
-    try { $t = [System.IO.File]::ReadAllText((Join-Path $WorkDir 'light.txt'), $script:Utf8).Trim() } catch { return '' }
-    if ($t -cmatch $script:UtcRx) { $t } else { '' }
+function Read-LightState {
+    <# Зникнення світла, про яке диспетчерові вже написано «світла нема», а «світло є» ще ні, або $null:
+    Off — час UTC зникнення; Id — рядок теки вихідних, доставки якого тримач ще чекає ('' — чекання скінчено).
+    Файл `light.txt` («<UTC>» чи «<UTC> <id>») переживає сон, перезапуск тримача й нову версію: «світло є» йде рівно
+    раз і з тим самим часом, а чекання доставки, перерване перезапуском, новий процес продовжує без другого рядка. #>
+    try { $t = [System.IO.File]::ReadAllText((Join-Path $WorkDir 'light.txt'), $script:Utf8).Trim() } catch { return $null }
+    # Id — ім'я файлу Add-Line (New-Id): «<дата>-<час>-<12 hex>».
+    if ($t -cnotmatch '\A(\S+)(?: ([0-9]{8}-[0-9]{6}-[0-9a-f]{12}))?\z') { return $null }
+    $off = $Matches[1]; $id = [string]$Matches[2]
+    if ($off -cnotmatch $script:UtcRx) { return $null }
+    [pscustomobject]@{ Off = $off; Id = $id }
 }
 
 function Set-LightHold([bool]$On) {
@@ -208,14 +214,15 @@ function Step-Light {
     через 3 с після переходу на батарею — раніше, ніж будь-хто встиг би щось написати. Світла нема — рядок у теку
     вихідних, чекання доставки (Wait-LineSent -FirstPass, межа -OffWaitMinutes — та сама, що в ВИМКНЕНО) і лише тоді
     запит відпущено: сон відкладається тільки до доставки, далі ноутбук засинає за схемою Windows (рішення менеджера
-    17.11). Світло повернулось — рядок «світло є» з часом зникнення і запит знову. Робочі процеси на батареї заморожує
-    не тримач, а Wait-PowerPause кожного рушія (queue_lanes.ps1). #>
+    17.11). Id рядка лежить у `light.txt`, доки чекання не скінчилось: тримач, перезапущений посеред чекання, бере
+    запит і чекає того самого рядка. Світло повернулось — рядок «світло є» з часом зникнення і запит знову. Робочі
+    процеси на батареї заморожує не тримач, а Wait-PowerPause кожного рушія (queue_lanes.ps1). #>
     $path = Join-Path $WorkDir 'light.txt'
     $stamp = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-    $off = Read-LightOff
+    $st = Read-LightState
     if (-not (Test-OnBattery)) {
-        if ($off) {
-            [void](Add-Line "GEMINI ОБГОРТКА: СВІТЛО Є $([datetime]::UtcNow.ToString($stamp)) ПАУЗА З $off")
+        if ($st) {
+            [void](Add-Line "GEMINI ОБГОРТКА: СВІТЛО Є $([datetime]::UtcNow.ToString($stamp)) ПАУЗА З $($st.Off)")
             Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
         }
         if (-not $script:LightHeld) {
@@ -228,15 +235,21 @@ function Step-Light {
         }
         return
     }
-    if ($off) { return }  # про це зникнення вже сказано, запит відпущено ще тоді
-    $off = [datetime]::UtcNow.ToString($stamp)
-    # Тримач стартував уже на батареї — запит і тут, лише на час доставки.
+    if ($st -and -not $st.Id) { return }  # про це зникнення вже сказано й доставки дочекались; запит відпущено ще тоді
+    # Тримач стартував уже на батареї чи перезапущений посеред чекання — запит і тут, лише на час доставки.
     if (-not $script:LightHeld) { Set-LightHold $true }
     $why = 'рядок не записано'
+    $off = $(if ($st) { $st.Off } else { [datetime]::UtcNow.ToString($stamp) })
     try {
-        $id = Add-Line "GEMINI ОБГОРТКА: СВІТЛА НЕМА $off"
-        Write-FileAtomic $path $off
-        if ($id) { $why = Wait-LineSent $id (Get-Date).AddMinutes($OffWaitMinutes) -FirstPass }
+        if ($st) { $id = $st.Id; Write-Log "світло: чекання доставки $id відновлено після перезапуску" }
+        else {
+            $id = Add-Line "GEMINI ОБГОРТКА: СВІТЛА НЕМА $off"
+            Write-FileAtomic $path $(if ($id) { "$off $id" } else { $off })
+        }
+        if ($id) {
+            $why = Wait-LineSent $id (Get-Date).AddMinutes($OffWaitMinutes) -FirstPass
+            Write-FileAtomic $path $off
+        }
     } finally {
         # Збій запису не тримає ноутбук на батареї: запит відпускається за будь-якого кінця.
         Set-LightHold $false

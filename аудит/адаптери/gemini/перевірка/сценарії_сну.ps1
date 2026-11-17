@@ -506,14 +506,14 @@ try {
             $ev = Tick $false
             [pscustomobject]@{Name="другий такт на мережі запиту не чіпає: '$ev'";Ok=($ev -ceq '' -and $script:LightHeld)}
             $ev = Tick $true $ok
-            $lines = @(Get-Outbox); $off = Read-LightOff
-            [pscustomobject]@{Name="світла нема: один рядок за шаблоном, без числа процесів: $($lines -join '')";Ok=($lines.Count -eq 1 -and $off -and $lines[0] -cmatch $script:PowerOffLineTemplate -and $lines[0].EndsWith(" НЕМА $off"))}
+            $lines = @(Get-Outbox); $st = Read-LightState; $off = $(if ($st) { $st.Off } else { '' })
+            [pscustomobject]@{Name="світла нема: один рядок за шаблоном, без числа процесів: $($lines -join '')";Ok=($lines.Count -eq 1 -and $off -and $lines[0] -cmatch $script:PowerOffLineTemplate -and $lines[0].EndsWith(" НЕМА $off") -and $st.Id -ceq '')}
             [pscustomobject]@{Name="світла нема → рядок → доставка → запит відпущено: $ev; $($script:Log[-1])";Ok=($ev -ceq 'доставка-чекання 1 | тримання False' -and -not $script:LightHeld -and $script:Log[-1] -cmatch 'запит відпущено — доставлено$')}
             $ev = Tick $true $ok
             [pscustomobject]@{Name="на батареї після сказаного — ні рядка, ні запиту: '$ev'";Ok=($ev -ceq '' -and @(Get-Outbox).Count -eq 1)}
             $ev = Tick $false
             $lines = @(Get-Outbox); $on = @($lines | Where-Object { $_ -cmatch $script:PowerOnLineTemplate })
-            [pscustomobject]@{Name="світло є: рядок із часом зникнення, запит знову тримається: $ev; $($on -join '')";Ok=($lines.Count -eq 2 -and $on.Count -eq 1 -and $on[0].EndsWith(" ПАУЗА З $off") -and $ev -ceq 'тримання True' -and $script:LightHeld -and -not (Read-LightOff))}
+            [pscustomobject]@{Name="світло є: рядок із часом зникнення, запит знову тримається: $ev; $($on -join '')";Ok=($lines.Count -eq 2 -and $on.Count -eq 1 -and $on[0].EndsWith(" ПАУЗА З $off") -and $ev -ceq 'тримання True' -and $script:LightHeld -and -not (Read-LightState))}
             Clear-Box
             $ev = Tick $true ''
             [pscustomobject]@{Name="доставки нема до -OffWaitMinutes — запит відпущено, причина в журналі: $($script:Log[-1])";Ok=($ev -cmatch '^доставка-чекання 1( \| доставка-чекання 1)* \| тримання False$' -and -not $script:LightHeld -and $script:Log[-1] -cmatch 'запит відпущено — не доставлено до межі чекання' -and @(Get-Outbox).Count -eq 1)}
@@ -525,6 +525,14 @@ try {
             [pscustomobject]@{Name="тримач стартував уже на батареї — запит лише на час доставки: $ev";Ok=($ev -ceq 'тримання True | доставка-чекання 1 | тримання False' -and @(Get-Outbox).Count -eq 1)}
             $ev = Tick $true $ok
             [pscustomobject]@{Name="перезапуск на батареї після сказаного — тиша (light.txt): '$ev'";Ok=($ev -ceq '' -and @(Get-Outbox).Count -eq 1)}
+            # Тримач перезапущено посеред чекання: light.txt має id рядка — новий процес бере запит і чекає саме його, без дубля.
+            [void](Tick $false); Clear-Box; Set-LightHold $false
+            $off = '2026-11-17T11:31:58Z'
+            $id = Add-Line "GEMINI ОБГОРТКА: СВІТЛА НЕМА $off"
+            Write-FileAtomic (Join-Path $WorkDir 'light.txt') "$off $id"
+            $ev = Tick $true $ok
+            $st = Read-LightState
+            [pscustomobject]@{Name="перезапуск посеред чекання доставки — запит знову, той самий рядок, без дубля: $ev; $($script:Log -join ' / ')";Ok=($ev -ceq 'тримання True | доставка-чекання 1 | тримання False' -and @(Get-Outbox).Count -eq 1 -and $st.Off -ceq $off -and $st.Id -ceq '' -and $script:Log[-1] -cmatch 'запит відпущено — доставлено$')}
             [void](Tick $false); Clear-Box; Set-LightHold $false
             $script:Refuse = $true; $script:LightRefused = $false
             $ev = Tick $false
