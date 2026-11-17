@@ -54,7 +54,8 @@ try {
     Check 'selfupdate.ready без active.txt: $false' (@(Test-SelfUpdate $r 6>&1)[-1] -eq $false)
 
     # читач: перша заміна зберігає повний файл, повтор нічого не міняє, потім читач запускає файл версії з аргументами
-    $r = New-Root 'читач' $true $sha $all
+    # корінь без кирилиці: читач пишеться без BOM, а Windows PowerShell 5.1 читає такий файл як ANSI (справжній корінь — ASCII)
+    $r = New-Root 'reader' $true $sha $all
     $entry = Join-Path $tmp 'профіль\claude-run'
     [void][IO.Directory]::CreateDirectory($entry)
     $file = Join-Path $entry 'claude_run.ps1'
