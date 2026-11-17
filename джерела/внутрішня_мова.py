@@ -3617,7 +3617,8 @@ if _спільні:
     'bag_strap': 'The check needs bag strap length in centimetres; drop is half the handle length.',
     'partner_pool': 'The check needs top and bottom candidates from this run to count combinations.',
     'shoe_repairability': 'The check needs a repairability measurement for the shoe sole construction.',
-    'occasion_duration': 'The check needs occasion duration in hours from the scenario.',
+    'occasion_duration': 'The check needs her time on her feet from the scenario: event duration in hours or '
+                         'minutes of walking.',
     'glasses_profile': 'The check needs glasses frame colour and pixel area from the profile.',
     'jewelry_kind': 'The check needs jewelry kind, distinct from its metal; a named metal does not establish pearls, wood, bone or beads.',
     'accent_pair': 'The check needs at least two non-neutral accent surfaces in different slots.',
@@ -3842,7 +3843,7 @@ def визначення_заяв(коди):
 МЕТАДАНІ_ЗАЯВ = {
     **{к: dict(recipient="journal") for к in ЗАЯВИ if к.startswith("no_input_")},
     **{к: dict(recipient="journal") for к in ("areas_not_measured", "which_white_suits_unknown",
-        "wear_cost_no_duration_surface", "wear_cost_no_duration", "leg_proportion_template_crotch",
+        "leg_proportion_template_crotch",
         "vertical_balance_not_judged", "calf_girth_not_measured", "her_register_unknown",
         "print_motif_scale_unknown",
         "chroma_clash_skipped_no_area", "unmeasured_accents_not_grouped", "area_share_error_unknown")},
@@ -3902,6 +3903,9 @@ def визначення_заяв(коди):
     "sole_grip_unknown_ice", "outer_composition_unknown_salt", "long_hem_rain_ground_unknown",
     "wear_way_not_chosen", "scarf_near_face_way_unknown",
     "her_foot_length_unknown", "her_head_girth_unknown", "shoe_size_not_checked", "hat_size_not_checked",
+    # час на ногах (години події, хвилини пішки) і поверхню вона називає сама: без них ціна каблука — питання
+    # K-END-01, і воно — їй, а не журналу (дошка 16281, 16257; рішення менеджера 17.11)
+    "wear_cost_no_duration", "wear_cost_no_duration_surface",
 ))
 _ВИД_НЕПЕРЕВІРЕНОГО = "card_unchecked"
 

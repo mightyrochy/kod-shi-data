@@ -1621,17 +1621,24 @@ _ВХІД_КОД = {"lab": "item_colour", "візерунок": "item_pattern", 
              "роль": "role", "супутник_рівень": "companion_formality", "сезон": "occasion_season",
              "життєвий_перехід": "life_transition", "заявлений_злам": "declared_break",
              "тон_колготи": "matching_opaque_tights", "заявлена_колона": "declared_column", "гардероб": "wardrobe",
-             "довжина_виробу_см": "item_length_cm"}      # річ каталогу без числа крамниці
+             "довжина_виробу_см": "item_length_cm",      # річ каталогу без числа крамниці
+             "тривалість_год": "duration_h"}             # час на ногах: години події чи дорога пішки (A9)
 # Похідне від входу сцени (клас E дослідження 5280): без нагоди нема й дистанції огляду, без погоди — погоди дня.
 _ПОХІДНЕ_ВІД = {"viewing_distance": "occasion", "temperature": "temperature"}
 # Заяви правил про вхід, якого система не пише ні зі слів жінки, ні з фото, ні з фіду (слово власника
 # 15.10, П2(а): такі — лише у звіті власника): жінка не може його дати, тож на картці «Чого я не знаю» вони
 # нічого не питають. Ознака — реєстр кодів заяв, не слова; її входи (обхват литки, довжина стопи) тут не стоять.
+# Час на ногах (`wear_cost_no_duration*`, K-END-01) — теж її вхід: години події й дорогу пішки пишуть її слова
+# (`duration_h`, `walk_min`), тож питання про них іде на картку (дошка 16281, 16257).
 ВХОДИ_БЕЗ_ПИСАЧА = frozenset({
     "outer_ease_not_in_feed", "outer_shoulder_not_measured", "item_insole_length_unknown", "shoe_size_not_checked",
-    "leg_proportion_template_crotch", "wear_cost_no_duration_surface", "wear_cost_no_duration",
+    "leg_proportion_template_crotch",
     "items_register_unknown",
     "dividing_line_item_length_unknown"})
+# Вхід пункту чекліста, про який уже питає заява правила про її речі (позначка з `items`): окремим рядком
+# «немає входу» він не йде — питання про час на ногах на картці одне, з названими речами.
+_НЕ_ЖІНЦІ = frozenset(("journal", "stylist"))       # адресати заяв не для картки (`statements.АДРЕСАТИ`)
+_ВХІД_У_ЗАЯВАХ = {"duration_h": frozenset({"wear_cost_no_duration", "wear_cost_no_duration_surface"})}
 
 
 def _позначка_пункту(б):
@@ -1646,7 +1653,14 @@ def _позначка_пункту(б):
 
 
 def _код_заяви(з):
-    return next(iter(з)) if isinstance(з, dict) else з
+    """Код заяви: поле `code` заяви (`дріт_моделі.заяви`), перший ключ `{код: значення}` чи рядок коду.
+
+    Доти тут стояв лише перший ключ словника, а заява на дроті — `{"code": …, "values": …}`: кодом ставало
+    слово «code», тож `ВХОДИ_БЕЗ_ПИСАЧА` не відсіював нічого, «Чого я не знаю» мала входи `code` і
+    зливала різні питання в один рядок, а вхід моделі ніс `statements: ["code"]` (дошка 16281)."""
+    if isinstance(з, dict):
+        return з["code"] if "code" in з else next(iter(з), None)
+    return з
 
 
 def позначки_без_входу(суд_):
@@ -1662,6 +1676,8 @@ def позначки_без_входу(суд_):
     знаю» (`прийняти_оцінку`) бере позначки як є, зі значеннями заяв (назви її речей); на дріт — `невідоме_для_моделі`."""
     вих, групи = [], {}
     входи = {б["input"] for б in суд_.get("без_входу") or [] if б.get("input")}
+    заявами = {_код_заяви(з) for б in суд_.get("без_входу") or [] if б.get("items") and not б.get("check")
+               for з in б.get("statements") or []}
     for б in суд_.get("без_входу") or []:
         if б.get("input"):
             вих.append(dict(no_input=[б["input"]], **({"items": б["items"]} if б.get("items") else {})))
@@ -1669,12 +1685,16 @@ def позначки_без_входу(суд_):
             if not б.get("why") or б.get("constant") or str(б["why"]).startswith(("system:", "not_passed:")):
                 continue        # без причини (запис до 5281) — лише у звіті власника, як і сталий брак
             вхід, чому = _позначка_пункту(б)
-            if _ПОХІДНЕ_ВІД.get(вхід) not in входи:
+            if _ПОХІДНЕ_ВІД.get(вхід) not in входи and not (_ВХІД_У_ЗАЯВАХ.get(вхід, frozenset()) & заявами):
                 групи.setdefault(чому, []).append(вхід)
         elif б.get("items"):
-            заяви = [з for з in _заяви(б, "statements") or [] if _код_заяви(з) not in ВХОДИ_БЕЗ_ПИСАЧА]
+            # заява журналу (адресат `journal` чи `stylist`, `внутрішня_мова.МЕТАДАНІ_ЗАЯВ`) — теж лише у звіті
+            # власника, як на картці рук 1–2 (`міст_відповіді._лише_її`): доки код заяви читався як «code», такі
+            # заяви стояли на картці входом «code» (дошка 16281)
+            заяви = [з for з in _заяви(б, "statements") or [] if _код_заяви(з) not in ВХОДИ_БЕЗ_ПИСАЧА
+                     and not (isinstance(з, dict) and з.get("recipient") in _НЕ_ЖІНЦІ)]
             if б.get("statements") and not заяви:
-                continue        # усі заяви — про вхід без писача (5815): лише у звіті власника
+                continue        # усі заяви — про вхід без писача (5815) чи журналу: лише у звіті власника
             вих.append({к: v for к, v in (("items", б.get("items")), ("statements", заяви),
                                           ("what", None if б.get("statements") else б.get("what"))) if v})
     return вих + [dict(no_input=list(dict.fromkeys(в)), why=ч) for ч, в in групи.items()]
@@ -1781,10 +1801,9 @@ def _без_ід(v):
 
 def _коди_без_входу(запис):
     """Позначка `позначки_без_входу` → коди входів, яких нема, для рядка «Чого я не знаю»: `no_input`
-    (`occasion`, `item_shine`…) чи коди заяв правила про її речі (`calf_girth_not_measured`). Слова до них
-    дає мовний прохід картки (`показ.html`, `мовоюКарткуОцінкиП`), не код (п.12)."""
-    return list(запис.get("no_input") or []) + [(next(iter(з)) if isinstance(з, dict) else з)
-                                                 for з in запис.get("statements") or []]
+    (`occasion`, `item_shine`…) чи коди заяв правила про її речі з адресатом «жінка» (`wear_cost_no_duration`).
+    Слова до них дає мовний прохід картки (`показ.html`, `мовоюКарткуОцінкиП`), не код (п.12)."""
+    return list(запис.get("no_input") or []) + [_код_заяви(з) for з in запис.get("statements") or []]
 
 
 def _дані_заяви(запис, назви):
