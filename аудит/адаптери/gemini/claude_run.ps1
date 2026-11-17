@@ -605,14 +605,14 @@ function Get-LmsCallAge([string]$Root = '') {
 
 function Get-SleepOverlap([datetime]$From, [datetime]$To) {
     <# Хвилини сну ноутбука в проміжку: події з `sleep-events.json` публікатора (`gemini_publish.ps1`, Get-WakeRows — журнал Windows
-    Power-Troubleshooter/1); `heartbeat/boot` (вимкнено й запущено, а не сон) не рахується. Файла нема чи він не читається — 0. #>
+    Power-Troubleshooter/1 чи Kernel-Power 506/507 у Modern Standby); `heartbeat/boot` (вимкнено й запущено, а не сон) не рахується. Файла нема чи він не читається — 0. #>
     try {
         $path = Join-Path $PublishDir 'sleep-events.json'
         if (-not (Test-Path -LiteralPath $path)) { return 0 }
         $j = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
         $total = 0.0
         foreach ($e in @($j.events)) {
-            if ($null -eq $e -or [string]$e.source -cne 'Power-Troubleshooter/1') { continue }
+            if ($null -eq $e -or [string]$e.source -cnotin @('Power-Troubleshooter/1', 'Kernel-Power/506-507')) { continue }
             $a = $(if ($e.from -is [datetime]) { $e.from.ToUniversalTime() } else { [datetimeoffset]::Parse([string]$e.from, [cultureinfo]::InvariantCulture).UtcDateTime })
             $b = $(if ($e.to -is [datetime]) { $e.to.ToUniversalTime() } else { [datetimeoffset]::Parse([string]$e.to, [cultureinfo]::InvariantCulture).UtcDateTime })
             $lo = $(if ($a -gt $From) { $a } else { $From }); $hi = $(if ($b -lt $To) { $b } else { $To })

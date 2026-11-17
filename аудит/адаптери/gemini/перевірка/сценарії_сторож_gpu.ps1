@@ -32,11 +32,12 @@ $newEnv = {
     $script:Limits = @{ slots = @{ claude = 2 }; source = 'код'; claude_laptop = @(); gpu_stall_minutes = 90; gpu_stall_percent = 15 }
     $script:TestBox = $box
 }
-# Події сну, як їх веде публікатор (`sleep-events.json`): сон 11:30–15:29 UTC (Power-Troubleshooter/1) і не-сон «вимкнено й запущено» 06:00–06:30.
+# Події сну, як їх веде публікатор (`sleep-events.json`): сон 11:30–15:29 UTC (Power-Troubleshooter/1) і не-сон «вимкнено й запущено» 06:00–06:30, сон Modern Standby 10.11 20:00–20:40 (Kernel-Power/506-507) — поза вікнами сценаріїв.
 [void][IO.Directory]::CreateDirectory("$tmp/pub")
 [IO.File]::WriteAllText("$tmp/pub/sleep-events.json", (@{ read_utc = '2099-01-01T00:00:00.0000000+00:00'; events = @(
     @{ key = 'a'; from = '2026-11-15T11:30:00.0000000+00:00'; to = '2026-11-15T15:29:00.0000000+00:00'; source = 'Power-Troubleshooter/1'; announced = $true },
-    @{ key = 'b'; from = '2026-11-15T06:00:00.0000000+00:00'; to = '2026-11-15T06:30:00.0000000+00:00'; source = 'heartbeat/boot'; announced = $true }) } | ConvertTo-Json -Depth 5 -Compress), $utf)
+    @{ key = 'b'; from = '2026-11-15T06:00:00.0000000+00:00'; to = '2026-11-15T06:30:00.0000000+00:00'; source = 'heartbeat/boot'; announced = $true },
+    @{ key = 'c'; from = '2026-11-10T20:00:00.0000000+00:00'; to = '2026-11-10T20:40:00.0000000+00:00'; source = 'Kernel-Power/506-507'; announced = $true }) } | ConvertTo-Json -Depth 5 -Compress), $utf)
 function Read-Box { @(Get-ChildItem -LiteralPath $script:TestBox -Filter '*.txt' -File -ErrorAction SilentlyContinue | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() }) }
 
 # --- (а) сьогоднішній випадок: замок тримається, карта 0 %, PID міняється; перед тим — сон ноутбука -------------------------------
@@ -120,6 +121,7 @@ Scenario 'а5 пропущені такти' {
     $r = @(Read-Box)
     Check "а5 рядок на 90-й хв ряду: $($r -join ' | ')" ($r.Count -eq 1 -and $r[0] -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE codex/Е1-нічний-живий-20261115 ЗАМОК 90 СОН 0 БЕЗ_РОБОТИ 90 PID_ЗМІН 0')
     Check 'а5 Get-SleepOverlap: сон 11:30–15:29 — повністю 239, частково 30, «вимкнено й запущено» (heartbeat/boot) не сон' ((Get-SleepOverlap $day.AddMinutes(11 * 60) $day.AddMinutes(16 * 60)) -eq 239 -and (Get-SleepOverlap $day.AddMinutes(11 * 60) $day.AddMinutes(12 * 60)) -eq 30 -and (Get-SleepOverlap $day.AddMinutes(5 * 60 + 59) $day.AddMinutes(7 * 60)) -eq 0)
+    Check 'а5 Get-SleepOverlap: сон Modern Standby (Kernel-Power/506-507) 20:00–20:40 лічиться, як і сон Power-Troubleshooter' ((Get-SleepOverlap ([datetime]'2026-11-10T19:00:00Z').ToUniversalTime() ([datetime]'2026-11-10T21:00:00Z').ToUniversalTime()) -eq 40)
     Check 'а5 sleep-events.json нема — сон 0, без збою' ((Get-SleepOverlap $day.AddMinutes(0) $day.AddMinutes(1)) -eq 0 -and (& { $PublishDir = "$tmp/нема"; (Get-SleepOverlap $day.AddMinutes(11 * 60) $day.AddMinutes(16 * 60)) -eq 0 }))
 }
 

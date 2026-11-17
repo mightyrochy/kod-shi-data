@@ -20,6 +20,12 @@ $script:GpuIdleLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО
 $script:PowerOffLineTemplate = '\AGEMINI ОБГОРТКА: СВІТЛА НЕМА 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z ПРИЗУПИНЕНО [0-9]{1,5}\z'
 $script:PowerOnLineTemplate = '\AGEMINI ОБГОРТКА: СВІТЛО Є 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z ПАУЗА З 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\z'
 
+# Перерва в роботі ноутбука (gemini_publish.ps1, Update-SleepEvents): СОН — пробудження, ВИМКНЕНО-СТАРТ — нове завантаження. СОН,
+# що почався на батареї, несе «СВІТЛА НЕ БУЛО З <UTC зникнення>» і, коли пробудження вже на мережі, «ДОСТУПНИЙ З <UTC пробудження>»:
+# такий СОН будить диспетчера (Test-DispatcherAction), решта йде зведенням.
+$script:SleepLineStamp = '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z'
+$script:SleepLineTemplate = "\AGEMINI ОБГОРТКА: (?:ВИМКНЕНО-СТАРТ $($script:SleepLineStamp) → $($script:SleepLineStamp), нарядів [0-9]{1,5}|СОН $($script:SleepLineStamp) → $($script:SleepLineStamp), нарядів [0-9]{1,5}(?: СВІТЛА НЕ БУЛО З $($script:SleepLineStamp)(?: ДОСТУПНИЙ З $($script:SleepLineStamp))?)?)\z"
+
 function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
 
 function Add-HoldLine([string]$Line) {
