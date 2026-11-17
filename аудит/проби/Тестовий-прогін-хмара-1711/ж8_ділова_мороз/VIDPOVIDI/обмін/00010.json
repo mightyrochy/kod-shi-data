@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-gauge turtleneck sweater: slim fit, hip length, ivory (#F2EBDD), merino wool\\n\\nStraight-leg trousers: high waist, full length to the top of the boot, charcoal (#3A3D42), wool-blend flannel\\n\\nTailored blazer: single-breasted, hip length, heathered taupe-brown (#6B645C), textured wool tweed\\n\\nOvercoat: straight cut, single-breasted, mid-calf length, deep navy (#1F2A44), wool-cashmere blend\\n\\nAnkle boots: low block heel, round toe, black (#1C1C1C), water-resistant leather with a grippy rubber lug sole\\n\\nSocks: crew length, charcoal (#3A3D42), merino-blend knit\\n\\nScarf: oversized, folded once at the neck, burgundy (#6D2332), soft lambswool\\n\\nGloves: wrist length, black (#1C1C1C), leather with a cashmere lining\\n\\nTote bag: structured, closed top, black (#1C1C1C), smooth leather that wipes clean\\n\\nWhy this outfit works: it stays within neat business dress with a refined knit, trousers, a textured jacket and ankle boots, so it looks professional for the meeting. The layers of merino, tweed and a wool-cashmere coat keep you warm during a 20-minute walk in frost and snow. The water-resistant boots with a lug sole give you grip on snow and are easy to wipe clean of road salt, and the full-length trousers keep the hems away from slush. The ivory, charcoal and navy palette is calm and cohesive, and the burgundy scarf adds a single point of color.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Turtleneck sweater\\\",\\\"details\\\":\\\"Fine-gauge, slim fit, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F2EBDD\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg trousers\\\",\\\"details\\\":\\\"High waist, full length to the top of the boot, wool-blend flannel\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3A3D42\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tailored blazer\\\",\\\"details\\\":\\\"Single-breasted, hip length, textured wool tweed\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#6B645C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Overcoat\\\",\\\"details\\\":\\\"Straight cut, single-breasted, mid-calf length, wool-cashmere blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#1F2A44\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"Low block heel, round toe, water-resistant leather with a grippy rubber lug sole\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1C1C1C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Socks\\\",\\\"details\\\":\\\"Crew length, merino-blend knit\\\",\\\"slot\\\":\\\"socks\\\",\\\"color_hex\\\":\\\"#3A3D42\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"Oversized, folded once at the neck, soft lambswool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#6D2332\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Gloves\\\",\\\"details\\\":\\\"Wrist length, leather with a cashmere lining\\\",\\\"slot\\\":\\\"gloves\\\",\\\"color_hex\\\":\\\"#1C1C1C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tote bag\\\",\\\"details\\\":\\\"Structured, closed top, smooth leather that wipes clean\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1C1C1C\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2227,\"output_tokens\":579},\"stop_reason\":\"end_turn\"}"
+ }
+}

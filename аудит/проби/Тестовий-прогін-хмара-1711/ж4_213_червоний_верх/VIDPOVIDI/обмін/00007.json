@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"На зустріч з подругами\", \"wants\": \"червоний верх\"}, \"wish_quotes\": [\"червоний верх\"], \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"wish_quotes\": {\"kind\": \"default\"}, \"wishes\": {\"kind\": \"reading\", \"quote\": \"червоний верх\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"червоний верх\"}]}, \"refusals\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"На зустріч з подругами\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}}, \"event\": \"На зустріч з подругами\", \"wishes\": [\"top, red\"], \"occasion\": \"everyday\", \"formality\": [\"everyday\"], \"season\": \"autumn\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Red knit top, slim-cut crew neck sweater, hip length, red (#B22234), soft merino-blend knit\\nDark straight-leg jeans, high waist, full length to the ankle, indigo (#1F2A44), stretch denim\\nLight trench coat, single-breasted, knee length, camel (#C19A6B), cotton gabardine\\nAnkle boots, low block heel, almond toe, dark brown (#4A2F23), smooth leather\\nLeather shoulder bag, structured medium size, dark brown (#4A2F23), smooth leather\\nThin scarf, long rectangle loosely draped, cream (#F2EAD8), light wool\\nSmall gold hoop earrings, gold (#C9A227), polished metal\\n\\nThis outfit works because the red sweater gives you the red top you asked for and stays the clear focus against calm, neutral colors. Dark jeans and brown boots keep the look relaxed and neat, right for meeting friends over coffee or lunch. The camel trench and cream scarf add warmth and light layering for an autumn day without competing with the red. The gold hoops add a small touch of polish while the whole look stays easy and comfortable.\"}],\"usage\":{\"input_tokens\":2145,\"output_tokens\":384},\"stop_reason\":\"end_turn\"}"
+ }
+}

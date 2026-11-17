@@ -21,6 +21,7 @@
      позначкою»; нова спроба при наявній гілці наряду — ще «продовжуй з гілки». Гілку й PR-чернетку сесія пушить сама.
   4. Межі часу всього нема: зупиняє лише завислість — жодної події stream-json довше за поріг (HANG). Очікування фонових
      завдань агента — без власної межі `claude -p` (CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0): його тоді обмежує лише HANG.
+     Явний `timeout` Bash понад 10 хв `claude -p` теж приймає без стелі (BASH_MAX_TIMEOUT_MS=2147483647, межа самого CLI).
   5. Кінець — рядок теки вихідних (доставляє `gemini-publish`): ГОТОВО <гілка> <SHA40>, лише коли `origin` має
      саме цей SHA на гілці зі звіту, або ЗАБЛОКОВАНО claude/<наряд> <КОД>; копія з незапушеними комітами лишається — ще рядок COPY_KEPT. Відмова за квотою — не кінець: позначка
      чекає скидання (час — з події `rate_limit_event` stream-json) і рядок QUOTA0_CLAUDE_M<хв>; потім її бере ця ж смуга.
@@ -686,14 +687,14 @@ function Get-LmsCallAge([string]$Root = '') {
 
 function Get-SleepOverlap([datetime]$From, [datetime]$To) {
     <# Хвилини сну ноутбука в проміжку: події з `sleep-events.json` публікатора (`gemini_publish.ps1`, Get-WakeRows — журнал Windows
-    Power-Troubleshooter/1); `heartbeat/boot` (вимкнено й запущено, а не сон) не рахується. Файла нема чи він не читається — 0. #>
+    Power-Troubleshooter/1 чи Kernel-Power 506/507 у Modern Standby); `heartbeat/boot` (вимкнено й запущено, а не сон) не рахується. Файла нема чи він не читається — 0. #>
     try {
         $path = Join-Path $PublishDir 'sleep-events.json'
         if (-not (Test-Path -LiteralPath $path)) { return 0 }
         $j = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
         $total = 0.0
         foreach ($e in @($j.events)) {
-            if ($null -eq $e -or [string]$e.source -cne 'Power-Troubleshooter/1') { continue }
+            if ($null -eq $e -or [string]$e.source -cnotin @('Power-Troubleshooter/1', 'Kernel-Power/506-507')) { continue }
             $a = $(if ($e.from -is [datetime]) { $e.from.ToUniversalTime() } else { [datetimeoffset]::Parse([string]$e.from, [cultureinfo]::InvariantCulture).UtcDateTime })
             $b = $(if ($e.to -is [datetime]) { $e.to.ToUniversalTime() } else { [datetimeoffset]::Parse([string]$e.to, [cultureinfo]::InvariantCulture).UtcDateTime })
             $lo = $(if ($a -gt $From) { $a } else { $From }); $hi = $(if ($b -lt $To) { $b } else { $To })
@@ -1151,6 +1152,14 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     # іде й під час паузи живлення (Wait-PowerPause призупиняє процеси наряду), тож після паузи межа вже минула, хоч
     # агент не мовчав. Межа часу прогону — лише завислість нижче (час неспання, `Stop-Tree` прибирає дерево).
     $psi.EnvironmentVariables['CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'] = '0'
+    # Без цього `claude -p` урізає явний `timeout` виклику Bash до 600000 (BASH_MAX_TIMEOUT_MS за замовчуванням): передня
+    # команда довша за 10 хв переходить у фон, а фонове завдання `claude -p` зупиняє через 10 хв («stopped after reaching its
+    # background time limit») навіть при CEILING=0 — прогін 8178 скінчився NO_REPORT. 2147483647 — власна найбільша межа
+    # CLI (int32): за принципом «межі часу всього нема» явний `timeout` не обрізається, завислість міряє лише HANG.
+    # Вимір (claude 2.1.312, передній Bash `timeout: 900000`, команда 720 с): без змінної — перенос у фон на 600 с (прогін
+    # 607 с); зі змінною — один передній виклик, результат за 727,9 с. `BASH_DEFAULT_TIMEOUT_MS` не чіпаємо: він міняв би
+    # типову межу кожної передньої команди без явного `timeout`.
+    $psi.EnvironmentVariables['BASH_MAX_TIMEOUT_MS'] = '2147483647'
     $psi.RedirectStandardInput = $true
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
     $p = Invoke-WithStdinUtf8 { Start-Tree $psi }
