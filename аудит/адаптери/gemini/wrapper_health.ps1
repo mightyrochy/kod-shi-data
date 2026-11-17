@@ -14,6 +14,18 @@ $script:HoldLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО (?
 # Сторож GPU-замка (queue_lanes.ps1, Update-GpuWatch): позначка, хвилин замка, хвилин без роботи карти, змін PID власника пам'яті.
 $script:GpuIdleLineTemplate = '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE (?:gemini|codex|claude)/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79} ЗАМОК [0-9]{1,6} СОН [0-9]{1,6} БЕЗ_РОБОТИ [0-9]{1,6} PID_ЗМІН [0-9]{1,5}\z'
 
+# Світло зникло й повернулось (queue_lanes.ps1, Wait-PowerPause; пише лише планувальник claude-run): перший рядок — ноутбук на
+# батареї, обгортка стала, ноутбук засне; другий — світло є, ноутбук знову доступний. Час усюди UTC; у другому — повернення й
+# настінний час зникнення (сон його не стискає, на відміну від «хвилин» у журналі).
+$script:PowerOffLineTemplate = '\AGEMINI ОБГОРТКА: СВІТЛА НЕМА 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z ПРИЗУПИНЕНО [0-9]{1,5}\z'
+$script:PowerOnLineTemplate = '\AGEMINI ОБГОРТКА: СВІТЛО Є 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z ПАУЗА З 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\z'
+
+# Перерва в роботі ноутбука (gemini_publish.ps1, Update-SleepEvents): СОН — пробудження, ВИМКНЕНО-СТАРТ — нове завантаження. СОН,
+# що почався на батареї, несе «СВІТЛА НЕ БУЛО З <UTC зникнення>» і, коли пробудження вже на мережі, «ДОСТУПНИЙ З <UTC пробудження>»:
+# такий СОН будить диспетчера (Test-DispatcherAction), решта йде зведенням.
+$script:SleepLineStamp = '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z'
+$script:SleepLineTemplate = "\AGEMINI ОБГОРТКА: (?:ВИМКНЕНО-СТАРТ $($script:SleepLineStamp) → $($script:SleepLineStamp), нарядів [0-9]{1,5}|СОН $($script:SleepLineStamp) → $($script:SleepLineStamp), нарядів [0-9]{1,5}(?: СВІТЛА НЕ БУЛО З $($script:SleepLineStamp)(?: ДОСТУПНИЙ З $($script:SleepLineStamp))?)?)\z"
+
 function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
 
 function Add-HoldLine([string]$Line) {

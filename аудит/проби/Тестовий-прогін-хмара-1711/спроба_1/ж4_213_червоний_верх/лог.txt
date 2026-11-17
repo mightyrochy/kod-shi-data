@@ -1,0 +1,88 @@
+СЦЕНАРІЙ ПІДМІНЕНО (CHAT_TEXT/PASPORT): звірки офісного випадку звіряються з поданим паспортом · {"чат":"На зустріч з подругами хочу червоний верх, добери до нього образ","паспорт":null}
+МОДЕЛЬ ЖИВА: claude-sonnet-5-5 · http://127.0.0.1:8791/v1 · reasoning_effort=none · відповіді → /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж4_213_червоний_верх/VIDPOVIDI
+   → у мережу (FOTO=1): https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   → у мережу (FOTO=1): https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   → у мережу (FOTO=1): https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   → у мережу (FOTO=1): https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+сторінка піднята за 1.8 с · збірка: 55bb94a4b1f2f1c38f04518d44cf15d3f0f198a9 · єдина сторінка: true
+
+0. знайомство · крок 1 «Про тебе»: {"режим":"старт","екран":0,"видно":["е-профіль"],"кнопка":"Далі"}
+  ✔ крок 1: кольори прозою ручним шляхом — розбіжність форми названо, рядки не прочитано
+  ✔ крок 1: кольори лягли ручним шляхом сторінки («Застосувати кольори»)
+   крок 2 «Що тобі до лиця»: {"режим":"старт","екран":1,"видно":["е-лице"],"кнопка":"Далі"}
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж4_213_червоний_верх/знімки/ekran_znaiomstvo_2_do_lytsia_seed3.png 79401 Б
+   крок 3 «Фігура»: {"режим":"старт","екран":2,"видно":["е-мірки"],"кнопка":"Готово"}
+  ✔ знайомство — рівно три кроки, і «Готово» стоїть лише на третьому
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж4_213_червоний_верх/знімки/ekran_znaiomstvo_3_fihura_seed3.png 52223 Б
+   «Готово» → {"режим":"сценарій","екран":2,"видно":["е-випадок"],"лист":true,"підказка":"Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.","питання":"Куди ти збираєшся?","рукою":"Або заповнити рукою","прикладів":3,"дії_панелі":false,"картка":false,"зібрати":null} за 11.4 с
+  ✔ після «Готово» — екран сценарію v5: аркуш листа з полем, питання «Куди ти збираєшся?», «Або заповнити рукою»; дій панелі нема, отже репліка піде замовленням, а не в помічницю
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж4_213_червоний_верх/знімки/ekran_scenarii_porozhnii_seed3.png 45568 Б
+   ↔ модель #1 мовний шар: хід розмови (35989 симв., разом 37280) → 7.4 с · HTTP 200 · 769 симв.
+
+1. чат → паспорт за 43.9 с · pyodide тягнув: ["pyodide.js","python_stdlib.zip","pyodide.asm.wasm","pyodide-lock.json","pyodide.asm.js"]
+  ✔ чат заповнив плитки з поданого паспорта (нагода=щоденне; чинне місце — null)
+  ✔ вето з поданого паспорта в паспорті (на екрані чипів нема, ПОКАЗ-1) (жодного)
+  ✔ рядок підтвердження стоїть («Усе правильно?» + «так»/«поправити»), і випадок — з поданого паспорта («зустріч з подругами»; нагода в рядках картки)
+  ✔ паспорт із перекладу (слова → внутрішня мова → паспорт кодом), питань моделі в паспорті нема (Т-18)
+  ✔ М-5: хід розмови — один виклик мовної моделі (запис «розмова» з внутрішньою мовою й частинами); другий — лише коли зміст дає код; у бульбашці — текст після суду коду
+  ✔ порада (рядки 108/114): тем за хід 1…3 — запрошення моделі розмови, пропущене судом коду, без повторів (`поради_дані`)
+  ✔ до збирання нічого не бракує
+   ↔ модель #2 вибір палітри (стилістка) (11291 симв., разом 12680) → 4.3 с · HTTP 200 · 198 симв.
+   знімок чату не вийшов: TimeoutError: elementHandle.screenshot: Timeout 30000ms exceeded.
+Call log:
+[2m  - taking element screenshot[22m
+[2m 
+стенд не піднявся: page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#пал-кнопка')[22m
+[2m    - locator resolved to <button type="button" id="пал-кнопка" class="ряд-паспорта далі-екран">…</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    56 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is not visible[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+    at стор.<computed> (/home/user/kod-shi-data/аудит/проби/рв6_стенд.js:2380:57)
+    at async діяІЧекати (/home/user/kod-shi-data/аудит/проби/рв6_стенд.js:141:3)
+    at async /home/user/kod-shi-data/аудит/проби/рв6_стенд.js:3670:3 {
+  log: [
+    "  - waiting for locator('#пал-кнопка')",
+    '    - locator resolved to <button type="button" id="пал-кнопка" class="ряд-паспорта далі-екран">…</button>',
+    '  - attempting click action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying click action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying click action',
+    '      - waiting 100ms',
+    '    56 × waiting for element to be visible, enabled and stable',
+    '       - element is not visible',
+    '     - retrying click action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}
+
+ЖИВА МОДЕЛЬ claude-sonnet-5-5: викликів 2 · збоїв 0 · у стелю виводу 0 · з думкою 0 · разом 11.7 с (найдовший 7.4 с)
+   · мовний шар: хід розмови — HTTP 200 · 7.4 с · вхід 14000 т. · вихід за лічильником CLI (з міркуванням) 899 т., видимих ≤ 385 т. · 769 симв.
+   · вибір палітри (стилістка) — HTTP 200 · 4.3 с · вхід 6044 т. · вихід за лічильником CLI (з міркуванням) 460 т., видимих ≤ 99 т. · 198 симв.
+
+фрази нових правил у ПОВНОМУ тексті пакета (усі виклики моделі цього сіда): {"намір=comfort_first (у переліку значень поля)":1,"намір=context_optimal (у переліку значень поля)":1}
+
+ВПАЛО 1 · прогін обірвався на кидку (див. «стенд не піднявся» вище); підсумок моделі надруковано
+
+ДОКАЗ · рв6_стенд · run-mwkuul0y-1650f828 · код 55bb94a4b1f2f1c38f04518d44cf15d3f0f198a9 · подія — · НЕ ДОВЕДЕНО: нема події завершення (кидок: page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#пал-кнопка')[22m
+[2m    - locator resolved to <button type="button" id="пал-кнопка" class="ряд-паспорта далі-екран">…</b) → /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж4_213_червоний_верх/знімки/доказ.json
+очікувань дії ядра: виконано 2 різних викликів файлу з 49 (разом 2 очікувань)

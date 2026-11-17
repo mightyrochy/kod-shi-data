@@ -63,7 +63,7 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 /* початок: зворот люстерка */
 .poch{min-height:100vh;min-height:calc(100dvh - var(--pult));padding:16px var(--p) 14px;display:flex;flex-direction:column;max-width:540px;margin:0 auto}
 .poch .mal{margin:0 -14px}
-.poch .kah{width:100%;height:auto;max-height:54vh;max-height:54dvh}
+.poch .kah{width:100%;height:auto;max-height:54vh;max-height:54dvh;max-height:min(54dvh,calc(100dvh - var(--pult) - 412px))}
 .poch .sl{flex:1;display:flex;flex-direction:column;margin-top:14px}
 .poch .napys{max-width:100%;height:auto}
 .poch .zakl{font-size:19px;line-height:1.45;margin:18px 0 20px;max-width:21em}
@@ -240,6 +240,22 @@ h3{font-weight:600;font-size:15px;line-height:1.3;margin:22px 0 10px}
 .kl.pusta i{width:44px;height:44px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--bura);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:24px;font-weight:300;color:var(--bura);line-height:1}
 .kl.mal-k{justify-content:center}
 .kl .kah{width:100%;height:auto}
+
+/* вибір теми: три люстерка в кутку першого екрана; рядки з іменем і рукою — у «Знайомстві» */
+.temy{display:flex}
+.temy button{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;position:relative}
+.temy button[aria-checked=true]::after{content:'';position:absolute;left:50%;bottom:2px;width:14px;height:2px;margin-left:-7px;background:var(--bura)}
+.temy.kr{align-self:flex-end;margin:-10px -10px 2px 0}
+.temy.kr button{opacity:.6}.temy.kr button[aria-checked=true]{opacity:1}
+.tvoje{margin:18px 0 6px;padding-top:14px;border-top:1px solid var(--lin)}
+.temy.kartky{flex-direction:column;margin-top:6px}
+.temy.kartky button{justify-content:flex-start;gap:14px;min-height:60px;text-align:left;padding:4px 0;border-bottom:1px solid var(--lin)}
+.temy.kartky button:last-child{border-bottom:0}
+.temy.kartky button::after{display:none}
+.temy.kartky span{display:grid;font-size:15px;line-height:1.3}.temy.kartky b{font-weight:600}.temy.kartky small{font-size:13px;color:var(--tin)}
+.temy.kartky button::before{content:'';order:2;margin-left:auto;width:16px;height:16px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--bura);flex:none}
+.temy.kartky button[aria-checked=true]::before{background:var(--bura);box-shadow:inset 0 0 0 1.5px var(--bura),inset 0 0 0 4.5px var(--tlo)}
+.pult .pt{width:auto!important;font-size:12px!important;text-decoration:underline;padding:0 4px}
 
 /* перемикач сцен прототипу — окрема темна смуга над інтерфейсом, не його частина */
 body:has(.pult){display:flex;flex-direction:column}

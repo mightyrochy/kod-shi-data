@@ -485,6 +485,12 @@ function рендерКартку(поз){
     const сп = ел('div', 'задум'); безСлів.forEach(т => сп.appendChild(елЖінціП('div', null, т, 'card_statement_failed', своїКартки)));
     бс.appendChild(сп); кт.appendChild(бс);
   }
+  /* ОПИС НАПИСАНО БЕЗ ФОТО — рядок під поясненням, лише коли пояснення показано; сталий напис шару теж стоїть тут
+     (не в згорнутому переліку): жінка має бачити, що фото цього опису не бачила модель */
+  const безФото = typeof к.опис_без_фото === 'string' ? к.опис_без_фото
+    : ((к.опис_без_фото || {}).kind === 'card_description_without_photos' ? НАПИС_БЕЗ_ШАРУ_П.card_description_without_photos : '');
+  if (опис && безФото)
+    кт.appendChild(елЖінціП('p', 'не-вийшло', безФото, 'card_description_without_photos_failed', своїКартки));
   if (задум.length){
     кт.appendChild(ел('h3', null, 'Як це носити'));
     const з = ел('div', 'задум'); задум.forEach(р=>з.appendChild(елЖінціП('div', null, р, 'card_wearing_failed', своїКартки))); кт.appendChild(з);

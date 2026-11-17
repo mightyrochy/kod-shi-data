@@ -311,18 +311,92 @@ function Get-SleepTime([string]$Text) {
     if ([datetimeoffset]::TryParse($Text, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::None, [ref]$stamp)) { return $stamp.UtcDateTime }
 }
 
+function Get-PowerEvents([hashtable]$Filter, [int]$Max = 0) {
+    <# Події журналу System за фільтром; Get-WinEvent кидає виняток, коли подій нема, а брак доступу той самий — обидва дають порожній перелік. #>
+    try {
+        if ($Max -gt 0) { return @(Get-WinEvent -FilterHashtable $Filter -MaxEvents $Max -ErrorAction Stop) }
+        @(Get-WinEvent -FilterHashtable $Filter -ErrorAction Stop)
+    } catch { @() }
+}
+
+function Get-EventData($Event) {
+    <# Поля EventData події як словник ім'я → текст. #>
+    $data = @{}
+    foreach ($item in ([xml]$Event.ToXml()).Event.EventData.Data) { $data[[string]$item.Name] = [string]$item.'#text' }
+    $data
+}
+
+function Get-StandbyRows([datetime]$Since) {
+    <# Сон Modern Standby з Kernel-Power: 506 — вхід, 507 — вихід (там Power-Troubleshooter 1 не пишеться). Один сон — від першого 506,
+    за яким система таки заснула, до 507, після якого Windows сеанс завершила. Це кажуть самі події: 507 з `SleepEntered=false` —
+    вхід не дійшов до сну (сну не було); 507 з `IsCsSessionInProgressOnExit=true` — вихід службовий, сеанс іде далі, і наступний 506 —
+    той самий сеанс (так Windows відмірює бюджет батареї, «Austerity»), а не нове пробудження. Вхід без виходу — сон іще триває:
+    `$script:SleepOpenFrom` — його початок, щоб наступне читання почалося з нього. #>
+    $filter = @{LogName='System'; ProviderName='Microsoft-Windows-Kernel-Power'; Id=@(506, 507); StartTime=$Since.ToLocalTime()}
+    $chain = $null
+    foreach ($event in @(Get-PowerEvents $filter | Sort-Object TimeCreated, RecordId)) {
+        $data = Get-EventData $event; $at = $event.TimeCreated.ToUniversalTime()
+        if ($event.Id -eq 506) {
+            # Вхід з іншим BootId — попередній сон урвало перезавантаження: його межі дає heartbeat/boot.
+            if ($null -ne $chain -and $chain.boot -cne $data['BootId']) { $chain = $null }
+            if ($null -eq $chain) { $chain = @{ from=$at; slept=$false; boot=$data['BootId'] } }
+            continue
+        }
+        if ($null -eq $chain) { continue }
+        if ($data['SleepEntered'] -ceq 'true') { $chain.slept = $true }
+        if ($data['IsCsSessionInProgressOnExit'] -ceq 'true') { continue }
+        if ($chain.slept) { [pscustomobject]@{ from=$chain.from.ToString('o'); to=$at.ToString('o'); source='Kernel-Power/506-507' } }
+        $chain = $null
+    }
+    if ($null -ne $chain) { $script:SleepOpenFrom = $chain.from }
+}
+
+function Get-PowerSource([datetime]$At) {
+    <# Джерело живлення в момент $At: останнє Kernel-Power 105 до нього (`AcOnline`); журнал мовчить чи поле не те — $null. #>
+    $found = @(Get-PowerEvents @{LogName='System'; ProviderName='Microsoft-Windows-Kernel-Power'; Id=105; EndTime=$At.ToLocalTime()} 1)
+    if ($found.Count -eq 0) { return $null }
+    $online = (Get-EventData $found[0])['AcOnline']
+    if ($online -cnotin @('true', 'false')) { return $null }
+    [pscustomobject]@{ ac=($online -ceq 'true'); at=$found[0].TimeCreated.ToUniversalTime() }
+}
+
+function Get-SleepLight([datetime]$From, [datetime]$To) {
+    <# Світло навколо сну: `dark` — коли воно зникло, якщо сон почався на батареї; `avail` — пробудження, якщо воно вже на мережі
+    (на батареї ноутбук прокинувся, але недоступний: про повернення світла скаже пауза claude-run). #>
+    $light = @{}
+    $start = Get-PowerSource $From
+    if ($null -eq $start -or $start.ac) { return $light }
+    $light.dark = $start.at.ToString('o')
+    $end = Get-PowerSource $To
+    if ($null -ne $end -and $end.ac) { $light.avail = $To.ToString('o') }
+    $light
+}
+
 function Get-WakeRows([datetime]$Since) {
-    <# Межі сну з Power-Troubleshooter 1; брак доступу залишає джерелом heartbeat. #>
+    <# Межі сну: Power-Troubleshooter 1 (звичайний сон) і Kernel-Power 506/507 (Modern Standby); сон, що є в обох, — один раз, за
+    Power-Troubleshooter. Кожному — світло з Kernel-Power 105. Брак доступу залишає джерелом heartbeat. #>
+    $script:SleepOpenFrom = $null
+    $rows = @()
     try {
         foreach ($event in @(Get-WinEvent -FilterHashtable @{LogName='System'; ProviderName='Microsoft-Windows-Power-Troubleshooter'; Id=1; StartTime=$Since.ToLocalTime()} -ErrorAction Stop)) {
-            $xml = [xml]$event.ToXml(); $data = @{}
-            foreach ($item in $xml.Event.EventData.Data) { $data[[string]$item.Name] = [string]$item.'#text' }
+            $data = Get-EventData $event
             $from = Get-SleepTime ([string]$data['SleepTime']); $to = Get-SleepTime ([string]$data['WakeTime'])
             if ($null -ne $from -and $null -ne $to -and $from -lt $to -and $to -gt $Since) {
-                [pscustomobject]@{ from=$from.ToString('o'); to=$to.ToString('o'); source='Power-Troubleshooter/1' }
+                $rows += [pscustomobject]@{ from=$from.ToString('o'); to=$to.ToString('o'); source='Power-Troubleshooter/1' }
             }
         }
     } catch { Write-WrapperLog 'живлення: нових подій Power-Troubleshooter немає або журнал недоступний' }
+    $known = @($rows)
+    foreach ($row in @(Get-StandbyRows $Since)) {
+        $from = Get-SleepTime $row.from; $to = Get-SleepTime $row.to
+        if (@($known | Where-Object { (Get-SleepTime $_.from) -lt $to -and $from -lt (Get-SleepTime $_.to) }).Count -eq 0) { $rows += $row }
+    }
+    foreach ($row in $rows) {
+        $item = [ordered]@{ from=$row.from; to=$row.to; source=$row.source }
+        $light = Get-SleepLight (Get-SleepTime $row.from) (Get-SleepTime $row.to)
+        foreach ($name in @($light.Keys)) { $item[$name] = $light[$name] }
+        [pscustomobject]$item
+    }
 }
 
 function Get-SleepRunStart($Status) {
@@ -384,7 +458,7 @@ function Get-SleepTaskCount($Event) {
 function Update-SleepEvents {
     <# Пише один рядок на пробудження; зберігає події та heartbeat між запусками публікатора. #>
     $path = Join-Path $WorkDir 'sleep-events.json'; $now = (Get-PowerTime).ToUniversalTime()
-    $saved = $null
+    $saved = $null; $script:SleepOpenFrom = $null
     if (Test-Path -LiteralPath $path) { $saved = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json }
     $last = $null; if ($null -ne $saved) { $last = Get-SleepTime ([string](Get-Prop $saved 'read_utc')) }
     $events = @(); if ($null -ne $saved) { $events = @(Get-Prop $saved 'events') }
@@ -394,13 +468,17 @@ function Update-SleepEvents {
         $reboot = $null -ne $boot -and $boot -gt $last -and $boot -le $now
         # Сама пауза публікатора не доводить сну й не дає дозволу повтору.
         # Heartbeat задає початок перерви лише при підтвердженому новому завантаженні.
+        # Сон, що почався до нового завантаження, вже не дочитується: перезавантаження його урвало.
+        if ($reboot -and $null -ne $script:SleepOpenFrom -and $script:SleepOpenFrom -lt $boot) { $script:SleepOpenFrom = $null }
         if ($rows.Count -eq 0 -and $reboot) {
             $rows = @([pscustomobject]@{ from=$last.ToString('o'); to=$boot.ToString('o'); source='heartbeat/boot' })
         }
         foreach ($row in $rows) {
             $key = Get-Sha256Hex ($row.from + ' ' + $row.to)
             if (@($events | Where-Object { $_.key -ceq $key }).Count -eq 0) {
-                $events += [pscustomobject]@{ key=$key; from=$row.from; to=$row.to; source=$row.source; announced=$false }
+                $item = [ordered]@{ key=$key; from=$row.from; to=$row.to; source=$row.source; announced=$false }
+                foreach ($name in @('dark', 'avail')) { if (Get-Prop $row $name) { $item[$name] = Get-Prop $row $name } }
+                $events += [pscustomobject]$item
             }
         }
     }
@@ -412,12 +490,21 @@ function Update-SleepEvents {
         # Нове завантаження — ноутбук був вимкнений (чи втратив живлення), а не спав: інша назва, той самий дозвіл повтору.
         $kind = $(if ([string](Get-Prop $event 'source') -ceq 'heartbeat/boot') { 'ВИМКНЕНО-СТАРТ' } else { 'СОН' })
         $line = "GEMINI ОБГОРТКА: $kind $($from.ToString('yyyy-MM-ddTHH:mm:ssZ')) → $($to.ToString('yyyy-MM-ddTHH:mm:ssZ')), нарядів $n"
+        # Сон почався без світла: диспетчер бачить, відколи його не було і чи ноутбук уже на мережі (доступний).
+        $dark = Get-SleepTime ([string](Get-Prop $event 'dark')); $avail = Get-SleepTime ([string](Get-Prop $event 'avail'))
+        if ($kind -ceq 'СОН' -and $null -ne $dark) {
+            $line += " СВІТЛА НЕ БУЛО З $($dark.ToString('yyyy-MM-ddTHH:mm:ssZ'))"
+            if ($null -ne $avail) { $line += " ДОСТУПНИЙ З $($avail.ToString('yyyy-MM-ddTHH:mm:ssZ'))" }
+        }
         # Стале ім'я витримує збій між записом вихідних і збереженням announced.
         Add-OutboxLine ($to.ToString('yyyyMMdd-HHmmss') + '-' + ([regex]::Match($event.key, '^[0-9a-f]{12}').Value) + '.txt') $line # Суфікс — формат чинного OutboxNamePattern.
         $event.announced = $true
         Write-WrapperLog ($line + '; джерело ' + $event.source)
     }
-    Write-FileAtomic $path (([ordered]@{read_utc=$now.ToString('o'); events=$events}) | ConvertTo-Json -Depth 5 -Compress)
+    # Сон, що ще триває, дочитується з його початку: наступне читання має знайти вхід, який уже в журналі. Мітка — мілісекундна, як і фільтр журналу.
+    $read = $now
+    if ($null -ne $script:SleepOpenFrom -and $script:SleepOpenFrom -lt $now) { $read = $script:SleepOpenFrom.AddMilliseconds(-1) }
+    Write-FileAtomic $path (([ordered]@{read_utc=$read.ToString('o'); events=$events}) | ConvertTo-Json -Depth 5 -Compress)
 }
 
 function Get-SleepPublicationKey($Status, [string]$Queue, [string]$Marker) {
@@ -651,6 +738,7 @@ function Remove-FinishedMarkers([datetime]$Since) {
         }
         $d = Invoke-Git @('push', '-q', '--no-verify', "--force-with-lease=${ref}:$($p[1])", 'origin', ":$ref") -AllowFail
         if ($d.Code -ne 0) { Write-WrapperLog "черга: $($p[0]) не знято ($($d.Err.Trim())) — повтор наступним проходом"; continue }
+        Set-QueueTracking $p[0]
         Remove-Item -LiteralPath $f.FullName -Force
         Write-WrapperLog "черга: $($p[0]) знято — кінцевий стан опубліковано"
     }
@@ -796,7 +884,7 @@ function Reset-State([string]$Id) {
 $script:OutboxNamePattern = '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.txt$'
 $script:SlugCore = $script:SlugPattern -replace '^\^|\\z$', ''
 $script:OutboxTemplates = @(
-    '\AGEMINI ОБГОРТКА: (?:СОН|ВИМКНЕНО-СТАРТ) [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z → [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z, нарядів [0-9]{1,5}\z'
+    $script:SleepLineTemplate
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32}(?: [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}))?\z',
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_[A-Z_]{1,32} PR [1-9][0-9]{0,8} [0-9a-f]{40}\z',
     '^GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED [A-Za-z0-9]{1,40} (?:[a-z_]{1,40}\.ps1:[0-9]{1,5}|[A-Za-z][A-Za-z0-9-]{0,79}) ШЛЯХ "(?:[A-Za-z]:\\\\|/)(?:[^"\\\x00-\x1f]|\\["\\]|\\u[0-9a-fA-F]{4}){1,4096}"\z',
@@ -809,6 +897,8 @@ $script:OutboxTemplates = @(
     '\AGEMINI ОБГОРТКА: ТРИВОГА (?:AUTH (?:AGY|CODEX|CLAUDE|CLOUD)|ISOLATION (?:WHOAMI|NET_SESSION|PROFILES|DRIVES|ENV)|DISK FULL|ENGINE (?:AGY|CODEX|CLAUDE))\z'
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z'
     $script:GpuIdleLineTemplate
+    $script:PowerOffLineTemplate
+    $script:PowerOnLineTemplate
     '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_]+(?:,[A-Z0-9_]+)* (?:20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|-))?\z'
     $script:HoldLineTemplate
     '\AGEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #[1-9][0-9]{0,8} [0-9a-f]{40}\z'
@@ -998,6 +1088,10 @@ function Test-DispatcherAction([string]$Line) {
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-\S+ CLAUDE_NOT_LAPTOP$') { return $false }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО \S+ (\S+)$') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE ') { return $true }
+    # Світло зникло чи повернулось: диспетчер має знати, коли ноутбук недоступний і коли доступний знову.
+    if ($Line -cmatch $script:PowerOffLineTemplate -or $Line -cmatch $script:PowerOnLineTemplate) { return $true }
+    # Сон, що почався без світла: час зникнення, а за мережі при пробудженні — «доступний з» (17.11); сон без світла йде зведенням.
+    if ($Line -cmatch $script:SleepLineTemplate -and $Line.Contains(' СВІТЛА НЕ БУЛО З ')) { return $true }
     # Простій увімкненого ноутбука (власник 31.10): раз на простій — доцільна робота чи ВИМКНИ НОУТБУК.
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ПРОСТІЙ [0-9T:Z-]{20} [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_,]+ [0-9T:Z-]+)?$') { return $true }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ)(?: |$)') { return $true }

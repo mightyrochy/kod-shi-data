@@ -73,8 +73,28 @@ try {
     $built = Merge 'build.txt' $newer; Invoke-WrapperChain
     $state = ConvertFrom-Json ([IO.File]::ReadAllText($file))
     Check 'збірка збережена в очікуванні моделей' ($state.live_pending.Count -eq 1 -and $state.live_pending[0].stamp -ceq $newer -and $state.live_pending[0].main -ceq $built)
+    # Прохід публікатора: fetch з Main (клон без remote.origin.fetch, як repo.git) -> ланцюг ставить позначку -> стан цієї
+    # позначки приймається в тому ж проході, а не наступним fetch.
+    [void](Invoke-Git @('fetch','-q','--prune','--no-tags','origin','+refs/heads/main:refs/remotes/origin/main','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
     $script:Ready = $true; Invoke-WrapperChain
     Check 'кілька злиттів однієї збірки отримали одну GPU-позначку за штампом' (@(Markers | Where-Object { $_ -match "автоживий-$newer/.*/1/p2-gpu$" }).Count -eq 1)
+    $queue = (@(Markers | Where-Object { $_ -match "автоживий-$newer/" })[0]) -replace '^refs/heads/',''
+    $part = $queue -split '/'
+    Check 'позначка, поставлена ланцюгом, видна клону того ж проходу без fetch' ((Get-RefSha "refs/remotes/origin/$queue") -ceq $built)
+    $runId = '20261101-230000-0123456789ab'
+    Write-FileAtomic "$OutDir/$runId.json" ((@{v=1;id=$runId;code='BLOCKED';slug=$part[1];model=$part[2];n=$part[3];cond=$part[4];marker=$built}) | ConvertTo-Json -Compress)
+    Receive-RunState $runId
+    $runSlug = $(if (Test-Path -LiteralPath "$WorkDir/state/$runId.json") { [string](ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/state/$runId.json", $utf))).slug } else { '' })
+    "ДАНІ стан позначки ланцюга: slug=[$runSlug] черга=$queue"
+    Check 'стан прогону щойно поставленої позначки приймається в тому ж проході, а не як «не відповідає жодній позначці»' ($runSlug -ceq $part[1])
+    # Зняття так само відразу видне клону: знята позначка не лишається в посиланнях до наступного fetch.
+    Add-ChainMarker "автоперевірка-77-$newer" 'gpt-6.1-sol-high' $built
+    $review = (@(Markers | Where-Object { $_ -match "автоперевірка-77-$newer/" })[0]) -replace '^refs/heads/',''
+    Check 'поставлена позначка автоперевірки видна клону' ((Get-RefSha "refs/remotes/origin/$review") -ceq $built)
+    [void](Request-CloudReview '77' $newer)
+    Check 'знята позначка зникає з клону того ж проходу' (@(Markers | Where-Object { $_ -match "автоперевірка-77-$newer/" }).Count -eq 0 -and -not (Get-RefSha "refs/remotes/origin/$review"))
+    foreach ($leftover in @(Get-ChildItem -LiteralPath $OutboxDir -File | Where-Object { ([IO.File]::ReadAllText($_.FullName, $utf)) -match 'CLAUDE #77 ' })) { Remove-Item -LiteralPath $leftover.FullName -Force }
+    Remove-Item -LiteralPath (Get-SeenPath "cloud-review 77 $newer") -Force
     Invoke-WrapperChain
     Check 'живий прогін не дублюється' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 1)
     $script:Pulls = @((Pull 12 'claude/наряд' $newer)); Invoke-WrapperChain

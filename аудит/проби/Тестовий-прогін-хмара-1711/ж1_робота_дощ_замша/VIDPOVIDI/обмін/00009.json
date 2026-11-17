@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fitted blouse, classic collar, hip length, ivory (#F2EBDD), soft crepe\\nStraight-leg trousers, high waist, ankle length, charcoal (#3E4249), wool blend\\nSlim leather belt, thin, dark taupe (#5A4A3F), smooth leather\\nSuede knee-high boots, low block heel, warm cognac (#9A5B34), water-repellent treated suede\\nTrench coat, knee length, belted, water-resistant, sand beige (#C8B08A), cotton gabardine\\nCompact umbrella, black (#1C1C1C), sturdy nylon\\nLeather tote, structured, medium size, cognac (#9A5B34), grained leather\\nSmall stud earrings, brushed gold (#C9A24D), metal\\n\\nThis outfit suits an autumn walk to the office in the rain while staying within a neat business dress code. The blouse and tailored trousers look polished, and the trousers sit neatly over the shaft of the suede boots, so the boots you wanted stay the focus and your legs stay dry. The cognac boots and tote bring warmth that flatters your golden hair and soft green-grey eyes, while the ivory and charcoal keep the base calm and professional. The trench and umbrella handle the rain, and the water-repellent finish protects the suede on the walk.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Fitted blouse\\\",\\\"details\\\":\\\"classic collar, hip length, soft crepe\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F2EBDD\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg trousers\\\",\\\"details\\\":\\\"high waist, ankle length, wool blend\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3E4249\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Slim leather belt\\\",\\\"details\\\":\\\"thin, smooth leather\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#5A4A3F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Suede knee-high boots\\\",\\\"details\\\":\\\"low block heel, water-repellent treated suede\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#9A5B34\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Trench coat\\\",\\\"details\\\":\\\"knee length, belted, water-resistant, cotton gabardine\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#C8B08A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Compact umbrella\\\",\\\"details\\\":\\\"sturdy nylon\\\",\\\"slot\\\":\\\"accessory\\\",\\\"color_hex\\\":\\\"#1C1C1C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Leather tote\\\",\\\"details\\\":\\\"structured, medium size, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#9A5B34\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small stud earrings\\\",\\\"details\\\":\\\"brushed gold, metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A24D\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2109,\"output_tokens\":457},\"stop_reason\":\"end_turn\"}"
+ }
+}

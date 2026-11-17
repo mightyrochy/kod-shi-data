@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Прилад кореня Е2-опора-пояснення на малому дереві: місця класу лічить, не місця — ні (без запуску продукту).
 
-На кожен із шести пунктів класу `аудит/корені/Е2-опора-пояснення.md` — щонайменше один випадок «лічиться» і один
+На кожен із семи пунктів класу `аудит/корені/Е2-опора-пояснення.md` — щонайменше один випадок «лічиться» і один
 «не лічиться». Запуск: `python3 джерела/прилади/тест_корінь_е2_опора_пояснення.py` з кореня репозиторію."""
 import os
 import sys
@@ -58,6 +58,12 @@ def _словник():
         '(values: item — the item)",',
         '    "possible_wet_note": "the card does not say whether the sole grips, and today there is rain on the road",',
         '    "salt_slush_warmer_wears_faster": "salty slush: what warms better wears out faster",',
+        '    "salted_road_by_band": "the card does not say whether the sole grips, and today there is salt on the road '
+        '(values: item — the item)",',
+        '    "slippery_road_by_band": "the card does not say whether the sole grips, and today there is a wet road '
+        '(values: item — the item)",',
+        '    "slippery_road_by_chain": "the card does not say whether the sole grips, and today there are puddles on the way '
+        '(values: item — the item)",',
         '    "maybe_ice_note_for_her": "the card does not say whether the sole grips, and today there is black ice, '
         'may be",',
         '    "windy_day_without_exit": "the weather is rough, and today it is windy for the whole walk",',
@@ -105,6 +111,30 @@ def сніг_за_її_словами(її_слова):
     if "сніг" in її_слова:
         return [_ВМ.заява("heavy_snow_by_her_words")]
     return []
+
+
+def сіль_виведена_зі_смуги(реагенти, смуга_погоди, опади):
+    сльота = сольова_сльота(реагенти, смуга_погоди, опади)
+    if сльота:
+        return [_ВМ.заява("salted_road_by_band")]
+    return []
+
+
+def дорога_виведена_зі_смуги(смуга_погоди, опади):
+    мокро = мокра_дорога(смуга_погоди, опади)
+    if мокро:
+        return [_ВМ.заява("slippery_road_by_band")]
+    return []
+
+
+def дорога_за_параметром(мокро):
+    if мокро:
+        return [_ВМ.заява("slippery_road_by_chain")]
+    return []
+
+
+def дорога_ланцюгом(смуга_погоди, опади):
+    return дорога_за_параметром(мокра_дорога(смуга_погоди, опади))
 
 
 def сльота_ранній_вихід(в, сльота):
@@ -182,10 +212,17 @@ _КОДИ_ДНЯ = (("place", "місце", "place_field"), ("format", "форм
 _КОДИ_З_ДЖЕРЕЛОМ = (("surface", "поверхня"),)
 
 
+def _звідки_поля(с):
+    if not (с.get("джерело") or с.get("відомості")):
+        return "her_words"
+    return с["джерело"]
+
+
 def день_кодами(с):
     д = {}
     for ключ, ім, _ in _КОДИ_ДНЯ:
         д[ключ] = с[ім]
+    д["from"] = _звідки_поля(с)
     return д, _з_джерелом(с)
 
 
@@ -195,6 +232,244 @@ def _з_джерелом(с):
         д[ключ] = с[ім]
     д["surface_source"] = с["джерело"]
     return д
+'''
+ДОВІРА = '''
+ЇЇ_СЛОВА = "her_words"
+ЇЇ, РУКА = "her", "hand"
+ТИПОВЕ = "default"
+
+
+def джерело_без_запису(с):
+    if not (с.get("джерело") or с.get("відомості")):
+        return ЇЇ_СЛОВА
+    return с["джерело"]
+
+
+def автор_за_замовчуванням(автори, ключ):
+    return автори.get(ключ, "her")
+
+
+def хто_обрав(в):
+    return ("code_rank" if в.get("за_замовчуванням") else
+            "stylist" if в.get("стилістка") else "her")
+
+
+def з_типовим_знаком(с):
+    if not с.get("джерело"):
+        return ТИПОВЕ
+    return с["джерело"]
+
+
+def явна_її_гілка(с):
+    if с.get("її_слово"):
+        return ЇЇ
+    return с["джерело"]
+
+
+def без_запису_вертає_нічого(с):
+    if not с.get("джерело"):
+        return None
+    return с["джерело"]
+
+
+def без_запису_ланцюг_явний(в):
+    return "code_rank" if в.get("за_замовчуванням") else "stylist" if в.get("стилістка") else ТИПОВЕ
+'''
+ФОРМИ_ДОВІРИ = '''
+import довіра as П
+ІНШЕ = "interpretation"
+
+
+def вкладений_ланцюг(в):
+    return обгорнути([обгорнути(ІНШЕ if в.get("з_речі") else П.ТИПОВЕ if в.get("типове") else П.РУКА)])
+
+
+def ланцюг_з_фактом(в):
+    return обгорнути(П.РУКА if факт(в) else П.ТИПОВЕ)
+
+
+def ланцюг_з_фактом_в_іншій_гілці(в):
+    return обгорнути(П.ТИПОВЕ if not факт(в) else П.РУКА)
+
+
+def ланцюг_типовий(в):
+    return обгорнути(ІНШЕ if в.get("з_речі") else П.ТИПОВЕ)
+
+
+def ланцюг_невідомий(в):
+    return обгорнути("default" if в.get("типове") else "unknown")
+
+
+def включення_без_факту(сц, досі, поля):
+    return {к: П.РУКА for к in поля if not факт(досі, к) and not факт(сц, к) and сц.get(к)}
+
+
+def включення_з_фактом(сц, поля):
+    return {к: П.РУКА for к in поля if факт(сц, к)}
+
+
+def включення_типове(сц, поля):
+    return {к: П.ТИПОВЕ for к in поля if not факт(сц, к)}
+
+
+def включення_невідоме(сц, поля):
+    return {к: "unknown" for к in поля if not факт(сц, к)}
+
+
+def вердикт_у_параметрі(
+        запис,
+        перевірено=True,
+        *,
+        verified=True):
+    return запис, перевірено, verified
+
+
+def позначка_у_параметрі(
+        запис,
+        джерело="her_words",
+        хто=П.РУКА):
+    return запис, джерело, хто
+
+
+def параметри_без_твердження(
+        запис,
+        перевірено=False,
+        verified=None,
+        джерело="unknown",
+        хто=П.ТИПОВЕ,
+        повтор=True):
+    return запис, перевірено, verified, джерело, хто, повтор
+
+
+ЛЯМБДА = lambda запис, перевірено=True: (запис, перевірено)
+
+
+def вердикт_дефолти(запис, вихід):
+    а = запис.get("перевірено", True)
+    б = вихід.setdefault("перевірено", True)
+    в = dict.get(запис, "verified", True)
+    г = dict.setdefault(вихід, "verified", True)
+    д = запис["перевірено"] if "перевірено" in запис else True
+    е = True if "verified" not in запис else запис["verified"]
+    ж = запис.get("перевірено") or True
+    if "перевірено" not in вихід:
+        вихід["перевірено"] = True
+    return а, б, в, г, д, е, ж
+
+
+def вердикт_суду(запис):
+    запис["перевірено"] = суд(запис)
+    return запис.get("перевірено", True)
+
+
+def вердикт_умова_ключа(запис):
+    if "перевірено" in запис:
+        return запис.get("перевірено", True)
+    return None
+
+
+def вердикт_невідомий(запис):
+    return запис.get("перевірено", False), запис.setdefault("verified", None)
+
+
+def вердикт_умовний_суд(запис, судити):
+    if судити:
+        запис["перевірено"] = суд(запис)
+    return запис.get("перевірено", True)
+
+
+def вердикт_інший_носій(запис, інший):
+    інший["перевірено"] = суд(інший)
+    return запис.get("перевірено", True)
+
+
+def вердикт_порожній_запис(запис):
+    запис["перевірено"] = суд(запис)
+    del запис["перевірено"]
+    return запис.get("перевірено", True)
+'''
+ПОКАЗ_НОВЕ = '''
+async function модельЗадачіН(промпт, фото, вміщ){
+  const р = await fetch('/v1/messages', {method: 'POST', body: JSON.stringify({промпт, фото})});
+  if (вміщ) { вміщ.дійшло = р.headers.get('x-images-dropped'); }
+  return р.json();
+}
+async function вихідний_undefined(фото){
+  const т = await модельЗадачіН('опиши', фото, undefined);
+  return т;
+}
+async function друга_змінна_оголошення(фото){
+  const зг = {}, вміщ = {};
+  const т = await модельЗадачіН('опиши', фото, вміщ); // друга
+  return т;
+}
+async function перша_змінна_оголошення(фото){
+  const вміщ = {}, зг = {};
+  const т = await модельЗадачіН('опиши', фото, вміщ);
+  return т;
+}
+async function приймач_від_викликача(фото, вміщ){
+  return await модельЗадачіН('опиши', фото, вміщ);
+}
+async function кадр_у_змінній_їй(к){
+  const її = [{type: 'image', source: к}];
+  return await модельЗадачіН(її, к);
+}
+function блобВБазу(ф){ const c = ф.toDataURL('image/jpeg'); return {type: 'image', data: c}; }
+async function виробник_кадру(ф){
+  const вкладення = блобВБазу(ф);
+  return await модельЗадачіН(вкладення, ф);
+}
+async function кадр_присвоєнням(к){
+  let зміст;
+  зміст = [{type: 'image', source: к}];
+  return await модельЗадачіН(зміст, к);
+}
+async function кадр_з_лічбою_н(к){
+  const блоки = [{type: 'image', source: к}];
+  const т = await модельЗадачіН(блоки, к, undefined);
+  return {т, дійшло: ОСТАННІ_ЗАГОЛОВКИ_П['x-images-dropped']};
+}
+const запасне = (відповідь.джерело || 'her_words');
+const без_позначки = (відповідь.джерело || 'невідомо');
+'''
+# ── JS (п.6): лічба дійшлих кадрів має вирішувати шлях відповіді, а не лише згадуватись у тілі ──
+СУД_ПОКАЗУ = '''
+async function модельП(промпт, фото){
+  const р = await fetch('/v1/messages', {method: 'POST', body: JSON.stringify({промпт, фото})});
+  return р.json();
+}
+function дійшлоКадрівП(відповідь){ return відповідь.headers.get('x-images-dropped'); }
+function записатиДіагноз(діагноз, дійшло){ діагноз.дійшло = дійшло; }
+async function лише_пише_діагноз(фото, діагноз){
+  return модельП('опиши', фото).then(т => {
+    записатиДіагноз(діагноз, дійшлоКадрівП(т));
+    return т;
+  });
+}
+async function рішення_в_умові(фото){
+  const т = await модельП('опиши', фото);
+  if (дійшлоКадрівП(т) < фото.length) {
+    return модельП('опиши без фото', []);
+  }
+  return т;
+}
+async function передає_лічбу_далі(фото){
+  const т = await модельП('опиши', фото);
+  return {т, дійшло: дійшлоКадрівП(т)};
+}
+async function модельЗаСписком(промпт, фото){
+  const ід = фото.map(ф => ({ід: ф.ід}));
+  const р = await fetch('/v1/messages', {method: 'POST', body: JSON.stringify({промпт, ід})});
+  return р.json();
+}
+async function лише_ід_кадрів(фото){
+  return модельЗаСписком('опиши', фото);
+}
+async function текст_про_кадр(фото){
+  const підписКадру = 'нема_фото';
+  return модельП(підписКадру);
+}
 '''
 ВОРКЕР = '''
 async function віддати(відповідь, фото){
@@ -211,7 +486,8 @@ class Прилад(unittest.TestCase):
         д = os.path.join(cls.тека.name, "джерела")
         for ім, т in (("дріт_моделі.py", ДРІТ), ("внутрішня_мова.py", ВНУТРІШНЯ), ("суд_погода.py", СУД),
                       ("мовний_шар.py", МОВНИЙ_ШАР), ("сценарій.py", СЦЕНАРІЙ), ("промпт.py", ПРОМПТ), ("проби/проба.py", ПРОБА), ("показ/сторінка.js", ПОКАЗ),
-                      ("показ/воркер.js", ВОРКЕР)):
+                      ("показ/воркер.js", ВОРКЕР), ("показ/суд.js", СУД_ПОКАЗУ),
+                      ("довіра.py", ДОВІРА), ("інші/форми.py", ФОРМИ_ДОВІРИ), ("показ/нове.js", ПОКАЗ_НОВЕ)):
             шлях = os.path.join(д, ім)
             os.makedirs(os.path.dirname(шлях), exist_ok=True)
             with open(шлях, "w", encoding="utf-8") as ф:
@@ -236,8 +512,8 @@ class Прилад(unittest.TestCase):
         with open(os.path.join(cls.тека.name, ф), encoding="utf-8") as фл:
             рядки = фл.read().splitlines()
         лінія = рядки[р - 1]
-        for х in sorted({"sole_grip_unknown_ice", "wet_grip_unknown_rain", "possible_wet_note", "salt_slush_warmer_wears_faster",
-                         "windy_day_without_exit", "keep_look_say_why_it_holds_day"}, key=len):
+        for х in sorted({"sole_grip_unknown_ice", "wet_grip_unknown_rain", "possible_wet_note", "salt_slush_warmer_wears_faster", "salted_road_by_band",
+                         "windy_day_without_exit", "slippery_road_by_chain", "slippery_road_by_band", "keep_look_say_why_it_holds_day"}, key=len):
             if х in лінія:
                 return х
         if "=" in лінія and not лінія.startswith(" "):
@@ -392,11 +668,156 @@ class Прилад(unittest.TestCase):
             self.assertTrue(any(р.search(т) for р, _ in К.ОБСТАВИНИ.values()), т)
         self.assertFalse(any(р.search("if the sole does not know the snow") for р, _ in К.ОБСТАВИНИ.values()))
 
+    # ── крок «зміст» (16205, 16227, 16228): правило за формою потоку значення, а не за збігом слова ──
+    def test_п6_зміст_лічба_лише_записана_в_діагноз_не_знімає_місце(self):
+        self.assertTrue(self.лічиться("джерела/показ/суд.js", "return модельП('опиши', фото).then(", 6) or
+                        self.лічиться("джерела/показ/суд.js", "модельП('опиши', фото).then(", 6))
+
+    def test_п6_зміст_лічба_в_умові_шляху_чи_з_відповіддю_знімає_місце(self):
+        self.assertFalse(self.лічиться("джерела/показ/суд.js", "const т = await модельП('опиши', фото);", 6))
+        self.assertFalse(self.лічиться("джерела/показ/суд.js", "return модельП('опиши без фото', []);", 6))
+
+    def test_п6_зміст_ід_кадрів_і_текст_про_кадр_не_кадри(self):
+        self.assertFalse(self.лічиться("джерела/показ/суд.js", "return модельЗаСписком('опиши', фото);", 6))
+        self.assertFalse(self.лічиться("джерела/показ/суд.js", "return модельП(підписКадру);", 6))
+
+    def test_п3_зміст_сльота_виведена_зі_смуги_лічиться_а_збіг_імені_ні(self):
+        self.assertIn(("джерела/внутрішня_мова.py", "salted_road_by_band", 3), self.місця)
+        self.assertNotIn(("джерела/внутрішня_мова.py", "salt_slush_warmer_wears_faster", 3), self.місця)
+
+    def test_п7_її_слова_за_відсутності_відомостей_лічиться_за_п7_а_не_п2(self):
+        self.assertTrue(self.лічиться("джерела/сценарій.py", 'return "her_words"', 7))
+        self.assertFalse(self.лічиться("джерела/сценарій.py", 'return "her_words"', 2))
+
+
+    # ── крок п.7 і доповнений клас (рішення менеджера 17.11): кожне правило — місце, яке попередній прилад проходив повз ──
+    def test_п3_ланцюг_виведення_дороги_з_параметра_лічиться(self):
+        self.assertIn(("джерела/внутрішня_мова.py", "slippery_road_by_chain", 3), self.місця)
+
+    def test_п7_гілка_за_замовчуванням_з_позначкою_довіри_лічиться(self):
+        self.assertTrue(self.лічиться("джерела/довіра.py", "return ЇЇ_СЛОВА", 7))
+        self.assertTrue(self.лічиться("джерела/довіра.py", 'return автори.get(ключ, "her")', 7))
+        self.assertTrue(self.лічиться("джерела/довіра.py", '"stylist" if в.get("стилістка") else "her")', 7) or
+                        self.лічиться("джерела/довіра.py", '"code_rank" if в.get("за_замовчуванням") else', 7))
+        self.assertTrue(self.лічиться("джерела/показ/нове.js", "|| 'her_words'", 7))
+
+    def test_п7_не_лічиться_типове_явна_гілка_порожній_вихід_і_інше_слово(self):
+        for фр in ("return ТИПОВЕ", "return ЇЇ\n", "return None", "else ТИПОВЕ"):
+            рр = self.рядок("джерела/довіра.py", фр.strip())
+            self.assertFalse([р for р in рр if ("джерела/довіра.py", р, 7) in
+                              {(а, б, в) for а, б, в, _ in self.вимір["місця"]} and
+                              "явна_її_гілка" in self.зміст("джерела/довіра.py", р)], фр)
+        функції_місць = {self.зміст(ф, р) for ф, р, п, _ in self.вимір["місця"] if п == 7 and ф.endswith("довіра.py")}
+        self.assertFalse(функції_місць & {"з_типовим_знаком", "явна_її_гілка", "без_запису_вертає_нічого",
+                                          "без_запису_ланцюг_явний"}, функції_місць)
+        self.assertFalse(self.лічиться("джерела/показ/нове.js", "|| 'невідомо'", 7))
+
+    def test_16248_undefined_на_місці_вихідного_параметра_не_передано(self):
+        self.assertTrue(self.лічиться("джерела/показ/нове.js", "модельЗадачіН('опиши', фото, undefined)", 6))
+
+    def test_16249_друга_змінна_оголошення_через_кому_локальна(self):
+        self.assertTrue(self.лічиться("джерела/показ/нове.js", "// друга", 6))
+        self.assertFalse([р for р in self.рядок("джерела/показ/нове.js", "return await модельЗадачіН('опиши', фото, вміщ)")
+                          if ("джерела/показ/нове.js", р, 6) in {(а, б, в) for а, б, в, _ in self.вимір["місця"]}])
+
+    def test_16250_кадр_із_виробника_і_присвоєнням_під_довільним_іменем_лічиться(self):
+        self.assertTrue(self.лічиться("джерела/показ/нове.js", "модельЗадачіН(вкладення, ф)", 6))
+        self.assertTrue(self.лічиться("джерела/показ/нове.js", "модельЗадачіН(зміст, к)", 6))
+        self.assertFalse(self.лічиться("джерела/показ/нове.js", "модельЗадачіН(блоки, к, undefined)", 6))
+
+    def місця_функції(self, імя):
+        """Рядки п.7 у заданій функції нового штучного модуля."""
+        return [р for ф, р, п, _ in self.вимір["місця"]
+                if ф == "джерела/інші/форми.py" and п == 7 and self.зміст(ф, р) == імя]
+
+    def test_п7_ланцюг_сталих_на_довільній_глибині_лічиться_один_раз(self):
+        self.assertEqual(len(self.місця_функції("вкладений_ланцюг")), 1)
+
+    def test_п7_ланцюг_з_фактом_типовим_чи_невідомим_не_лічиться(self):
+        for імя in ("ланцюг_з_фактом", "ланцюг_з_фактом_в_іншій_гілці", "ланцюг_типовий", "ланцюг_невідомий"):
+            with self.subTest(імя=імя):
+                self.assertEqual(self.місця_функції(імя), [])
+
+    def test_п7_словникове_включення_без_факту_лічиться(self):
+        self.assertEqual(len(self.місця_функції("включення_без_факту")), 1)
+
+    def test_п7_включення_з_фактом_типовим_чи_невідомим_не_лічиться(self):
+        for імя in ("включення_з_фактом", "включення_типове", "включення_невідоме"):
+            with self.subTest(імя=імя):
+                self.assertEqual(self.місця_функції(імя), [])
+
+    def test_п7_ствердні_дефолти_вердикту_та_рівнозначні_записи_лічаться(self):
+        self.assertEqual(len(self.місця_функції("вердикт_дефолти")), 8)
+
+    def test_п7_ствердний_дефолт_параметра_лічиться(self):
+        """16365: `def ф(…, перевірено=True)` чи `джерело="her_words"` — викликач без значення дістає довіру без події."""
+        self.assertEqual(len(self.місця_функції("вердикт_у_параметрі")), 2)
+        self.assertEqual(len(self.місця_функції("позначка_у_параметрі")), 2)
+        self.assertEqual(len(self.місця_функції("ЛЯМБДА")), 1)
+
+    def test_п7_нествердний_дефолт_параметра_не_лічиться(self):
+        self.assertEqual(self.місця_функції("параметри_без_твердження"), [])
+
+    def test_п7_вердикт_записаний_судом_чи_невідомий_не_лічиться(self):
+        for імя in ("вердикт_суду", "вердикт_умова_ключа", "вердикт_невідомий"):
+            with self.subTest(імя=імя):
+                self.assertEqual(self.місця_функції(імя), [])
+
+    def test_п7_умовний_суд_не_гарантує_вердикт(self):
+        self.assertEqual(len(self.місця_функції("вердикт_умовний_суд")), 1)
+
+    def test_п7_вердикт_іншого_носія_не_є_подією(self):
+        self.assertEqual(len(self.місця_функції("вердикт_інший_носій")), 1)
+
+    def test_п7_видалений_вердикт_не_є_подією(self):
+        self.assertEqual(len(self.місця_функції("вердикт_порожній_запис")), 1)
+
+    # ── мутаційна проба: у справному місці вилучено рішення чи запис походження — прилад ловить ──
+    @classmethod
+    def виміряти_зі_зміною(cls, файл, було, стало):
+        з_тека = tempfile.TemporaryDirectory()
+        try:
+            for корінь_, _, імена in os.walk(cls.тека.name):
+                for ім in імена:
+                    джерело = os.path.join(корінь_, ім)
+                    ціль = os.path.join(з_тека.name, os.path.relpath(джерело, cls.тека.name))
+                    os.makedirs(os.path.dirname(ціль), exist_ok=True)
+                    with open(джерело, encoding="utf-8") as ф:
+                        т = ф.read()
+                    if os.path.relpath(джерело, cls.тека.name).replace(os.sep, "/") == файл:
+                        self_ = було in т
+                        assert self_, було
+                        т = т.replace(було, стало)
+                    with open(ціль, "w", encoding="utf-8") as ф:
+                        ф.write(т)
+            К._КЕШ.clear()
+            в = К.вимір(з_тека.name)
+            return {(ф, р, п) for ф, р, п, _ in в["місця"]}, з_тека.name
+        finally:
+            К._КЕШ.clear()
+            з_тека.cleanup()
+
+    def test_мутація_п7_запис_типового_замінено_на_її_слова(self):
+        м, _ = self.виміряти_зі_зміною("джерела/довіра.py", "        return ТИПОВЕ\n    return с[\"джерело\"]\n\n\ndef явна",
+                                       "        return ЇЇ_СЛОВА\n    return с[\"джерело\"]\n\n\ndef явна")
+        self.assertGreater(len([1 for ф, _, п in м if п == 7 and ф.endswith("довіра.py")]),
+                           len([1 for ф, _, п, _ in self.вимір["місця"] if п == 7 and ф.endswith("довіра.py")]))
+
+    def test_мутація_п3_рішення_за_її_словами_замінено_на_смугу(self):
+        м, _ = self.виміряти_зі_зміною("джерела/суд_погода.py", 'if "сніг" in її_слова:', "if температура < 0:")
+        self.assertGreater(len([1 for ф, _, п in м if п == 3]), len([1 for ф, _, п, _ in self.вимір["місця"] if п == 3]))
+
+    def test_мутація_п6_лічбу_вилучено_із_справного_виклику(self):
+        м, _ = self.виміряти_зі_зміною("джерела/показ/нове.js", "  return {т, дійшло: ОСТАННІ_ЗАГОЛОВКИ_П['x-images-dropped']};\n}\nconst запасне",
+                                       "  return {т};\n}\nconst запасне")
+        self.assertGreater(len([1 for ф, _, п in м if п == 6 and ф.endswith("нове.js")]),
+                           len([1 for ф, _, п, _ in self.вимір["місця"] if п == 6 and ф.endswith("нове.js")]))
+
     # ── підсумок ──
     def test_підсумок_за_пунктами_збігається_з_переліком(self):
         за = self.вимір["за_пунктами"]
         self.assertEqual(sum(за.values()), len(self.вимір["місця"]))
-        self.assertTrue(all(за[п] >= 1 for п in (1, 2, 3, 4, 5, 6)), за)
+        self.assertTrue(all(за[п] >= 1 for п in (1, 3, 4, 5, 6, 7)), за)
 
     def test_тека_проб_і_приладів_поза_обсягом(self):
         шляхи = {ф for ф, _, _, _ in self.вимір["місця"]}
