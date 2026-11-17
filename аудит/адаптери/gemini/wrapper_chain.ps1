@@ -1,8 +1,29 @@
 ﻿#Requires -Version 5.1
+function New-ChainFailure([string]$Code, $Result) {
+    <# Виняток ланцюга після збою зовнішньої команди: Message — точно код (за ним розбирають `^CHAIN_[A-Z_]+$` і
+    Write-ChainPullFailure), код виходу й stderr команди — в Data (адреса без входу): без них збій не розрізнити —
+    HTTP 5xx, мережа чи межа часу. Кидається на місці виклику: `throw (New-ChainFailure 'CHAIN_API' $r)`. #>
+    $e = New-Object System.Exception $Code
+    $e.Data['ExitCode'] = [int](Get-Prop $Result 'Code')
+    $e.Data['Stderr'] = (([string](Get-Prop $Result 'Err')) -replace '://[^/@\s]*@','://')
+    $e
+}
+
+function Get-ChainCause($Failure) {
+    <# Безпечна ознака причини для рядка диспетчерові: `HTTP <код>` зі stderr або `межа часу` (так Invoke-Native
+    позначає вбитий за межею часу процес); решта stderr — лише в state-failures.jsonl: рядок іде в відкритий репозиторій. #>
+    $data = $Failure.Exception.Data
+    if ($null -eq $data -or -not $data.Contains('Stderr')) { return '' }
+    $text = [string]$data['Stderr']
+    if ($text.Trim() -ceq 'межа часу') { return 'межа часу' }
+    if ($text -cmatch '(?<![0-9A-Za-z])HTTP ([0-9]{3})(?![0-9])') { return "HTTP $($Matches[1])" }
+    ''
+}
+
 function Invoke-ChainApi([string]$Path) {
     <# Читає JSON GitHub; збій не стає порожнім успішним списком. #>
     $r = Invoke-Native (Resolve-Exe $GhExe) @('api', $Path) $WorkDir 2
-    if ($r.Code -ne 0) { throw 'CHAIN_API' }
+    if ($r.Code -ne 0) { throw (New-ChainFailure 'CHAIN_API' $r) }
     $data = ConvertFrom-Json $r.Out
     $data
 }
@@ -162,7 +183,7 @@ function Get-ChainRemoteHeads([string]$Pattern) {
     if ($r.Code -ne 0) {
         $text = (([string](Get-Prop $r 'Err')).Trim() -replace '://[^/@\s]*@','://' -replace '\s*\r?\n\s*',' | ')
         Write-WrapperLog "ланцюг: ls-remote $Pattern -> код $($r.Code): $text"
-        throw 'CHAIN_REMOTE'
+        throw (New-ChainFailure 'CHAIN_REMOTE' $r)
     }
     $r
 }
@@ -217,7 +238,7 @@ function Complete-EngineDrafts {
         }
         $body = $payload | ConvertTo-Json -Compress
         $r = Invoke-Native (Resolve-Exe $GhExe) @('api','--method',$method,$endpoint,'--input','-') $WorkDir 2 $body
-        if ($r.Code -ne 0) { throw 'CHAIN_DRAFT' }
+        if ($r.Code -ne 0) { throw (New-ChainFailure 'CHAIN_DRAFT' $r) }
         $pr = ConvertFrom-Json $r.Out
         if ([string]$pr.number -cnotmatch '^[1-9][0-9]{0,8}$') { throw 'CHAIN_DRAFT' }
         Write-WrapperLog "ланцюг: $method PR-чернетки #$($pr.number) $branch $head"
@@ -266,7 +287,7 @@ function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$
     $r = Get-ChainRemoteHeads $ref
     if ($r.Out.Trim()) { return }
     $r = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=${ref}:",'origin',"${Main}:$ref") -AllowFail
-    if ($r.Code -ne 0) { throw 'CHAIN_PUSH' }
+    if ($r.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PUSH' $r) }
     Set-QueueTracking ($ref -replace '^refs/heads/','') $Main
     Write-WrapperLog "ланцюг: поставлено $ref на $Main"
 }
@@ -490,11 +511,14 @@ function Write-StateFailureDiagnostic([string]$Code, $Failure, [string]$Path = '
         utc = [datetime]::UtcNow.ToString('o'); code = $Code; reason = $Why
         path = $Path; object_type = 'unavailable'; owner = $null; acl = $null; last_write_utc = $null
         exception = ''; script_stack = ''; position = ''; metadata_errors = @()
+        exit_code = $null; stderr = ''
     }
     if ($null -ne $Failure) {
         $record.exception = $Failure.Exception.ToString()
         $record.script_stack = [string]$Failure.ScriptStackTrace
         $record.position = [string]$Failure.InvocationInfo.PositionMessage
+        $data = $Failure.Exception.Data
+        if ($null -ne $data -and $data.Contains('ExitCode')) { $record.exit_code = $data['ExitCode']; $record.stderr = [string]$data['Stderr'] }
     }
     if ($Path) {
         try {
@@ -526,7 +550,8 @@ function Write-ChainFailure($Failure) {
     $code = [string]$Failure.Exception.Message
     $diagnosticCode = $(if ($code -cmatch '^CHAIN_[A-Z_]+$') { $code } else { 'CHAIN_FAILED' })
     $path = Write-StateFailureDiagnostic $diagnosticCode $Failure
-    $detail = ''
+    $cause = $(if ($code -cmatch '^CHAIN_[A-Z_]+$') { Get-ChainCause $Failure } else { '' })
+    $detail = $(if ($cause) { " $cause" } else { '' })
     $at = $Failure.InvocationInfo
     $where = $(if ($null -ne $at -and $at.ScriptName) { (Split-Path -Leaf $at.ScriptName) + ':' + $at.ScriptLineNumber } else { '' })
     if (-not $where -and ([string]$Failure.ScriptStackTrace -split "`r?`n")[0] -cmatch '^at ([A-Za-z][A-Za-z0-9-]{0,79}),') { $where = $Matches[1] }
@@ -556,9 +581,11 @@ function Write-ChainPullFailure($Failure, [string]$Number, [string]$Head) {
         Write-WrapperLog ("ланцюг: CHAIN_FAILED {0}: {1}`n{2}" -f $Failure.Exception.GetType().FullName, $Failure.Exception.Message, $Failure.ScriptStackTrace)
         $code = 'CHAIN_FAILED'
     }
-    Write-WrapperLog "ланцюг: #$Number $Head — $code; PR пропущено, наступний прохід повторить лише його"
+    $cause = $(if ($code -cmatch '^CHAIN_[A-Z_]+$') { Get-ChainCause $Failure } else { '' })
+    $suffix = $(if ($cause) { " $cause" } else { '' })
+    Write-WrapperLog "ланцюг: #$Number $Head — $code$suffix; PR пропущено, наступний прохід повторить лише його"
     if (-not (Test-Seen "chain-pr-failed $Number $Head $code")) {
-        Add-ChainLine "chain-pr $code $Number $Head" "GEMINI ОБГОРТКА: ЛАНЦЮГ $code PR $Number $Head"
+        Add-ChainLine "chain-pr $code $Number $Head" "GEMINI ОБГОРТКА: ЛАНЦЮГ $code PR $Number $Head$suffix"
     }
 }
 
@@ -621,7 +648,7 @@ function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [date
     Add-ChainMarker $Slug $Model $Main -Gpu:$Gpu -Attempt $attempt -Cond $Cond
     foreach ($m in $old) {
         $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',":refs/heads/$($m.Ref)") -AllowFail
-        if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
+        if ($d.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PUSH' $d) }
         Set-QueueTracking $m.Ref
         Write-WrapperLog "ланцюг: $($m.Ref) знято — квота постачальника вичерпана, роботу бере $Model"
     }
@@ -693,7 +720,7 @@ function Get-ReviewPatchId([string]$Head, [string]$Main) {
     $diff = (Invoke-Git @('-c','core.quotePath=true','diff','--binary','--full-index','--no-ext-diff','--no-textconv','--no-renames',$base,$Head,'--')).Out
     if (-not $diff.Trim()) { return '' }
     $r = Invoke-Native $GitExe @('patch-id','--stable') $WorkDir 2 $diff
-    if ($r.Code -ne 0) { throw 'CHAIN_PATCHID' }
+    if ($r.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PATCHID' $r) }
     ($r.Out.Trim() -split '\s+')[0]
 }
 
@@ -831,7 +858,7 @@ function Request-CloudReview([string]$Number, [string]$Head) {
     if (@($markers | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
     foreach ($m in $markers) {
         $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',":refs/heads/$($m.Ref)") -AllowFail
-        if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
+        if ($d.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PUSH' $d) }
         Set-QueueTracking $m.Ref
         Write-WrapperLog "ланцюг: $($m.Ref) знято — перевірку бере хмарний Claude"
     }
