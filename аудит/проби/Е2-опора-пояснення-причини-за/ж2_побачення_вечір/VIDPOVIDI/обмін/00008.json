@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"побачення в ресторані\", \"place\": \"побачення в ресторані\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"побачення в ресторані\"}, \"occasion\": {\"kind\": \"her\", \"quote\": \"побачення в ресторані\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}}, \"event\": \"побачення в ресторані ввечері\", \"part_of_day\": \"evening\", \"occasion\": \"date\", \"place\": \"restaurant_casual\", \"formality_branch\": \"social\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Fitted knit top, long sleeve, fitted crew neckline, hip length, deep burgundy (#6D1F2F), fine merino wool\\n\\nMidi skirt, A-line with a soft flare, falls to mid-calf, dark charcoal (#36393F), textured wool crepe\\n\\nOpaque tights, sheer-matte finish, ankle length, black (#1A1A1A), nylon blend\\n\\nAnkle boots, almond toe, block heel of medium height, shaft just above the ankle, black (#1C1C1C), smooth leather\\n\\nLight wrap coat, single-breasted, knee length, soft camel (#B98F63), wool blend\\n\\nCrossbody bag, small structured shape, chain strap, black (#1C1C1C), leather\\n\\nDrop earrings, slim and simple, antique gold (#B5944A), metal\\n\\nWhy this outfit works: The burgundy knit and charcoal skirt give a polished, neat look that suits a restaurant date without feeling overdressed. The deep, warm colors are flattering in soft evening restaurant light and fit the autumn season. The flared midi skirt adds movement and femininity, while the block-heeled ankle boots keep you comfortable and steady for the whole evening. The camel coat keeps you warm on the way there and adds a classic, warm contrast to the dark tones.\"}],\"usage\":{\"input_tokens\":2148,\"output_tokens\":433},\"stop_reason\":\"end_turn\"}"
+ }
+}
