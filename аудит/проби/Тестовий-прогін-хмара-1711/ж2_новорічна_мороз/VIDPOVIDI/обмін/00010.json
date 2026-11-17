@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fitted velvet midi dress, square neckline, long sleeves, knee-to-mid-calf length, deep emerald green (#0F5C4A), stretch velvet\\n\\nTailored wool-blend coat, single-breasted, slightly fitted through the waist, knee length, charcoal black (#2B2B2E), brushed wool with a soft finish\\n\\nSheer tights, ultra-fine, skin-tone to sheer black (#1C1C1E), fine nylon\\n\\nPointed-toe pumps, block heel about 7 cm, ankle strap, black (#1A1A1A), smooth leather\\n\\nClutch bag, structured, small, antique gold (#B08D57), metallic-finish leather\\n\\nDrop earrings, medium length, brushed gold (#C9A24D), metal\\n\\nWool scarf, wide and soft, draped loosely, warm cream (#EDE3D0), fine merino\\n\\nWhy this outfit works: The emerald velvet dress fits the smart, social dress code for a New Year's restaurant party and feels festive without being flashy. The deep green flatters your warm skin tone and olive-hazel eyes, and it looks rich under evening artificial light. The gold accents pick up the warmth in your brown hair and eyes, while the heeled pumps keep the look polished. The tailored wool coat and cream merino scarf keep you warm in the frost and still look elegant when you arrive.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Velvet midi dress\\\",\\\"details\\\":\\\"Fitted, square neckline, long sleeves, knee-to-mid-calf length, stretch velvet\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#0F5C4A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wool-blend coat\\\",\\\"details\\\":\\\"Tailored, single-breasted, slightly fitted through the waist, knee length, brushed wool with a soft finish\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#2B2B2E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sheer tights\\\",\\\"details\\\":\\\"Ultra-fine, fine nylon\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#1C1C1E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Pointed-toe pumps\\\",\\\"details\\\":\\\"Block heel about 7 cm, ankle strap, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Clutch bag\\\",\\\"details\\\":\\\"Structured, small, metallic-finish leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#B08D57\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Medium length, metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A24D\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wool scarf\\\",\\\"details\\\":\\\"Wide and soft, draped loosely, fine merino\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#EDE3D0\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2136,\"output_tokens\":467},\"stop_reason\":\"end_turn\"}"
+ }
+}

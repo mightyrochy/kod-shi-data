@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"вечір у театрі\", \"place\": \"вечір у театрі\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"вечір у театрі\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"вечір у театрі\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"her\"}}, \"event\": \"вечір у театрі, вистава\", \"part_of_day\": \"evening\", \"occasion\": \"theatre\", \"place\": \"theatre\", \"formality_branch\": \"social\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"artificial\"}, \"person\": {\"skin_hex\": [\"#f0d6d2\", \"#ead0cc\", \"#f4dcd8\"], \"hair_hex\": \"#241f22\", \"eyes_hex\": \"#5b6e82\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Tailored trousers, high-waisted, straight cut, full length to the ankle bone, deep charcoal (#3A3D45), wool crepe with a soft matte finish\\n\\nSilk-blend blouse, relaxed fit with a soft V-neck and a loose tie at the collar, long sleeves with buttoned cuffs, hip-skimming length, ivory (#F2EBDD), satin-finish fabric\\n\\nTextured blazer, single-breasted, slightly fitted through the waist, hip length, deep navy (#26324A), wool bouclé\\n\\nAnkle boots, almond toe, low block heel of about 5 cm, black (#1C1A1D), smooth leather\\n\\nClutch bag, structured and compact, with a thin removable chain strap, black (#1C1A1D), smooth leather\\n\\nDrop earrings, small and slim, antique gold (#B08D57), polished metal\\n\\nThin leather belt, 2 cm wide, worn at the waist over the blouse under the blazer, black (#1C1A1D), smooth leather\\n\\nThis outfit suits a neat evening at the theatre in autumn: the textured blazer, blouse and tailored trousers sit squarely in the polished, refined range without feeling stiff. The ivory blouse brings softness and light near the face, which glows under the warm artificial lighting of the foyer and auditorium, and it flatters her fair skin, dark hair and blue-grey eyes. The navy blazer and charcoal trousers create a calm, deep palette, while the belt defines the waist and the straight trousers lengthen the leg line. The block-heeled boots are comfortable through a long performance and the gold earrings add a quiet evening touch.\"}],\"usage\":{\"input_tokens\":2301,\"output_tokens\":549},\"stop_reason\":\"end_turn\"}"
+ }
+}

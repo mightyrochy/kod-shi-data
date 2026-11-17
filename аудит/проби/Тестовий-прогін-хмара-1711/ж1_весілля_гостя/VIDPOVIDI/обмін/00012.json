@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Bias-cut maxi dress, V-neckline, floaty short sleeves, floor-skimming length, in sage green (#7D8F7A), silk satin with a soft sheen\\n\\nBlock-heel sandals, open toe with a thin ankle strap, in warm sand (#C8AD92), smooth leather\\n\\nEnvelope clutch, small, in champagne (#CDB892), satin with a fine metal clasp\\n\\nDrop earrings, slim and elongated, in soft gold (#C9A227), polished metal\\n\\nThin bangle, in soft gold (#C9A227), polished metal\\n\\nThis outfit is formal enough for a sister's wedding, with a noble fabric and a dressy floor-length cut, yet it stays breathable and light for an August afternoon. Sage green looks soft in daylight and photographs well, and it stays well away from white, ivory and anything that competes with the bride. The bare arms are the only open area, so the look stays elegant and comfortable outdoors. Block heels keep you steady on grass during the ceremony, and the satin and gold details carry smoothly into the restaurant in the evening.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Maxi dress\\\",\\\"details\\\":\\\"Bias-cut, V-neckline, floaty short sleeves, floor-skimming length, silk satin with a soft sheen\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#7D8F7A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Block-heel sandals\\\",\\\"details\\\":\\\"Open toe with a thin ankle strap, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#C8AD92\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Envelope clutch\\\",\\\"details\\\":\\\"Small, satin with a fine metal clasp\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#CDB892\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Slim and elongated, polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A227\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Thin bangle\\\",\\\"details\\\":\\\"Polished metal\\\",\\\"slot\\\":\\\"bracelet\\\",\\\"color_hex\\\":\\\"#C9A227\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2036,\"output_tokens\":320},\"stop_reason\":\"end_turn\"}"
+ }
+}

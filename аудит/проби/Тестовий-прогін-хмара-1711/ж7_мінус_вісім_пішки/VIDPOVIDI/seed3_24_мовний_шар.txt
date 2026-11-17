@@ -1,0 +1,39 @@
+── ПРОМПТ (5723 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: dress_generic · about it: text н=1
+2 — kind: coat · about it: text н=2
+3 — kind: ankle_boots · about it: text н=3
+4 — kind: bag_generic · about it: text н=4
+5 — kind: belt · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "A shirt-style dress with a collar and a defined waist is a calm, businesslike base for an office day, and its midi length and vertical placket lengthen your line.",
+"2": "The coat is the outer layer for your frosty walk to the office. Its lapels give a smart finish, and its length leaves the dress hem showing below it.",
+"3": "Ankle boots with a sturdy sole suit a walk to work. They anchor the outfit at the ankle, which keeps the coat's volume balanced.",
+"4": "A roomy tote with long handles holds what you need for the office day. Its light beige tone echoes the boots and softens the grey.",
+"5": "The belt marks your waist, so the dress and the coat's volume don't hang without a focal point. It adds a clear accent at the centre of the outfit.",
+"6": "I built this for your walk to the office: the grey dress is the base, the coat goes over it, and the beige boots and tote bring a lighter tone to the grey. The belt marks your waist and the boots finish the line at the ankle, so the coat's width has a clear anchor at each end and the outline stays tidy. The dress's vertical row of snaps carries the eye up and down, which suits a working day and keeps your proportions long.",
+"7": "Fasten the belt over the dress at your waist and put the coat on over both, worn open.",
+"8": "Leave the coat open so the row of snaps on the dress stays visible down the front."
+}
+
+── ВІДПОВІДЬ (1363 симв., 17.1 с, HTTP 200) ──
+{"1":"Сукня в сорочковому стилі з коміром і підкресленою талією — спокійна ділова основа для офісного дня, а довжина міді й вертикальна планка видовжують твою лінію.","2":"Пальто — верхній шар для твоєї морозної прогулянки до офісу. Лацкани надають акуратного завершення, а довжина пальта залишає низ сукні видимим під ним.","3":"Ботильйони з міцною підошвою пасують для прогулянки на роботу. Вони закріплюють образ на щиколотці, і це врівноважує об'єм пальта.","4":"Містка сумка-шопер з довгими ручками вміщує все потрібне для офісного дня. Її світлий бежевий тон перегукується з ботильйонами й пом'якшує сірий.","5":"Пасок підкреслює твою талію, тому сукня й об'єм пальта не лишаються без точки фокуса. Він додає виразний акцент у центрі образу.","6":"Я склала цей образ для твоєї прогулянки до офісу: сіра сукня — основа, поверх неї пальто, а бежеві ботильйони й сумка-шопер додають сірому світлішого тону. Пасок підкреслює твою талію, а ботильйони завершують лінію на щиколотці, тож ширина пальта має чітку опору з обох боків, а силует лишається охайним. Вертикальний ряд кнопок на сукні веде погляд угору й униз, що пасує робочому дню й зберігає довжину твоїх пропорцій.","7":"Застебни пасок поверх сукні на талії й одягни поверх обох речей пальто, не застібаючи його.","8":"Залиш пальто розстебнутим, щоб ряд кнопок на сукні лишався видимим уздовж переду."}
