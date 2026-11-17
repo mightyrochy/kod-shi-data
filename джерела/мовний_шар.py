@@ -51,6 +51,7 @@ import фрази_формату as _ФФ
 import людський_вихід as _ЛВ
 from людський_вихід import ЗВЕРТАННЯ_ТИ as _ЗВЕРТАННЯ_ТИ
 import внутрішня_мова as _ВМ
+import знання_речі as _ЗН
 import паспорт_поля as _ПП
 # «невідомо» на кожному рівні й вільний текст — у внутрішній мові, її речі шару — у речі з фото (3.3, К-4)
 from внутрішня_мова import заглушка as _заглушка, порожнє as _порожнє, текст as _текст
@@ -310,16 +311,12 @@ def кольори_кодом(текст):
     return re.sub(r"[ \t]{2,}", " ", _HEX_У_ТЕКСТІ.sub(код, str(текст or ""))).replace(" ,", ",")
 
 
-def _абзац_кольорів(розмітка, коди_речей=()):
-    """Абзац промпту про коди кольорів — лише вжиті коди (у текстах і біля речей переліку, `коди_речей`) з внутрішнім
-    словом ядра; без них — ""."""
-    у_текстах = {к for р in розмітка for к in _КОД_КОЛЬОРУ.findall(р["текст"])}
-    коди = sorted(у_текстах | set(коди_речей))
+def _абзац_кольорів(розмітка):
+    """Абзац промпту про коди кольорів — лише вжиті в текстах коди з внутрішнім словом ядра; без них — ""."""
+    коди = sorted({к for р in розмітка for к in _КОД_КОЛЬОРУ.findall(р["текст"])})
     if not коди:
         return ""
     слова = "; ".join("%s — %s" % (к, _ВМ.ключ("color_name", к)) for к in коди) + ".\n\n"
-    if not у_текстах:
-        return "Colour codes: " + слова
     return ("[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, "
             "узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а "
             "другої назви кольору не додавай. Коди: " + слова)
@@ -358,57 +355,29 @@ def розмітити(тексти, виправ=None, урізано=None):
 # перекладається в цьому ж виклику (`мовоюКарткуП`). Промпт називає кожну річ номером із назвою (назва вигаданої —
 # «текст н=K») і просить вид — іменником назви, узгодження — з ним, а речей, яких англійський текст не називає, не
 # додавати. Назв код не читає: передає як є, слова пише мовна модель (п.12).
-# ОПИС РЕЧІ — СВОЇМ ТЕКСТОМ, КОЛІР РЕЧІ — СЛОВОМ КРАМНИЦІ ЧИ КОДОМ (п.18, п.12).
+# ОПИС РЕЧІ — СВОЇМ ТЕКСТОМ (п.18, п.12).
 # ЩО БУЛО ВИДНО. Опис руки 1–2 модель пише річ за річчю (`about_items` з номером речі), а показ віддавав шару одну
-# прозу — абзаци без номера. Перекладачка мала перелік назв, але не знала, який абзац про яку річ, і вид та колір
-# брала з англійських слів моделі про фото, бо правило так і казало («колір… перекладай з тексту»): «dark
-# heather-grey knit» → «темно-фіолетовий светр» (у переліку «Джемпер … темно-сірий-молочний»),
-# «graphite headband» → «Поясна стрічка» (у переліку «Обруч Келлі…» і «Поясна сумка…»), «lime-green
-# bag» → «лимонна» («Шкіряна сумка яскраво-зеленого кольору»), «pearl necklace» → «перлова намистина» («Намисто з
-# 5 рядів перлин айворі»). ЩО ТЕПЕР. Абзац про річ іде своїм текстом, і перелік каже біля речі, який текст про
-# неї («text н=M»); біля речі крамниці — код її кольору (`колір` картки — код каталогу, у вікні слова крамниці; без
-# нього — hex тим самим вікном, що підписує палітру, `_код_кольору`). Колір речі — слово її назви (річ зберігає
-# слово крамниці, п.18), а без нього — назва коду; кольорові слова англійського тексту про цю річ — враження моделі
-# від фото, не її колір. Назв і слів код не читає: передає назву, номер тексту й код (п.12).
-# ВИД РЕЧІ — КОДОМ (п.12). ЩО БУЛО ВИДНО. Перелік давав назву, колір і номер тексту, а вид речі
-# перекладачка брала з англійського слова моделі: «Suede pumps» → «Черевики з замші…» при «Туфлі човники»
-# «Emerald green snakeskin boots» → «ботильйони» при чоботях до коліна.
-# ЩО ТЕПЕР. Біля речі крамниці стоїть код її виду (`item_type` укладки — той самий `type`, що бачила стилістка в
-# `дріт_моделі.опис`; без типу — код слота, як «kind» там же), а правило каже: іменник речі в кожному тексті — цього
-# виду. Слів код не читає: дає код.
-# НАЗВИ З КРАМНИЦІ В ПЕРЕЛІКУ НЕМА (Е2-вхід-опису-кодами, ПС-22). Назва несла вид і колір словами крамниці поруч із
-# кодами, і правило велило брати іменник і колір із неї — два свідки одного факту, що розходились («Сумка поясна» з
-# кодом bag_generic, колір слова назви поруч з іншим кодом кольору). Тепер річ крамниці в переліку — номер на картці,
-# код виду й код кольору: іменник — українське слово коду виду, колір — українська назва коду кольору. Назва речі
-# крамниці лишається у записі виклику (`запис.речі`, звіт власника), у промпт не йде; назва вигаданої речі й її речі з
-# фото — текст цього ж виклику («назва в тексті н=K»), її пише модель, а не крамниця.
-ПРАВИЛО_РЕЧЕЙ = ("When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: "
-                 "…) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», "
-                 "loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the "
-                 "English text uses; a code ending in _generic names only the family (dress_generic — a dress, "
-                 "bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in "
-                 "gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this "
-                 "same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text "
-                 "the list gives as about an item (about it: text н=M) speaks of that one item, and so does every "
-                 "other text where the English names it. The colour of an item of the list is its colour code "
-                 "(colour code: …): write the Ukrainian name of that code. The English colour words for that item are "
-                 "the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour "
-                 "stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the "
-                 "rest — translate from the text. The list is for the items only: an item the English text does not "
-                 "name is not added to the translation — neither to the description nor to the advice.")
-
-
-def _код_кольору_речі(р):
-    """Код кольору речі з переліку картки: `код_кольору` з каталогу, коли він код `color_name`, інакше hex тим
-    самим вікном, що підписує палітру (`_код_кольору`), або None. Вигадана й її річ коду тут не мають: їхній колір —
-    у тексті, який перекладає цей самий виклик."""
-    if р.get("ключ"):
-        return None
-    к = str(р.get("код_кольору") or "").strip()
-    if к in _ВМ.ТАБЛИЦЯ.get("color_name", {}) and not _ВМ.невідомо(к):
-        return к
-    hx = re.fullmatch(r"#?([0-9a-fA-F]{6})", str(_КОЛІР.hex_кольору(р) or "").strip())
-    return _код_кольору(hx.group(1)) if hx else None
+# прозу — абзаци без номера. Перекладачка мала перелік назв, але не знала, який абзац про яку річ.
+# ЩО ТЕПЕР. Абзац про річ іде своїм текстом, і перелік каже біля речі, який текст про неї («text н=M»).
+# КОД НЕ СТАЄ НА МІСЦЕ СЛОВА МОДЕЛІ (корінь Е2-опора-пояснення, п.5 і п.1). Доти біля речі крамниці стояли коди
+# виду й кольору, а правило велило ставити їх замість слів англійського тексту («call it by the Ukrainian noun of its
+# kind code … whatever word the English text uses»; «the item's colour stands in their place»). Модель опису називає річ
+# і колір з фото, а код кольору був здебільшого словом крамниці, не звіреним із кадром: «creamy near-white» моделі
+# стало «срібним», «коричнева» сумка лишалась коричневою над бордовим кадром. Тепер колір і решта властивостей — з
+# тексту; біля речі лише вид із того самого складача, що вхід опису (`знання_речі.певне`), і він не замінює слова
+# тексту, а лише вибирає серед перекладів того самого слова («plimsolls» — кеди, а не еспадрильї) і дає іменник, де
+# текст каже лише «it». Назва речі крамниці лишається у записі виклику (`запис.речі`, звіт власника), у промпт не йде;
+# назва вигаданої речі й її речі з фото — текст цього ж виклику («назва в тексті н=K»), її пише модель, а не крамниця.
+ПРАВИЛО_РЕЧЕЙ = ("A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every "
+                 "other text where the English names it. Call an item by the Ukrainian noun that translates the "
+                 "English word for it — the same noun in the right case in every text; its kind (kind: …) only says "
+                 "which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where "
+                 "the English says just «it»; a kind ending in _generic names only the family. Make every adjective, "
+                 "pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; "
+                 "«шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call "
+                 "the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate "
+                 "from the text. The list is for the items only: an item the English text does not name is not added "
+                 "to the translation — neither to the description nor to the advice.")
 
 
 # НОВА РІЧ ЗМІНИ (картка «Оціни образ»). Під текстом «Що змінити» жінка бачить річ зміни, а перекладачка
@@ -418,42 +387,36 @@ def _код_кольору_речі(р):
 # лише в промпті з такою річчю: картки рук його не бачать (кеш їхнього початку той самий).
 ПРАВИЛО_НОВОЇ_РЕЧІ = (" An item given as the new item of a text (new item of text н=M) is what that text advises "
                       "her to take in place of her own item: wherever that text speaks of the new thing, it is this "
-                      "item, of its kind and its colour, whatever the English text says; her own item there keeps its "
-                      "own name.")
+                      "item; her own item there keeps its own name.")
 
 
 def _абзац_речей(розмітка, речі):
-    """(абзац промпту з речами картки, коди кольорів речей). `речі` — [{н, назва, ключ?, опис?, заміна?, тип?, колір?,
-    hex?}] з
-    показу (`тип` — ключ ядра `item_type` з укладки речі, без нього `слот`; у промпт — кодом виду):
-    номер речі; назва крамниці в промпт не йде (`ПРАВИЛО_РЕЧЕЙ`), назва, яку перекладає цей самий виклик (`ключ` є
-    в `розмітка`), — посиланням «текст н=K»;
-    текст про цю річ (`опис` — ключ тексту в `розмітка`) — «about it: text н=M»; текст зміни, чия це нова річ
-    (`заміна`), — «new item of text н=M» з `ПРАВИЛО_НОВОЇ_РЕЧІ`; код кольору речі крамниці
-    (`_код_кольору_речі`). Без речей — ("", [])."""
+    """Абзац промпту з речами картки. `речі` — [{н, назва, ключ?, опис?, заміна?, тип?, слот?, колір?, hex?}] з показу
+    (`тип` — ключ ядра `item_type` з укладки речі, без нього `слот`): номер речі; вид — те, що про неї знає продукт
+    (`знання_речі.певне`: тип, без нього рід), кодом; назва крамниці в промпт не йде (`ПРАВИЛО_РЕЧЕЙ`), назва, яку
+    перекладає цей самий виклик (`ключ` є в `розмітка`), — посиланням «текст н=K»; текст про цю річ (`опис` — ключ тексту
+    в `розмітка`) — «about it: text н=M»; текст зміни, чия це нова річ (`заміна`), — «new item of text н=M» з
+    `ПРАВИЛО_НОВОЇ_РЕЧІ`. Колір речі в перелік не йде: колір перекладачка бере з тексту. Без речей — ""."""
     н_ключа = {р["ключ"]: р["н"] for р in розмітка}
-    рядки, коди, нові = [], [], False
+    рядки, нові = [], False
     for р in речі if isinstance(речі, list) else []:
         if not isinstance(р, dict):
             continue
         н = н_ключа.get(str(р.get("ключ") or ""))
-        к, про = _код_кольору_речі(р), н_ключа.get(str(р.get("опис") or ""))
+        про = н_ключа.get(str(р.get("опис") or ""))
         заміна = н_ключа.get(str(р.get("заміна") or ""))
-        вид = ((_ВМ.код("item_type", р.get("тип")) if р.get("тип") else None)
-               or (_ВМ.код("slot", р.get("слот")) if р.get("слот") else None))
-        поля = ([("назва в тексті н=%d" % н)] if н else []) + (["kind code: %s" % вид] if вид else []) \
-            + (["colour code: %s" % к] if к else []) + (["about it: text н=%d" % про] if про else []) \
-            + (["new item of text н=%d" % заміна] if заміна else [])
+        певне = _ЗН.певне(р)
+        поля = ([("назва в тексті н=%d" % н)] if н else []) \
+            + (["kind: %s" % (певне.get("type") or певне["kind"])] if певне.get("type") or певне.get("kind") else []) \
+            + (["about it: text н=%d" % про] if про else []) + (["new item of text н=%d" % заміна] if заміна else [])
         if not поля:
             continue
         нові = нові or bool(заміна)
-        if к:
-            коди.append(к)
         рядки.append("%s — %s" % (р.get("н") or len(рядки) + 1, " · ".join(поля)))
     if not рядки:
-        return "", []
-    return ("Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):\n"
-            + "\n".join(рядки) + "\n" + ПРАВИЛО_РЕЧЕЙ + (ПРАВИЛО_НОВОЇ_РЕЧІ if нові else "") + "\n\n"), коди
+        return ""
+    return ("Речі образу — перелік речей картки (номер речі — як на картці):\n"
+            + "\n".join(рядки) + "\n" + ПРАВИЛО_РЕЧЕЙ + (ПРАВИЛО_НОВОЇ_РЕЧІ if нові else "") + "\n\n")
 
 
 def промпт(розмітка, речі=None):
@@ -465,8 +428,7 @@ def промпт(розмітка, речі=None):
     урізані = [р for р in розмітка if р.get("урізано")]
     if урізані:
         основа = основа.replace(ВХІД_ВИХОДУ, ВХІД_ВИХОДУ + РЕЧЕННЯ_УРІЗАНО % ", ".join(str(р["н"]) for р in урізані), 1)
-    абзац, коди = _абзац_речей(розмітка, речі)
-    return основа + абзац + _абзац_кольорів(розмітка, коди) + "ТЕКСТИ:\n" + хвіст + "{\n" + ",\n".join(
+    return основа + _абзац_речей(розмітка, речі) + _абзац_кольорів(розмітка) + "ТЕКСТИ:\n" + хвіст + "{\n" + ",\n".join(
         "%s: %s" % (_json_.dumps(str(р["н"])), _json_.dumps(dict(текст=р["текст"], виправ=р["виправ"]) if р.get("виправ")
                                                            else р["текст"], ensure_ascii=False)) for р in розмітка) + "\n}"
 
@@ -1633,9 +1595,16 @@ def _ключі_речі(р):
     вих = dict(слот=с, тип=_ВМ.ключ("item_type", р.get("item_type")),
                колір=_ВМ.ключ("color_name", р.get("color_name")), клас_кольору=_ВМ.ключ("color_class", р.get("color_class")),
                тканина=_ВМ.ключ("fabric", р.get("fabric")), візерунок=_ВМ.ключ("pattern", р.get("pattern")),
-               довжина=_ВМ.ключ("length", р.get("length")), ознака=_ВМ.ключ("feature", р.get("feature")))
+               довжина=_ВМ.ключ("length", р.get("length")), ознака=_ВМ.ключ("feature", р.get("feature")),
+               як_носить=_ВМ.ключ("wear", р.get("wear")))
     вих = {к: v for к, v in вих.items() if v}
     return dict(вих, фраза=_фраза(р), **({"уривок": р["quote"]} if р.get("quote") else {})) if вих else {}
+
+
+def _унія_слотів(а, б):
+    """Слоти двох меж одного слова — об'єднання (ту саму дію між ходами робить `_злити_слоти`, між записами одного
+    ходу — `_межі`): друге слово про той самий слот не затирає перше."""
+    return list(dict.fromkeys(list(а or []) + list(б or [])))
 
 
 def _межі(речі, весь_слот=True):
@@ -1654,7 +1623,7 @@ def _межі(речі, весь_слот=True):
         тип = _ВМ.ключ("item_type", р.get("item_type")) if весь_слот else None
         додати("кольори", колір)
         if колір and р.get("slot"):
-            слоти[колір] = _слоти_ядра(р["slot"])
+            слоти[колір] = _унія_слотів(слоти.get(колір), _слоти_ядра(р["slot"]))
         # ПРИНТ І ТКАНИНА, СКАЗАНІ ПРО ОДИН СЛОТ, — ТЕЖ НА СВІЙ СЛОТ. «Взуття не моє,
         # хочу без принта» шар пише `{slot: shoes, pattern: print_generic}`; слот ішов у `слоти` лише
         # для кольору, тож межа принта різала візерунчасте з УСІХ слотів (пул стенда 54 → 5). Читачі
@@ -1663,10 +1632,21 @@ def _межі(речі, весь_слот=True):
         for к, поле in (("принти", "pattern"), ("тканини", "fabric")):
             w = _ВМ.ключ(поле, р.get(поле))
             if w and р.get("slot") and not тип:
-                слоти.setdefault(w, _слоти_ядра(р["slot"]))
+                слоти[w] = _унія_слотів(слоти.get(w), _слоти_ядра(р["slot"]))
             elif w:
                 цілі.add(w)
         додати("типи", тип)
+        # ДОВЖИНА Й КРІЙ З КОМЕНТАРЯ — НА СЛОТ, ПРО ЯКИЙ СКАЗАНО (15511, живий «як людина» 2 і 3). «Пальто нижче коліна»
+        # перекладач пише `{slot: outerwear, length: midi}`, і «міді» ставало межею `типи` на весь образ — наступний збір
+        # знімав ще й міді-сукні та спідниці. Довжина й ознака крою (feature) названого слота лягають у `слоти`, як колір,
+        # принт і тканина: пул ріже слово лише на цьому слоті. Слово без слота — про весь образ, як доти.
+        if not весь_слот:
+            for поле in ("length", "feature"):
+                w = _ВМ.ключ(поле, р.get(поле))
+                if w and р.get("slot"):
+                    слоти[w] = _унія_слотів(слоти.get(w), _слоти_ядра(р["slot"]))
+                elif w:
+                    цілі.add(w)
         # МЕЖА НА ВЕСЬ СЛОТ — ЛИШЕ КОЛИ ЗАПИС НЕ НАЗИВАЄ НІЧОГО ВУЖЧОГО (ВМ-1). «Без підборів» шар
         # пише `{"slot": "shoes", "feature": "heels"}`: слот тут — де ознака, а не відмова від
         # взуття. Доти слот ішов у `типи` поруч із «підбори», і живий прогін 01.10 (ZHYVA=sonnet,
@@ -1686,7 +1666,7 @@ def _межі(речі, весь_слот=True):
             додати(к, w)
     for w in цілі:          # те саме слово, сказане й про весь образ, і про слот, — про весь образ
         слоти.pop(w, None)
-    return в, слоти
+    return в, {w: sorted(с) for w, с in слоти.items()}      # порядок записів на результат не впливає
 
 
 def _злити_слоти(було, нові_в, нові_слоти):
@@ -1696,7 +1676,7 @@ def _злити_слоти(було, нові_в, нові_слоти):
     сказане в будь-який хід (доти чи тепер), не звужується пізнішим «взуття без принта» і не
     лишає старого звуження, коли її знову сказано про весь образ — жорстка межа мовчки
     переставала б діяти на решті слотів. Звужене з обох ходів — об'єднання слотів."""
-    груп = ("кольори", "принти", "тканини")
+    груп = ("кольори", "принти", "тканини", "типи")
     було = було if isinstance(було, dict) else {}
     слоти_було = dict(було.get("слоти") or {})
     вих = {}
@@ -1705,7 +1685,7 @@ def _злити_слоти(було, нові_в, нові_слоти):
         глобально_тепер = w not in нові_слоти and any(w in нові_в.get(г, []) for г in груп)
         if глобально_було or глобально_тепер:
             continue
-        вих[w] = list(dict.fromkeys(list(слоти_було.get(w) or []) + list(нові_слоти.get(w) or [])))
+        вих[w] = _унія_слотів(слоти_було.get(w), нові_слоти.get(w))
     return вих
 
 
@@ -2065,9 +2045,12 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # ЗОНИ МЕТИ — ОКРЕМА ПЛИТКА: доти мета, названа ходом без
     # зон, скидала давні зони — бо «приховати» з зоною означало лише зону. Тепер зона
     # «відвести погляд від…» стоїть поруч із будь-якою увагою, тож нова увага давньої зони не знімає.
-    об["тривалість_год"] = в.get("duration_h")
-    об["ноги_вище_см"] = в.get("legs_above_cm")
-    for ім in ("тривалість_год", "ноги_вище_см"):
+    # ЧИСЛА — ОДНИМ ПЕРЕЛІКОМ (`_ПАСПОРТ_ЧИСЛА`, наряд Е2-втрата-слова-шлях-поля): поле з ознакою `число` реєстру
+    # пишеться тут без окремого рядка; рівень супутника — своїм шляхом нижче (лише в паспорт, без форми).
+    for ім, поле in _ПАСПОРТ_ЧИСЛА:
+        if ім in _ЧИСЛА_СВОЇМ_ШЛЯХОМ:
+            continue
+        об[ім] = в.get(поле)
         if об[ім] is None and є(досі.get(ім)) and джерела_досі.get(ім) != _ПН.ТИПОВЕ_ПОЛЕ_ФОРМИ:
             об[ім] = досі[ім]
     # ── ОШАТНІСТЬ — ЧИСЛО МОВНОЇ МОДЕЛІ ЗАВЖДИ (НП-в крок 2, принцип власника 01.10) ──────
@@ -2127,7 +2110,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     # МЕЖІ — ТІ, ЩО ПОЧУВ ПЕРЕКЛАДАЧ: гейт слів (`вето_тверде`) без слів мовчить і зняв би їх
     слоти = _злити_слоти(досі.get("вето_тверде"), нові_в, нові_слоти)
     тв = {к: list((п.get("вето") or {}).get(к) or []) for к in ("типи", "тканини", "принти", "кольори", "зони")}
-    тв["слоти"] = {к: v for к, v in слоти.items() if any(к in тв[г] for г in ("кольори", "принти", "тканини"))}
+    тв["слоти"] = {к: v for к, v in слоти.items() if any(к in тв[г] for г in ("кольори", "принти", "тканини", "типи"))}
     тв["без_читача"] = [w for к in ("типи", "тканини", "принти", "кольори") for w in тв[к]
                         if not _ПН.читач_вето(к, w)]
     п["вето_тверде"] = тв
@@ -2209,6 +2192,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     if бажання_коди or "бажання_коди" in досі:
         п["бажання_коди"] = бажання_коди
     уривки = dict(досі.get("цитати_полів") or {})
+    уривки_фактів = {}  # уривки для запису факту картки: плоскі цитати (`уривки`) їх не мають, коли поле смуги погоди
     рукою = set(_ПН.поля_рукою(сценарій or {}, досі))
     поля_з_цитатою_ходу = set()
     # R2: писар без уривка не стирає давнього уривка. Дотик змінює джерело
@@ -2220,8 +2204,12 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
             continue
         if ім in рукою:
             continue
+        # уривок поля смуги погоди несе її градуси: у факті він лишається (сила, `на_її_словах`), а далі —
+        # лише смуга: відсікає межа показу (`картка_запиту._проєкція`, `паспорт_поля.походження_поля`)
         if цит.get(поле):
-            уривки[ім] = цит[поле]
+            if _ПП.уривок_далі(ім):
+                уривки[ім] = цит[поле]
+            уривки_фактів[ім] = цит[поле]
             поля_з_цитатою_ходу.add(ім)
     п["цитати_полів"] = уривки
     п["перекладено_шаром"] = True
@@ -2281,7 +2269,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
     скинуті = {ім for ім in скинуті if not є(п.get(ім)) and ім not in рукою}
     _джерела_картки = {к: дж for к, дж in _джерела_картки.items() if к not in складені}
     _КЗ.синхронізувати(п, _ПН.ПОЛЯ_ПАСПОРТА, джерела=_джерела_картки,
-                       уривки=п["цитати_полів"], скинуті=скинуті)
+                       уривки=dict(п["цитати_полів"], **уривки_фактів), скинуті=скинуті)
     if рух_виведено:
         _КЗ.записати(п, "рух", "спорт", _ПП.ВИВЕДЕНЕ)
     if лише_плитки:
@@ -2459,7 +2447,7 @@ def паспорт_з_коментаря(внутрішня, паспорт_до
     чинне = _ПН.вето_чинне(досі)
     тв = {к: list(dict.fromkeys(list(чинне.get(к) or []) + нові_в[к])) for к in _КЛЮЧІ_ВЕТО}
     слоти = _злити_слоти(чинне, нові_в, нові_слоти)
-    тв["слоти"] = {к: v for к, v in слоти.items() if any(к in тв[г] for г in ("кольори", "принти", "тканини"))}
+    тв["слоти"] = {к: v for к, v in слоти.items() if any(к in тв[г] for г in ("кольори", "принти", "тканини", "типи"))}
     тв["без_читача"] = [w for к in ("типи", "тканини", "принти", "кольори") for w in тв[к]
                         if not _ПН.читач_вето(к, w)]
     п["вето_тверде"] = тв
@@ -3211,8 +3199,9 @@ import спільні_вимоги as _ВИМ
 # (ділова, світська) — кожна з одягом, нормою й прикладами: модель обирає один із семи кодів і гілку, а числа шкали
 # лишаються мірою коду (НП-в).
 def _драбина_en():
-    """Щаблі драбини рядком для моделі: «neat — business: одяг; whose standard is норма; e.g. приклади | social: …» · …"""
-    гілка = lambda г: "%s%s; whose standard is %s%s" % (("%s: " % г["гілка"]) if г["гілка"] else "", г["одяг"],
+    """Щаблі драбини рядком для моделі: «neat — business: одяг; standard: норма; e.g. приклади | social: …» · …
+    «standard:» замість «whose standard is» у кожній гілці — повтор (корінь Е2-промпти, п.5); що це, каже шапка драбини."""
+    гілка = lambda г: "%s%s; standard: %s%s" % (("%s: " % г["гілка"]) if г["гілка"] else "", г["одяг"],
                                                          г["норма"], ("; e.g. " + г["приклади"]) if г["приклади"] else "")
     return " · ".join("%s — %s" % (щ["код"], " | ".join(гілка(г) for г in щ["гілки"])) for щ in _ФОРМ_.ДРАБИНА)
 
@@ -3232,9 +3221,9 @@ _ПОЛЯ_EN = {
     "declared_break": _ПН.СХЕМА_ПАСПОРТА["заявлений_злам"],
     "declared_column": _ПН.СХЕМА_ПАСПОРТА["заявлена_колона"],
     "matching_opaque_tights": _ПН.СХЕМА_ПАСПОРТА["тон_колготи"],
-    "host_context": "whether the event has a host or stakes: yes when her words name one, no when explicitly absent, otherwise unknown; not whether she herself is the host; do not infer from the occasion type",
-    "creative_environment": "whether the event is in a creative environment: yes when named, no when explicitly denied, otherwise unknown; not her wish for a bold outfit; do not infer from the occasion type",
-    "direct_sun": "direct sunlight on her: yes only when her words name direct sun, no when they name shade or no sun; otherwise unknown; do not infer from temperature, precipitation or season",
+    "host_context": "whether the event has a host or stakes: yes when her words name one, no when explicitly absent; not whether she herself is the host; do not infer from the occasion type",
+    "creative_environment": "whether the event is in a creative environment: yes when named, no when explicitly denied; not her wish for a bold outfit; do not infer from the occasion type",
+    "direct_sun": "direct sunlight on her: yes only when her words name direct sun, no when they name shade or no sun; do not infer from temperature, precipitation or season",
     "palette": "the palette scheme she chose for this outfit",
     # «Йду ввечері на вечірку в клуб» — `occasion` з цим уривком, `place` — ні (клас
     # 4206): правило ходу каже про місце в назві події, а опис поля, яке модель заповнює першим, — ні
@@ -3302,6 +3291,7 @@ _ПОЛЯ_EN = {
                   "and overrides the event's norm",
     "setting": "indoors, outdoors or mixed",
     "duration_h": "how many hours the event lasts",
+    "walk_min": "minutes she walks there on foot; not duration_h",
     # `activity` кодів спорту не має (діти, нерівний ґрунт, прогулянка, ходьба, фотосесія) — спорт її дня
     # несе `movement: sport`, і руки 3–4 бачать його в `case` (`руки_без_коду.випадок_кодами`, `рух`)
     # «фраза дороги, що називає вихід, — і нагода» тепер лише в описі `occasion`; «як дістається — рух» (R2) — тут
@@ -3336,8 +3326,9 @@ _ПОЛЯ_EN = {
     # Свята-приклади (новорічна вечірка й корпоратив — свята сцен) — тепер родом випадку
     # Що дає місяць (дата, місяць, свято одного місяця — з цим словом цитатою), каже правило події (R6): там його
     # модель і заповнює; тут — лише чого місяцем не буває.
-    "month": "the month of the event, only when her words date it (the event rule); a weekday, «today», «tomorrow» "
-             "or an event of any month — absent",
+    "month": "the event month",
+    # День тижня — своє поле (корінь Е2-втрата-слова, 16027: «в суботу» 11 сцен, 0 дійшло — поля не було)
+    "weekday": "the event day",
     # «return only its code, never degrees» — R5 («Values are only the codes»); «K-WEA-01 with the P-5 split» —
     # мітки бази знань, не вимога; знято (Е2-промпти, п.1)
     "weather_band": "the weather band, from the degrees she names (digits or words) or her feeling of "
@@ -3452,7 +3443,7 @@ _ПОЛЯ_EN = {
 }
 _РЕЧІ_EN = {"slot": "part of the look", "item_type": "item type", "fabric": "fabric", "pattern": "pattern",
             "color_class": "colour class", "color_name": "colour name", "zone": "body zone she keeps covered",
-            "feature": "item feature", "length": "item length"}
+            "feature": "item feature", "length": "item length", "wear": "how she wears it"}
 _БЕЗ_У_РОЗМОВІ = _ПП.поля_виду("поза_розмовою")    # пари несуть цитату самі; про що питання — `need`
 
 
@@ -3576,7 +3567,7 @@ def _коди_норми(поля=None):
     поля (хід плиток бере `ПОЛЯ_ХОДУ_ПЛИТОК`: решту `прийняти_хід_плиток` відкидає, тож модель їх не бачить)."""
     р = ["Fields without quote — the value alone, not {\"quote\", \"value\"}:",
          "- formality — %s" % _ПОЛЯ_EN["formality"],
-         "  · the ladder (step — its branches: clothes; whose standard puts an outing on the step; ordinary "
+         "  · the ladder (step — its branches: clothes; standard: the norm that puts an outing on the step; ordinary "
          "examples, not codes): %s" % _драбина_en(),
          "- formality_branch — %s; %s" % (_ПОЛЯ_EN["formality_branch"], _тип_en(_ВМ.СЦЕНАРІЙ["formality_branch"]))]
     # МОВА-1 (02.10): `part_of_day` — службове, як ці два, але доти його рядка тут не було: модель не
@@ -3606,7 +3597,7 @@ def _коди_розмови():
         if _група(ім, с) == "пари":
             тип = _довідник_en(ім) if ім in _ГРУПИ_ДОВІДНИКА else _тип_en(с)
             if с.get("type") == "array" and "enum" in (с.get("items") or {}):
-                тип += '; {"quote": the fragment of her words, "value": [codes]}'
+                тип += '; {"quote": her fragment, "value": [codes]}'
             названа = next((о["названа"] for о in _ВМ.ПОЛЯ_ПАСПОРТА.values() if о.get("поле") == ім and о.get("названа")), None)
             if названа:
                 тип += '; {"quote": her words that name it, "value": its value, "%s": "%s"}' % названа
@@ -3827,7 +3818,8 @@ _ПРАВИЛО_ПЛИТОК = (
     # слів не читає (п.12).
     "An event she names goes into \"event\" and also as the code of \"occasion\" or \"place\" whose label "
     "names this event or one of its kind, with the name of the event as quote. Her words that date it — a date, "
-    "a month, or a holiday that falls in one month — also give \"month\", with that word as quote. An event "
+    "a month, or a holiday that falls in one month — also give \"month\", and the day she names \"weekday\", "
+    "with that word as quote. An event "
     "with no label of its own takes a code with the same rules, and "
     "\"stylist_note\" says what the event really is.",
     # Хрестини «спершу церква, потім обід у ресторані» давали нагоду однієї частини й місце іншої — або
@@ -4066,6 +4058,7 @@ def _паспорт_прості():
 
 
 _ПАСПОРТ_ЧИСЛА = tuple((к, в["поле"]) for к, в in _ВМ.ПОЛЯ_ПАСПОРТА.items() if в.get("число"))
+_ЧИСЛА_СВОЇМ_ШЛЯХОМ = frozenset(к for к, в in _ВМ.ПОЛЯ_ПАСПОРТА.items() if в.get("свій_писач"))
 _ГРУПИ_ВЕТО = (("типи", ("item_type", "slot", "feature", "length")), ("кольори", ("color_name", "color_class")),
                ("тканини", ("fabric",)), ("принти", ("pattern",)), ("зони", ("zone",)))
 

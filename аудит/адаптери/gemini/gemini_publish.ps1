@@ -809,6 +809,8 @@ $script:OutboxTemplates = @(
     '\AGEMINI ОБГОРТКА: ТРИВОГА (?:AUTH (?:AGY|CODEX|CLAUDE|CLOUD)|ISOLATION (?:WHOAMI|NET_SESSION|PROFILES|DRIVES|ENV)|DISK FULL|ENGINE (?:AGY|CODEX|CLAUDE))\z'
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z'
     $script:GpuIdleLineTemplate
+    $script:PowerOffLineTemplate
+    $script:PowerOnLineTemplate
     '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_]+(?:,[A-Z0-9_]+)* (?:20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|-))?\z'
     $script:HoldLineTemplate
     '\AGEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #[1-9][0-9]{0,8} [0-9a-f]{40}\z'
@@ -998,6 +1000,8 @@ function Test-DispatcherAction([string]$Line) {
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-\S+ CLAUDE_NOT_LAPTOP$') { return $false }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ЗАБЛОКОВАНО \S+ (\S+)$') { return $Matches[1] -cnotmatch $script:QuietBlockedCodes }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE ') { return $true }
+    # Світло зникло чи повернулось: диспетчер має знати, коли ноутбук недоступний і коли доступний знову.
+    if ($Line -cmatch $script:PowerOffLineTemplate -or $Line -cmatch $script:PowerOnLineTemplate) { return $true }
     # Простій увімкненого ноутбука (власник 31.10): раз на простій — доцільна робота чи ВИМКНИ НОУТБУК.
     if ($Line -cmatch '^GEMINI ОБГОРТКА: ПРОСТІЙ [0-9T:Z-]{20} [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_,]+ [0-9T:Z-]+)?$') { return $true }
     if ($Line -cmatch '^GEMINI ОБГОРТКА: (?:ЗАБЛОКОВАНО|ТРИВОГА|ЛАНЦЮГ)(?: |$)') { return $true }

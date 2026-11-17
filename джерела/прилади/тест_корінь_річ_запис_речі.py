@@ -1,5 +1,6 @@
-"""Перевіряє походження на штучних сторінках і реальному шляху жнив."""
+"""Перевіряє походження на штучному дереві й поточних жнивах; запуск із будь-якої теки."""
 import ast
+from contextlib import contextmanager
 import json
 from pathlib import Path
 import re
@@ -9,6 +10,9 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from корінь_річ_запис_речі import BeautifulSoup, Прогін, підсумувати, звичайні, ЧАСТИНА, ШМАТОК
 from річ_запис_походження import HTML, Спостерігач, Позначки, походження
+
+КОРІНЬ = Path(__file__).resolve().parents[2]
+ШТУЧНЕ_ДЕРЕВО = Path(__file__).resolve().parent / 'річ_запис_дані/стенд_жнив'
 
 СТОРІНКА = '''<html><head><title>Заголовок вкладки</title></head><body>
 <article id="товар"><h1>Лляна сорочка</h1><p>Власний опис</p></article>
@@ -22,6 +26,16 @@ def виконати(код, тіло=СТОРІНКА):
     дерево = Позначки('синтетичний.py').visit(ast.parse(код))
     exec(compile(ast.fix_missing_locations(дерево), 'синтетичний.py', 'exec'), простір)
     return підсумувати(простір['запис'], сп.читання), простір['запис']
+
+
+@contextmanager
+def жнива(корінь=ШТУЧНЕ_ДЕРЕВО):
+    """Виконує одне дерево й прибирає його модулі до завантаження наступного."""
+    прогін = Прогін(корінь)
+    try:
+        yield прогін
+    finally:
+        прогін.закрити()
 
 
 class Походження(unittest.TestCase):
@@ -143,46 +157,54 @@ class Походження(unittest.TestCase):
 
 
 class ШляхЖнив(unittest.TestCase):
-    """Запускає незмінені збирачі, а не копії їхніх правил видобування."""
-
-    @classmethod
-    def setUpClass(cls):
-        """Один раз завантажує модулі й JS для синтетичних сторінок."""
-        cls.прогін = Прогін(Path.cwd())
-
-    @classmethod
-    def tearDownClass(cls):
-        """Прибирає перехоплення імпортів після тестів."""
-        cls.прогін.закрити()
+    """Фіксує походження на штучному дереві й окремо виконує незмінені поточні збирачі."""
 
     def test_жнива_json_ld_та_власний_h1(self):
         """JSON-LD із head доходить у назву XML; власний h1 не створює місця."""
         рядок = dict(id='проба', крамниця='приклад.test', url='https://приклад.test/product/сорочка')
         тіло = СТОРІНКА.replace('<head>', '<head><script type="application/ld+json">{"@type":"Product","name":"Лляна сорочка","description":"Текст із JSON-LD"}</script>')
-        запис, читання = self.прогін.сторінка(рядок, тіло)
+        with жнива() as прогін:
+            запис, читання = прогін.сторінка(рядок, тіло)
         поля, _ = підсумувати(запис, читання)
         self.assertTrue(any(д.файл == 'zhnyvarka/жниварка.py' and any('name:' in п for п in імена) for д, імена in поля.items()))
         self.assertFalse(any('/article[1]/h1[1]' in д.вузол for д in поля))
+        self.assertEqual(звичайні(запис['html']['name:']), ['Лляна сорочка'])
+        self.assertEqual(звичайні(запис['html']['param:заголовок']), ['Лляна сорочка'])
 
     def test_js_body_до_опису(self):
-        """Справжній JS body-зліпок переносить джерело до поля опису офера жнив."""
+        """JS штучного дерева переносить джерело body до поля опису офера."""
         опис = 'Лляна сорочка з довгими рукавами та м’яким коміром. ' * 8
         тіло = СТОРІНКА.replace('Власний опис', 'Опис ' + опис + ' Характеристики').replace('</body>', '<div class="product">Короткий кандидат</div></body>')
         рядок = dict(id='проба', крамниця='приклад.test', url='https://приклад.test/product/сорочка')
-        запис, читання = self.прогін.сторінка(рядок, тіло)
+        with жнива() as прогін:
+            запис, читання = прогін.сторінка(рядок, тіло)
         поля, журнал = підсумувати(запис, читання)
         self.assertTrue(any(д.файл == 'zhnyvarka/виконавець.py' and 'браузер.опис' in імена for д, імена in поля.items()))
         self.assertTrue(any('@textContent' in д.вузол and 'body' in д.вузол for д in поля))
         self.assertTrue(any('@textContent' in р['вузол'] and not р['поля'] for р in журнал))
+        self.assertEqual(str(запис['браузер']['опис']), опис)
 
     def test_штатна_відмова_офера(self):
-        """Числовий sku ламає старий офер, але не ховає читання чинного HTML-шляху."""
+        """Числовий sku ламає штучний офер, але не ховає читання HTML-шляху."""
         тіло = СТОРІНКА.replace('<head>', '<head><script type="application/ld+json">{"@type":"Product","name":"Лляна сорочка","sku":123}</script>')
         рядок = dict(id='проба', крамниця='приклад.test', url='https://приклад.test/product/сорочка')
-        запис, читання = self.прогін.сторінка(рядок, тіло)
+        with жнива() as прогін:
+            запис, читання = прогін.сторінка(рядок, тіло)
         self.assertNotIn('браузер', запис)
         self.assertTrue(підсумувати(запис, читання)[0])
-        self.assertTrue(any('TypeError' in в for в in self.прогін.відмови))
+        self.assertTrue(any('TypeError' in в for в in прогін.відмови))
+
+    def test_поточні_жнива_читають_власний_блок(self):
+        """Поточні HTML і JS відкидають сторонню назву JSON-LD й беруть власний h1."""
+        тіло = СТОРІНКА.replace('<article id="товар">',
+            '<article id="товар" itemscope itemtype="https://schema.org/Product">').replace('<head>',
+            '<head><script type="application/ld+json">{"@type":"Product","name":"Стороння назва"}</script>')
+        рядок = dict(id='проба', крамниця='приклад.test', url='https://приклад.test/product/сорочка')
+        with жнива(КОРІНЬ) as прогін:
+            запис, читання = прогін.сторінка(рядок, тіло)
+        self.assertEqual(str(запис['браузер']['назва']), 'Лляна сорочка')
+        self.assertIn('Лляна сорочка', звичайні(запис['html']['name:']))
+        self.assertFalse(підсумувати(запис, читання)[0])
 
     def test_вхід_node_рядками(self):
         """Текст і атрибут понад ЧАСТИНА: кожен рядок входу node ≤ ЧАСТИНА, а значення доходять до JS цілими."""
@@ -191,9 +213,9 @@ class ШляхЖнив(unittest.TestCase):
         self.assertGreater(len(довге), 2 * ШМАТОК)
         тіло = СТОРІНКА.replace('Власний опис', довге).replace('<h1>', f'<img srcset="{атрибут}"><h1>').replace(
             '<article id="товар">', '<article id="товар" itemscope itemtype="https://schema.org/Product">')
-        self.прогін.входи_node.clear()
-        dom, _ = self.прогін.dom(тіло, 'https://приклад.test/product/сорочка', {})
-        найбільший, усього, рядків = self.прогін.входи_node[-1]
+        with жнива(КОРІНЬ) as прогін:
+            dom, _ = прогін.dom(тіло, 'https://приклад.test/product/сорочка', {})
+            найбільший, усього, рядків = прогін.входи_node[-1]
         self.assertLessEqual(найбільший, ЧАСТИНА)
         self.assertGreater(усього, 2 * ЧАСТИНА)
         self.assertGreater(рядків, 2)
@@ -206,8 +228,8 @@ class ШляхЖнив(unittest.TestCase):
         def помилка():
             """Імітує збій самого спостерігача."""
             raise ValueError('збій спостереження')
-        with self.assertRaises(AssertionError):
-            self.прогін.парний_виклик('проба', lambda: 'значення', помилка)
+        with жнива() as прогін, self.assertRaises(AssertionError):
+            прогін.парний_виклик('проба', lambda: 'значення', помилка)
 
 
 if __name__ == '__main__':

@@ -506,9 +506,10 @@ import внутрішня_мова as _ВМ_П
                        "by its «type»",
     "образи[].речі": "«n», e.g. \"%s\"" % ПРИКЛАД_НОМЕРА,      # «alone» — у правилі `РЯДОК_ЛИШЕ_НОМЕР`
     # «the choice is hers» — лише про її бажання; за свою річ стилістка каже, чому вона
+    # пояснення — лише з відомої властивості речі проти факту «day» (корінь Е2-опора-пояснення, крок «обставини»)
     "образи[].день": "one sentence, up to 25 words: how this outfit lives through her day; where something she "
                      "asked for herself argues with the day, say so gently — that part is hers to decide; where "
-                     "an item you chose argues with the day, say why you still chose it",
+                     "a known property of your item argues with «day», say why you still chose it",
     # «alone» уже каже правило `РЯДОК_ЛИШЕ_НОМЕР` (повтор, корінь Е2-промпти)
     "образи[].свідомо[].річ": "«n»",
     # Полюс — один код. Склеєних («tonal_column|ease_the_knot») і власних назв («tone_on_tone», «free_1»)
@@ -542,8 +543,8 @@ import внутрішня_мова as _ВМ_П
 # ремонту й вибору (`повнота_образу.ВИБІР`, звідки ремонт бере поля «case.*»).
 ПОЛЯ_МЕЖІ_НА_СЛОТ = tuple(
     _ЗП.Поле("case.refusals.%s[].only_on" % к, "the kinds of item this refusal is about",
-             як="it holds for these kinds only; a refusal without «only_on» holds for the whole outfit")
-    for к in ("colors", "prints", "fabrics"))
+             як="for these kinds only; without «only_on» — the whole outfit")
+    for к in ("colors", "prints", "fabrics", "types"))
 РЯДКИ_ЗАДАЧІ_ЗА_ПРАВИЛОМ = {"K-CRA-01": РЯДОК_ТРЕТЬОЇ_РЕЧІ, "K-VAR-01": РЯДОК_РІЧ_ДВІЧІ}
 
 СКЛАДАННЯ = _ЗП.Оголошення(
@@ -1239,7 +1240,7 @@ def випадок_для_пакета(паспорт, рядок, сценар�
         # `refusals.prints: [print_generic]` після «взуття не моє, хочу без принта» читала як «без
         # принта на весь образ». Слот — лише слову, яке стоїть у своєму списку.
         _сл = {w: list(сл) for w, сл in (_тв.get("слоти") or {}).items()
-               if сл and any(w in (в["вето"].get(г) or []) for г in ("кольори", "принти", "тканини"))}
+               if сл and any(w in (в["вето"].get(г) or []) for г in ("кольори", "принти", "тканини", "типи"))}
         if _сл:
             в["вето"]["слоти"] = _сл
     # ── БАЖАННЯ — КОДАМИ, НЕ ФРАЗОЮ КОДУ (аудит/ПРОДУКТ.md п.12) ──────────────────
