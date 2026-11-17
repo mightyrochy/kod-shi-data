@@ -94,6 +94,8 @@ $script:LineTemplates = @(
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$script:SlugCore [A-Z0-9_]{2,40}\z",
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z',
     $script:GpuIdleLineTemplate,
+    $script:PowerOffLineTemplate,
+    $script:PowerOnLineTemplate,
     '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_]+(?:,[A-Z0-9_]+)* (?:20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|-))?\z',
     $script:HoldLineTemplate
 )
@@ -161,6 +163,27 @@ function Add-Line([string]$Line) {
     Write-FileAtomic (Join-Path $OutboxDir "$id.txt") ($Line + "`n")
     Write-Log "рядок $id : $Line"
     $id
+}
+
+function Wait-LineSent([string]$Id, [datetime]$Until, [switch]$FirstPass) {
+    <# Чекає, поки gemini-publish (раз на хвилину) доставить рядок із теки вихідних: стан `o-<id>.json` — sent. З -FirstPass
+    ще й коли перший прохід публікатора вже скінчив спроби (спроби > 0 чи вичерпано) — далі рядок доставляють наступні
+    проходи, а ноутбук без мережі однаково засне. Довше за $Until не чекає: публікатор міг не запуститися. #>
+    $sent = Join-Path (Join-Path $PublishDir 'state') "o-$Id.json"
+    while ($Id -and (Get-Date) -lt $Until) {
+        try {
+            $s = [System.IO.File]::ReadAllText($sent, $script:Utf8) | ConvertFrom-Json
+            if ($s.sent -or ($FirstPass -and ([int](Get-JsonProp $s 'attempts') -gt 0 -or (Get-JsonProp $s 'exhausted') -eq $true))) { return }
+        } catch { $null = $_ }
+        Start-Sleep -Seconds 10
+    }
+}
+
+function Write-PauseLine([string]$Line, [bool]$Wait) {
+    <# Дія планувальника для Send-PauseLine (queue_lanes.ps1): рядок про світло в теку вихідних; «світла нема» ($Wait) —
+    ще й до доставки, межа чекання та сама, що в ВИМКНЕНО (-OffWaitMinutes): обидва рядки чекає той самий публікатор. #>
+    $id = Add-Line $Line
+    if ($Wait -and $id) { Wait-LineSent $id (Get-Date).AddMinutes($OffWaitMinutes) -FirstPass }
 }
 
 # --- позначки -----------------------------------------------------------------------------------------------------
@@ -1500,12 +1523,7 @@ function Invoke-Off($M) {
     $script:Phase = 'вимикаю'
     Update-Status -Force
     # Рядок доставляє gemini-publish (раз на хвилину): вимикаємо після доставки або за -OffWaitMinutes.
-    $sent = Join-Path (Join-Path $PublishDir 'state') "o-$id.json"
-    $until = (Get-Date).AddMinutes($OffWaitMinutes)
-    while ($id -and (Get-Date) -lt $until) {
-        try { if (([System.IO.File]::ReadAllText($sent, $script:Utf8) | ConvertFrom-Json).sent) { break } } catch { $null = $_ }
-        Start-Sleep -Seconds 10
-    }
+    Wait-LineSent $id (Get-Date).AddMinutes($OffWaitMinutes)
     # Власник міг сісти за ноутбук, поки чекали доставку (10.11 — 5 хв між ВИМКНЕНО і shutdown): питаємо ще раз. ВИМКНЕНО
     # вже доставлено, тож рядок OWNER пишемо завжди; стан OFF знімаємо — наступний прохід почне позначку з початку.
     if (Test-OwnerSession) {
@@ -1683,6 +1701,7 @@ function Main {
         $script:Held = @{}
         $first = $true; $clean = $true; $ver = ''
         $script:PauseMachine = $true  # лише планувальник: LM Studio й ComfyUI — того самого користувача, що й claude-run
+        $script:PauseLineAction = { param([string]$Line, [bool]$Wait) Write-PauseLine $Line $Wait }  # і лише він пише рядки про світло
         while ($true) {
             $ver = Get-VersionSwitch
             if ($ver) { Write-VersionSwitch $ver; break }
