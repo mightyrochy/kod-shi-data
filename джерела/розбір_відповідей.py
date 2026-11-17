@@ -169,10 +169,13 @@ import colorspace as _cs
                  без="No reasons: write an «about_items» entry only for the items of «your_declared»."),
         # «against a condition» без умови — сумку, яку стилістка ДОДАЛА, опис
         # прочитав вадою («не поєднується», «потрібно замінити», `swap`); тепер хід несе заяви своєї знахідки
+        # Прогін наряду «причини-за»: «kept the boots anyway for the warmth» без причини «day» при чоботах — чому
+        # річ лишено, модель добудовувала сама; тепер — лише з причин входу
         _ЗП.Поле("your_declared", "items you kept deliberately although the code found something against them: "
                                   "«item» — its «n», «statements» — what the code found, as statement codes",
                  як="this was your choice, not a flaw of the item: never call it a mismatch and never name it "
-                    "in «swap»; in «how_to_wear» say what she does about what the code found"),
+                    "in «swap»; why you kept it — only from its «reasons», without them just that you chose it on "
+                    "purpose; in «how_to_wear» say what she does about what the code found"),
         _ВИМ.поле("she_refuses", як="do not advise an item that breaks it and do not call it a compromise; when such an "
                     "item is in the outfit, tell her so plainly"),
         # Ч-1 (аудит/ПРОДУКТ.md п.12): the code no longer writes this as a sentence — it sends the
@@ -222,8 +225,8 @@ import colorspace as _cs
         # (`поля_виходу`, повтор `ПОВТОР_НЕ_ОПИСАНО_EN`): заборона без зміни вимоги не допомагала (#3717, крок «без опису»)
         "Tell her why an item is here for her only from its «reasons» and «your_declared» — not what it looks like: "
         "she sees it on its photo beside your words. Name an item by its kind so she recognises it. Fit, comfort, "
-        "warmth, grip, steadiness or weather protection of an item is said only when its «reasons» carry it; an item "
-        "without reasons gets no sentence of its own.",
+        "warmth, grip, steadiness, weather protection or what it does for her figure is said only when its «reasons» "
+        "carry it, also as why you kept it; an item without reasons gets no sentence of its own.",
         # 16409: заява, що спирається на обставину, яку код вивів (сіль — з морозу й снігу), стояла під образом як
         # обставина її дня
         "A statement with «day_facts» rests on a circumstance the code inferred, not one she named: say it only as a "
