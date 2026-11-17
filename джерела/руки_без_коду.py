@@ -75,10 +75,11 @@ def головний_колір(вибір):
     о = {"name": (_ВМ.код("color_name", слово) or слово) if слово else _ВМ.UNKNOWN}
     if (вибір or {}).get("база_hex"):
         о["hex"] = вибір["база_hex"]
-    о["chosen_by"] = ("her_item_photo" if вибір.get("база_з_речі")
-                      else "code" if вибір.get("база_за_замовчуванням") else "her")
-    о["source"] = _ПП.походження(_ПП.ТЛУМАЧЕННЯ if вибір.get("база_з_речі")
-                                 else _ПП.ТИПОВЕ if вибір.get("база_за_замовчуванням") else _ПП.РУКА)
+    # хто обрав — одне місце, закрите за замовчуванням (`паспорт_поля.автор_палітри`): основа без позначки коду й без
+    # запису її дії — «unknown», а не її рука (п.7)
+    автор = _ПП.автор_палітри(вибір, "base")
+    о["chosen_by"] = "code" if автор == "code_rank" else автор
+    о["source"] = _ПП.походження_автора(автор)
     return о
 
 
@@ -153,8 +154,9 @@ def її_речі(речі_паспорта, без_кадрів=False):
                                   "(standing out), fashion_forward (a bold fashion look, at least two sources of "
                                   "interest), editorial (an editorial construction, at least one source of "
                                   "interest); count limits do not apply to fashion_forward or editorial"),
-        _ЗП.Поле("main_color", "the main color: chosen_by her, code (default), or her_item_photo (model's "
-                               "reading of an item photo); source carries its kind",
+        _ЗП.Поле("main_color", "the main color: chosen_by her, conversation (she asked for it in the chat), "
+                               "code (default), her_item_photo (model's reading of an item photo) or unknown (who chose "
+                               "it is not recorded); source carries its kind",
                  як="build the outfit around it"),
         _ЗП.Поле("her_items", "her own items; \"photo\": true — also on the attached photos",
                  як="they stay in the outfit as they are: build the rest around them, add nothing that "
