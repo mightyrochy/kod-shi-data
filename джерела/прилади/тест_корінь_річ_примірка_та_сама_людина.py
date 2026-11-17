@@ -298,7 +298,13 @@ class Прилад(unittest.TestCase):
                     'draw(position(button));\n'
                     "const img=document.createElement('img');img.src=cards[0].picture;\n"
                     'document.body.appendChild(img);')}, 1)
-                self.перевірити({'а.js': f'judge({перетворення}(generate_image()));'}, 0)
+                self.перевірити({'а.js': (
+                    'const image=generate_image();'
+                    f'judge({перетворення}(image.width));')}, 0)
+                self.перевірити({'а.js': (
+                    "const ctx=document.createElement('canvas').getContext('2d');\n"
+                    'ctx.drawImage(generate_image(),0,0);\n'
+                    f'judge({перетворення}(ctx.getImageData(0,0,1,1).data[0]));')}, 1)
 
     def test_показ_за_ключами_стану(self):
         """Малювач читає позиції зі стану через Proxy, заморожування й Object.keys."""
