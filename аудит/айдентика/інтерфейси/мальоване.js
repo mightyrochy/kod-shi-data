@@ -1,7 +1,13 @@
 /* «Мальоване люстерко»: сцени прототипу. Вміст — вміст.js (та сама Оксана, ті самі речі каталогу),
-   малюнок — кахля.js, написи — написи.js, рушій сцен — рух.js. На людях нічого не перевірено. */
+   малюнок — кахля.js, написи — написи.js, рушій сцен — рух.js, теми — теми.js. На людях нічого не перевірено. */
 (function () {
-  var V = window.ВМІСТ, K = window.КАХЛЯ, R = V.rechi, N = window.НАПИС, B = K.BARVY, taj = [];
+  var V = window.ВМІСТ, K = window.КАХЛЯ, R = V.rechi, N = window.НАПИС, B = K.BARVY, taj = [], TM = window.ТЕМА;
+  /* тема міняє руку, барви й слова про ремесло (теми.js); каркас сцен від неї не залежить */
+  var SLOVA = { pidpys: 'Малюнок свій, рукою косівської кахлі. Квіти — з кахлі Петра Кошака, 1911', poklychu: 'покличу, коли домалюю', hotovo: 'Домалювала й випалила. Образ — на лиці.',
+    nedo: 'Не домалювала', shche: 'Домалювати ще раз', pusto: 'Піч ще холодна', pustoT: 'Кожен образ, який ти збережеш, ляже сюди кахлею — зі знаком із барв його речей і датою.',
+    pich: 'Кахля за кожен образ: пелюстки — барви його речей. Вдягла — торкнись «ще не вдягала», і вінець поллється.' };
+  function sl(k) { return (K.slova && K.slova[k]) || SLOVA[k]; }
+  if (TM) { TM.pochaty(); TM.koly(function (t) { K = t; B = t.BARVY; N = t.napys || window.НАПИС; }); }
   var ad = decodeURIComponent(location.search), krokZ = (/крок=(\d)/.exec(ad) || [])[1];
   if (/безслів/.test(ad)) document.documentElement.classList.add('bezsliv');
   var TYHO = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -42,7 +48,7 @@
       var w = el.offsetWidth, h = el.offsetHeight; if (w) el.insertAdjacentHTML('afterbegin', K.plama(w, h, el.getAttribute('data-pol'), i + 2));
     });
   }
-  if (!document.getElementById('fpS')) document.body.insertAdjacentHTML('afterbegin', K.spilni());
+  if (!TM && !document.getElementById('fpS')) document.body.insertAdjacentHTML('afterbegin', K.spilni());
   function dija(h, kl) { return '<div class="dija' + (kl ? ' ' + kl : '') + '">' + h + '</div>'; }
 
   /* ───── голоси ───── */
@@ -116,10 +122,10 @@
   window.СЦЕНИ = [
     { id: 'pochatok', nazva: 'Початок: зворот люстерка', html: function () {
       taj.forEach(clearTimeout); taj = []; window._bik = 'zvorot';
-      return '<div class="poch"><div class="mal">' + mal({ id: 'p', anim: 1, klas: 'chek' }) + '</div>' +
+      return '<div class="poch">' + (TM ? TM.vybir('kr') : '') + '<div class="mal">' + mal({ id: 'p', anim: 1, klas: 'chek' }) + '</div>' +
         '<div class="sl">' + N('ЛЮСТЕРКО', 37) + '<p class="zakl">Скажи, куди збираєшся. Зберу образ із речей українських крамниць — і скажу чесно, чи до лиця.</p>' +
         '<div class="nyz"><button type="button" class="kn" data-dali>Почнімо</button><a class="tyh" data-scena-do="porozhnio">Вже була тут — мої образи</a>' +
-        '<p class="pid">Малюнок свій, рукою косівської кахлі. Квіти — з кахлі Петра Кошака, 1911</p></div></div></div>';
+        '<p class="pid">' + sl('pidpys') + '</p></div></div></div>';
     }, pislja: function (k) { /* люстерко відповідає: праворуч з’являється відбиття — лінією, потім вбирається: сукня й пальто, черевики й сумка, палантин і сережка, квітка */
       var svg = k.querySelector('.chek');
       if (krokZ || TYHO) { svg.setAttribute('class', svg.getAttribute('class') + ' bezruhu k1 k2 k3 k4 k5 vypal'); return; }
@@ -140,6 +146,7 @@
         '<div class="dvafoto"><figure><img src="' + v.portret + '" alt="Портрет Оксани"><figcaption>портрет <button type="button">змінити</button></figcaption></figure>' +
         '<figure><img src="' + v.zrist + '" alt="Оксана на повен зріст"><figcaption>на повен зріст <button type="button">змінити</button></figcaption></figure></div>' +
         '<p class="obkh"><span class="dr">обхвати, зріст</span>' + v.obkhvaty.replace(', зріст', ' ·') + '<button type="button">виправити</button></p>' +
+        (TM && TM.vybir('kartky') ? '<div class="tvoje"><span class="dr">твоє люстерко — рука й барви на твій смак, решта та сама</span>' + TM.vybir('kartky') + '</div>' : '') +
         dija('<button type="button" class="kn" data-dali>Так, це я</button>'));
     } },
 
@@ -195,7 +202,7 @@
         '<p class="krok-n dr" aria-hidden="true"></p><p class="krok-t" aria-live="polite"></p><p class="krok-f dr"></p>' +
         '<div class="znajd">' + V.obraz.rechi.map(function (k) { return '<span class="m6" data-k="' + k + '">' + foto(k) + '</span>'; }).join('') + '</div>' +
         '<button type="button" class="kn hotovo" data-dali hidden>Обернути на лице</button>' +
-        '<div class="chekaty"><p class="dr">Збирання триває дві–п’ять хвилин (тут пришвидшено). Можна згорнути — покличу, коли домалюю.</p>' +
+        '<div class="chekaty"><p class="dr">Збирання триває дві–п’ять хвилин (тут пришвидшено). Можна згорнути — ' + sl('poklychu') + '.</p>' +
         '<button type="button" class="kn lin mala" aria-pressed="true" data-pol="zhov">Покликати мене</button></div>',
         lyceMisce(1), 'rozmova');
     }, pislja: function (k) {
@@ -207,7 +214,7 @@
         if (n >= 6) svg.classList.add('vypal');
         for (j = 1; j <= 5; j++) h += '<i' + (j <= n ? ' class="je"' : '') + '></i>';
         k.querySelector('.krok-n').innerHTML = h + '<span>' + (n >= 6 ? 'готово' : 'крок ' + Math.max(1, n) + ' з 5') + '</span>';
-        k.querySelector('.krok-t').textContent = n >= 6 ? 'Домалювала й випалила. Образ — на лиці.' : kr[0];
+        k.querySelector('.krok-t').textContent = n >= 6 ? sl('hotovo') : kr[0];
         k.querySelector('.krok-f').textContent = n >= 6 ? 'шість речей із шести крамниць' : kr[1];
         hto.slice(0, Math.max(0, Math.min(n, 4) - 1)).forEach(function (a) { a.forEach(function (x) { [].forEach.call(k.querySelectorAll('[data-k="' + x + '"]'), function (e) { e.classList.add('je'); }); }); });
         k.querySelector('.hotovo').hidden = n < 6; k.querySelector('.chekaty').hidden = n >= 6;
@@ -271,7 +278,7 @@
       return arkush('zvorot',
         '<div class="pich-v">' + N('МОЇ ОБРАЗИ', 20) + '<span class="dr lich">' + m.length + ' образи · ' + vd + ' вдягала</span></div>' +
         '<div class="pich">' + m.map(kahlja).join('') + '<a class="kl pusta" data-scena-do="rozmova"><i>+</i>новий образ</a></div>' +
-        '<p class="dr">Кахля за кожен образ: пелюстки — барви його речей. Вдягла — торкнись «ще не вдягала», і вінець поллється.</p>',
+        '<p class="dr">' + sl('pich') + '</p>',
         '<div class="lsh">' + obraz({ n: 1, nazva: V.nahoda.nazva, pro: NAH, rechi: PISLJA, slova: V.sumniv.vidpovid, svoje: 'palt', kudy: kudy }) + '</div>', 'moji');
     }, pislja: function (k) { /* вдягла — вінець поливається жовтим; не вдягала — лишається лінією */
       var m = V.moji, lich = k.querySelector('.lich');
@@ -300,9 +307,9 @@
       var c = V.chekannja.kroky;
       return arkush('zvorot',
         '<div class="chek-m">' + K.malyunok({ l: 0, p: 0, v: 0, anim: 1, id: 'e', klas: 'pom', kv: { v: { pol: 0, sklo: 1 }, l: { pol: 0 }, p: { pol: 0 } }, pidpys: 'Відбиття лишилось перерваною лінією' }) + '</div>' +
-        '<h2>Не домалювала</h2><p class="slova">' + V.pomylka + '</p>' +
+        '<h2>' + sl('nedo') + '</h2><p class="slova">' + V.pomylka + '</p>' +
         '<ul class="kroky"><li class="je">' + c[0][0] + '</li><li class="je">' + c[1][0] + '</li><li class="tut">Тут урвалось: дві крамниці не відповіли за хвилину</li></ul>' +
-        '<div class="dii st"><button type="button" class="kn" data-scena-do="chekannja">Домалювати ще раз</button><button type="button" class="kn lin" data-scena-do="zrozumila">Змінити щось у розмові</button></div>',
+        '<div class="dii st"><button type="button" class="kn" data-scena-do="chekannja">' + sl('shche') + '</button><button type="button" class="kn lin" data-scena-do="zrozumila">Змінити щось у розмові</button></div>',
         lyceMisce(), 'rozmova');
     } },
 
@@ -311,7 +318,7 @@
         '<div class="pich-v">' + N('МОЇ ОБРАЗИ', 20) + '<span class="dr">поки жодного</span></div>' +
         '<div class="pich"><div class="kl mal-k">' + K.malyunok({ je: { l: 1, v: 1 }, l: 0, v: 0, kv: { l: null, v: { pol: 0, sklo: 1 } }, bez: { vnutr: 1 }, vb: [60, 70, 570, 600], id: 'pp', tov: 7, tovst: 14, filtry: false, pidpys: 'Жінка перед люстерком — лінією, ще без поливи' }) + '</div>' +
         '<a class="kl pusta" data-scena-do="znajomstvo"><i>+</i>перший образ</a><div class="kl pusta"></div><div class="kl pusta"></div></div>' +
-        '<h2>Піч ще холодна</h2><p class="slova">Кожен образ, який ти збережеш, ляже сюди кахлею — зі знаком із барв його речей і датою.</p>' +
+        '<h2>' + sl('pusto') + '</h2><p class="slova">' + sl('pustoT') + '</p>' +
         '<button type="button" class="kn" data-scena-do="znajomstvo">Зібрати перший</button>', lyceMisce(), 'moji');
     } }
   ];
