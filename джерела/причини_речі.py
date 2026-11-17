@@ -107,13 +107,19 @@ def адресати(речі_запису, заяви, речі):
         if x in склад:
             вих.append(x)
             continue
-        за_назвою = [і for і, р in склад.items() if р.get("назва") and str(р["назва"]) == x]
+        за_назвою = [і for і, р in склад.items() if x in (str(р.get("назва") or ""), str(р.get("назва_показу") or ""))
+                     and x]
         за_слотом = [і for і, р in склад.items() if р.get("слот") == x]
         if len(за_назвою) == 1:
             вих.append(за_назвою[0])
         elif len(за_слотом) == 1:
             вих.append(за_слотом[0])
     return list(dict.fromkeys(вих))
+
+
+def _журналу(з):
+    """Заява для журналу (адресат `journal` у самій заяві чи в `МЕТАДАНІ_ЗАЯВ`) — не для неї й не для моделі."""
+    return (з.get("recipient") or (_ВМ.МЕТАДАНІ_ЗАЯВ.get(з.get("code")) or {}).get("recipient")) == "journal"
 
 
 def заяви_за_слотом(заяви, ід_ходу, речі):
@@ -124,7 +130,7 @@ def заяви_за_слотом(заяви, ід_ходу, речі):
     for з in заяви or []:
         if not isinstance(з, dict) or not з.get("code"):
             continue
-        if (з.get("recipient") or (_ВМ.МЕТАДАНІ_ЗАЯВ.get(з["code"]) or {}).get("recipient")) == "journal":
+        if _журналу(з):
             continue
         свої = [і for і in _ід_заяви(з) if і in вих]
         if not свої:
@@ -201,7 +207,10 @@ def причини(речі, *, день=None, тіло=None, намір=None, �
         рв = _рівень(р)
         if нагода and рв and рв[0] is not None and нагода.get("from") is not None \
                 and рв[0] <= нагода.get("to", нагода["from"]) and рв[1] >= нагода["from"]:
-            вих.append(dict(item_id=ід, about="occasion", what="item_level_within_occasion_level", sure="yes"))
+            # рівень нагоди код виводить з її слів (місце, подія) — джерело йде поруч (`provenance.formality`)
+            вих.append(dict(item_id=ід, about="occasion", what="item_level_within_occasion_level",
+                            occasion_level_from=(день.get("provenance") or {}).get("formality") or "unknown",
+                            sure="yes"))
         if дуга.get(ід) is True:
             джерело = _джерело_кольору(р)
             вих.append(dict(item_id=ід, about="palette", what="colour_inside_her_palette", colour_from=джерело,
@@ -224,14 +233,16 @@ def причини(речі, *, день=None, тіло=None, намір=None, �
     for з_суду in суд.get("знахідки") or []:
         if not isinstance(з_суду, dict):
             continue
-        заяви = [з for з in (з_суду.get("заяви") or []) if isinstance(з, dict) and з.get("code") in ЗА_РІЧ]
+        заяви = [з for з in (з_суду.get("заяви") or []) if isinstance(з, dict) and з.get("code") in ЗА_РІЧ
+                 and not _журналу(з)]
         for і in (адресати(з_суду.get("речі"), заяви, склад) if заяви else []):
             додати(за.setdefault(і, []), заяви)
     for п in суд.get("питання") or []:
         пов = (п or {}).get("повідомлення") or {}
         if not isinstance(п, dict) or пов.get("kind") != "card_unchecked":
             continue
-        заяви = [з for з in (пов.get("statements") or []) if isinstance(з, dict) and з.get("code") in НЕ_ЗНАЮ_ПРО_РІЧ]
+        заяви = [з for з in (пов.get("statements") or []) if isinstance(з, dict) and з.get("code") in НЕ_ЗНАЮ_ПРО_РІЧ
+                 and not _журналу(з)]
         for і in (адресати(п.get("речі"), заяви, склад) if заяви else []):
             додати(не_знаю.setdefault(і, []), заяви)
     for і, заяви in за.items():
