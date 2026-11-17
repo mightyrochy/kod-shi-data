@@ -348,10 +348,13 @@ def осі(зона, рч=None):
         # підошва: коди картки й основа зі слів картки про підошву — одним переліком (`пара_взуття.підошва`)
         коди = _ПАРА.підошва(р)[0]
         вих["sole"] = _коди(коди) if коди else _невідомо(р, "підошва")
-        # висота платформи чи підошви словом крамниці (дошка 16174): ключ — лише коли картка її називає
+        # платформа — ознака підошви, не каблук (рішення 17.11): висота словом крамниці (дошка 16174), а без висоти —
+        # що картка платформу назвала; ключ — лише коли картка її називає
         пл = _ПАРА.платформа(р)
-        if пл:
+        if пл and пл.get("shop"):
             вих["platform_height" if пл["of"] == "platform" else "sole_height"] = пл["shop"]
+        elif пл:
+            вих["platform"] = "yes"
         # нових ключів, яких картка не називає, у рядку нема (шапка каже: нема ключа — `unknown`): `unknown` на кожній
         # парі пулу коштував би ~2–3 % входу (повтор записаних входів, лічба п.7)
         if р.get("сезон_пари"):
@@ -518,6 +521,7 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
     "heel_cm": "heel height in cm as the shop gives it: one number, or the shop's band [from, to], null — the side "
                "the band leaves open",
     "sole": "the sole's material or form as the shop names it",
+    "platform": "yes — the shop names a platform sole (a sole, not a heel); its height is not named",
     "platform_height": "the platform's height in the shop's own words",
     "sole_height": "the sole's height in the shop's own words",
     "wear_season": "seasons the shop names for wearing the pair; *_collection — only the collection's season is named",
