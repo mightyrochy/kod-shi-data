@@ -7,7 +7,6 @@ import csv
 import hashlib
 import io
 import json
-import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -123,6 +122,8 @@ def прогнати(набір, номер):
             події_рушія = [json.loads(р) for р in файл.read_text(encoding='utf-8').splitlines()]
             результат['події_лічильника'] = [п for п in події_рушія if п.get('type') == 'event_msg'
                  and п['payload'].get('type') == 'token_count']
+            контекст = next(п['payload'] for п in події_рушія if п.get('type') == 'turn_context')
+            результат['контекст_рушія'] = {к: контекст.get(к) for к in ['model', 'effort']}
     результат['виклики_інструментів'] = [п for п in події if п.get('item', {}).get('type')
                                         in ('command_execution', 'mcp_tool_call', 'web_search')]
     записати(вихід, результат)
