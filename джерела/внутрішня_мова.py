@@ -1850,6 +1850,15 @@ def _опис_keep_by():
                                            "did not check it against the limit for a comfortable outing (values: item — the item: item_id, kind and colour codes; item_id)",
     "heel_height_unknown_wear_cost": "the pair has a heel, but the card does not say its height, so the code does not "
                                      "count the wearing cost for the feet (values: item — the item: item_id, kind and colour codes; item_id)",
+    # каблук без числа, але зі словом крамниці (вид, клас, смуга фільтра): суд називає слово, а не «висота невідома»
+    # (Річ-запис-речі п.7; меж класу в см база знань не має — слово порога не доводить)
+    "heel_named_comfort_ceiling": "the shop names the pair's heel in words, not in cm, so the code did not check it "
+                                  "against the limit for a comfortable outing (values: item — the item: item_id, kind "
+                                  "and colour codes; item_id; heel_shape, heel_level — the shop's codes; band — the "
+                                  "shop's band words)",
+    "heel_named_wear_cost": "the shop names the pair's heel in words, not in cm, so the code does not count the "
+                            "wearing cost for the feet (values: item — the item: item_id, kind and colour codes; "
+                            "item_id; heel_shape, heel_level — the shop's codes; band — the shop's band words)",
     "wear_cost_no_duration_surface": "the code does not count the wearing cost for the feet: it is unknown "
                                      "how many hours and on what she will walk",
     # поверхню вона назвала, часу на ногах — ні: умовної години код не бере (дошка 16198)
