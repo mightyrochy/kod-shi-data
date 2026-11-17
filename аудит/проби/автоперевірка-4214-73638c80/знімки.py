@@ -16,10 +16,14 @@ root = Path(sys.argv[1]).resolve()
 artifact = Path(__file__).resolve().parent
 after = json.loads((artifact / 'ПІСЛЯ.json').read_text(encoding='utf-8'))
 pair = after['пара']
-request = urllib.request.Request(pair['фото'][0], headers={'User-Agent': 'Mozilla/5.0'})
-with urllib.request.urlopen(request, timeout=30) as response:
-    photo_bytes = response.read()
-    mime = response.headers.get_content_type()
+cached_photo = artifact / 'фото-речі.jpg'
+if cached_photo.exists():
+    photo_bytes, mime = cached_photo.read_bytes(), 'image/jpeg'
+else:
+    request = urllib.request.Request(pair['фото'][0], headers={'User-Agent': 'Mozilla/5.0'})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        photo_bytes = response.read()
+        mime = response.headers.get_content_type()
 photo = 'data:' + mime + ';base64,' + base64.b64encode(photo_bytes).decode()
 (artifact / 'фото-речі.jpg').write_bytes(photo_bytes)
 logs = []
@@ -68,7 +72,7 @@ fs.writeFileSync('перевірка-4214.html', h.підставитиШабл�
           рендер();
         }""", packet)
         for index in range(2):
-            page.evaluate('(i) => показатиОбраз(i)', index)
+            page.evaluate("(i) => { режим('образи'); показатиОбраз(i); }", index)
             page.locator(f'#к-{index} details.питання-коду').evaluate_all('(nodes) => nodes.forEach(n => n.open = true)')
             page.locator(f'#к-{index}').scroll_into_view_if_needed()
             page.screenshot(path=str(artifact / f'{label}-рука-{index+1}-390x844.png'), animations='disabled')
@@ -76,6 +80,10 @@ fs.writeFileSync('перевірка-4214.html', h.підставитиШабл�
                 page.locator('#к-0').screenshot(path=str(artifact / f'{label}-рука-повна.png'), animations='disabled')
         page.evaluate("""(args) => {
           const [card, photo] = args;
+          мовоюП = async (texts) => {
+            ВХОДИ_ПЕРЕВІРКИ.push({evaluation: texts});
+            throw new Error('контроль без живої моделі');
+          };
           ОЦ.результат = {картка: card}; ОЦ.перелік = {так: true};
           ОЦ.фото = [{дані: photo.split(',')[1], тип: 'image/jpeg'}];
           Екран.змінити({режим: 'оцінка', вхід: Екран.стан.вхід + 1});
@@ -85,11 +93,7 @@ fs.writeFileSync('перевірка-4214.html', h.підставитиШабл�
         page.locator('#оц-картка').evaluate('(node) => window.scrollTo(0, node.getBoundingClientRect().top + window.scrollY)')
         page.screenshot(path=str(artifact / f'{label}-оцінка-390x844.png'), animations='disabled')
         page.locator('#оц-картка').screenshot(path=str(artifact / f'{label}-оцінка-повна.png'), animations='disabled')
-        # Відтворюємо збій шару, залишаючи штатний механізм очищення текстів.
-        page.evaluate("""() => { мовоюКарткуОцінкиП = async (card) => {
-          ВХОДИ_ПЕРЕВІРКИ.push({evaluation: card.не_знаю});
-          throw new Error('контроль без живої моделі');
-        }; }""")
+        # Зовнішній виклик уже заглушений; підготовка текстів і очищення — штатні.
         page.evaluate('async () => { await невідомеОцінкиСловамиП(ОЦ.результат.картка, {мова_шару: []}); }')
         logs.append(dict(дерево=directory, FOTO=os.environ.get('FOTO'), viewport='390x844',
                          входи=page.evaluate('ВХОДИ_ПЕРЕВІРКИ'), помилки=errors,
