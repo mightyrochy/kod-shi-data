@@ -651,6 +651,7 @@ function Remove-FinishedMarkers([datetime]$Since) {
         }
         $d = Invoke-Git @('push', '-q', '--no-verify', "--force-with-lease=${ref}:$($p[1])", 'origin', ":$ref") -AllowFail
         if ($d.Code -ne 0) { Write-WrapperLog "черга: $($p[0]) не знято ($($d.Err.Trim())) — повтор наступним проходом"; continue }
+        Set-QueueTracking $p[0]
         Remove-Item -LiteralPath $f.FullName -Force
         Write-WrapperLog "черга: $($p[0]) знято — кінцевий стан опубліковано"
     }

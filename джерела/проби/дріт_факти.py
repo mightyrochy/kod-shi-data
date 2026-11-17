@@ -8,7 +8,7 @@
 число. `СВІДОМО` — що не йде навмисно, з причиною (друкується поруч із лічбою)."""
 import glob, gzip, json, os, re, sys
 К = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."); sys.path.insert(0, К)
-import внутрішня_мова as ВМ, дріт_моделі as Д, протокол as П
+import внутрішня_мова as ВМ, дріт_моделі as Д, протокол as П, пара_взуття as ПАРА
 Т = None
 if os.environ.get("GEMMA_TOKENIZER"):
     from tokenizers import Tokenizer; Т = Tokenizer.from_file(os.environ["GEMMA_TOKENIZER"])
@@ -67,8 +67,8 @@ def з_осями(x):
             т = str(x.get("каблук") or "")
             if т:
                 о["heel"] = КАБЛУК.get(т, "yes")
-                о.update({к: Д._КАБЛУК_ФОРМА[w] for к, w in (("heel_shape", "тонкий"), ("heel_shape", "товстий")) if w in т})
-                о.update({к: Д._КАБЛУК_ВИСОТА[w] for к, w in (("heel_height", "високий"), ("heel_height", "низький")) if w in т})
+                о.update({к: ПАРА.ВИД_З_НАЗВИ[w] for к, w in (("heel_shape", "тонкий"), ("heel_shape", "товстий")) if w in т})
+                о.update({к: ПАРА.КЛАС_З_НАЗВИ[w] for к, w in (("heel_height", "високий"), ("heel_height", "низький")) if w in т})
         return в
     return [з_осями(v) for v in x] if isinstance(x, list) else x
 
