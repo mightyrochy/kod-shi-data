@@ -233,6 +233,16 @@ def записи_історії(тека, прилад, від, зараз):
     _коміт(тека, файли2, "Е1 перенесений (#19)", "2026-11-06T17:50:00Z")
     ран2 = прилад.прогнані_записами("main", ["Е1-нічний-живий-20261105"])
     перевірити("перенесений запис — за походження.json", sorted(ран2) == ["11|ж1_а_б"])
+    # Хмарний прогін — тека `Тестовий-прогін-хмара-*` у main, журнал хмарного драйвера (rc, секунд) без відмов; та сама
+    # пара в Е1-20261106 має відмову сцени — прогнаною її робить лише хмарна тека.
+    д3 = "аудит/проби/Тестовий-прогін-хмара-1106"
+    файли3 = {д3 + "/ПЛАН.json": json.dumps({"build": код, "scenes": {"ж2_в": [{"pr": 10, "question": "q"}]}}),
+              д3 + "/done.txt": json.dumps({"сцена": "ж2_в", "rc": 0, "секунд": 300}, ensure_ascii=False) + "\n"}
+    файли3.update(запис_сцени(д3 + "/ж2_в", код))
+    _коміт(тека, файли3, "Хмарний прогін (#21)", "2026-11-06T17:55:00Z")
+    ран3 = прилад.прогнані_записами("main")
+    перевірити("хмарна тека: пара її плану прогнана, звіт — назва теки",
+               ран3.get("10|ж2_в") == [{"sha": код, "звіт": "Тестовий-прогін-хмара-1106"}])
     паритет_записів(тека, "HEAD", "штучна історія")
 
 
@@ -289,7 +299,8 @@ $reports = @(); $i = 0
 foreach ($dir in @(ConvertFrom-Json ([IO.File]::ReadAllText($DirsPath, $utf)))) {
     $i++; $reports += @([pscustomobject]@{number=$i; head=@{ref=('claude/' + $dir); sha=$Head}})
 }
-$ran = Get-AutoRanPairs $reports ([datetimeoffset]::MinValue)
+# Хмарні теки обгортка читає з дерева збірки плану (-Tree), а не зі звітів.
+$ran = Get-AutoRanPairs $reports ([datetimeoffset]::MinValue) $Head
 $lines = New-Object 'System.Collections.Generic.List[string]'
 foreach ($key in @($ran.Keys | Sort-Object)) { $lines.Add($key + "`t" + ((@($ran[$key] | ForEach-Object { $_.sha }) | Sort-Object) -join ',')) }
 [IO.File]::WriteAllLines($OutPath, $lines, $utf)
@@ -306,7 +317,9 @@ def паритет_записів(тека, голова, назва):
         return
     дерево = прилад._текст(прилад.git("-C", тека, "ls-tree", "-r", "--name-only", голова, "--", "аудит/проби").stdout)
     теки = sorted({ш.split("/")[2] for ш in дерево.splitlines() if ш.count("/") >= 3 and ш.split("/")[2]
-                   and прилад.ТЕКА_ЗВІТУ.match(ш.split("/")[2])})
+                   and (прилад.ТЕКА_ЗВІТУ.match(ш.split("/")[2]) or прилад.ТЕКА_ХМАРИ.match(ш.split("/")[2]))})
+    # Звітами PowerShell отримує лише теки автоживого й Е1; хмарні він знаходить сам у дереві голови.
+    звіти = [т for т in теки if прилад.ТЕКА_ЗВІТУ.match(т)]
     стара = os.getcwd()
     тимч = tempfile.mkdtemp(prefix="паритет-записів-")
     try:
@@ -314,7 +327,7 @@ def паритет_записів(тека, голова, назва):
         with open(скрипт, "w", encoding="utf-8-sig") as ф:
             ф.write(PS_ЗАПИСИ)
         with open(вхід, "w", encoding="utf-8") as ф:
-            json.dump(теки, ф, ensure_ascii=False)
+            json.dump(звіти, ф, ensure_ascii=False)
         sha = прилад._текст(прилад.git("-C", тека, "rev-parse", голова).stdout).strip()
         готово = subprocess.run([pwsh, "-NoProfile", "-NonInteractive", "-File", скрипт, "-Source",
                                  os.path.join(КОРІНЬ, "аудит/адаптери/gemini/queue_lanes.ps1"), "-Repo", тека, "-Head", sha,
@@ -331,7 +344,7 @@ def паритет_записів(тека, голова, назва):
         os.chdir(тека)
         мої = {к: sorted(з["sha"] for з in v) for к, v in прилад.прогнані_записами(sha, теки).items()}
         os.chdir(стара)
-        перевірити(f"паритет Get-AutoRanPairs ({назва}): звітів {len(теки)}, пар {len(очікувано)}, моїх {len(мої)}",
+        перевірити(f"паритет Get-AutoRanPairs ({назва}): тек {len(теки)}, пар {len(очікувано)}, моїх {len(мої)}",
                    {к: sorted(v) for к, v in очікувано.items()} == мої)
     finally:
         os.chdir(стара)

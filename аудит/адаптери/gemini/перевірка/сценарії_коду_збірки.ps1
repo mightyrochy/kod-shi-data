@@ -49,6 +49,19 @@ try {
         <# Реальні Git refs відокремленого origin, а не лічильник викликів функції. #>
         @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/ | Where-Object { $_ -match $Pattern })
     }
+    function Finish-Lane([string]$Stamp) {
+        <# Смуга, що скінчила позначку, пише її стан (DONE) до рядка кінця, а ref знімає пізніше: жива позначка штампу
+        (перенесення між рушіями) кінця не дає (`Get-LiveCompletion`). #>
+        foreach ($ref in @(Markers "автоживий-$Stamp/")) {
+            $name = $ref.Substring('refs/heads/'.Length)
+            $sha = (& git -C $remote rev-parse $ref).Trim()
+            $cc = ($name -split '/')[2] -cmatch '^cc-'
+            $dir = $(if ($cc) { "$tmp/claude-run/state" } else { Join-Path $OutDir 'marker-state' })
+            [void][IO.Directory]::CreateDirectory($dir)
+            if (-not $cc) { Write-FileAtomic (Join-Path $dir 'ready') '1' }
+            Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "refs/remotes/origin/$name $sha") + '.txt')) 'DONE стенд DONE'
+        }
+    }
     function Merge([string]$Path, [string]$Text) {
         <# Створює наступний main і отримує його справжнім fetch. #>
         [IO.File]::WriteAllText((Join-Path $seed $Path), $Text, $utf)
@@ -106,6 +119,7 @@ Invoke-WrapperChain
         $script:Ready = $true; Invoke-WrapperChain
         Check 'активний прогін не породжує наступної позначки' (@(Markers 'автоживий-').Count -eq 1)
         [void][IO.Directory]::CreateDirectory((Join-Path $WorkDir 'state'))
+        Finish-Lane $product
         Write-FileAtomic (Join-Path $WorkDir 'state/report.json') ((@{slug="автоживий-$product";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$product $built"}) | ConvertTo-Json)
         Invoke-WrapperChain
         Check 'після звіту лише останній штамп має позначку на коміті своєї збірки' (@(Markers 'автоживий-').Count -eq 2 -and @(Markers "автоживий-$second/").Count -eq 0 -and (& git -C $remote rev-parse @(Markers "автоживий-$third/")[0]).Trim() -ceq $thirdBuild)
