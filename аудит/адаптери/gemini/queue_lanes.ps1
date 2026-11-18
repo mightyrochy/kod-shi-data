@@ -2882,6 +2882,8 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     if (-not $Path) { $Path = Join-Path $script:StateDir 'gpu-watch.json' }
     if (-not $VerdictPath) { $VerdictPath = Join-Path $LaneDir 'gpu-stall.json' }
     if ($null -eq $Now) { $Now = [datetime]::UtcNow }
+    # Вік chat-запиту ($Sample.CallAgeMin) виміряно на цю мить; час запиту — абсолютний, бо $Now нижче може відступити до read_utc.
+    $measuredAt = $Now
     $h = @($Holders | Where-Object { $_ -and [string]$_.Marker } | Select-Object -First 1)
     if ($h.Count -eq 0) {
         Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
@@ -2894,8 +2896,9 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     $st = $null
     if (Test-Path -LiteralPath $Path) { try { $st = [System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
     if ($null -ne $st) { $st = ConvertTo-PlainJson $st }
-    if ($null -eq $st -or [string](Get-JsonProp $st 'marker') -cne $marker) {
-        $since = [string]$h[0].Since
+    # Ряд — за замок: позначка й початок замка. Повтор тієї самої позначки (повтор після сну чи квоти) — новий замок, лічба з нуля.
+    $since = [string]$h[0].Since
+    if ($null -eq $st -or [string](Get-JsonProp $st 'marker') -cne $marker -or ($since -cmatch $rx -and [string](Get-JsonProp $st 'lock_since') -cne $since)) {
         $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = ''; last_at = ''; sleep_min = 0; idle_unknown = 0; prev_known = 1; nocall_min = 0 }
     }
     foreach ($n in @('last_at', 'sleep_min', 'idle_unknown', 'prev_known', 'nocall_min')) { if ($null -eq $st.PSObject.Properties[$n]) { Add-Member -InputObject $st -NotePropertyName $n -NotePropertyValue $(if ($n -eq 'last_at') { '' } elseif ($n -eq 'prev_known') { 1 } else { 0 }) } }
@@ -2938,7 +2941,8 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     if (-not $stale -and $callAge -ge 0) {
         $onBattery = ($null -ne $Sample.PSObject.Properties['OnBattery'] -and [bool]$Sample.OnBattery)
         $awakeIv = $(if ($onBattery) { 0 } else { [Math]::Max(0, $interval - $sleptIv) })
-        if ($null -ne $lastAt -and $Now.AddMinutes(-$callAge) -gt $lastAt) { $st.nocall_min = [Math]::Min($awakeIv, [double]$callAge) }
+        $callAt = $measuredAt.AddMinutes(-$callAge)
+        if ($null -ne $lastAt -and $callAt -gt $lastAt) { $st.nocall_min = [Math]::Min($awakeIv, [Math]::Max(0, ($Now - $callAt).TotalMinutes)) }
         else { $st.nocall_min = [double]$st.nocall_min + $awakeIv }
     }
     if (-not $stale) { $st.last_at = Get-UtcStamp $Now; $st.prev_known = $(if ($pct -ge 0) { 1 } else { 0 }) }

@@ -1180,6 +1180,7 @@ $script:CauseOfCode = @{
     MODEL_INVALID = 'умови наряду'; EFFORT_INVALID = 'умови наряду'; PLAN_WAIT = 'умови наряду'
     INTERRUPTED = 'ноутбук і обгортка'; CRASH = 'ноутбук і обгортка'; ENGINE_MISSING = 'ноутбук і обгортка'
     AUTH = 'ноутбук і обгортка'; REVIEW_API = 'ноутбук і обгортка'; COPY_FAILED = 'ноутбук і обгортка'
+    RECORD_FAILED = 'ноутбук і обгортка'
 }
 
 function Get-BootUtc {
@@ -1560,30 +1561,37 @@ function Close-CancelledMarker($M, $Workers) {
 function Save-RunRecord([string]$Repo, [string]$Slug, [string]$Code) {
     <# Записане зупиненим прогоном у `аудит/проби/<наряд>/`, ще не закомічене (запускач плану автоживого комітить лише після
     всіх сцен), — один коміт обгортки на гілці наряду, щоб кінець ніс його бандлом. Лише ця тека й лише коли копія стоїть на
-    гілці наряду; повертає число закомічених файлів (0 — нічого чи збій, причина в журналі). #>
+    гілці наряду. Повертає Files (закомічено файлів) і Error: '' — збережено чи зберігати нічого (теки чи змін нема); інакше
+    причина, з якою незакомічене лишилось лише в копії — її тоді не прибирають. #>
     $dir = "аудит/проби/$Slug"
-    if (-not (Test-Path -LiteralPath (Join-Path $Repo '.git')) -or -not (Test-Path -LiteralPath (Join-Path $Repo $dir))) { return 0 }
-    $head = (Invoke-Git @('symbolic-ref', '-q', 'HEAD') -AllowFail -Dir $Repo).Out.Trim()
-    if ($head -cne "refs/heads/gemini/$Slug") { Write-Log "записане ${Slug}: копія не на гілці наряду ($head) — не збережено"; return 0 }
+    $res = { param([int]$N, [string]$E) if ($E) { Write-Log "записане ${Slug}: $E" }; [pscustomobject]@{ Files = $N; Error = $E } }
+    if (-not (Test-Path -LiteralPath (Join-Path $Repo '.git')) -or -not (Test-Path -LiteralPath (Join-Path $Repo $dir))) { return (& $res 0 '') }
     # Git, зупинений разом із деревом наряду, лишає замок індексу; живих процесів наряду вже нема.
     $gitDir = (Invoke-Git @('rev-parse', '--absolute-git-dir') -AllowFail -Dir $Repo).Out.Trim()
     if ($gitDir) { Remove-Item -LiteralPath (Join-Path $gitDir 'index.lock') -Force -ErrorAction SilentlyContinue }
+    $stat = Invoke-Git @('status', '--porcelain', '-z', '--untracked-files=all', '--', $dir) -AllowFail -Dir $Repo
+    if ($stat.Code -ne 0) { return (& $res 0 "git status -> $($stat.Code): $($stat.Err.Trim())") }
+    if (-not $stat.Out.Trim([char[]]@([char]0, ' ', "`r", "`n"))) { return (& $res 0 '') }
+    $head = (Invoke-Git @('symbolic-ref', '-q', 'HEAD') -AllowFail -Dir $Repo).Out.Trim()
+    if ($head -cne "refs/heads/gemini/$Slug") { return (& $res 0 "копія не на гілці наряду ($head)") }
     $add = Invoke-Git @('add', '-A', '--sparse', '--', $dir) -AllowFail -Dir $Repo
     if ($add.Code -ne 0) { $add = Invoke-Git @('add', '-A', '--', $dir) -AllowFail -Dir $Repo }
-    if ($add.Code -ne 0) { Write-Log "записане ${Slug}: git add -> $($add.Code): $($add.Err.Trim())"; return 0 }
+    if ($add.Code -ne 0) { return (& $res 0 "git add -> $($add.Code): $($add.Err.Trim())") }
     $n = @(((Invoke-Git @('diff', '--cached', '--name-only', '-z', '--', $dir) -AllowFail -Dir $Repo).Out -split "`0") | Where-Object { $_ }).Count
-    if ($n -eq 0) { return 0 }
+    if ($n -eq 0) { return (& $res 0 '') }
     $c = Invoke-Git @('commit', '-q', '-m', "ЗУПИНЕНО ${Code}: записане до зупинки прогону (обгортка)", '--', $dir) -AllowFail -Dir $Repo
-    if ($c.Code -ne 0) { Write-Log "записане ${Slug}: git commit -> $($c.Code): $($c.Err.Trim())"; return 0 }
+    if ($c.Code -ne 0) { return (& $res 0 "git commit -> $($c.Code): $($c.Err.Trim())") }
     Write-Log "записане ${Slug}: закомічено файлів $n ($Code)"
-    $n
+    & $res $n ''
 }
 
 function Close-StoppedRun($Run, [string]$Code, [string]$Reason, [string]$MarkerSha = '', [string]$StatePath = '') {
     <# Прогін GPU-наряду, який зупинив планувальник (ЗНЯТО чи вирок сторожа GPU), закривається кінцем із бандлом, як
     перерваний (Complete-Status): незакомічене в `аудит/проби/<наряд>/` копії — комітом обгортки (Save-RunRecord), гілка
     наряду — бандлом, і публікатор дає `<код>_PUBLISHED`. $MarkerSha і $StatePath — позначка й стан, які кінець закриває
-    (ЗНЯТО — голова «ЗНЯТО…»: публікатор звіряє результат із позначкою на origin). Прогін без початку гілки — $false. #>
+    (ЗНЯТО — голова «ЗНЯТО…»: публікатор звіряє результат із позначкою на origin). Записане не закомічено — кінець
+    RECORD_FAILED (причина й шлях копії — у результаті), а копія лишається з `kept.txt` для відновлення (Clear-TaskCopies її
+    не чіпає). Прогін без початку гілки — $false. #>
     $j = $Run.Json
     if (-not [string](Get-JsonProp $j 'start')) { return $false }
     $status = [ordered]@{}
@@ -1592,7 +1600,12 @@ function Close-StoppedRun($Run, [string]$Code, [string]$Reason, [string]$MarkerS
     $status.reason = ConvertTo-NoteText $Reason
     if ($MarkerSha) { $status.marker = $MarkerSha }
     $copy = Join-Path (Join-Path $RunsDir 'w') ([string]$Run.Id)
-    [void](Save-RunRecord (Join-Path $copy 'repo') ([string]$status.slug) $Code)
+    $rec = Save-RunRecord (Join-Path $copy 'repo') ([string]$status.slug) $Code
+    if ($rec.Error) {
+        $status.code = 'RECORD_FAILED'
+        # Шлях копії й збій — першими: примітка до 240 знаків, причина зупинки — у рядку журналу й у коді позначки.
+        $status.reason = ConvertTo-NoteText "${Code}: копія $copy лишилась для відновлення — записане не закомічено ($($rec.Error)); $Reason"
+    }
     $t0 = [datetime]::MinValue
     $s = Get-JsonProp $j 'started_utc'
     if ($s -is [datetime]) { $t0 = $s.ToLocalTime() }
@@ -1601,7 +1614,10 @@ function Close-StoppedRun($Run, [string]$Code, [string]$Reason, [string]$MarkerS
         if ([datetime]::TryParse([string]$s, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind, [ref]$parsed)) { $t0 = $parsed.ToLocalTime() }
     }
     Complete-Status $status $(if ($StatePath) { $StatePath } else { [string]$Run.StatePath }) '' $t0
-    [void](Remove-TaskCopy $copy @('--branches', '--remotes'))
+    if ($rec.Error) {
+        [IO.File]::WriteAllText((Join-Path $copy 'kept.txt'), "записане ${Code} не закомічено: $($rec.Error)`n", $script:Utf8)
+        Write-Log "копія задачі $copy лишається: записане не закомічено"
+    } else { [void](Remove-TaskCopy $copy @('--branches', '--remotes')) }
     $true
 }
 

@@ -354,6 +354,32 @@ Scenario 'з завислість стенда' {
     Check 'з журнал LM Studio не читається — лічба стоїть, вироку нема' (-not $w.Stop -and -not (Test-Path $verdict))
 }
 
+# --- (з2) журнал сну відстає (read_utc раніше за вимір) і повтор тієї самої позначки новим замком ---------------------------------------
+Scenario 'з2 час chat-запиту і замок' {
+    . $newEnv 'zl'
+    $d = [datetime]::SpecifyKind([datetime]'2026-11-18T00:00:00', [DateTimeKind]::Utc)
+    $mk = 'gemini-queue/автоживий-04911e686195fc47873b70a231d6b70876f83af2/gpt-6.1-sol-high/1/p2-gpu'
+    $first = @([pscustomobject]@{ Marker = $mk; Since = '2026-11-18T12:30:00Z' })
+    $send = { param($l) [bool](Add-Line $l) }
+    $verdict = "$tmp/lanes/gpu-stall.json"
+    $tk = { param($H, [int]$Min, [int]$Call, [int]$ReadMin = -1)
+        $rd = $null
+        if ($ReadMin -ge 0) { $r = $d.AddMinutes($ReadMin); $rd = { $r }.GetNewClosure() }
+        Update-GpuWatch $H ([pscustomobject]@{ Percent = 0; OwnerPid = 0; CallAgeMin = $Call }) $send "$tmp/zl/state/gpu-watch.json" $d.AddMinutes($Min) { param($f, $t) 0 } $rd }
+    # Останній chat-запит 12:35, далі стенд мовчить: о 14:00 — 85 хв без chat-запитів.
+    for ($m = 12 * 60 + 35; $m -le 14 * 60; $m += 5) { $w = & $tk $first $m ($m - (12 * 60 + 35)) }
+    Check "з2 о 14:00 без chat-запитів $($w.NoCallMinutes) хв (очікується 85)" ($w.NoCallMinutes -eq 85 -and -not $w.Stop)
+    # Такт 14:10, журнал сну прочитано до 14:05, chat-запит о 14:03 (вік 7 хв на мить виміру).
+    $w = & $tk $first (14 * 60 + 10) 7 (14 * 60 + 5)
+    Check "з2 ДО: вік від read_utc давав запит о 13:58 — 90 хв і вирок справному прогону; ПІСЛЯ: запит о 14:03 — $($w.NoCallMinutes) хв, вироку нема" ($w.NoCallMinutes -eq 2 -and -not $w.Stop -and -not (Test-Path $verdict))
+    # Далі той самий замок без chat-запитів до 15:25 (82 хв), замок звільнено; повтор тієї самої позначки бере новий замок о 15:40.
+    for ($m = 14 * 60 + 15; $m -le 15 * 60 + 25; $m += 5) { $w = & $tk $first $m ($m - (14 * 60 + 3)) }
+    Check "з2 перший замок до 15:25 — $($w.NoCallMinutes) хв без chat-запитів" ($w.NoCallMinutes -eq 82 -and -not $w.Stop)
+    $retry = @([pscustomobject]@{ Marker = $mk; Since = '2026-11-18T15:40:00Z' })
+    $w = & $tk $retry (15 * 60 + 45) (15 * 60 + 45 - (14 * 60 + 3))
+    Check "з2 ДО: повтор успадковував лічбу (82 + 20 хв проміжку без замка — вирок на першому такті); ПІСЛЯ: новий замок — $($w.NoCallMinutes) хв, замок $($w.LockMinutes) хв" ($w.NoCallMinutes -eq 5 -and $w.LockMinutes -eq 5 -and -not $w.Stop -and -not (Test-Path $verdict))
+}
+
 # --- (і) подія Codex у heartbeat і #1856 --------------------------------------------------------------------------------------------
 Scenario 'і подія Codex' {
     . $newEnv 'ev'
@@ -443,11 +469,29 @@ Scenario 'и закриття GPU-наряду із записаним' {
     $rb = & $result $idB
     Check "и ДО: ЗНЯТО давало CANCELLED без бандла; ПІСЛЯ: CANCELLED із бандлом (комітів $($rb.ahead)), позначка — голова ЗНЯТО" ($b.Proc.HasExited -and $rb.code -ceq 'CANCELLED' -and $rb.bundle -ceq "$idB.bundle" -and [int]$rb.ahead -eq 2 -and $rb.marker -ceq $zn -and $rb.reason -ceq 'ЗНЯТО: тест')
     Check 'и стан знятої позначки — DONE <id прогону> CANCELLED; інших результатів цієї позначки нема' (([IO.File]::ReadAllText((Get-StatePath (Get-MarkerKey $mb)), $utf)).Trim() -ceq "DONE $idB CANCELLED" -and @(Get-ChildItem "$OutDir/*.json").Count -eq 2)
-    Check 'и рядки STALL_PUBLISHED і CANCELLED_PUBLISHED — за шаблоном публікатора' (& {
+
+    # Записане не комітиться (замок індексу тримає живий процес git): кінець RECORD_FAILED, копія з незакоміченим лишається.
+    $slugC = 'автоживий-' + ('c' * 40); $idC = '20261117-184659-0000000000c3'
+    $c = & $run $slugC $idC 'codex-3'
+    $ilock = Join-Path (Invoke-Git @('rev-parse', '--absolute-git-dir') -Dir $c.Repo).Out.Trim() 'index.lock'
+    $lp = Start-Process powershell.exe -ArgumentList @('-NoProfile', '-Command', "`$f = [IO.File]::Open('$ilock', 'OpenOrCreate', 'ReadWrite', 'None'); Start-Sleep 600") -PassThru -WindowStyle Hidden
+    for ($i = 0; $i -lt 100 -and -not (Test-Path -LiteralPath $ilock); $i++) { Start-Sleep -Milliseconds 200 }
+    Start-Sleep -Milliseconds 300
+    Write-FileAtomic "$LaneDir/gpu-stall.json" (([ordered]@{ marker = $c.M.Name; since = $since; nocall = 93; at = '2026-11-18T12:40:00Z' }) | ConvertTo-Json -Compress)
+    $null = Stop-GpuStalledRuns $workers
+    $rc = & $result $idC
+    $copyC = "$RunsDir/w/$idC"
+    Check "и ДО: збій коміту записаного — копію прибрано, сцени пропали, кінець STALL; ПІСЛЯ: $($rc.code), «$($rc.reason)»" ($c.Proc.HasExited -and $rc.code -ceq 'RECORD_FAILED' -and ([string]$rc.reason).StartsWith('STALL: копія ') -and ([string]$rc.reason).Contains($idC) -and ([string]$rc.reason).Contains('не закомічено (git add') -and $rc.bundle -ceq "$idC.bundle" -and [int]$rc.ahead -eq 1)
+    Check 'и стан — DONE <id> RECORD_FAILED' (([IO.File]::ReadAllText((Get-StatePath (Get-MarkerKey $c.M)), $utf)).Trim() -ceq "DONE $idC RECORD_FAILED")
+    if (-not $lp.HasExited) { $lp.Kill(); $lp.WaitForExit() }
+    Clear-TaskCopies "$RunsDir/w" @('--branches', '--remotes')
+    Check 'и копія зі сценами лишилась з kept.txt і після прибирання накопиченого' ((Test-Path "$copyC/kept.txt") -and @(Get-ChildItem -LiteralPath "$($c.Repo)/аудит/проби/$slugC" -Recurse -Filter 'результат.json').Count -eq 3)
+    Check 'и рядки STALL_PUBLISHED, CANCELLED_PUBLISHED і RECORD_FAILED_PUBLISHED — за шаблоном публікатора' (& {
         . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$g/pubw" -OutboxDir "$g/pubo"
-        (Test-OutboxLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugA STALL_PUBLISHED") -eq '' -and (Test-OutboxLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugB CANCELLED_PUBLISHED") -eq '' -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugB CANCELLED_PUBLISHED")
+        (Test-OutboxLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugA STALL_PUBLISHED") -eq '' -and (Test-OutboxLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugB CANCELLED_PUBLISHED") -eq '' -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugB CANCELLED_PUBLISHED") -and
+            (Test-OutboxLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugC RECORD_FAILED_PUBLISHED") -eq '' -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugC RECORD_FAILED_PUBLISHED")
     })
-    foreach ($p in @($a.Proc, $b.Proc)) { if (-not $p.HasExited) { $p.Kill() } }
+    foreach ($p in @($a.Proc, $b.Proc, $c.Proc, $lp)) { if (-not $p.HasExited) { $p.Kill() } }
 }
 
 Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
