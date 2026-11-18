@@ -120,7 +120,7 @@ import colorspace as _cs
         # ожеледиця», «Road salt and slush», «morning light» опис казав їй з виведеного й без вимоги умови.
         _ВИМ.поле("day", як="only what she said about her day. When «reasons» support it, in the last "
                     "part of «text» say how this outfit lives through the facts listed in «day». An item its photo "
-                    "shows unfit for her weather or way there is «swap»; for an item whose «your_declared» statement "
+                    "shows unfit for her weather or way there is «swap»; for an item whose «your_declared» "
                     "argues with a fact listed in «day», say in one plain sentence why you still chose it and what it means "
                     "for her day, never handing that decision back to her. Weather, road, place, light or time of "
                     "day that «day» does not carry is not a fact of her day"),
@@ -158,15 +158,13 @@ import colorspace as _cs
         # Е2-опора-пояснення, наряд «причини-за» (менеджер 17.11 після прогону #4205): причину «чому ця річ тут» пише
         # код (`причини_речі`) — типом, номером речі, джерелом і певністю; без неї модель добудовувала «Tall boots
         # suit a 20-minute walk in snow» при `sole_grip_unknown_ice` тієї самої руки, і причин «за» у вході було 0 із 30
-        _ЗП.Поле("reasons", "why items are here for her, as the code found it: «item» — its «n»; «about» — occasion "
-                            "(the item's level fits her occasion), palette (its colour is inside her palette; "
-                            "«colour_from» — where that colour comes from), figure (its cut is among the best cuts for "
-                            "her figure), day (its fabric suits the weather she named), her_words (it is what she "
-                            "asked for; «quote» — her words), found (what the code found for it, as statement codes), "
-                            "unknown (what the code could not check about it, as statement codes); «sure» — yes or no",
-                 як="these are the only reasons an item has: say only those listed for it, in your words and "
-                    "without codes; a reason with «sure» no is said as not sure («I'm not sure …»), never as a fact",
-                 без="No reasons: write an «about_items» entry only for the items of «your_declared»."),
+        _ЗП.Поле("reasons", "why items are here, as the code found it: «item» — its «n»; «about» — occasion "
+                            "(its level fits her occasion), palette (its colour is in her palette; «colour_from» — its "
+                            "source), figure (its cut is among the best for her figure), day (its fabric suits the "
+                            "weather she named), her_words (she asked for it; «quote»), found or unknown (what the "
+                            "code found for it or could not check, as statement codes); «sure» — yes or no",
+                 як="in your words, without codes; with «sure» no say it as not sure, never as a fact",
+                 без="No reasons: «about_items» only for items of «your_declared»."),
         # «against a condition» без умови — сумку, яку стилістка ДОДАЛА, опис
         # прочитав вадою («не поєднується», «потрібно замінити», `swap`); тепер хід несе заяви своєї знахідки
         # Прогін наряду «причини-за»: «kept the boots anyway for the warmth» без причини «day» при чоботах — чому
@@ -174,8 +172,7 @@ import colorspace as _cs
         _ЗП.Поле("your_declared", "items you kept deliberately although the code found something against them: "
                                   "«item» — its «n», «statements» — what the code found, as statement codes",
                  як="this was your choice, not a flaw of the item: never call it a mismatch and never name it "
-                    "in «swap»; why you kept it — only from its «reasons», without them just that you chose it on "
-                    "purpose; in «how_to_wear» say what she does about what the code found"),
+                    "in «swap»; why you kept it — only from its «reasons», else just that you chose it on purpose; in «how_to_wear» say what she does about what the code found"),
         _ВИМ.поле("she_refuses", як="do not advise an item that breaks it and do not call it a compromise; when such an "
                     "item is in the outfit, tell her so plainly"),
         # Ч-1 (аудит/ПРОДУКТ.md п.12): the code no longer writes this as a sentence — it sends the
@@ -223,14 +220,14 @@ import colorspace as _cs
         # властивість — лише як причина. Не довше за попереднє правило: воно стоїть на його місці
         # Наряд «причини-за»: правило велить казати лише причини зі входу — і вимога запису стоїть лише на речах із ними
         # (`поля_виходу`, повтор `ПОВТОР_НЕ_ОПИСАНО_EN`): заборона без зміни вимоги не допомагала (#3717, крок «без опису»)
-        "Tell her why an item is here for her only from its «reasons» and «your_declared» — not what it looks like: "
-        "she sees it on its photo beside your words. Name an item by its kind so she recognises it. Fit, comfort, "
-        "warmth, grip, steadiness, weather protection or what it does for her figure is said only when its «reasons» "
-        "carry it, also as why you kept it; an item without reasons gets no sentence of its own.",
+        "Say why an item is here only from its «reasons» and «your_declared», not how it looks: she sees its photo "
+        "beside your words. Name an item by its kind. Fit, comfort, warmth, grip, steadiness, weather protection or "
+        "what it does for her figure only when its «reasons» carry it; an item without reasons gets no sentence of "
+        "its own.",
         # 16409: заява, що спирається на обставину, яку код вивів (сіль — з морозу й снігу), стояла під образом як
         # обставина її дня
-        "A statement with «day_facts» rests on a circumstance the code inferred, not one she named: say it only as a "
-        "possibility («if the roads are salted»), never as a fact of her day.",
+        "Say a statement with «day_facts» only as a possibility («if the roads are salted»), never as a fact of her "
+        "day: the code inferred it.",
         "Say each thing about an item once, in one coherent wearing plan; an alternative is a choice, not another "
         "simultaneous instruction. No sentence or attribute quota.",
         # ПРОЗА-КАРТОК-2: «На фото є ще й підібрані сірі штани, але до цього образу належить
@@ -260,14 +257,13 @@ import colorspace as _cs
         # збирала всі поля входу
         # річ за річчю — полем `про_речі` з номером, а не рядком прози: модель називала
         # у «named» усі номери, а текст пропускав пальто чи піджак і описував штани, яких нема
-        "про_речі[].н": "«n» of an item of «reasons» or «your_declared»: one entry for each such item, in the order of "
-                       "«outfit»; no entry for an item without them",
+        "про_речі[].н": "«n» of an item with «reasons» or «your_declared»: one entry for each, in the order of "
+                       "«outfit»",
         # «styled here with matching wide-leg trousers» при бомбері без штанів, кардиган «поверх
         # в'язаного комплекту» з його фото при сукні — запис речі описував увесь кадр. Код прози не читає (п.12),
         # тож межа — тут: запис має лише свою річ, а як речі поєднуються — «text» (речі образу, звірені «named»)
         # Е2-опора-пояснення, крок «без опису речі»: запис речі — чому вона тут для неї, а не опис її вигляду
-        "про_речі[].текст": "why this item alone is here for her, in a sentence or two, only from its «reasons» and "
-                            "what she does about its «your_declared» — not how it looks. It belongs to her outfit; never call it excluded. No other clothing or "
+        "про_речі[].текст": "why this item alone is here for her, in a sentence or two. It belongs to her outfit; never call it excluded. No other clothing or "
                             "accessory, whether from its photo or «outfit»: combinations belong to «text». Her figure "
                             "only through line and cut, never a shape code or «…-shape»",
         "текст": "prose for her after the items: (1) optional, only when it adds something — how the "

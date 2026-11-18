@@ -23,6 +23,7 @@ import json as _json
 import graph as _Г
 import hypergraph as _ГГ
 import outfit as _О
+import місце_речі as _МІСЦЕ
 import внутрішня_мова as _ВМ
 import дріт_моделі as _Д
 from реєстр_правил import ТИПОВИЙ_НАМІР
@@ -48,7 +49,6 @@ for _к in ЗА_РІЧ | set(ФАКТ_ДНЯ_ЗАЯВИ):
     if _к not in _ВМ.ЗАЯВИ:
         raise KeyError("причини_речі: заява поза словником ЗАЯВИ: %r" % (_к,))
 _СЛОТ_EN = {v: к for к, v in _ВМ.ТАБЛИЦЯ["slot"].items()}
-_ВЕРХ_НИЗ = {"верх": "верх", "низ": "низ", "сукня": "верх", "верхній_шар": "верх"}
 
 
 def _підпис(з):
@@ -74,7 +74,7 @@ def позначити_виведене(заяви, день):
     for з in заяви or []:
         ф = ФАКТ_ДНЯ_ЗАЯВИ.get((з or {}).get("code")) if isinstance(з, dict) else None
         if ф and звідки.get(ф) != "her_words":
-            з = dict(з, day_facts={ф: звідки.get(ф) or "unknown"})
+            з = dict(з, day_facts={ф: звідки.get(ф)})      # походження нема — null: «невідомо», не типове
         вих.append(з)
     return вих
 
@@ -148,28 +148,22 @@ def заяви_за_слотом(заяви, ід_ходу, речі):
     return вих
 
 
+# Збій `graph.зона` чи `hypergraph.крої_для_пулу` не ковтається (Е2-збій-без-сліду): він іде до обробника моста зі
+# слідом, а не стає «у речі причини нема»
+
+
 def _рівень(р):
-    try:
-        ф = (_Г.зона(р) or {}).get("формальність") or {}
-    except Exception:          # бита річ — без причини нагоди, не без опису (П.14: причина додає, не гейтує)
-        return None
-    return ф.get("інтервал")
+    return ((_Г.зона(р) or {}).get("формальність") or {}).get("інтервал")
 
 
 def _смуга(р):
-    try:
-        с = (_Г.зона(р) or {}).get("сезон") or {}
-    except Exception:
-        return None
-    return с.get("смуга")
+    return ((_Г.зона(р) or {}).get("сезон") or {}).get("смуга")
 
 
 def _джерело_кольору(р):
-    """Звідки колір речі — та сама вісь, що бачила стилістка складання (`дріт_моделі.осі` → `L_from`)."""
-    try:
-        return (_Д.осі(_Г.зона(р), р) or {}).get("L_from") or "unknown"
-    except Exception:          # бита річ — джерело невідоме, а не довіра
-        return "unknown"
+    """Звідки колір речі — та сама вісь, що бачила стилістка складання (`дріт_моделі.осі` → `L_from`); None —
+    невідомо."""
+    return (_Д.осі(_Г.зона(р), р) or {}).get("L_from")
 
 
 def _збіг_бажання(б, р):
@@ -196,10 +190,7 @@ def причини(речі, *, день=None, тіло=None, намір=None, �
     її_день = _Д.день_її_слів(день) or {}
     смуга_дня = її_день.get("weather_band")
     нагода = день.get("formality") if isinstance(день.get("formality"), dict) else None
-    try:
-        крої = _ГГ.крої_для_пулу(тіло, intent=намір or ТИПОВИЙ_НАМІР, прогін_руки=прогін_руки) if тіло else None
-    except Exception:
-        крої = None
+    крої = _ГГ.крої_для_пулу(тіло, intent=намір or ТИПОВИЙ_НАМІР, прогін_руки=прогін_руки) if тіло else None
     суд = суд if isinstance(суд, dict) else {}
     # «у дузі» — суд пулу над річчю картки (`пакет_моделі.у_дузі_вікон`, запис образу вердикта `описи_н`)
     о = суд.get("образ") if isinstance(суд.get("образ"), dict) else {}
@@ -216,13 +207,14 @@ def причини(речі, *, день=None, тіло=None, намір=None, �
                 and рв[0] <= нагода.get("to", нагода["from"]) and рв[1] >= нагода["from"]:
             # рівень нагоди код виводить з її слів (місце, подія) — джерело йде поруч (`provenance.formality`)
             вих.append(dict(item_id=ід, about="occasion", what="item_level_within_occasion_level",
-                            occasion_level_from=(день.get("provenance") or {}).get("formality") or "unknown",
+                            occasion_level_from=(день.get("provenance") or {}).get("formality"),
                             sure="yes"))
         if дуга.get(ід) is True:
             джерело = _джерело_кольору(р)
             вих.append(dict(item_id=ід, about="palette", what="colour_inside_her_palette", colour_from=джерело,
                             sure="yes" if джерело in ("photo", "photo_point") else "no"))
-        кр = (крої or {}).get(_ВЕРХ_НИЗ.get(р.get("слот")))
+        # ярус тіла речі — з запису місця (`місце_речі.ярус`): сукня яруса не має, і причини «постать» не дістає
+        кр = (крої or {}).get(_МІСЦЕ.ярус(р))
         крій = _О.крій_для_моделі(р) if кр else None
         if крій and set(крій.split("|")) <= set(кр.get("ярус") or ()):
             вих.append(dict(item_id=ід, about="figure", what="cut_in_best_tier_for_her_figure", sure="yes"))
