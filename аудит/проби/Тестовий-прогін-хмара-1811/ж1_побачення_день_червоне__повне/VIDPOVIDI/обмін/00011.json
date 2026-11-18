@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Red knit sweater: relaxed fit, crew neck, hip length, red #B3262E, soft merino wool\\nStraight-leg jeans: mid-rise, full length to the ankle, dark indigo #2B3A55, stretch denim\\nCasual coat: single-breasted, straight cut, knee length, camel #C19A6B, wool blend\\nAnkle boots: low block heel, round toe, brown #6B4430, smooth leather\\nScarf: wide, loosely draped, cream #EFE6D2, lightweight wool\\nCrossbody bag: small, structured, tan #A9744F, leather\\nSmall gold hoop earrings: thin, #D4AF37, metal\\n\\nThis outfit puts the red you asked for front and center in a warm, brick-leaning shade that flatters your golden hair, soft grey-green eyes and warm skin. Dark jeans and a camel coat keep the look neat and relaxed, which suits an everyday first date. The coat and scarf handle an autumn park walk, and you can take them off in the café. The block-heel boots are comfortable on paths, and the simple accessories keep the focus on the red sweater.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Red knit sweater\\\",\\\"details\\\":\\\"relaxed fit, crew neck, hip length, soft merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#B3262E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg jeans\\\",\\\"details\\\":\\\"mid-rise, full length to the ankle, stretch denim\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#2B3A55\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Casual coat\\\",\\\"details\\\":\\\"single-breasted, straight cut, knee length, wool blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#C19A6B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"low block heel, round toe, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#6B4430\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"wide, loosely draped, lightweight wool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#EFE6D2\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Crossbody bag\\\",\\\"details\\\":\\\"small, structured, leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#A9744F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small gold hoop earrings\\\",\\\"details\\\":\\\"thin, metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#D4AF37\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2047,\"output_tokens\":416},\"stop_reason\":\"end_turn\"}"
+ }
+}

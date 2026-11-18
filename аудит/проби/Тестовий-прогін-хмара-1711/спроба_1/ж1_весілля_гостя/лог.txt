@@ -1,0 +1,488 @@
+СЦЕНАРІЙ ПІДМІНЕНО (CHAT_TEXT/PASPORT): звірки офісного випадку звіряються з поданим паспортом · {"чат":"я гостя на весіллі сестри в серпні, церемонія надворі о 16:00, потім ресторан","паспорт":null}
+МОДЕЛЬ ЖИВА: claude-sonnet-5-5 · http://127.0.0.1:8791/v1 · reasoning_effort=none · відповіді → /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/VIDPOVIDI
+   → у мережу (FOTO=1): https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   → у мережу (FOTO=1): https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   → у мережу (FOTO=1): https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+   → у мережу (FOTO=1): https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61ee/fonts/webfonts/Fix
+сторінка піднята за 4.4 с · збірка: 55bb94a4b1f2f1c38f04518d44cf15d3f0f198a9 · єдина сторінка: true
+
+0. знайомство · крок 1 «Про тебе»: {"режим":"старт","екран":0,"видно":["е-профіль"],"кнопка":"Далі"}
+  ✔ крок 1: кольори прозою ручним шляхом — розбіжність форми названо, рядки не прочитано
+  ✔ крок 1: кольори лягли ручним шляхом сторінки («Застосувати кольори»)
+   крок 2 «Що тобі до лиця»: {"режим":"старт","екран":1,"видно":["е-лице"],"кнопка":"Далі"}
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_znaiomstvo_2_do_lytsia_seed3.png 81768 Б
+   крок 3 «Фігура»: {"режим":"старт","екран":2,"видно":["е-мірки"],"кнопка":"Готово"}
+  ✔ знайомство — рівно три кроки, і «Готово» стоїть лише на третьому
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_znaiomstvo_3_fihura_seed3.png 53253 Б
+   «Готово» → {"режим":"сценарій","екран":2,"видно":["е-випадок"],"лист":true,"підказка":"Напиши, як подрузі: куди йдеш, коли, яка погода, чого хочеш і чого не хочеш. Я складу сценарій, а ти поправиш, що треба.","питання":"Куди ти збираєшся?","рукою":"Або заповнити рукою","прикладів":3,"дії_панелі":false,"картка":false,"зібрати":null} за 16.0 с
+  ✔ після «Готово» — екран сценарію v5: аркуш листа з полем, питання «Куди ти збираєшся?», «Або заповнити рукою»; дій панелі нема, отже репліка піде замовленням, а не в помічницю
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_scenarii_porozhnii_seed3.png 46409 Б
+   ↔ модель #1 мовний шар: хід розмови (36002 симв., разом 37293) → 15.3 с · HTTP 200 · 1487 симв.
+   ↔ модель #2 мовний шар: репліка (4398 симв., разом 4809) → 6.0 с · HTTP 200 · 424 симв.
+   ↔ модель #3 мовний шар: репліка (4590 симв., разом 5003) → 11.3 с · HTTP 200 · 506 симв.
+
+1. чат → паспорт за 53.3 с · pyodide тягнув: ["pyodide.js","python_stdlib.zip","pyodide.asm.wasm","pyodide-lock.json","pyodide.asm.js"]
+  ✔ чат заповнив плитки з поданого паспорта (нагода=весілля_гість; чинне місце — весілля)
+  ✔ вето з поданого паспорта в паспорті (на екрані чипів нема, ПОКАЗ-1) (жодного)
+  ✔ рядок підтвердження стоїть («Усе правильно?» + «так»/«поправити»), і випадок — з поданого паспорта («весіллі сестри, церемонія надворі, потім ресторан»; нагода в рядках картки)
+  ✔ паспорт із перекладу (слова → внутрішня мова → паспорт кодом), питань моделі в паспорті нема (Т-18)
+  ✔ М-5: хід розмови — один виклик мовної моделі (запис «розмова» з внутрішньою мовою й частинами); другий — лише коли зміст дає код; у бульбашці — текст після суду коду
+  ✔ порада (рядки 108/114): тем за хід 1…3 — запрошення моделі розмови, пропущене судом коду, без повторів (`поради_дані`)
+  ✔ до збирання нічого не бракує
+   знімок чату: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/chat_108_seed3.png 29263 Б
+   ↔ модель #4 мовний шар (8723 симв., разом 9496) → 11.6 с · HTTP 200 · 975 симв.
+
+1б. екран «Палітра» за 88.1 с · стан: "Основу палітри ще не обрано. Схему ще не обрано. Насиченість ще не обрано."
+   чипів основи: рекомендованих 10 · у розкривачі «не радимо, але можна» 35 · гам 4 · схем 7 · основ у смузі «середні» 10
+   сім'ї по порядку: ["червона","нейтраль"] · чипи: ["червона","червона","червона","червона","червона","нейтраль","нейтраль","нейтраль","нейтраль","нейтраль"]
+  ✔ екран «Палітра» відкрився рядком картки і дає рекомендовані основи (рядок «Основа — головний колір», чипи з сім'єю), вибір лишився за стилісткою
+  ✔ кожен чип «нейтраль» — справді нейтраль: сім'я з коду, тег у підписі і C* нижче межі кажуть одне
+  ✔ чипи основ стоять КУПНО ПО СІМ'ЯХ і в сталому порядку (жодна сім'я не двома клаптями)
+   ↔ модель #5 вибір палітри (стилістка) (12072 симв., разом 13563) → 4.7 с · HTTP 200 · 165 симв.
+   ↔ модель #6 мовний шар (7936 симв., разом 8601) → 9.5 с · HTTP 200 · 778 симв.
+   П-7 вибір стилістки на екрані: {"стан":"Основу образу я взяла світлу попелясту, нейтральну. Схема образу: нейтрали з акцентом. Насиченість кольорів я зробила приглушеною.","нота":"Для цього виходу я обрала схему «нейтрали+акцент»: речі підібрані під неї, а акцент я перевіряю на відповідність їй. Це перша порада для твого кольоротипу, а цей вихід не потребує нічого іншого. Ця схема пасує до рівня й настрою нагоди та місця. Основним кольором образу я обрала сірий, світлий відтінок. Цей колір пасує до рівня й настрою нагоди та місця. Він також пасує до погоди, пори року та світла цього дня. Насиченість кольору я обрала приглушену. Якщо захочеш, можеш сама обрати інший варіант.","стрічка":"основа від стилістки · схема від стилістки","чип_схеми":"хай обере стилістка","позначені":["приглушені","світлий попелястий · нейтраль · стилістка","нейтрали+акцент · звичайна"],"код_на_екрані":false,"вибір":null,"гілка":null,"схема":null}
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_palitra_seed3.png 192497 Б
+1б · написів «без пояснення словами» на екрані «Палітра»: 0 · рядків біля схем 6 · нота: "Для цього виходу я обрала схему «нейтрали+акцент»: речі підібрані під неї, а акцент я перевіряю на відповідність їй. Це перша порада для твого кольоротипу, а цей вихід не потребує нічого іншого. Ця схема пасує до рівня й настрою нагоди та місця. Основним кольором образу я обрала сірий, світлий відтінок. Цей колір пасує до рівня й настрою нагоди та місця. Він також пасує до погоди, пори року та світла цього дня. Насиченість кольору я обрала приглушену. Якщо захочеш, можеш сама обрати інший варіант."
+
+1е. чи можна натиснути «Зібрати образи» (рядок 183): {"під_пальцем_кнопка":true,"під_нижнім_краєм":true,"панель_fixed":true,"на_всю_ширину":true,"запас_px":541,"панель_висота":274,"відступ_body":"294px","вікно":844,"прокрутка":533}
+  ✔ «Зібрати образи» відкрита для дотику: у точці пальця — сама кнопка, а не панель (рядок 183)
+  ✔ і під нею лишається місце: низ кнопки вище за верх панелі на прокрученій до низу сторінці
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/scenarii_knopka_nad_panelliu_seed3.png 43870 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/zbyrannia_01_seed3.png 40755 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/zbyrannia_02_seed3.png 41337 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/zbyrannia_03_seed3.png 40771 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/zbyrannia_04_seed3.png 41279 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/zbyrannia_05_seed3.png 40774 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/zbyrannia_06_seed3.png 40895 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/zbyrannia_07_seed3.png 40899 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/zbyrannia_08_seed3.png 41728 Б
+   ↔ модель #8 проза: рука 3/4 (3306 симв., разом 3647) → 5.8 с · HTTP 200 · 1221 симв.
+   ↔ модель #9 проза: рука 3/4 (2979 симв., разом 3284) → 4.8 с · HTTP 200 · 906 симв.
+   ↔ модель #12 перелік речей (руки 3–4) (2162 симв., разом 2305) → 2.6 с · HTTP 200 · 690 симв.
+   ↔ модель #11 перелік речей (руки 3–4) (2483 симв., разом 2632) → 4.6 с · HTTP 200 · 898 симв.
+   ↔ модель #13 мовний шар (5489 симв., разом 5608) → 18.2 с · HTTP 200 · 1049 симв.
+   ↔ модель #14 мовний шар (5856 симв., разом 5987) → 21.1 с · HTTP 200 · 1504 симв.
+   ↔ модель #7 ПАКЕТ_V1→ОБРАЗИ_V1 (138734 симв., разом 156693) → 79.0 с · HTTP 200 · 3116 симв.
+   ↔ модель #15 ВЕРДИКТ_V1→ОБРАЗИ_V1 (80133 симв., разом 89660) → 27.8 с · HTTP 200 · 1502 симв.
+   ↔ модель #16 ВЕРДИКТ_V1→ВИБІР_V1 (30505 симв., разом 33968) → 7.1 с · HTTP 200 · 589 симв.
+   ↔ модель #10 ПАКЕТ_V1→ОБРАЗИ_V1 (138751 симв., разом 156710) → 99.4 с · HTTP 200 · 3237 симв.
+   ↔ модель #17 ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1 (13420 симв., разом 16352, фото 8 (не дійшло 6)) → 13.9 с · HTTP 200 · 2160 симв.
+   ↔ модель #19 мовний шар (3872 симв., разом 3992) → 2.0 с · HTTP 200 · 92 симв.
+   ↔ модель #20 мовний шар (5744 симв., разом 6016) → 2.7 с · HTTP 200 · 289 симв.
+   ↔ модель #22 мовний шар (4393 симв., разом 4551) → 1.9 с · HTTP 200 · 157 симв.
+   ↔ модель #18 ВЕРДИКТ_V1→ОБРАЗИ_V1 (82730 симв., разом 92613) → 21.8 с · HTTP 200 · 1750 симв.
+   ↔ модель #21 мовний шар (6511 симв., разом 6637) → 21.1 с · HTTP 200 · 2045 симв.
+   рука 1: картка за 234.1 с (від запити) · намір паспорта conventional
+   ↔ модель #23 ВЕРДИКТ_V1→ВИБІР_V1 (32800 симв., разом 36601) → 5.5 с · HTTP 200 · 567 симв.
+   ↔ модель #24 ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1 (13276 симв., разом 15671, фото 6 (не дійшло 3)) → 15.7 с · HTTP 200 · 1888 симв.
+   ↔ модель #25 мовний шар (4238 симв., разом 4387) → 2.0 с · HTTP 200 · 167 симв.
+   ↔ модель #26 мовний шар (6590 симв., разом 6720) → 23.9 с · HTTP 200 · 2176 симв.
+
+2. збирання (сід 3) за 393.1 с · поломка руки 2: "правило" · статус: ""
+  ✔ збирання на опублікованій сторінці не падає (намір паспорта conventional)
+   екран збирання: 26 станів у /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/postup_seed3.txt
+
+2б. чотири картки за 393.2 с · розклад рук: 3412 · пул: K=565:555/бюджетрушіяток · поломка руки 2: "правило" · контроль: {"різних":0,"сліпих":28,"поломка":"правило","слід":[],"вхід":true,"без_входу":{"R-COL-16":"особа.бік_b.вхід: eyes_give_no_side","K-COL-06-M":"метал: no_self_report_no_jewellery_wish_no_undertone","K-SHO-16":"сценарій.тривалість_год|дорога_пішки_хв|поверхня: none","R-MUA-02":"сценарій.макіяж: no_makeup_advice_applies"},"сліпий":true,"пул_спільних":555}
+   рука 3 {"рука":"3","речей":6,"фото":0,"без_свого":6,"свідомі_список":[],"назви_обидві":["Сукня міді із запахом","Босоніжки на підборах","Клатч","Сережки-краплі","Тонкий браслет","Легка шаль"],"ід_речей":["м-001","м-002","м-003","м-004","м-005","м-006"],"свідомі_ід":[],"ціни":0,"текст":1221,"ітерацій":0,"викликів":2,"назви":["Сукня міді із запахом","Босоніжки на підборах","Клатч","Сережки-краплі","Тонкий браслет","Легка шаль"],"проза":"Midi wrap dress, A-line skirt with a softly flared hem, falling just below the knee, in dusty sage green (#9CAF9A), lightweight crepe-chiffon with a smooth lining\n\nHeeled sandals, block heel of medium height, ankle strap, in warm nude (#D9B89C), soft leather\n\nClutch bag, small structured envelope shape, in champagne gold (#D8C08A), satin finish\n\nDrop earrings, slim and delicate, in polished gold (#C9A24D), metal with a small pearl accent\n\nThin bracelet, simple open cuff, in polished gold (#C9A24D), metal\n\nLightweight shawl, to carry for the evening only, in soft ivory (#EDE4D3), sheer silk-blend voile\n\nWhy this outfit works: The sage green echoes her eyes and sits beautifully against her warm skin and golden blonde hair, so the colour looks fresh without competing with the bride. The wrap dress is a smart, social-level choice that moves easily on grass during an outdoor ceremony, and the knee-grazing midi length keeps it elegant and comfortable in August warmth. Block heels give polish while staying steady on lawn, and the gold accents carry the celebration into the restaurant afterward. A single open zone is left to the neckline and arms, with the shawl as an optional extra rather than a needed layer.","назви_до_шару":["Midi wrap dress","Heeled sandals","Clutch bag","Drop earrings","Thin bracelet","Lightweight shawl"],"не_перекладено":[],"збій":false,"мова_видано":"так","свідомі":0,"різноманітність":false,"питань":0,"питань_картці":0,"чекають":0,"відкладено":0,"для_всіх":0,"кнопка":null,"питання":[],"тексти_питань":[],"питань_без_перекладу":0,"питань_з_пам_яті":0,"схема":{"вийшла":null,"основа":null},"питань_від_шару":0,"питань_перекладено":0}
+   рука 4 {"рука":"4","речей":5,"фото":0,"без_свого":5,"свідомі_список":[],"назви_обидві":["Сукня з запахом","Босоніжки на підборах","Клатч","Сережки-краплі","Браслет-обруч"],"ід_речей":["м-001","м-002","м-003","м-004","м-005"],"свідомі_ід":[],"ціни":0,"текст":906,"ітерацій":0,"викликів":2,"назви":["Сукня з запахом","Босоніжки на підборах","Клатч","Сережки-краплі","Браслет-обруч"],"проза":"Midi wrap dress, A-line skirt, flutter sleeves, V-neckline, sage green (#9CAF88), lightweight crepe chiffon with a lining\nHeeled sandals, block heel of about 6 cm, ankle strap, almond toe, warm nude (#D8B496), smooth leather\nClutch, small envelope shape, champagne gold (#D9C28F), satin\nDrop earrings, small teardrop, brushed gold (#C9A24D), metal\nThin bangle bracelet, polished gold (#D4AF37), metal\n\nThis outfit works because the lightweight chiffon dress keeps her cool during an outdoor August ceremony and still reads as smart enough for a wedding guest and the restaurant afterwards. Sage green is soft and festive, and it stays clear of white and ivory, which are best left to the bride. The block heels are steadier than stilettos on grass or gravel outdoors, and the nude tone lengthens the leg line. The gold accents tie the look together, and the clutch holds the essentials without adding bulk.","назви_до_шару":["Wrap dress","Heeled sandals","Clutch","Drop earrings","Bangle bracelet"],"не_перекладено":[],"збій":false,"мова_видано":"так","свідомі":0,"різноманітність":false,"питань":0,"питань_картці":0,"чекають":0,"відкладено":0,"для_всіх":0,"кнопка":null,"питання":[],"тексти_питань":[],"питань_без_перекладу":0,"питань_з_пам_яті":0,"схема":{"вийшла":null,"основа":null},"питань_від_шару":0,"питань_перекладено":0}
+   рука 1 {"рука":"1","речей":5,"фото":5,"без_свого":0,"свідомі_список":["Сукня зелена з квітковим принтом до коліна, Фігурні золоті сережки — Сукня і золоті сережки коштують більше, ніж більшість речей у своїх категоріях, але сукня — це річ, що несе весь образ, а золото — єдиний блиск, тож я вважаю, що ці витрати виправдані для весілля твоєї сестри."],"назви_обидві":["Сукня зелена з квітковим принтом до коліна","Сукня зелена з квітковим принтом до коліна - купити Сукні в Києві та Україні, ціни на Сукні в інтернет-магазині жіночого одягу a LOT","Слінгбеки замшеві коралові HILLARY","Сумка жіноча, ATTICO, шкіра, колір капучино","Фігурні золоті сережки","Золоте намисто з гравіюванням"],"ід_речей":["ж-00647@alot.com.ua","ж-09935@emmeliedelage.com","ж-08173@attico.ua","ж-11771@theoriginals.com.ua","ж-11782@theoriginals.com.ua"],"свідомі_ід":[["ж-00647@alot.com.ua","ж-11771@theoriginals.com.ua"]],"ціни":5,"текст":2160,"ітерацій":3,"викликів":4,"назви":["Сукня зелена з квітковим принтом до коліна","Слінгбеки замшеві коралові HILLARY","Сумка жіноча, ATTICO, шкіра, колір капучино","Фігурні золоті сережки","Золоте намисто з гравіюванням"],"проза":"{\"version\":\"1\",\"text\":\"The dress carries the whole look: a green dress is a festive choice for a guest and leaves white to the bride. The pumps, bag, earrings and necklace keep it polished for a ceremony that moves on to a restaurant. The gathered waist of the dress is where the outfit's line is anchored, and the tiered skirt falls softly from it to the knee, so the shape stays one clear line. It is a warm August afternoon, and the dress works for the 16:00 ceremony and carries on into the evening at the restaurant. It is a more considered piece than most dresses I could have picked, and it earns that by suiting both parts of the day without a change.\",\"how_to_wear\":[\"Let the necklace sit just above the round neckline of the dress, and keep the earrings simple beside it so the ruffled shoulders stay the focus.\",\"Wear the pumps with the dress for the whole day, from the ceremony to the restaurant, so the hem and the heel form one long line below the knee.\"],\"wrong_photos\":[],\"named\":[{\"n\":\"#140·01\",\"what\":\"dress\"},{\"n\":\"#174·10\",\"what\":\"pumps\"},{\"n\":\"#320·35\",\"what\":\"earrings\"},{\"n\":\"#330·35\",\"what\":\"necklace\"}],\"about_items\":[{\"n\":\"#140·01\",\"text\":\"A dress is the easiest way to look complete as a wedding guest, and its gathered waist and flowing tiered skirt give you a clear anchor at the waist without any extra belt. The green keeps you festive and away from white, which belongs to the bride.\"},{\"n\":\"#174·10\",\"text\":\"Pumps give a dressy finish suited to your sister's wedding and the restaurant afterwards. The heel lengthens the line from the hem down.\"},{\"n\":\"#132·03\",\"text\":\"A bag holds what you need through a long day that runs from the ceremony into the reception, and it keeps the outfit tidy and finished for an evening at a restaurant.\"},{\"n\":\"#320·35\",\"text\":\"The earrings add a festive touch at the face for a family celebration. I kept them as the one place where the outfit sparkles a little, which suits a wedding guest.\"},{\"n\":\"#330·35\",\"text\":\"The necklace adds a finishing detail at the neckline and makes the outfit feel dressed for the occasion, so it works for the ceremony and for the restaurant that follows.\"}]}","назви_до_шару":["Сукня зелена з квітковим принтом до коліна","Слінгбеки замшеві коралові HILLARY","Сумка жіноча, ATTICO, шкіра, колір капучино","Фігурні золоті сережки","Золоте намисто з гравіюванням"],"не_перекладено":[],"збій":false,"мова_видано":"так","свідомі":1,"різноманітність":true,"питань":35,"питань_картці":2,"чекають":0,"відкладено":0,"для_всіх":33,"кнопка":"Що я не змогла перевірити","питання":["K-SHO-13: shoe_size_not_checked {item: {item_id: ж-09935@emmeliedelage.com, kind: pumps, color: coral}, item_id: ж-09935@emmeliedelage.com, kind: pumps, color: coral} + her_foot_length_unknown + item_insole_length_unknown · for_all","K-COL-01: cannot_tell_lightness_structure {items: [{item_id: ж-08173@attico.ua, slot: bag, kind: bag_generic, color: beige}, {item_id: ж-09935@emmeliedelage.com, slot: shoes, kind: pumps, color: coral}]} · for_all · on_expand","K-COL-06: cannot_tell_two_neutrals_distinct {items: [{item_id: ж-09935@emmeliedelage.com, slot: shoes, kind: pumps, color: coral}, {item_id: ж-08173@attico.ua, slot: bag, kind: bag_generic, color: beige}]} · for_all · on_expand","K-COL-06-M: rule_input_missing {fields: [місце_речі], items: [ж-11782@theoriginals.com.ua]} · for_all","K-COL-06-T: rule_input_missing {fields: [місце_речі], items: [ж-00647@alot.com.ua]} · for_all","K-MAT-04: rule_input_missing {fields: [блиск], items: [ж-11782@theoriginals.com.ua]} · for_all","K-SIZ-02: size_is_label_not_fit {sizes: [{slot: dress, range: 36–38}]} · for_all","K-WEA-03: rule_input_missing {fields: [сонце], items: [ж-00647@alot.com.ua, ж-09935@emmeliedelage.com, ж-09935@emmeliedelage.com, ж-08173@attico.ua, ж-11771@theoriginals.com.ua, ж-11782@theoriginals.com.ua]} · for_all","сегментація: rule_input_missing {fields: [місце_речі.біля_обличчя], items: [ж-00647@alot.com.ua, ж-11782@theoriginals.com.ua]} · for_all","K-FIT-03: edge_not_judged_error_unknown {slot: dress, levels: [crown, chin, shoulders, bust, waist]} · for_all","K-COMP-04: colour_word_not_photo {items: [{item_id: ж-09935@emmeliedelage.com, slot: shoes, colour: ?, kind: pumps, color: coral}]} + cannot_tell_items_intensity_match ; K-CRA-02: colour_word_not_photo {items: [{item_id: ж-09935@emmeliedelage.com, slot: shoes, colour: ?, kind: pumps, color: coral}]} + cannot_tell_item_carries_interest → «Колір цих кораликових човників я визначила лише за словом із опису, а не за фото, тож у цьому образі перевірила його тільки так; глянь на фото сама.»","K-ACC-12: wear_way_not_chosen {item: {item_id: ж-08173@attico.ua, kind: bag_generic, color: beige}, ways: [hand, shoulder, crossbody], item_id: ж-08173@attico.ua, kind: bag_generic, color: beige} → «Ти ще не сказала, як понесеш бежеву сумку: у руці, на плечі чи кросбоді — підійде будь-який спосіб, а свій можеш назвати в розмові.»","K-SHO-11: calf_girth_not_measured · for_all","K-SHO-09: leg_proportion_template_crotch · for_all","K-END-01: wear_cost_no_duration_surface · for_all","K-ACC-10: rule_input_missing {fields: [заявлена_колона], items: [ж-00647@alot.com.ua, ж-09935@emmeliedelage.com, ж-09935@emmeliedelage.com, ж-08173@attico.ua, ж-11771@theoriginals.com.ua, ж-11782@theoriginals.com.ua]} · for_all","K-REG-03: items_register_unknown {count: 3} · for_all","площа: areas_not_measured · for_all","K-BOD-05: vertical_balance_not_judged · for_all","K-SIZ-01: no_input_hand_finger_neck_sizes · for_all","K-EYE-01: no_input_frame_size · for_all","K-WCH-01: no_input_watch_size · for_all","K-GLV-01: no_input_glove_size · for_all","K-HAT-01: no_input_hat_girth · for_all","K-ACC-03: no_input_hardware_metal · for_all","K-ACC-08: no_input_scarf_chosen_last · for_all","K-ACC-11: no_input_pocket_square · for_all","K-EYE-04: no_input_lens_prescription · for_all","K-SCL-01: no_input_facial_feature_scale · for_all","K-JEW-03: no_input_stone_clarity_band_width · for_all","K-ACC-09: no_input_brooch_weight · for_all","K-HAT-02: no_input_hat_brim_vs_cheekbones · for_all","K-SHO-06: no_input_shoes_formality_outlier_rule · for_all","K-SHO-12: no_input_toe_shape · for_all","K-REG-02: her_register_unknown · for_all"],"тексти_питань":["Колір цих кораликових човників я визначила лише за словом із опису, а не за фото, тож у цьому образі перевірила його тільки так; глянь на фото сама.","Ти ще не сказала, як понесеш бежеву сумку: у руці, на плечі чи кросбоді — підійде будь-який спосіб, а свій можеш назвати в розмові."],"питань_без_перекладу":0,"питань_з_пам_яті":0,"схема":{"вийшла":true,"основа":null},"питань_від_шару":2,"питань_перекладено":2}
+   рука 2 {"рука":"2","речей":4,"фото":4,"без_свого":0,"свідомі_список":["Червоний клатч зі шкіри — Червоний клатч відлунює бордові туфлі як один акцент; він трохи ошатніший, ніж вимагає день, і я це допускаю.","Костюм сірий, Човники жіночі Tamaris бордові, Червоний клатч зі шкіри — Костюм, туфлі й клатч трохи вищі за ошатний рівень, і я це допускаю. Як сестра нареченої ти будеш на сімейних фото, а вишуканий образ пасує до цього краще, ніж надто невимушений.","Червоний клатч зі шкіри — Червоний клатч ділить роль акценту з бордовими туфлями, тому я використовую його як навмисне відлуння; він також трохи ошатніший за рівень цього дня."],"назви_обидві":["Костюм сірий","Модель №905 сірий","Човники жіночі Tamaris бордові","Човники жіночі Tamaris 342 MAHOGANY (2026-2027)","Червоний клатч зі шкіри","Сережки"],"ід_речей":["ж-04513@stolyarchuk.com.ua","ж-12409@welfare.ua","ж53-b990b1873f0fbd6fa698@theoriginals.com.ua","ж-07619@gepur.com"],"свідомі_ід":[["ж53-b990b1873f0fbd6fa698@theoriginals.com.ua"],["ж-04513@stolyarchuk.com.ua","ж-12409@welfare.ua","ж53-b990b1873f0fbd6fa698@theoriginals.com.ua"],["ж53-b990b1873f0fbd6fa698@theoriginals.com.ua"]],"ціни":4,"текст":1888,"ітерацій":3,"викликів":4,"назви":["Костюм сірий","Човники жіночі Tamaris бордові","Червоний клатч зі шкіри","Сережки"],"проза":"{\"version\":\"1\",\"text\":\"I chose a suit as the base because you are the bride's sister, and that deserves a look a little dressier than the usual guest outfit. It carries you from the outdoor ceremony at four in the afternoon through to the restaurant without a change. The pumps and clutch keep that same polished level, and the earrings are the one point of shine. The pumps' pointed toe and raised heel lengthen the line of your leg, so the outfit stays clean and uninterrupted from the suit down to the shoes.\",\"how_to_wear\":[\"Keep the earrings as the only statement piece against the suit, so the outfit stays calm and polished from the ceremony into the evening.\",\"The pumps have a slim heel, so on the grass at the outdoor ceremony stay on paths and firm ground where you can.\"],\"named\":[{\"n\":\"#427·33\",\"what\":\"suit\"},{\"n\":\"#329·42\",\"what\":\"pumps\"},{\"n\":\"#94·14\",\"what\":\"earrings\"}],\"about_items\":[{\"n\":\"#427·33\",\"text\":\"A suit is the right base for a sister of the bride: it looks complete and put together at an outdoor ceremony and holds up just as well at the restaurant afterwards. I chose it a step dressier than a typical guest look on purpose, because of your role in the day.\"},{\"n\":\"#329·42\",\"text\":\"The deep burgundy-brown pumps add a rich, grounded colour for a warm August day. Their pointed toe and mid heel give a long, elegant leg line and keep your look at the level of the occasion.\"},{\"n\":\"#560·35\",\"text\":\"A clutch suits a long wedding day, from the ceremony to the restaurant, and keeps the outfit tidy. It is a little more formal than the occasion strictly needs, which is why I picked it as part of a deliberately dressier look for the bride's sister.\"},{\"n\":\"#94·14\",\"text\":\"The silver sculpted earrings give the outfit one bright, festive accent near your face, which suits a wedding celebration. They finish the look without needing any other jewellery.\"}]}","назви_до_шару":["Костюм сірий","Човники жіночі Tamaris бордові","Червоний клатч зі шкіри","Сережки"],"не_перекладено":[],"збій":false,"мова_видано":"так","свідомі":3,"різноманітність":true,"питань":32,"питань_картці":1,"чекають":0,"відкладено":0,"для_всіх":31,"кнопка":"Що я не змогла перевірити","питання":["K-SHO-13: shoe_size_not_checked {item: {item_id: ж-12409@welfare.ua, kind: pumps, color: burgundy}, item_id: ж-12409@welfare.ua, kind: pumps, color: burgundy} + her_foot_length_unknown + item_insole_length_unknown · for_all","K-COL-01: cannot_tell_lightness_structure {items: [{item_id: ж-12409@welfare.ua, slot: shoes, kind: pumps, color: burgundy}, {item_id: ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, slot: bag, kind: clutch, color: red}]} · for_all · on_expand","K-COL-06-M: rule_input_missing {fields: [тепло_особи], items: [ж-07619@gepur.com]} · for_all","K-COL-06-T: rule_input_missing {fields: [місце_речі], items: [ж-04513@stolyarchuk.com.ua]} · for_all","K-SIZ-02: size_is_label_not_fit {sizes: [{slot: set, range: 42–48}]} · for_all","K-WEA-03: rule_input_missing {fields: [сонце], items: [ж-04513@stolyarchuk.com.ua, ж-12409@welfare.ua, ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, ж-07619@gepur.com]} · for_all","сегментація: rule_input_missing {fields: [місце_речі.біля_обличчя], items: [ж-04513@stolyarchuk.com.ua]} · for_all","K-FIT-03: edge_not_judged_error_unknown {slot: set, levels: [crown, chin, shoulders, bust, waist]} · for_all","K-INT-04: colour_word_shop {items: [{item_id: ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, slot: bag, colour: червоний, kind: clutch, color: red}]} + cannot_tell_item_carries_interest ; K-COMP-04: colour_word_shop {items: [{item_id: ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, slot: bag, colour: червоний, kind: clutch, color: red}]} + cannot_tell_items_intensity_match ; K-PAL-18: colour_word_shop {items: [{item_id: ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, slot: bag, colour: червоний, kind: clutch, color: red}]} + cannot_tell_accent_role_chroma → «Колір червоного клатча я знаю лише зі слова крамниці, а не з вимірювання за фото, тож у цьому образі його перевірено тільки за цим словом; глянь на фото сама.»","K-SHO-11: calf_girth_not_measured · for_all","K-SHO-09: leg_proportion_template_crotch · for_all","K-END-01: wear_cost_no_duration_surface · for_all","K-ACC-10: rule_input_missing {fields: [заявлена_колона], items: [ж-04513@stolyarchuk.com.ua, ж-12409@welfare.ua, ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, ж-07619@gepur.com]} · for_all","K-REG-03: items_register_unknown {count: 2} · for_all","площа: areas_not_measured · for_all","K-BOD-05: vertical_balance_not_judged · for_all","K-SIZ-01: no_input_hand_finger_neck_sizes · for_all","K-EYE-01: no_input_frame_size · for_all","K-WCH-01: no_input_watch_size · for_all","K-GLV-01: no_input_glove_size · for_all","K-HAT-01: no_input_hat_girth · for_all","K-ACC-03: no_input_hardware_metal · for_all","K-ACC-08: no_input_scarf_chosen_last · for_all","K-ACC-11: no_input_pocket_square · for_all","K-EYE-04: no_input_lens_prescription · for_all","K-SCL-01: no_input_facial_feature_scale · for_all","K-JEW-03: no_input_stone_clarity_band_width · for_all","K-ACC-09: no_input_brooch_weight · for_all","K-HAT-02: no_input_hat_brim_vs_cheekbones · for_all","K-SHO-06: no_input_shoes_formality_outlier_rule · for_all","K-SHO-12: no_input_toe_shape · for_all","K-REG-02: her_register_unknown · for_all"],"тексти_питань":["Колір червоного клатча я знаю лише зі слова крамниці, а не з вимірювання за фото, тож у цьому образі його перевірено тільки за цим словом; глянь на фото сама."],"питань_без_перекладу":0,"питань_з_пам_яті":0,"схема":{"вийшла":true,"основа":null},"питань_від_шару":1,"питань_перекладено":1}
+
+ПЛАНУВАЛЬНИК · збирання → чотири картки · стінний 218.7 с · викликів 20 · спроб 20 · обривів 0 (HTTP 599 стенда 0) · повторів 0 · черга 2 с · модель 391.9 с · токени вхід 297458 / кеш 0 / вихід 47699 · обрізано 0 · одночасно 4
+   · OUTFITS_V1 · пул — викликів 2 · модель 178.5 с (найдовший 99.4) · черга 0 с · вхід ≤ 156710 симв. · стеля виводу 2800 · токени 134575/24094
+   · мова — викликів 8 · модель 93 с (найдовший 23.9) · черга 2 с · вхід ≤ 6720 симв. · стеля виводу 4000 · токени 27098/11074
+   · OUTFITS_V1 — викликів 2 · модель 49.7 с (найдовший 27.8) · черга 0 с · вхід ≤ 92613 симв. · стеля виводу 4000 · токени 75724/6317
+   · DESCRIPTION_V1 — викликів 2 · модель 40.3 с (найдовший 21.4) · черга 0 с · вхід ≤ 16352 симв. · стеля виводу 4000 · токени 20666/3126
+   · CHOICE_V1 — викликів 2 · модель 12.6 с (найдовший 7.1) · черга 0 с · вхід ≤ 36601 симв. · стеля виводу 4000 · токени 30290/1326
+   · OUTFIT_TEXT — викликів 2 · модель 10.6 с (найдовший 5.9) · черга 0 с · вхід ≤ 3647 симв. · стеля виводу 4000 · токени 4954/807
+   · ITEM_LIST — викликів 2 · модель 7.3 с (найдовший 4.6) · черга 0 с · вхід ≤ 2632 симв. · стеля виводу 4000 · токени 4151/955
+  ✔ чотири картки, жодного збою
+   П-7 діагноз вибору палітри: ["palette · choice · scheme=нейтрали+акцент · scheme_by=stylist · scheme_rank=1 · scheme_why=why_first_advice,why_occasion · base=сірий · base_by=stylist · base_rank=5 · base_why=why_occasion,why_weather · gamut=приглушені · gamut_by=stylist","palette · choice · same_as=palette_screen"]
+  ✔ що код почув від моделі й не взяв — рядком у звіті власника (1)
+  ✔ руки 1–2: дві ітерації + вибір + опис (ітерацій 3, викликів ≥ 4); руки 3–4: складання + перелік речей (2, ітерацій 0)
+  ✔ руки 3–4: кожна річ переліку названа в прозі, і жодна названа не загубилась
+  ✔ руки 1–2: речі з фото й цінами, окрім тих, у яких свого знімка в каталозі нема (арка); руки 3–4: речі без фото (Р-4 не вирішено — картки різняться)
+  ✔ на жодній картці нема «#N·MM», hex чи кодів правил
+  ✔ на жодній картці нема id вигаданої речі рук 3–4 («м-NNN»)
+  ✔ на жодній картці нема `repr` словника чи списку («{'», «[{», «"statements"»)
+  ✔ картки рук 3–4: латиниці на видимому тексті нема — англійську моделі жінці пише лише шар (П-3)
+  ✔ проза всіх чотирьох карток є і не чужою мовою (сторож продукту на видимому тексті, МШ-1)
+  ✔ на жодній картці нема сирого JSON переліку (дужки, ```)
+  ✔ рядок «Разом» стоїть лише на картках рук 1–2, на руках 3–4 його немає
+  ✔ на картку йде лише образ, який код прийняв
+   діагноз прогону (30 рядків):
+     · passport · invented · step=layer · field=occasion_part · model_said="other" · quote=none · quote_in_her_words=no · code=kept_as_reading
+     · chat · invented · step=layer · field=occasion_part · model_said="other" · quote=none · quote_in_her_words=no · code=kept_as_reading
+     · chat · dropped · part=text · why=no_card_confirmation · removed="Ти гостя на весіллі сестри, і це серпень."
+     · chat · dropped · part=text · why=no_card_confirmation · removed="Церемонія надворі о 16:00, а потім ресторан."
+     · chat · dropped · part=text · why=no_confirmation_text
+     · chat · moved · update.formality.step_code
+     · chat · dropped · part=text · why=no_card_confirmation · removed="Я записала: ти гостя на весіллі сестри."
+     · palette · choice · scheme=нейтрали+акцент · scheme_by=stylist · scheme_rank=1 · scheme_why=why_first_advice,why_occasion · base=сірий · base_by=stylist · base_rank=5 · base_why=why_occasion,why_weather · gamut=приглушені
+     · palette · choice · same_as=palette_screen
+     · pool · cuts=set_only_in_own_slot=177,no_price=18,fabric_off_temperature=685,below_event_level_by_more_than_a_step=140,sport_or_beach_below_event_level=24,no_photo_none_opened=62,no_photo_feed_gave_none=59,no_photo_other_
+     · control · hand_2_broken=rule_off · drawn_from=K-ACC-01,K-BOD-02,K-CRA-01,K-FIT-03,K-KOH-02,K-MAT-03,K-OUT-33,K-PAL-18,K-REG-01,K-SIL-03
+     · control · blind · breakage=правило · brief_rows=28 · brief_rows_changed=0 · packet_fields_changed=0 · pair_1_2_measures=nothing
+     · control · no_input=R-COL-16=особа.бік_b.вхід: eyes_give_no_side | K-COL-06-M=метал: no_self_report_no_jewellery_wish_no_undertone | K-SHO-16=сценарій.тривалість_год|дорога_пішки_хв|поверхня: none | R-MUA-02=сценарій.макі
+     · hand_4 · items_source=separate_call · model_named=5 · on_card=5
+     · hand_3 · items_source=separate_call · model_named=6 · on_card=6
+     · hand_4 · layer · dir=out · model=claude-sonnet-5-5 · ms=18230 · texts=6 · changed=6
+     · hand_3 · layer · dir=out · model=claude-sonnet-5-5 · ms=21505 · texts=7 · changed=7
+     · hand_1 · choice_gates_accepted · outfit=о1 · rules=K-PRC-01
+     · hand_1 · description_frames_reached=2/8
+     · hand_1 · code_unknown=K-SHO-13: shoe_size_not_checked {item: {item_id: ж-09935@emmeliedelage.com, kind: pumps, color: coral}, item_id: ж-09935@emmeliedelage.com, kind: pumps, color: coral} + her_foot_length_unknown + ite
+     · hand_1.code_unknowns · layer · dir=out_messages · model=claude-sonnet-5-5 · ms=4998 · messages=3 · said=2 · foreign=питання.10
+     · hand_1.code_unknowns.retry · layer · dir=out_messages · model=claude-sonnet-5-5 · ms=1876 · messages=1 · said=1
+     · hand_1 · layer · dir=out_messages · model=claude-sonnet-5-5 · ms=2065 · messages=1 · said=1
+     · hand_1 · layer · dir=out · model=claude-sonnet-5-5 · ms=21880 · texts=9 · changed=9
+     · hand_2 · choice_gates_accepted · outfit=о5 · rules=K-KOH-05
+     · hand_2 · description_frames_reached=3/6
+     · hand_2 · code_unknown=K-SHO-13: shoe_size_not_checked {item: {item_id: ж-12409@welfare.ua, kind: pumps, color: burgundy}, item_id: ж-12409@welfare.ua, kind: pumps, color: burgundy} + her_foot_length_unknown + item_insole
+     · hand_2.code_unknowns · layer · dir=out_messages · model=claude-sonnet-5-5 · ms=2059 · messages=1 · said=1
+     · hand_2 · layer · dir=out_messages · model=claude-sonnet-5-5 · ms=0 · messages=1 · said=1
+     · hand_2 · layer · dir=out · model=claude-sonnet-5-5 · ms=24286 · texts=10 · changed=10
+   рука 3 — код не знає (0): 
+   рука 4 — код не знає (0): 
+   рука 1 — код не знає (35): K-SHO-13: shoe_size_not_checked {item: {item_id: ж-09935@emmeliedelage.com, kind: pumps, color: coral}, item_id: ж-09935@emmeliedelage.com, kind: pumps, color: coral} + her_foot_length_unknown + item_insole_length_unknown · for_all | K-COL-01: cannot_tell_lightness_structure {items: [{item_id: ж-08173@attico.ua, slot: bag, kind: bag_generic, color: beige}, {item_id: ж-09935@emmeliedelage.com, slot: shoes, kind: pumps, color: coral}]} · for_all · on_expand | K-COL-06: cannot_tell_two_neutrals_distinct {items: [{item_id: ж-09935@emmeliedelage.com, slot: shoes, kind: pumps, color: coral}, {item_id: ж-08173@attico.ua, slot: bag, kind: bag_generic, color: beige}]} · for_all · on_expand | K-COL-06-M: rule_input_missing {fields: [місце_речі], items: [ж-11782@theoriginals.com.ua]} · for_all | K-COL-06-T: rule_input_missing {fields: [місце_речі], items: [ж-00647@alot.com.ua]} · for_all | K-MAT-04: rule_input_missing {fields: [блиск], items: [ж-11782@theoriginals.com.ua]} · for_all | K-SIZ-02: size_is_label_not_fit {sizes: [{slot: dress, range: 36–38}]} · for_all | K-WEA-03: rule_input_missing {fields: [сонце], items: [ж-00647@alot.com.ua, ж-09935@emmeliedelage.com, ж-09935@emmeliedelage.com, ж-08173@attico.ua, ж-11771@theoriginals.com.ua, ж-11782@theoriginals.com.ua]} · for_all | сегментація: rule_input_missing {fields: [місце_речі.біля_обличчя], items: [ж-00647@alot.com.ua, ж-11782@theoriginals.com.ua]} · for_all | K-FIT-03: edge_not_judged_error_unknown {slot: dress, levels: [crown, chin, shoulders, bust, waist]} · for_all | K-COMP-04: colour_word_not_photo {items: [{item_id: ж-09935@emmeliedelage.com, slot: shoes, colour: ?, kind: pumps, color: coral}]} + cannot_tell_items_intensity_match ; K-CRA-02: colour_word_not_photo {items: [{item_id: ж-09935@emmeliedelage.com, slot: shoes, colour: ?, kind: pumps, color: coral}]} + cannot_tell_item_carries_interest → «Колір цих кораликових човників я визначила лише за словом із опису, а не за фото, тож у цьому образі перевірила його тільки так; глянь на фото сама.» | K-ACC-12: wear_way_not_chosen {item: {item_id: ж-08173@attico.ua, kind: bag_generic, color: beige}, ways: [hand, shoulder, crossbody], item_id: ж-08173@attico.ua, kind: bag_generic, color: beige} → «Ти ще не сказала, як понесеш бежеву сумку: у руці, на плечі чи кросбоді — підійде будь-який спосіб, а свій можеш назвати в розмові.» | K-SHO-11: calf_girth_not_measured · for_all | K-SHO-09: leg_proportion_template_crotch · for_all | K-END-01: wear_cost_no_duration_surface · for_all | K-ACC-10: rule_input_missing {fields: [заявлена_колона], items: [ж-00647@alot.com.ua, ж-09935@emmeliedelage.com, ж-09935@emmeliedelage.com, ж-08173@attico.ua, ж-11771@theoriginals.com.ua, ж-11782@theoriginals.com.ua]} · for_all | K-REG-03: items_register_unknown {count: 3} · for_all | площа: areas_not_measured · for_all | K-BOD-05: vertical_balance_not_judged · for_all | K-SIZ-01: no_input_hand_finger_neck_sizes · for_all | K-EYE-01: no_input_frame_size · for_all | K-WCH-01: no_input_watch_size · for_all | K-GLV-01: no_input_glove_size · for_all | K-HAT-01: no_input_hat_girth · for_all | K-ACC-03: no_input_hardware_metal · for_all | K-ACC-08: no_input_scarf_chosen_last · for_all | K-ACC-11: no_input_pocket_square · for_all | K-EYE-04: no_input_lens_prescription · for_all | K-SCL-01: no_input_facial_feature_scale · for_all | K-JEW-03: no_input_stone_clarity_band_width · for_all | K-ACC-09: no_input_brooch_weight · for_all | K-HAT-02: no_input_hat_brim_vs_cheekbones · for_all | K-SHO-06: no_input_shoes_formality_outlier_rule · for_all | K-SHO-12: no_input_toe_shape · for_all | K-REG-02: her_register_unknown · for_all
+   рука 2 — код не знає (32): K-SHO-13: shoe_size_not_checked {item: {item_id: ж-12409@welfare.ua, kind: pumps, color: burgundy}, item_id: ж-12409@welfare.ua, kind: pumps, color: burgundy} + her_foot_length_unknown + item_insole_length_unknown · for_all | K-COL-01: cannot_tell_lightness_structure {items: [{item_id: ж-12409@welfare.ua, slot: shoes, kind: pumps, color: burgundy}, {item_id: ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, slot: bag, kind: clutch, color: red}]} · for_all · on_expand | K-COL-06-M: rule_input_missing {fields: [тепло_особи], items: [ж-07619@gepur.com]} · for_all | K-COL-06-T: rule_input_missing {fields: [місце_речі], items: [ж-04513@stolyarchuk.com.ua]} · for_all | K-SIZ-02: size_is_label_not_fit {sizes: [{slot: set, range: 42–48}]} · for_all | K-WEA-03: rule_input_missing {fields: [сонце], items: [ж-04513@stolyarchuk.com.ua, ж-12409@welfare.ua, ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, ж-07619@gepur.com]} · for_all | сегментація: rule_input_missing {fields: [місце_речі.біля_обличчя], items: [ж-04513@stolyarchuk.com.ua]} · for_all | K-FIT-03: edge_not_judged_error_unknown {slot: set, levels: [crown, chin, shoulders, bust, waist]} · for_all | K-INT-04: colour_word_shop {items: [{item_id: ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, slot: bag, colour: червоний, kind: clutch, color: red}]} + cannot_tell_item_carries_interest ; K-COMP-04: colour_word_shop {items: [{item_id: ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, slot: bag, colour: червоний, kind: clutch, color: red}]} + cannot_tell_items_intensity_match ; K-PAL-18: colour_word_shop {items: [{item_id: ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, slot: bag, colour: червоний, kind: clutch, color: red}]} + cannot_tell_accent_role_chroma → «Колір червоного клатча я знаю лише зі слова крамниці, а не з вимірювання за фото, тож у цьому образі його перевірено тільки за цим словом; глянь на фото сама.» | K-SHO-11: calf_girth_not_measured · for_all | K-SHO-09: leg_proportion_template_crotch · for_all | K-END-01: wear_cost_no_duration_surface · for_all | K-ACC-10: rule_input_missing {fields: [заявлена_колона], items: [ж-04513@stolyarchuk.com.ua, ж-12409@welfare.ua, ж53-b990b1873f0fbd6fa698@theoriginals.com.ua, ж-07619@gepur.com]} · for_all | K-REG-03: items_register_unknown {count: 2} · for_all | площа: areas_not_measured · for_all | K-BOD-05: vertical_balance_not_judged · for_all | K-SIZ-01: no_input_hand_finger_neck_sizes · for_all | K-EYE-01: no_input_frame_size · for_all | K-WCH-01: no_input_watch_size · for_all | K-GLV-01: no_input_glove_size · for_all | K-HAT-01: no_input_hat_girth · for_all | K-ACC-03: no_input_hardware_metal · for_all | K-ACC-08: no_input_scarf_chosen_last · for_all | K-ACC-11: no_input_pocket_square · for_all | K-EYE-04: no_input_lens_prescription · for_all | K-SCL-01: no_input_facial_feature_scale · for_all | K-JEW-03: no_input_stone_clarity_band_width · for_all | K-ACC-09: no_input_brooch_weight · for_all | K-HAT-02: no_input_hat_brim_vs_cheekbones · for_all | K-SHO-06: no_input_shoes_formality_outlier_rule · for_all | K-SHO-12: no_input_toe_shape · for_all | K-REG-02: her_register_unknown · for_all
+   картка: [["",0,true],["",0,true],["Що я не змогла перевірити · 2",2,true],["Що я не змогла перевірити · 1",1,true]]
+  ІД ЗВІРКИ: {"назва":"блок «що не перевірено» відповідає переліку перекладів і запасних станів; згорнутий, підпис і число рядків без «код»","стала":"блок «що не перевірено» є там і лише там, де шар дав речення; згорнутий, підпис — слова шару й число рядків, без «код»"}
+  ✔ блок «що не перевірено» відповідає переліку перекладів і запасних станів; згорнутий, підпис і число рядків без «код»
+  ✔ розгорнутий перелік — усі речення шару (без стелі, п.9; рядок 1447)
+  ✔ кожне «код не знає» має відповідь моделі до мовного сторожа
+   перекладено після мовного сторожа (окремо від доставки відповіді): [["3",0,0,0],["4",0,0,0],["1",2,0,2],["2",1,0,1]]
+   «код не знає» для картки / на розгортання / лише у звіті (для_всіх) / усього: [["3",0,0,0,0,null],["4",0,0,0,0,null],["1",2,0,33,35,"Що я не змогла перевірити"],["2",1,0,31,32,"Що я не змогла перевірити"]]
+   «код не знає», питання з пам'яті: {"питань":5,"з_пам_яті":5,"записів":0,"без_тексту":0}
+  ✔ питання, яких картці не ставили вдруге, — з пам'яті: виклику шару нема, число лягло в картку
+  ✔ жива модель шару: кожне питання дійшло до картки українським реченням
+  ✔ у блоці «код не знає» — лише речення шару: жодного коду заяви, ключа з підкресленням чи ID правила
+  ✔ дотик по «код не знає» діє на всі картки з переліком і переживає перемальовування
+  ✔ суд лише в руках 1–2: руки 3/4 без знахідок і без питань «код не знає»
+   → у мережу (FOTO=1): https://alot.com.ua/imgs/b808.jpg
+   → у мережу (FOTO=1): https://emmeliedelage.com/content/images/6/1200x1800l80nn0/slinhbeky-zamshevi-koralovi-hillary-58588
+   → у мережу (FOTO=1): https://attico.ua/wp-content/uploads/2026/05/11-260-04_1.jpg
+   → у мережу (FOTO=1): https://images.theoriginals.com.ua/cache/webp/catalog/product_photo/77092/aksessuary-guzema-fine-jew
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/kartka_87_seed3_zgornuto.png 228354 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/kartka_87_seed3_rozgornuto.png 253311 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/kartka_m001_seed3_ruka3_rozgornuto.png 191141 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/kartka_poz0_ruka3_seed3.png 192782 Б
+   плитки kartka_poz0_ruka3: {"плиток":0,"img_у_центрі":0,"без_img":[]}
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/kartka_poz1_ruka4_seed3.png 150309 Б
+   плитки kartka_poz1_ruka4: {"плиток":0,"img_у_центрі":0,"без_img":[]}
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/kartka_poz2_ruka1_seed3.png 291854 Б
+   плитки kartka_poz2_ruka1: {"плиток":5,"img_у_центрі":4,"без_img":[2]}
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/kartka_poz3_ruka2_seed3.png 252550 Б
+   плитки kartka_poz3_ruka2: {"плиток":4,"img_у_центрі":3,"без_img":[0]}
+   фото карток: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/фото_карток.txt 5134 Б · прийшло 14 з 14 · листів мережі про картинки: 31
+  ✗ руки 1–2: жінка БАЧИТЬ фото речей на картці (речей із видимим знімком ≥ речей із власним фото), а не силуети  →  [["3",0,0],["4",0,0],["1",5,4],["2",4,3]]
+     IMGRESP 403 https://attico.ua/wp-content/uploads/2026/05/11-260-04_1.jpg
+     IMGRESP 403 https://attico.ua/wp-content/uploads/2026/05/11-260-04_2.jpg
+     IMGRESP 403 https://attico.ua/wp-content/uploads/2026/05/11-260-04_3.jpg
+     IMGRESP 403 https://attico.ua/wp-content/uploads/2026/05/11-260-04_4.jpg
+     IMGRESP 403 https://attico.ua/wp-content/uploads/2026/05/11-260-04_1.jpg
+     IMGRESP 403 https://attico.ua/wp-content/uploads/2026/05/11-260-04_2.jpg
+     IMGRESP 403 https://attico.ua/wp-content/uploads/2026/05/11-260-04_3.jpg
+     IMGRESP 403 https://attico.ua/wp-content/uploads/2026/05/11-260-04_4.jpg
+   кадрів не дійшло до моделі: 9 · отримання/декодування тип image/webp без sharp · https://emmeliedelage.com/content/images/6/1200x1800l80nn0/slinhbeky-zamshevi-koralovi-hil | отримання/декодування тип image/webp без sharp · https://emmeliedelage.com/content/images/6/400x600l95nn0/slinhbeky-zamshevi-koralovi-hilla | HTTP 403 · https://attico.ua/wp-content/uploads/2026/05/11-260-04_1.jpg | HTTP 403 · https://attico.ua/wp-content/uploads/2026/05/11-260-04_2.jpg | отримання/декодування тип image/webp без sharp · https://images.theoriginals.com.ua/cache/webp/catalog/product_photo/77092/aksessuary-guzem
+   видимий текст карток: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/картки.txt 14663 Б · «ші» у видимому тексті карток: 0/0/0/0
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/spysok_kartok_seed3.png 252383 Б
+
+3. промптів до моделі: 26 {"мовний шар: хід розмови":1,"мовний шар: репліка":2,"мовний шар":10,"вибір палітри (стилістка)":1,"ПАКЕТ_V1→ОБРАЗИ_V1":2,"проза: рука 3/4":2,"перелік речей (руки 3–4)":2,"ВЕРДИКТ_V1→ОБРАЗИ_V1":2,"ВЕРДИКТ_V1→ВИБІР_V1":2,"ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1":2}
+   розмір запитів (симв. разом із base64 фото; стеля моста 400000):
+     # 1 мовний шар: хід розмови                  текст   36002 · фото 0 · разом   37293
+     # 2 мовний шар: репліка                      текст    4398 · фото 0 · разом    4809
+     # 3 мовний шар: репліка                      текст    4590 · фото 0 · разом    5003
+     # 4 мовний шар                               текст    8723 · фото 0 · разом    9496
+     # 5 вибір палітри (стилістка)                текст   12072 · фото 0 · разом   13563
+     # 6 мовний шар                               текст    7936 · фото 0 · разом    8601
+     # 7 ПАКЕТ_V1→ОБРАЗИ_V1                       текст  138734 · фото 0 · разом  156693
+     # 8 проза: рука 3/4                          текст    3306 · фото 0 · разом    3647
+     # 9 проза: рука 3/4                          текст    2979 · фото 0 · разом    3284
+     #10 ПАКЕТ_V1→ОБРАЗИ_V1                       текст  138751 · фото 0 · разом  156710
+     #11 перелік речей (руки 3–4)                 текст    2483 · фото 0 · разом    2632
+     #12 перелік речей (руки 3–4)                 текст    2162 · фото 0 · разом    2305
+     #13 мовний шар                               текст    5489 · фото 0 · разом    5608
+     #14 мовний шар                               текст    5856 · фото 0 · разом    5987
+     #15 ВЕРДИКТ_V1→ОБРАЗИ_V1                     текст   80133 · фото 0 · разом   89660
+     #16 ВЕРДИКТ_V1→ВИБІР_V1                      текст   30505 · фото 0 · разом   33968
+     #17 ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1                текст   13420 · фото 8 · разом   16352
+     #18 ВЕРДИКТ_V1→ОБРАЗИ_V1                     текст   82730 · фото 0 · разом   92613
+     #19 мовний шар                               текст    3872 · фото 0 · разом    3992
+     #20 мовний шар                               текст    5744 · фото 0 · разом    6016
+     #21 мовний шар                               текст    6511 · фото 0 · разом    6637
+     #22 мовний шар                               текст    4393 · фото 0 · разом    4551
+     #23 ВЕРДИКТ_V1→ВИБІР_V1                      текст   32800 · фото 0 · разом   36601
+     #24 ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1                текст   13276 · фото 6 · разом   15671
+     #25 мовний шар                               текст    4238 · фото 0 · разом    4387
+     #26 мовний шар                               текст    6590 · фото 0 · разом    6720
+  ✔ жоден запит не переріс стелю моста (наряд Л-2: код зменшує фото сам)
+  ✔ запит із її фото коштує більше за свій текст, і різниця видна (фото справді поїхали)
+   розміри запитів: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/розміри_запитів_seed3.txt
+  ✔ кожен промпт ітерацій 1–2, вибору й опису — один JSON-обʼєкт
+  ✔ опис іде з фото речей (блоки image у виклику 4)
+  ✔ невідомих промптів нема
+   мовний шар: модель claude-sonnet-5-5 · викликів у картках 9 · текстів 39, змінено 39 · без відповіді 0 · мс 21505/18230/4998/1876/2065/21880/2059/0/24286 · реплік чату з записами шару 1 з 1
+     · hand_3 · опис: Midi wrap dress, A-line skirt with a softly flared hem, falling just below the knee, in dusty sage green (#9CAF9A), ligh
+         → Сукня міді із запахом, А-подібна спідниця з м'яко розкльошеним низом, довжиною трохи нижче коліна, у приглушеному шавліє
+     · hand_3 · річ.0.назва: Midi wrap dress
+         → Сукня міді із запахом
+     · hand_3 · річ.1.назва: Heeled sandals
+         → Босоніжки на підборах
+     · hand_3 · річ.2.назва: Clutch bag
+         → Клатч
+     · hand_3 · річ.3.назва: Drop earrings
+         → Сережки-краплі
+     · hand_3 · річ.4.назва: Thin bracelet
+         → Тонкий браслет
+     · hand_3 · річ.5.назва: Lightweight shawl
+         → Легка шаль
+     · hand_4 · опис: Midi wrap dress, A-line skirt, flutter sleeves, V-neckline, sage green (#9CAF88), lightweight crepe chiffon with a linin
+         → Сукня з запахом довжини міді, спідниця А-подібного крою, рукави-воланчики, V-подібний виріз, шавлієво-зелена, легкий кре
+     · hand_4 · річ.0.назва: Wrap dress
+         → Сукня з запахом
+     · hand_4 · річ.1.назва: Heeled sandals
+         → Босоніжки на підборах
+     · hand_4 · річ.2.назва: Clutch
+         → Клатч
+     · hand_4 · річ.3.назва: Drop earrings
+         → Сережки-краплі
+     · hand_4 · річ.4.назва: Bangle bracelet
+         → Браслет-обруч
+     · hand_1.code_unknowns · питання.10: {"kind":"card_unchecked","statements":[{"code":"colour_word_not_photo","values":{"items":[{"item_id":"ж-09935@emmeliedel
+         → Колір цих кораликових човників я визначила лише за словом із опису, а не за фото, тож у цьому образі перевірила його тіл
+     · hand_1.code_unknowns · питання.11: {"kind":"card_unchecked","statements":[{"code":"wear_way_not_chosen","values":{"item":{"item_id":"ж-08173@attico.ua","ki
+         → Ти ще не сказала, як понесеш бежеву сумку: у руці, на плечі чи кросбоді — підійде будь-який спосіб, а свій можеш назвати
+     · hand_1.code_unknowns · кнопка: {"kind":"card_unknowns_toggle","statements":[{"code":"unchecked_in_this_look"}]}
+         → Що я не змогла перевірити
+     · hand_1.code_unknowns.retry · питання.10: {"kind":"card_unchecked","statements":[{"code":"colour_word_not_photo","values":{"items":[{"item_id":"ж-09935@emmeliedel
+         → Колір цих кораликових човників я визначила лише за словом із опису, а не за фото, тож у цьому образі перевірила його тіл
+     · hand_1 · кадр_не_відкрився: {"kind":"no_photo_reason","statements":[{"code":"no_photo_frames_did_not_open"}]}
+         → Крамниця надала фото цієї речі, але жодне з них не відкрилося, чому саме — не знаю.
+     · hand_1 · про_річ.0: A dress is the easiest way to look complete as a wedding guest, and its gathered waist and flowing tiered skirt give you
+         → Сукня — найпростіший спосіб виглядати завершено як гостя на весіллі, а зібрана талія та пишна ярусна спідниця, що спадає
+     · hand_1 · про_річ.1: Pumps give a dressy finish suited to your sister's wedding and the restaurant afterwards. The heel lengthens the line fr
+         → Туфлі-човники надають ошатного завершення, яке пасує весіллю твоєї сестри та ресторану після нього. Підбор подовжує ліні
+     · hand_1 · про_річ.2: A bag holds what you need through a long day that runs from the ceremony into the reception, and it keeps the outfit tid
+         → Сумка вміщає все потрібне протягом довгого дня, що тягнеться від церемонії до прийому, і робить образ охайним і завершен
+     · hand_1 · про_річ.3: The earrings add a festive touch at the face for a family celebration. I kept them as the one place where the outfit spa
+         → Сережки додають святковий акцент біля обличчя для родинного свята. Я залишила їх єдиним місцем, де образ трохи виблискує
+     · hand_1 · про_річ.4: The necklace adds a finishing detail at the neckline and makes the outfit feel dressed for the occasion, so it works for
+         → Намисто додає завершальну деталь біля горловини й робить образ доречним для події, тож пасує і до церемонії, і до рестор
+     · hand_1 · опис: The dress carries the whole look: a green dress is a festive choice for a guest and leaves white to the bride. The pumps
+         → Сукня тримає весь образ: зелена сукня — святковий вибір для гості, що залишає біле нареченій. Туфлі-човники, сумка, сере
+     · hand_1 · як_носити.0: Let the necklace sit just above the round neckline of the dress, and keep the earrings simple beside it so the ruffled s
+         → Нехай намисто лежить трохи вище круглого вирізу сукні, а сережки тримай простими поруч із ним, щоб головним лишалися пле
+     · hand_1 · як_носити.1: Wear the pumps with the dress for the whole day, from the ceremony to the restaurant, so the hem and the heel form one l
+         → Носи туфлі-човники із сукнею весь день, від церемонії до ресторану, щоб поділ і підбор утворювали одну довгу лінію під к
+     · hand_1 · свідомі.0: Сукня зелена з квітковим принтом до коліна, Фігурні золоті сережки — The dress and the gold earrings cost more than most
+         → Сукня зелена з квітковим принтом до коліна, Фігурні золоті сережки — Сукня і золоті сережки коштують більше, ніж більшіс
+     · hand_2.code_unknowns · питання.8: {"kind":"card_unchecked","statements":[{"code":"colour_word_shop","values":{"items":[{"item_id":"ж53-b990b1873f0fbd6fa69
+         → Колір червоного клатча я знаю лише зі слова крамниці, а не з вимірювання за фото, тож у цьому образі його перевірено тіл
+     · hand_2 · кадр_не_відкрився: {"kind":"no_photo_reason","statements":[{"code":"no_photo_frames_did_not_open"}]}
+         → Крамниця надала фото цієї речі, але жодне з них не відкрилося, чому саме — не знаю.
+     · hand_2 · про_річ.0: A suit is the right base for a sister of the bride: it looks complete and put together at an outdoor ceremony and holds 
+         → Костюм — правильна основа для сестри нареченої: він виглядає завершеним і зібраним на церемонії просто неба й так само д
+     · hand_2 · про_річ.1: The deep burgundy-brown pumps add a rich, grounded colour for a warm August day. Their pointed toe and mid heel give a l
+         → Туфлі-човники глибокого бордово-коричневого відтінку додають насиченого, землистого кольору для теплого серпневого дня. 
+     · hand_2 · про_річ.2: A clutch suits a long wedding day, from the ceremony to the restaurant, and keeps the outfit tidy. It is a little more f
+         → Клатч пасує до довгого весільного дня, від церемонії до ресторану, і тримає образ охайним. Він трохи офіційніший, ніж на
+     · hand_2 · про_річ.3: The silver sculpted earrings give the outfit one bright, festive accent near your face, which suits a wedding celebratio
+         → Срібні скульптурні сережки дають образу один яскравий, святковий акцент біля твого обличчя, що пасує весільному святу. В
+     · hand_2 · опис: I chose a suit as the base because you are the bride's sister, and that deserves a look a little dressier than the usual
+         → Я обрала костюм основою, бо ти сестра нареченої, а це заслуговує на образ трохи ошатніший за звичайний гостьовий. Він пр
+     · hand_2 · як_носити.0: Keep the earrings as the only statement piece against the suit, so the outfit stays calm and polished from the ceremony 
+         → Тримай сережки єдиним яскравим акцентом на тлі костюма, щоб образ лишався спокійним і вишуканим від церемонії до вечора.
+     · hand_2 · як_носити.1: The pumps have a slim heel, so on the grass at the outdoor ceremony stay on paths and firm ground where you can.
+         → Туфлі-човники мають тонкий підбор, тому на траві під час церемонії просто неба тримайся доріжок і твердого ґрунту, де мо
+     · hand_2 · свідомі.0: Червоний клатч зі шкіри — The red clutch echoes the burgundy shoes as one accent; it is a little dressier than the day a
+         → Червоний клатч зі шкіри — Червоний клатч відлунює бордові туфлі як один акцент; він трохи ошатніший, ніж вимагає день, і
+     · hand_2 · свідомі.1: Костюм сірий, Човники жіночі Tamaris бордові, Червоний клатч зі шкіри — The suit, shoes and clutch sit a little above th
+         → Костюм сірий, Човники жіночі Tamaris бордові, Червоний клатч зі шкіри — Костюм, туфлі й клатч трохи вищі за ошатний ріве
+     · hand_2 · свідомі.2: Червоний клатч зі шкіри — The red clutch shares the accent role with the burgundy shoes, so I use it as a deliberate ech
+         → Червоний клатч зі шкіри — Червоний клатч ділить роль акценту з бордовими туфлями, тому я використовую його як навмисне в
+  ✔ що перша відповідь шару не переклала — добрав повтор; вхідним назавжди не лишилось нічого (П-3)
+  ✔ кожна картка з речами пройшла мовний шар (запис виклику в картці)
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/otsin1_1_do_dotyku_seed3.png 54373 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/otsin1_2_pislia_dotyku_fokus_seed3.png 57532 Б
+
+4а. ОЦІН-1 · вердикт з одного дотику: записів до 0 → після дотику по «Вдягнеш?» 1 · лічильник «оцінено 0 з 4» → «оцінено 1 з 4» · {"рамка":true,"порада":"Вердикт уже записано. Кілька речень своїми словами дуже допоможуть: що саме відгукнулось.","кнопка_вимкнена":false,"статус":"Записано."}
+  ✔ один дотик по «Вдягнеш?» уже пише вердикт: +1 запис, без «Записати вердикт»
+  ✔ лічильник «оцінено N з M» біля «1 / 4» росте з дотиком
+  ✔ після дотику поле — фокус (рамка), поруч м'який рядок «вердикт уже записано», кнопка не вимкнена
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/otsin1_3_pislia_zapysu_nastupна_seed3.png 59478 Б
+   після слів і «Записати вердикт»: записів 1 · видно картку 1 · лічильник «оцінено 1 з 4»
+  ✔ друга вісь, слова й «Записати вердикт» дописують ТОЙ САМИЙ запис, а не плодять другий
+  ✔ «Записати вердикт» веде на наступну неоцінену картку (наступна жива після першої)
+  ✔ змінила відповідь «Вдягнеш?» — запис оновлено (їх лишилось стільки ж), не додано
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/otsin1_4_usi_otsineni_seed3.png 57030 Б
+   усі картки торкнуто: записів 4 на 4 карток · лічильник «оцінено 4 з 4» · картка на екрані 3
+  ✔ усі оцінено — «оцінено M з M», один запис на картку
+  ✔ неоцінених нема — лишаємось на місці, без нових екранів
+
+4. журнал: записів 4 · колонок у шапці 92
+    {"рука":"3","поломка":"","паспорт_джерело":"модель","чат_повідомлень":"2","мова":"","свідомі":"","виконано":"","різноманітність":"","викликів":"2"}
+    {"рука":"4","поломка":"","паспорт_джерело":"модель","чат_повідомлень":"2","мова":"","свідомі":"","виконано":"","різноманітність":"","викликів":"2"}
+    {"рука":"1","поломка":"","паспорт_джерело":"модель","чат_повідомлень":"2","мова":"","свідомі":"Сукня зелена з квітковим принтом до коліна, Фігурні золоті с","виконано":"усе","різноманітність":"ок","викликів":"4"}
+    {"рука":"2","поломка":"правило: rule_off · id=K-OUT-33 · theme=weather · breaks=1 ·","паспорт_джерело":"модель","чат_повідомлень":"2","мова":"","свідомі":"Червоний клатч зі шкіри — Червоний клатч відлунює бордові ту","виконано":"усе","різноманітність":"ок","викликів":"4"}
+  ✔ чотири записи, кожен має всі колонки шапки
+   дотик по чипах: {"зроблено":{"верд":["as_is"],"для_мене":["mine"],"аспекти":["colour","cut"]},"не":[],"верд":"вдягну як є","для_мене":"саме моє","верд_код":"as_is","моє_код":"mine","аспекти":["colour","cut"],"аспекти_знак":"plus","питання":"Що саме робить його твоїм?"}
+   дотик по чипах: {"зроблено":{"верд":["as_is"],"для_мене":["mine"]},"не":[],"верд":"вдягну як є","для_мене":"саме моє","верд_код":"as_is","моє_код":"mine","аспекти":[],"аспекти_знак":"plus","питання":"Що саме робить його твоїм?"}
+   дотик по чипах: {"зроблено":{"верд":["as_is"],"для_мене":["mine"],"аспекти":["colour"]},"не":[],"верд":"вдягну як є","для_мене":"саме моє","верд_код":"as_is","моє_код":"mine","аспекти":["colour"],"аспекти_знак":"plus","питання":"Що саме робить його твоїм?"}
+   дотик по чипах: {"зроблено":{"верд":["as_is"],"для_мене":["mine"]},"не":[],"верд":"вдягну як є","для_мене":"саме моє","верд_код":"as_is","моє_код":"mine","аспекти":[],"аспекти_знак":"plus","питання":"Що саме робить його твоїм?"}
+   у журналі: {"рука":"3","позиція":1,"вердикт_людини":"вдягну як є","вердикт_код":"as_is","моє_код":"mine","аспекти_знак":"plus","вдалось":"colour+cut","причини":"","питання_поля":"as_is.mine"}
+   у журналі: {"рука":"4","позиція":2,"вердикт_людини":"вдягну як є","вердикт_код":"as_is","моє_код":"mine","аспекти_знак":"","вдалось":"","причини":"","питання_поля":"as_is.mine"}
+   у журналі: {"рука":"1","позиція":3,"вердикт_людини":"вдягну як є","вердикт_код":"as_is","моє_код":"mine","аспекти_знак":"plus","вдалось":"colour","причини":"","питання_поля":"as_is.mine"}
+   у журналі: {"рука":"2","позиція":4,"вердикт_людини":"вдягну як є","вердикт_код":"as_is","моє_код":"mine","аспекти_знак":"","вдалось":"","причини":"","питання_поля":"as_is.mine"}
+  ✔ дотик по чипах вердикту кладе КОДИ двох осей (не лише напис), і питання над полем іде за ними
+  ✔ колонки КВ-1 у журналі несуть значення: `вердикт_код`, `моє_код`, `питання_поля`, а знак і «вдалось» — де були аспекти
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/verdykt_po_dotyku_poz0_seed3.png 209412 Б
+   плитки verdykt_po_dotyku_poz0: {"плиток":0,"img_у_центрі":0,"без_img":[]}
+
+4г. КВ-2, шість кнопок на 390 px: {"ряди":[{"рядків":1,"ширина":314,"чипи":271.4,"висота":44},{"рядків":1,"ширина":314,"чипи":224.2,"висота":44}],"осі_кегль":14.5,"поле_кегль":22,"висота_двох_осей":214.3,"висота_блоку":839.9,"висота_поля":381.8,"поле":154,"прокрутка":false,"предки":[".ряд.ряд-осі 314 pad 0px/0px mar 0px/0px",".вердикт 314 pad 0px/0px mar 18px/18px","#к-0.картка 350 pad 0px/0px mar 0px/0px","#картки. 350 pad 0px/0px mar 0px/0px","#е-образи.екран 350 pad 0px/0px mar 0px/0px","#колонка.колонка 390 pad 20px/20px mar 0px/0px"]}
+  ✔ КВ-2: кожен ряд осей — ОДИН рядок на 390 px, без горизонтальної прокрутки, і питання осей дрібніше за питання поля
+   «код не знає» — повний перелік проти звіту: [{"рука":"3","у_звіті":0,"повний":0},{"рука":"4","у_звіті":0,"повний":0},{"рука":"1","у_звіті":35,"повний":35},{"рука":"2","у_звіті":32,"повний":32}]
+   картка малює всі свої речення (без `для_всіх`) · звіт — [0,0,35,32]
+  ✔ колонка `питання_коду` звіту несе ПОВНИЙ перелік коду (N у звіті = N коду ≥ N на картці)
+   етапи руки 3 {"рука":"3","є":true,"розділів":["виклики","викликів","довідник_речей","діагноз_прогону","діагноз_руки","прогін","розмова","суд"],"викликів":2,"кроки":["assembly","item_list"],"стадії":["assembly","item_list"],"пул":555,"відсічено":13,"без_входу":null,"знахідок_суду":0,"питань_суду":0,"діагнозу":15,"символів":74152}
+   етапи руки 4 {"рука":"4","є":true,"розділів":["виклики","викликів","довідник_речей","діагноз_прогону","діагноз_руки","прогін","розмова","суд"],"викликів":2,"кроки":["assembly","item_list"],"стадії":["assembly","item_list"],"пул":555,"відсічено":13,"без_входу":null,"знахідок_суду":0,"питань_суду":0,"діагнозу":15,"символів":71078}
+   етапи руки 1 {"рука":"1","є":true,"розділів":["виклики","викликів","довідник_речей","діагноз_прогону","діагноз_руки","прогін","розмова","суд"],"викликів":4,"кроки":["assembly","repair","choice","description"],"стадії":["assembly","repair","choice","description"],"пул":555,"відсічено":13,"без_входу":21,"знахідок_суду":6,"питань_суду":36,"діагнозу":20,"символів":1167681}
+   етапи руки 2 {"рука":"2","є":true,"розділів":["виклики","викликів","довідник_речей","діагноз_прогону","діагноз_руки","прогін","розмова","суд"],"викликів":4,"кроки":["assembly","repair","choice","description"],"стадії":["assembly","repair","choice","description"],"пул":555,"відсічено":13,"без_входу":18,"знахідок_суду":7,"питань_суду":34,"діагнозу":19,"символів":1166473}
+  ✔ колонка `етапи` є на КОЖНІЙ руці й несе хід рішення (прогін, виклики, суд, діагноз)
+  ✔ етапи рук 1–2 несуть відсічення до пулу, чекліст «без входу», суд і кроки петлі (вибір, опис)
+   розмір звіту (ВЕРДИКТИ-ПОКАЗ-V3, 4 рядки): без колонки `етапи` 81491 · з нею 2560885 символів
+   фрагмент колонки `етапи` руки 1 (перші 900 символів):
+     {"прогін":{"пул_речей":555,"пул_чому":null,"стеля":{"K":565,"K_запитано":565,"K_віддано":565,"унікальних":555,"символів":138734,"пул_токенів":43372,"бюджет":43400,"чому":[{"code":"pool_cut_to_budget","values":{"full_tokens":172451,"floor":20},"recipient":"woman","source":"unknown","choice":"unknown","rank":null,"item_ids":[],"key":"s_dff9b6a2108061d022cace17"},{"code":"pool_stratum_axis_blind","values":{"axis":"type","share":0,"kinds":{"collar_necklace":18}},"recipient":"woman","source":"unknown","choice":"unknown","rank":null,"item_ids":[],"key":"s_c7915a781c86d9eb258dd7e6"},{"code":"pool_stratum_axis_blind","values":{"axis":"zone","share":5,"kinds":{"bracelet":63,"ring":53,"earrings":51,"collar_necklace":45,"necklace":36,"jewelry":17,"brooch":14}},"recipient":"woman","source":"unknown","choice":"unknown","rank":null,"item_ids":[],"key":"s_c74926cc04ded97e14501d27"}],"осі":{"верх":{"ряд
+  ✔ колонки Т-11 несуть значення: рука, поломка (рука 2), паспорт_джерело, чат_повідомлень, викликів
+  ✔ колонка `мова`: називає правило — або порожня, бо в текстах карток нема російських літер (чиста мова, гейту нічого ловити)
+  ✔ колонка `свідомі` рук 1–2 — ходи картки дослівно, і кожен хід над річчю її складу (Л-4)
+  ✔ колонка `свідомі_ід` рук 1–2 — id речей кожного ходу хід у хід, усі в складі картки (рядок 1250)
+
+4б. звіт файлом: verdykty-2026-11-17-1530.json · 2479659 символів
+   TSV того самого журналу 2566455 · файл 2479659 · файл без винесення спільного 2664099 → винесення зекономило 7 %
+   рядок стану: Збережено файлом «verdykty-2026-11-17-1530.json»: вердиктів 4. Прикріпи його до повідомлення.
+  ✔ кнопка «Зберегти всі вердикти файлом» віддає СПРАВЖНЄ завантаження, і браузер зберіг ім'я словом і датою з годиною
+  ✔ файл — цілий JSON, самодостатній: збірка, каталог, профіль зі знімком входу, паспорт і чотири вердикти
+  ✔ жодне непорожнє поле ШАПКИ не загублене — звірено поіменно на СПРАВЖНІХ записах прогону
+  ✔ спільне `етапи` винесено в шапку прогону — 22 тис. символів `прогін` не повторюються чотири рази
+  ✔ знахідки суду лишились структурою, а довгий текст — цілим, із переносами
+  ✔ порожніх полів у вердиктах файла нема жодного — рядка з 69 табуляцій тут не буває
+  ✔ на телефонній ширині кнопка звіту вміщається в екран цілком
+
+4б-201. запит і сира відповідь на кожному кроці:
+   рука 3 · assembly ← hand_prompt · step=assembly · запит 3306 символів · відповідь 1221 · образів кроку 0
+   рука 3 · item_list ← item_list_prompt · schema=ITEM_LIST · запит 2483 символів · відповідь 898 · образів кроку 0
+   рука 4 · assembly ← hand_prompt · step=assembly · запит 2979 символів · відповідь 906 · образів кроку 0
+   рука 4 · item_list ← item_list_prompt · schema=ITEM_LIST · запит 2162 символів · відповідь 690 · образів кроку 0
+   рука 1 · assembly ← hand_prompt · step=assembly · запит 138734 символів · відповідь 3116 · образів кроку 10 · вердикт набору є
+   рука 1 · repair ← repair_prompt · verdict=VERDYKT_V1 · rule_codes=no · запит 80133 символів · відповідь 1502 · образів кроку 5 · вердикт набору є
+   рука 1 · choice ← choice_prompt · schema=VYBIR_V1 · запит 30505 символів · відповідь 589 · образів кроку 1 · вердикт набору є
+   рука 1 · description ← description_prompt · schema=OPYS_V1 · item_photos=yes · запит 13412 символів · відповідь 2160 · образів кроку 1 · вердикт набору є
+   рука 2 · assembly ← hand_prompt · step=assembly · запит 138751 символів · відповідь 3237 · образів кроку 10 · вердикт набору є
+   рука 2 · repair ← repair_prompt · verdict=VERDYKT_V1 · rule_codes=no · запит 82730 символів · відповідь 1750 · образів кроку 5 · вердикт набору є
+   рука 2 · choice ← choice_prompt · schema=VYBIR_V1 · запит 32800 символів · відповідь 567 · образів кроку 1 · вердикт набору є
+   рука 2 · description ← description_prompt · schema=OPYS_V1 · item_photos=yes · запит 13270 символів · відповідь 1888 · образів кроку 1 · вердикт набору є
+  ✔ кожен виклик моделі несе ЗАПИТ, що в неї пішов (жодного порожнього `запит.текст`)
+  ✔ кожен виклик моделі несе СИРУ відповідь цього кроку, а не лише рішення коду про неї
+  ✔ крок складання несе ВСІ свої образи з вердиктом коду на кожен, а не тільки обраний
+   довідник речей `етапи`: [{"рука":"3","речей":6,"з_назвою":6,"з_ціною":0,"з_фото":0,"з_кольором":0,"з_номером":0,"складу_покрито":true},{"рука":"4","речей":5,"з_назвою":5,"з_ціною":0,"з_фото":0,"з_кольором":0,"з_номером":0,"складу_покрито":true},{"рука":"1","речей":45,"з_назвою":45,"з_ціною":45,"з_фото":45,"з_кольором":45,"з_номером":45,"складу_покрито":true},{"рука":"2","речей":44,"з_назвою":44,"з_ціною":44,"з_фото":44,"з_кольором":44,"з_номером":44,"складу_покрито":true}]
+  ✔ `етапи` зводять КОЖЕН ід складу до людських слів — назва, ціна, колір, адреса фото поруч з ід
+   `спільне` файла: 23 полів · вхід_прогону: 11 полів
+  ✔ кожен прогін несе ПОВНИЙ знімок входу і профіль, а не чотири поля
+   старий прогін без `вхід_прогону`: {"спільне":["полів_збірка_не_писала"],"нота":"вхід_прогону, етапи — ці вердикти записані збіркою, старішою за ці поля; це не «код не порахував», а «тодішній показ їх не зберігав». Решта полів прогону на місці."}
+  ✔ прогін старої збірки САМ каже, яких полів у нього нема, а не мовчить чотирма полями
+   ↔ модель #27 мовний шар: вхід (коментар) (6501 симв., разом 6794) → 4.5 с · HTTP 200 · 66 симв.
+   ціна повноти (рядок 201): 4 вердикти — 2479831 символів, склався за 47 мс, розібрався за 15 мс · дотик → файл на диску 149 мс
+   на журналі власника (17 вердиктів): 9746235 символів (9518 КБ тексту), склався за 145 мс, розібрався за 53 мс
+  ✔ файл розбирається назад у той самий журнал — усі вердикти на місці, поля зливаються
+  ✔ журнал на 17 вердиктів складається і розбирається в тій самій вкладці, без винятку
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_scenarii_seed3.png 66722 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_scenarii_povnyi_seed3.png 76986 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_profil_seed3.png 51977 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_profil_povnyi_seed3.png 59904 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_palitra_seed3.png 191016 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_palitra_povnyi_seed3.png 200462 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_scenariyi_seed3.png 20665 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_scenariyi_povnyi_seed3.png 29021 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_obrazy_seed3.png 270537 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_obrazy_povnyi_seed3.png 282342 Б
+   ↔ модель #28 мовний шар: вхід (коментар) (6498 симв., разом 6791) → 5.5 с · HTTP 200 · 106 симв.
+   ↔ модель #29 мовний шар: вхід (коментар) (6583 симв., разом 6894) → 4.3 с · HTTP 200 · 66 симв.
+   ↔ модель #30 мовний шар: вхід (коментар) (6583 симв., разом 6894) → 5.2 с · HTTP 200 · 66 симв.
+   плитки «Усіх образів»: Перший образ → силует · Другий образ → силует · Третій образ → кадр · Четвертий образ → ЩЕ НЕ ПРИЙШОВ
+     · Четвертий образ ЩЕ НЕ ПРИЙШОВ https://stolyarchuk.com.ua/image/cache/webp/catalog/905/%20%D0%BA%D0%B0%D0%B4%D1%806417%20
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_biblioteka_seed3.png 101786 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_biblioteka_povnyi_seed3.png 108456 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_otsinka_seed3.png 37663 Б
+   знімок: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/ekran_otsinka_povnyi_seed3.png 43625 Б
+
+5. прохід екранами й картками: /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/текст_екранів.txt 36615 Б
+   «ші» окремим словом у ВИДИМОМУ тексті (рядок 138): ніде · РАЗОМ 0
+
+ПЛАНУВАЛЬНИК · увесь прогін · стінний 397.7 с · викликів 30 · спроб 30 · обривів 0 (HTTP 599 стенда 0) · повторів 0 · черга 2.4 с · модель 469.8 с · токени вхід 348872 / кеш 0 / вихід 56675 · обрізано 0 · одночасно 4
+   · OUTFITS_V1 · пул — викликів 2 · модель 178.5 с (найдовший 99.4) · черга 0 с · вхід ≤ 156710 симв. · стеля виводу 2800 · токени 134575/24094
+   · мова — викликів 12 · модель 131.4 с (найдовший 23.9) · черга 2 с · вхід ≤ 9496 симв. · стеля виводу 4000 · токени 42933/15705
+   · OUTFITS_V1 — викликів 2 · модель 49.7 с (найдовший 27.8) · черга 0 с · вхід ≤ 92613 симв. · стеля виводу 4000 · токени 75724/6317
+   · DESCRIPTION_V1 — викликів 2 · модель 40.3 с (найдовший 21.4) · черга 0 с · вхід ≤ 16352 симв. · стеля виводу 4000 · токени 20666/3126
+   · мова · verdict_comment — викликів 4 · модель 19.5 с (найдовший 5.5) · черга 0.4 с · вхід ≤ 6894 симв. · стеля виводу 4000 · токени 15210/1922
+   · мова · ХІД_РОЗМОВИ — викликів 1 · модель 15.3 с (найдовший 15.3) · черга 0 с · вхід ≤ 37293 симв. · стеля виводу 4000 · токени 14008/1918
+   · CHOICE_V1 — викликів 2 · модель 12.6 с (найдовший 7.1) · черга 0 с · вхід ≤ 36601 симв. · стеля виводу 4000 · токени 30290/1326
+   · OUTFIT_TEXT — викликів 2 · модель 10.6 с (найдовший 5.9) · черга 0 с · вхід ≤ 3647 симв. · стеля виводу 4000 · токени 4954/807
+   · ITEM_LIST — викликів 2 · модель 7.3 с (найдовший 4.6) · черга 0 с · вхід ≤ 2632 симв. · стеля виводу 4000 · токени 4151/955
+   · PALETTE_CHOICE — викликів 1 · модель 4.7 с (найдовший 4.7) · черга 0 с · вхід ≤ 13563 симв. · стеля виводу 4000 · токени 6361/505
+
+ЖИВА МОДЕЛЬ claude-sonnet-5-5: викликів 30 · збоїв 0 · у стелю виводу 0 · з думкою 0 · разом 458.8 с (найдовший 99.4 с)
+   · мовний шар: хід розмови — HTTP 200 · 15.3 с · вхід 14008 т. · вихід за лічильником CLI (з міркуванням) 1918 т., видимих ≤ 744 т. · 1487 симв.
+   · мовний шар: репліка — HTTP 200 · 6 с · вхід 3128 т. · вихід за лічильником CLI (з міркуванням) 768 т., видимих ≤ 212 т. · 424 симв.
+   · мовний шар: репліка — HTTP 200 · 11.3 с · вхід 3200 т. · вихід за лічильником CLI (з міркуванням) 1397 т., видимих ≤ 253 т. · 506 симв.
+   · мовний шар — HTTP 200 · 11.6 с · вхід 4916 т. · вихід за лічильником CLI (з міркуванням) 1379 т., видимих ≤ 488 т. · 975 симв.
+   · вибір палітри (стилістка) — HTTP 200 · 4.7 с · вхід 6361 т. · вихід за лічильником CLI (з міркуванням) 505 т., видимих ≤ 83 т. · 165 симв.
+   · мовний шар — HTTP 200 · 9.5 с · вхід 4591 т. · вихід за лічильником CLI (з міркуванням) 1087 т., видимих ≤ 389 т. · 778 симв.
+   · проза: рука 3/4 — HTTP 200 · 5.8 с · вхід 2556 т. · вихід за лічильником CLI (з міркуванням) 455 т., видимих ≤ 611 т. · 1221 симв.
+   · проза: рука 3/4 — HTTP 200 · 4.8 с · вхід 2398 т. · вихід за лічильником CLI (з міркуванням) 352 т., видимих ≤ 453 т. · 906 симв.
+   · перелік речей (руки 3–4) — HTTP 200 · 2.6 с · вхід 2019 т. · вихід за лічильником CLI (з міркуванням) 325 т., видимих ≤ 345 т. · 690 симв.
+   · перелік речей (руки 3–4) — HTTP 200 · 4.6 с · вхід 2132 т. · вихід за лічильником CLI (з міркуванням) 630 т., видимих ≤ 449 т. · 898 симв.
+   · мовний шар — HTTP 200 · 18.2 с · вхід 3436 т. · вихід за лічильником CLI (з міркуванням) 2134 т., видимих ≤ 525 т. · 1049 симв.
+   · мовний шар — HTTP 200 · 21.1 с · вхід 3569 т. · вихід за лічильником CLI (з міркуванням) 2690 т., видимих ≤ 752 т. · 1504 симв.
+   · ПАКЕТ_V1→ОБРАЗИ_V1 — HTTP 200 · 79 с · вхід 67412 т. · вихід за лічильником CLI (з міркуванням) 10539 т., видимих ≤ 1558 т. · 3116 симв.
+   · ВЕРДИКТ_V1→ОБРАЗИ_V1 — HTTP 200 · 27.8 с · вхід 37298 т. · вихід за лічильником CLI (з міркуванням) 3457 т., видимих ≤ 751 т. · 1502 симв.
+   · ВЕРДИКТ_V1→ВИБІР_V1 — HTTP 200 · 7.1 с · вхід 14533 т. · вихід за лічильником CLI (з міркуванням) 772 т., видимих ≤ 295 т. · 589 симв.
+   · ПАКЕТ_V1→ОБРАЗИ_V1 — HTTP 200 · 99.4 с · вхід 67163 т. · вихід за лічильником CLI (з міркуванням) 13555 т., видимих ≤ 1619 т. · 3237 симв.
+   · ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1 — HTTP 200 · 13.9 с · вхід 9113 т. · вихід за лічильником CLI (з міркуванням) 1475 т., видимих ≤ 1080 т. · 2160 симв.
+   · мовний шар — HTTP 200 · 2 с · вхід 2876 т. · вихід за лічильником CLI (з міркуванням) 46 т., видимих ≤ 46 т. · 92 симв.
+   · мовний шар — HTTP 200 · 2.7 с · вхід 3649 т. · вихід за лічильником CLI (з міркуванням) 138 т., видимих ≤ 145 т. · 289 симв.
+   · мовний шар — HTTP 200 · 1.9 с · вхід 3104 т. · вихід за лічильником CLI (з міркуванням) 65 т., видимих ≤ 79 т. · 157 симв.
+   · ВЕРДИКТ_V1→ОБРАЗИ_V1 — HTTP 200 · 21.8 с · вхід 38426 т. · вихід за лічильником CLI (з міркуванням) 2860 т., видимих ≤ 875 т. · 1750 симв.
+   · мовний шар — HTTP 200 · 21.1 с · вхід 3697 т. · вихід за лічильником CLI (з міркуванням) 2847 т., видимих ≤ 1023 т. · 2045 симв.
+   · ВЕРДИКТ_V1→ВИБІР_V1 — HTTP 200 · 5.5 с · вхід 15757 т. · вихід за лічильником CLI (з міркуванням) 554 т., видимих ≤ 284 т. · 567 симв.
+   · ОПИС_V1→ОПИС_ВІДПОВІДЬ_V1 — HTTP 200 · 15.7 с · вхід 11553 т. · вихід за лічильником CLI (з міркуванням) 1651 т., видимих ≤ 944 т. · 1888 симв.
+   · мовний шар — HTTP 200 · 2 с · вхід 3028 т. · вихід за лічильником CLI (з міркуванням) 75 т., видимих ≤ 84 т. · 167 симв.
+   · мовний шар — HTTP 200 · 23.9 с · вхід 3739 т. · вихід за лічильником CLI (з міркуванням) 3079 т., видимих ≤ 1088 т. · 2176 симв.
+   · мовний шар: вхід (коментар) — HTTP 200 · 4.5 с · вхід 3782 т. · вихід за лічильником CLI (з міркуванням) 427 т., видимих ≤ 33 т. · 66 симв.
+   · мовний шар: вхід (коментар) — HTTP 200 · 5.5 с · вхід 3780 т. · вихід за лічильником CLI (з міркуванням) 594 т., видимих ≤ 53 т. · 106 симв.
+   · мовний шар: вхід (коментар) — HTTP 200 · 4.3 с · вхід 3824 т. · вихід за лічильником CLI (з міркуванням) 400 т., видимих ≤ 33 т. · 66 симв.
+   · мовний шар: вхід (коментар) — HTTP 200 · 5.2 с · вхід 3824 т. · вихід за лічильником CLI (з міркуванням) 501 т., видимих ≤ 33 т. · 66 симв.
+
+фрази нових правил у ПОВНОМУ тексті пакета (усі виклики моделі цього сіда): {"намір=comfort_first (у переліку значень поля)":1,"намір=context_optimal (у переліку значень поля)":1}
+
+мережа поза сторінкою (пущено, FOTO=1): 67 запитів [
+  'https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61e',
+  'https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61e',
+  'https://cdn.jsdelivr.net/gh/MacPaw/Fixel@514fd02ea7d70668ed3dd09fb2674ba6f70d61e'
+]
+консоль (помилки/попередження): [
+  'error: Failed to load resource: the server responded with a status of 404 (Not Found)',
+  'error: Failed to load resource: the server responded with a status of 404 (Not Found)',
+  'warning: штамп збірки: build.txt → 404',
+  'error: Failed to load resource: the server responded with a status of 404 (Not Found)',
+  'error: Failed to load resource: the server responded with a status of 403 (Forbidden)',
+  'error: Failed to load resource: the server responded with a status of 403 (Forbidden)',
+  'error: Failed to load resource: the server responded with a status of 403 (Forbidden)',
+  'error: Failed to load resource: the server responded with a status of 403 (Forbidden)',
+  'error: Failed to load resource: the server responded with a status of 403 (Forbidden)',
+  'error: Failed to load resource: the server responded with a status of 403 (Forbidden)'
+]
+
+ВПАЛО 1 · 425.8 с
+
+ДОКАЗ · рв6_стенд · run-mwkudprs-d1e0713a · код 55bb94a4b1f2f1c38f04518d44cf15d3f0f198a9 · подія усі сцени стенда · доведено → /home/user/kod-shi-data/аудит/проби/Тестовий-прогін-хмара-1711/ж1_весілля_гостя/знімки/доказ.json
+очікувань дії ядра: виконано 13 різних викликів файлу з 49 (разом 25 очікувань)

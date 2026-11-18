@@ -9,7 +9,8 @@ prompt = sys.stdin.read()
 with open(os.environ['FAKE_CC_LOG'], 'a', encoding='utf-8') as f:
     f.write(json.dumps({'argv': sys.argv[1:], 'stdin': prompt, 'cwd': os.getcwd(), 'temp': os.environ.get('TEMP', ''),
                         'tmp': os.environ.get('TMP', ''),
-                        'bg_ceiling': os.environ.get('CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS')}, ensure_ascii=False) + '\n')
+                        'bg_ceiling': os.environ.get('CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'),
+                        'bash_max': os.environ.get('BASH_MAX_TIMEOUT_MS')}, ensure_ascii=False) + '\n')
 slug = re.search(r'аудит/наряди/(.+?)\.md', prompt).group(1)
 branch = 'claude/' + slug
 from fake_timeline import тримати as hold

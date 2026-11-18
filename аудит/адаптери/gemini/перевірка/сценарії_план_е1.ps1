@@ -68,7 +68,7 @@ try {
         }
         if ($WithReport) {
             $when = $dates[$ReportBuild].AddHours(2).ToString('yyyy-MM-ddTHH:mm:ssZ')
-            [void]$all.Add((Fake-Pull 6000 ('claude/автоживий-' + $commits[$ReportBuild]) $when '' '' 'Звіт'))
+            [void]$all.Add((Fake-Pull 6000 ('claude/автоживий-' + $commits[$ReportBuild]) $when '' '' ("Звіт`nПЕРЕВІРЕНО ЗБІРКУ: " + $commits[$ReportBuild])))
         }
         $noiseStart = (Plan-Date '2026-11-03T12:00:00Z')
         for ($i = 0; $i -lt $Noise; $i++) {
@@ -144,7 +144,7 @@ try {
         }
         # Два звіти: чинний — новіша збірка, давніший звіт плану не звужує.
         $set = New-PullSet 15 $true 120
-        $newer = Fake-Pull 6001 ('claude/автоживий-' + $commits[30]) ($dates[30].AddHours(2).ToString('yyyy-MM-ddTHH:mm:ssZ')) '' '' 'Звіт'
+        $newer = Fake-Pull 6001 ('claude/автоживий-' + $commits[30]) ($dates[30].AddHours(2).ToString('yyyy-MM-ddTHH:mm:ssZ')) '' '' ("Звіт`nПЕРЕВІРЕНО ЗБІРКУ: " + $commits[30])
         $script:Served = @(@($set) + @($newer) | Sort-Object @{Expression = { $_.updated_at }; Descending = $true }, @{Expression = { $_.number }})
         Reset-Budget; Reset-Counters
         $two = ConvertFrom-Json (Get-AutoLivePlan $buildMain)

@@ -16,7 +16,7 @@ against skin, will not wear heels», FORCE hard «on the person's authority alon
 import sys, pathlib, json
 _КОРІНЬ = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_КОРІНЬ))
-import feed as Ф, bridge as B, profile as PR
+import feed as Ф, bridge as B, profile as PR, пара_взуття as ПАРА
 
 вх = json.load(open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8"))
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml")
@@ -24,11 +24,10 @@ import feed as Ф, bridge as B, profile as PR
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = B.каталог_останнього_пакета()
 взут = [c for c in кат if c.get("слот") == "взуття"]
-# на каблуку — за фідом, за назвою (`каблук_є`) або за кодом типу, що каже підбор (рядок 4640)
-на_каблуку = [c for c in взут if c.get("каблук") is True or c.get("каблук_є") is True
-              or (c.get("каблук_см") or 0) > 0 or PR._каблук_за_типом(c)]
-словами = [c for c in взут if "каблук" in str(c.get("каблук_словами") or "")]
-print("взуття в пакеті %d · справді на каблуку %d · слово «каблук» у полі `каблук_словами` %d"
+# на каблуку — одне визначення пари (`пара_взуття.під_межею_підборів`: запис, назва, код типу; рядок 4640)
+на_каблуку = [c for c in взут if ПАРА.під_межею_підборів(c)]
+словами = [c for c in взут if "каблук" in ПАРА.словами(c)]
+print("взуття в пакеті %d · справді на каблуку %d · слово «каблук» у рядку `пара_взуття.словами` %d"
       % (len(взут), len(на_каблуку), len(словами)))
 for сл in (["каблук"], ["не ношу підбори"], ["шпильки"]):
     _, відк = PR.жорстке_ні_фільтр(взут, сл)

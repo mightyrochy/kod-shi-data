@@ -17,7 +17,7 @@ from urllib.parse import quote
 REPO = "mightyrochy/kod-shi-data"
 ТЕКА_У_REPO = "zhnyvarka"                       # ASCII: цю адресу читає і .bat через curl
 RAW = "https://raw.githubusercontent.com/%s/main/%s/" % (REPO, ТЕКА_У_REPO)
-ФАЙЛИ_ОНОВЛЕННЯ = ("ідентичність_сторінки.py", "жниварка.py", "магазини.tsv", "start.py")
+ФАЙЛИ_ОНОВЛЕННЯ = ("ідентичність_сторінки.py", "вибір_кольору.py", "жниварка.py", "магазини.tsv", "один_колір.tsv", "start.py")
 МАРКЕР = "прогін_іде.txt"
 ТУТ = os.path.dirname(os.path.abspath(__file__))
 ТИХО = dict(stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

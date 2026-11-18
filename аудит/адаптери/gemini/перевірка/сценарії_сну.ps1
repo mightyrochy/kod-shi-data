@@ -37,13 +37,32 @@ try {
         function Test-UpdateRoot { $true }
         function Get-PowerTime { $script:Clock }
         function Get-PowerBoot { $script:Boot }
+        $script:PowerEvents = @()
         function Get-WinEvent {
-            <# XML подій підміняється, його розбирає справжній Get-WakeRows. #>
-            foreach ($row in $script:WakeRows) {
-                $value = [pscustomobject]@{ XmlText="<Event><EventData><Data Name='SleepTime'>$($row.from)</Data><Data Name='WakeTime'>$($row.to)</Data></EventData></Event>" }
-                Add-Member -InputObject $value -MemberType ScriptMethod -Name ToXml -Value {$this.XmlText}
-                $value
+            <# XML подій підміняється, його розбирає справжній Get-WakeRows; Kernel-Power віддає найновіші першими й, як журнал, кидає виняток без подій. #>
+            param([hashtable]$FilterHashtable, [int]$MaxEvents = 0, $ErrorAction)
+            $f = $FilterHashtable
+            $out = @()
+            if ($f.ProviderName -ceq 'Microsoft-Windows-Kernel-Power') {
+                $out = @($script:PowerEvents | Where-Object { $f.Id -contains $_.id -and (-not $f.ContainsKey('StartTime') -or $_.t -ge $f.StartTime.ToUniversalTime()) -and (-not $f.ContainsKey('EndTime') -or $_.t -le $f.EndTime.ToUniversalTime()) } | Sort-Object t, rec -Descending)
+                if ($MaxEvents -gt 0) { $out = @($out | Select-Object -First $MaxEvents) }
+                $out = @($out | ForEach-Object {
+                    $items = ($_.data.GetEnumerator() | ForEach-Object { "<Data Name='$($_.Key)'>$($_.Value)</Data>" }) -join ''
+                    $value = [pscustomobject]@{ Id=$_.id; TimeCreated=$_.t; RecordId=$_.rec; XmlText="<Event><EventData>$items</EventData></Event>" }
+                    Add-Member -InputObject $value -MemberType ScriptMethod -Name ToXml -Value {$this.XmlText}
+                    $value })
+            } else {
+                $out = @($script:WakeRows | ForEach-Object {
+                    $value = [pscustomobject]@{ XmlText="<Event><EventData><Data Name='SleepTime'>$($_.from)</Data><Data Name='WakeTime'>$($_.to)</Data></EventData></Event>" }
+                    Add-Member -InputObject $value -MemberType ScriptMethod -Name ToXml -Value {$this.XmlText}
+                    $value })
             }
+            if ($out.Count -eq 0) { throw 'No events were found that match the specified selection criteria.' }
+            $out
+        }
+        function Add-PowerEvent([int]$Id, [string]$At, [hashtable]$Data) {
+            <# Подія Kernel-Power стенда: час UTC, поля EventData; номер запису зростає за порядком додавання. #>
+            $script:PowerEvents += [pscustomobject]@{ id=$Id; t=([datetime]::Parse($At, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AdjustToUniversal)); rec=@($script:PowerEvents).Count; data=$Data }
         }
         function Get-RefSha([string]$Ref) {
             <# Підміна лише віддалених ref, які вже отримав fetch. #>
@@ -155,6 +174,68 @@ try {
             $noBundleRetry=Status '20261102-023000-000000000007' 'AGY_ERROR' $noBundle.id $false
             Save-Status $noBundleRetry;$result=Get-Line $noBundleRetry.id
             [pscustomobject]@{Name='повтор без нових комітів завершується ЗАБЛОКОВАНО';Ok=($result.Outbox -ceq 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/сон AGY_ERROR')}
+            $off = 'GEMINI ОБГОРТКА: СВІТЛА НЕМА 2026-11-16T15:44:52Z'
+            $on = 'GEMINI ОБГОРТКА: СВІТЛО Є 2026-11-17T07:26:10Z ПАУЗА З 2026-11-16T15:44:52Z'
+            [pscustomobject]@{Name='рядки про світло — за шаблоном вихідних (не в карантин)';Ok=((Test-OutboxLine $off) -ceq '' -and (Test-OutboxLine $on) -ceq '')}
+            [pscustomobject]@{Name='рядок про світло зі зайвим текстом чи без часу зникнення — карантин NO_TEMPLATE';Ok=((Test-OutboxLine ($off + ' ще')) -ceq 'NO_TEMPLATE' -and (Test-OutboxLine 'GEMINI ОБГОРТКА: СВІТЛО Є 2026-11-17T07:26:10Z') -ceq 'NO_TEMPLATE')}
+            [pscustomobject]@{Name='обидва рядки про світло будять диспетчера (не зведення)';Ok=((Test-DispatcherAction $off) -and (Test-DispatcherAction $on))}
+            # Modern Standby (запис ноутбука 16–17.11): Power-Troubleshooter 1 не пишеться, межі сну — Kernel-Power 506/507, світло — 105.
+            $in = { param([string]$id) @{ ScenarioInstanceId=$id; ScenarioInstanceIdV2=$id; BootId='146' } }
+            $out = { param([string]$id, [string]$asleep, [string]$goesOn, [string]$entry) @{ ScenarioInstanceId=$id; ScenarioInstanceIdV2=$entry; SleepEntered=$asleep; IsCsSessionInProgressOnExit=$goesOn; BootId='146' } }
+            Add-PowerEvent 105 '2026-11-16T15:43:27.283Z' @{AcOnline='false'}
+            Add-PowerEvent 506 '2026-11-16T15:51:01.142Z' (& $in '17')
+            Add-PowerEvent 507 '2026-11-16T15:51:02.960Z' (& $out '19' 'false' 'false' '17')
+            Add-PowerEvent 506 '2026-11-16T15:51:05.678Z' (& $in '20')
+            Add-PowerEvent 507 '2026-11-16T15:51:31.950Z' (& $out '22' 'true' 'true' '20')
+            Add-PowerEvent 506 '2026-11-16T15:51:31.953Z' (& $in '22')
+            Add-PowerEvent 105 '2026-11-17T07:23:00.726Z' @{AcOnline='true'}
+            Add-PowerEvent 507 '2026-11-17T07:23:01.788Z' (& $out '24' 'true' 'false' '22')
+            Add-PowerEvent 105 '2026-11-17T11:31:58.781Z' @{AcOnline='false'}
+            Add-PowerEvent 506 '2026-11-17T11:32:01.641Z' (& $in '25')
+            Add-PowerEvent 507 '2026-11-17T13:32:01.930Z' (& $out '27' 'true' 'true' '25')
+            Add-PowerEvent 506 '2026-11-17T13:32:01.932Z' (& $in '27')
+            Add-PowerEvent 105 '2026-11-17T15:52:31.688Z' @{AcOnline='true'}
+            Add-PowerEvent 507 '2026-11-17T15:52:32.909Z' (& $out '29' 'true' 'false' '27')
+            Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' | Remove-Item
+            $script:WakeRows = @(); $script:Boot = $null
+            Write-FileAtomic (Join-Path $WorkDir 'sleep-events.json') '{"read_utc":"2026-11-16T15:00:00Z","events":[]}'
+            $script:Clock = [datetime]'2026-11-17T16:00:00Z'
+            Update-SleepEvents; Update-SleepEvents
+            $sent = { @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' | Sort-Object Name | ForEach-Object { [IO.File]::ReadAllText($_.FullName,$script:Utf8).Trim() }) }
+            $standby = @(& $sent)
+            $night = 'GEMINI ОБГОРТКА: СОН 2026-11-16T15:51:05Z → 2026-11-17T07:23:01Z, нарядів 0 СВІТЛА НЕ БУЛО З 2026-11-16T15:43:27Z ДОСТУПНИЙ З 2026-11-17T07:23:01Z'
+            $day = 'GEMINI ОБГОРТКА: СОН 2026-11-17T11:32:01Z → 2026-11-17T15:52:32Z, нарядів 0 СВІТЛА НЕ БУЛО З 2026-11-17T11:31:58Z ДОСТУПНИЙ З 2026-11-17T15:52:32Z'
+            [pscustomobject]@{Name='Modern Standby 16–17.11: один рядок на сон, межі й світло з Kernel-Power (506→507→506 — один сон; 507 без сну — не сон)';Ok=($standby.Count -eq 2 -and $standby[0] -ceq $night -and $standby[1] -ceq $day)}
+            [pscustomobject]@{Name='рядки Modern Standby проходять доставку й будять диспетчера';Ok=((Test-OutboxLine $night) -ceq '' -and (Test-OutboxLine $day) -ceq '' -and (Test-DispatcherAction $night) -and (Test-DispatcherAction $day))}
+            [pscustomobject]@{Name='хвіст про світло лише в СОН: ВИМКНЕНО-СТАРТ чи зайвий текст — карантин';Ok=((Test-OutboxLine ($night -replace 'СОН','ВИМКНЕНО-СТАРТ')) -ceq 'NO_TEMPLATE' -and (Test-OutboxLine ($day + ' ще')) -ceq 'NO_TEMPLATE')}
+            # Сон на мережі — рядок без світла, зведенням; сон, що закінчився на батареї, — без «доступний з»; сон, що ще триває, дочитується з початку.
+            Add-PowerEvent 506 '2026-11-18T01:00:00.100Z' (& $in '30')
+            Add-PowerEvent 507 '2026-11-18T01:30:00.200Z' (& $out '31' 'true' 'false' '30')
+            $script:Clock = [datetime]'2026-11-18T02:00:00Z'; Update-SleepEvents
+            $plain = [string](@(& $sent) | Select-Object -Last 1)
+            [pscustomobject]@{Name='сон на мережі — СОН без світла, лише зведенням';Ok=($plain -ceq 'GEMINI ОБГОРТКА: СОН 2026-11-18T01:00:00Z → 2026-11-18T01:30:00Z, нарядів 0' -and -not (Test-DispatcherAction $plain))}
+            Add-PowerEvent 105 '2026-11-18T03:00:00.000Z' @{AcOnline='false'}
+            Add-PowerEvent 506 '2026-11-18T03:01:00.100Z' (& $in '32')
+            Add-PowerEvent 507 '2026-11-18T03:30:00.200Z' (& $out '33' 'true' 'false' '32')
+            $script:Clock = [datetime]'2026-11-18T04:00:00Z'; Update-SleepEvents
+            $battery = [string](@(& $sent) | Select-Object -Last 1)
+            [pscustomobject]@{Name='сон на батареї без повернення світла: час зникнення без «доступний з»';Ok=($battery -ceq 'GEMINI ОБГОРТКА: СОН 2026-11-18T03:01:00Z → 2026-11-18T03:30:00Z, нарядів 0 СВІТЛА НЕ БУЛО З 2026-11-18T03:00:00Z' -and (Test-DispatcherAction $battery))}
+            Add-PowerEvent 105 '2026-11-18T04:30:00.000Z' @{AcOnline='true'}
+            Add-PowerEvent 506 '2026-11-18T05:00:00.100Z' (& $in '34')
+            $count = @(& $sent).Count
+            $script:Clock = [datetime]'2026-11-18T05:10:00Z'; Update-SleepEvents
+            $resume = Get-SleepTime ([string]((Get-Content -LiteralPath (Join-Path $WorkDir 'sleep-events.json') -Raw -Encoding UTF8 | ConvertFrom-Json).read_utc))
+            [pscustomobject]@{Name='вхід без виходу — рядка нема, читання дочитає сон з його початку';Ok=(@(& $sent).Count -eq $count -and $resume -lt ([datetime]'2026-11-18T05:00:00.100Z').ToUniversalTime() -and $resume -gt ([datetime]'2026-11-18T04:00:00Z').ToUniversalTime())}
+            Add-PowerEvent 507 '2026-11-18T05:20:00.300Z' (& $out '35' 'true' 'false' '34')
+            $script:Clock = [datetime]'2026-11-18T06:00:00Z'; Update-SleepEvents; Update-SleepEvents
+            [pscustomobject]@{Name='сон, що тривав між читаннями, — один рядок із початком із журналу';Ok=(@(& $sent).Count -eq $count + 1 -and [string](@(& $sent) | Select-Object -Last 1) -ceq 'GEMINI ОБГОРТКА: СОН 2026-11-18T05:00:00Z → 2026-11-18T05:20:00Z, нарядів 0')}
+            # Той самий сон у Power-Troubleshooter 1 і Kernel-Power — один рядок, за Power-Troubleshooter.
+            $script:WakeRows = @([pscustomobject]@{ from='2026-11-18T07:00:00.0000000Z';to='2026-11-18T07:30:00.0000000Z' })
+            Add-PowerEvent 506 '2026-11-18T07:00:00.500Z' (& $in '36')
+            Add-PowerEvent 507 '2026-11-18T07:30:00.600Z' (& $out '37' 'true' 'false' '36')
+            $script:Clock = [datetime]'2026-11-18T08:00:00Z'; Update-SleepEvents
+            $both = @(& $sent | Where-Object { $_ -cmatch '2026-11-18T07:00:00Z' })
+            [pscustomobject]@{Name='сон у двох журналах — один рядок';Ok=($both.Count -eq 1 -and $both[0] -ceq 'GEMINI ОБГОРТКА: СОН 2026-11-18T07:00:00Z → 2026-11-18T07:30:00Z, нарядів 0' -and @($script:SleepEvents | Select-Object -Last 1 | ForEach-Object { $_.source }) -ceq 'Power-Troubleshooter/1')}
         }
         Export-ModuleMember -Function Run
     }
@@ -374,6 +455,111 @@ try {
         Export-ModuleMember -Function Run
     }
     foreach ($check in @(& $free {Run})) {Check $check.Name $check.Ok}
+    $light = New-Module -ArgumentList $SourceDir,$tmp -ScriptBlock {
+        param($src,$tmp)
+        . (Join-Path $src 'claude_run.ps1') -WorkDir "$tmp/cl-w" -RepoDir "$tmp/cl-r" -OutboxDir "$tmp/cl-box" -PublishDir "$tmp/cl-pub" -LaneDir "$tmp/cl-lanes" -OffWaitMinutes 0.05 -NoStatus
+        foreach ($d in @($WorkDir,$OutboxDir,"$PublishDir/state")) { [void][IO.Directory]::CreateDirectory($d) }
+        $script:Events = New-Object Collections.ArrayList
+        $script:Log = New-Object Collections.ArrayList
+        $script:Deliver = ''; $script:Battery = @($false); $script:Refuse = $false; $script:Ver = @('')
+        function Write-Log([string]$Text) { [void]$script:Log.Add($Text) }
+        function Invoke-HealthBeat { }
+        function Clear-GpuForPause { }
+        function Get-PauseTargets { @(11, 12) }
+        function Set-ProcessPause([int]$Id, [bool]$On) { $true }
+        function Set-KeepAwake([bool]$On) { [void]$script:Events.Add("тримання $On"); -not ($On -and $script:Refuse) }
+        function Test-OnBattery { $b = $script:Battery[0]; if ($script:Battery.Count -gt 1) { $script:Battery = $script:Battery[1..($script:Battery.Count - 1)] }; $b }
+        function Get-VersionSwitch { $v = $script:Ver[0]; if ($script:Ver.Count -gt 1) { $script:Ver = $script:Ver[1..($script:Ver.Count - 1)] }; $v }
+        function Get-Outbox { @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File | Sort-Object Name | ForEach-Object { [IO.File]::ReadAllText($_.FullName).Trim() }) }
+        function Start-Sleep {
+            <# Такт тримача (-Seconds 1), чекання доставки (-Seconds 10: публікатор закриває стан o-<id>.json з
+            $script:Deliver) і чекання світла паузою (-Milliseconds). #>
+            param([int]$Seconds, [int]$Milliseconds)
+            if ($Milliseconds) { [void]$script:Events.Add('світло-чекання'); return }
+            if ($Seconds -eq 1) { [void]$script:Events.Add('такт'); return }
+            [void]$script:Events.Add('доставка-чекання ' + (@(Get-Outbox).Count))
+            Microsoft.PowerShell.Utility\Start-Sleep -Milliseconds 50
+            if ($script:Deliver) {
+                foreach ($f in @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File)) {
+                    [IO.File]::WriteAllText((Join-Path "$PublishDir/state" ('o-' + $f.BaseName + '.json')), $script:Deliver)
+                }
+            }
+        }
+        function Tick([bool]$Battery, [string]$Delivered = '') {
+            <# Один такт тримача з чистими подіями й журналом; повертає події через « | ». #>
+            $script:Events.Clear(); $script:Log.Clear(); $script:Deliver = $Delivered; $script:Battery = @($Battery)
+            Step-Light
+            $script:Events -join ' | '
+        }
+        function Clear-Box {
+            <# Порожні тека вихідних і стани публікатора. #>
+            Get-ChildItem -LiteralPath $OutboxDir -File -ErrorAction SilentlyContinue | Remove-Item -Force
+            Get-ChildItem -LiteralPath "$PublishDir/state" -File -ErrorAction SilentlyContinue | Remove-Item -Force
+        }
+        function Run {
+            <# Тримач світла: запит на мережі заздалегідь; світла нема — рядок, доставка, лише тоді запит відпущено;
+            світло є — рядок і запит знову. Пише лише тримач: пауза рушія рядків не пише й ноутбука не тримає. #>
+            $ok = '{"line":"x","sent":true,"attempts":1}'
+            $script:LightHeld = $false; $script:LightRefused = $false
+            $ev = Tick $false
+            [pscustomobject]@{Name="на мережі запит тримається заздалегідь, рядків нема: $ev";Ok=($ev -ceq 'тримання True' -and $script:LightHeld -and @(Get-Outbox).Count -eq 0)}
+            $ev = Tick $false
+            [pscustomobject]@{Name="другий такт на мережі запиту не чіпає: '$ev'";Ok=($ev -ceq '' -and $script:LightHeld)}
+            $ev = Tick $true $ok
+            $lines = @(Get-Outbox); $st = Read-LightState; $off = $(if ($st) { $st.Off } else { '' })
+            [pscustomobject]@{Name="світла нема: один рядок за шаблоном, без числа процесів: $($lines -join '')";Ok=($lines.Count -eq 1 -and $off -and $lines[0] -cmatch $script:PowerOffLineTemplate -and $lines[0].EndsWith(" НЕМА $off") -and $st.Id -ceq '')}
+            [pscustomobject]@{Name="світла нема → рядок → доставка → запит відпущено: $ev; $($script:Log[-1])";Ok=($ev -ceq 'доставка-чекання 1 | тримання False' -and -not $script:LightHeld -and $script:Log[-1] -cmatch 'запит відпущено — доставлено$')}
+            $ev = Tick $true $ok
+            [pscustomobject]@{Name="на батареї після сказаного — ні рядка, ні запиту: '$ev'";Ok=($ev -ceq '' -and @(Get-Outbox).Count -eq 1)}
+            $ev = Tick $false
+            $lines = @(Get-Outbox); $on = @($lines | Where-Object { $_ -cmatch $script:PowerOnLineTemplate })
+            [pscustomobject]@{Name="світло є: рядок із часом зникнення, запит знову тримається: $ev; $($on -join '')";Ok=($lines.Count -eq 2 -and $on.Count -eq 1 -and $on[0].EndsWith(" ПАУЗА З $off") -and $ev -ceq 'тримання True' -and $script:LightHeld -and -not (Read-LightState))}
+            Clear-Box
+            $ev = Tick $true ''
+            [pscustomobject]@{Name="доставки нема до -OffWaitMinutes — запит відпущено, причина в журналі: $($script:Log[-1])";Ok=($ev -cmatch '^доставка-чекання 1( \| доставка-чекання 1)* \| тримання False$' -and -not $script:LightHeld -and $script:Log[-1] -cmatch 'запит відпущено — не доставлено до межі чекання' -and @(Get-Outbox).Count -eq 1)}
+            [void](Tick $false); Clear-Box
+            $ev = Tick $true '{"line":"x","sent":false,"attempts":3}'
+            [pscustomobject]@{Name="перший прохід публікатора без доставки — запит відпущено, довше не чекає: $ev";Ok=($ev -ceq 'доставка-чекання 1 | тримання False' -and $script:Log[-1] -cmatch 'перший прохід публікатора')}
+            [void](Tick $false); Clear-Box; Set-LightHold $false
+            $ev = Tick $true $ok
+            [pscustomobject]@{Name="тримач стартував уже на батареї — запит лише на час доставки: $ev";Ok=($ev -ceq 'тримання True | доставка-чекання 1 | тримання False' -and @(Get-Outbox).Count -eq 1)}
+            $ev = Tick $true $ok
+            [pscustomobject]@{Name="перезапуск на батареї після сказаного — тиша (light.txt): '$ev'";Ok=($ev -ceq '' -and @(Get-Outbox).Count -eq 1)}
+            # Тримач перезапущено посеред чекання: light.txt має id рядка — новий процес бере запит і чекає саме його, без дубля.
+            [void](Tick $false); Clear-Box; Set-LightHold $false
+            $off = '2026-11-17T11:31:58Z'
+            $id = Add-Line "GEMINI ОБГОРТКА: СВІТЛА НЕМА $off"
+            Write-FileAtomic (Join-Path $WorkDir 'light.txt') "$off $id"
+            $ev = Tick $true $ok
+            $st = Read-LightState
+            [pscustomobject]@{Name="перезапуск посеред чекання доставки — запит знову, той самий рядок, без дубля: $ev; $($script:Log -join ' / ')";Ok=($ev -ceq 'тримання True | доставка-чекання 1 | тримання False' -and @(Get-Outbox).Count -eq 1 -and $st.Off -ceq $off -and $st.Id -ceq '' -and $script:Log[-1] -cmatch 'запит відпущено — доставлено$')}
+            [void](Tick $false); Clear-Box; Set-LightHold $false
+            $script:Refuse = $true; $script:LightRefused = $false
+            $ev = Tick $false
+            $refused = @($script:Log | Where-Object { $_ -cmatch 'НЕ ПРИЙНЯТО' }).Count
+            $ev += ' / ' + (Tick $false)
+            $refused += @($script:Log | Where-Object { $_ -cmatch 'НЕ ПРИЙНЯТО' }).Count
+            [pscustomobject]@{Name="запит не прийнято — тримач пробує щотакту, журнал каже раз: $ev; $refused";Ok=($ev -ceq 'тримання True / тримання True' -and -not $script:LightHeld -and $refused -eq 1)}
+            $script:Refuse = $false
+            # Пауза рушія (навіть планувальника) лише заморожує: ні рядків, ні запиту.
+            $script:Events.Clear(); $script:Battery = @($true, $true, $false); $script:PauseMachine = $true
+            Wait-PowerPause
+            $ev = $script:Events -join ' | '
+            [pscustomobject]@{Name="пауза планувальника рядків не пише й ноутбука не тримає: $ev";Ok=($ev -ceq 'світло-чекання' -and @(Get-Outbox).Count -eq 0)}
+            # Постійний процес: нова версія — вихід із відпущеним запитом; другий тримач при живому першому — одразу вихід.
+            Set-LightHold $false; $script:Events.Clear(); $script:Battery = @($false); $script:Ver = @('', 'aaaaaaaa → bbbbbbbb')
+            $code = Invoke-Light
+            $ev = $script:Events -join ' | '
+            [pscustomobject]@{Name="нова версія — тримач виходить кодом 0 і відпускає запит: $code; $ev";Ok=($code -eq 0 -and $ev -ceq 'тримання True | такт | тримання False' -and -not $script:LightHeld)}
+            $lock = Open-Lock (Join-Path $WorkDir 'light.lock')
+            $script:Events.Clear(); $script:Ver = @('')
+            $code = Invoke-Light
+            $lock.Dispose()
+            [pscustomobject]@{Name="другий тримач при живому першому (light.lock) виходить, нічого не чіпаючи: $code";Ok=($code -eq 0 -and $script:Events.Count -eq 0)}
+        }
+        Export-ModuleMember -Function Run
+    }
+    foreach ($check in @(& $light {Run})) {Check $check.Name $check.Ok}
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
 # Артефакти лишаються в TEMP стенда; він не торкається робочих обгорток і станів ноутбука.
 "провалів: $bad"

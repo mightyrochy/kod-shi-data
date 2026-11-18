@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"екскурсія старим містом\", \"place\": \"екскурсія старим містом\", \"duration_h\": \"9 год\", \"movement\": \"9 год на ногах\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"екскурсія старим містом\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"екскурсія старим містом\"}, \"precipitation\": {\"kind\": \"reading\", \"quote\": \"без дощу\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"her\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"9 год на ногах\"}, \"weather_band\": {\"kind\": \"reading\"}, \"duration_h\": {\"kind\": \"her\", \"quote\": \"9 год\"}}, \"event\": \"екскурсія старим містом цілий день\", \"duration_h\": 9, \"movement\": \"walk_a_lot\", \"part_of_day\": \"day\", \"weather_band\": \"cool\", \"precipitation\": \"none\", \"occasion\": \"everyday\", \"place\": \"walk\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"light\": \"daylight\", \"activity\": \"walking\", \"surface\": \"cobblestones\"}, \"person\": {\"skin_hex\": [\"#deb295\", \"#d8a98c\", \"#e2ba9f\"], \"hair_hex\": \"#e5cd99\", \"eyes_hex\": \"#759087\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Long-sleeve top: fitted crew-neck tee, hip length, cream #F1E7D3, soft cotton jersey\\nSweater: relaxed crew-neck pullover, hip length, olive #7D8260, fine merino wool\\nTrousers: straight-leg jeans, full ankle length, dark indigo #2F3B52, stretch cotton denim\\nOuter layer: field jacket with a straight cut, hip length, camel #B58B5A, cotton twill with a light lining\\nShoes: low sneakers with a cushioned, flexible rubber sole, off-white #F2EEE6, smooth leather\\nScarf: wide, light scarf, sage-grey #8FA59C, soft wool-blend\\nBag: small crossbody with a zip closure, cognac #8A5A3B, grained leather\\n\\nThis outfit suits a cool autumn day of walking, because the tee, sweater and jacket can be taken off or added as the temperature changes between shady streets and sunny squares. Cushioned sneakers and stretch denim keep you comfortable for nine hours on cobblestones, and the crossbody bag leaves your hands free. The warm olive, camel and cream tones go well with your golden hair and warm skin, and the sage scarf picks up the grey-green of your eyes. The look is neat and relaxed, so it fits old-town streets, cafés and photos.\"}],\"usage\":{\"input_tokens\":2443,\"output_tokens\":993},\"stop_reason\":\"end_turn\"}"
+ }
+}

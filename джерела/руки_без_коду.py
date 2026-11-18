@@ -75,14 +75,15 @@ def головний_колір(вибір):
     о = {"name": (_ВМ.код("color_name", слово) or слово) if слово else _ВМ.UNKNOWN}
     if (вибір or {}).get("база_hex"):
         о["hex"] = вибір["база_hex"]
-    о["chosen_by"] = ("her_item_photo" if вибір.get("база_з_речі")
-                      else "code" if вибір.get("база_за_замовчуванням") else "her")
-    о["source"] = _ПП.походження(_ПП.ТЛУМАЧЕННЯ if вибір.get("база_з_речі")
-                                 else _ПП.ТИПОВЕ if вибір.get("база_за_замовчуванням") else _ПП.РУКА)
+    # хто обрав — одне місце, закрите за замовчуванням (`паспорт_поля.автор_палітри`): основа без позначки коду й без
+    # запису її дії — «unknown», а не її рука (п.7)
+    автор = _ПП.автор_палітри(вибір, "base")
+    о["chosen_by"] = "code" if автор == "code_rank" else автор
+    о["source"] = _ПП.походження_автора(автор)
     return о
 
 
-def її_речі(речі_паспорта):
+def її_речі(речі_паспорта, без_кадрів=False):
     """Її закріплені речі з повним описом — кодами полів, без слота.
 
     «Речі, які отримує функціональна модель, — завжди з повним описом. Модель сама знає,
@@ -105,7 +106,9 @@ def її_речі(речі_паспорта):
             к = _РФ.код_поля(поле, р.get(ключ))
             if к:
                 о[поле] = к
-        о["photo"] = bool(р.get("фото"))
+        # `без_кадрів` — кадри її речей до моделі не дійшли (Е2-опора-пояснення, п.6): «photo» хибне в кожної,
+        # інакше промпт казав би «also on the attached photos» про кадр, якого модель не бачила
+        о["photo"] = bool(р.get("фото")) and not без_кадрів
         вих.append(о)
     return вих
 
@@ -151,8 +154,9 @@ def її_речі(речі_паспорта):
                                   "(standing out), fashion_forward (a bold fashion look, at least two sources of "
                                   "interest), editorial (an editorial construction, at least one source of "
                                   "interest); count limits do not apply to fashion_forward or editorial"),
-        _ЗП.Поле("main_color", "the main color: chosen_by her, code (default), or her_item_photo (model's "
-                               "reading of an item photo); source carries its kind",
+        _ЗП.Поле("main_color", "the main color: chosen_by her, conversation (she asked for it in the chat), "
+                               "code (default), her_item_photo (model's reading of an item photo) or unknown (who chose "
+                               "it is not recorded); source carries its kind",
                  як="build the outfit around it"),
         _ЗП.Поле("her_items", "her own items; \"photo\": true — also on the attached photos",
                  як="they stay in the outfit as they are: build the rest around them, add nothing that "
@@ -308,16 +312,18 @@ def паспорт_рядком(п, без_меж=False):
 
 
 def промпт_руки(рука, випадок, вимоги="", вибір=None, речі_паспорта=None, факти=None,
-                фото_її=False, мова_тексту=None, перепис=False):
+                фото_її=False, мова_тексту=None, перепис=False, без_кадрів=False):
     """Промпт руки 3 (з `факти` — `особа(...)`) чи 4 (без них) рядком JSON; `перепис` — той
-    самий промпт із попередньою відповіддю й зауваженнями мовного гейта (заглушками).
+    самий промпт із попередньою відповіддю й зауваженнями мовного гейта (заглушками);
+    `без_кадрів` — той самий промпт для виклику без кадрів: кадри не дійшли до моделі, і промпт
+    не обіцяє жодного (її речі без «photo», без «photo_of_her»).
 
     ID правил із даних вирізаються так само, як із пакета рук 1–2 (`протокол.без_ід_глибоко` —
     по значеннях, а не регулярками по готовому JSON)."""
     дані = dict(case=випадок, requirements=str(вимоги or "").strip(),
-                main_color=головний_колір(вибір), her_items=її_речі(речі_паспорта),
+                main_color=головний_колір(вибір), her_items=її_речі(речі_паспорта, без_кадрів),
                 person=(факти if рука == "3" else None),
-                photo_of_her=(True if фото_її else None),
+                photo_of_her=(True if фото_її and not без_кадрів else None),
                 previous_answer=(ЗАГЛУШКА_ОПИСУ if перепис else None),
                 remarks=(ЗАГЛУШКА_ЗАУВАЖЕНЬ if перепис else None))
     return _json.dumps(_ЗП.зібрати(ОБРАЗ, _ПР.без_ід_глибоко(дані), мова_тексту=мова_тексту),

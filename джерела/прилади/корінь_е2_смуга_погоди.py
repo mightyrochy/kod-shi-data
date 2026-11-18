@@ -1922,70 +1922,176 @@ class АналізСлів:
         return False
 
     def писачі_опор(self):
-        """[(модуль, функція, параметр опор, параметр поля)]: функція кладе параметр у ключ `опори` запису, що лежить за
-        ключем-параметром (`картка[поле] = факт`, `факт["опори"] = опори`)."""
+        """Усі записи ключа `опори`: модуль, вузол, значення та можливі поля факту.
+
+        Невідоме поле лишається None: другий писач не може зникнути через форму значення чи відсутність параметра.
+        """
         вих = []
         for м in self.пі:
-            for ф in м.функції:
-                пар = м.параметри.get(id(ф), [])
-                опора = поле = None
-                for в in ast.walk(ф):
-                    if isinstance(в, ast.Assign) and \
-                            any(isinstance(ц, ast.Subscript) and рядок_константи(ц.slice) == ОПОРИ for ц in в.targets):
-                        імена = [н.id for н in ast.walk(в.value) if isinstance(н, ast.Name) and н.id in пар]
-                        опора = імена[0] if імена else опора
-                    if isinstance(в, ast.Assign):
-                        for ц in в.targets:
-                            if isinstance(ц, ast.Subscript) and isinstance(ц.slice, ast.Name) and ц.slice.id in пар:
-                                поле = ц.slice.id
-                if опора and поле:
-                    вих.append((м, ф, опора, поле))
-        return вих
+            for в in м.вид("Assign", "AnnAssign"):
+                for ц in (в.targets if isinstance(в, ast.Assign) else [в.target]):
+                    if isinstance(ц, ast.Subscript) and рядок_константи(ц.slice) == ОПОРИ:
+                        вих.append((м, в, в.value, self.поля_факту(м, ц.value)))
+            for в in м.вид("Dict"):
+                б = м.батько.get(id(в))
+                if isinstance(б, ast.keyword) and б.arg is None:
+                    continue  # пакет аргументів — не сам запис факту; його розбирає аргументи_опор
+                for к, з in zip(в.keys, в.values):
+                    if к is not None and рядок_константи(к) == ОПОРИ:
+                        вих.append((м, в, з, self.поля_факту(м, в)))
+            for в in м.вид("Call"):
+                if isinstance(в.func, ast.Name) and в.func.id == "dict":
+                    for к in в.keywords:
+                        if к.arg == ОПОРИ:
+                            вих.append((м, в, к.value, self.поля_факту(м, в)))
+        return [(м, в, з, поля) for м, в, з, поля in вих
+                if any(п is not None for п in поля) or self.невідомий_факт(м, в)]
 
-    def поле_виклику(self, м, виклик, арг):
-        """Чи аргумент-поле може бути полем погоди: рядок, змінна циклу по переліку літералів; інше — може."""
-        if арг is None:
-            return True
-        з = рядок_константи(арг)
-        if з is not None:
-            return з in ПОЛЕ_ПОГОДИ
-        if isinstance(арг, ast.Name):
-            б = м.батько.get(id(виклик))
-            while б is not None and not isinstance(б, ОБЛАСТІ):
-                if isinstance(б, (ast.For, ast.AsyncFor)) and isinstance(б.target, ast.Name) and б.target.id == арг.id:
-                    try:
-                        кол = ast.literal_eval(б.iter)
-                    except (ValueError, SyntaxError, TypeError):
-                        return True
-                    return isinstance(кол, (tuple, list, set, frozenset)) and any(к in ПОЛЕ_ПОГОДИ for к in кол)
-                б = м.батько.get(id(б))
-        return True
+    def невідомий_факт(self, м, вузол):
+        """Чи запис може змінювати переданий ззовні факт, навіть коли його поле тут не відоме.
+
+        Самостійні локальні записи й описи схем без розміщення за ключем поля не є фактами полів: ключ `опори`
+        у вердикті образу має інший зміст. Зміна переданого факту лишається невідомою, а не безпечною.
+        """
+        if not isinstance(вузол, (ast.Assign, ast.AnnAssign)):
+            return False
+        for ц in (вузол.targets if isinstance(вузол, ast.Assign) else [вузол.target]):
+            if isinstance(ц, ast.Subscript) and isinstance(ц.value, ast.Name):
+                обл = м.область(вузол)
+                if ц.value.id in м.параметри.get(id(обл), ()):
+                    return True
+        return False
+
+    def поля_факту(self, м, вираз, слід=frozenset()):
+        """Ключі записів, куди потрапляє факт; невідоме розміщення не доводить відсутності погоди."""
+        if id(вираз) in слід:
+            return [None]
+        слід = слід | {id(вираз)}
+        if isinstance(вираз, ast.Subscript):
+            return [вираз.slice]
+        if isinstance(вираз, ast.Name):
+            поля = []
+            for в in м.вид("Assign", "AnnAssign"):
+                if м.область(в) is м.область(вираз) and isinstance(в.value, ast.Name) and в.value.id == вираз.id:
+                    for ц in (в.targets if isinstance(в, ast.Assign) else [в.target]):
+                        поля += self.поля_факту(м, ц, слід)
+            return поля or [None]
+        б = м.батько.get(id(вираз))
+        if isinstance(б, (ast.Assign, ast.AnnAssign)):
+            return [п for ц in (б.targets if isinstance(б, ast.Assign) else [б.target])
+                    for п in self.поля_факту(м, ц, слід)]
+        if isinstance(б, ast.Dict):
+            return [к for к, з in zip(б.keys, б.values) if з is вираз] or [None]
+        return [None]
+
+    def досяжне_опор(self, м, ім, вузол):
+        """Останнє присвоєння перед точкою, зокрема всередині циклу; умовне поза шляхом — невідоме."""
+        обл = м.область(вузол)
+        записи = []
+        for оп, знач, вид in м.присвоєння.get((id(обл) if обл is not None else None, ім), ()):
+            if м.усередині(вузол, оп):
+                if вид in ("цикл", "ген") and not м.усередині(вузол, знач):
+                    записи.append((оп, знач, "цикл"))
+            elif (getattr(оп, "end_lineno", оп.lineno), getattr(оп, "end_col_offset", 0)) <= \
+                    (вузол.lineno, вузол.col_offset):
+                записи.append((оп, знач, вид))
+        if not записи:
+            return None
+        оп, знач, вид = max(записи, key=lambda з: (з[0].lineno, з[0].col_offset))
+        б = м.батько.get(id(оп))
+        while б is not None and б is not обл:
+            if isinstance(б, (ast.If, ast.Try, ast.Match, ast.For, ast.AsyncFor, ast.While)) and \
+                    not м.усередині(вузол, б):
+                return оп, None, "інше"
+            if isinstance(б, ast.If) and м.усередині(вузол, б):
+                в_тілі = any(м.усередині(оп, д) for д in б.body)
+                вузол_в_тілі = any(м.усередині(вузол, д) for д in б.body)
+                if в_тілі != вузол_в_тілі:
+                    return оп, None, "інше"
+            б = м.батько.get(id(б))
+        return оп, знач, вид
+
+    def значення_опор(self, м, вираз, вузол, звязки, слід=frozenset()):
+        """Можливі значення виразу; Ellipsis означає невідоме, яке не можна використати для вилучення місця."""
+        if вираз is None or id(вираз) in слід:
+            return [Ellipsis]
+        слід = слід | {id(вираз)}
+        try:
+            return [ast.literal_eval(вираз)]
+        except (ValueError, SyntaxError, TypeError):
+            pass
+        if isinstance(вираз, ast.Name):
+            д = self.досяжне_опор(м, вираз.id, вузол)
+            if д:
+                оп, знач, вид = д
+                з = self.значення_опор(м, знач, оп, звязки, слід)
+                if вид == "цикл":
+                    return [к for кол in з for к in (кол if isinstance(кол, (tuple, list, set, frozenset, dict))
+                                                    else [Ellipsis])] or [Ellipsis]
+                return з
+            if вираз.id in звязки:
+                мм, з, точка = звязки[вираз.id]
+                return self.значення_опор(мм, з, точка, {}, слід)
+            if not м.локальне(м.область(вузол), вираз.id):
+                з = self.глобальне(м, вираз.id)
+                if з is not None:
+                    return [з]
+            return [Ellipsis]
+        if isinstance(вираз, (ast.BoolOp, ast.IfExp)):
+            вирази = вираз.values if isinstance(вираз, ast.BoolOp) else [вираз.body, вираз.orelse]
+            return [з for в in вирази for з in self.значення_опор(м, в, вузол, звязки, слід)]
+        if isinstance(вираз, (ast.List, ast.Tuple, ast.Set)):
+            return [[Ellipsis] if вираз.elts else []]
+        if isinstance(вираз, ast.Dict):
+            return [Ellipsis] if None in вираз.keys else [{і: Ellipsis for і in range(len(вираз.keys))}]
+        if isinstance(вираз, ast.Call):
+            ім = вираз.func.id if isinstance(вираз.func, ast.Name) else \
+                вираз.func.attr if isinstance(вираз.func, ast.Attribute) else None
+            if ім in ("list", "tuple", "set", "frozenset", "deepcopy", "copy") and len(вираз.args) == 1:
+                return self.значення_опор(м, вираз.args[0], вузол, звязки, слід)
+        return [Ellipsis]
+
+    def аргументи_опор(self, м, виклик, ціль, ф):
+        """Зв'язує параметри з позиційними й іменованими аргументами, **словником та типовими значеннями."""
+        а = ф.args
+        позиційні = а.posonlyargs + а.args
+        типові = {п.arg: з for п, з in zip(позиційні[-len(а.defaults):], а.defaults)} if а.defaults else {}
+        типові.update({п.arg: з for п, з in zip(а.kwonlyargs, а.kw_defaults) if з is not None})
+        задані, невідомі = {}, False
+        for п, з in zip(позиційні, виклик.args):
+            if isinstance(з, ast.Starred):
+                невідомі = True
+                break
+            задані[п.arg] = з
+        for к in виклик.keywords:
+            if к.arg is not None:
+                задані[к.arg] = к.value
+            elif isinstance(к.value, ast.Dict) and all(рядок_константи(з) is not None for з in к.value.keys):
+                задані.update({рядок_константи(з): в for з, в in zip(к.value.keys, к.value.values)})
+            else:
+                невідомі = True
+        return {п.arg: (м, задані[п.arg], виклик) if п.arg in задані else
+                (м, None, виклик) if невідомі or п.arg not in типові else (ціль, типові[п.arg], ф)
+                for п in позиційні + а.kwonlyargs}
+
+    def поле_виклику(self, м, вузол, арг, звязки):
+        """Чи хоч одне досяжне значення поля є погодою або невідомим."""
+        return any(з is Ellipsis or not isinstance(з, str) or з in ПОЛЕ_ПОГОДИ
+                   for з in self.значення_опор(м, арг, вузол, звязки))
 
     def опори_без_погоди(self):
-        """True — писачі `опори` є, і жоден виклик з `опори` не кладе поле погоди; False — може; None — писача нема."""
+        """True лише коли кожен писач у всіх відомих викликах доведено не дає опор полю погоди."""
         писачі = self.писачі_опор()
         if not писачі:
             return None
-        цілі = {(м.шлях, ф.name): (оп, пл, ф) for м, ф, оп, пл in писачі}
-        for м in self.пі:
-            for в in м.вид("Call"):
-                ц = self.ціль(м, в.func)
-                if not ц or (ц[0].шлях, ц[1]) not in цілі:
+        for м, вузол, опори, поля in писачі:
+            ф = м.функція_вузла(вузол)
+            контексти = [self.аргументи_опор(мм, в, м, ф) for мм in self.пі for в in мм.вид("Call")
+                         if ф is not None and self.ціль(мм, в.func) == (м, ф.name)] or [{}]
+            for звязки in контексти:
+                if not any(з is Ellipsis or bool(з) for з in self.значення_опор(м, опори, вузол, звязки)):
                     continue
-                оп, пл, ф = цілі[(ц[0].шлях, ц[1])]
-                пар = ц[0].параметри.get(id(ф), [])
-
-                def аргумент(ім):
-                    for к in в.keywords:
-                        if к.arg == ім:
-                            return к.value, True
-                    і = пар.index(ім)
-                    return (в.args[і], True) if і < len(в.args) else (None, False)
-                знач, є = аргумент(оп)
-                if not є or (isinstance(знач, ast.Constant) and знач.value is None):
-                    continue
-                поле, _ = аргумент(пл)
-                if self.поле_виклику(м, в, поле):
+                if any(self.поле_виклику(м, вузол, поле, звязки) for поле in поля):
                     return False
         return True
 
@@ -3366,6 +3472,52 @@ def без_опор(паспорт):
 }
 
 
+def випадки_писачів_опор():
+    """Пари писачів із погодою та без неї, а також невідомі значення й перекриття присвоєнь."""
+    базовий = _ПИСАЧ_ОПОР % '("бажання", "вето")'
+    for поле, пункти in (("смуга_погоди", {2}), ("бажання", set())):
+        виклик = базовий.replace('паспорт, поле, внутрішня[поле]', 'паспорт, "%s", внутрішня[поле]' % поле)
+        форми = {
+            "розпакування": виклик.replace('опори=[{"уривок": "х"}]', '**{"опори": [{"уривок": "х"}]}'),
+            "типове": базовий.replace('опори=None', 'опори=({"уривок": "х"},)')
+            .replace('паспорт, "смуга_погоди", "cold"', 'паспорт, "%s", "cold"' % поле),
+            "переприсвоєння": базовий.replace('        записати(', '        поле = "%s"\n        записати(' % поле),
+            "словник": базовий + '\n\ndef додати(паспорт):\n'
+            '    паспорт["картка"]["%s"] = {"опори": [{"уривок": "х"}]}\n' % поле,
+            "копія": базовий + '\n\ndef додати(паспорт, давній):\n'
+            '    факт = {"опори": давній.get("опори")}\n    паспорт["картка"]["%s"] = факт\n' % поле,
+            "прямий_ключ": базовий + '\n\ndef додати(паспорт, давній):\n'
+            '    паспорт["картка"]["%s"]["опори"] = давній.get("опори")\n' % поле,
+        }
+        for ім, текст in форми.items():
+            yield ім + "_" + поле, текст, пункти
+    yield "переприсвоєння_з_погоди", (_ПИСАЧ_ОПОР % '("смуга_погоди",)') \
+        .replace('        записати(', '        поле = "бажання"\n        записати('), set()
+    yield "типове_порожнє", базовий.replace("опори=None", "опори=()"), set()
+    yield "невідоме_розпакування", базовий.replace('опори=[{"уривок": "х"}]', '**внутрішня') \
+        .replace('паспорт, поле, внутрішня[поле]', 'паспорт, "смуга_погоди", внутрішня[поле]'), {2}
+    yield "умовне_переприсвоєння", базовий.replace('        записати(',
+        '        if внутрішня:\n            поле = "смуга_погоди"\n        записати('), {2}
+    yield "умовне_зняття_погоди", (_ПИСАЧ_ОПОР % '("смуга_погоди",)').replace('        записати(',
+        '        if внутрішня:\n            поле = "бажання"\n        записати('), {2}
+    yield "іменовані_параметри", базовий.replace('уривок, опори=None', 'уривок, *, цитата=True, опори=None') \
+        .replace('паспорт, поле, внутрішня[поле]', 'паспорт, "смуга_погоди", внутрішня[поле]'), {2}
+    yield "опори_іншого_запису", базовий + '''
+
+СХЕМА = {"опори": {"тип": "список"}}
+
+def вердикт(опори):
+    вих = {}
+    вих["опори"] = [{"правило": о.get("правило")} for о in опори]
+    return вих
+''', set()
+    yield "невідомий_переданий_факт", базовий + '''
+
+def додати(факт, давній):
+    факт["опори"] = давній.get("опори")
+''', {2}
+
+
 def _прогін(штучні, очікувані, префікс=""):
     """[(назва, так/ні)]: кожна позначка штучних файлів — очікуваний набір пунктів; вивід — однаковий двічі."""
     тека = tempfile.mkdtemp(prefix="е2_смуга_")
@@ -3404,6 +3556,9 @@ def самоперевірка():
     підсумок = _прогін(ШТУЧНІ, ОЧІКУВАНІ)
     for ім, (штучні, очікувані) in ДЕРЕВА_ОПОР.items():
         підсумок += _прогін(штучні, очікувані, ім + ": ")
+    for ім, текст, пункти in випадки_писачів_опор():
+        підсумок += _прогін({"джерела/ш_поля.py": _ЧИТАЧ_ОПОР, "джерела/ш_запис.py": текст},
+                           {"опори_читач": пункти}, ім + ": ")
     return підсумок
 
 

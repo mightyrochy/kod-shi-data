@@ -73,8 +73,28 @@ try {
     $built = Merge 'build.txt' $newer; Invoke-WrapperChain
     $state = ConvertFrom-Json ([IO.File]::ReadAllText($file))
     Check 'збірка збережена в очікуванні моделей' ($state.live_pending.Count -eq 1 -and $state.live_pending[0].stamp -ceq $newer -and $state.live_pending[0].main -ceq $built)
+    # Прохід публікатора: fetch з Main (клон без remote.origin.fetch, як repo.git) -> ланцюг ставить позначку -> стан цієї
+    # позначки приймається в тому ж проході, а не наступним fetch.
+    [void](Invoke-Git @('fetch','-q','--prune','--no-tags','origin','+refs/heads/main:refs/remotes/origin/main','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
     $script:Ready = $true; Invoke-WrapperChain
     Check 'кілька злиттів однієї збірки отримали одну GPU-позначку за штампом' (@(Markers | Where-Object { $_ -match "автоживий-$newer/.*/1/p2-gpu$" }).Count -eq 1)
+    $queue = (@(Markers | Where-Object { $_ -match "автоживий-$newer/" })[0]) -replace '^refs/heads/',''
+    $part = $queue -split '/'
+    Check 'позначка, поставлена ланцюгом, видна клону того ж проходу без fetch' ((Get-RefSha "refs/remotes/origin/$queue") -ceq $built)
+    $runId = '20261101-230000-0123456789ab'
+    Write-FileAtomic "$OutDir/$runId.json" ((@{v=1;id=$runId;code='BLOCKED';slug=$part[1];model=$part[2];n=$part[3];cond=$part[4];marker=$built}) | ConvertTo-Json -Compress)
+    Receive-RunState $runId
+    $runSlug = $(if (Test-Path -LiteralPath "$WorkDir/state/$runId.json") { [string](ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/state/$runId.json", $utf))).slug } else { '' })
+    "ДАНІ стан позначки ланцюга: slug=[$runSlug] черга=$queue"
+    Check 'стан прогону щойно поставленої позначки приймається в тому ж проході, а не як «не відповідає жодній позначці»' ($runSlug -ceq $part[1])
+    # Зняття так само відразу видне клону: знята позначка не лишається в посиланнях до наступного fetch.
+    Add-ChainMarker "автоперевірка-77-$newer" 'gpt-6.1-sol-high' $built
+    $review = (@(Markers | Where-Object { $_ -match "автоперевірка-77-$newer/" })[0]) -replace '^refs/heads/',''
+    Check 'поставлена позначка автоперевірки видна клону' ((Get-RefSha "refs/remotes/origin/$review") -ceq $built)
+    [void](Request-CloudReview '77' $newer)
+    Check 'знята позначка зникає з клону того ж проходу' (@(Markers | Where-Object { $_ -match "автоперевірка-77-$newer/" }).Count -eq 0 -and -not (Get-RefSha "refs/remotes/origin/$review"))
+    foreach ($leftover in @(Get-ChildItem -LiteralPath $OutboxDir -File | Where-Object { ([IO.File]::ReadAllText($_.FullName, $utf)) -match 'CLAUDE #77 ' })) { Remove-Item -LiteralPath $leftover.FullName -Force }
+    Remove-Item -LiteralPath (Get-SeenPath "cloud-review 77 $newer") -Force
     Invoke-WrapperChain
     Check 'живий прогін не дублюється' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 1)
     $script:Pulls = @((Pull 12 'claude/наряд' $newer)); Invoke-WrapperChain
@@ -165,6 +185,31 @@ try {
     & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
     Invoke-WrapperChain
     Check 'нічний, codex з квотою: дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    # Відмова Codex без часу скидання — квота лише тоді, коли останній вимір не показує залишку в кожному вікні (heartbeat.codex.limits);
+    # відмова з часом скидання — квота завжди, як було. Дозвіл після кожного перенесення повертається на codex.
+    function SetCodexRefused([string]$Reset, $Limits) {
+        $v = @{refused=(Stamp -0.5);reset=$Reset}
+        if ($null -ne $Limits) { $v.read = (Stamp -0.2); $v.limits = $Limits }
+        [IO.File]::WriteAllText("$OutDir/heartbeat.json", ((@{codex=$v}) | ConvertTo-Json -Compress -Depth 6), $utf)
+    }
+    function CodexLimits([int[]]$Left) { , @(@{id='codex';windows=@(foreach ($l in $Left) { @{m=300;used=(100-$l);left=$l;reset=(Stamp 1)} })}) }
+    function BackToCodex {
+        foreach ($m in @(SlugMarkers $night)) { & git -C $seed push -q origin ":$m" }
+        & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+    }
+    SetClaude $false
+    SetCodexRefused '' (CodexLimits 72, 72); Invoke-WrapperChain
+    Check 'нічний, відмова codex без часу скидання, вимір 72 і 72 % вільних: збій рушія, дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    $moved = @(
+        @{Why='відмова без часу скидання, виміру нема: квота, як було'; Reset=''; Limits=$null},
+        @{Why='відмова без часу скидання, одне вікно виміру на 0 %: квота'; Reset=''; Limits=(CodexLimits 72, 0)},
+        @{Why='відмова з часом скидання, вимір 72 % вільних: справжня квота'; Reset=(Stamp 140); Limits=(CodexLimits 72, 72)})
+    foreach ($c in $moved) {
+        SetCodexRefused $c.Reset $c.Limits; Invoke-WrapperChain
+        Check "нічний, $($c.Why): дозвіл перейшов на Claude" (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/cc-claude-sonnet-5-5-medium/1/gpu-p8$')
+        BackToCodex
+    }
+    "  мірило: відмова codex без часу скидання, вимір 72 % вільних — було перенесення на Claude, стало: лишається на codex"
     SetCodex $true; SetClaude $true; Invoke-WrapperChain
     Check 'нічний, обидва на квоті: дозвіл чекає на codex, не переходить' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
     & git -C $seed push -q origin ":$(@(SlugMarkers $night)[0])"

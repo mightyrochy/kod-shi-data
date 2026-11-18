@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Dress: A-line formal dress with a fitted bodice, softly V-neckline, wide straps, defined waist and a flowing skirt, ankle-length, in deep teal-green (#3F6B63), in silk crepe satin\\n\\nShoes: Block-heel ankle-strap sandals, medium heel, in warm champagne gold (#D9BF8F), in smooth satin-finish leather\\n\\nClutch: Small structured envelope clutch in soft gold (#C9A86A), in metallic-finish leather\\n\\nEarrings: Medium drop earrings with a delicate open shape, in warm gold (#C9A86A), in polished metal\\n\\nWhy this outfit works: The silk crepe satin dress is a formal fabric that suits the wedding, and its ankle length keeps it elegant while the flowing skirt stays cool on a warm August afternoon. Bare arms are the only open zone, so the look stays refined and comfortable for an outdoor ceremony and the restaurant afterwards. The deep teal-green echoes the grey-green of your eyes and sets off your golden hair and warm skin, without competing with the bride. Block heels stay stable on grass, and the champagne-gold shoes and accessories add a festive glow that carries from daylight into the evening.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Dress\\\",\\\"details\\\":\\\"A-line formal dress with a fitted bodice, softly V-neckline, wide straps, defined waist and a flowing skirt, ankle-length, in silk crepe satin\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#3F6B63\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sandals\\\",\\\"details\\\":\\\"Block-heel ankle-strap sandals, medium heel, in smooth satin-finish leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#D9BF8F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Clutch\\\",\\\"details\\\":\\\"Small structured envelope clutch in metallic-finish leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#C9A86A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Earrings\\\",\\\"details\\\":\\\"Medium drop earrings with a delicate open shape, in polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A86A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2085,\"output_tokens\":305},\"stop_reason\":\"end_turn\"}"
+ }
+}

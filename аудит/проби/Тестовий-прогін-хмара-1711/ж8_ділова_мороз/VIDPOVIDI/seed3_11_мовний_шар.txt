@@ -1,0 +1,45 @@
+── ПРОМПТ (5983 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+8 — назва в тексті н=9
+9 — назва в тексті н=10
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Fine-knit turtleneck, slim fit, hip length, cream, merino wool\n\nHigh-waisted trousers, straight leg, full length to the top of the boot, dark chocolate, wool flannel\n\nTextured blazer, single-breasted, slightly fitted, hip length, camel, herringbone wool tweed\n\nOvercoat, single-breasted, belted, knee length, deep navy, dense wool-cashmere blend\n\nAnkle boots, low block heel, grippy rubber sole, black, waterproof-treated smooth leather that is easy to wipe clean of salt\n\nScarf, wide and generously long, burgundy, soft lambswool\n\nGloves, wrist length, dark brown, leather with a warm lining\n\nKnit beanie, close fitting, cream, wool-blend (optional for the walk, easy to take off at the door)\n\nStructured tote bag, medium size, with a top handle and a zip, dark brown, grained leather\n\nWhy this outfit works: layers of wool and a lined coat keep you warm through a 20-minute walk in frost and snow, and the blazer under the coat gives the office-ready, neat business look the moment you take the coat off. The waterproof leather boots with grippy soles handle snow and road salt, and the full-length trousers keep ankles covered and dry. The warm cream, camel and chocolate tones flatter your dark hair, brown eyes and warm skin, while the burgundy scarf adds a rich touch of color near the face. The tone-on-tone column of the knit and trousers, topped by a belted coat, keeps the silhouette long and polished.",
+"2": "Fine-knit turtleneck",
+"3": "High-waisted trousers",
+"4": "Textured blazer",
+"5": "Overcoat",
+"6": "Ankle boots",
+"7": "Scarf",
+"8": "Gloves",
+"9": "Knit beanie",
+"10": "Structured tote bag"
+}
+
+── ВІДПОВІДЬ (1839 симв., 18.1 с, HTTP 200) ──
+{"1":"Водолазка тонкої в'язки, прилеглого крою, довжиною до стегон, кремова, з вовни мериноса\n\nШтани з високою талією, прямого крою, повної довжини до верху черевиків, темно-шоколадні, з вовняної фланелі\n\nФактурний піджак, однобортний, трохи приталений, довжиною до стегон, кемел, з вовняного твіду «ялинка»\n\nПальто однобортне, з поясом, довжиною до коліна, глибокий темно-синій, зі щільної суміші вовни й кашеміру\n\nЧеревики на низькому масивному підборі, з гумовою підошвою з міцним зчепленням, чорні, з гладкої шкіри з водонепроникною обробкою, яку легко очистити від солі\n\nШарф широкий і щедро довгий, бордовий, з м'якої ягнячої вовни\n\nРукавички довжиною до зап'ястка, темно-коричневі, зі шкіри з теплою підкладкою\n\nВ'язана шапка-біні, щільно прилягає, кремова, з вовняної суміші (необов'язкова для прогулянки, легко знімається біля дверей)\n\nСтруктурована сумка-тоут середнього розміру, з верхньою ручкою і блискавкою, темно-коричнева, із зернистої шкіри\n\nЧому цей образ працює: шари вовни та пальто на підкладці тримають тебе в теплі під час 20-хвилинної прогулянки морозом і снігом, а піджак під пальтом одразу, як тільки ти знімаєш пальто, дає охайний діловий вигляд, готовий до офісу. Водонепроникні шкіряні черевики з підошвою з міцним зчепленням дають раду снігові й дорожній солі, а штани повної довжини закривають щиколотки й не дають їм змокнути. Теплі кремовий, кемел і шоколадний тони пасують до твого темного волосся, карих очей і теплого тону шкіри, а бордовий шарф додає насиченого кольору біля обличчя. Колона тон у тон із водолазки та штанів, поверх якої пальто з поясом, робить силует довгим і доглянутим.","2":"Водолазка тонкої в'язки","3":"Штани з високою талією","4":"Фактурний піджак","5":"Пальто","6":"Черевики","7":"Шарф","8":"Рукавички","9":"В'язана шапка-біні","10":"Структурована сумка-тоут"}

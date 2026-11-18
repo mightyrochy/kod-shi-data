@@ -21,6 +21,7 @@
      позначкою»; нова спроба при наявній гілці наряду — ще «продовжуй з гілки». Гілку й PR-чернетку сесія пушить сама.
   4. Межі часу всього нема: зупиняє лише завислість — жодної події stream-json довше за поріг (HANG). Очікування фонових
      завдань агента — без власної межі `claude -p` (CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0): його тоді обмежує лише HANG.
+     Явний `timeout` Bash понад 10 хв `claude -p` теж приймає без стелі (BASH_MAX_TIMEOUT_MS=2147483647, межа самого CLI).
   5. Кінець — рядок теки вихідних (доставляє `gemini-publish`): ГОТОВО <гілка> <SHA40>, лише коли `origin` має
      саме цей SHA на гілці зі звіту, або ЗАБЛОКОВАНО claude/<наряд> <КОД>; копія з незапушеними комітами лишається — ще рядок COPY_KEPT. Відмова за квотою — не кінець: позначка
      чекає скидання (час — з події `rate_limit_event` stream-json) і рядок QUOTA0_CLAUDE_M<хв>; потім її бере ця ж смуга.
@@ -31,6 +32,9 @@
      смуги й слоти (свої й gemini-run з heartbeat), квота груп моделей і Claude з часом скидання в UTC, позначки в
      чеканні квоти, GPU (вимір карти nvidia-smi з часом UTC і замок обгортки окремими рядками), межі без джерела, здоров'я машини (місце, теки, позначки за рушієм, видом і віком), аварії однієї
      причини — лише обчислене.
+  8. `-Light` — тримач світла (задача `claude-light`, той самий скрипт і той самий контекст, що й планувальник):
+     постійний процес, що на мережі тримає запит «система й дисплей потрібні», а коли світло зникає, пише
+     СВІТЛА НЕМА, чекає доставки й лише тоді відпускає запит; світло повернулось — СВІТЛО Є і запит знову.
 #>
 [CmdletBinding()]
 param(
@@ -53,12 +57,13 @@ param(
     [double]$QuotaWaitMinutes = 60,
     [int]$MarkerMaxAgeDays = 7,
     [double]$OffWaitMinutes = 10,
-    [string[]]$TaskNames = @('claude-run', 'gemini-run', 'gemini-publish', 'gemini-watch'),
+    [string[]]$TaskNames = @('claude-run', 'claude-light', 'gemini-run', 'gemini-publish', 'gemini-watch'),
     [string]$GeminiUser = 'gemini',
     [string]$HealthDrive = 'C:\',
     [string]$TmpDir = 'C:\tmp',
     [switch]$NoStatus,
     [switch]$MeasureHealth,
+    [switch]$Light,
     [string]$WorkerFile = ''
 )
 
@@ -94,6 +99,8 @@ $script:LineTemplates = @(
     "\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$script:SlugCore [A-Z0-9_]{2,40}\z",
     '\AGEMINI ОБГОРТКА: ВИМКНЕНО [0-9a-f]{40}\z',
     $script:GpuIdleLineTemplate,
+    $script:PowerOffLineTemplate,
+    $script:PowerOnLineTemplate,
     '\AGEMINI ОБГОРТКА: ПРОСТІЙ 20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z [0-9]{1,6}(?: QUOTA0 [1-9][0-9]* [A-Z0-9_]+(?:,[A-Z0-9_]+)* (?:20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|-))?\z',
     $script:HoldLineTemplate
 )
@@ -161,6 +168,117 @@ function Add-Line([string]$Line) {
     Write-FileAtomic (Join-Path $OutboxDir "$id.txt") ($Line + "`n")
     Write-Log "рядок $id : $Line"
     $id
+}
+
+function Wait-LineSent([string]$Id, [datetime]$Until, [switch]$FirstPass) {
+    <# Чекає, поки gemini-publish (раз на хвилину) доставить рядок із теки вихідних: стан `o-<id>.json` — sent. З -FirstPass
+    ще й коли перший прохід публікатора вже скінчив спроби (спроби > 0 чи вичерпано) — далі рядок доставляють наступні
+    проходи, а ноутбук без мережі однаково засне. Довше за $Until не чекає: публікатор міг не запуститися.
+    Повертає, чим скінчилось чекання, — для журналу. #>
+    $sent = Join-Path (Join-Path $PublishDir 'state') "o-$Id.json"
+    while ($Id -and (Get-Date) -lt $Until) {
+        try {
+            $s = [System.IO.File]::ReadAllText($sent, $script:Utf8) | ConvertFrom-Json
+            if ($s.sent) { return 'доставлено' }
+            if ($FirstPass -and ([int](Get-JsonProp $s 'attempts') -gt 0 -or (Get-JsonProp $s 'exhausted') -eq $true)) { return 'перший прохід публікатора скінчив спроби без доставки' }
+        } catch { $null = $_ }
+        Start-Sleep -Seconds 10
+    }
+    'не доставлено до межі чекання (-OffWaitMinutes): публікатор не відповів'
+}
+
+# --- світло (тримач, -Light) --------------------------------------------------------------------------------------
+
+function Read-LightState {
+    <# Зникнення світла, про яке диспетчерові вже написано «світла нема», а «світло є» ще ні, або $null:
+    Off — час UTC зникнення; Id — рядок теки вихідних, доставки якого тримач ще чекає ('' — чекання скінчено).
+    Файл `light.txt` («<UTC>» чи «<UTC> <id>») переживає сон, перезапуск тримача й нову версію: «світло є» йде рівно
+    раз і з тим самим часом, а чекання доставки, перерване перезапуском, новий процес продовжує без другого рядка. #>
+    try { $t = [System.IO.File]::ReadAllText((Join-Path $WorkDir 'light.txt'), $script:Utf8).Trim() } catch { return $null }
+    # Id — ім'я файлу Add-Line (New-Id): «<дата>-<час>-<12 hex>».
+    if ($t -cnotmatch '\A(\S+)(?: ([0-9]{8}-[0-9]{6}-[0-9a-f]{12}))?\z') { return $null }
+    $off = $Matches[1]; $id = [string]$Matches[2]
+    if ($off -cnotmatch $script:UtcRx) { return $null }
+    [pscustomobject]@{ Off = $off; Id = $id }
+}
+
+function Set-LightHold([bool]$On) {
+    <# Запит тримача взяти чи відпустити; $script:LightHeld — чи тримає його цей потік зараз (Set-KeepAwake). #>
+    if ($On) { $script:LightHeld = [bool](Set-KeepAwake $true); return }
+    [void](Set-KeepAwake $false)
+    $script:LightHeld = $false
+}
+
+function Step-Light {
+    <# Один такт тримача. На мережі запит тримається заздалегідь: 17.11 Windows увійшла в Modern Standby за простоєм
+    через 3 с після переходу на батарею — раніше, ніж будь-хто встиг би щось написати. Світла нема — рядок у теку
+    вихідних, чекання доставки (Wait-LineSent -FirstPass, межа -OffWaitMinutes — та сама, що в ВИМКНЕНО) і лише тоді
+    запит відпущено: сон відкладається тільки до доставки, далі ноутбук засинає за схемою Windows (рішення менеджера
+    17.11). Id рядка лежить у `light.txt`, доки чекання не скінчилось: тримач, перезапущений посеред чекання, бере
+    запит і чекає того самого рядка. Світло повернулось — рядок «світло є» з часом зникнення і запит знову. Робочі
+    процеси на батареї заморожує не тримач, а Wait-PowerPause кожного рушія (queue_lanes.ps1). #>
+    $path = Join-Path $WorkDir 'light.txt'
+    $stamp = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    $st = Read-LightState
+    if (-not (Test-OnBattery)) {
+        if ($st) {
+            [void](Add-Line "GEMINI ОБГОРТКА: СВІТЛО Є $([datetime]::UtcNow.ToString($stamp)) ПАУЗА З $($st.Off)")
+            Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+        }
+        if (-not $script:LightHeld) {
+            Set-LightHold $true
+            # Відмову пишемо раз, а не щотакту: тримач пробує знову кожен такт.
+            if ($script:LightHeld -or -not $script:LightRefused) {
+                Write-Log "світло: мережа, запит «система й дисплей потрібні» $(if ($script:LightHeld) { 'тримається' } else { 'НЕ ПРИЙНЯТО' })"
+            }
+            $script:LightRefused = -not $script:LightHeld
+        }
+        return
+    }
+    if ($st -and -not $st.Id) { return }  # про це зникнення вже сказано й доставки дочекались; запит відпущено ще тоді
+    # Тримач стартував уже на батареї чи перезапущений посеред чекання — запит і тут, лише на час доставки.
+    if (-not $script:LightHeld) { Set-LightHold $true }
+    $why = 'рядок не записано'
+    $off = $(if ($st) { $st.Off } else { [datetime]::UtcNow.ToString($stamp) })
+    try {
+        if ($st) { $id = $st.Id; Write-Log "світло: чекання доставки $id відновлено після перезапуску" }
+        else {
+            $id = Add-Line "GEMINI ОБГОРТКА: СВІТЛА НЕМА $off"
+            Write-FileAtomic $path $(if ($id) { "$off $id" } else { $off })
+        }
+        if ($id) {
+            $why = Wait-LineSent $id (Get-Date).AddMinutes($OffWaitMinutes) -FirstPass
+            Write-FileAtomic $path $off
+        }
+    } finally {
+        # Збій запису не тримає ноутбук на батареї: запит відпускається за будь-якого кінця.
+        Set-LightHold $false
+        Write-Log "світло: батарея з $off, запит відпущено — $why"
+    }
+}
+
+function Invoke-Light {
+    <# Тримач світла: живе, поки ноутбук увімкнено, незалежно від нарядів (задача claude-light перезапускає його після
+    виходу чи падіння; IgnoreNew і замок `light.lock` — водночас один). Нова версія обгортки — чистий вихід, як у
+    планувальника; запит потоку Windows знімає й сама, коли процес завершився. #>
+    $lock = Open-Lock (Join-Path $WorkDir 'light.lock')
+    if ($null -eq $lock) { return 0 }
+    $script:LightHeld = $false
+    $script:LightRefused = $false
+    try {
+        Write-Log 'світло: тримач запущено'
+        while ($true) {
+            $ver = Get-VersionSwitch
+            if ($ver) { Write-Log "світло: версія $ver — тримач виходить, нову запустить планувальник"; break }
+            try { Step-Light }
+            catch { Add-HealthException $_.Exception; Write-Log "світло: $($_.Exception.Message)" }
+            Start-Sleep -Seconds 1
+        }
+        0
+    } finally {
+        if ($script:LightHeld) { Set-LightHold $false }
+        $lock.Dispose()
+    }
 }
 
 # --- позначки -----------------------------------------------------------------------------------------------------
@@ -582,14 +700,14 @@ function Get-LmsCallAge([string]$Root = '') {
 
 function Get-SleepOverlap([datetime]$From, [datetime]$To) {
     <# Хвилини сну ноутбука в проміжку: події з `sleep-events.json` публікатора (`gemini_publish.ps1`, Get-WakeRows — журнал Windows
-    Power-Troubleshooter/1); `heartbeat/boot` (вимкнено й запущено, а не сон) не рахується. Файла нема чи він не читається — 0. #>
+    Power-Troubleshooter/1 чи Kernel-Power 506/507 у Modern Standby); `heartbeat/boot` (вимкнено й запущено, а не сон) не рахується. Файла нема чи він не читається — 0. #>
     try {
         $path = Join-Path $PublishDir 'sleep-events.json'
         if (-not (Test-Path -LiteralPath $path)) { return 0 }
         $j = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
         $total = 0.0
         foreach ($e in @($j.events)) {
-            if ($null -eq $e -or [string]$e.source -cne 'Power-Troubleshooter/1') { continue }
+            if ($null -eq $e -or [string]$e.source -cnotin @('Power-Troubleshooter/1', 'Kernel-Power/506-507')) { continue }
             $a = $(if ($e.from -is [datetime]) { $e.from.ToUniversalTime() } else { [datetimeoffset]::Parse([string]$e.from, [cultureinfo]::InvariantCulture).UtcDateTime })
             $b = $(if ($e.to -is [datetime]) { $e.to.ToUniversalTime() } else { [datetimeoffset]::Parse([string]$e.to, [cultureinfo]::InvariantCulture).UtcDateTime })
             $lo = $(if ($a -gt $From) { $a } else { $From }); $hi = $(if ($b -lt $To) { $b } else { $To })
@@ -1047,6 +1165,14 @@ function Invoke-Claude([string]$Exe, [string[]]$ArgList, [string]$Prompt, [strin
     # іде й під час паузи живлення (Wait-PowerPause призупиняє процеси наряду), тож після паузи межа вже минула, хоч
     # агент не мовчав. Межа часу прогону — лише завислість нижче (час неспання, `Stop-Tree` прибирає дерево).
     $psi.EnvironmentVariables['CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'] = '0'
+    # Без цього `claude -p` урізає явний `timeout` виклику Bash до 600000 (BASH_MAX_TIMEOUT_MS за замовчуванням): передня
+    # команда довша за 10 хв переходить у фон, а фонове завдання `claude -p` зупиняє через 10 хв («stopped after reaching its
+    # background time limit») навіть при CEILING=0 — прогін 8178 скінчився NO_REPORT. 2147483647 — власна найбільша межа
+    # CLI (int32): за принципом «межі часу всього нема» явний `timeout` не обрізається, завислість міряє лише HANG.
+    # Вимір (claude 2.1.312, передній Bash `timeout: 900000`, команда 720 с): без змінної — перенос у фон на 600 с (прогін
+    # 607 с); зі змінною — один передній виклик, результат за 727,9 с. `BASH_DEFAULT_TIMEOUT_MS` не чіпаємо: він міняв би
+    # типову межу кожної передньої команди без явного `timeout`.
+    $psi.EnvironmentVariables['BASH_MAX_TIMEOUT_MS'] = '2147483647'
     $psi.RedirectStandardInput = $true
     # .NET Framework створює StandardInput з AutoFlush: BOM пишеться вже під час Start.
     $p = Invoke-WithStdinUtf8 { Start-Tree $psi }
@@ -1500,12 +1626,7 @@ function Invoke-Off($M) {
     $script:Phase = 'вимикаю'
     Update-Status -Force
     # Рядок доставляє gemini-publish (раз на хвилину): вимикаємо після доставки або за -OffWaitMinutes.
-    $sent = Join-Path (Join-Path $PublishDir 'state') "o-$id.json"
-    $until = (Get-Date).AddMinutes($OffWaitMinutes)
-    while ($id -and (Get-Date) -lt $until) {
-        try { if (([System.IO.File]::ReadAllText($sent, $script:Utf8) | ConvertFrom-Json).sent) { break } } catch { $null = $_ }
-        Start-Sleep -Seconds 10
-    }
+    [void](Wait-LineSent $id (Get-Date).AddMinutes($OffWaitMinutes))
     # Власник міг сісти за ноутбук, поки чекали доставку (10.11 — 5 хв між ВИМКНЕНО і shutdown): питаємо ще раз. ВИМКНЕНО
     # вже доставлено, тож рядок OWNER пишемо завжди; стан OFF знімаємо — наступний прохід почне позначку з початку.
     if (Test-OwnerSession) {
@@ -1662,6 +1783,7 @@ function Main {
     if (-not (Test-OwnerUser)) { Write-Log "запуск під $GeminiUser — відмова"; return 1 }
     $script:NoHooks = Join-Path ([System.IO.Path]::GetTempPath()) ('no-hooks-' + [guid]::NewGuid().ToString('N'))
     $script:HealthAlertDir = $OutboxDir
+    if ($Light) { return (Invoke-Light) }
     if ($WorkerFile) { return (Invoke-Worker) }
     $script:HeartbeatAction = { Update-Status }
     $lockFile = Open-Lock (Join-Path $WorkDir 'lock')

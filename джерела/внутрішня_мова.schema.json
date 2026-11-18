@@ -332,6 +332,14 @@
       "unknown"
      ]
     },
+    "wear": {
+     "description": "як вона цю річ носить",
+     "enum": [
+      "near_face",
+      "covers_hair",
+      "unknown"
+     ]
+    },
     "quote": {
      "type": "string",
      "description": "дослівний уривок її слів про цю річ"
@@ -358,6 +366,10 @@
       "not_wanted",
       "unknown"
      ]
+    },
+    "shop": {
+     "$ref": "#/$defs/free_text",
+     "description": "крамниця чи сайт, звідки ця річ, як вона їх назвала"
     },
     "slot": {
      "description": "частина образу",
@@ -644,6 +656,14 @@
       "unknown"
      ]
     },
+    "wear": {
+     "description": "як вона цю річ носить",
+     "enum": [
+      "near_face",
+      "covers_hair",
+      "unknown"
+     ]
+    },
     "quote": {
      "type": "string",
      "description": "дослівний уривок її слів про цю річ"
@@ -743,6 +763,18 @@
     },
     "duration_h": {
      "description": "скільки годин триває подія",
+     "oneOf": [
+      {
+       "type": "number",
+       "minimum": 0
+      },
+      {
+       "const": "unknown"
+      }
+     ]
+    },
+    "walk_min": {
+     "description": "скільки хвилин вона йтиме пішки дорогою (не тривалість події)",
      "oneOf": [
       {
        "type": "number",
@@ -1014,6 +1046,21 @@
       "october",
       "november",
       "december",
+      "unknown"
+     ]
+    },
+    "weekday": {
+     "description": "день тижня події, коли її слова його називають",
+     "enum": [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday",
+      "today",
+      "tomorrow",
       "unknown"
      ]
     },
@@ -2381,6 +2428,10 @@
         "description": "скільки годин триває подія"
        },
        {
+        "const": "walk_min",
+        "description": "скільки хвилин вона йтиме пішки дорогою (не тривалість події)"
+       },
+       {
         "const": "movement",
         "description": "сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, ставатиме на коліна чи займатиметься спортом"
        },
@@ -2451,6 +2502,10 @@
        {
         "const": "month",
         "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця"
+       },
+       {
+        "const": "weekday",
+        "description": "день тижня події, коли її слова його називають"
        },
        {
         "const": "formality_branch",
@@ -2597,6 +2652,10 @@
           "description": "скільки годин триває подія"
          },
          {
+          "const": "walk_min",
+          "description": "скільки хвилин вона йтиме пішки дорогою (не тривалість події)"
+         },
+         {
           "const": "movement",
           "description": "сидітиме, стоятиме, ходитиме, багато ходитиме, танцюватиме, ставатиме на коліна чи займатиметься спортом"
          },
@@ -2667,6 +2726,10 @@
          {
           "const": "month",
           "description": "місяць події, коли її слова його називають: дата, місяць чи свято одного місяця"
+         },
+         {
+          "const": "weekday",
+          "description": "день тижня події, коли її слова його називають"
          },
          {
           "const": "formality_branch",
@@ -2994,6 +3057,32 @@
         },
         "value": {
          "description": "скільки годин триває подія",
+         "oneOf": [
+          {
+           "type": "number",
+           "minimum": 0
+          },
+          {
+           "const": "unknown"
+          }
+         ]
+        }
+       }
+      },
+      "walk_min": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "скільки хвилин вона йтиме пішки дорогою (не тривалість події)",
          "oneOf": [
           {
            "type": "number",
@@ -3431,6 +3520,35 @@
           "october",
           "november",
           "december",
+          "unknown"
+         ]
+        }
+       }
+      },
+      "weekday": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "quote",
+        "value"
+       ],
+       "properties": {
+        "quote": {
+         "type": "string",
+         "minLength": 1
+        },
+        "value": {
+         "description": "день тижня події, коли її слова його називають",
+         "enum": [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+          "sunday",
+          "today",
+          "tomorrow",
           "unknown"
          ]
         }
@@ -3910,6 +4028,7 @@
           "place",
           "setting",
           "duration_h",
+          "walk_min",
           "movement",
           "dress_code",
           "palette",
@@ -3928,6 +4047,7 @@
           "mood",
           "part_of_day",
           "month",
+          "weekday",
           "formality_branch",
           "open_zones",
           "reserved_colour",
@@ -3967,6 +4087,7 @@
           "place",
           "setting",
           "duration_h",
+          "walk_min",
           "movement",
           "dress_code",
           "palette",
@@ -3985,6 +4106,7 @@
           "mood",
           "part_of_day",
           "month",
+          "weekday",
           "formality_branch",
           "open_zones",
           "reserved_colour",
@@ -4665,6 +4787,10 @@
       {
        "const": "card_without_description",
        "description": "рядок на місці «Чому цей образ», коли пояснення до образу не вийшло: що саме сталось і що на картці однаково правдиве"
+      },
+      {
+       "const": "card_description_without_photos",
+       "description": "рядок під поясненням «Чому цей образ», коли фото речей образу до стилістки не дійшли і пояснення написано без них: чесно сказати, що воно з даних про речі, а не з того, як речі виглядають на фото"
       }
      ]
     },
@@ -5098,6 +5224,10 @@
           "description": "the heel of this pair is a noticeable cost for the feet over a long day on her feet"
          },
          {
+          "const": "heel_cost_on_walk",
+          "description": "the heel of this pair is a noticeable cost for the feet on her way on foot (values: walk_min — minutes she walks on foot, heel_cm — heel height in cm)"
+         },
+         {
           "const": "not_a_ban_her_choice",
           "description": "this is not a ban: the choice is hers"
          },
@@ -5111,7 +5241,7 @@
          },
          {
           "const": "material_on_salted_road",
-          "description": "the named materials spoil on a salted road when untreated (values: materials — material codes)"
+          "description": "the named materials spoil when untreated if the road is salted, which a snowy frost may bring (values: materials — material codes)"
          },
          {
           "const": "material_in_rain",
@@ -5486,8 +5616,8 @@
           "description": "after seeing the item photos the stylist replaced one item with another for the same place from her selection; the code checked the outfit again (values: was — the item she took out, now — the item in its place, both as item_id, kind and colour codes: name each in a few words of your own — its kind and its colour; reason — what the photo of «was» showed: colour — its colour there is clearly not the one the shop named (say that it is the colour that differs), kind — it is another kind of item, occasion — it does not suit her occasion, day — it would not stand her weather or her way there)"
          },
          {
-          "const": "photo_item_not_for_day_no_spare",
-          "description": "the photo of this item showed it will not stand her day — her weather or her way there; among her selection no other item of the same kind passed the check, so it stays, and what the outfit lacks is an item of this kind made for such a day (values: item — the item as item_id, kind and colour codes: name it in a few words of your own; the rest — the known facts of her day as codes: weather_band, precipitation, movement, surface, activity, setting)"
+          "const": "photo_item_unfit_no_swap",
+          "description": "the photo of this item showed a reason it does not serve this outfit, and no checked replacement of the same kind took its place, so it stays; what the outfit lacks is an item of this kind without that flaw (values: item — the item as item_id, kind and colour codes: name it in a few words of your own; reason — what its photo showed: colour — its colour there is clearly not the one the shop named (say that it is the colour that differs), kind — it is another kind of item, occasion — it does not suit her occasion, day — it would not stand her weather or her way there; with day, the known facts of her day as codes: weather_band, precipitation, movement, surface, activity, setting)"
          },
          {
           "const": "selection_removed_this_layer",
@@ -6322,12 +6452,24 @@
           "description": "the pair has a heel, but the card does not say its height, so the code does not count the wearing cost for the feet (values: item — the item: item_id, kind and colour codes; item_id)"
          },
          {
+          "const": "heel_named_comfort_ceiling",
+          "description": "the shop names the pair's heel in words, not in cm, so the code did not check it against the limit for a comfortable outing (values: item — the item: item_id, kind and colour codes; item_id; heel_shape, heel_level — the shop's codes; band — the shop's band words)"
+         },
+         {
+          "const": "heel_named_wear_cost",
+          "description": "the shop names the pair's heel in words, not in cm, so the code does not count the wearing cost for the feet (values: item — the item: item_id, kind and colour codes; item_id; heel_shape, heel_level — the shop's codes; band — the shop's band words)"
+         },
+         {
           "const": "wear_cost_no_duration_surface",
           "description": "the code does not count the wearing cost for the feet: it is unknown how many hours and on what she will walk"
          },
          {
+          "const": "wear_cost_no_duration",
+          "description": "the code does not count the wearing cost for the feet: it is known on what she will walk, but not how many hours she will be on her feet or how long she will walk"
+         },
+         {
           "const": "sole_grip_unknown_ice",
-          "description": "the card does not say whether the sole grips on ice, and today there is black ice (values: item — the item: item_id, kind and colour codes; item_id)"
+          "description": "the card does not say whether the sole grips on ice, which a frosty day may bring (values: item — the item: item_id, kind and colour codes; item_id)"
          },
          {
           "const": "no_light_outer_layer_in_catalogue",
@@ -6379,7 +6521,7 @@
          },
          {
           "const": "outer_composition_unknown_salt",
-          "description": "the card does not name the outer layer's composition, so the code does not know whether road salt damages it (values: item — the item: item_id, kind and colour codes; item_id)"
+          "description": "the card does not name the outer layer's composition, so the code does not know whether it stands road salt, if the roads she walks are salted (values: item — the item: item_id, kind and colour codes; item_id)"
          },
          {
           "const": "size_is_label_not_fit",
@@ -6428,6 +6570,10 @@
          {
           "const": "description_did_not_arrive",
           "description": "the explanation for this outfit did not arrive: the connection broke on the last step"
+         },
+         {
+          "const": "description_written_without_photos",
+          "description": "the explanation of this outfit was written without the photos of its items: they did not reach the stylist, so the text rests on the data about the items (names, colours, materials), not on how the items look in the pictures"
          },
          {
           "const": "items_prices_links_are_true",
@@ -7211,7 +7357,7 @@
          },
          {
           "const": "rain_outer_layer_over_look",
-          "description": "an outer layer that keeps off rain — a trench, a raincoat or a parka — over this look, or keep the look and say why it holds this day"
+          "description": "an outer layer that keeps off rain — a trench, a raincoat or a parka — over this look, or keep the look only when a known property of its items holds this day, and name that property"
          },
          {
           "const": "smooth_protected_leather_or_rubber_or_treat",
@@ -7219,7 +7365,7 @@
          },
          {
           "const": "keep_look_say_why_it_holds_day",
-          "description": "keep the look and say why it holds this day"
+          "description": "keep the look only when a known property of its items holds this day, and name that property"
          },
          {
           "const": "face_contrast_above_her_own",
@@ -7663,7 +7809,7 @@
          },
          {
           "const": "salt_slush_warmer_wears_faster",
-          "description": "salty slush: what warms better wears out faster"
+          "description": "in salty slush, which a snowy frost may bring, what warms better wears out faster"
          },
          {
           "const": "clean_after_each_outing_or_sturdier_layer",
@@ -7671,7 +7817,7 @@
          },
          {
           "const": "suede_under_salt_no_home_cleaning",
-          "description": "suede under salt: no home cleaning"
+          "description": "if road salt reaches suede, which a snowy frost may bring, it is not cleaned at home"
          },
          {
           "const": "professional_cleaning_or_suede_spray",
@@ -9111,7 +9257,7 @@
          },
          {
           "const": "occasion_duration",
-          "description": "The check needs occasion duration in hours from the scenario."
+          "description": "The check needs her time on her feet from the scenario: event duration in hours or minutes of walking."
          },
          {
           "const": "glasses_profile",
@@ -9554,6 +9700,17 @@
    "november": "листопад",
    "december": "грудень"
   },
+  "weekday": {
+   "monday": "понеділок",
+   "tuesday": "вівторок",
+   "wednesday": "середа",
+   "thursday": "четвер",
+   "friday": "пʼятниця",
+   "saturday": "субота",
+   "sunday": "неділя",
+   "today": "сьогодні",
+   "tomorrow": "завтра"
+  },
   "weather_band": {
    "deep_frost": "deep_frost",
    "frost": "frost",
@@ -9891,6 +10048,10 @@
   "feature": {
    "heels": "підбори",
    "large_print": "великий принт"
+  },
+  "wear": {
+   "near_face": "біля_обличчя",
+   "covers_hair": "волосся_сховане"
   },
   "own_item_status": {
    "has": "певна",
