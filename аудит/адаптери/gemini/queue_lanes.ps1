@@ -2066,16 +2066,16 @@ function ConvertTo-AutoTime($Value) {
 
 function Get-AutoCheckedBuild($Pulls, $History) {
     <# Збірка, яку перевірив найновіший звіт (`автоживий-<штамп>` чи `Е1-нічний-живий-<дата>`): найближча до голови в історії.
-    Звіт з кількома `ПЕРЕВІРЕНО ЗБІРКУ` не береться; старий нічний звіт без SHA нічого не відсікає.
-    Повертає @{sha; pr} — збірку й номер звіту, що її назвав (нема — порожні рядки). #>
+    Межа — лише рядок `ПЕРЕВІРЕНО ЗБІРКУ: <SHA>`: його агент ставить після всього плану. Штамп у назві гілки межею не
+    є: звіт обірваного прогону (`NO_REPORT`, світло, зупинка рушія) теж має гілку `автоживий-<штамп>`, і штамп
+    викидав би з наступного плану всі непрогнані питання збірки — прогнане звужують записи (`Get-AutoRanPairs`).
+    Звіт з кількома рядками не береться. Повертає @{sha; pr} — збірку й номер звіту, що її назвав (нема — порожні рядки). #>
     $checked = @{sha=''; pr=''}
     foreach ($report in $Pulls) {
-        if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') { continue }
-        $stamp = [string]$Matches[1]
+        if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { continue }
         $declared = [regex]::Matches([string]$report.body, '(?m)^ПЕРЕВІРЕНО ЗБІРКУ: ([0-9a-f]{40})\r?$')
-        if ($declared.Count -gt 1) { continue }
-        $candidate = if ($declared.Count -eq 1) { $declared[0].Groups[1].Value } else { $stamp }
-        # Старий нічний звіт без SHA не може відсікти неперевірений код.
+        if ($declared.Count -ne 1) { continue }
+        $candidate = $declared[0].Groups[1].Value
         if ($candidate -and $History.ContainsKey($candidate) -and
             (-not $checked.sha -or $History[$candidate] -lt $History[$checked.sha])) { $checked = @{sha=$candidate; pr=[string]$report.number} }
     }
@@ -2168,18 +2168,21 @@ function Get-AutoPlanBoundary($Reports, $History, $Read, $Cache) {
     @{sha=$checked.sha; pr=$checked.pr; carry=$carry; bound=$bound}
 }
 
-function Get-AutoRanPairs($Reports, [datetimeoffset]$Since) {
-    <# Питання (PR, сцена), які звіти автоживого й Е1 справді прогнали, — за записами приладів у голові звіту, а не за
+function Get-AutoRanPairs($Reports, [datetimeoffset]$Since, [string]$Tree = '') {
+    <# Питання (PR, сцена), які звіти автоживого й Е1 і хмарні прогони справді прогнали, — за записами приладів, а не за
     рядком `ПЕРЕВІРЕНО ЗБІРКУ`: його агент ставить лише після всього плану, і план, де хоч одне питання не виконується
     (режим, який прилад відхиляє, сцена «у хмарі», обрив стенда), не звужував жоден прогін.
-    Пара прогнана, коли вона є в `ПЛАН.json` звіту (`аудит/проби/<наряд>/`), журнал `done.txt` приладу `записати_план.py`
-    не має відмови цієї сцени чи цього питання, а запис сцени завершено так, як його бере за базу `нова_база.js`:
+    Пара прогнана, коли вона є в `ПЛАН.json` прогону (`аудит/проби/<наряд>/`), журнал `done.txt` не має відмови цієї
+    сцени чи цього питання, а запис сцени завершено так, як його бере за базу `нова_база.js`:
     `результат.json` з rc 0 чи 1 і SHA живого коду, `повтор.json`, `лог.txt`, `знімки/доказ.json`, `VIDPOVIDI/обмін`.
     Запис — у теці наряду або перенесений `нова_база.js` у `аудит/проби/нічні/` (`походження.json` називає теку запису).
-    Повертає «PR|сцена» → список @{sha; report}; що злиття PR — предок SHA запису, перевіряє план. Звіт, створений раніше
-    за межу плану (мінус запас годинників), злиттів після неї не містить — не читається. Нема голови, плану, журналу чи
-    завершеного запису, журнал не розбирається — пари не прогнані: непрогнане лишається в плані. #>
+    Звіти автоживого й Е1 читаються з голови звіту; звіт, створений раніше за межу плану (мінус запас годинників),
+    злиттів після неї не містить — не читається. Хмарний прогін (`аудит/проби/Тестовий-прогін-хмара-*`) — документ,
+    злитий у `main`: його теки читаються з дерева $Tree (збірка плану), ідентифікатор прогону — назва теки.
+    Повертає «PR|сцена» → список @{sha; report}; що злиття PR — предок SHA запису, перевіряє план. Нема голови, плану,
+    журналу чи завершеного запису, журнал не розбирається — пари не прогнані: непрогнане лишається в плані. #>
     $ran = @{}
+    $runs = @()
     foreach ($report in @($Reports)) {
         if ([string]$report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { continue }
         $dir = 'аудит/проби/' + $Matches[1]
@@ -2190,6 +2193,16 @@ function Get-AutoRanPairs($Reports, [datetimeoffset]$Since) {
         if ($Since -ne [datetimeoffset]::MinValue -and $null -ne $created -and $null -ne $created.Value -and
             (ConvertTo-AutoTime $created.Value) -lt $Since.AddHours(-$script:AutoPlanMarginHours)) { continue }
         if ((Invoke-Git @('cat-file','-e',"$head^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','--no-tags','origin',$head) -AllowFail) }
+        $runs += @(@{head=$head; dir=$dir; id=[string]$report.number})
+    }
+    if ($Tree -cmatch '^[0-9a-f]{40}$') {
+        foreach ($path in ((Invoke-Git @('ls-tree','-d','--name-only',$Tree,'--','аудит/проби/') -AllowFail).Out -split "`n")) {
+            $path = $path.TrimEnd("`r")
+            if ($path -cmatch '^аудит/проби/(Тестовий-прогін-хмара-[\w-]+)$') { $runs += @(@{head=$Tree; dir=$path; id=$Matches[1]}) }
+        }
+    }
+    foreach ($run in $runs) {
+        $head = $run.head; $dir = $run.dir
         $planText = Invoke-Git @('show', "${head}:$dir/ПЛАН.json") -AllowFail
         $doneText = Invoke-Git @('show', "${head}:$dir/done.txt") -AllowFail
         if ($planText.Code -ne 0 -or $doneText.Code -ne 0) { continue }
@@ -2238,7 +2251,7 @@ function Get-AutoRanPairs($Reports, [datetimeoffset]$Since) {
                 $key = [string](Get-JsonProp $question 'pr') + '|' + $scene
                 if ($refused.ContainsKey($key)) { continue }
                 if (-not $ran.ContainsKey($key)) { $ran[$key] = @() }
-                $ran[$key] = @($ran[$key]) + @(@{sha=$code;report=[string]$report.number})
+                $ran[$key] = @($ran[$key]) + @(@{sha=$code;report=$run.id})
             }
         }
     }
@@ -2300,17 +2313,29 @@ function Get-AutoLivePlan([string]$BuildMain) {
     $registry = Get-LiveSceneRegistry $registryText
     if (-not $registry.Count) { throw 'AUTO_REGISTRY' }
     $carry = $boundary.carry
-    # Записи прогонів — з прочитаних звітів і зі звітів, які переніс план джерела (поза читанням): інакше давній PR,
-    # що піднявся в читання лише коментарем, повернув би пару, прогнану звітом, якого читання вже не дістає.
+    # Записи прогонів — з прочитаних звітів і зі звітів, які переніс план джерела: поза читанням (інакше давній PR,
+    # що піднявся в читання лише коментарем, повернув би пару, прогнану звітом, якого читання вже не дістає) і з іншою
+    # головою того самого звіту — нова спроба на тій самій гілці переписує `ПЛАН.json`, і пари попередньої спроби
+    # лишаються лише за її головою. Хмарні прогони — з дерева збірки.
     $ranReports = @($pulls)
-    if ($carry) { foreach ($old in @($carry.reports)) { if (-not $readNumbers.ContainsKey([string]$old.number)) { $ranReports += @($old) } } }
-    $ranPairs = Get-AutoRanPairs $ranReports $since
+    $readHeads = @{}
+    foreach ($one in $pulls) { $readHeads[[string]$one.number + '|' + [string]$(if ($one.head -is [Collections.IDictionary]) { $one.head['sha'] } else { Get-JsonProp $one.head 'sha' })] = $true }
+    if ($carry) {
+        foreach ($old in @($carry.reports)) {
+            if ($readHeads.ContainsKey([string]$old.number + '|' + [string]$old.head['sha'])) { continue }
+            $ranReports += @($old)
+        }
+    }
+    $ranPairs = Get-AutoRanPairs $ranReports $since $BuildMain
     $usedReports = @{}
     foreach ($runs in @($ranPairs.Values)) { foreach ($run in @($runs)) { $usedReports[[string]$run.report] = $true } }
     $reportsOut = @()
+    $outHeads = @{}
     foreach ($report in $ranReports) {
         if (-not $usedReports.ContainsKey([string]$report.number)) { continue }
-        $usedReports.Remove([string]$report.number)
+        $outKey = [string]$report.number + '|' + [string]$(if ($report.head -is [Collections.IDictionary]) { $report.head['sha'] } else { Get-JsonProp $report.head 'sha' })
+        if ($outHeads.ContainsKey($outKey)) { continue }
+        $outHeads[$outKey] = $true
         $created = $report.PSObject.Properties['created_at']
         # Без часу створення наступний план не відсік би звіт за межею — такий звіт не переноситься.
         if ($null -eq $created -or $null -eq $created.Value) { continue }
@@ -2324,6 +2349,7 @@ function Get-AutoLivePlan([string]$BuildMain) {
     $cloud = [ordered]@{}
     $bad = @()
     $merges = [ordered]@{}
+    $sceneRank = @{}
     # Джерела рядків: давні PR, яких читання не дійшло, — з плану звіту-джерела; прочитані злиті — з тіла.
     $sources = @()
     if ($carry) {
@@ -2361,8 +2387,21 @@ function Get-AutoLivePlan([string]$BuildMain) {
             if (-not $target.Contains($item.id)) { $target[$item.id] = @() }
             $target[$item.id] = @($target[$item.id]) + @(@{pr=$pr.number;question=$item.question})
             $merges[[string]$pr.number] = $merge
+            $rankKey = [string]$inCloud + '|' + $item.id
+            if (-not $sceneRank.ContainsKey($rankKey) -or $history[$merge] -lt $sceneRank[$rankKey]) { $sceneRank[$rankKey] = $history[$merge] }
         }
     }
+    # Сцени — від найновішого злиття до найстарішого (ранг у історії збірки, 0 — голова): першими йдуть правки, на які
+    # чекають зараз, а обрив забирає найдавніше. Сцена стоїть за своїм найновішим PR; питань не викидає й не додає.
+    $ordered = @{}
+    foreach ($kind in @(@{cloud=$false; dict=$scenes}, @{cloud=$true; dict=$cloud})) {
+        $order = @(); $i = 0
+        foreach ($id in @($kind.dict.Keys)) { $order += @([pscustomobject]@{id=$id; rank=$sceneRank[[string]$kind.cloud + '|' + $id]; i=$i}); $i++ }
+        $sorted = [ordered]@{}
+        foreach ($one in @($order | Sort-Object rank, i)) { $sorted[$one.id] = $kind.dict[$one.id] }
+        $ordered[[string]$kind.cloud] = $sorted
+    }
+    $scenes = $ordered['False']; $cloud = $ordered['True']
     ConvertTo-Json -InputObject @{since_sha=$checked;since_pr=[string]$boundary.pr;since=$since.ToString('o');until=$until.ToString('o');build=$BuildMain;scenes=$scenes;cloud=$cloud;bad=$bad;ran=$ranBy;merge=$merges;reports=@($reportsOut)} -Depth 8 -Compress
 }
 

@@ -742,11 +742,30 @@ function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
     (Get-ReviewDiff $head $Main) -ceq [string]$old.diff
 }
 
+function Test-ChainMarkerCancelled($Marker) {
+    <# Голова позначки — коміт «ЗНЯТО…» диспетчера (`ЧЕРГА.md`): смуга її не виконає, лише закриє CANCELLED.
+    Коміту нема локально й fetch не дав — не знята (жива): кінця не вигадуємо. #>
+    if ((Invoke-Git @('cat-file','-e',"$($Marker.Sha)^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','--no-tags','origin',$Marker.Sha) -AllowFail) }
+    $subject = Invoke-Git @('log','-1','--format=%s',$Marker.Sha) -AllowFail
+    $subject.Code -eq 0 -and ([string]$subject.Out).Trim() -cmatch '^ЗНЯТО'
+}
+
 function Get-LiveCompletion($Active) {
-    <# Кінець активного наряду — за позначкою, незалежно від рушія й назви гілки звіту. #>
+    <# Кінець активного наряду — за позначкою, незалежно від рушія й назви гілки звіту: рядок кінця за назвою наряду чи
+    зняття всіх його позначок, і на origin нема живої позначки того самого штампу (NEW, WAIT, TAKEN чи UNKNOWN, не знятої
+    «ЗНЯТО»). Перенесення між рушіями чи смугами — нова позначка того самого штампу, а стара закінчується рядком
+    (CANCELLED після «ЗНЯТО», відмова смуги): 17.11 о 18:39Z диспетчер переніс `автоживий-04911e68` зі смуги claude на
+    `gpt-6.1-sol-high`, кінець старої позначки звільнив прогін, і о 18:43Z ланцюг поставив `автоживий-49b680c2`, хоч
+    прогін 04911e68 ішов — дві збірки в черзі на одну відеокарту. Тепер кінець — лише коли штамп не має роботи в черзі. #>
     $published = Get-Prop $Active 'published'
     if ($null -ne $published -and -not $published) { return '' }
-    Get-ChainTaskCompletion ("автоживий-" + [string]$Active.stamp) -Removed
+    $slug = "автоживий-" + [string]$Active.stamp
+    $done = Get-ChainTaskCompletion $slug -Removed
+    if (-not $done) { return '' }
+    foreach ($marker in @(Get-ChainMarkers $slug)) {
+        if ($marker.Kind -cin @('NEW','WAIT','TAKEN','UNKNOWN') -and -not (Test-ChainMarkerCancelled $marker)) { return '' }
+    }
+    $done
 }
 
 function Get-LatestLivePending($Pending) {
