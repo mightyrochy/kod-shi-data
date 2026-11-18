@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Straight-leg jeans, full length, dark indigo (#2B3A55), mid-weight denim\\nFitted crew-neck sweater, hip length, warm cream (#EFE6D2), fine merino wool\\nSingle-breasted cardigan-coat, mid-thigh length, relaxed fit, camel (#B98A5B), soft brushed wool\\nAnkle boots, low block heel, round toe, chestnut brown (#7A4A2B), smooth leather\\nScarf, wide rectangular, worn folded snug under the chin, sage green (#8FA68E), soft lambswool\\nCrossbody bag, compact, tobacco brown (#8A5A36), pebbled leather\\n\\nThis outfit works because it keeps to an easy everyday look that suits a long autumn walk, with a cardigan-coat that gives enough warmth without feeling heavy. The sage green scarf sits right under the chin as she asked, and it echoes the soft green of her eyes while the cream sweater beneath keeps the face bright. The camel and chestnut tones pick up the copper on one side of her hair and sit calmly beside the lighter half, so the two halves read as one harmonious whole. Dark denim and flat-soled boots keep it practical and comfortable for walking.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Straight-leg jeans\\\",\\\"details\\\":\\\"full length, mid-weight denim\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#2B3A55\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Fitted crew-neck sweater\\\",\\\"details\\\":\\\"hip length, fine merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#EFE6D2\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Single-breasted cardigan-coat\\\",\\\"details\\\":\\\"mid-thigh length, relaxed fit, soft brushed wool\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B98A5B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"low block heel, round toe, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#7A4A2B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"wide rectangular, worn folded snug under the chin, soft lambswool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#8FA68E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Crossbody bag\\\",\\\"details\\\":\\\"compact, pebbled leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#8A5A36\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2084,\"output_tokens\":375},\"stop_reason\":\"end_turn\"}"
+ }
+}
