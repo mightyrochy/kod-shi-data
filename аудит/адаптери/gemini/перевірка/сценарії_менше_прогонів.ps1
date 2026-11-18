@@ -311,7 +311,7 @@ console.log('GPU_OFF');
         function Invoke-Native {
             param($Exe, $Arguments)
             if ($Arguments -contains '--query-compute-apps=pid,used_memory') { return [pscustomobject]@{Code=0;Out='23660, [N/A]'} }
-            if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{Code=0;Out='16376, 16319, 0'} }
+            if ($Arguments -like '--query-gpu=memory.total,memory.free,utilization.gpu*') { return [pscustomobject]@{Code=0;Out='16376, 16319, 0'} }
             [pscustomobject]@{Code=1;Out='';Err='невідомий виклик'}
         }
         $old = (Invoke-Native 'nvidia-smi' @('--query-compute-apps=pid,used_memory')).Out.Trim()
