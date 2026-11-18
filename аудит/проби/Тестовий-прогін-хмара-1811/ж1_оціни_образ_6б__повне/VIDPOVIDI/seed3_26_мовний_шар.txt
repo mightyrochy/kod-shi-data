@@ -1,0 +1,43 @@
+── ПРОМПТ (6154 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: top · about it: text н=1
+2 — kind: trousers · about it: text н=2
+3 — kind: blazer · about it: text н=3
+4 — kind: loafers · about it: text н=4
+5 — kind: bag_generic · about it: text н=5
+6 — kind: earrings · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "It holds the place of the base layer for your office day, though a proper top is what this spot still needs.",
+"2": "Straight, full-length trousers in a deep dark tone keep the line long and serious for a working day in the office.",
+"3": "A structured grey blazer gives your office day its business footing and draws a clean vertical line down the front.",
+"4": "Loafers are an office-ready shoe that gives the outfit a tidy, businesslike finish.",
+"5": "Its blue flap and woven pattern are the one bright note in an otherwise quiet office palette.",
+"6": "Silver sculptural earrings put a small bright accent by your face and keep the jewellery to one statement, which is right for work.",
+"7": "I built this around a quiet, business-like base: grey blazer, dark brown trousers and loafers, with the bag and earrings as the only bright notes. That suits an office day. The blazer and the straight trousers give one clean vertical line, and fastening the blazer's button gives your waist a point. The top is the weak spot of this outfit: it is only a stand-in, and what the look still needs is a proper top in its place.",
+"8": "Fasten the blazer's single button so your waist gets a clear point and the line stays one calm column down to the trousers.",
+"9": "Let the trouser hem fall just to the loafers so the shoes stay visible and are not lost under the dark fabric.",
+"10": "Лофери жіночі, ATTICO, замша, колір блакитний, Штани прямі шкіряні бургунді — The suede loafers are light next to straight graphite trousers, but the trousers are plain and the loafers' blue is the one accent I want here, so I keep them on purpose.",
+"11": "Сумка Синя — The blue bag deliberately echoes the blue loafers; both are edge colours inside your palette and carry the accent role."
+}
+
+── ВІДПОВІДЬ (1704 симв., 20.8 с, HTTP 200) ──
+{"1":"Він займає місце базового шару для твого офісного дня, хоча на цьому місці ще потрібен справжній топ.","2":"Прямі штани повної довжини глибокого темного тону роблять лінію довгою та серйозною для робочого дня в офісі.","3":"Структурований сірий блейзер дає твоєму офісному дню діловий фундамент і малює чітку вертикальну лінію спереду.","4":"Лофери — офісне взуття, яке надає образу охайного ділового завершення.","5":"Її синій клапан і тканий візерунок — єдина яскрава нота в загалом спокійній офісній палітрі.","6":"Срібні скульптурні сережки додають невеликий яскравий акцент біля твого обличчя й обмежують прикраси одним виразним елементом, що доречно для роботи.","7":"Я побудувала образ навколо спокійної ділової основи: сірий блейзер, темно-коричневі штани та лофери, а сумка й сережки — єдині яскраві ноти. Це пасує офісному дню. Блейзер і прямі штани дають одну чисту вертикальну лінію, а застебнутий ґудзик блейзера дає твоїй талії точку. Слабке місце цього образу — топ: він лише тимчасова заміна, і образу на його місці ще потрібен справжній топ.","8":"Застебни єдиний ґудзик блейзера, щоб твоя талія мала чітку точку, а лінія лишалася однією спокійною колоною аж до штанів.","9":"Дай низу штанин спадати просто до лоферів, щоб взуття лишалося видимим і не губилося під темною тканиною.","10":"Лофери жіночі, ATTICO, замша, колір блакитний, Штани прямі шкіряні бургунді — Замшеві лофери світлі поруч із прямими графітовими штанами, але штани прості, а блакитний колір лоферів — єдиний акцент, який я хочу тут, тому я лишаю їх навмисно.","11":"Сумка Синя — Синя сумка навмисно перегукується з блакитними лоферами; обидва кольори — крайні в межах твоєї палітри й виконують роль акценту."}

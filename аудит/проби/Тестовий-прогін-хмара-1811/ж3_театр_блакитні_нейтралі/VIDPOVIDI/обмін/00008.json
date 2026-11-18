@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"театр\", \"place\": \"театр\", \"weekday\": \"сьогодні\", \"wants\": \"блакитні туфлі\"}, \"wish_quotes\": [\"блакитні туфлі\"], \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"wish_quotes\": {\"kind\": \"default\"}, \"wishes\": {\"kind\": \"reading\", \"quote\": \"блакитні туфлі\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"блакитні туфлі\"}]}, \"refusals\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"reading\"}, \"weekday\": {\"kind\": \"her\", \"quote\": \"сьогодні\"}, \"place\": {\"kind\": \"her\", \"quote\": \"театр\"}, \"occasion\": {\"kind\": \"her\", \"quote\": \"театр\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}}, \"event\": \"сьогодні театр, вечірня вистава\", \"part_of_day\": \"evening\", \"wishes\": [\"shoes, light_blue\"], \"occasion\": \"theatre\", \"place\": \"theatre\", \"weekday\": \"today\", \"formality_branch\": \"social\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"artificial\"}, \"person\": {\"skin_hex\": [\"#f0d6d2\", \"#ead0cc\", \"#f4dcd8\"], \"hair_hex\": \"#241f22\", \"eyes_hex\": \"#5b6e82\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Autumn evening at the theatre, neat social band, light-blue shoes requested. Outer layer needed for the weather.\\n\\nTailored midi skirt, A-line, falling just below the knee, deep navy (#1f2a44), fine wool crepe\\n\\nFitted refined knit top, slim cut with a boat neckline and long sleeves, ivory (#f3ece0), merino wool\\n\\nTextured jacket, softly structured and cropped at the hip, single-breasted, charcoal-navy (#2b3350), wool bouclé\\n\\nPumps with a low block heel, rounded toe, light blue (#8fb8e0), smooth leather\\n\\nKnee-high sheer tights, no wait, sheer tights, ankle to waist, in a soft smoke tone (#3a3a44), fine nylon\\n\\nSmall structured top-handle bag, deep navy (#1f2a44), matte leather\\n\\nDrop earrings, small, in brushed silver (#c0c4cc), metal\\n\\nLightweight scarf, loosely draped, pale grey-blue (#b9c6d6), silk-wool blend\\n\\nWhy this works: The light-blue pumps are the focal point, and the navy skirt and jacket frame them so they look intentional rather than loud. The ivory knit brightens the face under artificial theatre lighting and echoes her cool, soft coloring, while the blue of the eyes is picked up by the shoes and scarf. The skirt, knit and textured jacket sit exactly in the neat social range, polished enough for an evening performance without feeling like cocktail wear. The jacket and wool layers keep her warm for an autumn evening, and the low block heel stays comfortable through a long seated show.\"}],\"usage\":{\"input_tokens\":2462,\"output_tokens\":546},\"stop_reason\":\"end_turn\"}"
+ }
+}

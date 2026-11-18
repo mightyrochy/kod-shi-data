@@ -1,0 +1,44 @@
+── ПРОМПТ (6394 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: coat · about it: text н=1
+2 — kind: sweater · about it: text н=2
+3 — kind: trousers · about it: text н=3
+4 — kind: boots · about it: text н=4
+5 — kind: bag_generic · about it: text н=5
+6 — kind: belt · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "A short double-breasted coat is the outer layer for your frosty walk and arrives at the office looking neat, with a structured line that suits a work day.",
+"2": "A fitted turtleneck keeps the upper half slim and polished for the office, so the volume stays in the trousers and the coat.",
+"3": "Wide pleated trousers are office-appropriate, and their long vertical folds lengthen your line from the waist down.",
+"4": "Tall boots are right for a walk to work in the cold, and I kept them because they give the long trouser line a solid, clean ending.",
+"5": "The structured bag is smart enough for the office and brings one deep wine accent into an otherwise grey look.",
+"6": "The belt is the waist anchor this outfit needs: it keeps a defined point in the middle while the trousers and coat carry the volume.",
+"7": "I built this for your walk to the office in the frost: the coat goes on last, and the rest is a quiet grey-and-brown office look. The boots finish the line to the floor, and the bag adds the one wine-coloured accent that the belt repeats at your waist. The wide trousers and the coat both carry volume, so the belt marks the one place where the outline narrows, and that keeps the whole look clean and tidy rather than shapeless.",
+"8": "Put the belt on over the sweater at the waist before you put the coat on, so the waist stays marked under the wide trousers.",
+"9": "Let the trousers fall straight over the boots so the line runs unbroken from waist to floor.",
+"10": "Once you reach the office, take off the coat and the belted sweater with the trousers is a ready business look.",
+"11": "LeBERDES Чоботи зимові коричневі — The shop gives a 5 cm low heel and no sole data. I chose it for the winter lining and the frost; check the sole before a long walk.",
+"12": "Гольф трикотажний з підплічниками, Бордова сумка Le Grand Bambino — The burgundy bag is louder than the quiet graphite sweater on purpose. It is the single accent of the outfit, and the belt repeats it so it reads as a choice."
+}
+
+── ВІДПОВІДЬ (1914 симв., 23.0 с, HTTP 200) ──
+{"1":"Коротке двобортне пальто — верхній шар для твоєї морозної прогулянки, і в офісі воно виглядає охайно, а структурована лінія пасує до робочого дня.","2":"Приталений гольф залишає верхню частину стрункою та вишуканою для офісу, тож об'єм лишається в штанах і пальто.","3":"Широкі штани зі складками доречні в офісі, а їхні довгі вертикальні складки видовжують твою лінію від талії донизу.","4":"Високі чоботи доречні для дороги на роботу в холод, і я їх залишила, бо вони дають довгій лінії штанів щільне, чисте завершення.","5":"Структурована сумка достатньо елегантна для офісу й додає один глибокий винний акцент до решти сірого образу.","6":"Пасок — це якір талії, який потрібен цьому образу: він тримає виразну точку посередині, тоді як штани й пальто несуть об'єм.","7":"Я зібрала цей образ для твоєї дороги до офісу в мороз: пальто одягається останнім, а решта — тихий сіро-коричневий офісний образ. Чоботи завершують лінію до підлоги, а сумка додає єдиний акцент кольору вина, який повторює пасок на твоїй талії. І штани, і пальто несуть об'єм, тож пасок позначає єдине місце, де силует звужується, і через це весь образ лишається чистим та охайним, а не безформним.","8":"Одягни пасок поверх светра на талії, перш ніж вдягнеш пальто, щоб талія лишалася позначеною під широкими штанами.","9":"Нехай штани спадають рівно поверх чобіт, щоб лінія йшла нерозривно від талії до підлоги.","10":"Щойно дійдеш до офісу, зніми пальто, і светр із паском та штани — це вже готовий діловий образ.","11":"LeBERDES Чоботи зимові коричневі — Крамниця вказує низький підбор 5 см і не дає даних про підошву. Я обрала їх заради зимової підкладки та морозу; перевір підошву перед довгою прогулянкою.","12":"Гольф трикотажний з підплічниками, Бордова сумка Le Grand Bambino — Бордова сумка навмисно гучніша за тихий графітовий светр. Вона — єдиний акцент образу, а пасок повторює його, тож це виглядає як свідомий вибір."}
