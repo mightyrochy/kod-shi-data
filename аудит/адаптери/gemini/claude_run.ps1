@@ -92,6 +92,7 @@ $script:Limits = $null
 $script:Workers = $null
 $script:MarkerRx = '^gemini-queue/[\p{L}\p{Nd}._-]{1,80}/[a-z0-9][a-z0-9.-]{1,63}/[1-9][0-9]{0,2}(?:/(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gpu)){0,2})?$'
 $script:UtcRx = '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$'
+$script:GpuBeat = $null  # знімок такту й живлення з останнього стану (Get-GpuStateLines) для heartbeat
 
 # Шаблони рядків — ті самі, що в `gemini_publish.ps1` (OutboxTemplates): рядок, що не збігся, у теку не йде.
 $script:LineTemplates = @(
@@ -383,7 +384,7 @@ function Read-NoteRows([string]$Path, [string[]]$Names) {
 # heartbeat.json обгортки Gemini (пише gemini — недовірений файл): лише поля за форматом, решта — «?» чи пропущено.
 function Read-GeminiBeat {
     $b = [ordered]@{ Time = '?'; Isolation = '?'; Marker = ''; Engine = ''; Model = ''; Minutes = ''; Lanes = @(); Quota = $null; Codex = $null; Wait = @(); Limits = ''
-        Unsourced = @(); Profile = $null; Zero = ''; CodexFallback = $true }
+        Unsourced = @(); Profile = $null; Zero = ''; CodexFallback = $true; Gpu = $null }
     $path = Join-Path $GeminiOutDir 'heartbeat.json'
     try { $j = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { return [pscustomobject]$b }
     $get = { param($o, $n) $p = $(if ($null -eq $o -or $o -is [string] -or $o -is [ValueType]) { $null } else { $o.PSObject.Properties[$n] }); if ($null -eq $p -or $null -eq $p.Value) { '' } elseif ($p.Value -is [datetime]) { $p.Value.ToString('s') } else { [string]$p.Value } }
@@ -436,6 +437,7 @@ function Read-GeminiBeat {
         })
         $b.Quota = [pscustomobject]@{ Read = (& $utc (& $getu $q 'read')); Windows = $win }
     }
+    $b.Gpu = ConvertFrom-GpuBeat (Get-JsonProp $j 'gpu')
     $cf = & $get $j 'codex_fallback'
     if ($cf -in @('True', 'False')) { $b.CodexFallback = ($cf -eq 'True') }
     $c = Get-JsonProp $j 'codex'
@@ -731,15 +733,21 @@ function Get-SleepRead {
     } catch { $null }
 }
 
-function Get-GpuStateLines($LockedBy, $Holders = @()) {
+function Get-GpuStateLines($LockedBy, $Holders = @(), $GeminiGpu = $null) {
     $gpu = Get-GpuTelemetry
+    # Такт, потужність, причини обмеження, джерело живлення й режим — з того самого знімка; збій читання не гасить стан.
+    # Той самий об'єкт іде в heartbeat (Update-Status), тож другого виклику nvidia-smi нема.
+    $script:GpuBeat = $null
+    try { $script:GpuBeat = Get-GpuPowerInfo $gpu } catch { Write-Log "GPU: такт і живлення: $($_.Exception.Message)" }
+    $powerLine = $(if ($null -ne $script:GpuBeat) { Format-GpuPowerLine $script:GpuBeat 'nvidia-smi' } else { '- такт і живлення: не виміряно (збій — claude-run.log)' })
     $watchSample = [pscustomobject]@{ Percent = $(if ($gpu.Error) { -1 } else { $gpu.Percent }); OwnerPid = 0; CallAgeMin = -1 }
     $at = Get-UtcStamp (Get-Date)
     $lines = @('', '### GPU')
-    if ($gpu.Error) { $lines += "- вимір карти (UTC $at): $($gpu.Error) — завантаження, пам'ять і процеси невідомі; замок нижче карти не відображає" }
+    if ($gpu.Error) { $lines += "- вимір карти (UTC $at): $($gpu.Error) — завантаження, пам'ять і процеси невідомі; замок нижче карти не відображає"; $lines += $powerLine }
     else {
         $used = $gpu.TotalMiB - $gpu.FreeMiB
         $lines += "- вимір карти (nvidia-smi, UTC $at): завантаження $($gpu.Percent) % · пам'ять зайнято $used з $($gpu.TotalMiB) MiB (вільно $($gpu.FreeMiB))"
+        $lines += $powerLine
         $rows = Get-GpuCounterRows
         if ($null -eq $rows) { $lines += "- процеси-власники пам'яті: лічильник Windows недоступний (UTC $at)" }
         else {
@@ -758,6 +766,8 @@ function Get-GpuStateLines($LockedBy, $Holders = @()) {
             $lines += "- процеси-власники пам'яті (лічильник Windows, PID ім'я MiB): $(if ($owners.Count) { ($owners | ForEach-Object { "$($_.Pid) $($_.Name) $($_.MiB)" }) -join ' · ' } else { 'жоден не тримає понад 1 MiB' })"
         }
     }
+    # Те саме читання під користувачем gemini (його heartbeat): розбіжність із рядком вище — різні облікові записи бачать різне.
+    if ($null -ne $GeminiGpu) { $lines += Format-GpuPowerLine $GeminiGpu 'gemini-run, heartbeat' }
     $lines += "- замок GPU обгортки (запис слотів нарядів, не вимір карти): $(if ($LockedBy.Count) { 'зайнятий — ' + ($LockedBy -join ', ') } else { 'вільний' })"
     # Сторож замка: той самий вимір ряду, що й рядки вище; рядок диспетчерові — раз на ряд бездіяльності (Update-GpuWatch).
     try {
@@ -816,7 +826,7 @@ function Get-StatusBody {
         }
     }
     $lines += @(Get-IdleLines)
-    $lines += @(Get-GpuStateLines $gpuBy $gpuHold)
+    $lines += @(Get-GpuStateLines $gpuBy $gpuHold $g.Gpu)
     $lines += @('', $(try { Get-SupervisorLine } catch { Write-Log "наглядова: $($_.Exception.Message)"; 'наглядова: не виміряно (збій — claude-run.log)' }))
     $lines += @('', "межі: claude-run — $(if ($null -ne $lim) { $lim.source } else { '?' }), gemini-run — $(if ($g.Limits) { $g.Limits } else { '?' })")
     $lines += @('', "heartbeat gemini-run (UTC): $($g.Time) · вік: $(Get-Minutes $g.Time) хв · isolation: $($g.Isolation) · понад 5 хв — джерело застаріле")
@@ -906,6 +916,7 @@ function Update-Status([switch]$Force) {
         $body = Get-StatusBody
         Write-FileAtomic (Join-Path $WorkDir 'status.md') $body
         $hb = [ordered]@{ read_utc = (Get-UtcStamp (Get-Date)); time = (Get-Date).ToString('s'); phase = $script:Phase; busy = @(Read-SlotInfo 'claude' | ForEach-Object { [string]$_.marker }) }
+        if ($null -ne $script:GpuBeat) { $hb.gpu = $script:GpuBeat }
         Write-FileAtomic (Join-Path $WorkDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress)
         if ($NoStatus) { return }
         $gh = Find-Exe $GhExe

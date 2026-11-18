@@ -1160,6 +1160,9 @@ namespace GeminiWrapper {
         // AcLine: 0 — від батареї, 1 — від мережі, 255 — невідомо (тоді не пауза).
         public static bool OnBattery() { Status s; return GetSystemPowerStatus(out s) && s.AcLine == 0; }
 
+        // Джерело живлення для стану: 0 — батарея, 1 — мережа, 255 — невідомо, -1 — Windows не відповіла.
+        public static int AcLine() { Status s; return GetSystemPowerStatus(out s) ? s.AcLine : -1; }
+
         // ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED, поки цей потік не зніме вимогу (ES_CONTINUOUS без
         // інших прапорів). Дисплей — бо Modern Standby починається, коли гасне дисплей, а запит «система потрібна» на
         // батареї Windows знімає за 5 хв після спливу тайм-ауту сну (НАЛАШТУВАННЯ.md, «Тримач світла»).
@@ -1197,6 +1200,13 @@ function Test-OnBattery {
     <# Світла нема — ноутбук живиться від батареї (GetSystemPowerStatus, дешевий виклик); без Windows — ні. #>
     if (-not $script:OnWindows) { return $false }
     try { Add-PowerType; [GeminiWrapper.Power]::OnBattery() } catch { $false }
+}
+
+function Get-PowerSource {
+    <# Джерело живлення для стану й heartbeat: `мережа`, `батарея` чи `?` (не Windows, Windows не відповіла, невідомо). Той самий
+    GetSystemPowerStatus, що в Test-OnBattery, але без «невідомо = мережа»: у стані «?» чесніше за хибне «мережа». #>
+    if (-not $script:OnWindows) { return '?' }
+    try { Add-PowerType; switch ([GeminiWrapper.Power]::AcLine()) { 0 { 'батарея' } 1 { 'мережа' } default { '?' } } } catch { '?' }
 }
 
 function Set-KeepAwake([bool]$On) {
@@ -2489,24 +2499,153 @@ builtins.__import__ = _gpu_import
     $env:PYTHONPATH = $Directory + [IO.Path]::PathSeparator + $env:PYTHONPATH
 }
 
+# Поля одного знімка карти: пам'ять і навантаження (допуск GPU-нарядів) та такт, потужність, причини обмеження (стан, heartbeat).
+# Старі драйвери знають лише clocks_throttle_reasons (nvidia-smi --help-query-gpu: це друга назва того самого поля), а ще
+# старіші — жодного з додаткових: запит скорочується до форми, яку драйвер приймає, і вона запам'ятовується.
+$script:GpuQueryBase = @('memory.total', 'memory.free', 'utilization.gpu')
+$script:GpuQueryExtra = @('clocks.sm', 'clocks.max.sm', 'power.draw', 'power.limit', 'enforced.power.limit')
+$script:GpuQueryTiers = @(
+    , @($script:GpuQueryBase + $script:GpuQueryExtra + 'clocks_event_reasons.active')
+    , @($script:GpuQueryBase + $script:GpuQueryExtra + 'clocks_throttle_reasons.active')
+    , @($script:GpuQueryBase + $script:GpuQueryExtra)
+    , @($script:GpuQueryBase))
+$script:GpuQueryTier = 0
+
 function Get-GpuTelemetry {
-    <# Один знімок вільної пам'яті й обчислень єдиної карти; невідомі дані не означають простій.
+    <# Один знімок карти одним викликом nvidia-smi: вільна пам'ять і обчислення єдиної карти (рішення про допуск) та такт SM,
+    потужність і причини обмеження такту (стан #1856, heartbeat); невідомі дані не означають простій, а додаткове поле, якого
+    драйвер не дав (`[N/A]`), — `?` чи порожня причина, не відмова виміру.
     Місткості різних карт не складаємо: цей вимір і бюджет стосуються єдиної RTX 4090 ноутбука. #>
-    $errorResult = [pscustomobject]@{ Error = 'nvidia-smi не відповів'; TotalMiB = 0; FreeMiB = 0; Percent = 0 }
+    $errorResult = [pscustomobject]@{ Error = 'nvidia-smi не відповів'; TotalMiB = 0; FreeMiB = 0; Percent = 0
+        SmMHz = '?'; SmMaxMHz = '?'; PowerW = '?'; LimitW = '?'; EnforcedW = '?'; Reasons = '' }
     $exe = Get-Command nvidia-smi -ErrorAction SilentlyContinue
     if ($null -eq $exe) { return $errorResult }
-    $r = Invoke-Native $exe.Source @('--query-gpu=memory.total,memory.free,utilization.gpu', '--format=csv,noheader,nounits') '' 1
-    if ($r.Code -ne 0) { return $errorResult }
+    $fields = $null; $r = $null
+    for ($t = $script:GpuQueryTier; $t -lt $script:GpuQueryTiers.Count; $t++) {
+        $r = Invoke-Native $exe.Source @("--query-gpu=$($script:GpuQueryTiers[$t] -join ',')", '--format=csv,noheader,nounits') '' 1
+        if ($r.Code -eq 0) { $fields = @($script:GpuQueryTiers[$t]); $script:GpuQueryTier = $t; break }
+        # Драйвер не знає поля — коротша форма запиту; будь-яка інша відмова (нема драйвера, межа часу) — вимір не вдався.
+        if ("$($r.Out)$($r.Err)" -cnotmatch 'is not a valid field') { return $errorResult }
+    }
+    if ($null -eq $fields) { return $errorResult }
     $lines = @($r.Out -split '\r?\n' | Where-Object { $_.Trim() })
     if ($lines.Count -gt 1) {
         $errorResult.Error = 'кілька GPU: потрібен вимір однієї карти'
         return $errorResult
     }
-    if ($lines.Count -ne 1 -or $lines[0] -notmatch '^\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*$') { return $errorResult }
+    if ($lines.Count -ne 1) { return $errorResult }
+    $cells = @($lines[0] -split ',' | ForEach-Object { $_.Trim() })
+    if ($cells.Count -lt $script:GpuQueryBase.Count -or $cells[0] -notmatch '^[0-9]+$' -or $cells[1] -notmatch '^[0-9]+$' -or $cells[2] -notmatch '^[0-9]+$') { return $errorResult }
     $total = 0L; $free = 0L; $percent = 0
-    if (-not [long]::TryParse($Matches[1], [ref]$total) -or -not [long]::TryParse($Matches[2], [ref]$free) -or
-        -not [int]::TryParse($Matches[3], [ref]$percent) -or $total -le 0 -or $free -gt $total -or $percent -gt 100) { return $errorResult }
-    [pscustomobject]@{ Error = ''; TotalMiB = $total; FreeMiB = $free; Percent = $percent }
+    if (-not [long]::TryParse($cells[0], [ref]$total) -or -not [long]::TryParse($cells[1], [ref]$free) -or
+        -not [int]::TryParse($cells[2], [ref]$percent) -or $total -le 0 -or $free -gt $total -or $percent -gt 100) { return $errorResult }
+    $got = @{}
+    for ($i = 3; $i -lt [Math]::Min($cells.Count, $fields.Count); $i++) { $got[$fields[$i]] = $cells[$i] }
+    $num = { param($name) $v = [string]$got[$name]; if ($v -cmatch '^[0-9]{1,6}(?:\.[0-9]{1,3})?$') { $v } else { '?' } }
+    $mask = [string]$got['clocks_event_reasons.active']
+    if (-not $mask) { $mask = [string]$got['clocks_throttle_reasons.active'] }
+    [pscustomobject]@{ Error = ''; TotalMiB = $total; FreeMiB = $free; Percent = $percent
+        SmMHz = (& $num 'clocks.sm'); SmMaxMHz = (& $num 'clocks.max.sm'); PowerW = (& $num 'power.draw'); LimitW = (& $num 'power.limit')
+        EnforcedW = (& $num 'enforced.power.limit'); Reasons = $(if ($mask -cmatch '^0x[0-9A-Fa-f]{1,16}$') { $mask } else { '' }) }
+}
+
+# Біти маски причин обмеження такту (nvml.h, nvmlClocksEventReasons; та сама маска в `clocks_event_reasons.active` nvidia-smi):
+# https://docs.nvidia.com/deploy/nvml-api/group__nvmlClocksEventReasons.html; значення причин — `nvidia-smi --help-query-gpu`.
+$script:GpuReasonBits = @(
+    , @(0x1, 'GPU idle')
+    , @(0x2, 'Applications clocks setting')
+    , @(0x4, 'SW power cap')
+    , @(0x8, 'HW slowdown')
+    , @(0x10, 'Sync boost')
+    , @(0x20, 'SW thermal slowdown')
+    , @(0x40, 'HW thermal slowdown')
+    , @(0x80, 'HW power brake slowdown')
+    , @(0x100, 'Display clock setting'))
+
+function Get-GpuReasonText([string]$Hex) {
+    <# Маска причин обмеження такту словами: `0x4` — `SW power cap (0x4)`, `0x5` — `GPU idle + SW power cap (0x5)`, нуль — `немає`
+    (такт не обмежено), невідомі біти — `невідомі біти` (драйвер новіший за таблицю; повна маска в дужках), не маска — `?`. #>
+    if ($Hex -cnotmatch '^0x([0-9A-Fa-f]{1,16})$') { return '?' }
+    $mask = [Convert]::ToUInt64($Matches[1], 16)
+    if ($mask -eq 0) { return 'немає' }
+    $names = @(); $known = [uint64]0
+    foreach ($b in $script:GpuReasonBits) {
+        $bit = [uint64]$b[0]
+        if (($mask -band $bit) -ne 0) { $names += [string]$b[1] }
+        $known = $known -bor $bit
+    }
+    $rest = $mask -band (-bnot $known)
+    if ($rest -ne 0) { $names += 'невідомі біти' }
+    '{0} (0x{1:X})' -f ($names -join ' + '), $mask
+}
+
+# Режими живлення Windows 11 (overlay) — GUID із документації Microsoft про повзунок живлення:
+# https://learn.microsoft.com/windows-hardware/customize/desktop/customize-power-slider; нульовий GUID — Balanced.
+$script:PowerOverlays = @{
+    '961cc777-2547-4f9d-8174-7d86181b8a7a' = 'Best Power Efficiency'
+    '00000000-0000-0000-0000-000000000000' = 'Balanced'
+    '3af9b8d9-7c97-431d-ad78-34a8bfea439f' = 'Better Performance'
+    'ded574b5-45a0-4f42-8737-46345c09c238' = 'Best Performance' }
+
+function Get-WindowsPowerMode([string]$Source = '?') {
+    <# Активна схема живлення Windows і режим (overlay) для поточного джерела: реєстр `HKLM\SYSTEM\CurrentControlSet\Control\Power\
+    User\PowerSchemes` (`ActivePowerScheme`, `ActiveOverlayAcPowerScheme`/`…Dc…`), що читається без прав адміністратора й під
+    gemini, без `powercfg` (його вивід іде в кодуванні консолі, а назви схем локалізовані). Не прочитано — `?`; назва схеми з
+    ресурсу (`@…dll,-15,Balanced`) — запасна англійська після другої коми; режим невідомого GUID — сам GUID. #>
+    $mode = [pscustomobject]@{ Scheme = '?'; Overlay = '?' }
+    if (-not $script:OnWindows) { return $mode }
+    $guidRx = '^[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$'
+    $base = 'HKLM:\SYSTEM\CurrentControlSet\Control\Power\User\PowerSchemes'
+    try {
+        $k = Get-ItemProperty -LiteralPath $base -ErrorAction Stop
+        $scheme = [string](Get-JsonProp $k 'ActivePowerScheme')
+        if ($scheme -cmatch $guidRx) {
+            $name = ''
+            try { $name = [string](Get-JsonProp (Get-ItemProperty -LiteralPath "$base\$scheme" -ErrorAction Stop) 'FriendlyName') } catch { $null = $_ }
+            if ($name -cmatch '^@[^,]*,-?[0-9]+,(.+)$') { $name = $Matches[1] }
+            $mode.Scheme = $(if ($name -cmatch '^[\p{L}\p{Nd} ._()+-]{1,40}$') { $name } else { $scheme.ToLowerInvariant() })
+        }
+        $valueName = $(if ($Source -ceq 'батарея') { 'ActiveOverlayDcPowerScheme' } elseif ($Source -ceq 'мережа') { 'ActiveOverlayAcPowerScheme' } else { '' })
+        $ov = $(if ($valueName) { [string](Get-JsonProp $k $valueName) } else { '' })
+        if ($ov -cmatch $guidRx) {
+            $key = $ov.ToLowerInvariant()
+            $mode.Overlay = $(if ($script:PowerOverlays.ContainsKey($key)) { $script:PowerOverlays[$key] } else { $key })
+        }
+    } catch { $null = $_ }
+    $mode
+}
+
+function Get-GpuPowerInfo($Gpu) {
+    <# Такт, потужність, причина обмеження, джерело живлення й режим Windows одним об'єктом для рядка стану й для heartbeat: поля
+    знімка Get-GpuTelemetry (того самого виклику nvidia-smi, що й вимір пам'яті) і два читання, які від nvidia-smi не залежать.
+    Чого нема чи не прочитано — `?`; збій виміру карти джерела живлення й режиму не гасить. #>
+    $v = { param($n) $x = [string](Get-JsonProp $Gpu $n); if ($x) { $x } else { '?' } }
+    $source = Get-PowerSource
+    $mode = Get-WindowsPowerMode $source
+    $hex = [string](Get-JsonProp $Gpu 'Reasons')
+    [pscustomobject]@{ read = (Get-UtcStamp (Get-Date)); sm_mhz = (& $v 'SmMHz'); sm_max_mhz = (& $v 'SmMaxMHz'); power_w = (& $v 'PowerW')
+        limit_w = (& $v 'LimitW'); enforced_w = (& $v 'EnforcedW'); reasons = $(if ($hex) { $hex } else { '?' }); reasons_text = (Get-GpuReasonText $hex)
+        source = $source; scheme = $mode.Scheme; overlay = $mode.Overlay }
+}
+
+function ConvertFrom-GpuBeat($Raw) {
+    <# Поле `gpu` heartbeat gemini-run (пише інший користувач — недовірений файл): кожне поле за своїм форматом, решта — `?`;
+    `$null` — поля нема. Текст причини не береться з файла, а відновлюється з маски. #>
+    if ($null -eq $Raw -or $Raw -is [string] -or $Raw -is [ValueType]) { return $null }
+    $s = { param($n, $rx) $p = Get-JsonProp $Raw $n; $x = $(if ($p -is [datetime]) { Get-UtcStamp $p } else { [string]$p }); if ($x -cmatch $rx) { $x } else { '?' } }
+    $mhz = '^(?:[0-9]{1,5}|\?)$'; $watt = '^(?:[0-9]{1,6}(?:\.[0-9]{1,3})?|\?)$'
+    $mode = '^(?:[\p{L}\p{Nd} ._()+-]{1,40}|\?)$'
+    $hex = & $s 'reasons' '^(?:0x[0-9A-Fa-f]{1,16}|\?)$'
+    [pscustomobject]@{ read = (& $s 'read' '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$'); sm_mhz = (& $s 'sm_mhz' $mhz); sm_max_mhz = (& $s 'sm_max_mhz' $mhz)
+        power_w = (& $s 'power_w' $watt); limit_w = (& $s 'limit_w' $watt); enforced_w = (& $s 'enforced_w' $watt); reasons = $hex
+        reasons_text = $(if ($hex -ceq '?') { '?' } else { Get-GpuReasonText $hex }); source = (& $s 'source' '^(?:мережа|батарея|\?)$')
+        scheme = (& $s 'scheme' $mode); overlay = (& $s 'overlay' $mode) }
+}
+
+function Format-GpuPowerLine($Info, [string]$Who) {
+    <# Рядок розділу GPU стану: такт SM, потужність із межею, причина обмеження, джерело живлення, схема й режим Windows. #>
+    $t = { param($n) $x = [string](Get-JsonProp $Info $n); if ($x) { $x } else { '?' } }
+    "- такт і живлення ($Who, UTC $(& $t 'read')): такт SM $(& $t 'sm_mhz') з $(& $t 'sm_max_mhz') МГц · потужність $(& $t 'power_w') Вт (межа $(& $t 'enforced_w') Вт, задана $(& $t 'limit_w') Вт) · причина обмеження: $(& $t 'reasons_text') · живлення: $(& $t 'source') · схема Windows: $(& $t 'scheme') · режим Windows: $(& $t 'overlay')"
 }
 
 function Test-GpuModelProcess([string]$Name, [string]$Path = '') {
