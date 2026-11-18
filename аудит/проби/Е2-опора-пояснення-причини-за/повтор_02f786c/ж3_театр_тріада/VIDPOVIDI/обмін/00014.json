@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Autumn evening, theatre, neat social band. Weather isn't specified, so a light outer layer suits an autumn evening.\\n\\nDay dress: knee-length A-line dress with long sleeves and a modest V-neckline, deep burgundy #6D1F2F, fine wool crepe\\nTextured jacket: cropped, slightly structured blazer, hip-skimming, charcoal #3B3D42, bouclé wool blend\\nAnkle boots: slim block heel of about 5 cm, almond toe, black #1C1C1E, smooth leather\\nBag: small structured crossbody, black #1C1C1E, smooth leather with matte gold hardware\\nTights: sheer, sheen-free, black #1C1C1E, fine knit\\nEarrings: small drop earrings, antique gold #B08D57, brushed metal\\nScarf: light wrap scarf, soft grey #A9A9AE, merino and silk blend\\n\\nThis outfit works because the burgundy dress brings richness that reads well under the warm artificial light of a theatre, while still staying within a neat, refined register. The bouclé jacket adds texture and a bit of structure, and it keeps you comfortable in an autumn evening and in a cooler foyer. Low-profile block-heel boots are easy to wear through a long performance and the interval, and the black tights, boots and bag keep the line cohesive. The gold accents and soft grey scarf add polish without overdoing it.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Day dress\\\",\\\"details\\\":\\\"knee-length A-line dress with long sleeves and a modest V-neckline, fine wool crepe\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#6D1F2F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Textured jacket\\\",\\\"details\\\":\\\"cropped, slightly structured blazer, hip-skimming, bouclé wool blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#3B3D42\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"slim block heel of about 5 cm, almond toe, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1C1C1E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Bag\\\",\\\"details\\\":\\\"small structured crossbody, smooth leather with matte gold hardware\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1C1C1E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tights\\\",\\\"details\\\":\\\"sheer, sheen-free, fine knit\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#1C1C1E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Earrings\\\",\\\"details\\\":\\\"small drop earrings, brushed metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#B08D57\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"light wrap scarf, merino and silk blend\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#A9A9AE\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2144,\"output_tokens\":448},\"stop_reason\":\"end_turn\"}"
+ }
+}
