@@ -3001,7 +3001,8 @@ function Get-LastCodexEvent([string]$Path) {
         for ($i = $rows.Count - 1; $i -ge 0; $i--) {
             if ($rows[$i] -cnotmatch '^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)	(.*)$') { continue }
             $t = [datetime]::ParseExact($Matches[1], 's', [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeLocal)
-            $type = $(if ($Matches[2] -cmatch '^[A-Za-z0-9_./-]{1,60}$') { $Matches[2] } else { '?' })
+            $type = $Matches[2]
+            if ($type -cnotmatch '^[A-Za-z0-9_./-]{1,60}$') { $type = '?' }
             return [pscustomobject]@{ Utc = (Get-UtcStamp $t); Type = $type }
         }
         $null
