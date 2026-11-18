@@ -1902,6 +1902,40 @@ function Get-LiveSceneRegistry([string]$Text) {
     $registry
 }
 
+function Get-LiveSceneInputs([string]$Text) {
+    <# Вхід сцени з реєстру (четверте поле: змінні стенда, як `PORTRET=…`, `FOTO_RECHI=…`) за тим самим розбором, що й
+    Get-LiveSceneRegistry. #>
+    $inputs = @{}
+    foreach ($row in ($Text -split "`n")) {
+        $row = $row.TrimEnd("`r").TrimStart([char]0xFEFF)
+        if (-not $row.Trim() -or $row.TrimStart().StartsWith('#')) { continue }
+        $fields = $row.Split('|')
+        if ($fields.Count -lt 5) { continue }
+        $inputs[$fields[0].Trim()] = $fields[3].Trim()
+    }
+    $inputs
+}
+
+function Get-LiveQuestionUnfit([string]$Question, [string]$Mode, [string]$SceneInput) {
+    <# Причина, з якої сцена механічно не може відповісти на питання `ЖИВИЙ ПІСЛЯ`, або ''. Лише те, що видно з тексту без
+    здогаду: голова питання (до першої «→») питає про повтор запису (replay), а не про відповідь продукту; голова називає
+    файлову змінну стенда (PORTRET, FOTO_RECHI, ROZMOVA), якої нема ні у вході сцени, ні в режимі питання; голова питає про
+    збирання, а режим питання (друге поле «→», без нього — режим реєстру) — «розмова» без «й повне», що не збирає.
+    Слова «фото» чи «кадр» самі не є ознакою: кадри каталогу й фото заміни є без FOTO, тож це був би здогад. #>
+    $fields = $Question.Split([char]0x2192)
+    $head = $fields[0]
+    $mode = if ($fields.Count -gt 1) { $fields[1].Trim() } else { $Mode }
+    if ($head -match 'replay') { return 'питання про повтор запису (replay), а не про відповідь продукту: живий прогін сцену записує, а не повторює' }
+    foreach ($found in [regex]::Matches($head, '(?<![A-Za-z0-9_])(PORTRET|FOTO_RECHI|ROZMOVA)(?![A-Za-z0-9_])')) {
+        $name = $found.Groups[1].Value
+        if (($SceneInput + ' ' + $mode) -cnotmatch ('(?<![A-Za-z0-9_])' + $name + '=')) {
+            return "питання називає $name, а сцена його не має: ні у вході реєстру, ні в режимі питання «$mode»"
+        }
+    }
+    if ($head -match 'збиранн' -and $mode -cmatch '^розмова(?!\s+й\s+повне)') { return "питання про збирання, а режим «$mode» образів не збирає" }
+    ''
+}
+
 function Get-LiveAfterLines([string]$Body, $Registry) {
     <# Єдиний розбір рядків `ЖИВИЙ ПІСЛЯ: <id> — <питання>` для планувальника й CI на тілі PR. Рядок, що починається з
     `ЖИВИЙ ПІСЛЯ` (після пробілів, маркера списку чи виділення), або розібрано повністю, або в ньому `error`. #>
@@ -2086,7 +2120,7 @@ function Read-AutoCarryPlan($Report, $History, $Cache) {
     <# План звіту автоживого чи Е1 (`аудит/проби/<наряд>/ПЛАН.json` у голові звіту), яким план живого заміняє читання
     давніх PR. Годиться лише план, складений `Get-AutoLivePlan` з полями `build` (збірка того плану — предок нинішньої),
     `since_sha` (порожня чи предок; непорожня — з номером звіту `since_pr`) і `merge` (злиття кожного PR плану).
-    Повертає @{build; since; since_pr; merge; lines; reports; report}, де lines — «PR» → рядки `ЖИВИЙ ПІСЛЯ` плану (питання
+    Повертає @{build; since; since_pr; merge; lines; reports; unfit; report}, де lines — «PR» → рядки `ЖИВИЙ ПІСЛЯ` плану (питання
     сцени чи вадний рядок), щоб їх розібрав той самий `Get-LiveAfterLines` проти нинішнього реєстру, а reports — звіти
     (номер, гілка, голова, час створення), чиї записи той план визнав прогнаними. Нема голови, файла,
     поля чи злиття хоч одного PR плану — $null: такий звіт межі читання не зсуває. Cache — «номер|голова» → план чи $false. #>
@@ -2122,10 +2156,14 @@ function Read-AutoCarryPlan($Report, $History, $Cache) {
             }
         }
     }
+    # Питання, відсіяні тим планом до прогону (`bad` зі сценою), — «PR|сцена|рядок»: повтор у новому плані не новий.
+    $unfit = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
     foreach ($entry in @(Get-JsonProp $plan 'bad')) {
         if ($null -eq $entry) { continue }
         $pr = [string](Get-JsonProp $entry 'pr')
         $lines[$pr] = @($lines[$pr] | Where-Object { $_ }) + @([string](Get-JsonProp $entry 'line'))
+        $scene = [string](Get-JsonProp $entry 'scene')
+        if ($scene) { [void]$unfit.Add($pr + '|' + $scene + '|' + [string](Get-JsonProp $entry 'line')) }
     }
     foreach ($pr in @($lines.Keys)) { if (-not $merge.ContainsKey($pr)) { return $null } }
     # Звіти, чиї записи план визнав прогнаними (`reports`): не довіра до списку пар, а адреси голів — записи
@@ -2140,7 +2178,7 @@ function Read-AutoCarryPlan($Report, $History, $Cache) {
             $ref -cnotmatch '^(?:gemini|claude|codex)/(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { continue }
         $reports += @([pscustomobject]@{number=[long]$number; head=@{ref=$ref; sha=$sha}; created_at=$created})
     }
-    $Cache[$key] = @{build=$build; since=$since; since_pr=$sincePr; merge=$merge; lines=$lines; reports=$reports; report=[string]$Report.number}
+    $Cache[$key] = @{build=$build; since=$since; since_pr=$sincePr; merge=$merge; lines=$lines; reports=$reports; unfit=$unfit; report=[string]$Report.number}
     $Cache[$key]
 }
 
@@ -2179,7 +2217,8 @@ function Get-AutoRanPairs($Reports, [datetimeoffset]$Since, [string]$Tree = '') 
     Звіти автоживого й Е1 читаються з голови звіту; звіт, створений раніше за межу плану (мінус запас годинників),
     злиттів після неї не містить — не читається. Хмарний прогін (`аудит/проби/Тестовий-прогін-хмара-*`) — документ,
     злитий у `main`: його теки читаються з дерева $Tree (збірка плану), ідентифікатор прогону — назва теки.
-    Повертає «PR|сцена» → список @{sha; report}; що злиття PR — предок SHA запису, перевіряє план. Нема голови, плану,
+    Повертає «PR|сцена» → список @{sha; report; folder (тека прогону); question (питання з його `ПЛАН.json`)}; що злиття
+    PR — предок SHA запису, перевіряє план, а чи не дала оцінка прогону «не виміряно» — Get-AutoEvalUnanswered. Нема голови, плану,
     журналу чи завершеного запису, журнал не розбирається — пари не прогнані: непрогнане лишається в плані. #>
     $ran = @{}
     $runs = @()
@@ -2251,11 +2290,84 @@ function Get-AutoRanPairs($Reports, [datetimeoffset]$Since, [string]$Tree = '') 
                 $key = [string](Get-JsonProp $question 'pr') + '|' + $scene
                 if ($refused.ContainsKey($key)) { continue }
                 if (-not $ran.ContainsKey($key)) { $ran[$key] = @() }
-                $ran[$key] = @($ran[$key]) + @(@{sha=$code;report=$run.id})
+                $ran[$key] = @($ran[$key]) + @(@{sha=$code;report=$run.id;folder=$dir.Substring(12);question=[string](Get-JsonProp $question 'question')})
             }
         }
     }
     $ran
+}
+
+function Get-AutoEvalUnanswered([string]$Tree) {
+    <# Питання, на які записаний прогін відповіді не дав: рядки «не виміряно» в таблицях оцінок прогонів
+    (`аудит/перевірки/` і `аудит/проби/`, файл `Оцінка…md` чи `оцінка…md` у дереві $Tree). Таблиця — рядок «|…|» з
+    роздільником під ним, де є стовпці `сцена`, `PR…` і `відповідь` чи `вердикт`; сцена — перше слово клітинки, PR — усі
+    номери клітинки, тека прогону — кожна тека автоживого, Е1 чи хмари, яку називає файл оцінки (запис оцінено з неї).
+    Повертає «тека|PR|сцена» → @{where = «файл:рядок»; reason = причина з оцінки; cut = вердикт «не виміряно (обрив)»:
+    сцена не дійшла до місця питання, тож питання йде в наступний план, а не в `bad`}. Пара, яку хоч одна оцінка тієї
+    теки дала з іншим вердиктом (так, ні), — з відповіддю: її не повертає. Запис такої пари план не рахує прогнаним. #>
+    $tableHead = '^\|(?:\s*:?-+:?\s*\|)+$'
+    $answered = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+    $found = New-Object 'System.Collections.Generic.Dictionary[string,object]' ([StringComparer]::Ordinal)
+    if ($Tree -cnotmatch '^[0-9a-f]{40}$') { return $found }
+    $paths = @(((Invoke-Git @('ls-tree','--name-only',$Tree,'--','аудит/перевірки/','аудит/проби/') -AllowFail).Out -split "`n") |
+        ForEach-Object { $_.TrimEnd("`r") } | Where-Object { $_ -cmatch '^аудит/(?:перевірки|проби)/[Оо]цінка[^/]*\.md$' })
+    [Array]::Sort($paths, [StringComparer]::Ordinal)
+    foreach ($path in $paths) {
+        $text = Invoke-Git @('show', "${Tree}:$path") -AllowFail
+        if ($text.Code -ne 0) { continue }
+        $folders = @()
+        foreach ($one in [regex]::Matches($text.Out, '(?<![\w-])(автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8}|Тестовий-прогін-хмара-[\w-]+)(?![\w-])')) {
+            if ($folders -cnotcontains $one.Groups[1].Value) { $folders += @($one.Groups[1].Value) }
+        }
+        if (-not $folders.Count) { continue }
+        $lines = @($text.Out -split "`n")
+        $i = 0
+        while ($i -lt $lines.Count) {
+            $line = $lines[$i].Trim()
+            if (-not $line.StartsWith('|') -or $i + 1 -ge $lines.Count -or $lines[$i + 1].Trim() -cnotmatch $tableHead) { $i++; continue }
+            $names = @($line.Trim('|').Split('|') | ForEach-Object { $_.Replace('*','').Replace('`','').Trim() })
+            $sceneAt = -1; $prAt = -1; $verdictAt = -1
+            for ($k = 0; $k -lt $names.Count; $k++) {
+                if ($sceneAt -lt 0 -and $names[$k] -ceq 'сцена') { $sceneAt = $k }
+                if ($prAt -lt 0 -and $names[$k] -cmatch '^PR(?:\s|$)') { $prAt = $k }
+                if ($verdictAt -lt 0 -and ($names[$k] -ceq 'відповідь' -or $names[$k] -ceq 'вердикт')) { $verdictAt = $k }
+            }
+            $i += 2
+            while ($i -lt $lines.Count -and $lines[$i].Trim().StartsWith('|')) {
+                $row = $i; $i++
+                if ($sceneAt -lt 0 -or $prAt -lt 0 -or $verdictAt -lt 0) { continue }
+                $cells = @($lines[$row].Trim().Trim('|').Split('|'))
+                # Зайвий «|» усередині тексту — частина останньої клітинки.
+                if ($cells.Count -gt $names.Count) { $cells = @($cells[0..($names.Count - 2)]) + @($cells[($names.Count - 1)..($cells.Count - 1)] -join '|') }
+                if ($cells.Count -ne $names.Count) { continue }
+                $cells = @($cells | ForEach-Object { $_.Replace('*','').Replace('`','').Trim() })
+                if ($cells[$sceneAt] -cnotmatch '^[^\s(]+') { continue }
+                $scene = $Matches[0]
+                $prs = @()
+                foreach ($one in [regex]::Matches($cells[$prAt], '(?<![0-9A-Za-z])#?([0-9]{3,6})(?![0-9A-Za-z])')) {
+                    if ($prs -cnotcontains $one.Groups[1].Value) { $prs += @($one.Groups[1].Value) }
+                }
+                $verdict = $cells[$verdictAt]
+                $open = $verdict -match '^не виміряно'
+                $cut = $verdict -cmatch '^не виміряно \(обрив\)'
+                $reason = ''
+                if ($open) {
+                    $reason = ($verdict -replace '^(?i:не виміряно)(?: \(обрив\))?[\s:.,;—–-]*', '').Trim()
+                    if (-not $reason -and $verdictAt -ne $names.Count - 1) { $reason = $cells[$names.Count - 1] }
+                    if ($reason.Length -gt 160) { $reason = $reason.Substring(0, 160) + '…' }
+                }
+                foreach ($folder in $folders) {
+                    foreach ($pr in $prs) {
+                        $key = "$folder|$pr|$scene"
+                        if (-not $open) { [void]$answered.Add($key) }
+                        elseif (-not $found.ContainsKey($key)) { $found[$key] = @{where="${path}:$($row + 1)"; reason=$reason; cut=$cut} }
+                    }
+                }
+            }
+        }
+    }
+    foreach ($key in @($answered)) { [void]$found.Remove($key) }
+    $found
 }
 
 function Get-AutoLivePlan([string]$BuildMain) {
@@ -2313,6 +2425,9 @@ function Get-AutoLivePlan([string]$BuildMain) {
     $registryText = (Invoke-Git @('cat-file','blob',"${BuildMain}:аудит/проби/живі_сцени.txt")).Out
     $registry = Get-LiveSceneRegistry $registryText
     if (-not $registry.Count) { throw 'AUTO_REGISTRY' }
+    $inputs = Get-LiveSceneInputs $registryText
+    # Оцінки прогонів у дереві збірки: запис пари, яку оцінка тієї теки дала «не виміряно», прогнаним не рахується.
+    $unanswered = Get-AutoEvalUnanswered $BuildMain
     $carry = $boundary.carry
     # Записи прогонів — з прочитаних звітів і зі звітів, які переніс план джерела (поза читанням): інакше давній PR,
     # що піднявся в читання лише коментарем, повернув би пару, прогнану звітом, якого читання вже не дістає.
@@ -2338,6 +2453,7 @@ function Get-AutoLivePlan([string]$BuildMain) {
     $scenes = [ordered]@{}
     $cloud = [ordered]@{}
     $bad = @()
+    $unfitNew = 0
     $merges = [ordered]@{}
     $sceneRank = @{}
     # Джерела рядків: давні PR, яких читання не дійшло, — з плану звіту-джерела; прочитані злиті — з тіла.
@@ -2363,17 +2479,38 @@ function Get-AutoLivePlan([string]$BuildMain) {
             # Сцена режиму «функція» — код без моделі: її ставить хмарна сесія, не ноутбук.
             $inCloud = $item.mode -cmatch '^функція'
             $target = if ($inCloud) { $cloud } else { $scenes }
-            # Питання, яке звіт уже прогнав на коді з цим злиттям (завершений запис сцени), план не повторює.
+            # Питання, яке звіт уже прогнав на коді з цим злиттям (завершений запис сцени), план не повторює. Запис, який
+            # оцінка його теки дала «не виміряно», відповіді не дав: прогнаним не рахується, а оцінку пам'ятаємо.
             $by = ''
+            $open = $null
             foreach ($run in @($ranPairs["$($pr.number)|$($item.id)"] | Where-Object { $_ -and -not $inCloud })) {
                 if (-not $codeHistory.ContainsKey($run.sha)) {
                     $codeHistory[$run.sha] = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
                     $list = Invoke-Git @('rev-list',$run.sha,'--') -AllowFail
                     if ($list.Code -eq 0) { foreach ($commit in ($list.Out -split "`n")) { if ($commit.Trim()) { [void]$codeHistory[$run.sha].Add($commit.Trim()) } } }
                 }
-                if ($codeHistory[$run.sha].Contains($merge)) { $by = $run.report; break }
+                if (-not $codeHistory[$run.sha].Contains($merge)) { continue }
+                $evalKey = "$($run.folder)|$($pr.number)|$($item.id)"
+                if ($unanswered.ContainsKey($evalKey)) {
+                    if (-not $open -and [string]$run.question -ceq $item.question) { $open = $unanswered[$evalKey] }
+                    continue
+                }
+                $by = $run.report; break
             }
             if ($by) { $ranBy[$by] = 1 + $(if ($ranBy.Contains($by)) { $ranBy[$by] } else { 0 }); continue }
+            # Сцена не може відповісти (Get-LiveQuestionUnfit) чи оцінка дала тому самому тексту «не виміряно»: питання — у
+            # `bad` з причиною й сценою, сцени заради нього не записуємо. Виправлений рядок (інший текст) і обрив
+            # («не виміряно (обрив)») ідуть у план.
+            $why = ''
+            if (-not $inCloud) { $why = Get-LiveQuestionUnfit $item.question $item.mode ([string]$inputs[$item.id]) }
+            if ($why) { $why = 'не для живого прогону: ' + $why }
+            elseif ($open -and -not $open.cut) { $why = "не виміряно в оцінці $($open.where): $($open.reason)" }
+            if ($why) {
+                $bad += @(@{pr=$pr.number;line=$item.line;reason=$why;scene=$item.id})
+                $merges[[string]$pr.number] = $merge
+                if (-not ($carry -and $carry.unfit.Contains("$($pr.number)|$($item.id)|$($item.line)"))) { $unfitNew++ }
+                continue
+            }
             if (-not $target.Contains($item.id)) { $target[$item.id] = @() }
             $target[$item.id] = @($target[$item.id]) + @(@{pr=$pr.number;question=$item.question})
             $merges[[string]$pr.number] = $merge
@@ -2392,7 +2529,12 @@ function Get-AutoLivePlan([string]$BuildMain) {
         $ordered[[string]$kind.cloud] = $sorted
     }
     $scenes = $ordered['False']; $cloud = $ordered['True']
-    ConvertTo-Json -InputObject @{since_sha=$checked;since_pr=[string]$boundary.pr;since=$since.ToString('o');until=$until.ToString('o');build=$BuildMain;scenes=$scenes;cloud=$cloud;bad=$bad;ran=$ranBy;merge=$merges;reports=@($reportsOut)} -Depth 8 -Compress
+    # Відсіяне до прогону видно в журналі обгортки одним рядком (звіт і тіло коміту — за шаблоном `автоживий.md`).
+    $sifted = @($bad | Where-Object { $_.Contains('scene') })
+    if ($sifted.Count) {
+        try { Write-Log ("план живого: сцен $($scenes.Count), у хмарі $($cloud.Count), відсіяно до прогону $($sifted.Count) (нових $unfitNew): " + (@($sifted | ForEach-Object { "#$($_.pr) $($_.scene) — $($_.reason)" }) -join '; ')) } catch { }
+    }
+    ConvertTo-Json -InputObject @{since_sha=$checked;since_pr=[string]$boundary.pr;since=$since.ToString('o');until=$until.ToString('o');build=$BuildMain;scenes=$scenes;cloud=$cloud;bad=$bad;unfit_new=$unfitNew;ran=$ranBy;merge=$merges;reports=@($reportsOut)} -Depth 8 -Compress
 }
 
 function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '', [string]$Model = '') {
@@ -2429,8 +2571,12 @@ function Test-AutoPlanEmpty([string]$Slug, [string]$Text) {
     # Сцени «у хмарі» й вадні рядки теж потрібно донести до звіту: з ними план не порожній.
     $cloud = $plan.PSObject.Properties['cloud']
     if ($null -ne $cloud -and @($cloud.Value.PSObject.Properties).Count -ne 0) { return $false }
+    # Відсіяне до прогону (`bad` зі сценою) моделі не потребує: план із ним порожній, коли нового відсіяного нема
+    # (`unfit_new`) — те саме вже названо звітом попереднього прогону, і прогін заради переліку не повторюється.
     $bad = $plan.PSObject.Properties['bad']
-    -not ($null -ne $bad -and @($bad.Value).Count -ne 0)
+    if ($null -ne $bad -and @($bad.Value | Where-Object { $null -ne $_ -and -not [string](Get-JsonProp $_ 'scene') }).Count -ne 0) { return $false }
+    $new = $plan.PSObject.Properties['unfit_new']
+    -not ($null -ne $new -and [int]$new.Value -gt 0)
 }
 
 function Set-BrowserGpuPolicy([string]$Directory) {
