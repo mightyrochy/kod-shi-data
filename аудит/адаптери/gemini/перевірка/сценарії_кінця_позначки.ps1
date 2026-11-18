@@ -44,6 +44,19 @@ try {
     function Remove-DeadReviewMarkers { }
     function Move-BlockedMarkers { $false }
     function LiveMarkers { @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/ | Where-Object { $_ -like '*/автоживий-*' }) }
+    function Finish-Lane([string]$Stamp) {
+        <# Смуга, що скінчила позначку, пише її стан (DONE) до рядка кінця, а ref знімає пізніше: кінець за назвою
+        позначки не чекає зняття, а жива позначка того самого штампу (перенесення) — чекає. #>
+        foreach ($ref in @(LiveMarkers | Where-Object { $_ -like "*/автоживий-$Stamp/*" })) {
+            $name = $ref.Substring('refs/heads/'.Length)
+            $sha = (& git -C $remote rev-parse $ref).Trim()
+            $dir = $(if (($name -split '/')[2] -cmatch '^cc-') { "$tmp/claude-run/state" } else { Join-Path $OutDir 'marker-state' })
+            [void][IO.Directory]::CreateDirectory($dir)
+            # Тека станів смуги Codex/agy, яку смуга вже ініціювала (без `ready` читач дає UNKNOWN).
+            if (($name -split '/')[2] -cnotmatch '^cc-') { Write-FileAtomic (Join-Path $dir 'ready') '1' }
+            Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "refs/remotes/origin/$name $sha") + '.txt')) 'DONE стенд DONE'
+        }
+    }
     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
     Invoke-WrapperChain
     foreach ($engine in @('claude','codex','agy')) {
@@ -61,6 +74,7 @@ try {
         Invoke-WrapperChain
         Check "$engine чужий штамп не відкриває наступного прогону" (@(LiveMarkers).Count -eq $count)
         Remove-Item -LiteralPath $report
+        Finish-Lane $first
         if ($engine -eq 'claude') {
             $run = "$tmp/claude-run/runs/старий-формат"
             [void][IO.Directory]::CreateDirectory($run)
@@ -74,6 +88,7 @@ try {
         Check "$engine наступна позначка — лише останній штамп" ($markers.Count -eq $count + 1 -and @($markers | Where-Object { $_ -like "*/автоживий-$latest/*" }).Count -eq 1 -and @($markers | Where-Object { $_ -like "*/автоживий-$middle/*" }).Count -eq 0)
         Invoke-WrapperChain
         Check "$engine повтор проходу не дублює позначку" (@(LiveMarkers).Count -eq $markers.Count)
+        Finish-Lane $latest
         Write-FileAtomic "$WorkDir/state/blocked-$engine.json" ((@{slug="автоживий-$latest";line='GEMINI ОБГОРТКА: ЗАБЛОКОВАНО codex/короткий BLOCKED'}) | ConvertTo-Json)
         Check "$engine ЗАБЛОКОВАНО — кінець за позначкою" ([bool](Get-LiveCompletion ([pscustomobject]@{stamp=$latest;published=$true})))
         Invoke-WrapperChain

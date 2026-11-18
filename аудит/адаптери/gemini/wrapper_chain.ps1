@@ -617,9 +617,10 @@ function Get-ChainMarkerState([string]$Ref, [string]$Sha, [string]$Model) {
     }
 }
 
-function Get-ChainMarkers([string]$Slug) {
-    <# Віддалені позначки з числовою спробою й поточним станом смуги — спільне джерело вибору та перенесення. #>
-    $r = Get-ChainRemoteHeads "refs/heads/gemini-queue/$Slug/*"
+function Get-ChainMarkers([string]$Slug, $Heads = $null) {
+    <# Віддалені позначки з числовою спробою й поточним станом смуги — спільне джерело вибору та перенесення. $Heads —
+    уже прочитаний `Get-ChainRemoteHeads` цього штампу (один ls-remote на прохід). #>
+    $r = $(if ($null -ne $Heads) { $Heads } else { Get-ChainRemoteHeads "refs/heads/gemini-queue/$Slug/*" })
     foreach ($line in ($r.Out -split "`n")) {
         if ($line.Trim() -cnotmatch '^([0-9a-f]{40})\trefs/heads/(gemini-queue/([^/]+)/([a-z0-9][a-z0-9.-]{1,63})/([1-9][0-9]{0,2})(?:/([^/]+))?)$') { continue }
         $sha = $Matches[1]; $ref = $Matches[2]; $task = $Matches[3]; $model = $Matches[4]; $attempt = [int]$Matches[5]; $cond = [string]$Matches[6]
@@ -760,9 +761,12 @@ function Get-LiveCompletion($Active) {
     $published = Get-Prop $Active 'published'
     if ($null -ne $published -and -not $published) { return '' }
     $slug = "автоживий-" + [string]$Active.stamp
-    $done = Get-ChainTaskCompletion $slug -Removed
+    $done = Get-ChainTaskCompletion $slug
+    # Один ls-remote: усі позначки зняті — кінець (як `-Removed`), інакше кінець — лише рядок без живої позначки.
+    $heads = Get-ChainRemoteHeads "refs/heads/gemini-queue/$slug/*"
+    if (-not $heads.Out.Trim()) { return $(if ($done) { $done } else { [datetime]::UtcNow.ToString('o') }) }
     if (-not $done) { return '' }
-    foreach ($marker in @(Get-ChainMarkers $slug)) {
+    foreach ($marker in @(Get-ChainMarkers $slug $heads)) {
         if ($marker.Kind -cin @('NEW','WAIT','TAKEN','UNKNOWN') -and -not (Test-ChainMarkerCancelled $marker)) { return '' }
     }
     $done

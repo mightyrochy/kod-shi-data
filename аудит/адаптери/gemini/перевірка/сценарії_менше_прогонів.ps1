@@ -88,6 +88,20 @@ try {
         function script:Add-ChainMarker($Slug,$Model,$Main,[switch]$Gpu) { $script:TestMarkers += $Slug }
         # Клон стенда без origin; зняття мертвих позначок на справжньому origin міряє сценарії_ланцюга.ps1.
         function script:Remove-DeadReviewMarkers { }
+        # Позначки стенд ставить підміною Add-ChainMarker: origin — їхній перелік, стан смуги — DONE, коли за назвою є
+        # рядок кінця (смуга пише стан до рядка). Кінець при живій позначці іншого рушія (перенесення) міряє
+        # сценарії_ланцюга_перенесення.ps1 на справжньому origin.
+        function script:Get-ChainRemoteHeads([string]$Pattern) {
+            $slug = $Pattern -replace '^refs/heads/gemini-queue/', '' -replace '/\*$', ''
+            $lines = @($script:TestMarkers | Where-Object { $_ -like $slug } | ForEach-Object { ('0' * 40) + "`trefs/heads/gemini-queue/$_/cc-claude-test/1/p2-gpu" })
+            [pscustomobject]@{Code = 0; Out = ($lines -join "`n"); Err = ''}
+        }
+        function script:Get-ChainMarkers([string]$Slug, $Heads = $null) {
+            foreach ($one in @($script:TestMarkers | Where-Object { $_ -like $Slug })) {
+                [pscustomobject]@{Slug = $one; Ref = "gemini-queue/$one/cc-claude-test/1/p2-gpu"; Sha = '0' * 40; Model = 'cc-claude-test'; Attempt = 1; Cond = 'p2-gpu'
+                    Kind = $(if (Get-ChainTaskCompletion $one) { 'DONE' } else { 'NEW' })}
+            }
+        }
         function script:Invoke-ChainApi([string]$Path) { [pscustomobject]@{sha=($Path -split '/')[-1];commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddSeconds(-1).ToString('o')}}} }
         $pull = [pscustomobject]@{number=9;created_at=[datetimeoffset]::UtcNow.ToString('o');title='код';user=@{login='mightyrochy'};head=@{ref='claude/task';sha=$old;repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
         $script:TestPulls = @($pull)
