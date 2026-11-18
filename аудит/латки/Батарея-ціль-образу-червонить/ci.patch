@@ -1,0 +1,13 @@
+--- a/.github/workflows/zbirka.yml
++++ b/.github/workflows/zbirka.yml
+@@ -561,7 +561,9 @@
+ 
+       - name: розділи гейтів (ВПАЛО має лишатись 0)
+         working-directory: джерела
+-        run: python3 прилади/розділи_гейтів.py
++        run: |
++          python3 прилади/розділи_гейтів.py
++          python3 gate_reach.py --образи
+ 
+       - name: контракти (мають лишатись цілі)
+         working-directory: джерела
