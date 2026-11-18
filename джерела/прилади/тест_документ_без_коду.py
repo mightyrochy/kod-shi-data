@@ -695,6 +695,26 @@ class Самоперевірка(unittest.TestCase):
     def test_самоперевірка(self):
         self.assertEqual(д.самоперевірка(), 0)
 
+    def test_самоперевірка_в_розрідженому_дереві_workflow(self):
+        """Job «рішення» й «злиття» беруть розрідженим checkout лише файли зі свого `sparse-checkout`; прилад і його
+        імпорти (`корінь_пк_дотримання.py` → `запуск_python.py`) мусять там працювати. Тека збирається з переліків yml,
+        не з голови: новий імпорт приладу без файлу в переліку червонить PR, що його вносить, а не `main` після злиття."""
+        import shutil
+        import tempfile
+        with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
+            текст = ф.read()
+        переліки = re.findall(r"sparse-checkout: \|\n((?:            \S.*\n)+)", текст)
+        self.assertEqual(len(переліки), 2, "очікувано два job із sparse-checkout (рішення, злиття)")
+        for перелік in переліки:
+            with tempfile.TemporaryDirectory() as тека:
+                for шлях in перелік.split():
+                    ціль = os.path.join(тека, шлях)
+                    os.makedirs(os.path.dirname(ціль), exist_ok=True)
+                    shutil.copy(os.path.join(КОРІНЬ, шлях), ціль)
+                р = subprocess.run([sys.executable, "-I", "джерела/прилади/документ_без_коду.py", "--самоперевірка"],
+                                   cwd=тека, capture_output=True, text=True, encoding="utf-8")
+                self.assertEqual(р.returncode, 0, f"перелік {перелік.split()}: {(р.stdout + р.stderr)[-600:]}")
+
 
 if __name__ == "__main__":
     if "--таблиця" in sys.argv:
