@@ -2458,6 +2458,13 @@ function Get-AutoLivePlan([string]$BuildMain) {
             sha=[string]$(if ($report.head -is [Collections.IDictionary]) { $report.head['sha'] } else { Get-JsonProp $report.head 'sha' })
             created_at=(ConvertTo-AutoTime $created.Value).ToString('o')})
     }
+    # Межа перевіреної збірки не покриває пари, яку оцінка теки звіту, що назвав межу, дала «не виміряно»: таку пару
+    # план розбирає, як і непокриту (записи, оцінка, `bad` чи `scenes`), інакше межа губила б її повз оцінку.
+    $checkedDir = ''
+    foreach ($report in $ranReports) {
+        if ([string]$report.number -ceq [string]$boundary.pr -and
+            [string]$report.head.ref -cmatch '^(?:gemini|claude|codex)/(автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { $checkedDir = $Matches[1]; break }
+    }
     $codeHistory = @{}
     $ranBy = [ordered]@{}
     $scenes = [ordered]@{}
@@ -2483,8 +2490,10 @@ function Get-AutoLivePlan([string]$BuildMain) {
     }
     foreach ($pr in $sources) {
         $merge = $pr.merge
-        if (-not $history.ContainsKey($merge) -or $covered.ContainsKey($merge)) { continue }
+        if (-not $history.ContainsKey($merge)) { continue }
+        $underBound = $covered.ContainsKey($merge)
         foreach ($item in @($pr.found)) {
+            if ($underBound -and -not ($checkedDir -and -not $item.error -and $unanswered.ContainsKey("$checkedDir|$($pr.number)|$($item.id)"))) { continue }
             if ($item.error) { $bad += @(@{pr=$pr.number;line=$item.line;reason=$item.error}); $merges[[string]$pr.number] = $merge; continue }
             # Сцена режиму «функція» — код без моделі: її ставить хмарна сесія, не ноутбук.
             $inCloud = $item.mode -cmatch '^функція'
