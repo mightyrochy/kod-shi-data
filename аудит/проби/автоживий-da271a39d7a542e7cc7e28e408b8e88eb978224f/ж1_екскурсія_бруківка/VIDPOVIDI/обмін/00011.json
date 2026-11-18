@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"екскурсія старим містом цілий день: 9 год на ногах по бруківці, +12 °C, без дощу\", \"walk_min\": \"9 год на ногах по бруківці\", \"movement\": \"9 год на ногах по бруківці\", \"place_words\": \"старим містом\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"walk_min\": {\"kind\": \"reading\", \"quote\": \"9 год на ногах по бруківці\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"екскурсія старим містом цілий день: 9 год на ногах по бруківці, +12 °C, без дощу\"}, \"precipitation\": {\"kind\": \"reading\", \"quote\": \"без дощу\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"9 год на ногах по бруківці\"}, \"weather_band\": {\"kind\": \"reading\"}}, \"event\": \"екскурсія старим містом цілий день: 9 год на ногах по бруківці, +12 °C, без дощу\", \"movement\": \"walk_a_lot\", \"weather_band\": \"cold\", \"precipitation\": \"none\", \"occasion\": \"walk\", \"walk_min\": 540, \"formality\": [\"everyday\"], \"season\": \"autumn\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A refined merino wool blend sweater in a soft camel hue with hex code #C19A6B, featuring a relaxed fit with slightly dropped shoulders and falling to mid-thigh.\\n\\nA pair of dark indigo heavy-weight denim jeans with straight legs and no stretch, cut for structure rather than cling, paired with flat leather ankle boots in cognac brown (hex #8B4513) that offer ample cushioning and a durable sole for long walks.\\n\\nThis outfit works perfectly because it balances the need for extreme comfort with the desire to look polished during a full day of walking on cobblestones. The breathable yet warm fabric blend handles the cool +12 °C temperature without overheating, while the sturdy denim protects against scrapes from uneven stone surfaces. Finally, the earthy neutral palette feels effortlessly chic as you explore historic streets, ensuring you stay comfortable for nine hours without sacrificing style.\"}],\"usage\":{\"input_tokens\":785,\"output_tokens\":186},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream trench coat, knee-length, #f5f0e6, cotton gabardine with a soft wool lining for wind protection.\\nHigh-waisted wide-leg trousers, ankle length, #8b7d6b, durable stretch denim designed to resist abrasion from cobblestones.\\nA relaxed-fit button-down shirt, hip length, #e8dcc9, crisp oxford cotton tucked neatly into the trousers.\\nLeather ankle boots, mid-calf height, #5c4f42, crepe rubber sole and padded insole for nine hours of comfort on uneven ground.\\n\\nThis outfit works perfectly because the wide-leg cut of the denim provides ample clearance over cobblestones, preventing fabric damage while maintaining an elegant silhouette. The layered textures of the trench coat and oxford shirt add visual interest suitable for a full-day city tour without feeling too heavy at +12 °C. The sturdy ankle boots with their cushioned soles are essential for enduring long walks on stone streets, ensuring she remains comfortable throughout the excursion.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"Trench coat\\\",\\n\\\"details\\\": \\\"Cream knee-length cotton gabardine with soft wool lining for wind protection\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#f5f0e6\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Wide-leg trousers\\\",\\n\\\"details\\\": \\\"High-waisted ankle length durable stretch denim designed to resist abrasion from cobblestones\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#8b7d6b\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Button-down shirt\\\",\\n\\\"details\\\": \\\"Relaxed-fit hip length crisp oxford cotton tucked neatly into the trousers\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#e8dcc9\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Ankle boots\\\",\\n\\\"details\\\": \\\"Leather mid-calf height with crepe rubber sole and padded insole for comfort on uneven ground\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#5c4f42\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":567,\"output_tokens\":257},\"stop_reason\":\"end_turn\"}"
+ }
+}

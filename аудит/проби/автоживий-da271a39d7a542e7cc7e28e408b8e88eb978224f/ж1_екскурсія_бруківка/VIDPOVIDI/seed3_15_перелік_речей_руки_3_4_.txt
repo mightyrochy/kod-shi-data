@@ -1,0 +1,30 @@
+── ПРОМПТ (2156 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined merino wool blend sweater in a soft camel hue with hex code #C19A6B, featuring a relaxed fit with slightly dropped shoulders and falling to mid-thigh.\n\nA pair of dark indigo heavy-weight denim jeans with straight legs and no stretch, cut for structure rather than cling, paired with flat leather ankle boots in cognac brown (hex #8B4513) that offer ample cushioning and a durable sole for long walks.\n\nThis outfit works perfectly because it balances the need for extreme comfort with the desire to look polished during a full day of walking on cobblestones. The breathable yet warm fabric blend handles the cool +12 °C temperature without overheating, while the sturdy denim protects against scrapes from uneven stone surfaces. Finally, the earthy neutral palette feels effortlessly chic as you explore historic streets, ensuring you stay comfortable for nine hours without sacrificing style."}
+
+── ВІДПОВІДЬ (639 симв., 2.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sweater",
+      "details": "relaxed fit with slightly dropped shoulders, mid-thigh length, merino wool blend fabric",
+      "slot": "top",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "jeans",
+      "details": "straight legs, no stretch, heavy-weight denim cut for structure",
+      "slot": "bottom",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "flat leather sole with ample cushioning and durable outsole",
+      "slot": "shoes",
+      "color_hex": "#8B4513",
+      "worn": true
+    }
+  ]
+}
