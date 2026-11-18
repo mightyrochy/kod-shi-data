@@ -10,12 +10,15 @@
 Пароль gemini — лише через Get-Credential (системне вікно); скрипт його не читає в змінну для виводу й не пише.
 Попередні умови: 0_власник.ps1 пройдено; gemini має пароль (той, що вже стоїть у задачі gemini-run; без пароля — Ctrl+Alt+Del у сеансі gemini).
 Команди кроків — дослівно з НАЛАШТУВАННЯ.md.
+З установленим самооновленням (selfupdate.ready) gemini_run.ps1 у ProgramData — читач active.txt (читач.ps1), а не повна
+копія: його лишено (чи поставлено), queue_lanes.ps1 і wrapper_health.ps1 разом із версіями кладе gemini-publish.
 З -EnableCodex задача gemini-run дістає ключ `-EnableCodex` в аргументах (рушій Codex ввімкнено; рішення власника 25.10, 9738);
 без ключа — аргументи, як були, Codex не кличеться. Повторний запуск з іншим значенням перереєстровує задачу (-Force).
 #>
 param([switch]$EnableCodex)
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $here 'читач.ps1')
 function Stop-Here([string]$m) { Write-Host "СТОП: $m" -ForegroundColor Red; Write-Host 'Напиши диспетчерові: ЗАБЛОКОВАНО + цей текст.'; exit 1 }
 function Step([string]$m) { Write-Host "`n== $m" -ForegroundColor Cyan }
 
@@ -33,6 +36,7 @@ foreach ($f in @(@('gemini_run.ps1', "$env:TEMP\gemini_run.ps1"), @('wrapper_hea
 
 Step 'Крок 3: тека обгортки gemini лише для читання'
 $run = 'C:\ProgramData\gemini-wrapper'
+$su = Test-SelfUpdate $run
 New-Item -ItemType Directory -Force $run | Out-Null
 icacls $run /inheritance:r /grant:r "*S-1-5-18:(OI)(CI)F" "*S-1-5-32-544:(OI)(CI)F" "${env:USERNAME}:(OI)(CI)F" "gemini:(OI)(CI)RX"
 if ($LASTEXITCODE -ne 0) { Stop-Here "icacls повернув код $LASTEXITCODE." }
@@ -41,20 +45,25 @@ if ($LASTEXITCODE -ne 0) { Stop-Here "icacls повернув код $LASTEXITCO
 # видаляємо й падаємо. gemini_publish.ps1 лишається у профілі власника (задача gemini-publish запускає його звідти): байти
 # читаємо раз, хеш — з пам'яті.
 # queue_lanes.ps1 — спільний модуль смуг (М.9-Е): gemini_run.ps1 підвантажує його з тієї самої теки.
-Copy-Item "$env:TEMP\gemini_run.ps1" "$run\gemini_run.ps1" -Force
-Copy-Item "$env:TEMP\queue_lanes.ps1" "$run\queue_lanes.ps1" -Force
-Copy-Item "$env:TEMP\wrapper_health.ps1" "$run\wrapper_health.ps1" -Force
-foreach ($name in @('gemini_run.ps1', 'queue_lanes.ps1', 'wrapper_health.ps1')) {
-    $dst = Join-Path $run $name
-    $got = (Get-FileHash $dst -Algorithm SHA256).Hash
-    if ($got -ne $expected[$name]) {
-        Remove-Item $dst -Force -ErrorAction SilentlyContinue
-        Stop-Here "хеш $name у ProgramData не збігся з хеші.psd1: маємо $got; файл видалено. Запусти 0_власник.ps1 знову; не допомогло — диспетчерові."
+if ($su) {
+    Install-EntryReader $run 'gemini_run.ps1' $run
+    Write-Host 'Самооновлення встановлено: gemini_run.ps1 у ProgramData — читач active.txt.' -ForegroundColor Yellow
+} else {
+    Copy-Item "$env:TEMP\gemini_run.ps1" "$run\gemini_run.ps1" -Force
+    Copy-Item "$env:TEMP\queue_lanes.ps1" "$run\queue_lanes.ps1" -Force
+    Copy-Item "$env:TEMP\wrapper_health.ps1" "$run\wrapper_health.ps1" -Force
+    foreach ($name in @('gemini_run.ps1', 'queue_lanes.ps1', 'wrapper_health.ps1')) {
+        $dst = Join-Path $run $name
+        $got = (Get-FileHash $dst -Algorithm SHA256).Hash
+        if ($got -ne $expected[$name]) {
+            Remove-Item $dst -Force -ErrorAction SilentlyContinue
+            Stop-Here "хеш $name у ProgramData не збігся з хеші.psd1: маємо $got; файл видалено. Запусти 0_власник.ps1 знову; не допомогло — диспетчерові."
+        }
     }
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    $got = ([BitConverter]::ToString($sha.ComputeHash([System.IO.File]::ReadAllBytes($pubFile))) -replace '-', '')
+    if ($got -ne $expected['gemini_publish.ps1']) { Stop-Here "хеш gemini_publish.ps1 не збігся з хеші.psd1: маємо $got. Запусти 0_власник.ps1 знову; не допомогло — диспетчерові." }
 }
-$sha = [System.Security.Cryptography.SHA256]::Create()
-$got = ([BitConverter]::ToString($sha.ComputeHash([System.IO.File]::ReadAllBytes($pubFile))) -replace '-', '')
-if ($got -ne $expected['gemini_publish.ps1']) { Stop-Here "хеш gemini_publish.ps1 не збігся з хеші.psd1: маємо $got. Запусти 0_власник.ps1 знову; не допомогло — диспетчерові." }
 
 Step 'Крок 5: дві задачі планувальника'
 $set = @{ MultipleInstances = 'IgnoreNew'; AllowStartIfOnBatteries = $true; DontStopIfGoingOnBatteries = $true; StartWhenAvailable = $true }

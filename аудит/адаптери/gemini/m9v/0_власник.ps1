@@ -9,10 +9,13 @@
 рушій Claude — задача claude-run (НАЛАШТУВАННЯ.md «Рушій Claude»); спільний модуль смуг queue_lanes.ps1 — поруч із
 claude_run.ps1 і в %TEMP% (звідти його копіює в ProgramData 1_адмін.ps1).
 Ідемпотентний: повторний запуск перекачує файли, перевіряє хеші, перереєструє задачу. Паролів і токенів не читає.
+З установленим самооновленням (selfupdate.ready) входи задач у профілі — читачі active.txt (читач.ps1): повні файли
+качаються лише у тимчасову теку для звірки хешів, а входи лишаються (чи стають) читачами; версії кладе gemini-publish.
 Команди — дослівно з НАЛАШТУВАННЯ.md і СПОСТЕРІГАЧ.md.
 #>
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $here 'читач.ps1')
 function Stop-Here([string]$m) { Write-Host "СТОП: $m" -ForegroundColor Red; Write-Host 'Напиши диспетчерові: ЗАБЛОКОВАНО + цей текст.'; exit 1 }
 function Step([string]$m) { Write-Host "`n== $m" -ForegroundColor Cyan }
 
@@ -33,12 +36,19 @@ Step 'Крок 2: файли обгортки і SHA-256'
 $expected = Import-PowerShellDataFile (Join-Path $here 'хеші.psd1')
 $base = 'https://raw.githubusercontent.com/mightyrochy/kod-shi-data/main/аудит/адаптери/gemini'
 $pub = "$env:USERPROFILE\gemini-publish"; New-Item -ItemType Directory -Force $pub | Out-Null
+$w = "$env:USERPROFILE\gemini-watch"; New-Item -ItemType Directory -Force $w | Out-Null
+$cr = "$env:USERPROFILE\claude-run"; New-Item -ItemType Directory -Force $cr | Out-Null
+$su = Test-SelfUpdate
+if ($su) {
+    $live = @($pub, $w, $cr); $stage = Join-Path $env:TEMP ('m9v-' + [guid]::NewGuid().ToString('N'))
+    $pub = "$stage\gemini-publish"; $w = "$stage\gemini-watch"; $cr = "$stage\claude-run"
+    foreach ($d in @($pub, $w, $cr)) { New-Item -ItemType Directory -Force $d | Out-Null }
+    Write-Host 'Самооновлення встановлено: повні файли — лише для звірки хешів, входи задач лишаються читачами.' -ForegroundColor Yellow
+}
 Invoke-WebRequest "$base/gemini_publish.ps1" -OutFile "$pub\gemini_publish.ps1" -UseBasicParsing
 Invoke-WebRequest "$base/gemini_run.ps1" -OutFile "$env:TEMP\gemini_run.ps1" -UseBasicParsing
 Invoke-WebRequest "$base/queue_lanes.ps1" -OutFile "$env:TEMP\queue_lanes.ps1" -UseBasicParsing
-$w = "$env:USERPROFILE\gemini-watch"; New-Item -ItemType Directory -Force $w | Out-Null
 Invoke-WebRequest "$base/gemini_watch.ps1" -OutFile "$w\gemini_watch.ps1" -UseBasicParsing
-$cr = "$env:USERPROFILE\claude-run"; New-Item -ItemType Directory -Force $cr | Out-Null
 Invoke-WebRequest "$base/claude_run.ps1" -OutFile "$cr\claude_run.ps1" -UseBasicParsing
 Invoke-WebRequest "$base/queue_lanes.ps1" -OutFile "$cr\queue_lanes.ps1" -UseBasicParsing
 Get-FileHash "$pub\gemini_publish.ps1", "$env:TEMP\gemini_run.ps1" | Format-List Hash, Path
@@ -62,6 +72,14 @@ foreach ($p in @(@('gemini_publish.ps1', "$pub\gemini_publish.ps1"), @('gemini_r
 }
 if ($bad) { Stop-Here ("хеші не збіглися (нічого не зареєстровано):`n  " + ($bad -join "`n  ")) }
 Write-Host 'Хеші збіглися з таблицею.' -ForegroundColor Green
+if ($su) {
+    $pub, $w, $cr = $live
+    Remove-Item $stage -Recurse -Force
+    Install-EntryReader $pub 'gemini_publish.ps1'
+    Install-EntryReader $w 'gemini_watch.ps1'
+    Install-EntryReader $cr 'claude_run.ps1'
+    Write-Host 'Входи gemini-publish, gemini-watch, claude-run — читачі active.txt.' -ForegroundColor Green
+}
 
 # --- тека вихідних ---
 Step 'Тека вихідних'
@@ -104,5 +122,15 @@ $t = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInte
 $s = New-ScheduledTaskSettingsSet @set -ExecutionTimeLimit ([TimeSpan]::Zero)
 Register-ScheduledTask -TaskName 'claude-run' -Action $a -Trigger $t -Settings $s -Principal $p -Force | Out-Null
 Get-ScheduledTask claude-run | ForEach-Object { "claude-run: $($_.State), інтервал $($_.Triggers[0].Repetition.Interval), межа часу $($_.Settings.ExecutionTimeLimit)" }
+
+# Тримач світла — той самий скрипт, користувач і контекст задачі, що й claude-run (Add-Type з P/Invoke тут працює), але
+# постійний процес; повтор тригера перезапускає його після виходу чи падіння, IgnoreNew — водночас один. Stop/Start —
+# щоб новий код узявся одразу, а не після перезапуску ноутбука.
+Step 'Тримач світла: реєстрація задачі claude-light'
+$a = New-ScheduledTaskAction -Execute 'conhost.exe' -Argument "--headless powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$cr\claude_run.ps1`" -Light"
+Register-ScheduledTask -TaskName 'claude-light' -Action $a -Trigger $t -Settings $s -Principal $p -Force | Out-Null
+Stop-ScheduledTask -TaskName 'claude-light' -ErrorAction SilentlyContinue
+Start-ScheduledTask -TaskName 'claude-light'
+Get-ScheduledTask claude-light | ForEach-Object { "claude-light: $($_.State), інтервал $($_.Triggers[0].Repetition.Interval), межа часу $($_.Settings.ExecutionTimeLimit)" }
 
 Write-Host "`nГОТОВО: частина власника пройдена. Далі — за ЩО_НАТИСНУТИ.md (крок 2: користувач gemini)." -ForegroundColor Green
