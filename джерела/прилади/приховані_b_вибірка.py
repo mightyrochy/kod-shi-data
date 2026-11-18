@@ -12,6 +12,10 @@
 Запуск з кореня репозиторію (~2 хв):
   python3 джерела/прилади/приховані_b_вибірка.py <тека>      пише <тека>/<клас>.s, рядок на місце
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import io
 import os
 import re
@@ -42,8 +46,8 @@ def кожне_k(рядки, n=20, k=None):
 
 
 def з_приладу(аргументи, фільтр=None):
-    вихід = subprocess.run([sys.executable, os.path.join(ТУТ, аргументи[0])] + аргументи[1:], cwd=КОРІНЬ,
-                           capture_output=True, text=True).stdout.splitlines()
+    вихід = запустити_python([sys.executable, os.path.join(ТУТ, аргументи[0])] + аргументи[1:], cwd=КОРІНЬ,
+                           capture_output=True, text=True, потрібен_вивід=True).stdout.splitlines()
     рядки = [р for р in вихід if "\t" in р]
     return [р for р in рядки if фільтр(р)] if фільтр else рядки
 

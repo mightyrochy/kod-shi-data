@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 """Синтетичні перевірки виявлення подій і повного шляху Е2, без продукту/API."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import tempfile
 import os
 import subprocess
@@ -48,7 +52,7 @@ class ПриладЕ2(unittest.TestCase):
             дж.mkdir()
             (дж / 'дія.js').write_text('function дія(){return 1;} к.onclick=()=>дія();', encoding='utf-8')
             середовище = dict(os.environ, PYTHONIOENCODING='cp1251')
-            п = subprocess.run([sys.executable, str(Path(__file__).with_name('корінь_е2_усе_з_розмови.py')),
+            п = запустити_python([sys.executable, str(Path(__file__).with_name('корінь_е2_усе_з_розмови.py')),
                 '--корінь', тека], env=середовище, capture_output=True, check=True)
             self.assertEqual(п.stdout.decode('utf-8').splitlines()[-1], 'місць: 1')
 

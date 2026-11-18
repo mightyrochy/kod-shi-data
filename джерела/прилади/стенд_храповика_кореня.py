@@ -25,6 +25,10 @@ PR вливає M1 коміт-злиттям; CI дає храповикові `
 Друкує «мірило: випадок N — <результат>» на кожен випадок; код виходу 1 — хоч один не той, що в таблиці наряду.
 ЗАПУСК (з кореня репозиторію): python3 джерела/прилади/стенд_храповика_кореня.py [--храповик <шлях коду роботи>]
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import argparse
 import importlib.util
 import os
@@ -337,7 +341,7 @@ def перевірити_обсяг_відкритого(шлях):
         if обсяг is None:
             print(f'обсяг з коду: {імя} — не визначено (лічиться завжди), відкрите не звірено')
             continue
-        вихід = subprocess.run([sys.executable, '-I', '-X', 'utf8', '-c', СТЕЖЕННЯ, прилад_, *аргументи],
+        вихід = запустити_python([sys.executable, '-I', '-X', 'utf8', '-c', СТЕЖЕННЯ, прилад_, *аргументи],
                                cwd=корінь, capture_output=True, text=True)
         рядок = next((р for р in вихід.stdout.splitlines()[::-1] if р.startswith('ВІДКРИТО ')), None)
         if рядок is None:
@@ -347,7 +351,7 @@ def перевірити_обсяг_відкритого(шлях):
         import json
         відкрите = set()
         for х in json.loads(рядок[len('ВІДКРИТО '):]):
-            відносний = os.path.relpath(х if os.path.isabs(х) else os.path.join(корінь, х), корінь)
+            відносний = os.path.relpath(х if os.path.isabs(х) else os.path.join(корінь, х), корінь).replace(os.sep, '/')
             if (not відносний.startswith('..') and os.path.isfile(os.path.join(корінь, відносний))
                     and '__pycache__' not in відносний and not відносний.endswith('.pyc')):
                 відкрите.add(відносний)
@@ -395,7 +399,7 @@ def прогнати(база, голова, храповик, ознака=Fals
         середовище = dict(os.environ, GITHUB_STEP_SUMMARY=підсумок, GITHUB_ACTIONS='')
         файл_ознаки = os.path.join(тека, 'ознака.txt')
         додаткові = ['--ознака-стенда', файл_ознаки] if ознака else []
-        вихід = subprocess.run([sys.executable, храповик, '--репо', репо, *(['--пр'] if пр else []), '--база', sha_бази, *додаткові],
+        вихід = запустити_python([sys.executable, храповик, '--репо', репо, *(['--пр'] if пр else []), '--база', sha_бази, *додаткові],
                                capture_output=True, text=True, env=середовище)
         текст = вихід.stdout + вихід.stderr
         if os.path.exists(підсумок):
@@ -435,7 +439,7 @@ def прогнати_злиття(пр_зміни, main_зміни, злити=T
             git(репо, 'checkout', '-q', '--detach', 'пр')
         підсумок = os.path.join(тека, 'підсумок.md')
         середовище = dict(os.environ, GITHUB_STEP_SUMMARY=підсумок, GITHUB_ACTIONS='')
-        вихід = subprocess.run([sys.executable, ХРАПОВИК_ПРОГОН, '--репо', репо, '--пр', '--база', m0],
+        вихід = запустити_python([sys.executable, ХРАПОВИК_ПРОГОН, '--репо', репо, '--пр', '--база', m0],
                                capture_output=True, text=True, env=середовище)
         текст = вихід.stdout + вихід.stderr
         if os.path.exists(підсумок):

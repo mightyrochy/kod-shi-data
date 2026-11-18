@@ -13,6 +13,10 @@
 
 Звіт, не гейт (ПРОДУКТ.md п.3): код виходу 0, коли прогін відбувся; тотожність і розбіжності — у таблиці `<вихід>/підсумок.md`.
 Час у таблиці — з паралельних процесів (-j): годинна стіна однакова для Pyodide й CPython, але абсолютні мс залежать від -j."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import argparse, concurrent.futures, gzip, hashlib, json, os, shutil, subprocess, sys, tempfile, time
 
 ТЕКА = os.path.dirname(os.path.abspath(__file__))
@@ -78,7 +82,7 @@ def запустити(середовище, сцена, арг, вихід, п�
     if os.path.exists(вихід) and os.path.exists(вихід + '.час.json') and not арг.наново:
         return вихід, json.load(open(вихід + '.час.json', encoding='utf-8'))    # знімок уже є: повторний запуск дописує лише нове
     t0 = time.perf_counter()
-    п = subprocess.run(команда, text=True, capture_output=True)
+    п = запустити_python(команда, text=True, capture_output=True)
     if п.returncode:
         raise RuntimeError('%s %s: rc %d\n%s' % (середовище, сцена['ім'], п.returncode, (п.stdout + п.stderr)[-800:]))
     час = json.load(open(вихід + '.час.json', encoding='utf-8'))

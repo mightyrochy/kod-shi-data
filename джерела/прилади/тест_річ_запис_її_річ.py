@@ -6,6 +6,10 @@
 описом — місцем перекладу; назва з `name` — без місця. Записана відповідь перекладача — назва на картці. Запуск з
 кореня: python -X utf8 джерела/прилади/тест_річ_запис_її_річ.py (кілька хвилин: кожен мутант — повний прогін).
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import json
 from pathlib import Path
 import shutil
@@ -45,7 +49,7 @@ def лічба(правки=()):
                 текст = шлях.read_text(encoding='utf-8')
                 assert текст.count(старе) == 1, f'{файл}: мутант не стає — рядка нема чи він не один'
                 шлях.write_text(текст.replace(старе, нове), encoding='utf-8')
-        вих = subprocess.run([sys.executable, '-X', 'utf8', '-W', 'ignore', str(Path(Я.__file__)), '--json',
+        вих = запустити_python([sys.executable, '-X', 'utf8', '-W', 'ignore', str(Path(Я.__file__)), '--json',
                               f'--джерела={джерела}'], cwd=КОРІНЬ, capture_output=True, text=True, timeout=900)
     if вих.returncode:
         raise AssertionError(вих.stderr[-3000:])
