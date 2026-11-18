@@ -1504,10 +1504,12 @@ function Test-SlugBusy([string]$Slug, [string[]]$Lanes) {
     $false
 }
 
-function Stop-CancelledRuns($M, $Workers) {
-    <# Знята позначка (голова «ЗНЯТО…»), прогін якої вже йде під попереднім SHA у слоті цього планувальника: процес наряду
-    зупиняється деревом (той самий обліковий запис, що запустив, — прав адміністратора не треба), його STARTED
-    закривається кінцем CANCELLED без результату — публікувати нема чого, кінець несе результат самої знятої позначки.
+function Stop-CancelledRuns($M, $Workers, [string]$Code = 'CANCELLED') {
+    <# Знята позначка (голова «ЗНЯТО…»; вирок сторожа GPU — код STALL), прогін якої вже йде під попереднім SHA у слоті цього
+    планувальника: процес наряду зупиняється деревом (той самий обліковий запис, що запустив, — прав адміністратора не
+    треба), його STARTED закривається станом `DONE <id> <код>`. Повертає зупинені прогони (Id, Slot, Json — запис STARTED,
+    StatePath): кінець із записаним дає їм планувальник смуги (gemini — Close-StoppedRun), інакше кінець несе результат
+    самої знятої позначки.
 
     Свій процес — з $Workers; процес попереднього планувальника — за pid з `<слот>.json`, поки замок слота зайнятий. #>
     $slots = New-Object System.Collections.ArrayList
@@ -1529,9 +1531,10 @@ function Stop-CancelledRuns($M, $Workers) {
         $slot = [string](Get-JsonProp $j 'slot')
         if ($slots -cnotcontains $slot -or -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
         if (-not $id) { $id = [string](Get-JsonProp $j 'id') }
-        Write-FileAtomic $f.FullName "DONE $id CANCELLED"
+        Write-FileAtomic $f.FullName "DONE $id $Code"
         Remove-Claim $f.FullName
-        Write-Log "зняття $($M.Name): прогін $id у слоті $slot зупинено — CANCELLED"
+        Write-Log "зняття $($M.Name): прогін $id у слоті $slot зупинено — $Code"
+        [pscustomobject]@{ Id = $id; Slot = $slot; Json = $j; StatePath = $f.FullName }
     }
 }
 
@@ -2721,19 +2724,31 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
 # --- сторож GPU-замка: наряд тримає карту, а вона не працює -----------------------------------------------------------
 # 15.11 GPU-наряд Codex тримав замок понад 640 хв, карта була на 0 % у вимірах 19:39, 19:45, 19:55 UTC (12 % о 19:50), а
 # PID llama-server щоп'ять хвилин ставав новим; `codex_stall_minutes` не спрацював, бо Codex події дає. Сторож лічить лише з
-# вимірів (nvidia-smi — відсоток, лічильник Windows — PID найбільшого власника пам'яті) і записів слотів, без тексту агента;
-# наряду не знімає — знімає диспетчер позначкою «ЗНЯТО». Межі — `gpu_stall_minutes`, `gpu_stall_percent` (`смуги.json`, з джерелом).
+# вимірів (nvidia-smi — відсоток, лічильник Windows — PID найбільшого власника пам'яті), записів слотів і chat-запитів журналу
+# LM Studio, без тексту агента. 18.11 стенд автоживого 04911e68 після обриву о 05:15Z не звернувся до моделі до 13:19Z, а
+# наряд тримав замок, доки диспетчер не поставив «ЗНЯТО», і ~42 записані сцени пропали: тож наряд, чий стенд не звертався до
+# моделі довше за `gpu_stall_minutes` неспання, планувальник смуги закриває сам (вирок `gpu-stall.json`, Get-GpuStallVerdict).
+# Межі — `gpu_stall_minutes`, `gpu_stall_percent` (`смуги.json`, з джерелом).
 
-function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = '', $Now = $null, [scriptblock]$Sleeps = $null, [scriptblock]$SleepRead = $null) {
-    <# Один вимір ряду. $Holders — наряди із замком GPU (Marker, Since UTC-рядок); $Sample — Percent (-1 — невідомо) і
-    OwnerPid (0 — власника нема). Стан `gpu-watch.json`: позначка, початок замка, початок безперервної бездіяльності карти
+function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = '', $Now = $null, [scriptblock]$Sleeps = $null, [scriptblock]$SleepRead = $null, [string]$VerdictPath = '') {
+    <# Один вимір ряду. $Holders — наряди із замком GPU (Marker, Since UTC-рядок); $Sample — Percent (-1 — невідомо),
+    OwnerPid (0 — власника нема), CallAgeMin (хвилини від останнього chat-запиту до LM Studio, -1 — не виміряно) і OnBattery
+    (такт без світла). Стан `gpu-watch.json`: позначка, початок замка, початок безперервної бездіяльності карти
     (вимір не вище gpu_stall_percent; невідомий вимір ряд не рве й не подовжує), останній PID, скільки разів він змінився за
-    замок, за якого ряду бездіяльності рядок уже надіслано. Рядок — раз на ряд бездіяльності, понад gpu_stall_minutes.
-    Повертає об'єкт для #1856 (Marker, LockMinutes, IdleMinutes, PidChanges) чи $null, коли замка GPU нема. #>
+    замок, за якого ряду бездіяльності рядок уже надіслано, хвилини неспання без chat-запитів за замок. Рядок — раз на ряд
+    бездіяльності, понад gpu_stall_minutes. Без chat-запитів понад gpu_stall_minutes неспання — вирок `gpu-stall.json` у
+    $LaneDir (позначка, початок замка), за яким планувальник смуги закриває наряд сам; інакше вироку нема.
+    Повертає об'єкт для #1856 (Marker, LockMinutes, IdleMinutes, PidChanges, CallAgeMinutes, NoCallMinutes, Stop) чи $null,
+    коли замка GPU нема. #>
     if (-not $Path) { $Path = Join-Path $script:StateDir 'gpu-watch.json' }
+    if (-not $VerdictPath) { $VerdictPath = Join-Path $LaneDir 'gpu-stall.json' }
     if ($null -eq $Now) { $Now = [datetime]::UtcNow }
     $h = @($Holders | Where-Object { $_ -and [string]$_.Marker } | Select-Object -First 1)
-    if ($h.Count -eq 0) { Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue; return $null }
+    if ($h.Count -eq 0) {
+        Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $VerdictPath -Force -ErrorAction SilentlyContinue
+        return $null
+    }
     $marker = [string]$h[0].Marker
     $rx = '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$'
     $fmt = "yyyy-MM-dd'T'HH:mm:ss'Z'"
@@ -2742,9 +2757,9 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     if ($null -ne $st) { $st = ConvertTo-PlainJson $st }
     if ($null -eq $st -or [string](Get-JsonProp $st 'marker') -cne $marker) {
         $since = [string]$h[0].Since
-        $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = ''; last_at = ''; sleep_min = 0; idle_unknown = 0; prev_known = 1 }
+        $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = ''; last_at = ''; sleep_min = 0; idle_unknown = 0; prev_known = 1; nocall_min = 0 }
     }
-    foreach ($n in @('last_at', 'sleep_min', 'idle_unknown', 'prev_known')) { if ($null -eq $st.PSObject.Properties[$n]) { Add-Member -InputObject $st -NotePropertyName $n -NotePropertyValue $(if ($n -eq 'last_at') { '' } elseif ($n -eq 'prev_known') { 1 } else { 0 }) } }
+    foreach ($n in @('last_at', 'sleep_min', 'idle_unknown', 'prev_known', 'nocall_min')) { if ($null -eq $st.PSObject.Properties[$n]) { Add-Member -InputObject $st -NotePropertyName $n -NotePropertyValue $(if ($n -eq 'last_at') { '' } elseif ($n -eq 'prev_known') { 1 } else { 0 }) } }
     $idleLimit = [double](Get-Limit $script:Limits 'GpuIdleMinutes' 'gpu_stall_minutes')
     $pctLimit = [double](Get-Limit $script:Limits 'GpuIdlePercent' 'gpu_stall_percent')
     $pct = [int]$Sample.Percent; $ownerPid = [int]$Sample.OwnerPid
@@ -2766,8 +2781,10 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     }
     $lastAt = $(if ($null -ne (Get-JsonProp $st 'last_at') -and [string]$st.last_at -cmatch $rx) { [datetime]::ParseExact([string]$st.last_at, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) } elseif ([string]$st.lock_since -cmatch $rx) { [datetime]::ParseExact([string]$st.lock_since, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) } else { $null })
     $stale = $lagged -and $null -ne $lastAt -and $Now -le $lastAt
+    $sleptIv = 0
     if (-not $stale -and $null -ne $lastAt -and $null -ne $Sleeps -and $Now -gt $lastAt) {
         $slept = [int](& $Sleeps $lastAt $Now)
+        $sleptIv = $slept
         if ($slept -gt 0) {
             $st.sleep_min = [int](Get-JsonProp $st 'sleep_min') + $slept
             $st.idle_since = ''
@@ -2777,6 +2794,14 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     # Невідомий вимір ряд не рве й не подовжує (15788): проміжок, чий кінець чи початок без виміру, у бездіяльність не йде.
     $interval = $(if (-not $stale -and $null -ne $lastAt -and $Now -gt $lastAt) { ($Now - $lastAt).TotalMinutes } else { 0 })
     if ([string]$st.idle_since -cmatch $rx -and ($pct -lt 0 -or [int]$st.prev_known -eq 0)) { $st.idle_unknown = [double]$st.idle_unknown + $interval }
+    # Без chat-запитів за замок — хвилини неспання: проміжок між тактами без сну (журнал Windows) і без такту на батареї (пауза
+    # світла, Wait-PowerPause); запит у проміжку лишає лише хвилини після нього, журнал не читається — лічба стоїть.
+    if (-not $stale -and $callAge -ge 0) {
+        $onBattery = ($null -ne $Sample.PSObject.Properties['OnBattery'] -and [bool]$Sample.OnBattery)
+        $awakeIv = $(if ($onBattery) { 0 } else { [Math]::Max(0, $interval - $sleptIv) })
+        if ($null -ne $lastAt -and $Now.AddMinutes(-$callAge) -gt $lastAt) { $st.nocall_min = [Math]::Min($awakeIv, [double]$callAge) }
+        else { $st.nocall_min = [double]$st.nocall_min + $awakeIv }
+    }
     if (-not $stale) { $st.last_at = Get-UtcStamp $Now; $st.prev_known = $(if ($pct -ge 0) { 1 } else { 0 }) }
     if ($ownerPid -gt 0) {
         $last = [int]$st.last_pid
@@ -2799,7 +2824,49 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
         if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE $lane/$($parts[1]) ЗАМОК $lockMin СОН $sleepMin БЕЗ_РОБОТИ $idleMin PID_ЗМІН $($st.pid_changes)") { $st.sent = $cause }
     }
     Write-FileAtomic $Path ($st | ConvertTo-Json -Compress)
-    [pscustomobject]@{ Marker = $marker; LockMinutes = $lockMin; SleepMinutes = $sleepMin; IdleMinutes = $idleMin; PidChanges = [int]$st.pid_changes; CallAgeMinutes = $callAge }
+    $noCall = [int][Math]::Floor([double]$st.nocall_min)
+    $stop = ($callAge -ge 0 -and $idleLimit -gt 0 -and $noCall -ge $idleLimit)
+    if ($stop) { Write-FileAtomic $VerdictPath (([ordered]@{ marker = $marker; since = [string]$h[0].Since; nocall = $noCall; at = (Get-UtcStamp $Now) }) | ConvertTo-Json -Compress) }
+    else { Remove-Item -LiteralPath $VerdictPath -Force -ErrorAction SilentlyContinue }
+    [pscustomobject]@{ Marker = $marker; LockMinutes = $lockMin; SleepMinutes = $sleepMin; IdleMinutes = $idleMin; PidChanges = [int]$st.pid_changes; CallAgeMinutes = $callAge; NoCallMinutes = $noCall; Stop = $stop }
+}
+
+function Get-GpuStallVerdict([string]$Path = '') {
+    <# Вирок сторожа GPU (`gpu-stall.json` у $LaneDir, пише Update-GpuWatch планувальника claude-run): позначка й початок замка
+    наряду, чий стенд не звертався до моделі довше за gpu_stall_minutes неспання. Нема чи не за форматом — $null. #>
+    if (-not $Path) { $Path = Join-Path $LaneDir 'gpu-stall.json' }
+    try { $j = [IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json } catch { return $null }
+    $marker = [string](Get-JsonProp $j 'marker')
+    $since = Get-JsonProp $j 'since'
+    if ($since -is [datetime]) { $since = Get-UtcStamp $since }
+    $n = 0
+    if ($marker -cnotmatch '^gemini-queue/[\p{L}\p{Nd}._/-]{1,200}$' -or $marker.Contains('..') -or [string]$since -cnotmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$' -or
+        -not [int]::TryParse([string](Get-JsonProp $j 'nocall'), [ref]$n)) { return $null }
+    [pscustomobject]@{ Marker = $marker; Since = [string]$since; NoCall = $n }
+}
+
+function Get-LastCodexEvent([string]$Path) {
+    <# Остання подія Codex прогону з `codex.events.tsv` (Invoke-NativeUntilStall: «<місцевий час>⇥<тип>» на кожен рядок stdout):
+    UTC і тип; файла нема чи жодного рядка за форматом — $null. Читається лише хвіст файла, без блокування записувача. Тип поза
+    безпечним набором — «?»: файл пише процес наряду. #>
+    try {
+        $fs = [IO.File]::Open($Path, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+        try {
+            $n = [int][Math]::Min($fs.Length, 4096L)
+            [void]$fs.Seek(-$n, [IO.SeekOrigin]::End)
+            $buf = New-Object byte[] $n
+            $read = 0
+            while ($read -lt $n) { $k = $fs.Read($buf, $read, $n - $read); if ($k -le 0) { break }; $read += $k }
+        } finally { $fs.Dispose() }
+        $rows = @($script:Utf8.GetString($buf, 0, $read) -split "`r?`n")
+        for ($i = $rows.Count - 1; $i -ge 0; $i--) {
+            if ($rows[$i] -cnotmatch '^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)	(.*)$') { continue }
+            $t = [datetime]::ParseExact($Matches[1], 's', [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeLocal)
+            $type = $(if ($Matches[2] -cmatch '^[A-Za-z0-9_./-]{1,60}$') { $Matches[2] } else { '?' })
+            return [pscustomobject]@{ Utc = (Get-UtcStamp $t); Type = $type }
+        }
+        $null
+    } catch { $null }
 }
 
 

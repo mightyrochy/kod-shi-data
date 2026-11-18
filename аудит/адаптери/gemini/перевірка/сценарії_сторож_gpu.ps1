@@ -1,8 +1,10 @@
 ﻿#Requires -Version 5.1
 <# Стенд наряду «обгортка-сторож-gpu-замка» (15.11): GPU-наряд тримає замок 640 хв, карта на 0 %, PID сервера щоп'ять хвилин
 новий, а запобіжник завислості мовчить; наглядова сесія не підтверджує листів, а стан ноутбука цього не показує.
-Справжні функції обгортки (Update-GpuWatch, Get-GpuStateLines, Get-SupervisorLine, публікатор); підмінено лише вимір карти й
-час. Git для рядка наглядової — справжній, на тимчасовому origin. #>
+18.11 (автоживий 04911e68): стенд після обриву о 05:15Z не звертався до моделі, GET /api/v1/models журналу LM Studio
+показував «виклики моделі» свіжими, наряд стояв до «ЗНЯТО», а записане пропало — сценарії з, и, і.
+Справжні функції обгортки (Update-GpuWatch, Get-GpuStateLines, Get-SupervisorLine, Get-LmsCallAge, Close-CancelledMarker,
+Stop-GpuStalledRuns, публікатор); підмінено лише вимір карти й час. Git — справжній, на тимчасових клонах. #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
@@ -81,16 +83,17 @@ Scenario 'а2 справний прогін' {
     . $newEnv 'a2'
     $send = { param($l) [bool](Add-Line $l) }
     $holder = @([pscustomobject]@{ Marker = $marker; Since = '2026-11-15T09:00:00Z' })
-    $maxIdle = 0; $w = $null; $n = 0
+    $maxIdle = 0; $w = $null; $n = 0; $maxNoCall = 0
     for ($m = 9 * 60; $m -le 20 * 60 + 30; $m += 5) {
         if ($m -gt 11 * 60 + 25 -and $m -lt 15 * 60 + 35) { continue }   # сон: вимірів нема
         if ($m -lt 9 * 60 + 70) { $s = [pscustomobject]@{ Percent = 0; OwnerPid = 100; CallAgeMin = 200 } }   # підготовка Codex, 69 хв без викликів
         else { $n++; $s = [pscustomobject]@{ Percent = $(if ($n % 4 -eq 0) { 0 } else { 75 }); OwnerPid = 200 + [int][Math]::Floor($n / 4); CallAgeMin = 3 } }   # кожен четвертий вимір — перезавантаження моделі
         $w = Update-GpuWatch $holder $s $send "$tmp/a2/state/gpu-watch.json" $day.AddMinutes($m) { param($f, $t) Get-SleepOverlap $f $t }
-        $maxIdle = [Math]::Max($maxIdle, $w.IdleMinutes)
+        $maxIdle = [Math]::Max($maxIdle, $w.IdleMinutes); $maxNoCall = [Math]::Max($maxNoCall, $w.NoCallMinutes)
     }
     Check "а2 справний прогін зі сном і чергуванням моделей — рядка нема (найдовше без роботи $maxIdle хв, PID ×$($w.PidChanges), сон $($w.SleepMinutes) хв)" (@(Read-Box).Count -eq 0 -and $maxIdle -lt 90 -and $w.PidChanges -gt 15 -and $w.SleepMinutes -eq 239)
     Check "а2 хвилини замка в #1856 — без сну: $($w.LockMinutes)" ($w.LockMinutes -eq 451)
+    Check "а2 справний прогін не закривається: найдовше без chat-запитів $maxNoCall хв неспання (підготовка 65) < 90, вироку нема" ($maxNoCall -eq 65 -and -not (Test-Path "$tmp/lanes/gpu-stall.json"))
 }
 
 # --- (а3) знімки 0 %, а виклики моделі йдуть (за журналом LM Studio) — рядка нема; журнала нема — не виміряно, без тривоги ------------
@@ -129,12 +132,34 @@ Scenario 'а6 журнал LM Studio' {
     . $newEnv 'a6'
     $root = Join-Path $tmp 'lms-logs'; $sub = Join-Path $root '2026-11'
     [void][IO.Directory]::CreateDirectory($sub)
-    [IO.File]::WriteAllText("$sub/старий.log", 'a', $utf); [IO.File]::WriteAllText("$sub/свіжий.log", 'b', $utf)
-    [IO.File]::SetLastWriteTimeUtc("$sub/старий.log", [datetime]::UtcNow.AddMinutes(-120)); [IO.File]::SetLastWriteTimeUtc("$sub/свіжий.log", [datetime]::UtcNow.AddMinutes(-4))
-    $age = Get-LmsCallAge $root
-    Check "а6 час найновішого файла журналу: $age хв (очікується 3–5)" ($age -ge 3 -and $age -le 5)
+    $now = [datetime]::UtcNow
+    # Рядок журналу — місцевий час, як пише LM Studio.
+    $row = { param([double]$Ago, [string]$Req) '[{0}][DEBUG] Received request: {1}' -f $now.AddMinutes(-$Ago).ToLocalTime().ToString('yyyy-MM-dd HH:mm:ss'), $Req }
+    $chat = 'POST to /v1/chat/completions with body {'
+    $get = 'GET to /api/v1/models'
+    # 18.11: останній chat-запит 05:15:06Z (тут 480 хв тому), далі лише GET, unload і load; свіжий GET — 4 хв тому.
+    [IO.File]::WriteAllText("$sub/старий.log", ((& $row 900 $chat), (& $row 890 $get)) -join "`n", $utf)
+    [IO.File]::WriteAllText("$sub/свіжий.log", (@((& $row 600 $chat), (& $row 480 $chat), '  "model": "mamaylm"', '}', (& $row 480 'POST to /api/v1/models/unload with body {'),
+        (& $row 300 'POST to /api/v1/models/load with body {'), (& $row 120 $get), (& $row 4 $get), (& $row 3 'POST to /v1/messages/count_tokens with body {')) -join "`n") + "`n", $utf)
+    [IO.File]::SetLastWriteTimeUtc("$sub/старий.log", $now.AddMinutes(-890)); [IO.File]::SetLastWriteTimeUtc("$sub/свіжий.log", $now.AddMinutes(-3))
+    $age = Get-LmsCallAge $root $null $now
+    Check "а6 ДО: час файла — 3 хв (GET свіжий); ПІСЛЯ: вік за останнім chat-запитом — $age хв (очікується 480)" ($age -eq 480)
     $src = (Get-Command Get-LmsCallAge).ScriptBlock.ToString()
-    Check 'а6 час береться з самого файла ([IO.File]::GetLastWriteTimeUtc), а не з запису каталогу (елемент переліку мав відставання 32 хв)' ($src -cmatch 'GetLastWriteTimeUtc\(\$f\.FullName\)' -and $src -cnotmatch '\$f\.LastWriteTimeUtc|Sort-Object LastWriteTimeUtc')
+    Check 'а6 час файла береться з самого файла ([IO.File]::GetLastWriteTimeUtc), а не з запису каталогу (елемент переліку мав відставання 32 хв)' ($src -cmatch 'GetLastWriteTimeUtc\(\$f\.FullName\)' -and $src -cnotmatch '\$f\.LastWriteTimeUtc|Sort-Object LastWriteTimeUtc')
+    # Журнал без chat-запиту від початку замка: вік — від замка, давніший журнал не читається.
+    [IO.File]::WriteAllText("$sub/свіжий.log", ((& $row 120 $get), (& $row 4 $get)) -join "`n", $utf)
+    [IO.File]::SetLastWriteTimeUtc("$sub/свіжий.log", $now.AddMinutes(-4))
+    $age2 = Get-LmsCallAge $root $now.AddMinutes(-200) $now
+    Check "а6 за замок (200 хв) лише GET — вік від початку замка: $age2 хв" ($age2 -eq 200)
+    Check 'а6 без замка — chat-запит у давнішому журналі знаходиться (900 хв)' ((Get-LmsCallAge $root $null $now) -eq 900)
+    # Запит на стику шматків читання (1 МіБ з кінця): рядок, розрізаний читанням, складається з обох шматків.
+    $big = Join-Path $tmp 'lms-big'; [void][IO.Directory]::CreateDirectory("$big/2026-11")
+    $hit = & $row 700 $chat
+    $tail = ((& $row 10 $get) + "`n")
+    $fill = $tail * [int][Math]::Ceiling((1MB - $hit.Length / 2) / $tail.Length)
+    $fill = $fill.Substring($fill.Length - [int](1MB - [Math]::Floor($hit.Length / 2)))
+    [IO.File]::WriteAllText("$big/2026-11/a.log", ((& $row 800 $get) + "`n" + $hit + "`n" + $fill), $utf)
+    Check 'а6 рядок chat-запиту на стику шматків по 1 МіБ знаходиться (700 хв)' ((Get-LmsCallAge $big $null $now) -eq 700)
     Check 'а6 теки нема чи в ній жодного журналу — -1 (не виміряно)' ((Get-LmsCallAge (Join-Path $tmp 'нема')) -eq -1 -and (Get-LmsCallAge $sub.Replace('2026-11', 'порожня')) -eq -1)
 }
 
@@ -182,7 +207,7 @@ Scenario 'г стан' {
     $holder = @([pscustomobject]@{ Marker = $marker; Since = (Get-UtcStamp $now.AddMinutes(-700)) })
     $lines = @(Get-GpuStateLines @('codex-1') $holder)
     $row = @($lines | Where-Object { $_ -like '- замок тримає *' })
-    Check "г рядок у GPU-розділі: $($row -join ' | ')" ($row.Count -eq 1 -and $row[0] -cmatch ('^- замок тримає ' + [regex]::Escape($marker) + ' 5[7-8][0-9] хв \(без сну; сон 120 хв\); карта без роботи 10[0-1] хв; PID сервера змінювався 4 разів; виклики моделі: останній 150 хв тому$'))
+    Check "г рядок у GPU-розділі: $($row -join ' | ')" ($row.Count -eq 1 -and $row[0] -cmatch ('^- замок тримає ' + [regex]::Escape($marker) + ' 5[7-8][0-9] хв \(без сну; сон 120 хв\); карта без роботи 10[0-1] хв; PID сервера змінювався 4 разів; виклики моделі: останній chat-запит 150 хв тому; без chat-запитів за замок [3-4] хв неспання$'))
     Check 'г і рядок диспетчерові надіслано раз' (@(Read-Box | Where-Object { $_ -cmatch 'GPU_IDLE codex/Е1-нічний-живий-20261115 ЗАМОК 5[7-8][0-9] СОН 120 БЕЗ_РОБОТИ 10[0-1] PID_ЗМІН 4$' }).Count -eq 1)
     # Журнал LM Studio не читається: без тривоги, в #1856 — «не виміряно».
     . $newEnv 'd2'
@@ -290,6 +315,139 @@ Scenario 'д наглядова' {
     function Get-HealthLines { @() }
     $body = Get-StatusBody
     Check 'д тіло стану (#1856) містить рядок «наглядова: …»' ($body -cmatch '(?m)^наглядова: ')
+}
+
+
+# --- (з) 18.11: стенд не звертається до моделі, а замок тримається; світло зникло й ноутбук спав — вирок на 90-й хв неспання ---------
+Scenario 'з завислість стенда' {
+    . $newEnv 'zv'
+    $PublishDir = "$tmp/pub-zv"; [void][IO.Directory]::CreateDirectory($PublishDir)
+    # Сон без світла 06:05–11:55 UTC (Modern Standby); публікатор прочитав журнал Windows до кінця дня.
+    [IO.File]::WriteAllText("$PublishDir/sleep-events.json", (@{ read_utc = '2026-11-18T23:00:00.0000000+00:00'; events = @(
+        @{ key = 's'; from = '2026-11-18T06:05:00.0000000+00:00'; to = '2026-11-18T11:55:00.0000000+00:00'; source = 'Kernel-Power/506-507'; announced = $true }) } | ConvertTo-Json -Depth 5 -Compress), $utf)
+    $d18 = [datetime]::SpecifyKind([datetime]'2026-11-18T00:00:00', [DateTimeKind]::Utc)
+    $mk = 'gemini-queue/автоживий-04911e686195fc47873b70a231d6b70876f83af2/gpt-6.1-sol-high/1/p2-gpu'
+    $holder = @([pscustomobject]@{ Marker = $mk; Since = '2026-11-17T18:46:59Z' })
+    $send = { param($l) [bool](Add-Line $l) }
+    $verdict = "$tmp/lanes/gpu-stall.json"
+    $tk = { param([int]$Min, [int]$Call, [bool]$Battery = $false)
+        Update-GpuWatch $holder ([pscustomobject]@{ Percent = 0; OwnerPid = 0; CallAgeMin = $Call; OnBattery = $Battery }) $send "$tmp/zv/state/gpu-watch.json" $d18.AddMinutes($Min) { param($f, $t) Get-SleepOverlap $f $t } { Get-SleepRead } }
+    # До обриву стенд кликав модель (останній chat-запит щойно); 05:15 — обрив, далі лише GET.
+    for ($m = 4 * 60; $m -le 5 * 60 + 15; $m += 5) { $w = & $tk $m 0 }
+    Check "з до обриву виклики йдуть — вироку нема (без викликів $($w.NoCallMinutes) хв)" (-not $w.Stop -and $w.NoCallMinutes -eq 0 -and -not (Test-Path $verdict))
+    for ($m = 5 * 60 + 20; $m -le 6 * 60; $m += 5) { $w = & $tk $m ($m - (5 * 60 + 15)) }
+    $w = & $tk (6 * 60 + 2) 47 $true   # світла нема: такт на батареї проміжку не лічить
+    $w = & $tk (11 * 60 + 55) 400       # світло повернулось; сон 06:05–11:55 не лічиться
+    Check "з після паузи світла й сну: без викликів $($w.NoCallMinutes) хв неспання (45 до паузи + 3 до сну), карта без роботи $($w.IdleMinutes) хв" ($w.NoCallMinutes -eq 48 -and -not $w.Stop)
+    for ($m = 12 * 60; $m -le 12 * 60 + 35; $m += 5) { $w = & $tk $m ($m - (5 * 60 + 15)) }
+    Check "з ДО: 12:35 — 88 хв неспання без викликів, вироку ще нема; рядка GPU_IDLE нема (ряд карти після сну $($w.IdleMinutes) хв < 90)" ($w.NoCallMinutes -eq 88 -and -not $w.Stop -and -not (Test-Path $verdict) -and @(Read-Box).Count -eq 0)
+    $w = & $tk (12 * 60 + 40) (12 * 60 + 40 - (5 * 60 + 15))
+    $v = Get-GpuStallVerdict $verdict
+    Check "з ПІСЛЯ: 12:40 — 93 хв неспання без chat-запитів, вирок для планувальника смуги: $($v.Marker) $($v.Since) $($v.NoCall)" ($w.Stop -and $null -ne $v -and $v.Marker -ceq $mk -and $v.Since -ceq '2026-11-17T18:46:59Z' -and $v.NoCall -eq 93)
+    $w = & $tk (12 * 60 + 45) 2
+    Check 'з chat-запит повернувся — вирок знято' (-not $w.Stop -and -not (Test-Path $verdict) -and $w.NoCallMinutes -le 2)
+    [IO.File]::WriteAllText($verdict, '{"marker":"gemini-queue/x; rm/m/1","since":"2026-11-17T18:46:59Z","nocall":99}', $utf)
+    Check 'з вирок не за форматом не читається' ($null -eq (Get-GpuStallVerdict $verdict))
+    [void](Update-GpuWatch @() ([pscustomobject]@{ Percent = 0; OwnerPid = 0; CallAgeMin = 500 }) $send "$tmp/zv/state/gpu-watch.json" $d18.AddMinutes(13 * 60))
+    Check 'з замка нема — вироку нема' (-not (Test-Path $verdict))
+    $w = & $tk (13 * 60 + 5) -1
+    Check 'з журнал LM Studio не читається — лічба стоїть, вироку нема' (-not $w.Stop -and -not (Test-Path $verdict))
+}
+
+# --- (і) подія Codex у heartbeat і #1856 --------------------------------------------------------------------------------------------
+Scenario 'і подія Codex' {
+    . $newEnv 'ev'
+    $ev = Join-Path $tmp 'codex.events.tsv'
+    $t1 = [datetime]::SpecifyKind([datetime]'2026-11-18T05:17:20', [DateTimeKind]::Utc)
+    [IO.File]::WriteAllText($ev, ($t1.AddSeconds(-5).ToLocalTime().ToString('s') + "`tturn.started`n" + $t1.ToLocalTime().ToString('s') + "`titem.started`n"), $utf)
+    $e = Get-LastCodexEvent $ev
+    Check "і остання подія codex.events.tsv (місцевий час) — UTC і тип: $($e.Utc) $($e.Type)" ($null -ne $e -and $e.Utc -ceq '2026-11-18T05:17:20Z' -and $e.Type -ceq 'item.started')
+    [IO.File]::AppendAllText($ev, ($t1.ToLocalTime().ToString('s') + "`tрядок; rm`n"), $utf)
+    Check 'і тип поза безпечним набором — «?»' ((Get-LastCodexEvent $ev).Type -ceq '?')
+    Check 'і файла нема — $null' ($null -eq (Get-LastCodexEvent (Join-Path $tmp 'нема.tsv')))
+    $mk = 'gemini-queue/автоживий-04911e686195fc47873b70a231d6b70876f83af2/gpt-6.1-sol-high/1/p2-gpu'
+    $hb = @{ read_utc = (Get-UtcStamp (Get-Date)); time = (Get-Date).ToString('s'); isolation = 'OK'; lanes = @(
+        @{ lane = 'codex'; n = 10; busy = @(@{ slot = 'codex-1'; marker = $mk; model = 'gpt-6.1-sol-high'; since = '2026-11-17T18:46:59Z'; gpu = $true; ev_utc = '2026-11-18T05:17:20Z'; ev = 'item.started' },
+            @{ slot = 'codex-2'; marker = 'gemini-queue/інший/gpt-6.1-sol-high/1'; model = 'gpt-6.1-sol-high'; since = '2026-11-18T05:00:00Z'; gpu = $false; ev_utc = 'вчора'; ev = 'x y' }) },
+        @{ lane = 'agy'; n = 54; busy = @() }) }
+    [IO.File]::WriteAllText("$tmp/gout/heartbeat.json", ($hb | ConvertTo-Json -Depth 6 -Compress), $utf)
+    $g = Read-GeminiBeat
+    $b = @(@($g.Lanes | Where-Object { $_.Lane -eq 'codex' })[0].Busy)
+    Check 'і heartbeat: подія слота прочитана, чужий формат відкинуто' ($b.Count -eq 2 -and $b[0].EvUtc -ceq '2026-11-18T05:17:20Z' -and $b[0].Ev -ceq 'item.started' -and $b[1].EvUtc -ceq '' -and $b[1].Ev -ceq '')
+    $rows = @(Get-EngineEventLines $g.Lanes)
+    Check "і #1856: рядок останньої події Codex: $($rows -join ' | ')" ($rows.Count -eq 2 -and $rows[0] -ceq '' -and $rows[1] -cmatch ('^- остання подія Codex ' + [regex]::Escape($mk) + ': item\.started о 2026-11-18T05:17:20Z \([0-9]+ хв тому\)$'))
+    Check 'і без подій — рядків нема' (@(Get-EngineEventLines @([pscustomobject]@{ Lane = 'codex'; N = 1; Busy = @() })).Count -eq 0)
+}
+
+# --- (и) gemini-run: вирок сторожа й ЗНЯТО закривають GPU-наряд кінцем із записаним (бандл), а не CANCELLED без нічого ------------
+Scenario 'и закриття GPU-наряду із записаним' {
+    $g = Join-Path $tmp 'gem'
+    $clone = "$g/clone"
+    [void][IO.Directory]::CreateDirectory($clone)
+    . (Join-Path $SourceDir 'gemini_run.ps1') -RepoDir $clone -RunsDir "$g/runs" -OutDir "$g/out" -LaneDir "$g/lanes" -UpdateRoot "$g/update"
+    $script:StateDir = "$RunsDir/state"; $script:SlotDir = "$RunsDir/slots"; $script:NoHooks = "$g/no-hooks"
+    foreach ($d in @($RunsDir, $script:StateDir, $script:SlotDir, $OutDir, $LaneDir, "$RunsDir/w")) { [void][IO.Directory]::CreateDirectory($d) }
+    [void](Invoke-Git @('init', '-q', '-b', 'main', $clone) -Dir $g)
+    [void](Invoke-Git @('config', 'user.email', 't@t')); [void](Invoke-Git @('config', 'user.name', 't'))
+    [IO.File]::WriteAllText("$clone/f.txt", 'x', $utf)
+    [void](Invoke-Git @('add', 'f.txt')); [void](Invoke-Git @('commit', '-q', '-m', 'base'))
+    $base = (Invoke-Git @('rev-parse', 'HEAD')).Out.Trim()
+    $since = '2026-11-17T18:46:59Z'
+    # Прогін GPU-наряду: копія задачі на гілці наряду, коміт агента (ПЛАН.json) і записані сцени без коміту (запускач плану
+    # комітить лише після всіх сцен), процес наряду тримає замок слота.
+    $run = {
+        param([string]$Slug, [string]$Id, [string]$Slot)
+        $repo = "$RunsDir/w/$Id/repo"
+        [void](Invoke-Git @('worktree', 'add', '-q', '-b', "gemini/$Slug", $repo, $base))
+        $dir = "$repo/аудит/проби/$Slug"
+        [void][IO.Directory]::CreateDirectory($dir)
+        [IO.File]::WriteAllText("$dir/ПЛАН.json", '{}', $utf)
+        [void](Invoke-Git @('add', '-A') -Dir $repo); [void](Invoke-Git @('commit', '-q', '-m', 'план') -Dir $repo)
+        foreach ($k in 1..3) { [void][IO.Directory]::CreateDirectory("$dir/сцена-$k"); [IO.File]::WriteAllText("$dir/сцена-$k/результат.json", "{`"k`":$k}", $utf) }
+        [IO.File]::WriteAllText("$repo/поза-теки.txt", 'x', $utf)
+        $M = [pscustomobject]@{ Name = "gemini-queue/$Slug/gpt-6.1-sol-high/1/p2-gpu"; Sha = $base; Slug = $Slug; Model = 'gpt-6.1-sol-high'; N = '1'; Cond = 'p2-gpu'; Gpu = $true; Lane = 'codex'; Reason = '' }
+        $st = [ordered]@{ v = 1; id = $Id; slug = $Slug; model = $M.Model; n = 1; marker = $base; cond = 'p2-gpu'; slot = $Slot; start = $base; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0
+            engine_answer_utc = ''; minutes = 0; bundle = ''; engine = 'codex'; retakes = 0; started_utc = '2026-11-17T18:46:59.0000000Z'; ended_utc = ''; sleep_parent = '' }
+        Write-FileAtomic (Get-StatePath (Get-MarkerKey $M)) ('STARTED ' + ($st | ConvertTo-Json -Compress))
+        $lock = "$($script:SlotDir)/$Slot.lock"
+        $p = Start-Process powershell.exe -ArgumentList @('-NoProfile', '-Command', "`$f = [IO.File]::Open('$lock', 'OpenOrCreate', 'ReadWrite', 'None'); Start-Sleep 600") -PassThru -WindowStyle Hidden
+        for ($i = 0; $i -lt 100 -and (Test-LockFree $lock); $i++) { Start-Sleep -Milliseconds 200 }
+        Write-FileAtomic "$($script:SlotDir)/$Slot.json" (([ordered]@{ slot = $Slot; lane = 'codex'; marker = $M.Name; slug = $Slug; model = $M.Model; since = $since; gpu = $true; prio = 'p2'; pid = $p.Id; id = $Id; copy = "$RunsDir/w/$Id" }) | ConvertTo-Json -Compress)
+        [pscustomobject]@{ M = $M; Proc = $p; Repo = $repo }
+    }
+    $committed = { param([string]$Slug) @(((Invoke-Git @('show', '--name-only', '--format=', "gemini/$Slug")).Out -split "`n") | Where-Object { $_.Trim() }) }
+    $result = { param([string]$Id) [IO.File]::ReadAllText("$OutDir/$Id.json", $utf) | ConvertFrom-Json }
+    $workers = New-Object System.Collections.ArrayList
+
+    # Вирок сторожа (Update-GpuWatch claude-run) для GPU-наряду цього планувальника.
+    $slugA = 'автоживий-' + ('a' * 40); $idA = '20261117-184659-0000000000a1'
+    $a = & $run $slugA $idA 'codex-1'
+    Write-FileAtomic "$LaneDir/gpu-stall.json" (([ordered]@{ marker = $a.M.Name; since = '2026-11-17T18:00:00Z'; nocall = 93; at = '2026-11-18T12:40:00Z' }) | ConvertTo-Json -Compress)
+    $null = Stop-GpuStalledRuns $workers
+    Check 'и вирок попереднього прогону тієї самої позначки (інший початок замка) нинішнього не зупиняє' (-not $a.Proc.HasExited -and ([IO.File]::ReadAllText((Get-StatePath (Get-MarkerKey $a.M)), $utf)).StartsWith('STARTED '))
+    Write-FileAtomic "$LaneDir/gpu-stall.json" (([ordered]@{ marker = $a.M.Name; since = $since; nocall = 93; at = '2026-11-18T12:40:00Z' }) | ConvertTo-Json -Compress)
+    $null = Stop-GpuStalledRuns $workers
+    $ra = & $result $idA
+    $files = & $committed $slugA
+    Check "и вирок: процес наряду зупинено, кінець STALL із бандлом (комітів $($ra.ahead)), причина «$($ra.reason)»" ($a.Proc.HasExited -and $ra.code -ceq 'STALL' -and $ra.bundle -ceq "$idA.bundle" -and [int]$ra.ahead -eq 2 -and (Test-Path "$OutDir/$idA.bundle") -and ([string]$ra.reason).StartsWith('GPU_IDLE: стенд без chat-запитів до моделі 93 хв'))
+    Check "и записане — коміт обгортки лише з теки наряду: $($files -join ', ')" ($files.Count -eq 3 -and @($files | Where-Object { $_ -cnotlike "аудит/проби/$slugA/сцена-*/результат.json" }).Count -eq 0 -and (Invoke-Git @('log', '-1', '--format=%s', "gemini/$slugA")).Out.Trim() -ceq 'ЗУПИНЕНО STALL: записане до зупинки прогону (обгортка)')
+    Check 'и стан позначки — DONE <id> STALL, копію задачі прибрано' (([IO.File]::ReadAllText((Get-StatePath (Get-MarkerKey $a.M)), $utf)).Trim() -ceq "DONE $idA STALL" -and -not (Test-Path "$RunsDir/w/$idA"))
+
+    # ЗНЯТО під час прогону GPU-наряду: кінець CANCELLED несе записане; позначка — голова «ЗНЯТО…», як її бачить публікатор.
+    $slugB = 'автоживий-' + ('b' * 40); $idB = '20261117-184659-0000000000b2'
+    $b = & $run $slugB $idB 'codex-2'
+    $zn = (Invoke-Git @('commit-tree', "$base^{tree}", '-p', $base, '-m', 'ЗНЯТО: тест')).Out.Trim()
+    $mb = $b.M | Select-Object *
+    $mb.Sha = $zn; $mb.Reason = 'ЗНЯТО: тест'
+    Close-CancelledMarker $mb $workers
+    $rb = & $result $idB
+    Check "и ДО: ЗНЯТО давало CANCELLED без бандла; ПІСЛЯ: CANCELLED із бандлом (комітів $($rb.ahead)), позначка — голова ЗНЯТО" ($b.Proc.HasExited -and $rb.code -ceq 'CANCELLED' -and $rb.bundle -ceq "$idB.bundle" -and [int]$rb.ahead -eq 2 -and $rb.marker -ceq $zn -and $rb.reason -ceq 'ЗНЯТО: тест')
+    Check 'и стан знятої позначки — DONE <id прогону> CANCELLED; інших результатів цієї позначки нема' (([IO.File]::ReadAllText((Get-StatePath (Get-MarkerKey $mb)), $utf)).Trim() -ceq "DONE $idB CANCELLED" -and @(Get-ChildItem "$OutDir/*.json").Count -eq 2)
+    Check 'и рядки STALL_PUBLISHED і CANCELLED_PUBLISHED — за шаблоном публікатора' (& {
+        . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$g/pubw" -OutboxDir "$g/pubo"
+        (Test-OutboxLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugA STALL_PUBLISHED") -eq '' -and (Test-OutboxLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugB CANCELLED_PUBLISHED") -eq '' -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugB CANCELLED_PUBLISHED")
+    })
+    foreach ($p in @($a.Proc, $b.Proc)) { if (-not $p.HasExited) { $p.Kill() } }
 }
 
 Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue

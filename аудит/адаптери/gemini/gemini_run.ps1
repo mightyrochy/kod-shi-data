@@ -1539,12 +1539,91 @@ function Enter-StartQuotaWait($M, $Q, $State) {
 
 # Позначку знято комітом «ЗНЯТО…» (ConvertTo-Marker): її прогін, що вже йде, зупиняється, а сама позначка закривається
 # кінцевим CANCELLED з причиною (тема коміту) у результаті; публікатор дає рядок і знімає гілку позначки з черги.
+# Прогін GPU-наряду, що вже почав гілку, несе цей кінець сам — із записаним (Close-StoppedRun): 18.11 зняття автоживого
+# 04911e68 дало CANCELLED без бандла, і ~42 записані сцени пропали разом із копією задачі.
 function Close-CancelledMarker($M, $Workers) {
-    Stop-CancelledRuns $M $Workers
+    $stopped = @(Stop-CancelledRuns $M $Workers)
+    if ($M.Gpu) {
+        foreach ($r in $stopped) {
+            if (Close-StoppedRun $r 'CANCELLED' $M.Reason $M.Sha (Get-StatePath (Get-MarkerKey $M))) {
+                Write-Log "позначка $($M.Name): ЗНЯТО — CANCELLED із записаним прогону $($r.Id)"
+                return
+            }
+        }
+    }
     $status = [ordered]@{ v = 1; id = (New-RunId (Get-MarkerKey $M)); slug = $M.Slug; model = $M.Model; n = [int]$M.N; marker = $M.Sha; cond = $M.Cond; slot = ''
         start = ''; head = ''; code = 'CANCELLED'; report = 'NONE'; ahead = 0; turns = 0; minutes = 0; bundle = ''; engine = $M.Lane; reason = (ConvertTo-NoteText $M.Reason) }
     Write-Log "позначка $($M.Name): ЗНЯТО — CANCELLED"
     Complete-Status $status (Get-StatePath (Get-MarkerKey $M)) '' ([datetime]::MinValue)
+}
+
+function Save-RunRecord([string]$Repo, [string]$Slug, [string]$Code) {
+    <# Записане зупиненим прогоном у `аудит/проби/<наряд>/`, ще не закомічене (запускач плану автоживого комітить лише після
+    всіх сцен), — один коміт обгортки на гілці наряду, щоб кінець ніс його бандлом. Лише ця тека й лише коли копія стоїть на
+    гілці наряду; повертає число закомічених файлів (0 — нічого чи збій, причина в журналі). #>
+    $dir = "аудит/проби/$Slug"
+    if (-not (Test-Path -LiteralPath (Join-Path $Repo '.git')) -or -not (Test-Path -LiteralPath (Join-Path $Repo $dir))) { return 0 }
+    $head = (Invoke-Git @('symbolic-ref', '-q', 'HEAD') -AllowFail -Dir $Repo).Out.Trim()
+    if ($head -cne "refs/heads/gemini/$Slug") { Write-Log "записане ${Slug}: копія не на гілці наряду ($head) — не збережено"; return 0 }
+    # Git, зупинений разом із деревом наряду, лишає замок індексу; живих процесів наряду вже нема.
+    $gitDir = (Invoke-Git @('rev-parse', '--absolute-git-dir') -AllowFail -Dir $Repo).Out.Trim()
+    if ($gitDir) { Remove-Item -LiteralPath (Join-Path $gitDir 'index.lock') -Force -ErrorAction SilentlyContinue }
+    $add = Invoke-Git @('add', '-A', '--sparse', '--', $dir) -AllowFail -Dir $Repo
+    if ($add.Code -ne 0) { $add = Invoke-Git @('add', '-A', '--', $dir) -AllowFail -Dir $Repo }
+    if ($add.Code -ne 0) { Write-Log "записане ${Slug}: git add -> $($add.Code): $($add.Err.Trim())"; return 0 }
+    $n = @(((Invoke-Git @('diff', '--cached', '--name-only', '-z', '--', $dir) -AllowFail -Dir $Repo).Out -split "`0") | Where-Object { $_ }).Count
+    if ($n -eq 0) { return 0 }
+    $c = Invoke-Git @('commit', '-q', '-m', "ЗУПИНЕНО ${Code}: записане до зупинки прогону (обгортка)", '--', $dir) -AllowFail -Dir $Repo
+    if ($c.Code -ne 0) { Write-Log "записане ${Slug}: git commit -> $($c.Code): $($c.Err.Trim())"; return 0 }
+    Write-Log "записане ${Slug}: закомічено файлів $n ($Code)"
+    $n
+}
+
+function Close-StoppedRun($Run, [string]$Code, [string]$Reason, [string]$MarkerSha = '', [string]$StatePath = '') {
+    <# Прогін GPU-наряду, який зупинив планувальник (ЗНЯТО чи вирок сторожа GPU), закривається кінцем із бандлом, як
+    перерваний (Complete-Status): незакомічене в `аудит/проби/<наряд>/` копії — комітом обгортки (Save-RunRecord), гілка
+    наряду — бандлом, і публікатор дає `<код>_PUBLISHED`. $MarkerSha і $StatePath — позначка й стан, які кінець закриває
+    (ЗНЯТО — голова «ЗНЯТО…»: публікатор звіряє результат із позначкою на origin). Прогін без початку гілки — $false. #>
+    $j = $Run.Json
+    if (-not [string](Get-JsonProp $j 'start')) { return $false }
+    $status = [ordered]@{}
+    foreach ($p in $j.PSObject.Properties) { $status[$p.Name] = $p.Value }
+    $status.code = $Code
+    $status.reason = ConvertTo-NoteText $Reason
+    if ($MarkerSha) { $status.marker = $MarkerSha }
+    $copy = Join-Path (Join-Path $RunsDir 'w') ([string]$Run.Id)
+    [void](Save-RunRecord (Join-Path $copy 'repo') ([string]$status.slug) $Code)
+    $t0 = [datetime]::MinValue
+    $s = Get-JsonProp $j 'started_utc'
+    if ($s -is [datetime]) { $t0 = $s.ToLocalTime() }
+    else {
+        $parsed = [datetime]::MinValue
+        if ([datetime]::TryParse([string]$s, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind, [ref]$parsed)) { $t0 = $parsed.ToLocalTime() }
+    }
+    Complete-Status $status $(if ($StatePath) { $StatePath } else { [string]$Run.StatePath }) '' $t0
+    [void](Remove-TaskCopy $copy @('--branches', '--remotes'))
+    $true
+}
+
+function Stop-GpuStalledRuns($Workers) {
+    <# Вирок сторожа GPU (Get-GpuStallVerdict): GPU-наряд цього планувальника, чий стенд не звертався до моделі довше за
+    gpu_stall_minutes неспання, зупиняється й закривається кінцем STALL із записаним (Close-StoppedRun), а не тримає замок
+    до «ЗНЯТО» диспетчера. Звіряються позначка й початок замка (`since` слота): повтор тієї самої позначки вирок попереднього
+    прогону не зупиняє. Нічого не повертає. #>
+    $v = Get-GpuStallVerdict
+    if ($null -eq $v) { return }
+    $own = @(foreach ($ln in $script:Lanes) { foreach ($s in @(Read-SlotInfo $ln)) { if ([string]$s.marker -ceq $v.Marker -and [string]$s.since -ceq $v.Since -and [bool]$s.gpu) { $s } } })
+    if ($own.Count -eq 0) { return }
+    $why = "GPU_IDLE: стенд без chat-запитів до моделі $($v.NoCall) хв неспання (gpu_stall_minutes)"
+    Write-Log "позначка $($v.Marker): $why — закриваю STALL"
+    foreach ($r in @(Stop-CancelledRuns ([pscustomobject]@{ Name = $v.Marker }) $Workers 'STALL')) {
+        if (Close-StoppedRun $r 'STALL' $why) { continue }
+        # Прогін до початку гілки: кінець без бандла, але з результатом — інакше позначка мовчки стояла б DONE.
+        $st = [ordered]@{}
+        foreach ($p in $r.Json.PSObject.Properties) { $st[$p.Name] = $p.Value }
+        $st.code = 'STALL'; $st.reason = ConvertTo-NoteText $why
+        Complete-Status $st ([string]$r.StatePath) '' ([datetime]::MinValue)
+    }
 }
 
 # Один прохід: позначки смуг codex і agy за порядком черги — у вільні слоти, кожна окремим процесом. Повертає число
@@ -1554,6 +1633,7 @@ function Start-Markers($Workers) {
     [void](Repair-GpuModels)
     $started = 0
     [void](Remove-OrphanWaits)
+    $null = Stop-GpuStalledRuns $Workers
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $all = @(Get-Markers | Where-Object { -not $_.Slug.StartsWith('Е1-нічний-живий-') }) + @(Get-NightlyMarker)
     # Позначка з назвою не за форматом — рядок диспетчерові раз на позначку: 31.10 `ВИМКНИ-НОУТБУК/cc-off/31102` (спроба з
@@ -1675,7 +1755,15 @@ function Write-Heartbeat([string]$Iso) {
         $lanes = @(); $first = $null
         foreach ($ln in $script:Lanes) {
             $busy = @(foreach ($s in @(Read-SlotInfo $ln)) {
-                [ordered]@{ slot = [string]$s.slot; marker = [string]$s.marker; model = [string]$s.model; since = [string]$s.since; gpu = [bool]$s.gpu }
+                $b = [ordered]@{ slot = [string]$s.slot; marker = [string]$s.marker; model = [string]$s.model; since = [string]$s.since; gpu = [bool]$s.gpu }
+                # Остання подія Codex прогону: поріг завислості (codex_stall_minutes) лічить саме їх, а тека прогону закрита
+                # для інших користувачів — без цього поля не видно, чи рушій пише події, поки йде довга команда.
+                $rid = [string](Get-JsonProp $s 'id')
+                if ($rid -cmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}$') {
+                    $e = Get-LastCodexEvent (Join-Path (Join-Path $RunsDir $rid) 'codex.events.tsv')
+                    if ($null -ne $e) { $b.ev_utc = $e.Utc; $b.ev = $e.Type }
+                }
+                $b
             })
             if ($null -eq $first -and $busy.Count -gt 0) { $first = $busy[0] }
             $lanes += [ordered]@{ lane = $ln; n = [int]$script:Limits.slots[$ln]; busy = $busy }
@@ -1726,7 +1814,7 @@ function Invoke-Worker {
             $gpu = $true
         }
         Write-FileAtomic $info (([ordered]@{ slot = $job.slot; lane = $job.lane; marker = $job.name; slug = $job.slug; model = $job.model
-                    since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID
+                    since = (Get-UtcStamp (Get-Date)); gpu = [bool]$job.gpu; prio = $job.prio; pid = $PID; id = [string]$job.id
                     copy = (Join-Path (Join-Path $RunsDir 'w') ([string]$job.id)) }) | ConvertTo-Json -Compress)
         $M = [pscustomobject]@{ Ref = $job.ref; Name = $job.name; Sha = $job.sha; Time = [long]$job.time; Slug = $job.slug; Model = $job.model
             N = [string]$job.n; Cond = [string]$job.cond; Prio = $job.prio; Deadline = $job.deadline; Gpu = [bool]$job.gpu; Lane = $job.lane }

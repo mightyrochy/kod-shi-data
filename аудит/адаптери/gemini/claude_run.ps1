@@ -422,7 +422,9 @@ function Read-GeminiBeat {
         $busy = @(foreach ($s in @(Get-JsonProp $l 'busy' | Select-Object -First $script:Ceil.slots[1])) {
             $sl = & $get $s 'slot'; $m = & $get $s 'marker'; $md = & $get $s 'model'; $since = & $utc (& $getu $s 'since')
             if (-not (Test-SlotName $sl @($ln)) -or $m -cnotmatch $script:MarkerRx -or $m.Contains('..') -or $md -cnotmatch $script:ModelPattern) { continue }
-            [pscustomobject]@{ Slot = $sl; Marker = $m; Model = $md; Since = $since; Gpu = ((& $get $s 'gpu') -eq 'True') }
+            $ev = & $get $s 'ev'
+            [pscustomobject]@{ Slot = $sl; Marker = $m; Model = $md; Since = $since; Gpu = ((& $get $s 'gpu') -eq 'True')
+                EvUtc = (& $utc (& $getu $s 'ev_utc')); Ev = $(if ($ev -cmatch '^(?:[A-Za-z0-9_./-]{1,60}|\?)$') { $ev } else { '' }) }
         })
         $lanes += [pscustomobject]@{ Lane = $ln; N = [int]$n; Busy = $busy }
     }
@@ -680,21 +682,61 @@ function Get-SupervisorLine([switch]$NoCache) {
 
 # Вимір відеокарти для стану: відповіді про GPU брали запис замка, а не карту. Той самий вимір, що в Get-GpuLoad (nvidia-smi,
 # лічильник процесів Windows), без порога й без впливу на допуск; замок — окремий рядок.
-function Get-LmsCallAge([string]$Root = '') {
-    <# Хвилини від останнього запису в журналах LM Studio (`~\.lmstudio\server-logs\<рік-місяць>\*.log`); -1 — теки нема чи не
-    читається. Файл вибирається переліком, а час береться з самого файла (GetLastWriteTimeUtc): час із запису каталогу
-    (LastWriteTimeUtc елемента переліку) NTFS оновлює із запізненням, поки LM Studio тримає журнал відкритим — 15.11 20:00:19Z
-    при останньому рядку 20:32:18Z. Формат журналу не розбирається. #>
+# Запит генерації в журналі LM Studio: рядок `Received request: POST to <ендпойнт>` чату, completions, messages чи responses.
+# GET /api/v1/models, load і unload теж пишуть у журнал (18.11 GET о 12:06:47Z дав у #1856 «останній 60 хв тому», а останній
+# chat-запит був о 05:15:06Z), тож вони не рахуються.
+$script:LmsCallRx = [regex]'(?m)^\[(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\]\[[A-Z]+\] Received request: POST to /(?:v1/(?:chat/completions|completions|messages|responses)|api/v[01]/(?:chat(?:/completions)?|completions))(?=[ \r\n]|$)'
+
+function Find-LmsCall([string]$Path) {
+    <# Час (UTC) останнього запиту генерації в одному журналі LM Studio чи $null. Файл читається з кінця шматками по 1 МіБ без
+    блокування записувача; час рядка — місцевий час журналу. #>
+    $fs = [IO.File]::Open($Path, [IO.FileMode]::Open, [IO.FileAccess]::Read, ([IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete))
+    try {
+        $end = $fs.Length
+        $carry = New-Object byte[] 0
+        while ($end -gt 0) {
+            $start = [Math]::Max(0L, $end - 1MB)
+            $len = [int]($end - $start)
+            $buf = New-Object byte[] ($len + $carry.Length)
+            [void]$fs.Seek($start, [IO.SeekOrigin]::Begin)
+            $read = 0
+            while ($read -lt $len) { $k = $fs.Read($buf, $read, $len - $read); if ($k -le 0) { break }; $read += $k }
+            [Array]::Copy($carry, 0, $buf, $len, $carry.Length)
+            # Неповний перший рядок шматка (не з початку файла) дочитується з наступним, ранішим шматком.
+            $cut = 0
+            if ($start -gt 0) { $cut = [Array]::IndexOf($buf, [byte]10) + 1; if ($cut -le 0) { $cut = $buf.Length } }
+            $carry = New-Object byte[] $cut
+            [Array]::Copy($buf, 0, $carry, 0, $cut)
+            $m = $script:LmsCallRx.Matches([Text.Encoding]::UTF8.GetString($buf, $cut, $buf.Length - $cut))
+            if ($m.Count) {
+                return [datetime]::ParseExact($m[$m.Count - 1].Groups[1].Value, 'yyyy-MM-dd HH:mm:ss', [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeLocal).ToUniversalTime()
+            }
+            $end = $start
+        }
+        $null
+    } finally { $fs.Dispose() }
+}
+
+function Get-LmsCallAge([string]$Root = '', $Since = $null, $Now = $null) {
+    <# Хвилини від останнього запиту генерації до LM Studio (Find-LmsCall) за журналами `~\.lmstudio\server-logs\<рік-місяць>\*.log`;
+    -1 — теки нема, журнал не читається чи запиту нема в жодному. Журнали — від найсвіжішого; час файла береться з самого файла
+    (GetLastWriteTimeUtc): час із запису каталогу NTFS оновлює із запізненням, поки LM Studio тримає журнал відкритим.
+    $Since (UTC, початок замка): журнал, що востаннє писався раніше, запиту за замок не несе — тоді вік рахується від замка, а
+    давніші журнали не читаються. #>
     try {
         if (-not $Root) { $Root = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.lmstudio\server-logs' }
+        if ($null -eq $Now) { $Now = [datetime]::UtcNow }
         if (-not (Test-Path -LiteralPath $Root)) { return -1 }
-        $newest = $null
-        foreach ($f in @(Get-ChildItem -LiteralPath $Root -Filter '*.log' -File -Recurse -ErrorAction Stop)) {
-            $t = [IO.File]::GetLastWriteTimeUtc($f.FullName)
-            if ($null -eq $newest -or $t -gt $newest) { $newest = $t }
+        $files = @(foreach ($f in @(Get-ChildItem -LiteralPath $Root -Filter '*.log' -File -Recurse -ErrorAction Stop)) {
+                [pscustomobject]@{ Path = $f.FullName; Time = [IO.File]::GetLastWriteTimeUtc($f.FullName) } })
+        if ($files.Count -eq 0) { return -1 }
+        $age = { param([datetime]$t) [int][Math]::Max(0, [Math]::Floor(($Now - $t).TotalMinutes)) }
+        foreach ($f in @($files | Sort-Object -Property Time -Descending)) {
+            if ($null -ne $Since -and $f.Time -lt $Since) { return (& $age $Since) }
+            $t = Find-LmsCall $f.Path
+            if ($null -ne $t) { return (& $age $t) }
         }
-        if ($null -eq $newest) { return -1 }
-        [int][Math]::Max(0, [Math]::Floor(([datetime]::UtcNow - $newest).TotalMinutes))
+        $(if ($null -ne $Since) { & $age $Since } else { -1 })
     } catch { -1 }
 }
 
@@ -733,7 +775,7 @@ function Get-SleepRead {
 
 function Get-GpuStateLines($LockedBy, $Holders = @()) {
     $gpu = Get-GpuTelemetry
-    $watchSample = [pscustomobject]@{ Percent = $(if ($gpu.Error) { -1 } else { $gpu.Percent }); OwnerPid = 0; CallAgeMin = -1 }
+    $watchSample = [pscustomobject]@{ Percent = $(if ($gpu.Error) { -1 } else { $gpu.Percent }); OwnerPid = 0; CallAgeMin = -1; OnBattery = [bool](Test-OnBattery) }
     $at = Get-UtcStamp (Get-Date)
     $lines = @('', '### GPU')
     if ($gpu.Error) { $lines += "- вимір карти (UTC $at): $($gpu.Error) — завантаження, пам'ять і процеси невідомі; замок нижче карти не відображає" }
@@ -761,11 +803,32 @@ function Get-GpuStateLines($LockedBy, $Holders = @()) {
     $lines += "- замок GPU обгортки (запис слотів нарядів, не вимір карти): $(if ($LockedBy.Count) { 'зайнятий — ' + ($LockedBy -join ', ') } else { 'вільний' })"
     # Сторож замка: той самий вимір ряду, що й рядки вище; рядок диспетчерові — раз на ряд бездіяльності (Update-GpuWatch).
     try {
-        if ($Holders.Count) { $watchSample.CallAgeMin = [int](Get-LmsCallAge) }
+        if ($Holders.Count) {
+            $since = $null
+            $hs = [string]@($Holders)[0].Since
+            if ($hs -cmatch $script:UtcRx) { $since = [datetime]::ParseExact($hs, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) }
+            $watchSample.CallAgeMin = [int](Get-LmsCallAge '' $since)
+        }
         $w = Update-GpuWatch $Holders $watchSample { param($l) [bool](Add-Line $l) } '' $null { param($f, $t) Get-SleepOverlap $f $t } { Get-SleepRead }
-        if ($null -ne $w) { $lines += "- замок тримає $($w.Marker) $($w.LockMinutes) хв (без сну; сон $($w.SleepMinutes) хв); карта без роботи $(if ($gpu.Error) { '?' } else { $w.IdleMinutes }) хв; PID сервера змінювався $($w.PidChanges) разів; виклики моделі: $(if ($w.CallAgeMinutes -lt 0) { 'не виміряно (журнал LM Studio не читається)' } else { 'останній ' + $w.CallAgeMinutes + ' хв тому' })" }
+        if ($null -ne $w) {
+            $calls = $(if ($w.CallAgeMinutes -lt 0) { 'не виміряно (журнал LM Studio не читається)' }
+                else { "останній chat-запит $($w.CallAgeMinutes) хв тому; без chat-запитів за замок $($w.NoCallMinutes) хв неспання$(if ($w.Stop) { ' — вирок: наряд закриває планувальник смуги (STALL)' })" })
+            $lines += "- замок тримає $($w.Marker) $($w.LockMinutes) хв (без сну; сон $($w.SleepMinutes) хв); карта без роботи $(if ($gpu.Error) { '?' } else { $w.IdleMinutes }) хв; PID сервера змінювався $($w.PidChanges) разів; виклики моделі: $calls"
+        }
     } catch { Write-Log "сторож GPU: $($_.Exception.Message)"; $lines += '- замок тримає: не виміряно (збій — claude-run.log)' }
     $lines
+}
+
+function Get-EngineEventLines($Lanes) {
+    <# Остання подія Codex кожного зайнятого слота gemini-run (heartbeat: `ev_utc`, `ev` з `codex.events.tsv` прогону): поріг
+    завислості `codex_stall_minutes` лічить саме ці події, а тека прогону закрита для інших користувачів. Нема подій — рядків нема. #>
+    $rows = @(foreach ($l in @($Lanes)) {
+            foreach ($s in @($l.Busy)) {
+                if ($null -eq $s.PSObject.Properties['EvUtc'] -or -not $s.EvUtc) { continue }
+                "- остання подія Codex $($s.Marker): $(if ($s.Ev) { $s.Ev } else { '?' }) о $($s.EvUtc) ($(Get-Minutes $s.EvUtc) хв тому)"
+            }
+        })
+    if ($rows.Count) { @('') + $rows }
 }
 
 function Get-StatusBody {
@@ -815,6 +878,7 @@ function Get-StatusBody {
             $lines += "| $ln | $($l[0].N) | $($l[0].Busy.Count) | $($s.Marker) | $($s.Model) | $(Get-Minutes $s.Since) | $(if ($s.Gpu) { 'так' } else { '—' }) |"
         }
     }
+    $lines += @(Get-EngineEventLines $g.Lanes)
     $lines += @(Get-IdleLines)
     $lines += @(Get-GpuStateLines $gpuBy $gpuHold)
     $lines += @('', $(try { Get-SupervisorLine } catch { Write-Log "наглядова: $($_.Exception.Message)"; 'наглядова: не виміряно (збій — claude-run.log)' }))
@@ -1272,7 +1336,7 @@ function Complete-Task($M, [string]$StatePath, [string]$Id, [string]$Code, [stri
 # Позначку знято комітом «ЗНЯТО…» (ConvertTo-Marker): прогін, що вже йде, зупиняється; сама позначка — кінець CANCELLED
 # з причиною в результаті й рядком, а публікатор знімає гілку з черги.
 function Close-CancelledMarker($M, $Workers) {
-    Stop-CancelledRuns $M $Workers
+    $null = Stop-CancelledRuns $M $Workers
     Complete-Task $M (Get-StatePath (Get-MarkerKey $M)) (New-Id) 'CANCELLED' -Reason $M.Reason
 }
 
