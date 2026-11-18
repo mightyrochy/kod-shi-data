@@ -1292,9 +1292,9 @@ def таблиця_г2(корінь):
     код = ("import sys, json; sys.path.insert(0, sys.argv[1]); import %s as В; "
            "print(json.dumps({п: В.ТАБЛИЦЯ.get(п) or {} for п in sys.argv[2:]}, ensure_ascii=False))" % МОДУЛЬ_ТАБЛИЦІ)
     try:
-        вих = subprocess.run([sys.executable, "-I", "-c", код, дж, *ПОЛЯ_Г2], cwd=дж, capture_output=True, text=True,
+        вих = subprocess.run([sys.executable, "-I", "-X", "utf8", "-c", код, дж, *ПОЛЯ_Г2], cwd=дж, capture_output=True, encoding="utf-8",
                              timeout=120)
-        if вих.returncode == 0:
+        if вих.returncode == 0 and вих.stdout.strip():
             return json.loads(вих.stdout.strip().splitlines()[-1])
         ОБСЯГ.непрочитано("джерела/%s.py" % МОДУЛЬ_ТАБЛИЦІ, "ТАБЛИЦЯ: код %d %s" % (
             вих.returncode, (вих.stderr.strip().splitlines() or ["—"])[-1]))
