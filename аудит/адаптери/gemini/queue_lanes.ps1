@@ -2268,9 +2268,8 @@ function Get-AutoLivePlan([string]$BuildMain) {
     його збірки PR; рядки розбирає той самий `Get-LiveAfterLines` проти нинішнього реєстру, а межа, склад збірки й
     записи прогонів відсікають їх так само, як рядки тіла. PR, оновлений після джерела, читається з тіла.
     Не дійшли до межі за AutoPlanMaxPages сторінок — AUTO_PAGES, плану нема. План несе `build`, `since_pr`, `merge`
-    (PR → злиття) і `reports` (звіти за парою номер|голова, чиї записи визнано прогнаними), щоб наступний план міг узяти
-    його за джерело й перевірити ті самі записи, не читаючи давніх звітів: нова спроба на тій самій гілці переписує
-    `ПЛАН.json`, а пари обірваної попередньої лишаються за її головою. Прогнане — ще й хмарні теки дерева збірки
+    (PR → злиття) і `reports` (звіти, чиї записи визнано прогнаними), щоб наступний план міг узяти його за джерело
+    й перевірити ті самі записи, не читаючи давніх звітів. Прогнане — ще й хмарні теки дерева збірки
     (`Get-AutoRanPairs -Tree`). Сцени `scenes` і `cloud` — від найновішого злиття до найдавнішого. #>
     $calls0 = $script:AutoApiCalls
     $until = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$BuildMain)).Out.Trim())
@@ -2315,29 +2314,18 @@ function Get-AutoLivePlan([string]$BuildMain) {
     $registry = Get-LiveSceneRegistry $registryText
     if (-not $registry.Count) { throw 'AUTO_REGISTRY' }
     $carry = $boundary.carry
-    # Записи прогонів — з прочитаних звітів і зі звітів, які переніс план джерела: поза читанням (інакше давній PR,
-    # що піднявся в читання лише коментарем, повернув би пару, прогнану звітом, якого читання вже не дістає) і з іншою
-    # головою того самого звіту — нова спроба на тій самій гілці переписує `ПЛАН.json`, і пари попередньої спроби
-    # лишаються лише за її головою. Хмарні прогони — з дерева збірки.
+    # Записи прогонів — з прочитаних звітів і зі звітів, які переніс план джерела (поза читанням): інакше давній PR,
+    # що піднявся в читання лише коментарем, повернув би пару, прогнану звітом, якого читання вже не дістає.
+    # Хмарні прогони — з дерева збірки.
     $ranReports = @($pulls)
-    $readHeads = @{}
-    foreach ($one in $pulls) { $readHeads[[string]$one.number + '|' + [string]$(if ($one.head -is [Collections.IDictionary]) { $one.head['sha'] } else { Get-JsonProp $one.head 'sha' })] = $true }
-    if ($carry) {
-        foreach ($old in @($carry.reports)) {
-            if ($readHeads.ContainsKey([string]$old.number + '|' + [string]$old.head['sha'])) { continue }
-            $ranReports += @($old)
-        }
-    }
+    if ($carry) { foreach ($old in @($carry.reports)) { if (-not $readNumbers.ContainsKey([string]$old.number)) { $ranReports += @($old) } } }
     $ranPairs = Get-AutoRanPairs $ranReports $since $BuildMain
     $usedReports = @{}
     foreach ($runs in @($ranPairs.Values)) { foreach ($run in @($runs)) { $usedReports[[string]$run.report] = $true } }
     $reportsOut = @()
-    $outHeads = @{}
     foreach ($report in $ranReports) {
         if (-not $usedReports.ContainsKey([string]$report.number)) { continue }
-        $outKey = [string]$report.number + '|' + [string]$(if ($report.head -is [Collections.IDictionary]) { $report.head['sha'] } else { Get-JsonProp $report.head 'sha' })
-        if ($outHeads.ContainsKey($outKey)) { continue }
-        $outHeads[$outKey] = $true
+        $usedReports.Remove([string]$report.number)
         $created = $report.PSObject.Properties['created_at']
         # Без часу створення наступний план не відсік би звіт за межею — такий звіт не переноситься.
         if ($null -eq $created -or $null -eq $created.Value) { continue }
