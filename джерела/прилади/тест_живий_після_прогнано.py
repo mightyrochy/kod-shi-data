@@ -267,7 +267,7 @@ def придатність():
                and н("чи збирання доходить до карток?", "повне", "") == "")
     перевірити("слова «фото» й «кадр» — не ознака", н("кожне слово збігається з кадром, фото колажу → повне → —", "повне", "") == "")
     перевірити("входи сцен — четверте поле реєстру",
-               прилад.входи_сцен("# x\nж1|a|b|PORTRET=п.jpg|палітра\nж2|a|b||повне\nкоротка|a\n") == {"ж1": "PORTRET=п.jpg", "ж2": ""})
+               прилад.входи_сцен("# x\nж1|a|b|PORTRET=п.jpg|палітра\nж2|a|b||повне\nкоротка|a\n", {"ж1": "палітра", "ж2": "повне"}) == {"ж1": "PORTRET=п.jpg", "ж2": ""})
 
 
 def оцінки_історія():
@@ -350,7 +350,7 @@ if ($found.Count -ne $names.Count) { throw 'нема функцій розбор
 foreach ($function in $found) { . ([scriptblock]::Create($function.Extent.Text)) }
 $registryText = [IO.File]::ReadAllText($RegistryPath, $utf)
 $registry = Get-LiveSceneRegistry $registryText
-$inputs = Get-LiveSceneInputs $registryText
+$inputs = Get-LiveSceneInputs $registryText $registry
 $lines = New-Object 'System.Collections.Generic.List[string]'
 $lines.Add((ConvertTo-Json -InputObject @($registry, $inputs) -Compress))
 foreach ($body in @(ConvertFrom-Json ([IO.File]::ReadAllText($BodiesPath, $utf)))) {
@@ -506,7 +506,7 @@ def паритет():
             # Лише «\n» (WriteAllLines на Linux): splitlines різав би й на U+2028, U+0085 у JSON без екранування.
             рядки = ф.read().rstrip("\n").split("\n")
         with open(реєстр_шлях, encoding="utf-8") as ф:
-            входи = прилад.входи_сцен(ф.read())
+            входи = прилад.входи_сцен(ф.read(), реєстр)
         перевірити("паритет реєстру сцен і входів (" + str(len(реєстр)) + " id)", json.loads(рядки[0]) == [реєстр, входи])
         розбіжних = []
         пунктів = непридатних = 0

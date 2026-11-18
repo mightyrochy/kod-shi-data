@@ -1902,16 +1902,17 @@ function Get-LiveSceneRegistry([string]$Text) {
     $registry
 }
 
-function Get-LiveSceneInputs([string]$Text) {
-    <# Вхід сцени з реєстру (четверте поле: змінні стенда, як `PORTRET=…`, `FOTO_RECHI=…`) за тим самим розбором, що й
-    Get-LiveSceneRegistry. #>
+function Get-LiveSceneInputs([string]$Text, $Registry) {
+    <# Вхід сцени з реєстру (четверте поле: змінні стенда, як `PORTRET=…`, `FOTO_RECHI=…`) для рядків, які прийняв
+    Get-LiveSceneRegistry ($Registry): той самий розбір, без другого визначення повного рядка. #>
     $inputs = @{}
     foreach ($row in ($Text -split "`n")) {
         $row = $row.TrimEnd("`r").TrimStart([char]0xFEFF)
         if (-not $row.Trim() -or $row.TrimStart().StartsWith('#')) { continue }
         $fields = $row.Split('|')
-        if ($fields.Count -lt 5) { continue }
-        $inputs[$fields[0].Trim()] = $fields[3].Trim()
+        if (-not $Registry.ContainsKey($fields[0].Trim())) { continue }
+        # Рядок реєстру міг повторити id коротшим рядком: четвертого поля тоді нема, вхід порожній.
+        $inputs[$fields[0].Trim()] = ([string]($fields | Select-Object -Index 3)).Trim()
     }
     $inputs
 }
@@ -2354,7 +2355,6 @@ function Get-AutoEvalUnanswered([string]$Tree) {
                 if ($open) {
                     $reason = ($verdict -replace '^(?i:не виміряно)(?: \(обрив\))?[\s:.,;—–-]*', '').Trim()
                     if (-not $reason -and $verdictAt -ne $names.Count - 1) { $reason = $cells[$names.Count - 1] }
-                    if ($reason.Length -gt 160) { $reason = $reason.Substring(0, 160) + '…' }
                 }
                 foreach ($folder in $folders) {
                     foreach ($pr in $prs) {
@@ -2425,7 +2425,7 @@ function Get-AutoLivePlan([string]$BuildMain) {
     $registryText = (Invoke-Git @('cat-file','blob',"${BuildMain}:аудит/проби/живі_сцени.txt")).Out
     $registry = Get-LiveSceneRegistry $registryText
     if (-not $registry.Count) { throw 'AUTO_REGISTRY' }
-    $inputs = Get-LiveSceneInputs $registryText
+    $inputs = Get-LiveSceneInputs $registryText $registry
     # Оцінки прогонів у дереві збірки: запис пари, яку оцінка тієї теки дала «не виміряно», прогнаним не рахується.
     $unanswered = Get-AutoEvalUnanswered $BuildMain
     $carry = $boundary.carry
