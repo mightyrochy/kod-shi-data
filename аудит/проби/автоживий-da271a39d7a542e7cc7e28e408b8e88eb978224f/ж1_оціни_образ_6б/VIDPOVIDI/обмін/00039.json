@@ -1,0 +1,74 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-nano-banana-2.1",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "image",
+      "source": {
+       "type": "base64",
+       "media_type": "image/jpeg",
+       "data": "/9j/2Q=="
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://bella-bicchi.com/upload/iblock/a70/oqq7gzs5vulu5hdeuzvi997i3ateot4h/w7bchqfnwmpddnea3djkk3wneox37bkq.jpg"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://favoriteshoes.com.ua/upload/catalog/23700/23665/s_img_0120.jpg"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://images.theoriginals.com.ua/cache/webp/catalog/product_photo/74131/ukrasheniya-guzema-fine-jewelry-1-700x500.webp"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://emmeliedelage.com/content/images/7/1200x1600l95nn0/kostium-shokoladnyi-mirage-49166704240248.webp"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://www.miraton.ua/upload/webp_cache/1740x2280q90-000211442_1_.webp"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://cdn.shopify.com/s/files/1/0635/3138/5029/files/330_14_11zon_72b36567-6f66-4c5e-bf35-deeb5dfe157c.webp?v=1761650108"
+      }
+     },
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"Photo 1 is a woman. Dress her in the outfit below.\", \"rules\": [\"Change only the clothes on photo 1: her face, body, pose, hands, hair, light, background, framing and angle stay exactly as on photo 1.\", \"One image with one frame: the same single woman filling the frame, in the proportions of photo 1.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one image and no text.\"], \"input\": [\"\\\"item_photos\\\" — the items on the attached photos after photo 1, with their photo numbers; take from each photo only the item named for it: the photo may show a whole outfit on a model; draw its color, cut, length and texture as on the photo\", \"\\\"how_to_wear\\\" — how the items are worn; follow it\"]}, \"item_photos\": [{\"photo\": 2, \"slot\": \"outerwear\", \"name\": \"Жіноче класичне вовняне пальто двобортне з поясом, осінь/весна Stella Polare\", \"color\": \"camel\", \"color_hex\": \"#a78870\"}, {\"photo\": 3, \"slot\": \"shoes\", \"name\": \"LeBERDES Туфлі бордові\", \"color\": \"burgundy\", \"color_hex\": \"#5c2727\"}, {\"photo\": 4, \"slot\": \"necklace\", \"name\": \"Золоте намисто з гравіюванням\", \"color\": \"golden\", \"color_hex\": \"#f7e7d7\"}, {\"photo\": 5, \"slot\": \"set\", \"name\": \"Костюм шоколадний MIRAGE\", \"color\": \"chocolate\", \"color_hex\": \"#533e33\"}, {\"photo\": 6, \"slot\": \"bag\", \"name\": \"Жіноча сумка через плече шкіряна бежева\", \"color\": \"beige\", \"color_hex\": \"#b28f7b\"}, {\"photo\": 7, \"slot\": \"headwear\", \"name\": \"Обруч Бріанна золотий\", \"color\": \"golden\", \"color_hex\": \"#735a42\"}], \"how_to_wear\": [\"Wear the coat buttoned to create one continuous vertical line that sharpens your silhouette for your office setting.\"]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 501,
+  "contentType": "application/json",
+  "body": "{\"error\":{\"message\":\"приміряння не перевіряється: локальна текстова модель картинок не малює\"}}"
+ }
+}
