@@ -4,7 +4,8 @@ PR, хмарній теці запису й оцінках у дереві зб�
 яке сцена механічно не може відповісти (replay, PORTRET без входу, збирання в режимі «розмова»), — у `bad` з причиною й
 сценою, сцена заради нього не записується (ДО — сцена в плані); запис, який оцінка дала «не виміряно», не прогнаний:
 той самий текст — у `bad` з причиною оцінки, виправлений рядок і «не виміряно (обрив)» — у плані (ДО — пару лічено
-прогнаною); повтор відсіяного планом-джерелом не новий (`unfit_new`), і план лише з ним порожній (`Test-AutoPlanEmpty`). #>
+прогнаною); межа перевіреної збірки (`ПЕРЕВІРЕНО ЗБІРКУ`) не покриває пари, яку оцінка теки того звіту дала «не
+виміряно» (ДО — губилась); повтор відсіяного планом-джерелом не новий (`unfit_new`), і план лише з ним порожній (`Test-AutoPlanEmpty`). #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
@@ -159,6 +160,40 @@ try {
         try { $plan = Get-Plan $reportHead } finally { $script:PlanPulls = @($script:Merged) }
         "ДАНІ повтор: bad $(@($plan.bad).Count), unfit_new $($plan.unfit_new)"
         Check '4 те саме відсіяне з планом-джерелом — у bad, але не нове (unfit_new 0)' (@($plan.bad | Where-Object { $null -ne $_.PSObject.Properties['scene'] }).Count -eq 4 -and [int]$plan.unfit_new -eq 0)
+    }
+    Scenario '6 межа перевіреної збірки й «не виміряно»' {
+        # Звіт автоживого перевірив збірку $build (`ПЕРЕВІРЕНО ЗБІРКУ`) і записав ж1_робота (PR 101) та ж3_свято_др (PR 104).
+        $dirName = "автоживий-$build"
+        $scenesRun = @{}
+        foreach ($n in @(101, 104)) {
+            $record = "$repo/аудит/проби/$dirName/$($questions[$n][0])"
+            foreach ($sub in @('знімки', 'VIDPOVIDI/обмін')) { [void][IO.Directory]::CreateDirectory("$record/$sub") }
+            [IO.File]::WriteAllText("$record/результат.json", ('{"rc": 0, "sha": "' + $build + '"}'), $utf)
+            foreach ($file in @('повтор.json', 'лог.txt', 'знімки/доказ.json', 'VIDPOVIDI/обмін/1.json')) { [IO.File]::WriteAllText("$record/$file", '{}', $utf) }
+            $scenesRun[$questions[$n][0]] = @(@{pr = $n; question = $questions[$n][1]})
+        }
+        [IO.File]::WriteAllText("$repo/аудит/проби/$dirName/ПЛАН.json", (ConvertTo-Json -Compress -Depth 5 @{build = $build; scenes = $scenesRun}), $utf)
+        [IO.File]::WriteAllText("$repo/аудит/проби/$dirName/done.txt", (@($scenesRun.Keys | ForEach-Object { '{"сцена": "' + $_ + '", "rc": 0, "секунд": 300}' }) -join "`n") + "`n", $utf)
+        $reportHead = Repo-Commit '2026-11-06T00:00:00Z' 'Звіт межі'
+        $report = [pscustomobject]@{number = 120; user = @{login = 'mightyrochy'}; head = @{ref = "claude/$dirName"; sha = $reportHead; repo = @{full_name = 'mightyrochy/kod-shi-data'}}
+            base = @{ref = 'main'; repo = @{full_name = 'mightyrochy/kod-shi-data'}}; merge_commit_sha = $null; merged_at = $null
+            created_at = '2026-11-06T00:00:00Z'; updated_at = '2026-11-06T00:00:00Z'; body = "Звіт`n`nПЕРЕВІРЕНО ЗБІРКУ: $build`n"}
+        $script:PlanPulls = @($report) + @($script:Merged)
+        try {
+            $before = Get-Plan $reportHead
+            Check '6 без оцінки теки звіту межа покриває всі PR до збірки: ні сцен, ні bad' (@(Scene-Names $before).Count -eq 0 -and @($before.bad | Where-Object { $null -ne $_ }).Count -eq 0)
+            $boundEval = 'аудит/перевірки/Оцінка-межа.md'
+            [IO.File]::WriteAllText("$repo/$boundEval", ("# Оцінка прогону ``аудит/проби/$dirName```n`n| сцена | PR | відповідь | чому |`n|---|---|---|---|`n" +
+                "| ж1_робота | #101 | не виміряно | модель не дійшла до вибору |`n| ж3_свято_др | #104 | так | видно |`n"), $utf)
+            $evalHead = Repo-Commit '2026-11-07T00:00:00Z' 'Оцінка звіту межі'
+            $plan = Get-Plan $evalHead
+            $entry = @(Bad-Of $plan 101)
+            "ДАНІ межа: сцени $(@(Scene-Names $plan) -join ', '); bad: " + (@($plan.bad | Where-Object { $null -ne $_ } | ForEach-Object { "#$($_.pr) $($_.scene) — $($_.reason)" }) -join ' | ')
+            Check '6 пара під межею, яку оцінка теки звіту дала «не виміряно», — у bad з причиною оцінки (ДО — губилась)' ($entry.Count -eq 1 -and
+                [string]$entry[0].scene -ceq 'ж1_робота' -and [string]$entry[0].reason -cmatch '^не виміряно в оцінці ')
+            Check '6 інші пари під межею лишаються покритими: ні сцен, ні іншого bad' (@(Scene-Names $plan).Count -eq 0 -and
+                @($plan.bad | Where-Object { $null -ne $_ }).Count -eq 1)
+        } finally { $script:PlanPulls = @($script:Merged) }
     }
     Scenario '5 порожній план' {
         $slug = 'автоживий-' + ('a' * 40)
