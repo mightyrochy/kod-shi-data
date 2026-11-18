@@ -45,7 +45,7 @@ $fakes = {
     function Invoke-Native { param([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [double]$TimeoutMinutes = 10)
         [void]$script:NativeCalls.Add("$Exe $($Arguments -join ' ')")
         if ($Exe -ne 'nvidia-smi') { return [pscustomobject]@{ Code = 1; Out = ''; Err = 'стенд: лише nvidia-smi' } }
-        if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') {
+        if ($Arguments -like '--query-gpu=memory.total,memory.free,utilization.gpu*') {
             $s = 0; foreach ($p in @($script:Procs)) { $s += $p.MiB }
             return [pscustomobject]@{ Code = 0; Out = "16376, $([Math]::Max(0, 16376 - $s)), $script:Percent" }
         }

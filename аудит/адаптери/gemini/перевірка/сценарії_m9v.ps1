@@ -95,6 +95,19 @@ try {
     Check 'крок 2: читач gemini_run.ps1 — у гілці $su' ($admSu.Count -eq 1 -and $admInstall.Count -eq 1 -and $admInstall[0].Extent.Text -match 'gemini_run' -and $admInstall[0].Extent.StartOffset -ge $admSu[0].Extent.StartOffset -and $admInstall[0].Extent.EndOffset -le $admSu[0].Clauses[0].Item2.Extent.EndOffset)
     Check 'крок 2: повна копія gemini_run.ps1 — лише в else' ($admCopy.Count -eq 1 -and $null -ne $admSu[0].ElseClause -and $admCopy[0].Extent.StartOffset -ge $admSu[0].ElseClause.Extent.StartOffset -and $admCopy[0].Extent.EndOffset -le $admSu[0].ElseClause.Extent.EndOffset)
     Check 'крок 2: реєстрація задач поза гілкою $su' (@(& $cmd $adm 'Register-ScheduledTask' | Where-Object { $_.Extent.StartOffset -ge $admSu[0].Extent.StartOffset -and $_.Extent.EndOffset -le $admSu[0].Extent.EndOffset }).Count -eq 0)
+
+    # крок 2, Codex: Test-CodexInstall із 2_під_gemini.ps1 (AST) на підмінених Has і codex — ставить, коли нема, версія інша чи не прочитана
+    $sub = [Management.Automation.Language.Parser]::ParseFile((Join-Path $m9v '2_під_gemini.ps1'), [ref]$t, [ref]$e)
+    . ([scriptblock]::Create($sub.Find({ param($a) $a -is [Management.Automation.Language.FunctionDefinitionAst] -and $a.Name -ceq 'Test-CodexInstall' }, $true).Extent.Text))
+    function Has([string]$n) { $script:hasCodex }
+    function codex { if ($script:codexOut -ceq 'THROW') { throw 'codex зламано' }; $script:codexOut }
+    foreach ($c in @(
+        @('codex нема', $false, '', $true), @('версія та сама', $true, 'codex-cli 0.169.1', $false),
+        @('версія інша', $true, 'codex-cli 0.164.0', $true), @('alpha того ж x.y.z', $true, 'codex-cli 0.169.1-alpha.2', $true),
+        @('вивід порожній', $true, '', $true), @('вивід не version', $true, 'щось інше', $true), @('codex падає', $true, 'THROW', $true))) {
+        $script:hasCodex = $c[1]; $script:codexOut = $c[2]
+        Check "крок 2 Codex, $($c[0]): ставить = $($c[3])" ((Test-CodexInstall '0.169.1') -eq $c[3])
+    }
 } finally {
     Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
 }

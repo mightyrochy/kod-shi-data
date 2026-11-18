@@ -3768,8 +3768,8 @@ def _коди_розмови():
     # `fabric` не мали K-WEA-01. Решта ознак — як доти, лише названі нею.
     р.append("- own_items — %s: objects with quote, name — the item in her words, status — %s, %s — always, each "
              "a code her words give or unknown, and other attributes only when her words name them (not zone or "
-             "feature), also for an item in her photo: the photo is looked at by another model. It is the only "
-             "field for her items: there is no field per part of the look"
+             "feature), also for an item in her photo: the photo is looked at by another model. Colour: "
+             "color_name; her shop: shop (text); no field per part of the look"
              % (_ПОЛЯ_EN["own_items"], _тип_en(_ВМ.ЇЇ_РІЧ["status"])[len("codes: "):].replace(", ", " | "),
                 ", ".join(_ВМ.ЇЇ_РІЧ_КОДИ)))
     р.append("Fields in her words — a string in her language, without quote:")
