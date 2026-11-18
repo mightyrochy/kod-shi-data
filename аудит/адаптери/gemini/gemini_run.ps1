@@ -1789,6 +1789,8 @@ function Write-Heartbeat([string]$Iso) {
         $hb.wait = @(foreach ($w in @(Get-WaitingMarkers | Select-Object -First 12)) { [ordered]@{ marker = $w.Marker; until = $w.Until; g = $w.Group } })
         try { $hb.health = Get-GeminiHealth } catch { Write-Log "здоров'я: $($_.Exception.Message)" }
     }
+    # Такт, потужність, причини обмеження, джерело живлення й режим — як їх бачить обліковий запис gemini; нечитане — `?`.
+    try { $hb.gpu = Get-GpuPowerInfo (Get-GpuTelemetry) } catch { Write-Log "GPU: такт і живлення: $($_.Exception.Message)" }
     try { Write-FileAtomic (Join-Path $OutDir 'heartbeat.json') ($hb | ConvertTo-Json -Compress -Depth 6) } catch { Write-Log "heartbeat: $($_.Exception.Message)" }
 }
 

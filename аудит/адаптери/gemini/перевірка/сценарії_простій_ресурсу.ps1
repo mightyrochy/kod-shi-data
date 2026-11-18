@@ -252,7 +252,7 @@ Scenario 'в планувальник' {
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
     function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
     function Invoke-Native { param($Exe, $Arguments)
-        if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{ Code = 0; Out = $script:FakeTelemetry } }
+        if ($Arguments -like '--query-gpu=memory.total,memory.free,utilization.gpu*') { return [pscustomobject]@{ Code = 0; Out = $script:FakeTelemetry } }
         [pscustomobject]@{ Code = 0; Out = $script:FakeApps } }
     $script:FakeTelemetry = '16376, 2000, 74'; $script:FakeApps = '4120, C:\Users\x\chrome.exe'
     $w = New-Object System.Collections.ArrayList
@@ -283,7 +283,7 @@ Scenario 'в3 gemini-run' {
     function Get-Command { [pscustomobject]@{ Source = 'nvidia-smi' } }
     function Get-GpuCounterRows { <# Запасне джерело — nvidia-smi; лічильник процесів міряє сценарії_gpu_процеси.ps1. #> $null }
     function Invoke-Native { param($Exe, $Arguments)
-        if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{ Code = 0; Out = '16376, 2000, 74' } }
+        if ($Arguments -like '--query-gpu=memory.total,memory.free,utilization.gpu*') { return [pscustomobject]@{ Code = 0; Out = '16376, 2000, 74' } }
         [pscustomobject]@{ Code = 0; Out = '4120, C:\Users\x\chrome.exe' } }
     $w = New-Object System.Collections.ArrayList
     [void](Start-Markers $w)

@@ -5,15 +5,16 @@
     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
     'wrapper_chain.ps1'  = '9C83D2F6D3C215F78C0CA107B87D3533779B3D099D18A72078BBC890BBCFEE65'
     'wrapper_health.ps1' = '1427DF6C7CF1A6D5EDBC66072B58ED085A34C15D3DC7463750F93FB06F5FA810'
-    'gemini_run.ps1'     = '95000F59AC6958EC1A6B761EA1649D96DB9404F7D2B90D7DE4E7CFCF64E795B1'
+    'gemini_run.ps1'     = '6514184F4F87F8D056A8D933E817D1F2D01A1E098277326D1C24BAF91A7B9E6C'
     'gemini_publish.ps1' = 'FB9E593AD1BB42AD59FC0219E9641212F6331A02B3C4D2D3E1ADC480F175EE2A'
     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
-    # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
+    # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release), коли codex нема
+    # чи `codex --version` не дорівнює CodexRelease.
     # Оновити Codex = новий PR: нова версія, новий хеш (докази — у PR). Порожній хеш — інсталятор не виконується.
-    CodexRelease         = '0.164.0'
-    CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
+    CodexRelease         = '0.169.1'
+    CodexInstaller       = '365F40F3D0FE417388B8F75333D66657481D86769E2EAFED29967921B928484F'
     'gemini_watch.ps1'   = '77FE75B2BC5AC2BF20B5ECE88892B52C1A2F660BEA0DD1038C73C088D6121C9A'
-    'queue_lanes.ps1'    = 'CC1DDF4AE64E8F668DB0B16323357F807CE26521A0F86C5AF3442718201B7CDA'
-    'claude_run.ps1'     = '96C5DC71A668BD2F46E9B8E1E37E7C662D238FEE07EF4170A6AF206071CAD6F4'
+    'queue_lanes.ps1'    = 'D72ADD2CE2E3F7BEE06C65DAA3FE7701369DD54D1D1ADBED04EF4EBFA8FCC0E0'
+    'claude_run.ps1'     = 'FE285E905794EACCE555B0451575F3A6B5F89D6239492F046F2E9519976314ED'
 }

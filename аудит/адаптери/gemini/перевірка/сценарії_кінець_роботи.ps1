@@ -103,6 +103,9 @@ try {
         $heartbeat = $ast.Find({ param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -ceq 'Write-Heartbeat' }, $true)
         Invoke-Expression $heartbeat.Extent.Text
         function Get-UtcStamp($Date) { <# Форматує час справжнього Write-Heartbeat. #> $Date.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") }
+        # Справжній Write-Heartbeat пише ще й знімок такту та живлення карти; тут його міряти нічим і не треба (сценарії_такти_gpu.ps1) — заглушки.
+        function Get-GpuTelemetry { [pscustomobject]@{ Error = 'стенд' } }
+        function Get-GpuPowerInfo($Gpu) { $null }
         [void][IO.Directory]::CreateDirectory("$GeminiRunsDir/slots")
         foreach ($lane in @('codex','agy')) {
             $gm = "gemini-queue/спільний-$lane/gpt-test/2/p1"
