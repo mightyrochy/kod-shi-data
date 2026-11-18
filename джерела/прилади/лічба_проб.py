@@ -30,6 +30,10 @@ env: NYTOK (ниток, типово 4), STELYA (стеля секунд на п
 робить. Рядок реєстру, що вказує на пробу, якої вже нема, прилад називає
 голосно: інакше реєстр тихо росте й починає ховати живі проби.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import sys, os, json, time, glob, subprocess, argparse
 import concurrent.futures as cf
 import contextlib
@@ -133,7 +137,7 @@ class Дерево_проби:
                         else:
                             shutil.copyfile(запис, ціль)
             else:
-                subprocess.run([sys.executable, '-c',
+                запустити_python([sys.executable, '-c',
                                 'import чистка_каталогу; '
                                 'чистка_каталогу.забезпечити_чистим("каталог_повний.xml")'],
                                cwd=self.джерела, check=True, capture_output=True,
@@ -254,7 +258,7 @@ def гнати(шлях, стеля, дерево):
     # документовано». Що проба кладе в `sys.path` сама — лишається як було.
     # stdin закритий: проба, що чекає на введення, має впасти, а не повісити прогін.
     try:
-        р = subprocess.run([sys.executable, арг], cwd=cwd, stdin=subprocess.DEVNULL,
+        р = запустити_python([sys.executable, арг], cwd=cwd, stdin=subprocess.DEVNULL,
                            capture_output=True, text=True, errors='replace',
                            encoding='utf-8', timeout=стеля, env=дерево.середовище())
         rc, вивід, помилки = р.returncode, р.stdout, р.stderr

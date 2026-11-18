@@ -14,6 +14,10 @@
 
 ЗАПУСК: python3 джерела/прилади/стенд_паспорта_файл_гілки.py   (друкує «мірило: …»; код 1 — хоч одне не те)
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import os
 import shutil
 import stat
@@ -81,7 +85,7 @@ def конфлікт(тека, гілка):
 
 
 def згорнути(тека, *аргументи):
-    р = subprocess.run([sys.executable, '-X', 'utf8', '-I', 'джерела/прилади/згорнути_паспорти.py', *аргументи], cwd=тека,
+    р = запустити_python([sys.executable, '-X', 'utf8', '-I', 'джерела/прилади/згорнути_паспорти.py', *аргументи], cwd=тека,
                        capture_output=True, text=True, encoding='utf-8')
     return р.returncode, р.stdout, р.stderr
 

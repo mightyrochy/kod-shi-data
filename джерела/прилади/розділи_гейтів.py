@@ -32,6 +32,10 @@ CI». Файл переїхав ЦІЛИМ, без зміни жодної пе�
 Лише нові розділи 63–66 + перецілений тест руки 2 з §41.
 Повна регресія в цьому середовищі не доходить (§54 на каталог_повний зʼїдає
 памʼять і процес гине без рядка). Це НЕ заміна регресії — це вимір нового."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import sys, os as _os, json as _json, tempfile as _tf, re as _re
 # `_тут` — це `джерела`, а не тека цього файлу: перевірки нижче кладуть його в
 # `cwd=` і `PYTHONPATH=` підпроцесів (§117, §119, §120) і шукають ним фікстури.
@@ -3393,7 +3397,7 @@ def ф():
     for _м117 in _ПРИЛАДИ117:
         _т117 = _ч117.time()
         try:
-            _п117 = _сп117.run([sys.executable, "-c", "import %s" % _м117],
+            _п117 = запустити_python([sys.executable, "-c", "import %s" % _м117],
                                cwd=_чужа117, env=_середа117, capture_output=True,
                                text=True, timeout=_ЧЕКАТИ117)
             _звіт117[_м117] = (_п117.returncode, round(_ч117.time() - _т117, 2),
@@ -3577,7 +3581,7 @@ def ф():
     # «усе ціле» в найгіршому можливому стані. Лічба — це ВИМІР, і місце виміру в
     # stdout, де він уже й друкується рядком «РОЗРИВІВ: N»; кодові виходу лишається
     # сказати одне: є розрив чи нема.
-    _вих120 = _сп117.run([sys.executable, "audit_contracts.py"], cwd=_тут,
+    _вих120 = запустити_python([sys.executable, "audit_contracts.py"], cwd=_тут,
                          env=_середа117, capture_output=True, text=True, timeout=600)
     _м120 = _re.search(r"РОЗРИВІВ: (\d+)", _вих120.stdout)
     _лічба120 = int(_м120.group(1)) if _м120 else 0

@@ -23,6 +23,10 @@
   GEMMA_TOKENIZER=<tokenizer.json> python3 джерела/прилади/промпти_перелік.py \
       А_шлях=<тека VIDPOVIDI> [Б_…=<тека> …] [--живі <ref>] [--вихід аудит/промпти/перелік.md]
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import collections
 import difflib
 import glob
@@ -544,7 +548,10 @@ print(json.dumps(вих, ensure_ascii=False))
 
 def _виміряти(тека):
     """{клас: симв. сталої частини} — `ВИМІР_ІСТОРІЇ` у теці джерел окремим процесом; збій — {"помилка": …}."""
-    р = subprocess.run([sys.executable, "-W", "ignore", "-c", ВИМІР_ІСТОРІЇ], cwd=тека, capture_output=True, timeout=900)
+    try:
+        р = запустити_python([sys.executable, "-W", "ignore", "-c", ВИМІР_ІСТОРІЇ], cwd=тека, capture_output=True, timeout=900, потрібен_вивід=True)
+    except subprocess.SubprocessError as помилка:
+        return {"помилка": str(помилка)}
     рядок = (р.stdout.decode("utf-8", "replace").strip().splitlines() or ["{}"])[-1]
     try:
         return json.loads(рядок)

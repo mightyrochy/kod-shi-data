@@ -22,6 +22,10 @@
 числом, а не з `RELATIONS` модуля, — пункт 1, відношення власним кутом (`ознаки_п1_кут_відношення`).
 Модуль визначення — `джерела/колір_тон.py`; якщо його в дереві нема, поза модулем — усе (розрахунок чесний ДО його
 появи). Згенеровані читачі (шапка «згенеровано») — не місця."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import ast, collections, functools, json, os, re, subprocess, sys, warnings
 
 import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
@@ -1292,8 +1296,8 @@ def таблиця_г2(корінь):
     код = ("import sys, json; sys.path.insert(0, sys.argv[1]); import %s as В; "
            "print(json.dumps({п: В.ТАБЛИЦЯ.get(п) or {} for п in sys.argv[2:]}, ensure_ascii=False))" % МОДУЛЬ_ТАБЛИЦІ)
     try:
-        вих = subprocess.run([sys.executable, "-I", "-X", "utf8", "-c", код, дж, *ПОЛЯ_Г2], cwd=дж, capture_output=True, encoding="utf-8",
-                             timeout=120)
+        вих = запустити_python([sys.executable, "-I", "-X", "utf8", "-c", код, дж, *ПОЛЯ_Г2], cwd=дж, capture_output=True, encoding="utf-8",
+                             timeout=120, потрібен_вивід=True)
         if вих.returncode == 0 and вих.stdout.strip():
             return json.loads(вих.stdout.strip().splitlines()[-1])
         ОБСЯГ.непрочитано("джерела/%s.py" % МОДУЛЬ_ТАБЛИЦІ, "ТАБЛИЦЯ: код %d %s" % (

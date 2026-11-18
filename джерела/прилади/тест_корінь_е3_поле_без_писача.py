@@ -4,6 +4,10 @@
 Дерево будується в тимчасовій теці, прилад іде окремим процесом (`--корінь`, `--json`), щоб модулі дерева не змішались
 із модулями репозиторію. Запуск: python3 джерела/прилади/тест_корінь_е3_поле_без_писача.py
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import json
 import os
 import subprocess
@@ -96,7 +100,7 @@ def прогін(дерево):
             os.makedirs(os.path.dirname(повний), exist_ok=True)
             with open(повний, "w", encoding="utf-8") as ф:
                 ф.write(текст)
-        р = subprocess.run([sys.executable, ПРИЛАД, "--корінь", т, "--json"], capture_output=True, text=True,
+        р = запустити_python([sys.executable, ПРИЛАД, "--корінь", т, "--json"], capture_output=True, text=True,
                            timeout=300)
         assert р.returncode == 0, р.stderr
         return json.loads(р.stdout[:р.stdout.rindex("місць:")])
@@ -136,7 +140,7 @@ class ПолеБезПисача(unittest.TestCase):
 
     def test_причини_не_місць_є_на_main(self):
         # кожне не-місце справжнього дерева має причину поіменно; ключ без причини — «БЕЗ ПРИЧИНИ» і код 1
-        р = subprocess.run([sys.executable, ПРИЛАД, "--тихо"], capture_output=True, text=True,
+        р = запустити_python([sys.executable, ПРИЛАД, "--тихо"], capture_output=True, text=True,
                            cwd=os.path.join(os.path.dirname(ПРИЛАД), "..", ".."))
         self.assertEqual(р.returncode, 0, р.stderr)
         self.assertNotIn("БЕЗ ПРИЧИНИ", р.stderr)

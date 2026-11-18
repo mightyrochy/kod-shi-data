@@ -4,6 +4,10 @@
 Свіжий XML підставляється в тимчасове дерево: проби зі сталими шляхами читають
 його, а чистка не змінює вихід жнив. Збагачення/галереї лишаються знімками git.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import argparse
 import gzip
 import hashlib
@@ -74,7 +78,7 @@ def прогнати(проба, джерела, лог, секунд):
               "if подія in ('socket.connect','socket.getaddrinfo') else None); "
               "sys.argv=[sys.argv[1]]; runpy.run_path(sys.argv[0],run_name='__main__')")
     try:
-        код = subprocess.run(
+        код = запустити_python(
             [sys.executable, "-u", "-c", запуск, str(джерела / "проби" / проба.name)],
             cwd=джерела, stdout=лог, stderr=subprocess.STDOUT, timeout=секунд,
             env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1", GIT_NO_LAZY_FETCH="1"),
