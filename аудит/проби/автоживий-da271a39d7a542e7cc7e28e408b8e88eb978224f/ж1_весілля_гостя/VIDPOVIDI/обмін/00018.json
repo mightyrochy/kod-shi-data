@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Satin slip dress with a fluid, knee-length silhouette in a soft rose hue (#D48C94) and liquid georgette fabric for effortless movement during the afternoon garden portion.\\nA lightweight unstructured blazer in crisp ivory linen with a relaxed fit and dropped shoulders to add polish while ensuring breathability against the August heat.\\nStrappy metallic gold sandals on a 3-inch block heel that transition seamlessly from the outdoor ceremony to the indoor reception dinner.\\nThis ensemble honors her specific refusal of heavy layers or cold-weather gear by relying on breathable natural fibers like linen and silk suitable for midsummer temperatures. The choice of smart social formality balances the celebratory nature of a wedding guest appearance with the need for comfort during an extended evening event that moves from outdoors to a restaurant setting. By keeping the outer layer optional and airy, the look respects her wishes while maintaining elegance through rich textures and a sophisticated color palette.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"satin slip dress\\\",\\n      \\\"details\\\": \\\"fluid knee-length silhouette, soft rose hue, liquid georgette fabric\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#D48C94\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"unstructured blazer\\\",\\n      \\\"details\\\": \\\"crisp ivory linen, relaxed fit, dropped shoulders\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#FFFFF0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"strappy metallic gold sandals\\\",\\n      \\\"details\\\": \\\"3-inch block heel\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#FFD700\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":540,\"output_tokens\":209},\"stop_reason\":\"end_turn\"}"
+ }
+}
