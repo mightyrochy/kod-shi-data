@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-knit crew-neck sweater, slightly fitted, hip length, wine red (#7A2E3A), merino wool\\n\\nMidi skirt, softly flared A-line, falling just below the knee, deep olive (#4F5233), matte crepe\\n\\nShort textured jacket, relaxed fit with a straight hem at the hip, camel (#B58B5A), wool bouclé tweed\\n\\nAnkle boots, almond toe, low block heel, dark chocolate (#4A3022), smooth leather\\n\\nSmall shoulder bag, structured, cognac (#8A5230), leather\\n\\nDrop earrings, small, polished gold (#C9A24B), metal\\n\\nThis outfit sits in the neat, social range: a refined knit with a skirt, a textured jacket and ankle boots, which suits a relaxed restaurant date. Wine red near the face echoes the warm undertone of her skin and brings out the olive in her eyes, while the deep olive skirt and camel jacket pick up her brown hair and keep the whole palette rich and autumnal. The flared midi skirt and the softly fitted knit create a balanced, feminine line, and the boots keep it comfortable for an evening out. Under warm restaurant lighting the saturated tones look glowing rather than flat, and the jacket can come off at the table without losing the polish of the look.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Crew-neck sweater\\\",\\\"details\\\":\\\"Fine-knit, slightly fitted, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#7A2E3A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Midi skirt\\\",\\\"details\\\":\\\"Softly flared A-line, falling just below the knee, matte crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#4F5233\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Short jacket\\\",\\\"details\\\":\\\"Textured, relaxed fit with a straight hem at the hip, wool bouclé tweed\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B58B5A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"Almond toe, low block heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#4A3022\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small shoulder bag\\\",\\\"details\\\":\\\"Structured, leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#8A5230\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Small, polished gold, metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A24B\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2113,\"output_tokens\":377},\"stop_reason\":\"end_turn\"}"
+ }
+}

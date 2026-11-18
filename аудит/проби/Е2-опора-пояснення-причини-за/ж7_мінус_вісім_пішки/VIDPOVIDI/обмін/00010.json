@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-knit sweater: crew neck, regular fit, hip length, soft blue #8fb0cf, merino wool\\nTrousers: straight leg, mid rise, full length to the ankle, charcoal #3b4048, wool-blend flannel\\nCoat: single-breasted, tailored, knee length, deep navy #2c3e5c, wool and cashmere blend\\nAnkle boots: low block heel, round toe, grippy rubber sole, dark graphite #26282c, smooth leather\\nScarf: wide and generously sized, soft cream #ece6dc, thick wool\\nGloves: slim fit, wrist length, dark graphite #26282c, leather with a warm lining\\nTote bag: structured, medium size, slate grey #4a4f5a, grained leather\\n\\nThis outfit stays within neat business dress, with a refined knit and tailored trousers, while the wool coat, scarf and lined gloves cover the frost on the walk to the office. The soft blue of the sweater echoes your eye color and sits well beside your silvery hair and fair skin. The charcoal, navy and cream palette is cool and calm, so everything works together without looking heavy. The low block heel and grippy sole keep the walk comfortable and steady, and the straight trousers and knee-length coat give a clean, balanced line.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Fine-knit sweater\\\",\\\"details\\\":\\\"crew neck, regular fit, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#8fb0cf\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Trousers\\\",\\\"details\\\":\\\"straight leg, mid rise, full length to the ankle, wool-blend flannel\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3b4048\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Coat\\\",\\\"details\\\":\\\"single-breasted, tailored, knee length, wool and cashmere blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#2c3e5c\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"low block heel, round toe, grippy rubber sole, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#26282c\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"wide and generously sized, thick wool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#ece6dc\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Gloves\\\",\\\"details\\\":\\\"slim fit, wrist length, leather with a warm lining\\\",\\\"slot\\\":\\\"gloves\\\",\\\"color_hex\\\":\\\"#26282c\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tote bag\\\",\\\"details\\\":\\\"structured, medium size, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#4a4f5a\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2099,\"output_tokens\":433},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -118,10 +118,10 @@ import colorspace as _cs
         # Обставини її дня (корінь Е2-опора-пояснення, крок «обставини»): «day» несе лише сказане нею
         # (`дріт_моделі.день_її_слів`), і пояснення — лише про факт «day» і відому властивість речі: «а сьогодні
         # ожеледиця», «Road salt and slush», «morning light» опис казав їй з виведеного й без вимоги умови.
-        _ВИМ.поле("day", як="only what she said about her day. When the known item properties support it, in the last "
+        _ВИМ.поле("day", як="only what she said about her day. When «reasons» support it, in the last "
                     "part of «text» say how this outfit lives through the facts listed in «day». An item its photo "
-                    "shows unfit for her weather or way there is «swap»; for an item whose known property argues "
-                    "with a fact listed in «day», say in one plain sentence why you still chose it and what it means "
+                    "shows unfit for her weather or way there is «swap»; for an item whose «your_declared» "
+                    "argues with a fact listed in «day», say in one plain sentence why you still chose it and what it means "
                     "for her day, never handing that decision back to her. Weather, road, place, light or time of "
                     "day that «day» does not carry is not a fact of her day"),
         # ОПИС-1 (K-PAL-11/14/15): «найдальші» й «комбінація», якщо йдуть у КОЖЕН опис, дають
@@ -155,12 +155,24 @@ import colorspace as _cs
                     "for each item; in «how_to_wear» name a way only when it changes something for this outfit — its effect "
                     "matters here (a line across the torso that already has many, a hem it lands on); a way "
                     "that changes nothing is left out"),
+        # Е2-опора-пояснення, наряд «причини-за» (менеджер 17.11 після прогону #4205): причину «чому ця річ тут» пише
+        # код (`причини_речі`) — типом, номером речі, джерелом і певністю; без неї модель добудовувала «Tall boots
+        # suit a 20-minute walk in snow» при `sole_grip_unknown_ice` тієї самої руки, і причин «за» у вході було 0 із 30
+        _ЗП.Поле("reasons", "why items are here, as the code found it: «item» — its «n»; «about» — occasion "
+                            "(its level fits her occasion), palette (its colour is in her palette; «colour_from» — its "
+                            "source), figure (its cut is among the best for her figure), day (its fabric suits the "
+                            "weather she named), her_words (she asked for it; «quote»), found or unknown (what the "
+                            "code found for it or could not check, as statement codes); «sure» — yes or no",
+                 як="in your words, without codes; with «sure» no say it as not sure, never as a fact",
+                 без="No reasons: «about_items» only for items of «your_declared»."),
         # «against a condition» без умови — сумку, яку стилістка ДОДАЛА, опис
         # прочитав вадою («не поєднується», «потрібно замінити», `swap`); тепер хід несе заяви своєї знахідки
+        # Прогін наряду «причини-за»: «kept the boots anyway for the warmth» без причини «day» при чоботах — чому
+        # річ лишено, модель добудовувала сама; тепер — лише з причин входу
         _ЗП.Поле("your_declared", "items you kept deliberately although the code found something against them: "
                                   "«item» — its «n», «statements» — what the code found, as statement codes",
                  як="this was your choice, not a flaw of the item: never call it a mismatch and never name it "
-                    "in «swap»; in «how_to_wear» say what she does about what the code found"),
+                    "in «swap»; why you kept it — only from its «reasons», else just that you chose it on purpose; in «how_to_wear» say what she does about what the code found"),
         _ВИМ.поле("she_refuses", як="do not advise an item that breaks it and do not call it a compromise; when such an "
                     "item is in the outfit, tell her so plainly"),
         # Ч-1 (аудит/ПРОДУКТ.md п.12): the code no longer writes this as a sentence — it sends the
@@ -206,10 +218,16 @@ import colorspace as _cs
         # «Добір, суд і вибір»): правило #3717 «кожна властивість — з коду або з видимого на фото» лишало пояснення
         # описом речі — 17 із 20 тверджень без опори третього прогону стояли там; тепер воно каже, чому річ тут, а
         # властивість — лише як причина. Не довше за попереднє правило: воно стоїть на його місці
-        "Tell her why each item is here for her, as far as the input supports it — her occasion, her own words, the "
-        "facts listed in «day», her figure, what the code found — not what it looks like: she sees it on its photo "
-        "beside your words. Name an item by its kind so she recognises it. A colour, cut, length or fabric comes in only as the reason for a choice and only when "
-        "clearly visible on that item's own photo; never fibre, feel, comfort or weather protection.",
+        # Наряд «причини-за»: правило велить казати лише причини зі входу — і вимога запису стоїть лише на речах із ними
+        # (`поля_виходу`, повтор `ПОВТОР_НЕ_ОПИСАНО_EN`): заборона без зміни вимоги не допомагала (#3717, крок «без опису»)
+        "Say why an item is here only from its «reasons» and «your_declared», not how it looks: she sees its photo "
+        "beside your words. Name an item by its kind. Fit, comfort, warmth, grip, steadiness, weather protection or "
+        "what it does for her figure only when its «reasons» carry it; an item without reasons gets no sentence of "
+        "its own.",
+        # 16409: заява, що спирається на обставину, яку код вивів (сіль — з морозу й снігу), стояла під образом як
+        # обставина її дня
+        "Say a statement with «day_facts» only as a possibility («if the roads are salted»), never as a fact of her "
+        "day: the code inferred it.",
         "Say each thing about an item once, in one coherent wearing plan; an alternative is a choice, not another "
         "simultaneous instruction. No sentence or attribute quota.",
         # ПРОЗА-КАРТОК-2: «На фото є ще й підібрані сірі штани, але до цього образу належить
@@ -239,14 +257,13 @@ import colorspace as _cs
         # збирала всі поля входу
         # річ за річчю — полем `про_речі` з номером, а не рядком прози: модель називала
         # у «named» усі номери, а текст пропускав пальто чи піджак і описував штани, яких нема
-        "про_речі[].н": "«n» of the item of «outfit»: one entry for every item of «outfit», in its order",
+        "про_речі[].н": "«n» of an item with «reasons» or «your_declared»: one entry for each, in the order of "
+                       "«outfit»",
         # «styled here with matching wide-leg trousers» при бомбері без штанів, кардиган «поверх
         # в'язаного комплекту» з його фото при сукні — запис речі описував увесь кадр. Код прози не читає (п.12),
         # тож межа — тут: запис має лише свою річ, а як речі поєднуються — «text» (речі образу, звірені «named»)
         # Е2-опора-пояснення, крок «без опису речі»: запис речі — чому вона тут для неї, а не опис її вигляду
-        "про_речі[].текст": "why this item alone is here for her, in a sentence or two, as far as the input supports "
-                            "it: what it does for her occasion, her day, her figure or what she asked — not how it "
-                            "looks. It belongs to her outfit; never call it excluded. No other clothing or "
+        "про_речі[].текст": "why this item alone is here for her, in a sentence or two. It belongs to her outfit; never call it excluded. No other clothing or "
                             "accessory, whether from its photo or «outfit»: combinations belong to «text». Her figure "
                             "only through line and cut, never a shape code or «…-shape»",
         "текст": "prose for her after the items: (1) optional, only when it adds something — how the "
@@ -373,7 +390,7 @@ def _місця_в_ід(об, склад):
 def опис_обʼєкт(речі, образ=None, задум=None, випадок=None, свідомі=None, фото_є=True,
                 канал_3=None, палітра=None, день=None, день_образу=None, неповний=None,
                 межі=None, мова_тексту=None, випадок_коди=None, заміна_запасні=None, макіяж=None,
-                тіло=None, рішення_заміни=None):
+                тіло=None, рішення_заміни=None, причини=None):
     """Четвертий виклик: `ОПИС_V1` — обраний образ обʼєктом коду (його перевіряє схема,
     його кладе звіт); моделі його несе `промпт_опису` англійським дротом.
 
@@ -396,6 +413,8 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
     (`swap_decided`); з ним відповідь не просить `swap` і не пише про заміну — картка каже про неї своїм рядком.
     `тіло` — її фігура кодами (`hypergraph.тіло_для_опису`): без неї промпт не несе поля.
     `свідомі` — `[{н, заяви}]`: річ, яку стилістка поставила проти знахідки коду, і заяви тієї знахідки.
+    `причини` — `[{н, about, …}]` (`причини_речі.причини` з номером речі замість id): чому річ тут, як це знає код; запис `про_речі`
+    відповідь несе лише для речей із причиною чи оголошеним ходом (`опис_відповідь_з_json`, `з_причинами`).
     """
     р = []
     for x in (речі or []):
@@ -465,6 +484,9 @@ def опис_обʼєкт(речі, образ=None, задум=None, випад
         об["заміна_запасні"] = заміна_запасні
     if isinstance(рішення_заміни, dict) and рішення_заміни.get("н") and рішення_заміни.get("стан"):
         об["рішення_заміни"] = dict(н=str(рішення_заміни["н"]), стан=str(рішення_заміни["стан"]))
+    _прч = [dict(п) for п in (причини or []) if isinstance(п, dict) and п.get("н") and п.get("about")]
+    if _прч:
+        об["причини"] = _прч
     об["завдання"] = {"мова": str(мова_тексту or _ЗП.МОВА_EN), "відповідь": ОПИС.вихід}
     return об
 
@@ -556,9 +578,10 @@ def фото_доведено_коду(запис):
 
 # Повтор опису, що лишив речі образу без власного запису в `про_речі`. Номери — з тієї
 # самої нумерації пулу, що бачила модель; слів її прози код не читає (п.12).
-ПОВТОР_НЕ_ОПИСАНО_EN = ("Your «about_items» has no entry for these items of «outfit»: %s. Give every item of "
-                        "«outfit» its own entry in «about_items» — its «n» and one or two sentences on why it is "
-                        "here for her — and " + _ФФ.ТОЙ_САМИЙ_ОБЄКТ_EN + ".")
+# Наряд «причини-за»: повтор просить запис лише речей із причиною чи оголошеним ходом — і словами лише їх
+ПОВТОР_НЕ_ОПИСАНО_EN = ("Your «about_items» has no entry for these items, which have «reasons» or «your_declared»: "
+                        "%s. Give each of them its own entry in «about_items» — its «n» and one or two sentences "
+                        "saying only its reasons — and " + _ФФ.ТОЙ_САМИЙ_ОБЄКТ_EN + ".")
 
 
 def _про_речі(про_речі, словник, за_ном, склад):
@@ -599,7 +622,7 @@ def _названо_поза_образом(названо, словник, за
     return поза
 
 
-def опис_відповідь_з_json(текст, кандидати=None, каталог=None, склад=None, запасні=False):
+def опис_відповідь_з_json(текст, кандидати=None, каталог=None, склад=None, запасні=False, з_причинами=None):
     """`ОПИС_ВІДПОВІДЬ_V1` → проза для жінки, поради й речі з поганим фото (Т-06, крок 3).
 
     Повертає `{текст, як_носити, фото_не_те, фото_не_ті, фото_не_ті_знято, проза,
@@ -607,7 +630,9 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
     запис `названо` без номера речі образу (`_названо_поза_образом`) — це річ, якої
     в образі нема, і опис просять переписати (`повторний_виклик`, один повтор у показі). `заміна` (ФОТО-1) — пропозиція моделі id-ами
     (`{річ, чому, на?, на_відкинуто?}`) або `{відмова, сире}`, коли номер не резолвився; рішення — `заміна_з_фото`.
-    `запасні` — чи у вході були `swap_spares` (другий опис): лише тоді «на» без речі пулу — відмова. `фото_не_ті` — id каталогу, у які резолвились
+    `запасні` — чи у вході були `swap_spares` (другий опис): лише тоді «на» без речі пулу — відмова.
+    `з_причинами` — id речей, що мали у вході причину чи оголошений хід (`міст_опис.опис` → `з_причинами`): лише
+    їхній запис обовʼязковий (`не_описано`, повтор); None — вхід без цього поля, обовʼязковий запис кожної речі. `фото_не_ті` — id каталогу, у які резолвились
     номери речей із `фото_не_те`; вони й лягають на картку позначкою під річчю.
     `фото_не_ті_знято` — ті, кому код доказом відмовив (`фото_доведено_коду`),
     разом із причиною: зняття позначки називається, а не робиться мовчки.
@@ -683,6 +708,10 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
         # штани» при м'ятних. Тож кожна річ образу має свій запис `про_речі` з номером; картка читає ці записи в порядку образу, а за
         # ними — `текст`. Річ без запису — `не_описано` (номерами) і один повтор, як «named».
         _рядки, _не, _поза_п = _про_речі(об.get("про_речі"), словник, за_ном, склад)
+        # Наряд «причини-за»: річ без причини у вході окремого запису не потребує — інакше модель добудовує причину сама
+        if з_причинами is not None:
+            _з_прч = {str(і) for і in з_причинами}
+            _не = [і for і in _не if str(і) in _з_прч]
         # Запис `про_речі` несе той самий абзац, що став рядком `текст` (ПЕРЕКЛАД-36): показ віддає мовному шару
         # кожен абзац своїм текстом із номером речі, і поділ звіряється з `текст` знак у знак.
         if _рядки and р["текст"]:

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fitted knit top, long sleeve, fitted crew neckline, hip length, deep burgundy (#6D1F2F), fine merino wool\\n\\nMidi skirt, A-line with a soft flare, falls to mid-calf, dark charcoal (#36393F), textured wool crepe\\n\\nOpaque tights, sheer-matte finish, ankle length, black (#1A1A1A), nylon blend\\n\\nAnkle boots, almond toe, block heel of medium height, shaft just above the ankle, black (#1C1C1C), smooth leather\\n\\nLight wrap coat, single-breasted, knee length, soft camel (#B98F63), wool blend\\n\\nCrossbody bag, small structured shape, chain strap, black (#1C1C1C), leather\\n\\nDrop earrings, slim and simple, antique gold (#B5944A), metal\\n\\nWhy this outfit works: The burgundy knit and charcoal skirt give a polished, neat look that suits a restaurant date without feeling overdressed. The deep, warm colors are flattering in soft evening restaurant light and fit the autumn season. The flared midi skirt adds movement and femininity, while the block-heeled ankle boots keep you comfortable and steady for the whole evening. The camel coat keeps you warm on the way there and adds a classic, warm contrast to the dark tones.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Fitted knit top\\\",\\\"details\\\":\\\"long sleeve, fitted crew neckline, hip length, fine merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#6D1F2F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Midi skirt\\\",\\\"details\\\":\\\"A-line with a soft flare, falls to mid-calf, textured wool crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#36393F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Opaque tights\\\",\\\"details\\\":\\\"sheer-matte finish, ankle length, nylon blend\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"almond toe, block heel of medium height, shaft just above the ankle, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1C1C1C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Light wrap coat\\\",\\\"details\\\":\\\"single-breasted, knee length, wool blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B98F63\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Crossbody bag\\\",\\\"details\\\":\\\"small structured shape, chain strap, leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1C1C1C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"slim and simple, metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#B5944A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2116,\"output_tokens\":446},\"stop_reason\":\"end_turn\"}"
+ }
+}
