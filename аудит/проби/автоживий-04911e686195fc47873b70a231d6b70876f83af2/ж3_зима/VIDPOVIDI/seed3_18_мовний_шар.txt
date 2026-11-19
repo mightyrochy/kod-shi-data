@@ -1,0 +1,41 @@
+── ПРОМПТ (5209 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Crisp navy wool-blend trousers with a high-rise cut and wide-leg silhouette for warmth and structure.\nCream silk-blend blouse featuring a relaxed collar and dropped shoulders to soften the outfit's formality.\nBlack leather ankle boots with a low block heel, providing traction on snow-covered, salted pavement.\nA matching navy wool cardigan worn as an outer layer to shield against the frost, fastened simply at the neck.\n\nThis outfit works because it adheres to the everyday dress code while prioritizing protection from the severe winter conditions of frost and snow. The dark trousers and black boots create a grounded base that handles the slippery, salted roads safely, while the cream blouse offers a fresh contrast against the grey daylight. The cardigan provides essential insulation without appearing overly formal, ensuring she stays warm during her 20-minute walk through the autumn morning.",
+"2": "trousers",
+"3": "blouse",
+"4": "boots",
+"5": "cardigan"
+}
+
+── ВІДПОВІДЬ (1023 симв., 14.8 с, HTTP 200) ──
+{
+"1": "Стильні темно-сині вовняні штани з високою талією і широкими штанинами, які зігріють тебе й додадуть образу структури.\nКремовий шовковий блузон із вільним коміром і спущеними плечима, щоб пом’якшити офіційність твого луку.\nЧорні шкіряні черевики на низькому стійкому каблуці, які забезпечать тобі зчеплення на засніжених та посипаних сіллю тротуарах.\nТемно-синій вовняний кардиган в тон штанам, який ти одягнеш поверх усього іншого для захисту від морозу і просто зав’яжеш на шиї.\n\nЦей образ працює тому, що відповідає повсякденному дрес-коду, але при цьому пріоритетом є твій захист від суворих зимових умов — морозів та снігу. Темно-сині штани і чорні черевики створюють міцну основу, яка безпечно витримає слизькі тротуари з сіллю, а кремовий блузон додасть свіжості на тлі похмурого осіннього світла. Кардиган забезпечить тобі необхідне тепло без зайвої офіційності, щоб ти не замерзла під час своєї 20-хвилинної прогулянки ранковим містом.",
+"2": "штани",
+"3": "блузон",
+"4": "черевики",
+"5": "кардиган"
+}

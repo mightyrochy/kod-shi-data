@@ -1,0 +1,30 @@
+── ПРОМПТ (2128 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Midi coat in a charcoal tone (#36454F), structured single-breasted cut with lapels reaching mid-thigh length, wool-blend fabric for warmth against the frost.\nTrousers in dark denim (#1C232B), relaxed straight-leg cut falling just below the ankle, durable cotton twill that resists road salt.\nChunky leather boots in matte black (#000000), ankle-high shaft with a thick non-slip sole designed for snowy walking conditions.\nThis outfit works because the heavy wool coat provides essential insulation against the frost while the dark denim trousers are chosen to avoid getting damaged by road salt or melting snow. The chunky-soled boots ensure stability and warmth during a twenty-minute walk, meeting the safety needs of the cold morning weather. Every piece strictly adheres to her refusals for reading-heavy items while staying within the requested everyday dress code band."}
+
+── ВІДПОВІДЬ (660 симв., 3.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Midi coat",
+      "details": "structured single-breasted cut with lapels reaching mid-thigh length, wool-blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "relaxed straight-leg cut falling just below the ankle, durable cotton twill",
+      "slot": "bottom",
+      "color_hex": "#1C232B",
+      "worn": true
+    },
+    {
+      "name": "Chunky leather boots",
+      "details": "ankle-high shaft with a thick non-slip sole",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

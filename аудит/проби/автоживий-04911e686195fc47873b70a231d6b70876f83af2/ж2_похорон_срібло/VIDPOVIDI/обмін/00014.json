@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined charcoal wool skirt suit, tailored with a structured blazer jacket and matching high-waisted trousers in a matte finish, color #36454F, fabric: heavy wool blend. A crisp white silk blouse with a modest neckline, cut classic and slightly loose for comfort during long services, color #FFFFFF, fabric: smooth silk chiffon. Simple silver stud earrings and a delicate silver chain necklace, as requested, metal: sterling silver with an oxidized finish to honor the somber occasion. Black leather loafers with a slight heel, chosen for practicality on potentially damp autumn ground, color #000000, fabric: smooth calfskin leather. This outfit honors the solemnity of your grandfather's funeral by adhering strictly to your request for silver jewelry and avoiding any lightness numbers or measurements, offering a respectful, neat silhouette that transitions seamlessly from the morning service to any subsequent family gatherings, while the dark wool provides appropriate dignity for an autumn Thursday in Ukraine.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"skirt suit\\\",\\n      \\\"details\\\": \\\"structured blazer jacket and matching high-waisted trousers in a matte finish, heavy wool blend\\\",\\n      \\\"slot\\\": \\\"set\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"crisp white silk with a modest neckline, cut classic and slightly loose\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFFFF\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"earrings\\\",\\n      \\\"details\\\": \\\"simple silver stud earrings with an oxidized finish on sterling silver\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"necklace\\\",\\n      \\\"details\\\": \\\"delicate silver chain necklace\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"loafers\\\",\\n      \\\"details\\\": \\\"black leather with a slight heel, smooth calfskin leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":554,\"output_tokens\":330},\"stop_reason\":\"end_turn\"}"
+ }
+}

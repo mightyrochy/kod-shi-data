@@ -1,0 +1,46 @@
+── ПРОМПТ (5954 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: casual_suit · about it: text н=1
+2 — kind: belt · about it: text н=2
+3 — kind: scarf_generic · about it: text н=3
+4 — kind: moccasins · about it: text н=4
+5 — kind: bag_generic · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Your cream silk set with red hearts gives a romantic, relaxed feel ideal for an upscale restaurant evening; its flowing drape and short length keep you comfortable while maintaining effortless grace in candlelight.",
+"2": "This belt can define your waist if you choose to wear it, adding structure to the set’s soft silhouette and balancing its volume with a clean line at your narrowest point.",
+"3": "The scarf works beautifully around your neck or as a head wrap to add warmth and a touch of colour that complements your gold necklace, while also lightening the overall look for an elegant yet relaxed evening.",
+"4": "Your cream moccasin sandals provide effortless comfort and a casual-chic vibe that fits perfectly with your silk set’s relaxed elegance for an intimate dinner out.",
+"5": "The wicker basket bag adds a natural, rustic charm to your outfit, its woven texture contrasting softly with the smooth silk and echoing the calm, celebratory mood of your evening.",
+"6": "I chose your cream heart-print silk set to bring a soft, romantic touch perfect for an upscale restaurant evening. The white wicker basket with its lace trim feels light and natural against the silk, adding a gentle countryside elegance that fits your mood of calm celebration. Your gold dangling necklace sits beautifully at the neckline, drawing eyes to your face in the candlelight, while the moccasin sandals offer relaxed comfort without sacrificing style for an intimate dinner out.",
+"7": "Tuck the scarf into the waist of your silk set to soften your silhouette and add a subtle pop of colour near your hips."
+}
+
+── ВІДПОВІДЬ (1685 симв., 11.9 с, HTTP 200) ──
+{
+"1": "Твій кремовий шовковий комплект з червоними сердечками створює романтичний, невимушений образ, ідеальний для вечора в дорогому ресторані; його струмлива драпіровка та коротка довжина дарують тобі комфорт, зберігаючи при цьому бездоганну грацію у світлі свічок.",
+"2": "Цей пояс може підкреслити твою талію, якщо ти вирішиш його одягнути, додавши структури м’якому силуету комплекту та збалансувавши його об’єм чіткою лінією у найвужчому місці.",
+"3": "Цей шарф чудово виглядає на шиї або як пов’язка на голову, щоб додати тепла й відтінку кольору, який гармонує з твоїм золотим кулоном, а також освіжає загальний образ для елегантного та невимушеного вечора.",
+"4": "Твої кремові мокасини забезпечують бездоганний комфорт і невимушений шик, що чудово поєднується з розслабленою вишуканістю твого шовкового комплекту на романтичній вечері.",
+"5": "Плетена кошикова сумка додає твоєму образу природного, сільського шарму; її плетена текстура м’яко контрастує з гладким шовком і відлунює спокійний святковий настрій твого вечора.",
+"6": "Я обрала для тебе кремовий шовковий комплект із сердечками, щоб додати образу ніжного романтичного акценту, який підійде для вишуканого ресторану. Білий плетені кошик з мереживною обробкою здається легким і природним на тлі шовку, додаючи делікатну сільську елегантність, що відповідає твоєму настрою спокійної урочистості. Твій золотий підвісний кулон чудово виглядає в зоні декольте, привертаючи увагу до обличчя у світлі свічок, а мокасини дарують розслаблений комфорт без шкоди для стилю на інтимній вечері.",
+"7": "Заправ шарф у талію шовкового комплекту, щоб пом’якшити силует і додати ледь помітного кольорового акценту біля стегон."
+}

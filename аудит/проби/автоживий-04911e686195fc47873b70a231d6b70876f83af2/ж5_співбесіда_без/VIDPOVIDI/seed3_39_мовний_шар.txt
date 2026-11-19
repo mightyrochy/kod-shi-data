@@ -1,0 +1,53 @@
+── ПРОМПТ (6403 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: dress_shoes · about it: text н=1
+2 — kind: blazer · about it: text н=2
+3 — kind: blouse · about it: text н=3
+4 — kind: belt · about it: text н=4
+5 — kind: bag_generic · about it: text н=5
+6 — kind: shorts · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "These low-heel dress shoes are the perfect solution to your request for no stilettos, providing a stable foundation that lets you walk with confidence while maintaining a professional, polished look for your interview.",
+"2": "This tailored blazer brings the necessary structure and authority to your appearance, serving as an ideal outer layer for a banking interview that signals you are ready for a professional challenge.",
+"3": "Your crisp blouse acts as a bright, clean foundation under the jacket, ensuring your neckline remains accessible and your upper half looks composed and intelligent.",
+"4": "This belt cinches your waist to define your silhouette against the volume of the shorts and blazer, refining your overall line without adding bulk.",
+"5": "As a flat alternative to heels, these shoes fulfill your wish for comfort while still looking sharp enough for a formal job interview setting.",
+"6": "These shorts provide a modern contrast to the traditional suit pieces, injecting a touch of contemporary ease that fits the weekday setting while keeping your overall look professional.",
+"7": "This tailored blazer and crisp blouse create a polished, professional silhouette that commands respect for your bank analyst interview. The white blouse brightens your complexion while the structured jacket adds necessary authority to your look. Your wide-leg shorts balance the formality of the suit pieces with modern ease, and the black belt defines your waistline to refine your overall line. I chose these dress shoes specifically because you requested no heels; their stable platform ensures you can walk confidently between buildings without sacrificing the sharpness needed for this important meeting.",
+"8": "Let the blazer hang open over the blouse to soften your upper half while keeping your neckline clean and accessible.",
+"9": "Сумка Марсала абстракція — Removed silver ring entirely (kept as declaration only) to fix 'same_kind_accessories_duplicate' and simplify the look for a formal interview."
+}
+
+── ВІДПОВІДЬ (2054 симв., 14.1 с, HTTP 200) ──
+```json
+{
+  "1": "Ці туфлі на низькому підборі є ідеальним рішенням для твого прохання не носити шпильки, забезпечуючи стійку основу, яка дозволяє тобі впевнено ходити та зберігати професійний, охайний вигляд на твоєму співбесіді.",
+  "2": "Цей приталений піджак надає необхідну структуру й авторитетність твоїй зовнішності, слугуючи ідеальним верхнім шаром для банківського співбесіди, який сигналізує про те, що ти готова до професійного виклику.",
+  "3": "Твоя свіжа блузка є яскравим, чистим фоном під жакетом, забезпечуючи доступність твоєї лінії шиї та охайний і розумний вигляд верхньої частини тіла.",
+  "4": "Цей пояс підкреслює твою талію, щоб визначити силует на тлі об’єму шортів і жакета, вдосконалюючи загальний контур без додавання зайвого об’єму.",
+  "5": "Як альтернатива підборам, ці туфлі задовольняють твоє бажання комфорту, залишаючись достатньо елегантними для формального співбесіди.",
+  "6": "Ці шорти надають сучасний контраст традиційним деталям костюма, додаючи нотку сучасної легкості, яка підходить до буднього дня, зберігаючи при цьому загальний професійний вигляд.",
+  "7": "Цей приталений піджак і свіжа блузка створюють охайний, професійний силует, який викликає повагу на твоєму співбесіді для аналітика банку. Біла блузка освітлює твій колір обличчя, а структурований піджак додає необхідної авторитетності до твого образу. Твої шорти вільного крою збалансовують формальність деталей костюма сучасною легкістю, а чорний пояс визначає лінію твоєї талії для вдосконалення загальної лінії. Я обрала ці туфлі саме тому, що ти попросила не носити підбори; їхня стійка платформа гарантує, що ти зможеш упевнено ходити між будівлями без шкоди для елегантності, необхідної на такій важливій зустрічі.",
+  "8": "Дай піджаку вільно звисати над блузкою, щоб пом’якшити верхню частину тіла та зберегти лінію шиї чистою й доступною.",
+  "9": "Сумка Марсала абстракція — Видалено срібне кільце повністю (залишено лише як декларацію), щоб виправити 'same_kind_accessories_duplicate' і спростити образ для формальної співбесіди."
+}
+```

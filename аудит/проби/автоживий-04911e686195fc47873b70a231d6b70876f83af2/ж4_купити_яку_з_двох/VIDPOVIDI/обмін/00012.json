@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"wants\": \"Хочу купити одну з цих речей — яку з них радиш і чому?\"}, \"wish_quotes\": [\"Хочу купити одну з цих речей — яку з них радиш і чому?\"], \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"wish_quotes\": {\"kind\": \"default\"}, \"wishes\": {\"kind\": \"reading\", \"quote\": \"Хочу купити одну з цих речей — яку з них радиш і чому?\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"Хочу купити одну з цих речей — яку з них радиш і чому?\"}]}, \"refusals\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"default\"}, \"precipitation\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"default\"}}, \"wishes\": [\"blouse\"], \"occasion\": \"everyday\", \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#5a3a2a\", \"#4e3022\", \"#664332\"], \"hair_hex\": \"#1d1612\", \"eyes_hex\": \"#3b2417\", \"height_cm\": 165, \"girths_cm\": {\"shoulders\": 112, \"bust\": 114, \"waist\": 104, \"hips\": 114}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Satin-blend blouse with a relaxed drape cut in a classic V-neck, length hitting mid-hip at approximately 78 cm, color deep terracotta (#c26a5f), composed of soft viscose.\\nWool-cashmere blend wide-leg trousers with a high waist and gentle taper through the calf, ankle-length falling just above the shoe line, color charcoal heather (#3d4143), woven from structured yet fluid wool.\\nLeather ankle boots with a low block heel and a pointed toe silhouette, shaft height resting at mid-calf, color espresso brown (#3b2a20), crafted from smooth full-grain leather.\\nThis outfit balances the crispness of autumn weather with comfort through the use of a breathable viscose blouse paired with warm, durable wool trousers that drape elegantly without clinging. The deep terracotta hue complements warm skin tones while grounding the look with neutral charcoal and rich espresso accents for a polished everyday aesthetic. It honors the wish to own a versatile blouse while creating a cohesive ensemble suitable for cool fall days without feeling overly dressed up.\"}],\"usage\":{\"input_tokens\":577,\"output_tokens\":230},\"stop_reason\":\"end_turn\"}"
+ }
+}

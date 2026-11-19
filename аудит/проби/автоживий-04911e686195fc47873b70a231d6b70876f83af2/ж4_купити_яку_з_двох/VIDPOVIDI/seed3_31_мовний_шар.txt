@@ -1,0 +1,62 @@
+── ПРОМПТ (7173 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: dress_generic · about it: text н=1
+2 — kind: beanie · about it: text н=2
+3 — kind: earrings · about it: text н=3
+4 — kind: loafers · about it: text н=4
+5 — kind: bag_generic · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This dress anchors your outfit with a clean, continuous line that flatters your figure without adding unnecessary bulk, keeping the focus on your natural shape rather than hiding it.",
+"2": "The headwear brings a playful pop of color and texture that contrasts beautifully with the dress’s simplicity, drawing attention to your face and adding character to your everyday style.",
+"3": "These earrings offer a subtle accent that complements your features without overwhelming the rest of your look, perfect for an everyday occasion where understated elegance shines.",
+"4": "The loafers provide a comfortable and stylish base for your day-to-day adventures, their sleek design ensuring you can move freely while maintaining a polished appearance.",
+"5": "This bag rounds out the outfit with practicality and style, offering just enough presence to carry essentials without disrupting the flow of your ensemble.",
+"6": "This ensemble is built to turn your everyday outing into a moment that feels effortless yet polished, anchored by a dress that defines your silhouette with clean lines. The headwear adds a touch of playful contrast and texture, drawing the eye upward while balancing the overall look, while the loafers ground you with quiet sophistication. A simple necklace completes the picture without competing for attention, letting each piece breathe as part of a cohesive whole.",
+"7": "Start your day with the dress as your foundation; if you feel it’s too casual, slip on the headwear to instantly elevate the vibe.",
+"8": "Сережки-гвоздики червоні квадрати в позолоті — Burgundy earrings were kept as a strong color contrast against the chocolate dress, answering the need for an accent in this monochromatic scheme.",
+"9": "Лофери жіночі замшеві св.бірюзові — Sandals are unsuitable for autumn; flat suede loafers replace them to fit the seasonal weather band and provide a polished finish.",
+"10": "Міні-сумочка Бірюзовий Розквіт — A bag is strictly required for any occasion; this neutral tote fills the missing accessory slot cleanly.",
+"11": "Лофери жіночі замшеві св.бірюзові — The gate on the shoes is accepted because swapping sandals for suede loafers directly solves the seasonal mismatch while preserving the outfit's romantic, warm aesthetic.",
+"12": "Сукня приталеного крою, призібрана по боках, вирізи V-подібні (Chloe) Chloe — The warning about open zones is noted but not a blocker; the dress remains the clear hero and focal point of this simple, elegant ensemble.",
+"13": "Шапка з екохутра рожева — The beige blouse was removed in favor of these pink loafers, which add a softer, more playful pop of color suitable for her festive mood.",
+"14": "Шапка з екохутра рожева — Red sneakers are replaced by burgundy loafers to match the formal requirement of 'smart' while keeping the casual vibe."
+}
+
+── ВІДПОВІДЬ (2809 симв., 20.0 с, HTTP 200) ──
+```json
+{
+  "1": "Ця сукня формує твій образ чистою, безперервною лінією, яка підкреслює фігуру, не додаючи зайвого об’єму, залишаючи акцент на природних формах.",
+  "2": "Головний убір приносить грайливий сплеск кольору та текстури, який чудово контрастує з простотою сукні, привертаючи увагу до твого обличчя і додаючи характеру твоєму повсякденному стилю.",
+  "3": "Ці сережки пропонують ледь помітний акцент, що гармонує з рисами обличчя без перевантаження всього образу — ідеальний варіант для повсякденної події, де витончена елегантність сяє.",
+  "4": "Лофери забезпечують комфортну та стильну основу для твоїх щоденних пригод; їхній лаконічний дизайн гарантує, що ти зможеш вільно рухатися, зберігаючи при цьому доглянутий вигляд.",
+  "5": "Ця сумка завершує образ практичністю і стилем, пропонуючи достатньо присутності для перенесення необхідних речей без порушення гармонії ансамблю.",
+  "6": "Цей комплект створений, щоб перетворити твій звичайний похід на подію, яка відчувається легкою та вишуканою, заснованою на сукні, що окреслює силует чистими лініями. Головний убір додає нотку грайливого контрасту і текстури, привертаючи погляд вгору і збалансовуючи загальний образ, а лофери заземлюють тебе тихою вишуканістю. Просте намисто завершує картину без боротьби за увагу, дозволяючи кожному елементу дихати як частині цілісного ансамблю.",
+  "7": "Почни свій день із сукні в основі; якщо тобі здається, що вона надто повсякденна, одягни головний убір, щоб миттєво підняти настрій.",
+  "8": "Сережки-гвоздики червоні квадрати в позолоті — Червоні сережки були збережені як сильний колірний контраст до шоколадної сукні, задовольняючи потребу в акценті у цій монохромній схемі.",
+  "9": "Лофери жіночі замшеві св.бірюзові — Сандалії не підходять для осені; їх замінюють плоскі замшеві лофери, щоб відповідати сезонним погодним умовам і надати вишуканий фініш.",
+  "10": "Міні-сумочка Бірюзовий Розквіт — Сумка суворо необхідна для будь-якої події; ця нейтральна сумка заповнює відсутній аксесуар чисто.",
+  "11": "Лофери жіночі замшеві св.бірюзові — Застібка на взутті прийнята, оскільки заміна сандалій на замшеві лофери безпосередньо вирішує сезонний дисбаланс і зберігає романтичну, теплу естетику образу.",
+  "12": "Сукня приталеного крою, призібрана по боках, вирізи V-подібні (Chloe) Chloe — Попередження про відкриті зони відзначено, але не є перешкодою; сукня залишається головним героєм і фокусом цього простого, елегантного ансамблю.",
+  "13": "Шапка з екохутра рожева — Бежеву блузку прибрали на користь цих рожевих лоферів, які додають м’якший, більш грайливий сплеск кольору, відповідний її святковому настрою.",
+  "14": "Шапка з екохутра рожева — Червоні кросівки замінені на бордові лофери, щоб відповідати формальній вимозі «ошатно», зберігаючи при цьому невимушений стиль."
+}
+```
