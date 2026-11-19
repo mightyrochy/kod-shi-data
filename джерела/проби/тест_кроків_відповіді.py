@@ -6,7 +6,7 @@ from unittest import TestCase, main
 
 import міст_відповіді as міст
 
-ДЖЕРЕЛА = Path(__file__).resolve().parent
+ДЖЕРЕЛА = Path(__file__).resolve().parents[1]
 СЦЕНА = (ДЖЕРЕЛА.parent / "аудит/проби/живий-як-людина-4/стенд/службове"
          / "с5_весілля_сестри")
 

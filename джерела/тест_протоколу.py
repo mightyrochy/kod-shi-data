@@ -1661,7 +1661,7 @@ for _к, _в in _ПП_ш.ПОЛЯ_ПАСПОРТА.items():
 
 
 from unittest import TextTestRunner, defaultTestLoader
-from тест_кроків_відповіді import КрокиВідповіді
+from проби.тест_кроків_відповіді import КрокиВідповіді
 
 _кроки = TextTestRunner(stream=sys.stdout).run(defaultTestLoader.loadTestsFromTestCase(КрокиВідповіді))
 звірка("Три кроки відповіді моделі на записі с5 та зіпсованих входах", _кроки.wasSuccessful())
