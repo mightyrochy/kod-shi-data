@@ -1,0 +1,44 @@
+── ПРОМПТ (2360 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer in charcoal gray (#36454f), tailored fit with sharp shoulders and elbow patches for texture.\nHigh-waisted wide-leg trousers in heavy crepe fabric, cut in a deep forest green (#1a3c34) to ground the look on parquet flooring.\nA silk blouse with subtle puff sleeves in cream ivory (#fffff0), featuring an embroidered neckline that complements her warm skin tones.\nStiletto pumps in polished black leather (#000000) for a sleek silhouette appropriate for a festive dinner setting.\nDelicate gold drop earrings in 18k yellow gold to catch the artificial evening lighting without overpowering the ensemble.\n\nThis outfit works because it perfectly balances the formal dress code with the guest's need for context-optimal style during a celebration. The structured blazer and elegant trousers provide a polished silhouette that flatters her specific proportions, while the rich green hue adds depth against autumnal tones. The mix of natural wool crepe and luxurious silk creates an editorial quality that stands out in a festive environment without sacrificing comfort or movement."}
+
+── ВІДПОВІДЬ (935 симв., 5.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored fit with sharp shoulders and elbow patches, wool-blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-waisted wide-leg cut, heavy crepe fabric",
+      "slot": "bottom",
+      "color_hex": "#1a3c34",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "subtle puff sleeves with embroidered neckline",
+      "slot": "top",
+      "color_hex": "#fffff0",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "stiletto silhouette, polished leather",
+      "slot": "shoes",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "delicate drop style in 18k yellow gold",
+      "slot": "earrings",
+      "color_hex": "#ffd700",
+      "worn": true
+    }
+  ]
+}
