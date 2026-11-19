@@ -123,9 +123,25 @@ try {
     $rec = @(Records)[-1]; $lines = @(Chain-Lines)
     Check 'CHAIN_API: межа часу — журнал і рядок «межа часу»' ($err.Exception.Message -ceq 'CHAIN_API' -and $rec.exit_code -eq -1 -and $rec.stderr -ceq 'межа часу' -and $lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API межа часу' -and (Test-OutboxLine $lines[0]) -ceq '')
     Reset-ChainLines
-    [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="dial tcp: lookup api.github.com: no such host`n"}))
+    [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="unknown flag: --foo`n"}))
     $lines = @(Chain-Lines)
-    Check 'CHAIN_API: stderr без коду HTTP — рядок без ознаки, текст лише в журналі' ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API' -and @(Records)[-1].stderr.Contains('no such host'))
+    Check 'CHAIN_API: довільний stderr без ознаки — рядок без ознаки, текст лише в журналі' ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API' -and @(Records)[-1].stderr.Contains('unknown flag'))
+    Reset-ChainLines
+    $live = "Get `"https://api.github.com/repos/mightyrochy/kod-shi-data/pulls?state=open&per_page=100&page=1`": net/http: TLS handshake timeout"
+    [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err=$live}))
+    $rec = @(Records)[-1]; $lines = @(Chain-Lines)
+    Check 'CHAIN_API: живий stderr (TLS handshake timeout) — журнал повний, рядок «мережа» без адреси' ($rec.exit_code -eq 1 -and $rec.stderr -ceq $live -and $lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API мережа' -and (Test-OutboxLine $lines[0]) -ceq '')
+    foreach ($go in @('dial tcp 140.82.121.6:443: i/o timeout','read tcp 10.0.0.2:5000->140.82.121.6:443: connection reset by peer','dial tcp 127.0.0.1:443: connect: connection refused','dial tcp: lookup api.github.com: no such host')) {
+        Reset-ChainLines
+        [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="Get `"$url`": $go"}))
+        $lines = @(Chain-Lines)
+        Check "CHAIN_API: Go-помилка «$go» — «мережа»" ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API мережа')
+    }
+    Reset-ChainLines
+    [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="gh: HTTP 502: Bad Gateway ($url): i/o timeout"}))
+    $lines = @(Chain-Lines)
+    Check 'CHAIN_API: HTTP-код старший за «мережу»' ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API HTTP 502')
+    Reset-ChainLines
     $secret = New-ChainFailure 'CHAIN_PUSH' ([pscustomobject]@{Code=128;Out='';Err="fatal: unable to access 'https://user:token123@github.com/o/r/': HTTP 502"})
     Check 'stderr у Data — адреса без входу' ($secret.Message -ceq 'CHAIN_PUSH' -and $secret.Data['ExitCode'] -eq 128 -and -not ([string]$secret.Data['Stderr']).Contains('token123') -and ([string]$secret.Data['Stderr']).Contains('https://github.com/o/r/'))
     Reset-ChainLines
