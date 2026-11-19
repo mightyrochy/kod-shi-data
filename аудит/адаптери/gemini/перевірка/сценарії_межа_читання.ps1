@@ -151,7 +151,7 @@ try {
     Scenario '0 план звіту несе build, since_pr і merge' {
         $p = ConvertFrom-Json $plan1
         Check '0 build — збірка плану, межа — з номером звіту' ($p.build -ceq $build1 -and $p.since_sha -ceq $checked -and $p.since_pr -ceq '900')
-        Check '0 merge — злиття кожного PR плану' ((@($p.merge.PSObject.Properties.Name) | Sort-Object) -join ',' -ceq '11,12,13,14,15,16' -and $p.merge.'13' -ceq $merge[13])
+        Check '0 merge — злиття кожного PR плану, і притриманого (#19, прогнаний #902)' ((@($p.merge.PSObject.Properties.Name) | Sort-Object) -join ',' -ceq '11,12,13,14,15,16,19' -and $p.merge.'13' -ceq $merge[13])
         Check '0 reports — звіт #902, що прогнав #19, з головою й часом' ((@($p.reports | ForEach-Object { $_.number }) -join ',') -ceq '902' -and @($p.reports)[0].sha -ceq $headR0 -and [bool]@($p.reports)[0].created_at -and $p.ran.'902' -eq 1)
         $script:FullPairs = Pairs (Plan-Run $build2 -Full)
         "ПОВНЕ ЧИТАННЯ: $($script:AutoApiCalls) запитів; $($script:FullPairs -join '; ')"

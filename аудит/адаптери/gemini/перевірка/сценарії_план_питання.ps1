@@ -5,7 +5,10 @@ PR, хмарній теці запису й оцінках у дереві зб�
 сценою, сцена заради нього не записується (ДО — сцена в плані); запис, який оцінка дала «не виміряно», не прогнаний:
 той самий текст — у `bad` з причиною оцінки, виправлений рядок і «не виміряно (обрив)» — у плані (ДО — пару лічено
 прогнаною); межа перевіреної збірки (`ПЕРЕВІРЕНО ЗБІРКУ`) не покриває пари, яку оцінка теки того звіту дала «не
-виміряно» (ДО — губилась); повтор відсіяного планом-джерелом не новий (`unfit_new`), і план лише з ним порожній (`Test-AutoPlanEmpty`). #>
+виміряно» (ДО — губилась); повтор відсіяного планом-джерелом не новий (`unfit_new`), і план лише з ним порожній (`Test-AutoPlanEmpty`);
+план-джерело притримує (`held`) прогнане записом і покрите межею, що записував прогін звіту межі: оцінку «не виміряно»,
+злиту після нього, наступний план застосовує й тоді, коли PR пари поза читанням (ДО — пару губило: її не було ні в `bad`,
+ні в `scenes`); план без `held` читається, як і раніше. #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
@@ -206,6 +209,93 @@ try {
         Check '5 лише повтор відсіяного (unfit_new 0) — план порожній' (Test-AutoPlanEmpty $slug (Plan-Text 0 $true))
         Check '5 нове відсіяне (unfit_new 1) — план не порожній: звіт назве його' (-not (Test-AutoPlanEmpty $slug (Plan-Text 1 $true)))
         Check '5 нерозібраний рядок (bad без сцени) — план не порожній' (-not (Test-AutoPlanEmpty $slug (Plan-Text 0 $false)))
+    }
+    Scenario '7 план-джерело притримує прогнане й покрите межею' {
+        function Held-Pairs($Plan) { @(@($Plan.held.PSObject.Properties) | ForEach-Object { $id = $_.Name; @($_.Value) | ForEach-Object { "$($_.pr)|$id" } }) }
+        function Report([int]$Number, [string]$Dir, [string]$Head, [string]$Date, [string]$Body) {
+            [pscustomobject]@{number = $Number; user = @{login = 'mightyrochy'}; head = @{ref = "claude/$Dir"; sha = $Head; repo = @{full_name = 'mightyrochy/kod-shi-data'}}
+                base = @{ref = 'main'; repo = @{full_name = 'mightyrochy/kod-shi-data'}}; merge_commit_sha = $null; merged_at = $null
+                created_at = $Date; updated_at = $Date; body = $Body}
+        }
+        function Save-Plans([string]$Dir, [string]$Plan, [string]$Date) {
+            # Той самий план двічі: без `held` (як складав код до цього поля) і з ним — дві голови звіту.
+            $old = ConvertFrom-Json $Plan; $old.PSObject.Properties.Remove('held')
+            [void][IO.Directory]::CreateDirectory("$repo/аудит/проби/$Dir")
+            [IO.File]::WriteAllText("$repo/аудит/проби/$Dir/ПЛАН.json", (ConvertTo-Json -InputObject $old -Depth 8 -Compress), $utf)
+            $oldHead = Repo-Commit $Date 'Звіт: план без held'
+            [IO.File]::WriteAllText("$repo/аудит/проби/$Dir/ПЛАН.json", $Plan, $utf)
+            @($oldHead, (Repo-Commit $Date 'Звіт: план з held'))
+        }
+        function Where-Is($Plan, [int]$Number, [string]$Scene) {
+            $in = @(@($Plan.scenes.PSObject.Properties) | Where-Object { $_.Name -ceq $Scene } | ForEach-Object { @($_.Value) } | Where-Object { [int]$_.pr -eq $Number })
+            $out = @(Bad-Of $Plan $Number | Where-Object { [string]$_.scene -ceq $Scene })
+            if ($in.Count) { 'scenes' } elseif ($out.Count) { 'bad: ' + [string]$out[0].reason } else { 'ніде' }
+        }
+        try {
+            # (а) Прогнане записом. План P1 на збірці без оцінки лічить #101 і #102 прогнаними хмарною текою.
+            & git -C $repo checkout -q -b plan-held-ran $treeNoEval
+            if ($LASTEXITCODE) { throw 'Не створено гілку plan-held-ran' }
+            $script:PlanPulls = @($script:Merged)
+            $p1Text = Get-AutoLivePlan $treeNoEval
+            $p1 = ConvertFrom-Json $p1Text
+            Check '7а план P1 притримує прогнане (#101, #102) у held, у scenes і bad їх нема' ((@(Held-Pairs $p1 | Sort-Object) -join ',') -ceq '101|ж1_робота,102|ж2_побачення_вечір' -and
+                (Where-Is $p1 101 'ж1_робота') -ceq 'ніде' -and (Where-Is $p1 102 'ж2_побачення_вечір') -ceq 'ніде')
+            $dirA = "автоживий-$treeNoEval"
+            $heads = Save-Plans $dirA $p1Text '2026-11-08T00:00:00Z'
+            # Оцінку хмарної теки злито після плану: #101 — «не виміряно», #102 — «не виміряно (обрив)».
+            [IO.File]::WriteAllText("$repo/$evalPath", ("# Оцінка прогону ``аудит/проби/$cloudName```n`n| сцена | PR | відповідь | чому |`n|---|---|---|---|`n" +
+                "| ж1_робота | #101 | не виміряно | сцена не дійшла до вибору |`n| ж2_побачення_вечір | #102 | не виміряно (обрив) | стенд обірвався |`n"), $utf)
+            $evalA = Repo-Commit '2026-11-09T00:00:00Z' 'Оцінка після плану'
+            # Читання дійшло лише до звіту: PR #101–#106 поза межею сторінок, їхні рядки — з плану-джерела.
+            $script:PlanPulls = @(Report 130 $dirA $heads[0] '2026-11-08T00:00:00Z' '')
+            $before = Get-Plan $evalA
+            $script:PlanPulls = @(Report 131 $dirA $heads[1] '2026-11-08T00:00:00Z' '')
+            $after = Get-Plan $evalA
+            "ДАНІ 7а ДО: #101 — $(Where-Is $before 101 'ж1_робота'); #102 — $(Where-Is $before 102 'ж2_побачення_вечір')"
+            "ДАНІ 7а ПІСЛЯ: #101 — $(Where-Is $after 101 'ж1_робота'); #102 — $(Where-Is $after 102 'ж2_побачення_вечір')"
+            Check '7а ДО (план без held): пар #101 і #102 нема ні в bad, ні в scenes, решта плану-джерела на місці' ((Where-Is $before 101 'ж1_робота') -ceq 'ніде' -and
+                (Where-Is $before 102 'ж2_побачення_вечір') -ceq 'ніде' -and (Where-Is $before 104 'ж3_свято_др') -ceq 'scenes' -and @(Bad-Of $before 105).Count -eq 1)
+            Check '7а ПІСЛЯ: «не виміряно» — #101 у bad з причиною оцінки, «обрив» — #102 знову в scenes' ((Where-Is $after 101 'ж1_робота') -ceq
+                "bad: не виміряно в оцінці ${evalPath}:5: сцена не дійшла до вибору" -and (Where-Is $after 102 'ж2_побачення_вечір') -ceq 'scenes')
+
+            # (б) Покрите межею. Звіт #140 перевірив збірку $build і записав #101 та #104; його план — ці дві пари.
+            & git -C $repo checkout -q -b plan-held-bound $treeNoEval
+            if ($LASTEXITCODE) { throw 'Не створено гілку plan-held-bound' }
+            $dirB = "автоживий-$build"
+            $runScenes = @{}
+            foreach ($n in @(101, 104)) {
+                $record = "$repo/аудит/проби/$dirB/$($questions[$n][0])"
+                foreach ($sub in @('знімки', 'VIDPOVIDI/обмін')) { [void][IO.Directory]::CreateDirectory("$record/$sub") }
+                [IO.File]::WriteAllText("$record/результат.json", ('{"rc": 0, "sha": "' + $build + '"}'), $utf)
+                foreach ($file in @('повтор.json', 'лог.txt', 'знімки/доказ.json', 'VIDPOVIDI/обмін/1.json')) { [IO.File]::WriteAllText("$record/$file", '{}', $utf) }
+                $runScenes[$questions[$n][0]] = @(@{pr = $n; question = $questions[$n][1]})
+            }
+            [IO.File]::WriteAllText("$repo/аудит/проби/$dirB/ПЛАН.json", (ConvertTo-Json -Compress -Depth 5 @{build = $build; scenes = $runScenes}), $utf)
+            [IO.File]::WriteAllText("$repo/аудит/проби/$dirB/done.txt", (@($runScenes.Keys | ForEach-Object { '{"сцена": "' + $_ + '", "rc": 0, "секунд": 300}' }) -join "`n") + "`n", $utf)
+            $head140 = Repo-Commit '2026-11-08T00:00:00Z' 'Звіт межі #140'
+            $report140 = Report 140 $dirB $head140 '2026-11-08T00:00:00Z' "Звіт`n`nПЕРЕВІРЕНО ЗБІРКУ: $build`n"
+            $script:PlanPulls = @($report140) + @($script:Merged)
+            $paText = Get-AutoLivePlan $head140
+            $pa = ConvertFrom-Json $paText
+            Check '7б план під межею притримує лише пари прогону звіту межі (#101, #104), не #102' ((@(Held-Pairs $pa | Sort-Object) -join ',') -ceq '101|ж1_робота,104|ж3_свято_др' -and
+                @(Scene-Names $pa).Count -eq 0)
+            $dirC = "автоживий-$head140"
+            $heads = Save-Plans $dirC $paText '2026-11-09T00:00:00Z'
+            $boundEval = 'аудит/перевірки/Оцінка-межа-план.md'
+            [IO.File]::WriteAllText("$repo/$boundEval", ("# Оцінка прогону ``аудит/проби/$dirB```n`n| сцена | PR | відповідь | чому |`n|---|---|---|---|`n" +
+                "| ж3_свято_др | #104 | не виміряно | модель не дійшла до вибору |`n"), $utf)
+            $evalB = Repo-Commit '2026-11-10T00:00:00Z' 'Оцінка звіту межі після плану'
+            # Читання дійшло лише до звіту #150: звіт межі #140 — з reports плану-джерела, PR #101–#106 — поза читанням.
+            $script:PlanPulls = @(Report 150 $dirC $heads[0] '2026-11-09T00:00:00Z' '')
+            $before = Get-Plan $evalB
+            $script:PlanPulls = @(Report 151 $dirC $heads[1] '2026-11-09T00:00:00Z' '')
+            $after = Get-Plan $evalB
+            "ДАНІ 7б ДО: #104 — $(Where-Is $before 104 'ж3_свято_др'); ПІСЛЯ: #104 — $(Where-Is $after 104 'ж3_свято_др')"
+            Check '7б ДО (план без held): пари #104 під межею нема ні в bad, ні в scenes' ((Where-Is $before 104 'ж3_свято_др') -ceq 'ніде')
+            Check '7б ПІСЛЯ: #104 у bad з причиною оцінки звіту межі, #101 лишається покритим і притриманим' ((Where-Is $after 104 'ж3_свято_др') -ceq
+                "bad: не виміряно в оцінці ${boundEval}:5: модель не дійшла до вибору" -and (Where-Is $after 101 'ж1_робота') -ceq 'ніде' -and
+                (@(Held-Pairs $after) -join ',') -ceq '101|ж1_робота')
+        } finally { $script:PlanPulls = @($script:Merged) }
     }
 } finally {
     if ((Split-Path -Parent $tmp) -eq [IO.Path]::GetTempPath().TrimEnd('\', '/') -and (Split-Path -Leaf $tmp) -cmatch '^plan-pytannia-[0-9a-f]{32}$') { Remove-Item -LiteralPath $tmp -Recurse -Force }
