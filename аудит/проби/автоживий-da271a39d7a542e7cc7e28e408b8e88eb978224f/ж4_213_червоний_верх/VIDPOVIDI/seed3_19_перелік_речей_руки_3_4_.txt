@@ -1,0 +1,30 @@
+── ПРОМПТ (1979 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk blouse with a relaxed fit, cropped at the hip, deep crimson (#DC143C), woven silk.\nTailored wool-blend trousers, straight-leg cut, mid-calf length, charcoal gray (#36454F), fine worsted wool.\nLeather ankle boots, pointed toe and low heel, chestnut brown (#8B4513), smooth full-grain leather.\nThis outfit works for a social gathering with friends in autumn because the rich red top follows her wish to wear red on top while remaining comfortably neat. The charcoal trousers provide a polished yet relaxed silhouette suitable for an evening out without looking too stiff or formal. The ankle boots offer practical warmth and stability for cooler weather while maintaining a stylish edge that balances comfort with elegance."}
+
+── ВІДПОВІДЬ (617 симв., 4.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Silk blouse",
+      "details": "relaxed fit, cropped at the hip, woven silk",
+      "slot": "top",
+      "color_hex": "#DC143C",
+      "worn": true
+    },
+    {
+      "name": "Wool-blend trousers",
+      "details": "tailored, straight-leg cut, mid-calf length, fine worsted wool",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "pointed toe and low heel, smooth full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#8B4513",
+      "worn": true
+    }
+  ]
+}

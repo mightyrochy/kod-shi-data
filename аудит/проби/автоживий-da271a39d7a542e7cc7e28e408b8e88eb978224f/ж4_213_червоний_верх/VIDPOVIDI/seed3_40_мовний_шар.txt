@@ -1,0 +1,45 @@
+── ПРОМПТ (5718 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: dress_generic · about it: text н=1
+2 — kind: dress_shoes · about it: text н=2
+3 — kind: ring · about it: text н=3
+4 — kind: bag_generic
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "I chose this dress for your meeting with friends because it fits the social occasion perfectly and matches the red top you wanted to wear. Its cut provides a comfortable fit that feels good on your body while maintaining a stylish line.",
+"2": "These shoes were selected to complement the dress, ensuring they are suitable for an evening out with friends without adding unnecessary formality.",
+"3": "This ring adds a subtle personal touch to your ensemble, enhancing your outfit's overall style just right for a social gathering.",
+"4": "This red dress is the perfect choice for your meeting with friends, as you mentioned wanting a top in that specific color. It offers the right level of style for a social occasion while keeping you comfortable throughout your time together. The shoes match this casual yet polished look, and the ring adds a touch of personal flair without being too loud.",
+"5": "Tuck or gather the dress slightly at the waist to create a defined line, which helps balance the outfit's silhouette and gives shape to your figure.",
+"6": "LeBERDES Туфлі бордові, Незамкнена каблучка зі срібла — The silvery ring adds just one necessary metallic touch alongside the leather shoes, keeping the shine budget low without dulling the look; it serves as a subtle accent rather than a distraction.",
+"7": "LeBERDES Туфлі бордові — High heel pumps used to add volume and presence, countering the 'one_line' risk."
+}
+
+── ВІДПОВІДЬ (1419 симв., 13.2 с, HTTP 200) ──
+{
+"1": "Я обрала цю сукню для твоєї зустрічі з друзями, адже вона ідеально підходить до соціальної події та поєднується з червоним топом, який ти хотіла одягнути. Її крій забезпечує комфортний силует, що добре сидить на твоїй фігурі, зберігаючи при цьому стильний вигляд.",
+"2": "Ці туфлі були підібрані для доповнення сукні, щоб вони відповідали вечірньому заходу з друзями без зайвої офіційності.",
+"3": "Це кільце додає непомітний особистий штрих твоєму ансамблю, покращуючи загальний стиль твого образу саме для соціального зібрання.",
+"4": "Ця червона сукня — ідеальний вибір на зустріч з друзями, адже ти хотіла топ саме цього кольору. Вона пропонує потрібний рівень стилю для соціальної події, залишаючись при цьому комфортною протягом усього часу разом. Туфлі доповнюють цей невимушений і водночас вишуканий образ, а кільце додає нотку особистого шарму без зайвої помітності.",
+"5": "Злегка заправ або збери сукню на талії, щоб створити чіткий силует, який допоможе врівноважити загальний вигляд твого образу і підкреслить фігуру.",
+"6": "LeBERDES Туфлі бордові, Незамкнена каблучка зі срібла — Срібне кільце додає лише один необхідний металевий акцент поряд з шкіряними туфлями, зберігаючи скромність блиску без нудного вигляду; воно слугує тонким штрихом замість відволікаючого елементу.",
+"7": "LeBERDES Туфлі бордові — Чоботи на підборах для додання об’єму та виразності, протидіючи ризику «одної лінії»."
+}
