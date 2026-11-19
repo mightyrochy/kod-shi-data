@@ -98,7 +98,11 @@ function відтворитиЗапис(тека, результат, налаш
     const р = запуститиСтенд(збірка, кеш, сцена.сід, середовищеСцени(сцена, вихід), вихід);
     налаштування.етап?.(path.basename(тека), 'читання результату й прибирання стенда');
     const помилка = path.join(вихід, 'знімки/помилка_відтворення.json');
-    return {rc: р.status === null ? 2 : р.status, лог: fs.readFileSync(path.join(вихід, 'лог.txt'), 'utf8'),
+    const лог = fs.readFileSync(path.join(вихід, 'лог.txt'), 'utf8');
+    console.log('СТЕНД ' + JSON.stringify({utc: new Date().toISOString(), сцена: path.basename(тека),
+      rc: р.status, помилка: р.error?.message || null, сигнал: р.signal,
+      ...(р.error ? {кінець_логу: лог.slice(-2000)} : {})}));
+    return {rc: р.status === null ? 2 : р.status, лог,
       помилка: fs.existsSync(помилка) ? JSON.parse(fs.readFileSync(помилка, 'utf8')) : null};
   } finally { fs.rmSync(вихід, {recursive: true, force: true}); }
 }
