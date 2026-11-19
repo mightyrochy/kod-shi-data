@@ -192,7 +192,7 @@ def _до_очей(о, F):
     поля_виходу={"scheme": "scheme code from \"schemes\"", "scheme_reasons": "reason code",
                  "base": "id from \"bases\"", "base_reasons": "reason code",
                  "saturation": "band of the look's colours",
-                 "accent_place": "where the accent is: %s; omit it if unsure" % ", ".join(МІСЦЯ_АКЦЕНТУ)},
+                 "accent_place": "where the accent is: %s; jewellery when she named her jewellery or earrings for it; omit if unsure" % ", ".join(МІСЦЯ_АКЦЕНТУ)},
     межі=("лише_вхід",),
     мова_промпту="en",
     # схема останньою, без мітки «answer» у «task» (Е2-межі п.4; причина — `річ_з_фото.фото_речей`): записані відповіді
