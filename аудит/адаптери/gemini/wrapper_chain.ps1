@@ -12,14 +12,17 @@ function New-ChainFailure([string]$Code, $Result) {
 function Get-ChainCause($Failure) {
     <# Безпечна ознака причини для рядка диспетчерові, у порядку перевірок: `межа часу` (так Invoke-Native позначає вбитий
     за межею часу процес), `HTTP <код>` зі stderr, `мережа` (транспортний збій gh, сталі рядки помилок Go net/http: TLS
-    handshake timeout, i/o timeout, connection reset by peer, connection refused, no such host); решта stderr — лише
-    в state-failures.jsonl: рядок іде в відкритий репозиторій. #>
+    handshake timeout, i/o timeout, connection reset by peer, connection refused, no such host; збій з'єднання чи DNS у
+    git/libcurl: Could not resolve host, Failed to connect to, Could not connect to server, Connection timed out,
+    Recv/Send failure: Connection was reset); решта stderr — лише в state-failures.jsonl: рядок іде в відкритий
+    репозиторій. #>
     $data = $Failure.Exception.Data
     if ($null -eq $data -or -not $data.Contains('Stderr')) { return '' }
     $text = [string]$data['Stderr']
     if ($text.Trim() -ceq 'межа часу') { return 'межа часу' }
     if ($text -cmatch '(?<![0-9A-Za-z])HTTP ([0-9]{3})(?![0-9])') { return "HTTP $($Matches[1])" }
     if ($text -cmatch '(TLS handshake timeout|i/o timeout|connection reset by peer|connection refused|no such host)') { return 'мережа' }
+    if ($text -cmatch '(Could not resolve host|Failed to connect to |Could not connect to server|Connection timed out|(Recv|Send) failure: Connection was reset)') { return 'мережа' }
     ''
 }
 

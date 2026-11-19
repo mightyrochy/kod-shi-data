@@ -1689,14 +1689,26 @@ $script:ArchiveDirBytes = 8MB
 $script:TaskCopy = $null
 
 function Get-ArchiveDirs([string]$Commit, [string]$TaskText) {
-    <# Теки-архіви коміту згори вниз; частковий клон не міряємо: `ls-tree -l` довантажив би всі об'єкти. #>
-    if ((Invoke-Git @('config', '--get', 'remote.origin.promisor') -AllowFail).Out.Trim() -eq 'true') { return }
-    $r = Invoke-Git @('ls-tree', '-r', '-l', '-z', $Commit, '--', 'аудит') -AllowFail
-    if ($r.Code -ne 0) { return }
+    <# Теки-архіви коміту згори вниз (`Dirs`) і причина, чому список порожній чи неповний (`Why`, '' — нема чого сказати).
+
+    Розмір blob-об'єкта береться лише з локального сховища. У частковому клоні (`remote.origin.promisor`) `ls-tree -l`
+    довантажив би з origin кожен відсутній blob, тож тут git іде з `--no-lazy-fetch` (git 2.44+): відсутній дає розмір
+    `BAD` і в суму теки не йде. Відсутні — лише blob-об'єкти, яких жодна копія ще не викладала; теку з ними наступна
+    копія міряє вже повністю. Розміру без вмісту GitHub не віддає (протокол v2 без `object-info`). #>
+    $partial = (Invoke-Git @('config', '--get', 'remote.origin.promisor') -AllowFail).Out.Trim() -eq 'true'
+    $r = Invoke-Git (@(if ($partial) { '--no-lazy-fetch' }) + @('ls-tree', '-r', '-l', '-z', $Commit, '--', 'аудит')) -AllowFail
+    if ($r.Code -ne 0) {
+        $err = @($r.Err.Trim() -split '\r?\n')[0]
+        $how = $(if ($r.TimedOut) { 'межа часу' } else { "код $($r.Code)" })
+        return [pscustomobject]@{ Dirs = @(); Why = "ls-tree $Commit не вдався — $how$(if ($partial) { ', частковий клон' }): $err" }
+    }
     $size = New-Object 'System.Collections.Generic.Dictionary[string,long]' ([StringComparer]::Ordinal)
+    $blobs = 0; $unknown = 0
     foreach ($e in $r.Out.Split([char]0)) {
-        if ($e -notmatch '^[0-7]{6} blob [0-9a-f]{40,64} +([0-9]+)\t(.+)$') { continue }
-        $bytes = [long]$Matches[1]; $path = $Matches[2]; $i = -1; $depth = 0
+        if ($e -notmatch '^[0-7]{6} blob [0-9a-f]{40,64} +(\S+)\t(.+)$') { continue }
+        $blobs++; $len = $Matches[1]; $path = $Matches[2]; $i = -1; $depth = 0
+        if ($len -cnotmatch '^[0-9]+$') { $unknown++; continue }
+        $bytes = [long]$len
         while (($i = $path.IndexOf('/', $i + 1)) -ge 0) {
             $depth++
             if ($depth -lt 3) { continue }
@@ -1706,13 +1718,21 @@ function Get-ArchiveDirs([string]$Commit, [string]$TaskText) {
     }
     $named = @(foreach ($m in [regex]::Matches($TaskText, '`([^`\r\n]+)`')) { (($m.Groups[1].Value.Trim() -replace '\\', '/') -replace '^\./', '').TrimEnd('/') })
     $out = New-Object System.Collections.Generic.List[string]
-    foreach ($d in @($size.Keys | Where-Object { $size[$_] -ge $script:ArchiveDirBytes } | Sort-Object { $_.Split('/').Count }, { $_ })) {
+    $big = @($size.Keys | Where-Object { $size[$_] -ge $script:ArchiveDirBytes } | Sort-Object { $_.Split('/').Count }, { $_ })
+    foreach ($d in $big) {
         $keep = $false
         foreach ($x in $out) { if ($d.StartsWith($x + '/', [StringComparison]::Ordinal)) { $keep = $true } }
         foreach ($n in $named) { if ($n -ceq $d -or $n.StartsWith($d + '/', [StringComparison]::Ordinal)) { $keep = $true } }
         if (-not $keep) { $out.Add($d) }
     }
-    $out
+    $why = New-Object System.Collections.Generic.List[string]
+    if ($unknown -gt 0) { $why.Add("частковий клон: розмір невідомий для $unknown з $blobs blob-об'єктів ``аудит/`` (ще не завантажені, у суму тек не йдуть)") }
+    if ($out.Count -eq 0) {
+        $limit = "$([long]$script:ArchiveDirBytes / 1MB) МіБ"
+        if ($big.Count -gt 0) { $why.Add("теки від $limit ($($big.Count)) названо в наряді") }
+        else { $why.Add("жодна тека ``аудит/`` від третього рівня не має $limit серед $($blobs - $unknown) blob-об'єктів відомого розміру") }
+    }
+    [pscustomobject]@{ Dirs = $out.ToArray(); Why = ($why -join '; ') }
 }
 
 function ConvertTo-SparseSkip([string]$Dir) {
@@ -1763,21 +1783,22 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
     # sparse-checkout у worktree лише з git 2.36: раніший писав `core.sparseCheckout` у спільний конфіг клону, а
     # `--no-cone` з'явився в 2.35. Старіший git — копія повна, але так само прибирається після доставки.
     $v = [regex]::Match([string](Invoke-Git @('version') -AllowFail).Out, '([0-9]+)\.([0-9]+)')
-    $skip = @()
+    $skip = @(); $why = ''
     if ($v.Success -and [int]$v.Groups[1].Value * 1000 + [int]$v.Groups[2].Value -ge 2036) {
-        $skip = @(Get-ArchiveDirs $Commit $TaskText)
+        $arch = Get-ArchiveDirs $Commit $TaskText
+        $skip = @($arch.Dirs); $why = $arch.Why
         $sp = Invoke-Git (@('sparse-checkout', 'set', '--no-cone', '/*') + @(foreach ($d in $skip) { ConvertTo-SparseSkip $d })) -AllowFail -Dir $repo
         if ($sp.Code -ne 0) {
             Write-Log "копія задачі: sparse-checkout не вдався — повна ($($sp.Err.Trim()))"
             [void](Invoke-Git @('sparse-checkout', 'disable') -AllowFail -Dir $repo)
-            $skip = @()
+            $skip = @(); $why = 'sparse-checkout не вдався'
         }
-    } else { Write-Log "копія задачі: git до 2.36 — повна ($([string]$v.Value))" }
+    } else { Write-Log "копія задачі: git до 2.36 — повна ($([string]$v.Value))"; $why = 'git до 2.36' }
     Set-CopyWorkTree $repo
     [void](Invoke-CopyGit @('reset', '-q', '--hard') $repo)
     Set-Variable -Scope Script -Name RepoDir -Value $repo
     $env:TEMP = $tmp; $env:TMP = $tmp
-    Write-Log "копія задачі $repo ($Commit): тек-архівів не викладено — $($skip.Count)"
+    Write-Log "копія задачі $repo ($Commit): тек-архівів не викладено — $($skip.Count)$(if ($why) { " ($why)" })"
     $repo
 }
 
