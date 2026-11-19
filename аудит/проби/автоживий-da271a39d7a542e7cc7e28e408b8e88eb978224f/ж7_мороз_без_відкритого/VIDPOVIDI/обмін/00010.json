@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"йду на роботу пішки\", \"open_zones\": \"відкритого не хочу\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\", \"quote\": \"відкритого не хочу\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"йду на роботу пішки\"}, \"precipitation\": {\"kind\": \"her\", \"quote\": \"сніг\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"weather_band\": {\"kind\": \"reading\"}}, \"event\": \"йду на роботу пішки\", \"part_of_day\": \"morning\", \"weather_band\": \"frost\", \"precipitation\": \"snow\", \"occasion\": \"work\", \"open_zones\": \"none\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"daylight\", \"road_salt\": true}, \"person\": {\"skin_hex\": [\"#f2dcd6\", \"#ecd0ca\", \"#f6e4df\"], \"hair_hex\": \"#b8bcc3\", \"eyes_hex\": \"#7fa6c8\", \"height_cm\": 160, \"girths_cm\": {\"shoulders\": 100, \"bust\": 98, \"waist\": 88, \"hips\": 100}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Textured wool blazer in navy (#1a233a), structured shoulder cut with a knee-length hem and a classic notched lapel.\\nSilk-blend blouse in cream (#f5f5dc), relaxed fit with a button-down front reaching the waistline.\\nWool-trimmed trousers in charcoal (#36454f), straight-leg cut falling to the ankle with a subtle crease.\\nChelsea boots in black leather (#000000), slim ankle height with elastic side panels for easy wear while walking.\\nThis outfit is ideal for a frosty morning commute as the wool blazer and trousers provide essential warmth against the snow and road salt without feeling bulky. The cream blouse offers a soft contrast to the dark outer layers, keeping the look professional yet approachable for a casual workday walk. It strictly respects your preference against exposed skin by maintaining full coverage from shoulders to ankles while allowing you to move comfortably on foot.\"}],\"usage\":{\"input_tokens\":803,\"output_tokens\":199},\"stop_reason\":\"end_turn\"}"
+ }
+}

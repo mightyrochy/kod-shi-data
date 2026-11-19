@@ -1,0 +1,30 @@
+── ПРОМПТ (2056 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Long-sleeved merino wool turtleneck sweater in a deep charcoal hue (#36454F), relaxed fit, knee-length, soft fine-gauge knit.\nHigh-waisted straight-leg wool-cashmere blend trousers in black (#000000), mid-weight fabric with a subtle texture for warmth.\nChelsea boots in polished leather, ankle height, color #1A2B3C (dark charcoal gray) to match the monochrome palette and repel wet snow.\nThis outfit is perfect for walking to work in frosty conditions because the wool layers provide essential insulation against the cold without feeling bulky or restrictive. The closed neck of the sweater respects her desire for no open zones while keeping her warm during the commute. The dark, neutral tones create a cohesive look that transitions seamlessly from the snowy street into a neat business environment."}
+
+── ВІДПОВІДЬ (607 симв., 6.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "turtleneck sweater",
+      "details": "Long-sleeved, relaxed fit, knee-length, soft fine-gauge knit",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "High-waisted straight-leg, mid-weight fabric with a subtle texture",
+      "slot": "bottom",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Chelsea boots",
+      "details": "Polished leather, ankle height",
+      "slot": "shoes",
+      "color_hex": "#1A2B3C",
+      "worn": true
+    }
+  ]
+}
