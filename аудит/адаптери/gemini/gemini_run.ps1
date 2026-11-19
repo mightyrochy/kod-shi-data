@@ -2000,10 +2000,10 @@ function Main {
             $started = 0
             try {
                 [void](Repair-GpuModels)
-                [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
+                Invoke-PassFetch @('fetch', '-q', '--prune', '--no-tags', 'origin',
                         '+refs/heads/main:refs/remotes/origin/main',
                         '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
-                        '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+                        '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*')
                 $script:Limits = Get-Limits
                 # Перервані й накопичене — після першого успішного fetch: прохід, що впав на fetch, їх не знімає.
                 if ($clean) { Resume-Interrupted; Clear-TaskCopies (Join-Path $RunsDir 'w') @('--branches', '--remotes'); $clean = $false }
