@@ -25,6 +25,7 @@ vm.runInContext('модельМовиП = відмоваМоделі', context);
      source: 'catalogue', rank: {position: 1, rare: false},
      values: {item: {free_text: 'Сукня', lang: 'uk'}}}]}}, 'перевірка-кредитів')`, context);
   console.log(JSON.stringify({викликів_моделі: calls, текст_жінці: result.тексти,
+    спільний_розпізнавач: vm.runInContext("кредитиСкінчилисьП(new Error('HTTP 402 credits_exhausted'))", context),
     причини: result.записи.map(x => x.причина),
     журнал_збоїв_жінці: vm.runInContext('ЖУРНАЛ_ЗБОЇВ_ЖІНЦІ_П', context)}, null, 2));
 })().catch(e => {console.error(e); process.exitCode = 1;});
