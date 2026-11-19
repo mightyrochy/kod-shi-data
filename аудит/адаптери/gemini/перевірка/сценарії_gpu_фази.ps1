@@ -2,8 +2,10 @@
 <# Стенд замка GPU лише на фази прогону з моделлю: агент позначає кінець фаз з моделлю (`аудит/проби/кінець_моделі.py`),
 процес наряду на такті очікування (Wait-PowerPause → Exit-GpuModelPhase) відпускає оренду, файл слота — gpu=false; база й
 підсумок ідуть без замка, інший GPU-наряд проходить ворота, сторож простою такого прогону не лічить, а наряд без позначки
-тримає карту до кінця. Справжні функції обгортки (claude_run.ps1 з queue_lanes.ps1, StrictMode), справжні замки-файли й
-прилади python; підмінено перелік LM Studio (екземпляри в пам'яті, вивантаження за ID), пам'ять карти, батарею й журнал. #>
+тримає карту до кінця. Кінець процесу агента з деревом відпускає оренду до завершальних кроків наряду (д), а процес codex,
+що після події кінця ходу не виходить, зупиняється з деревом на такті очікування (е). Справжні функції обгортки
+(claude_run.ps1 і gemini_run.ps1 з queue_lanes.ps1, StrictMode), справжні замки-файли, процеси й прилади python; підмінено
+перелік LM Studio (екземпляри в пам'яті, вивантаження за ID), пам'ять карти, батарею, журнал і рушій (codex_хід.py). #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
@@ -172,6 +174,55 @@ Scenario 'г сторож під час бази' {
     Check "г ПІСЛЯ позначки: тримачів замка нема ($($h.Count)), ряд і вирок знято — STALL посеред бази нема" ($h.Count -eq 0 -and $null -eq $w -and -not (Test-Path -LiteralPath $verdict) -and $null -eq (Get-GpuStallVerdict) -and -not (Test-Path -LiteralPath $watch))
     Exit-GpuLease $a.Job
     $a.SlotLock.Dispose()
+}
+
+# --- (д) процес агента закінчився: оренду відпущено до завершальних кроків наряду, не на кінці процесу наряду ---------------
+Scenario 'д кінець агента' {
+    . $newEnv 'д'
+    $a = & $admit 'f-a' 'Річ-кадр-варіант-кадри' 'claude-1' $false
+    [void]$script:Lms.Add([pscustomobject]@{ id = 'gemma-a'; model = 'gemma' })
+    $script:Seen = New-Object System.Collections.ArrayList
+    function Get-Prompt { 'наряд' }
+    function Invoke-Claude { [void]$script:Seen.Add("агент: оренда=$($null -ne $script:GpuLease) слот-gpu=$(& $slotGpu 'claude-1')"); [pscustomobject]@{ Kind = 'STALL' } }
+    function Complete-Task { [void]$script:Seen.Add("кінець: оренда=$($null -ne $script:GpuLease) слот-gpu=$(& $slotGpu 'claude-1') ворота=«$(Get-GpuBusyReason)»") }
+    $runDir = Join-Path $script:RunRoot 'f-a'; [void][IO.Directory]::CreateDirectory($runDir)
+    $M = [pscustomobject]@{ Name = $a.Job.name; Slug = 'Річ-кадр-варіант-кадри'; Claude = 'claude-sonnet-5-5'; Effort = '' }
+    Invoke-ClaudeTask $M $a.Job 'claude' 'текст' '' $runDir 'стан' 'копія'
+    $seen = $script:Seen -join ' | '
+    Check "д під час агента оренда тримається, після нього — відпущена до кінця наряду, ворота вільні: $seen" ($script:Seen.Count -eq 2 -and $script:Seen[0] -ceq 'агент: оренда=True слот-gpu=True' -and $script:Seen[1] -ceq 'кінець: оренда=False слот-gpu=False ворота=«»')
+    Check "д модель наряду вивантажено, журнал каже чому: [$($script:Unloaded -join ',')] $($script:Logged -join ' | ')" (($script:Unloaded -join ',') -ceq 'gemma-a' -and @($script:Logged | Where-Object { $_ -ceq "GPU відпущено до кінця прогону $($a.Job.name): процес агента з деревом закінчився, далі завершальні кроки без моделі" }).Count -eq 1)
+    $script:Unloaded.Clear(); $script:Logged.Clear()
+    Exit-GpuLease $a.Job; Exit-GpuAfterAgent $a.Job
+    Check "д кінець процесу наряду й повторний виклик нічого не чіпають: [$($script:Unloaded -join ',')] $($script:Logged -join ' | ')" ($script:Unloaded.Count -eq 0 -and $script:Logged.Count -eq 0 -and -not (Test-Path -LiteralPath (Join-Path $LaneDir 'gpu-models.json')))
+    $a.SlotLock.Dispose()
+}
+
+# --- (е) codex закінчив хід, а процес не виходить: зупинка з деревом на такті очікування, а не на виході процесу ------------
+Scenario 'е codex після кінця ходу' {
+    $work = Join-Path $tmp 'е'
+    . (Join-Path $SourceDir 'gemini_run.ps1') -RepoDir $tmp -RepoUrl 'x' -RunsDir "$work/runs" -OutDir "$work/out" -LaneDir "$work/lanes" -AgyExe 'немає-cli' -ProfileDir $tmp
+    foreach ($d in @("$work/runs", "$work/out", "$work/lanes")) { [void][IO.Directory]::CreateDirectory($d) }
+    $script:Logged = New-Object System.Collections.ArrayList
+    function Write-Log([string]$Text, [switch]$Required) { [void]$script:Logged.Add($Text) }
+    function Test-OnBattery { $false }
+    # Рушій: подія кінця ходу, файл відповіді (коли не «-»), тоді живе ще $rest с — як закриття рушія під збоєм мережі.
+    $fake = Join-Path $work 'codex_хід.py'
+    [IO.File]::WriteAllText($fake, "import json, sys, time`nkind, done, rest = sys.argv[1], sys.argv[2], float(sys.argv[3])`nprint(json.dumps({'type': 'turn.started'}), flush=True)`nprint(json.dumps({'type': kind}), flush=True)`nif done != '-':`n    open(done, 'w', encoding='utf-8').write('ГОТОВО')`ntime.sleep(rest)`n", $utf)
+    $turn = {
+        param([string]$Kind, [string]$Write, [string]$DoneFile, [int]$Rest)
+        $script:Logged.Clear()
+        $sw = [Diagnostics.Stopwatch]::StartNew()
+        $r = Invoke-NativeUntilStall $python @($fake, $Kind, $Write, [string]$Rest) $work 10 (Join-Path $work "$Kind.jsonl") (Join-Path $work "$Kind.tsv") $DoneFile
+        $left = @(Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { [string]$_.CommandLine -like "*codex_хід.py*$Kind*" }).Count
+        [pscustomobject]@{ Code = $r.Code; Stalled = $r.Stalled; Seconds = [int]$sw.Elapsed.TotalSeconds; Left = $left; Log = ($script:Logged -join ' | ') }
+    }
+    $f = & $turn 'turn.failed' '-' (Join-Path $work 'f.out.md') 600
+    Check "е turn.failed, процес живе далі: зупинено за такт ($($f.Seconds) с з 600), код $($f.Code), лишків $($f.Left); $($f.Log)" ($f.Seconds -lt 300 -and $f.Code -eq 1 -and -not $f.Stalled -and $f.Left -eq 0 -and $f.Log -ceq 'codex: хід закінчено (turn.failed), процес не вийшов за такт очікування — зупинено з деревом')
+    $done = Join-Path $work 'c.out.md'
+    $c = & $turn 'turn.completed' $done $done 600
+    Check "е turn.completed, файл відповіді є, процес живе далі: зупинено за такт ($($c.Seconds) с з 600), код $($c.Code), лишків $($c.Left)" ($c.Seconds -lt 300 -and $c.Code -eq 0 -and -not $c.Stalled -and $c.Left -eq 0 -and $c.Log -like 'codex: хід закінчено (turn.completed)*' -and [IO.File]::ReadAllText($done) -ceq 'ГОТОВО')
+    $w = & $turn 'turn.completed' '-' (Join-Path $work 'w.out.md') 70
+    Check "е turn.completed без файлу відповіді: чекає виходу процесу, як раніше ($($w.Seconds) с з 70), код $($w.Code), журнал «$($w.Log)»" ($w.Seconds -ge 70 -and $w.Code -eq 0 -and -not $w.Stalled -and $w.Log -eq '')
 }
 
 Remove-Item Env:KINETS_MODELI -ErrorAction SilentlyContinue

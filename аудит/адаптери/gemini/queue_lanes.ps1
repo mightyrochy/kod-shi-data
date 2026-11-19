@@ -1479,27 +1479,44 @@ function Set-ModelPhaseMark($Job) {
 }
 
 function Exit-GpuModelPhase {
-    <# Агент позначив кінець фаз з моделлю, а оренда ще тримається — файл слота стає gpu=false (сторож і стан бачать
-    прогін без замка), тоді Exit-GpuLease: оренда закінчується й відпускається, як на кінці прогону. Прогін іде далі. #>
+    <# Агент позначив кінець фаз з моделлю, а оренда ще тримається — оренду відпущено до кінця прогону (Exit-GpuBeforeEnd).
+    Прогін іде далі. #>
     $job = $script:ModelPhaseJob
     if ($null -eq $job -or $null -eq $script:GpuLease) { return }
     $mark = [string]$env:KINETS_MODELI
     if (-not $mark -or -not [IO.File]::Exists($mark)) { return }
     $script:ModelPhaseJob = $null
-    $info = Join-Path $script:SlotDir "$($job.slot).json"
+    Exit-GpuBeforeEnd $job "агент позначив кінець фаз з моделлю ($mark)"
+}
+
+function Exit-GpuAfterAgent($Job) {
+    <# Процес агента закінчився разом із деревом (рушій повертається лише після Stop-Tree): у прогоні не лишилось
+    процесу, що кличе модель. Завершальні кроки — факти, бандл, пуш, прибирання копії задачі — моделі не кличуть, а під
+    збоєм мережі чи диска тягнуться хвилинами; оренду відпущено до них. Наряд без оренди (не GPU чи вже відпущена за
+    позначкою) — нічого. #>
+    if ($null -eq $script:GpuLease) { return }
+    $script:ModelPhaseJob = $null
+    Exit-GpuBeforeEnd $Job 'процес агента з деревом закінчився, далі завершальні кроки без моделі'
+}
+
+function Exit-GpuBeforeEnd($Job, [string]$Why) {
+    <# Оренда ще тримається, а прогін далі моделі не кличе: файл слота стає gpu=false (сторож простою й стан бачать прогін
+    без замка), тоді Exit-GpuLease — оренда закінчується й відпускається, як на кінці прогону, і наступний GPU-наряд
+    проходить ворота. Кінець процесу наряду (Exit-GpuLease) відпущеної оренди не чіпає. #>
+    $info = Join-Path $script:SlotDir "$($Job.slot).json"
     try {
         $slot = ConvertTo-PlainJson ([IO.File]::ReadAllText($info, $script:Utf8) | ConvertFrom-Json)
         $slot.gpu = $false
         Write-FileAtomic $info ($slot | ConvertTo-Json -Compress)
     } catch { Write-Log "GPU: файл слота $info не оновлено — $($_.Exception.Message)" }
-    Exit-GpuLease $job
-    Write-Log "GPU відпущено до кінця прогону $($job.name): агент позначив кінець фаз з моделлю ($mark)"
+    Exit-GpuLease $Job
+    Write-Log "GPU відпущено до кінця прогону $($Job.name): $Why"
 }
 
 function Exit-GpuLease($Job) {
     <# Кінець GPU-наряду на кожному шляху виходу: під воротами закінчує оренду й прибирає те, що вже нічиє, тоді відпускає
     замок оренди. Ворота зайняті чи збій — оренда стає мертвою, і її прибирає наступний прохід (Repair-GpuModels).
-    Оренду, вже відпущену за кінцем фаз з моделлю (Exit-GpuModelPhase), кінець прогону не чіпає. #>
+    Оренду, вже відпущену до кінця прогону (Exit-GpuBeforeEnd), кінець прогону не чіпає. #>
     if ($null -eq $script:GpuLease) { return }
     $gate = Open-Lock (Get-GpuLockPath)
     try {
