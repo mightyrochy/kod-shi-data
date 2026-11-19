@@ -1,0 +1,44 @@
+── ПРОМПТ (2362 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Charcoal wool skirt suit, tailored straight-leg trousers cut to mid-calf length, deep gray #36454F, heavy woven wool with a fine texture.\nBlack silk blouse, classic collar with a soft drape, jet black #000000, smooth satin-finish fabric.\nOpaque matte black tights, full leg coverage, true black #1C1C1C, thick brushed nylon blend for warmth.\nNude leather ankle boots, low stacked heel wrapped around the foot, taupe beige #D2B48C, soft calfskin with a pointed toe.\nSilver oxidized metal watch chain necklace, delicate link chain resting at collarbone, silver metallic #C0C0C0, lightweight sterling silver alloy.\nThis ensemble honors the solemnity of a funeral on Thursday in autumn by adhering to strict formal dress codes while ensuring practical warmth against morning chill. The charcoal suit and black silk provide the required somber elegance without appearing overly flashy, respecting the grief of the occasion. Matte tights and nude boots maintain a polished silhouette suitable for daytime daylight, balancing traditional mourning etiquette with subtle personal style touches like the silver watch."}
+
+── ВІДПОВІДЬ (1071 симв., 4.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "skirt suit",
+      "details": "tailored straight-leg trousers cut to mid-calf length, heavy woven wool with a fine texture",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "classic collar with a soft drape, smooth satin-finish fabric",
+      "slot": "top",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "tights",
+      "details": "full leg coverage, thick brushed nylon blend for warmth",
+      "slot": "tights",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "low stacked heel wrapped around the foot, pointed toe, soft calfskin",
+      "slot": "shoes",
+      "color_hex": "#D2B48C",
+      "worn": true
+    },
+    {
+      "name": "watch chain necklace",
+      "details": "delicate link chain resting at collarbone, lightweight sterling silver alloy",
+      "slot": "accessory",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}

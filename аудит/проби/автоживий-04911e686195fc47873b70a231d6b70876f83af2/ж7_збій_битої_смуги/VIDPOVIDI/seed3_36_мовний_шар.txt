@@ -1,0 +1,59 @@
+── ПРОМПТ (6613 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: blazer · about it: text н=1
+2 — kind: bodysuit · about it: text н=2
+3 — kind: boots · about it: text н=3
+4 — kind: tote · about it: text н=4
+5 — kind: jeans · about it: text н=5
+6 — kind: coat · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This blazer gives you structure for your walk to work while keeping you covered against the frost, acting as a solid outer layer before you step into your coat.",
+"2": "The bodysuit creates a smooth line under the blazer that respects your figure and maintains a neat silhouette for your workday.",
+"3": "These boots are chosen for their protection against the snow and frost, keeping you grounded on your walk to work.",
+"4": "The tote bag holds your essentials for the day without dragging you down with excess weight, fitting perfectly with your neat commute style.",
+"5": "The jeans provide the everyday comfort you requested while maintaining a silhouette that is appropriate for walking in the snow.",
+"6": "This coat serves as your essential outer layer to shield you from the frosty conditions and snow on your way to work.",
+"7": "You are walking to work on a frosty day with snow, yet your wish is clear: no open zones and no heels. The blazer provides structure for your commute while keeping you covered against the chill; it acts as your outer layer here since the coat is listed separately in your plan. Underneath, the bodysuit creates a smooth line that respects your figure without adding bulk where volume anchors are needed for your walk. The jeans offer the everyday comfort you asked for while maintaining a neat silhouette appropriate for the occasion. Your boots keep your feet protected from the snow and frost, grounding the outfit in practicality. The tote bag holds everything you need for work without dragging you down with excess weight.",
+"8": "Layer the blazer over the bodysuit to define your upper half while keeping the look streamlined for walking.",
+"9": "Tuck the bodysuit into the jeans to establish a waistline anchor that supports the volume of the top and bottom.",
+"10": "Let the coat rest over the blazer when you leave the house, creating a protective outer shell for the commute.",
+"11": "Сапоги бордо — These knee-high leather boots replace the ankle ones to provide warmth and protection against snow without cutting the leg line.",
+"12": "Шкіряний тоут червоного кольору — I kept the crossbody bag but positioned it asymmetrically on the shoulder to add visual interest without needing extra c"
+}
+
+── ВІДПОВІДЬ (2104 симв., 14.6 с, HTTP 200) ──
+```json
+{
+  "1": "Цей блейзер надає тобі структури під час прогулянки на роботу, водночас захищаючи тебе від морозу та слугуючи міцним зовнішнім шаром перед тим, як ти одягнеш пальто.",
+  "2": "Боді створює гладку лінію під блейзером, яка поважає твою фігуру і зберігає охайний силует протягом робочого дня.",
+  "3": "Ці чоботи обрано для захисту від снігу та морозу, тримаючи тебе на землі під час прогулянки до роботи.",
+  "4": "Тот-бег вміщує твої необхідні речі на день без зайвої ваги, ідеально поєднуючись з твоїм охайним стилем у дорозі.",
+  "5": "Джинси забезпечують повсякденний комфорт, який ти просила, водночас зберігаючи силует, що підходить для прогулянки в снігу.",
+  "6": "Це пальто служить твоїм основним зовнішнім шаром, щоб захистити тебе від морозних умов і снігу дорогою на роботу.",
+  "7": "Ти йдеш на роботу в морозяний день зі снігом, але твоє бажання чітке: жодних відкритих зон і без підборів. Блейзер надає тобі структури для поїздки на роботу, водночас захищаючи тебе від холоду; він слугує твоїм зовнішнім шаром тут, оскільки пальто окремо зазначено у твоєму плані. Під ним боді створює гладку лінію, яка поважає твою фігуру без додавання об’єму там, де потрібні зони для підтримки під час ходьби. Джинси пропонують повсякденний комфорт, який ти попросила, водночас зберігаючи охайний силует, що відповідає випадку. Твої чоботи захищають твої ноги від снігу та морозу, роблячи образ практичним. Тот-бег вміщує все необхідне для роботи без зайвого тягаря.",
+  "8": "Одягни блейзер поверх боді, щоб визначити верхню частину тіла і зберегти вигляд струнким під час ходьби.",
+  "9": "Заправ боді в джинси, щоб створити лінію талії, яка підтримує об’єм верху й низу.",
+  "10": "Дай пальту лежати поверх блейзера, коли ти виходиш з дому, створюючи захисну зовнішню оболонку для поїздки на роботу.",
+  "11": "Ці ботфорти бордового кольору замінюють черевички, щоб забезпечити тепло та захист від снігу без обрізання лінії ноги.",
+  "12": "Шкіряний тоут червоного кольору — Я залишила сумку через плече, але розмістила її асиметрично на плечі, щоб додати візуального інтересу."
+}
+```

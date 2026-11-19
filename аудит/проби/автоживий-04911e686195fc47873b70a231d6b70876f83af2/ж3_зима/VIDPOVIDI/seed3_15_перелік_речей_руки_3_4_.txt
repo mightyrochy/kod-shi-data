@@ -1,0 +1,30 @@
+── ПРОМПТ (2102 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cozy merino wool sweater, relaxed fit, thigh-length hem, heather oatmeal color (#D7CCC8), soft knit fabric.\nWater-resistant technical jacket, streamlined cut, hip-length, stormy slate color (#455A64), matte synthetic shell fabric.\nChelsea boots made of treated leather, ankle-high shaft, chestnut brown color (#5D4037), rubber-wrapped sole fabric.\nThis outfit works perfectly because the warm wool sweater provides essential insulation against the frost and snow, while the water-resistant jacket keeps you dry if precipitation occurs during your walk. The relaxed yet neat silhouette honors the \"everyday\" dress code without sacrificing comfort for a twenty-minute stroll on a salted road. Finally, the earthy tones of oatmeal and chestnut brown create a sophisticated morning look that feels both protective and stylish in crisp autumn daylight."}
+
+── ВІДПОВІДЬ (628 симв., 3.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "merino wool sweater",
+      "details": "relaxed fit, thigh-length hem, soft knit fabric",
+      "slot": "top",
+      "color_hex": "#D7CCC8",
+      "worn": true
+    },
+    {
+      "name": "technical jacket",
+      "details": "streamlined cut, hip-length, matte synthetic shell fabric",
+      "slot": "outerwear",
+      "color_hex": "#455A64",
+      "worn": true
+    },
+    {
+      "name": "Chelsea boots",
+      "details": "treated leather, ankle-high shaft, rubber-wrapped sole fabric",
+      "slot": "shoes",
+      "color_hex": "#5D4037",
+      "worn": true
+    }
+  ]
+}

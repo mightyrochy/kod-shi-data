@@ -1,0 +1,30 @@
+── ПРОМПТ (2080 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk blend sheath dress, floor-length, charcoal gray (#3a3d40), crepe with a subtle luster.\nPoint-toe pumps, stiletto heel, classic nude (#e6cbb2), calfskin leather.\nGold drop earrings, polished finish, circular hoops, 18k gold-plated brass.\n\nThis ensemble is perfectly suited for an evening theatre visit as it falls within the social formality band required for the occasion. The charcoal sheath dress offers a sophisticated silhouette that respects the refined atmosphere of the performance without being overly restrictive. The nude pumps elongate the legs and maintain a seamless line with the skin tone, while the gold accessories add a touch of necessary glamour against the dark fabric. Together, these pieces create a balanced look that transitions effortlessly from the afternoon arrival to the evening curtain call."}
+
+── ВІДПОВІДЬ (621 симв., 3.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "floor-length, silk blend with crepe texture and subtle luster",
+      "slot": "dress",
+      "color_hex": "#3a3d40",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "point-toe, stiletto heel, classic nude leather",
+      "slot": "shoes",
+      "color_hex": "#e6cbb2",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "gold drop earrings with polished finish, circular hoops, 18k gold-plated brass",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk blouse with a relaxed fit, elbow length, #deb295, lightweight woven fabric. Wide-leg trousers with a soft pleat, below the knee to ankle, #d8a98c, fluid crepe material. Gold collar necklace with hanging pendants, adjustable chain length, polished brass and glass accents. Leather ankle boots with a low block heel, mid-calf height, #759087, smooth full-grain leather. This outfit works because the relaxed yet tailored silhouette creates an effortless elegance suitable for an upscale restaurant dinner without feeling overly stiff. The warm amber tones of the blouse and trousers harmonize beautifully with her skin and hair, establishing a calm and inviting mood for the evening. The statement gold necklace with pendants fulfills her specific wish to be the center of attention while the ankle boots ensure comfort throughout the meal.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"Silk blouse\\\",\\n\\\"details\\\": \\\"relaxed fit, elbow length, lightweight woven fabric\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#deb295\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Wide-leg trousers\\\",\\n\\\"details\\\": \\\"soft pleat, below the knee to ankle, fluid crepe material\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#d8a98c\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Gold collar necklace\\\",\\n\\\"details\\\": \\\"hanging pendants, adjustable chain length, polished brass and glass accents\\\",\\n\\\"slot\\\": \\\"collar_necklace\\\",\\n\\\"color_hex\\\": null,\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Leather ankle boots\\\",\\n\\\"details\\\": \\\"low block heel, mid-calf height, smooth full-grain leather\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#759087\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":527,\"output_tokens\":241},\"stop_reason\":\"end_turn\"}"
+ }
+}
