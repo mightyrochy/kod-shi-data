@@ -137,6 +137,27 @@ try {
         $lines = @(Chain-Lines)
         Check "CHAIN_API: Go-помилка «$go» — «мережа»" ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API мережа')
     }
+    # Збої git (libcurl): живий stderr CHAIN_REMOTE 19.11 (state-failures.jsonl) і стандартні повідомлення з'єднання й DNS.
+    Reset-ChainLines
+    $liveGit = "fatal: unable to access 'https://github.com/mightyrochy/kod-shi-data.git/': Failed to connect to github.com:443 after 21084 ms: Could not connect to server`n"
+    [void](Fail-ChainApi ([pscustomobject]@{Code=128;Out='';Err=$liveGit}))
+    $rec = @(Records)[-1]; $lines = @(Chain-Lines)
+    Check 'CHAIN_API: живий stderr git (Failed to connect to … Could not connect to server) — журнал повний, рядок «мережа»' ($rec.exit_code -eq 128 -and $rec.stderr -ceq $liveGit -and $lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API мережа' -and (Test-OutboxLine $lines[0]) -ceq '')
+    foreach ($git in @("fatal: unable to access 'https://github.com/mightyrochy/kod-shi-data.git/': Could not resolve host: github.com",'fatal: unable to access ''https://github.com/o/r.git/'': Failed to connect to github.com port 443: Connection timed out','error: RPC failed; curl 56 Recv failure: Connection was reset','error: RPC failed; curl 55 Send failure: Connection was reset','fatal: unable to access ''https://github.com/o/r.git/'': Connection timed out after 300001 milliseconds')) {
+        Reset-ChainLines
+        [void](Fail-ChainApi ([pscustomobject]@{Code=128;Out='';Err="$git`n"}))
+        $lines = @(Chain-Lines)
+        Check "CHAIN_API: git/libcurl «$git» — «мережа»" ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API мережа')
+    }
+    foreach ($plain in @("fatal: couldn't find remote ref refs/heads/nope",'fatal: not a git repository (or any of the parent directories): .git',"fatal: unable to access 'https://github.com/o/r.git/': The requested URL returned error: 403")) {
+        Reset-ChainLines
+        [void](Fail-ChainApi ([pscustomobject]@{Code=128;Out='';Err="$plain`n"}))
+        $lines = @(Chain-Lines)
+        Check "CHAIN_API: звичайний fatal без мережі «$plain» — не «мережа»" ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API' -and @(Records)[-1].stderr.Contains('fatal:'))
+    }
+    Reset-ChainLines
+    [void](Fail-ChainApi ([pscustomobject]@{Code=128;Out='';Err="fatal: unable to access 'https://github.com/o/r.git/': The requested URL returned error: HTTP 502: Could not connect to server"}))
+    Check 'CHAIN_API: git — HTTP-код старший за «мережу»' (@(Chain-Lines).Count -eq 1 -and @(Chain-Lines)[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API HTTP 502')
     Reset-ChainLines
     [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="gh: HTTP 502: Bad Gateway ($url): i/o timeout"}))
     $lines = @(Chain-Lines)
