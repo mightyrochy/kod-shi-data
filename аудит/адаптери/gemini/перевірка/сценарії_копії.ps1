@@ -40,7 +40,7 @@ try {
         foreach ($e in (Invoke-Git @('ls-tree', '-r', '-l', '-z', $commit)).Out.Split([char]0)) {
             if ($e -match '^[0-7]{6} blob [0-9a-f]{40,64} +([0-9]+)\t(.+)$') { $sizes[$Matches[2]] = [long]$Matches[1]; $full += [long]$Matches[1] }
         }
-        $skip = @(Get-ArchiveDirs $commit '')
+        $skip = @((Get-ArchiveDirs $commit '').Dirs)
         $skipBytes = 0L
         foreach ($p in $sizes.Keys) { foreach ($d in $skip) { if ($p.StartsWith($d + '/', [StringComparison]::Ordinal)) { $skipBytes += $sizes[$p]; break } } }
         $dir = Join-Path (Join-Path $tmp 'w') 'run-1'
@@ -57,7 +57,7 @@ try {
         $small = $skip[-1]
         [void](Invoke-Git @('sparse-checkout', 'add', "/$small/"))
         Check "сесія додає потрібну теку сама ($small)" ((Test-Path -LiteralPath (Join-Path $repo $small)) -and (Invoke-Git @('status', '--porcelain')).Out.Trim() -eq '')
-        Check 'тека, названа в наряді, лишається у копії' (-not (@(Get-ArchiveDirs $commit "Дивись ``$($skip[0])/звіт.md``.") -ccontains $skip[0]))
+        Check 'тека, названа в наряді, лишається у копії' (-not (@((Get-ArchiveDirs $commit "Дивись ``$($skip[0])/звіт.md``.").Dirs) -ccontains $skip[0]))
         Check 'промпт називає теку задачі й sparse-checkout' ((Get-TaskDirText $dir).Contains($dir) -and (Get-TaskDirText $dir).Contains('git sparse-checkout add'))
         $kept = Close-TaskCopy @($commit)
         $after = Get-DirBytes $dir
@@ -373,6 +373,57 @@ $u = New-Object Text.UTF8Encoding($false)
         Check 'без -Breakdown обхід не збирає розбивки (Bytes/Skipped, як було)' ((Measure-DirBytes $p).Bytes -eq 10810 -and @((Measure-DirBytes $p).Top).Count -eq 0)
         $back = @(ConvertFrom-SizeList (ConvertTo-SizeList @([pscustomobject]@{ Name = 'a|b`<c>'; Bytes = 5 }, [pscustomobject]@{ Name = 'Дані'; Bytes = 7 })))
         Check 'назви без службових знаків, кирилиця лишається; чужий рядок відкидається' ($back.Count -eq 2 -and $back[0].Name -ceq 'a_b__c_' -and $back[1].Name -ceq 'Дані' -and @(ConvertFrom-SizeList 'x|y=1;ok=2;bad=-1;z=').Count -eq 1)
+    }
+
+    Scenario 'частковий клон: теки-архіви міряно з наявних blob-об''єктів, без довантаження' {
+        # Межу теки-архіву зменшено на час сценарію: архіви — по 4 КіБ, а не по 8 МіБ.
+        $saved = $script:ArchiveDirBytes; $script:ArchiveDirBytes = 4KB
+        try {
+            $src = Join-Path $tmp 'pc-src'; $bare = Join-Path $tmp 'pc.git'; $pc = Join-Path $tmp 'pc'; $pc0 = Join-Path $tmp 'pc0'
+            function PutBlob([string]$Rel, [byte]$Tag) {
+                $b = New-Object byte[] ([int]$script:ArchiveDirBytes); $b[0] = $Tag
+                $full = Join-Path $src $Rel; [void][IO.Directory]::CreateDirectory((Split-Path -Parent $full))
+                [IO.File]::WriteAllBytes($full, $b)
+            }
+            function Missing([string]$Repo, [string]$Ref) { @(& git -C $Repo rev-list --objects --missing=print $Ref | Where-Object { $_.StartsWith('?') }) }
+            & git init -q -b main $src
+            & git -C $src config user.name 'стенд'; & git -C $src config user.email 'stend@example.invalid'; & git -C $src config core.autocrlf false
+            [IO.File]::WriteAllText("$src/a.txt", '1', $utf)
+            [void][IO.Directory]::CreateDirectory("$src/аудит/адаптери/код"); [IO.File]::WriteAllText("$src/аудит/адаптери/код/x.ps1", 'x', $utf)
+            PutBlob 'аудит/проби/архів-1/дані.bin' 1; PutBlob 'аудит/проби/архів-2/дані.bin' 2
+            & git -C $src add -A; & git -C $src commit -q -m 'архіви 1 і 2'
+            & git init -q --bare -b main $bare; & git -C $bare config uploadpack.allowFilter true
+            & git -C $src push -q $bare main
+            $url = 'file:///' + ($bare -replace '\\', '/')
+            & git clone -q --filter=blob:none $url $pc
+            # Після клону main росте: архів-1 — новим файлом, архів-3 — новою текою; їхніх blob-об'єктів у клоні нема.
+            PutBlob 'аудит/проби/архів-1/новий.bin' 3; PutBlob 'аудит/проби/архів-3/дані.bin' 4
+            & git -C $src add -A; & git -C $src commit -q -m 'архів-1 росте, архів-3 новий'
+            & git -C $src push -q $bare main
+            & git -C $pc fetch -q origin
+            $c2 = Rev $pc 'refs/remotes/origin/main'
+            $script:RepoDir = $pc
+            $m0 = Missing $pc $c2
+            $a = Get-ArchiveDirs $c2 ''
+            $m1 = Missing $pc $c2
+            Check "ls-tree у частковому клоні не довантажує: відсутніх blob-об'єктів $($m0.Count) → $($m1.Count)" ($m0.Count -eq 2 -and $m1.Count -eq 2)
+            Check "теки з наявними blob-об'єктами виключено: $(@($a.Dirs) -join ', ')" ((@($a.Dirs) -join '|') -ceq 'аудит/проби/архів-1|аудит/проби/архів-2')
+            Check "причину неповноти сказано: $($a.Why)" ($a.Why.Contains('частковий клон') -and $a.Why.Contains('2 з 5'))
+            $n0 = $script:Log.Count
+            $repo = New-TaskCopy (Join-Path (Join-Path $tmp 'w-pc') 'run-1') $c2 ''
+            $line = @($script:Log | Select-Object -Skip $n0 | Where-Object { $_.Contains('тек-архівів не викладено') })
+            $m2 = Missing $pc $c2
+            Check "рядок журналу копії — з числом і причиною: $($line -join ' | ')" ($line.Count -eq 1 -and $line[0].Contains('— 2 (частковий клон: розмір невідомий для 2 з 5'))
+            Check 'копія без виключених тек; тека з невідомим розміром і решта — на місці' (-not (Test-Path -LiteralPath (Join-Path $repo 'аудит/проби/архів-1')) -and -not (Test-Path -LiteralPath (Join-Path $repo 'аудит/проби/архів-2')) -and (Test-Path -LiteralPath (Join-Path $repo 'аудит/проби/архів-3/дані.bin')) -and (Test-Path -LiteralPath (Join-Path $repo 'a.txt')))
+            Check "новий blob виключеної теки копія не довантажила (відсутніх $($m2.Count))" ($m2.Count -eq 1 -and $m2[0].Substring(1) -ceq (Rev $pc "${c2}:аудит/проби/архів-1/новий.bin"))
+            [void](Close-TaskCopy @($c2))
+            $f = Get-ArchiveDirs ('0' * 40) ''
+            Check "ls-tree упав — код і stderr у причині: $($f.Why)" (@($f.Dirs).Count -eq 0 -and $f.Why.Contains('ls-tree') -and $f.Why.Contains('код 128') -and $f.Why.Contains('частковий клон'))
+            & git clone -q --no-checkout --filter=blob:none $url $pc0
+            $script:RepoDir = $pc0
+            $e = Get-ArchiveDirs $c2 ''
+            Check "клон без жодного blob-об'єкта: порожньо, з причиною й без довантаження: $($e.Why)" (@($e.Dirs).Count -eq 0 -and $e.Why.Contains('5 з 5') -and $e.Why.Contains('жодна тека') -and (Missing $pc0 $c2).Count -eq 6)
+        } finally { $script:ArchiveDirBytes = $saved }
     }
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
 finally {
