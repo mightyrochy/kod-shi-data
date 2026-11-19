@@ -65,6 +65,10 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
+# Межа одного публічного запиту (-TimeoutSec): стільки ж на замок бюджету, який власник тримає на час свого запиту.
+$script:ReviewApiTimeout = 20
+# Безпечна ознака останньої відмови Get-AutoReviewState (замок, бюджет, чекання, HTTP <код>, мережа, межа часу, відповідь).
+$script:ReviewApiCause = ''
 # План живого (Get-AutoLivePlan, автоживий й Е1-нічний-живий). Вимір 07.11: `pulls?state=all` — 33 сторінки по 100 PR,
 # сторінка до 2,36 млн знаків (3273 PR); повне читання на спробу — 33 запити з 60/год без входу. Тепер сторінки по 50,
 # читання стоїть, щойно сторінка старіша за межу плану (Get-AutoPlanBoundary; запити — з бюджету review-api.json, як у
@@ -394,10 +398,30 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
     [pscustomobject]@{ Code = $(if ($timedOut) { -1 } else { $p.ExitCode }); TimedOut = $timedOut; Out = $out.Result; Err = $err.Result }
 }
 
+function Get-GitStallOptions([string[]]$GitArgs) {
+    <# Мережевій команді git (fetch, ls-remote, push) — межа застряглої передачі: нуль байтів довше за poll_minutes (інтервал
+    між проходами) обриває команду, а не тримає прохід до межі Invoke-Native (10 хв неспання). Нижча межа швидкості — 1 Б/с:
+    лише повна відсутність руху. Фаза з'єднання й DNS цією межею не вимірюється. #>
+    if ($GitArgs.Count -eq 0 -or $GitArgs[0] -cnotin @('fetch', 'ls-remote', 'push')) { return @() }
+    $poll = [double]$script:Defaults['poll_minutes']
+    if ($script:Bound -is [hashtable]) { $poll = Get-Limit $script:Limits 'PollMinutes' 'poll_minutes' }
+    $seconds = [int][math]::Round($poll * 60)
+    @('-c', 'http.lowSpeedLimit=1', '-c', "http.lowSpeedTime=$seconds")
+}
+
+function Invoke-PassFetch([string[]]$GitArgs) {
+    <# `git fetch` проходу з тривалістю в журналі (норма й вбитий fetch видно поряд): успіх і збій — один рядок, збій
+    кидається далі як є. #>
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    $result = 'ок'
+    try { [void](Invoke-Git $GitArgs) } catch { $result = 'збій'; throw }
+    finally { Write-Log "fetch проходу: $result за $($clock.Elapsed.TotalSeconds.ToString('0.0', [cultureinfo]::InvariantCulture)) с" }
+}
+
 function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail, [double]$TimeoutMinutes = 10, [string]$Dir = '') {
     <# git у клоні ($RepoDir) чи в робочій копії слота (-Dir) без входу й без гачків. #>
     $d = $(if ($Dir) { $Dir } else { $RepoDir })
-    $all = @('-C', $d, '-c', "core.hooksPath=$script:NoHooks", '-c', 'credential.helper=', '-c', 'core.quotepath=false') + $GitArgs
+    $all = @('-C', $d, '-c', "core.hooksPath=$script:NoHooks", '-c', 'credential.helper=', '-c', 'core.quotepath=false') + @(Get-GitStallOptions $GitArgs) + $GitArgs
     $r = Invoke-Native $GitExe $all '' $TimeoutMinutes
     if ($r.Code -ne 0 -and -not $AllowFail) { throw "git $($GitArgs -join ' ') -> $($r.Code): $($r.Err.Trim())" }
     $r
@@ -692,13 +716,52 @@ function Read-AutoApiBudget([string]$Path, [long]$Now) {
     [pscustomobject]@{ Calls = @($saved.calls | Where-Object { [long]$_ -gt ($Now - $script:ReviewApiWindow) }); Until = [long]$saved.until }
 }
 
+function Open-ReviewApiLock {
+    <# Замок бюджету review-api.json: зайнятий — чекає, а не відмовляє одразу. Його тримає процес, що саме робить запит
+    (до ReviewApiTimeout с), тож друга позначка того ж проходу чекає ту саму межу і йде в мережу, а не в REVIEW_API.
+    $null — теки смуги нема чи замок не звільнився за межу. #>
+    if (-not (Test-Path -LiteralPath $LaneDir)) { return $null }
+    $path = Join-Path $LaneDir 'review-api.lock'
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    while ($true) {
+        $lock = Open-Lock $path
+        if ($null -ne $lock) { return $lock }
+        if ($clock.Elapsed.TotalSeconds -ge $script:ReviewApiTimeout) { return $null }
+        Start-Sleep -Milliseconds 100
+    }
+}
+
+function Get-ReviewApiCause($Err) {
+    <# Безпечна ознака відмови публічного запиту: `HTTP <код>`, `межа часу`, `мережа <статус>`, `відповідь` (тіло не те, що
+    чекали), інакше `запит <тип винятку>`. Текст винятку й відповіді сервера не йде в рядок: журнал і стан відкриті. #>
+    $ex = $(if ($Err -is [Management.Automation.ErrorRecord]) { $Err.Exception } else { $Err })
+    if ($ex -isnot [Exception]) { return 'запит' }
+    if ($ex.Message -ceq 'REVIEW_RESPONSE') { return 'відповідь' }
+    for ($e = $ex; $null -ne $e; $e = $e.InnerException) {
+        $resp = $e.PSObject.Properties['Response']
+        if ($null -ne $resp -and $null -ne $resp.Value -and $null -ne $resp.Value.PSObject.Properties['StatusCode']) {
+            $code = [int]$resp.Value.StatusCode
+            if ($code -ge 100) { return "HTTP $code" }
+        }
+        $type = $e.GetType().FullName
+        if ($type -ceq 'System.Net.WebException') {
+            if ([string]$e.Status -ceq 'Timeout') { return 'межа часу' }
+            return "мережа $($e.Status)"
+        }
+        if ($type -cmatch '^System\.(?:TimeoutException|OperationCanceledException|Threading\.Tasks\.TaskCanceledException)$') { return 'межа часу' }
+        if ($type -cmatch '^System\.(?:Net\.Http\.HttpRequestException|Net\.Sockets\.SocketException|IO\.IOException)$') { return 'мережа' }
+    }
+    if ($ex.Message -cmatch '(?<![0-9A-Za-z])HTTP ([45][0-9]{2})(?![0-9])|\(([45][0-9]{2})\)') { return 'HTTP ' + $(if ($Matches[1]) { $Matches[1] } else { $Matches[2] }) }
+    "запит $($ex.GetType().Name)"
+}
+
 function Use-AutoApiBudget {
     <# Один запит публічного REST зі спільного бюджету (ті самі файл, замок і межа, що в Get-AutoReviewState): запит
     резервується до мережі, тож збій і перезапуск не обнуляють витраченого. $false — замка нема, бюджет пошкоджений, діє
     спільна пауза чи вичерпано межу: викликач у мережу не йде. #>
     $lock = $null
     try {
-        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
+        $lock = Open-ReviewApiLock
         if ($null -eq $lock) { return $false }
         $path = Join-Path $LaneDir 'review-api.json'
         $now = Get-ReviewTime
@@ -714,7 +777,7 @@ function Set-AutoApiPause {
     <# Мережева відмова публічного запиту ставить спільну паузу ReviewApiBackoff с, як у Get-AutoReviewState. #>
     $lock = $null
     try {
-        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
+        $lock = Open-ReviewApiLock
         if ($null -eq $lock) { return }
         $path = Join-Path $LaneDir 'review-api.json'
         $now = Get-ReviewTime
@@ -734,22 +797,24 @@ function Get-AutoReviewState([string]$Slug) {
     if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') { $number = $Matches[1]; $head = $Matches[2] }
     elseif ($Slug -cmatch '^перевірка-([1-9][0-9]{0,8})$') { $number = $Matches[1]; $head = '' }
     else { return 'LIVE' }
+    $script:ReviewApiCause = ''
     $lock = $null
     try {
-        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
-        if ($null -eq $lock) { return 'REVIEW_API' }
+        $lock = Open-ReviewApiLock
+        if ($null -eq $lock) { $script:ReviewApiCause = 'замок'; return 'REVIEW_API' }
         $path = Join-Path $LaneDir 'review-api.json'
         $now = Get-ReviewTime
         $saved = Read-AutoApiBudget $path $now
         # Пошкоджений бюджет не дозволяє непорахованих запитів.
-        if ($null -eq $saved) { return 'REVIEW_API' }
+        if ($null -eq $saved) { $script:ReviewApiCause = 'бюджет пошкоджено'; return 'REVIEW_API' }
         $calls = $saved.Calls; $until = $saved.Until
-        if ($now -lt $until -or $calls.Count -ge $script:ReviewApiLimit) { return 'REVIEW_API' }
+        if ($now -lt $until) { $script:ReviewApiCause = 'чекання'; return 'REVIEW_API' }
+        if ($calls.Count -ge $script:ReviewApiLimit) { $script:ReviewApiCause = 'бюджет вичерпано'; return 'REVIEW_API' }
         # Резервуємо запит до мережі: 403/429, тайм-аут і падіння процесу також входять у бюджет.
         $budget = [ordered]@{calls=@($calls) + @($now);until=0L}
         Write-FileAtomic $path ($budget | ConvertTo-Json -Compress)
         try {
-            $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+            $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec $script:ReviewApiTimeout -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
             if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
             if ($pr.state -cne 'open') { return 'STALE' }
             if (-not $head) { return 'LIVE' }
@@ -757,18 +822,20 @@ function Get-AutoReviewState([string]$Slug) {
             if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or (Test-ReviewBranch ([string]$pr.head.ref))) { return 'STALE' }
             'LIVE'
         } catch {
+            $script:ReviewApiCause = Get-ReviewApiCause $_
             $budget.until = $now + $script:ReviewApiBackoff
             Write-FileAtomic $path ($budget | ConvertTo-Json -Compress)
             'REVIEW_API'
         }
-    } catch { 'REVIEW_API' }
+    } catch { $script:ReviewApiCause = 'збій обгортки'; 'REVIEW_API' }
     finally { if ($null -ne $lock) { $lock.Dispose() } }
 }
 
-function Enter-ReviewWait($M, [string]$Head = '') {
-    <# Повертає позначку після відмови REST чи вичерпання бюджету без збільшення retakes і кінцевого звіту. #>
-    [void](Set-MarkerWait $M ((Get-ReviewTime) + $script:ReviewApiBackoff) @{group='REVIEW_API';head=$Head})
-    Write-Log "позначка $($M.Name): REVIEW_API; спроба збережена, повтор у черзі"
+function Enter-ReviewWait($M, [string]$Head = '', [string]$Cause = $script:ReviewApiCause) {
+    <# Повертає позначку після відмови REST чи вичерпання бюджету без збільшення retakes і кінцевого звіту. Ознака причини
+    (Get-AutoReviewState) іде в стан позначки (`reason`) і в рядок журналу, щоб позначка, що не стартує, мала пояснення. #>
+    [void](Set-MarkerWait $M ((Get-ReviewTime) + $script:ReviewApiBackoff) @{group='REVIEW_API';head=$Head;reason=$Cause})
+    Write-Log "позначка $($M.Name): REVIEW_API ($Cause); спроба збережена, повтор у черзі"
 }
 
 function Get-PlanFailReason([string]$Message) {
@@ -785,7 +852,7 @@ function Enter-PlanWait($M, [string]$Reason, [string]$Head = '') {
     (спільна межа MaxRetakes): повертає $false, коли межу вичерпано і чекання не записано, — викликач кінчає наряд
     кодом PLAN_FAILED, який будить диспетчера (не тихий REVIEW_API без кінця). #>
     # Автоперевірка PR (не план): її збій API лишається REVIEW_API — повтор у черзі під бюджетом, як і було.
-    if ($M.Slug -cnotmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Head; return $true }
+    if ($M.Slug -cnotmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Head $(if ($Reason -ceq 'AUTO_BUDGET') { 'бюджет' } else { Get-PlanFailReason $Reason }); return $true }
     $why = Get-PlanFailReason $Reason
     $n = Set-MarkerWait $M ((Get-ReviewTime) + $script:PlanBackoff) @{group='PLAN_WAIT';reason=$why;head=$Head;retake=$true}
     if ($null -eq $n) { Write-Log "позначка $($M.Name): план не збудовано (${why}: $(([regex]::Replace($Reason, '[\x00-\x1f\x7f]+', ' ')).Trim())) понад $($script:MaxRetakes) разів — PLAN_FAILED"; return $false }
@@ -1908,7 +1975,7 @@ function Get-AutoPublicItems([string]$Path, [int]$PerPage = 100, [int]$MaxPages 
         $script:AutoApiCalls++
         $separator = if ($Path.Contains('?')) { '&' } else { '?' }
         try {
-            $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=$PerPage&page=$page") -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+            $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=$PerPage&page=$page") -Method Get -TimeoutSec $script:ReviewApiTimeout -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
         } catch {
             if ($Budgeted) { Set-AutoApiPause }
             throw

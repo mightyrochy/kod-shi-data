@@ -1886,9 +1886,9 @@ function Main {
             $started = 0; $off = $null
             try {
                 [void](Repair-GpuModels)
-                [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', '--refmap=', 'origin',
+                Invoke-PassFetch @('fetch', '-q', '--prune', '--no-tags', '--refmap=', 'origin',
                         "+refs/heads/main:$script:RemoteRoot/main",
-                        "+refs/heads/gemini-queue/*:$($script:QueuePrefix)*"))
+                        "+refs/heads/gemini-queue/*:$($script:QueuePrefix)*")
                 $script:Limits = Get-Limits
                 # Накопичене — після першого успішного fetch (до нього origin/* застарілі): прохід, що впав на
                 # fetch, прибирання не знімає.
