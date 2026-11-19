@@ -1369,6 +1369,10 @@ def _опис_keep_by():
                           "name; shade — light, dark, absent means medium)",
     "stylist_chose_saturation": "the stylist chose the outfit's colour saturation (values: saturation — "
                                 "muted, medium, vivid)",
+    "stylist_accent_place": "the stylist says where the look's accent is (values: accent_in — jewellery: the accent "
+                            "is in the jewellery she named or wears; clothing: in a garment; other_accessories: in "
+                            "a bag, scarf, shoes or belt; none: the look has no separate accent; jewellery_metal — "
+                            "the metal of her jewellery today, when she named it)",
     "stylist_did_not_choose": "the stylist did not choose this part for her this time (values: why — "
                               "no_model: the stylist was unavailable; unreadable: her answer could not be "
                               "read; outside_list: she named something that is not among the possible ones)",
@@ -3882,7 +3886,8 @@ def визначення_заяв(коди):
         "colour_holds_attention", "lightness_structure", "item_is_neutral")},
     **{к: dict(choice="her") for к in ("scheme_chosen_by_her", "her_own_choice_kept_as_is")},
     **{к: dict(choice="stylist", source="model") for к in ("scheme_chosen_by_stylist",
-        "stylist_chose_scheme", "stylist_chose_base", "stylist_chose_saturation", "stylist_declared_on_purpose")},
+        "stylist_chose_scheme", "stylist_chose_base", "stylist_chose_saturation", "stylist_accent_place",
+        "stylist_declared_on_purpose")},
     **{к: dict(choice="code_rank", source="default") for к in ("scheme_taken_by_default", "stylist_did_not_choose",
         "first_scheme_of_advice", "base_from_her_features")},
     "stylist_will_choose": dict(choice="pending"),

@@ -1,0 +1,41 @@
+── ПРОМПТ (6162 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: suit · about it: text н=1
+2 — kind: top
+3 — kind: dress_shoes · about it: text н=2
+4 — kind: bag_generic · about it: text н=3
+5 — kind: earrings
+6 — kind: necklace
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "You asked for a grey suit, so it is the centre of the outfit. It sits a touch smarter than an everyday workday, and I chose it on purpose.",
+"2": "Their level fits a working day, so they suit your occasion. I cannot say how comfortable they will be over long hours, as I do not know how long you will be on your feet or on what surface.",
+"3": "I chose this bag as a practical companion for the working day. I cannot judge how comfortable it will be over long hours, since I do not know your day's length or surface.",
+"4": "I built this outfit around the grey suit you asked for: jacket, vest and wide trousers in one tone make a calm, polished base for work. The short vest marks your waist, so the wide trousers keep a clear line. The silver earrings are the ones you wanted, and the necklace is the accent in jewelry you mentioned. The shoes are at the right level for a working day. The whole outfit is a little smarter than an ordinary office day needs, and I kept it that way on purpose. One thing is missing: a top that suits this outfit, because the one here is not the right kind of piece.",
+"5": "Wear the suit's jacket open over its vest to take a little of the formality off.",
+"6": "Let the necklace be the one accent and keep the silver earrings small beside it.",
+"7": "Let the wide trouser hems fall to the shoes so the grey line stays unbroken.",
+"8": "Костюм двійка штани палаццо + піджак приталений сірий, Жіночі туфлі бордові шкіряні — The suit is a step dressier than neat. You asked for it by name, and for work this level looks deliberate and polished rather than overdone.",
+"9": "Костюм двійка штани палаццо + піджак приталений сірий, Жіночі туфлі бордові шкіряні — The burgundy shoes are a little louder than the suit, but they pick up the red necklace and give the outfit one clear warm note against all the grey."
+}
+
+── ВІДПОВІДЬ (1809 симв., 17.9 с, HTTP 200) ──
+{"1":"Ти просила сірий костюм, тож він став центром образу. Він трохи ошатніший за звичайний робочий день, і я обрала його навмисно.","2":"Їхній рівень пасує до робочого дня, тож вони підходять до твого випадку. Я не можу сказати, наскільки зручними вони будуть протягом довгих годин, бо не знаю, як довго ти будеш на ногах і на якій поверхні.","3":"Я обрала цю сумку як практичну супутницю на робочий день. Я не можу оцінити, наскільки зручною вона буде протягом довгих годин, бо не знаю ні тривалості твого дня, ні поверхні.","4":"Я склала цей образ навколо сірого костюма, який ти просила: піджак, жилет і широкі штани в одному тоні створюють спокійну, акуратну основу для роботи. Короткий жилет підкреслює твою талію, тому широкі штани тримають чітку лінію. Срібні сережки — ті, які ти хотіла, а намисто — акцент у прикрасах, про який ти згадувала. Туфлі відповідають рівню робочого дня. Весь образ трохи ошатніший, ніж потрібно для звичайного офісного дня, і я залишила його таким навмисно. Одного бракує: топа, який пасує до цього образу, бо той, що тут, — не той вид речі.","5":"Носи піджак від костюма розстебнутим поверх його жилета, щоб трохи зняти офіційність.","6":"Нехай намисто буде єдиним акцентом, а срібні сережки поруч із ним залишай маленькими.","7":"Нехай підгини широких штанів спадають до туфель, щоб сіра лінія лишалася суцільною.","8":"Костюм двійка штани палаццо + піджак приталений сірий, Жіночі туфлі бордові шкіряні — Костюм на крок ошатніший за охайний. Ти просила саме його, і для роботи такий рівень виглядає виваженим та доглянутим, а не надмірним.","9":"Костюм двійка штани палаццо + піджак приталений сірий, Жіночі туфлі бордові шкіряні — Бордові туфлі трохи гучніші за костюм, але вони підхоплюють червоне намисто і дають образу одну чітку теплу ноту на тлі всього сірого."}
