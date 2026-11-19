@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Oversized wool-blend blazer, relaxed fit, knee-length, #4a5d6e, melton wool; High-neck silk blouse, tailored cut, hip-length, #f6e4df, crinkle silk; Wide-leg trousers, straight cut, ankle-length, #2c2c30, heavy tweed; Chunky leather boots, lace-up style, calf-length, #8b5a3b, polished goat skin. This outfit works because the deep frost temperature and snowy, salted cobblestone streets require a warm outer layer and sturdy footwear for safe walking to the office on foot. The neat dress code is perfectly honored by the structured yet comfortable silhouette that allows for easy movement without compromising professional polish. Finally, the cool-toned fabric palette harmonizes beautifully with her fair skin and light hair, creating an elegant morning look suited for autumn daylight.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"blazer\\\",\\n\\\"details\\\": \\\"Oversized relaxed fit knee-length melton wool\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#4a5d6e\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"blouse\\\",\\n\\\"details\\\": \\\"High-neck tailored cut hip-length crinkle silk\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#f6e4df\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"trousers\\\",\\n\\\"details\\\": \\\"Wide-leg straight cut ankle-length heavy tweed\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#2c2c30\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"boots\\\",\\n\\\"details\\\": \\\"Chunky lace-up style calf-length polished goat skin\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#8b5a3b\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":533,\"output_tokens\":227},\"stop_reason\":\"end_turn\"}"
+ }
+}
