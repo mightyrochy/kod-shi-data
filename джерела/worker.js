@@ -15,7 +15,9 @@
 
    ДЕ ЦЕ ЖИВЕ: Cloudflare Workers (безкоштовний тариф). Ключі — секретами:
        GEMINI_API_KEY    — секрет: ключ з aistudio.google.com (починається на AIza)
-       ANTHROPIC_API_KEY — секрет: потім, коли перейдемо на Claude
+       ANTHROPIC_API_KEY — секрет: ключ API Anthropic (текст продукту — Claude, кредити з підписки)
+       CLAUDE_EFFORT     — звичайна змінна, необов'язкова: `output_config.effort` для
+                           `claude-` (low | medium | high | …), `as-is` — без поля. Без змінної: low.
        TESTER_TOKENS     — секрет: токени через кому, ЛИШЕ латиниця (tok-a1,tok-b2)
        ALLOWED_ORIGINS   — звичайна змінна: https://твій.github.io
        GEMINI_THINKING   — звичайна змінна, необов'язкова. Скільки Gemini
@@ -51,6 +53,10 @@ const ТИПОВИЙ_MIME_КАРТИНКИ = "image/png";     // картинк�
 const ТИПОВА_ПРИЧИНА_ЗУПИНКИ = "end_turn";     // відповідь без причини зупинки
 const ПІДПИС_БЕЗ_СТАТУСУ = "(нема)";           // відповідь Interactions API без статусу
 const СТЕЛЯ_ВИХОДУ     = 4000;
+const ЗАПАС_ДУМОК_CLAUDE = 12000;   // токенів на думки Claude 5.5 понад стелю відповіді (провайдер anthropic)
+/* Зусилля мислення Claude, коли змінна CLAUDE_EFFORT не задана: low — вимір 19.11
+   (`аудит/проби/модель-текст-claude/`), якість образів як без межі, вихід на чверть менший. */
+const ТИПОВЕ_ЗУСИЛЛЯ_CLAUDE = "low";
 const СТЕЛЯ_ВХОДУ_СИМВ = 400000;   // виміряно: рука з пулом ≈ 130 000 симв
 const ПРОГОНІВ_НА_ДОБУ = 40;
 
@@ -193,10 +199,38 @@ const ПРОВАЙДЕРИ = [
        `claude-` не працював би з першого ж виклику — рівно в момент, коли
        систему роздають тестувальницям. Gemini не зачеплено: його `запит`
        будує нове тіло. */
+    /* ── МИСЛЕННЯ CLAUDE 5.5 З'ЇДАЄ СТЕЛЮ ВИВОДУ (наряд «Модель-текст-на-Claude», вимір 19.11) ──
+       Sonnet 5.5 і Haiku 5.5 мислять завжди (adaptive), а думки рахуються в `max_tokens`. Без поля
+       `effort` Sonnet думає на high: 13.11 через `claude -p` 44 з 382 викликів продукту вийшли понад
+       4000 токенів (до 23 178), і 5 тривали понад 85 с — на мості зі стелею 4000 це обрізані відповіді
+       й 504. Тому, як каскад Gemini: рівень задає змінна `CLAUDE_EFFORT` (типово low, «as-is» — без
+       поля), поле їде як `output_config.effort`, на 400 через нього міст повторює без нього. Стеля
+       відповіді сторінки лишається її (`СТЕЛЯ_ВИХОДУ`), а до `max_tokens` провайдеру додається запас на
+       думки `ЗАПАС_ДУМОК_CLAUDE`: на low з 382 викликів Sonnet 5.5 найбільший вихід разом із думками —
+       9 459 (повтор трьох найдовших — до 11 045), думок — до 10 224 (`аудит/проби/модель-текст-claude/`). Вимкнути мислення (`between_tools`
+       на Sonnet 5.5, `disabled` на Haiku 5.5) не обрано: якість без думок не виміряна — `claude -p`
+       його не вимикає. */
+    змінна_думок: "CLAUDE_EFFORT",
+    думки: н => {
+      const з = String(н || "").trim().toLowerCase();
+      if (з === "as-is" || з === "як є") return [];
+      return [{effort: з || ТИПОВЕ_ЗУСИЛЛЯ_CLAUDE}];
+    },
     запит: т => { const р = з_кешем({...т}); delete р._думки; delete р._без_темп;
                   const темп = температура_тіла(т);
                   if (темп === null) delete р.temperature; else р.temperature = темп;
+                  if (т._думки && т._думки.effort)
+                    р.output_config = Object.assign({}, р.output_config, {effort: т._думки.effort});
+                  р.max_tokens = (Number(т.max_tokens) || СТЕЛЯ_ВИХОДУ) + ЗАПАС_ДУМОК_CLAUDE;
                   return р; },
+    /* ── КРЕДИТИ СКІНЧИЛИСЬ ─────────────────────────────────────────────
+       Кредити API з підписки — $100 на місяць; скінчились — Anthropic відповідає 400
+       invalid_request_error «Your credit balance is too low to access the Anthropic API…»
+       (чи 402 billing_error). Сторінка такого не повторює, але й не відрізнила б від будь-якого
+       збою: жінка бачила «Не змогла відповісти» і пробувала ще. Міст називає це одним видом —
+       402 `credits_exhausted`, — а слова жінці пише сторінка (`ШАБЛОНИ_ЗБОЮ_П.credits_exhausted`). */
+    без_кредитів: (статус, текст) => (статус === 400 || статус === 402)
+      && /credit balance is too low|billing_error/i.test(текст),
     відповідь: д => д,
   },
   {
@@ -210,6 +244,7 @@ const ПРОВАЙДЕРИ = [
       : "https://generativelanguage.googleapis.com/v1beta/models/"
         + encodeURIComponent(м) + ":generateContent",
     шапка: k => ({"content-type":"application/json", "x-goog-api-key":k}),
+    змінна_думок: "GEMINI_THINKING",
     /* ── МИСЛЕННЯ З'ЇДАЄ СТЕЛЮ ВИВОДУ (спіймано першим живим прогоном) ─
        Flash-моделі Gemini мислять за замовчуванням, і `thoughtsTokenCount`
        рахується ПРОТИ `maxOutputTokens`. Проба зі стелею 16 віддала
@@ -619,7 +654,7 @@ export default {
     // `thinkingBudget` означало б замінити один здогад іншим і мовчки
     // зламатись, коли аліас переїде. Тому форми пробуються по черзі, і лише
     // потім поле знімається зовсім. Порожній хвіст `null` — це «без поля».
-    const форми = (пров.думки && !_картинкова ? пров.думки(env.GEMINI_THINKING) : []).concat([null]);
+    const форми = (пров.думки && !_картинкова ? пров.думки(env[пров.змінна_думок]) : []).concat([null]);
     let відп = null, думки_стан = "as-is", модель_ок = тіло.model;
     const спроби = [];
     const почато = Date.now();
@@ -643,7 +678,7 @@ export default {
             continue;
           }
           // 400 НЕ через мислення — чужа помилка, віддаємо як є, не крутимо каскад
-          if (!/thinking|thought/i.test(т400)) break щабель;
+          if (!/thinking|thought|effort|output_config/i.test(т400)) break щабель;
           /* ПРИЧИНА ВІДМОВИ — У СПРОБАХ (02.09: `gemini-3.7-flash` відхилив
              `thinkingLevel`, і чому — не було видно; наступна форма коштувала
              503 і 85 с тиші). Короткий текст помилки Google — ASCII-безпечно. */
@@ -690,6 +725,10 @@ export default {
       return відмова(504, "провайдер не відповів за " + Math.round((Date.now() - почато) / 1000)
                           + " с (стеля " + стеля_с + " с на спробу; спроби: " + спроби.join(", ") + "). "
                           + "Це латентність моделі, не міст: спробуй інше ім'я моделі або задай GEMINI_FALLBACK.", п);
+    if (пров.без_кредитів && пров.без_кредитів(відп.status, сире))
+      return new Response(JSON.stringify({error:{type:"credits_exhausted",
+        message:"кредити API провайдера " + пров.ім + " скінчились: " + сире.replace(/\s+/g, " ").slice(0, 200)}}),
+        {status:402, headers:вих});
     if (!відп.ok) return new Response(сире, {status:відп.status, headers:вих});
     let дані;
     try { дані = JSON.parse(сире); }
