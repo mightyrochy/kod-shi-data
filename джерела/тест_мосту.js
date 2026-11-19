@@ -703,6 +703,70 @@ const пнг = байтів => {
     тест("claude-: x-route=messages", в.headers.get("x-route") === "messages", в.headers.get("x-route"));
   }
 
+  console.log("4ж. OPENAI images/edits: заглушка за документованим форматом (наряд «Модель-примірка-на-OpenAI»)");
+  {
+    /* Формат — з developers.openai.com (довідник «Create image edit», 19.11.2026), живого виклику НЕ було. */
+    const envО = {...env, OPENAI_API_KEY:"sk-openai-тест"};
+    const запО = тіло => М.fetch(new Request("https://w.workers.dev/", {method:"POST",
+      headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
+      body:JSON.stringify(тіло)}), envО);
+    const фото = {type:"image", source:{type:"base64", media_type:"image/jpeg", data:"QUJD"}};
+    const ід = k => ({type:"image", source:{type:"url", url:"https://img.example/" + k + ".png"}});
+    вихідні.length = 0; фотоЗапити.length = 0;
+    відповідач = () => new Response(JSON.stringify({created:1, output_format:"png", quality:"medium", size:"1024x1536",
+      data:[{b64_json:"R0lG"}],
+      usage:{input_tokens:3000, input_tokens_details:{image_tokens:2500, text_tokens:500}, output_tokens:1000, total_tokens:4000}}), {status:200});
+    в = await запО({model:"gpt-image-2.6-sunburst", max_tokens:800,
+      messages:[{role:"user", content:[{type:"text", text:"Одягни її"}, фото, ід("a"), {type:"text", text:"Речі — далі"}]}]});
+    const о = вихідні[0], тіло_о = о && о.body, д_о = await в.json();
+    тест("openai: адреса images/edits, Bearer ключа, JSON", о && о.url === "https://api.openai.com/v1/images/edits"
+         && о.headers.authorization === "Bearer sk-openai-тест" && о.headers["content-type"] === "application/json", о && о.url);
+    тест("openai: model, prompt з текстових блоків, images у порядку (data:-URL, фото за адресою вже base64)",
+         тіло_о.model === "gpt-image-2.6-sunburst" && тіло_о.prompt === "Одягни її\n\nРечі — далі"
+         && тіло_о.images.length === 2 && тіло_о.images[0].image_url === "data:image/jpeg;base64,QUJD"
+         && /^data:image\/png;base64,/.test(тіло_о.images[1].image_url), тіло_о);
+    тест("openai: у тілі нема службових полів Anthropic/Gemini", !("messages" in тіло_о) && !("max_tokens" in тіло_о)
+         && !("_думки" in тіло_о) && !("temperature" in тіло_о), Object.keys(тіло_о));
+    тест("openai: одна спроба без каскаду, x-provider=openai, x-route=images-edits, x-thinking=as-is",
+         вихідні.length === 1 && в.headers.get("x-provider") === "openai" && в.headers.get("x-route") === "images-edits"
+         && в.headers.get("x-thinking") === "as-is", в.headers.get("x-attempts"));
+    тест("openai: відповідь у форматі Anthropic — блок image base64 image/png, usage 3000/1000",
+         в.status === 200 && д_о.content.length === 1 && д_о.content[0].type === "image"
+         && д_о.content[0].source.type === "base64" && д_о.content[0].source.media_type === "image/png"
+         && д_о.content[0].source.data === "R0lG" && д_о.usage.input_tokens === 3000 && д_о.usage.output_tokens === 1000, д_о);
+    /* 2500·8 + 500·5 + 1000·30 = 20000 + 2500 + 30000 = 52500 / 1e6 = $0.0525 */
+    тест("openai: x-cost-usd = токени × ціна (0.0525)", в.headers.get("x-cost-usd") === "0.0525", в.headers.get("x-cost-usd"));
+    вихідні.length = 0;
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"}]}]});
+    тест("openai: без фото — 400 до мережі", в.status === 400 && вихідні.length === 0, в.status);
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[фото]}, {role:"assistant", content:"b"}]});
+    тест("openai: кілька повідомлень — 400 до мережі", в.status === 400 && вихідні.length === 0, в.status);
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"}, ...Array.from({length:17}, () => фото)]}]});
+    тест("openai: понад 16 зображень — 400 до мережі", в.status === 400 && вихідні.length === 0, в.status);
+    в = await М.fetch(new Request("https://w.workers.dev/", {method:"POST",
+      headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
+      body:JSON.stringify({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[фото]}]})}), env);
+    тест("openai: без секрета → 500 і названо OPENAI_API_KEY", в.status === 500 && /OPENAI_API_KEY/.test(await в.text()), в.status);
+    /* мертве фото за адресою випадає й рахується, не валить виклик */
+    вихідні.length = 0;
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"}, фото,
+      {type:"image", source:{type:"url", url:"https://dead.example/z.png"}}]}]});
+    тест("openai: мертве фото за адресою випало (x-images-dropped=1), виклик пішов з одним зображенням",
+         в.status === 200 && в.headers.get("x-images-dropped") === "1" && вихідні[0].body.images.length === 1, в.headers.get("x-images-dropped"));
+    /* відмова безпеки й порожня відповідь */
+    вихідні.length = 0;
+    відповідач = () => new Response(JSON.stringify({error:{code:"moderation_blocked", message:"blocked"}}), {status:400});
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[фото]}]});
+    тест("openai: moderation_blocked 400 — віддано як є, один виклик", в.status === 400 && вихідні.length === 1
+         && /moderation_blocked/.test(await в.text()), в.status);
+    відповідач = () => new Response(JSON.stringify({data:[], usage:{}}), {status:200});
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[фото]}]});
+    тест("openai: 200 без картинки — 422, а не «успіх»", в.status === 422, в.status);
+    відповідач = () => new Response(JSON.stringify({error:{code:"insufficient_quota", message:"You exceeded your current quota"}}), {status:429});
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[фото]}]});
+    тест("openai: insufficient_quota → 402 credits_exhausted", в.status === 402 && /credits_exhausted/.test(await в.text()), в.status);
+  }
+
   console.log("5. СТЕЛІ");
   в = await зап({model:"claude-sonnet-5", messages:[{role:"user", content:"x".repeat(400001)}]});
   тест("запит понад стелю входу → 413", в.status === 413, в.status);

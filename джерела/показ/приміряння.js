@@ -8,8 +8,8 @@ const МОДЕЛЬ_КАРТИНКИ = (function(){
     const h = new URLSearchParams((location.hash || '').replace(/^#/, ''));
     const м = h.get('модель_картинки');
     if (м) localStorage.setItem('міст:модель_картинки', м);
-    return м || localStorage.getItem('міст:модель_картинки') || 'gemini-nano-banana-2.1';
-  }catch(_){ return 'gemini-nano-banana-2.1'; }
+    return м || localStorage.getItem('міст:модель_картинки') || 'gpt-image-2.6-sunburst';
+  }catch(_){ return 'gpt-image-2.6-sunburst'; }
 })();
 
 let _блобВБазуЯкЄ = function(блоб){
