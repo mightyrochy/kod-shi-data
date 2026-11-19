@@ -1,0 +1,61 @@
+── ПРОМПТ (6247 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: two_piece_set · about it: text н=1
+2 — kind: ankle_boots · about it: text н=2
+3 — kind: headwear · about it: text н=3
+4 — kind: belt · about it: text н=4
+5 — kind: jewelry_generic · about it: text н=5
+6 — kind: vest · about it: text н=6
+7 — kind: backpack · about it: text н=7
+8 — kind: half_coat · about it: text н=8
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The two-piece set fits the occasion perfectly, providing the right level of formality for a restaurant celebration while defining your silhouette.",
+"2": "These ankle boots complement the occasion and ensure your footing is steady as you move through the room.",
+"3": "This headwear adds a finishing touch that aligns with the festive nature of your celebration.",
+"4": "The belt cinches at your waist, helping to structure the outfit and accentuate your figure.",
+"5": "This jewelry brings a delicate sparkle that enhances your neckline without overpowering the overall look.",
+"6": "The vest provides the necessary warmth for frosty weather while maintaining the elegance required by the occasion.",
+"7": "The backpack offers practicality and security for your essentials, ensuring you stay comfortable throughout the evening.",
+"8": "This half-coat provides essential protection against the cold, its fabric suited to the frosty conditions of your day.",
+"9": "This outfit was chosen for your New Year's celebration at the restaurant, where it balances warmth with elegance. The two-piece set anchors you in a formal look without feeling heavy, while the frost-resistant fabrics in the vest and half-coat keep you comfortable as the temperature drops. The pearl-and-ribbon jewelry adds a touch of festive sparkle to your neckline, and the ankle boots offer the stability you need on an evening out.",
+"10": "Leave the collar of your top buttoned and let the bow sit naturally at your chest to maintain a soft, vertical line.",
+"11": "Tuck your hands into your pockets or gently hold the sash to draw attention to your waistline.",
+"12": "Атласний костюм шоколад — A jumpsuit is chosen as the dress equivalent to simplify the silhouette and anchor the outfit vertically."
+}
+
+── ВІДПОВІДЬ (1672 симв., 13.6 с, HTTP 200) ──
+```json
+{
+  "1": "Цей двобортний комплект ідеально підходить для цієї нагоди, забезпечуючи потрібний рівень офіційності для святкування в ресторані та водночас окреслюючи твою фігуру.",
+  "2": "Ці ботильйони доповнюють цю подію й гарантують стійкість твоєї ноги під час пересування по кімнаті.",
+  "3": "Цей головний убір додає завершальний штрих, який відповідає святковій атмосфері твого свята.",
+  "4": "Пояс підкреслює талію, допомагаючи структурувати образ і акцентувати фігуру.",
+  "5": "Ця прикраса дарує ніжний блиск, що підкреслює лінію шиї без перевантаження загального вигляду.",
+  "6": "Жилет забезпечує необхідне тепло в морозну погоду, зберігаючи елегантність, потрібну для цієї нагоди.",
+  "7": "Рюкзак пропонує практичність і безпеку для твоїх речей, гарантуючи комфорт протягом усього вечора.",
+  "8": "Цей півпальто забезпечує необхідний захист від холоду, а його тканина підходить до морозних умов дня.",
+  "9": "Я обрала цей образ для твого новорічного святкування в ресторані, де він поєднує тепло з елегантністю. Двобортний комплект створює офіційний вигляд без відчуття тяжкості, а тканини жилета та півпальта, що захищають від морозу, зберігають комфорт у міру зниження температури. Прикраса з перлів і стрічки додає святкового блиску твоїй лінії шиї, а ботильйони забезпечують стабільність під час вечора.",
+  "10": "Залиш комір сорочки застебнутим, а бант нехай природно лежить на грудях, щоб зберегти м’яку вертикальну лінію.",
+  "11": "Поклади руки в кишені або ніжно тримай пояс, щоб привернути увагу до лінії талії.",
+  "12": "Шовковий комбінезон — я обрала його як еквівалент сукні, щоб спростити силует і закріпити образ вертикально."
+}
+```
