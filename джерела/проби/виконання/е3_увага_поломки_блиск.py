@@ -11,6 +11,7 @@ import json
 import os
 import pathlib
 import runpy
+import shutil
 import subprocess
 import sys
 import traceback
@@ -35,27 +36,55 @@ def читати(шлях):
         return json.load(ф)
 
 
+def звірити_місця(до, після, база):
+    """Звірити мультимножини файл · пункт · функція, залишок частини назвати явно."""
+    from е3_місця import місця
+    д = місця(pathlib.Path(до).read_text(encoding='utf-8-sig'), база)
+    п = місця(pathlib.Path(після).read_text(encoding='utf-8-sig'))
+    файли = {'джерела/' + м + '.py' for м in МОДУЛІ[:3]}
+    частина = lambda м: sum(н for к, н in м.items() if к[0] in файли)
+    print('частина:', частина(д), '→', частина(п), '; нових:', sum((п-д).values()))
+    for к, н in sorted((д-п).items()):
+        print('знято:', ' · '.join(к), н)
+    for к, н in sorted(п.items()):
+        if к[0] in файли:
+            print('лишилось:', ' · '.join(к), н)
+    assert not (п-д), 'додано місця кореня'
+    assert {к: н for к, н in д.items() if к[0] not in файли} == {
+        к: н for к, н in п.items() if к[0] not in файли}, 'зміни поза частиною'
+
+
 def звірити(до, після):
     """Звірити кожну знахідку та надрукувати переходи ваг за правилом."""
     д, п = читати(до), читати(після)
     print('записів:', len(д['записи']), '→', len(п['записи']))
-    зміни, сили, порушення = collections.Counter(), collections.Counter(), 0
-    for а, б in itertools.zip_longest(д['записи'], п['записи']):
-        if а is None or б is None or а[:3] != б[:3]:
+    def групи(записи):
+        вих = collections.defaultdict(collections.Counter)
+        for р in записи:
+            ключ = json.dumps(р[:2] + [sorted(map(str, р[2] or []))], ensure_ascii=False)
+            вих[ключ][tuple(р[3:])] += 1
+        return вих
+    гд, гп = групи(д['записи']), групи(п['записи'])
+    зміни, порушення = collections.Counter(), 0
+    разом = collections.Counter(р[1] for р in д['записи'])
+    for ключ in гд.keys() | гп.keys():
+        а, б = гд.get(ключ, collections.Counter()), гп.get(ключ, collections.Counter())
+        if sum(а.values()) != sum(б.values()):
             порушення += 1
-            continue
-        if а[3:] != б[3:]:
-            зміни[а[1], str(а[3:]), str(б[3:])] += 1
-        if а[3] != б[3]:
-            сили[а[1], а[3], б[3]] += 1
+        if а != б:
+            зміни[json.loads(ключ)[1], str(dict(а-б)), str(dict(б-а))] += 1
     print('змін складу:', порушення, '; змін ваги/сили:', sum(зміни.values()))
     print('| Правило | ДО (сила, сира/ефективна вага, гейт) | ПІСЛЯ | Кількість |')
     print('|---|---|---|---|')
+    for правило, н in sorted(разом.items()):
+        if not any(к[0] == правило for к in зміни):
+            print('| %s | без змін | без змін | %d |' % (правило, н))
     for (правило, а, б), н in sorted(зміни.items()):
         print('| %s | %s | %s | %d |' % (правило, а, б, н))
     print('провали ДО:', д.get('провали', []))
     print('провали ПІСЛЯ:', п.get('провали', []))
     assert not порушення, 'змінився склад знахідок'
+    assert not зміни, 'змінились ваги знахідок; потрібна оцінка переходів'
 
 
 def каталог(запис):
@@ -68,7 +97,10 @@ def каталог(запис):
     from е3_блиск_набори import набори
     кеш = pathlib.Path(os.environ['TMP']) / 'каталог.json.gz'
     if not кеш.exists():
-        речі = Ф.база_прогону(Ф.каталог_на_диску('каталог_повний.xml'), ліміт_фото=0)['каталог']
+        архів = кеш.parent / 'каталог_повний.xml.gz'
+        shutil.copyfile(КОРІНЬ / архів.name, архів)
+        речі = Ф.база_прогону(Ф.каталог_на_диску('каталог_повний.xml', тека=str(кеш.parent)),
+                            ліміт_фото=0)['каталог']
         with gzip.open(кеш, 'wt', encoding='utf-8') as ф:
             json.dump(речі, ф, ensure_ascii=False)
     речі = читати(кеш)
@@ -147,6 +179,8 @@ def main():
     режим, вихід = sys.argv[1:3]
     if режим == 'звірити':
         return звірити(вихід, sys.argv[3])
+    if режим == 'місця':
+        return звірити_місця(вихід, sys.argv[3], sys.argv[4])
     шлях = pathlib.Path(вихід).resolve()
     тимчасова = pathlib.Path(str(шлях) + '.tmp')
     тимчасова.mkdir(parents=True, exist_ok=True)
