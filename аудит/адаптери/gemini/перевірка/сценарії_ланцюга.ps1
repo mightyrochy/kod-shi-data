@@ -88,7 +88,7 @@ try {
     "ДАНІ стан позначки ланцюга: slug=[$runSlug] черга=$queue"
     Check 'стан прогону щойно поставленої позначки приймається в тому ж проході, а не як «не відповідає жодній позначці»' ($runSlug -ceq $part[1])
     # Зняття так само відразу видне клону: знята позначка не лишається в посиланнях до наступного fetch.
-    Add-ChainMarker "автоперевірка-77-$newer" 'gpt-6.1-sol-high' $built
+    Add-ChainMarker "автоперевірка-77-$newer" 'gpt-6.2-sol-high' $built
     $review = (@(Markers | Where-Object { $_ -match "автоперевірка-77-$newer/" })[0]) -replace '^refs/heads/',''
     Check 'поставлена позначка автоперевірки видна клону' ((Get-RefSha "refs/remotes/origin/$review") -ceq $built)
     [void](Request-CloudReview '77' $newer)
@@ -147,10 +147,10 @@ try {
     $cases = @(
         @{N=1; Gem=0; Cg=1; Argon=40; Refused='2026-10-29T15:18:00Z'; OldWant='gemini-4-argon-high'; Want='gemini-4-argon-high'; Why='Gemini Models 0 %, Argon вільний: перший кандидат agy'},
         @{N=2; Gem=0; Cg=1; Argon=0; Refused='2026-10-29T18:30:00Z'; OldWant='gemini-4-argon-high'; Want='gemini-4-argon-high'; Why='Argon і Codex на квоті: перший кандидат чекає скидання'},
-        @{N=3; Gem=100; Cg=0; Argon=0; Refused='2026-10-29T15:18:00Z'; OldWant='gemini-4-argon-high'; Want='gpt-6.1-sol-high'; Why='Gemini Models вільний, Argon 0 %: доступний Codex'},
-        @{N=4; Gem=0; Cg=0; Argon=0; Refused=''; OldWant='gpt-6.1-sol-high'; Want='gpt-6.1-sol-high'; Why='усі групи agy 0 %, відмови Codex нема'},
+        @{N=3; Gem=100; Cg=0; Argon=0; Refused='2026-10-29T15:18:00Z'; OldWant='gemini-4-argon-high'; Want='gpt-6.2-sol-high'; Why='Gemini Models вільний, Argon 0 %: доступний Codex'},
+        @{N=4; Gem=0; Cg=0; Argon=0; Refused=''; OldWant='gpt-6.2-sol-high'; Want='gpt-6.2-sol-high'; Why='усі групи agy 0 %, відмови Codex нема'},
         @{N=5; Gem=$null; Cg=$null; Argon=$null; Refused=''; OldWant='gemini-4-argon-high'; Want='gemini-4-argon-high'; Why='pools.json відсутній: квота agy невідома, перший кандидат доступний'},
-        @{N=6; Gem=0; Cg=1; Argon=0; Refused='2026-10-29T15:18:00Z'; OldWant='gemini-4-argon-high'; Want='gpt-6.1-sol-high'; Why='Claude and GPT Models вільний, Argon 0 %: доступний Codex'},
+        @{N=6; Gem=0; Cg=1; Argon=0; Refused='2026-10-29T15:18:00Z'; OldWant='gemini-4-argon-high'; Want='gpt-6.2-sol-high'; Why='Claude and GPT Models вільний, Argon 0 %: доступний Codex'},
         @{N=7; Gem=0; Cg=0; Argon=40; Refused='2026-10-29T18:30:00Z'; OldWant='gemini-4-argon-high'; Want='gemini-4-argon-high'; Why='лише Argon вільний, Codex на квоті: доступний agy'},
         @{N=8; Gem=0; Cg=0; Argon=0; Refused='2026-10-29T18:30:00Z'; OldWant='gemini-4-argon-high'; Want='gemini-4-argon-high'; Why='усі групи 0 % і свіжа відмова Codex: перший кандидат чекає'})
     foreach ($c in $cases) {
@@ -174,17 +174,17 @@ try {
     Check 'нічний Е1 відкривається з 02:00 UTC' (-not (Test-NightlyOpen ([datetime]::new(2026, 11, 9, 1, 59, 0, [DateTimeKind]::Utc))) -and (Test-NightlyOpen ([datetime]::new(2026, 11, 9, 2, 0, 0, [DateTimeKind]::Utc))))
     function Test-NightlyOpen([datetime]$Utc) { $true }
     $night = 'Е1-нічний-живий-' + [datetimeoffset]::UtcNow.UtcDateTime.ToString('yyyyMMdd')
-    & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+    & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.2-sol-high/1/gpu-p8"
     SetCodex $true; SetClaude $false; Invoke-WrapperChain
     $nm = @(SlugMarkers $night)
     Check 'нічний, codex 0 %: дозвіл перейшов на Claude з квотою — одна позначка, умови gpu-p8 і коміт ті самі' ($nm.Count -eq 1 -and $nm[0] -match '/cc-claude-sonnet-5-5-medium/1/gpu-p8$' -and (& git -C $remote rev-parse $nm[0]).Trim() -ceq $newer)
-    "  мірило: нічний при codex 0 % — було gpt-6.1-sol-high/1, стало $(($nm[0] -split '/')[-3])/$(($nm[0] -split '/')[-2])"
+    "  мірило: нічний при codex 0 % — було gpt-6.2-sol-high/1, стало $(($nm[0] -split '/')[-3])/$(($nm[0] -split '/')[-2])"
     SetCodex $false; Invoke-WrapperChain
     Check 'відновлення codex не повертає й не дублює нічний дозвіл' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/cc-claude-sonnet-5-5-medium/1/gpu-p8$')
     & git -C $seed push -q origin ":$($nm[0])"
-    & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+    & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.2-sol-high/1/gpu-p8"
     Invoke-WrapperChain
-    Check 'нічний, codex з квотою: дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    Check 'нічний, codex з квотою: дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6.2-sol-high/1/gpu-p8$')
     # Відмова Codex без часу скидання — квота лише тоді, коли останній вимір не показує залишку в кожному вікні (heartbeat.codex.limits);
     # відмова з часом скидання — квота завжди, як було. Дозвіл після кожного перенесення повертається на codex.
     function SetCodexRefused([string]$Reset, $Limits) {
@@ -195,11 +195,11 @@ try {
     function CodexLimits([int[]]$Left) { , @(@{id='codex';windows=@(foreach ($l in $Left) { @{m=300;used=(100-$l);left=$l;reset=(Stamp 1)} })}) }
     function BackToCodex {
         foreach ($m in @(SlugMarkers $night)) { & git -C $seed push -q origin ":$m" }
-        & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+        & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.2-sol-high/1/gpu-p8"
     }
     SetClaude $false
     SetCodexRefused '' (CodexLimits 72, 72); Invoke-WrapperChain
-    Check 'нічний, відмова codex без часу скидання, вимір 72 і 72 % вільних: збій рушія, дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    Check 'нічний, відмова codex без часу скидання, вимір 72 і 72 % вільних: збій рушія, дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6.2-sol-high/1/gpu-p8$')
     $moved = @(
         @{Why='відмова без часу скидання, виміру нема: квота, як було'; Reset=''; Limits=$null},
         @{Why='відмова без часу скидання, одне вікно виміру на 0 %: квота'; Reset=''; Limits=(CodexLimits 72, 0)},
@@ -211,13 +211,13 @@ try {
     }
     "  мірило: відмова codex без часу скидання, вимір 72 % вільних — було перенесення на Claude, стало: лишається на codex"
     SetCodex $true; SetClaude $true; Invoke-WrapperChain
-    Check 'нічний, обидва на квоті: дозвіл чекає на codex, не переходить' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    Check 'нічний, обидва на квоті: дозвіл чекає на codex, не переходить' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6.2-sol-high/1/gpu-p8$')
     & git -C $seed push -q origin ":$(@(SlugMarkers $night)[0])"
     # Дозвіл на збірці, для якої автоживий уже є ($built несе build.txt = $newer, автоживий-$newer стоїть): Get-NightlyMarker
     # такого дозволу не віддає, тож і перенесення до Claude його не обходить.
-    & git -C $seed push -q origin "${built}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+    & git -C $seed push -q origin "${built}:refs/heads/gemini-queue/$night/gpt-6.2-sol-high/1/gpu-p8"
     SetCodex $true; SetClaude $false; Invoke-WrapperChain
-    Check 'нічний, codex 0 %, але автоживий цієї збірки вже є: дозвіл не переходить до Claude' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    Check 'нічний, codex 0 %, але автоживий цієї збірки вже є: дозвіл не переходить до Claude' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6.2-sol-high/1/gpu-p8$')
     & git -C $seed push -q origin ":$(@(SlugMarkers $night)[0])"
     SetCodex $false; SetClaude $false
     # Збій не з кодом CHAIN_*: у рядку тип і рядок скрипту, без шляхів і тексту.
@@ -292,7 +292,7 @@ try {
     function PushMk([string]$Slug, [string]$Model, [string]$Sha, [string]$Cond = 'p1') { & git -C $seed push -q origin "${Sha}:refs/heads/gemini-queue/$Slug/$Model/1/$Cond" }
     $h1 = Merge 'три-pr.txt' '1'
     $h2 = Merge 'три-pr.txt' '2'
-    PushMk "автоперевірка-41-$h2" 'gpt-6.1-sol-high' $h2
+    PushMk "автоперевірка-41-$h2" 'gpt-6.2-sol-high' $h2
     PushMk "автоперевірка-41-$h2" 'gemini-4-argon-high' $h2 'p2'
     PushMk "автоперевірка-42-$h1" 'gemini-4-argon-high' $h1
     PushMk "автоперевірка-43-$h2" 'gemini-4-argon-high' $h2
@@ -300,7 +300,7 @@ try {
     $script:Pulls = @((Pull 41 'claude/живий' $h2), (Pull 42 'codex/змінений' $h2)); Invoke-WrapperChain
     $after = @(Markers | Where-Object { $_ -match 'автоперевірка-4[123]-' })
     $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)
-    Check 'позначка диспетчера на живій голові лишилась, давня позначка ланцюга (p2) — знята' ($after.Count -eq 1 -and $after[0] -match "автоперевірка-41-$h2/gpt-6\.1-sol-high/1/p1$")
+    Check 'позначка диспетчера на живій голові лишилась, давня позначка ланцюга (p2) — знята' ($after.Count -eq 1 -and $after[0] -match "автоперевірка-41-$h2/gpt-6.2-sol-high/1/p1$")
     Check 'мертві позначки знято до узяття: стара голова, закритий PR, дубль' (@($after | Where-Object { $_ -match 'автоперевірка-4[23]-' }).Count -eq 0 -and $log.Contains('знято — голова PR змінилась') -and $log.Contains('знято — PR не відкритий') -and $log.Contains('знято — друга позначка тієї самої голови'))
     "  мірило: позначок диспетчера 4 → після зняття мертвих $($after.Count)"
     # Позначка Claude на ноутбуці в автоперевірці не потрібна: зникає, а кількість знятих — рядок у зведенні.

@@ -606,7 +606,7 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     if ($utc.Hour -lt 2) { return }
     if ($OpenOnly) { return $true }
     $date = $utc.ToString('yyyyMMdd')
-    $head = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/'
+    $head = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.2-sol-high/'
     $main = Get-RefSha "$script:RemoteRoot/main"
     if ($main -cnotmatch '^[0-9a-f]{40}$') { return }
     $tries = @(foreach ($name in ((Invoke-Git @('for-each-ref', '--format=%(refname)', $head)).Out -split "`n")) {

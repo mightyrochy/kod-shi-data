@@ -11,7 +11,7 @@ $script:QueuePrefix = 'refs/remotes/origin/gemini-queue/'
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$'
 $script:ModelPattern = '^[a-z0-9][a-z0-9.-]{1,63}$'
 $script:CondPattern = '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gpu)){0,2}$'
-$m = ConvertTo-Marker ($script:QueuePrefix + 'проба/gpt-6.1-sol-high/1' + "`t" + ('a'*40) + "`t1")
+$m = ConvertTo-Marker ($script:QueuePrefix + 'проба/gpt-6.2-sol-high/1' + "`t" + ('a'*40) + "`t1")
 if (-not $m.Valid -or $m.Lane -ne 'codex') { exit 1 }
 if ((Get-AutoTaskPath ('автоперевірка-12-' + ('a'*40))) -cne 'аудит/наряди/автоперевірка.md') { exit 1 }
 Write-Output 'WRAPPER_PROBE_OK'
