@@ -396,6 +396,27 @@ function Select-ReviewModel([string[]]$Candidates, [datetimeoffset]$Now) {
     $list[0]
 }
 
+function Get-CodexPauseUntil($Config) {
+    <# Необов'язкове `codex_pause_until` у ланцюг.json (UTC, `2026-11-23T10:16:00Z`): до цього часу автоживий не йде на Codex і не
+    на Claude ноутбука (їхні квоти під лімітом менеджера), а бере `agy`. Нема поля чи `null` — $null, поведінка без паузи; значення
+    не за форматом — CHAIN_CONFIG (формат і розбір — ті самі, що для часу скидання квот: ConvertFrom-QuotaStamp). PowerShell 7 сам
+    перетворює дату з JSON на DateTime: приймається лише UTC (`Z`), місцевий час чи зсув — не за форматом, а не мовчки зсув. #>
+    $prop = $Config.PSObject.Properties['codex_pause_until']
+    if ($null -eq $prop -or $null -eq $prop.Value) { return $null }
+    if ($prop.Value -is [datetime] -and $prop.Value.Kind -ne [DateTimeKind]::Utc) { throw 'CHAIN_CONFIG' }
+    $until = ConvertFrom-QuotaStamp $prop.Value
+    if ($null -eq $until) { throw 'CHAIN_CONFIG' }
+    $until
+}
+
+function Get-LiveModels($Config, [datetimeoffset]$Now, $PauseUntil = $null) {
+    <# Кандидати рушія для автоживого за порядком `codex`, `claude`; доки `$Now` < `$PauseUntil` (codex_pause_until) — лише `agy`: смуга
+    gemini ставить GPU-позначку так само, як codex (замок GPU, оренда й план — одні), квоту agy читає Test-ModelQuota. Нічний Е1
+    (Move-NightlyMarker) цього списку не бере: його дозвіл і позначки диспетчера з явною моделлю лишаються на своїх моделях. #>
+    if ($null -ne $PauseUntil -and $Now -lt $PauseUntil) { return @([string]$Config.agy) }
+    @([string]$Config.codex, [string]$Config.claude)
+}
+
 function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset]::UtcNow) {
     <# Один рецензент іншого постачальника, ніж автор, що не на квоті: робота GPT і Claude — agy, Gemini — Codex; запасний —
     Codex для Claude, хмарний Claude для GPT і Gemini (рядок диспетчерові, не claude -p на ноутбуці). Обидва для роботи
@@ -1029,6 +1050,15 @@ function Invoke-WrapperChain {
             if ($hours -lt 1 -or $hours -gt 168) { throw 'CHAIN_CONFIG' }
         }
         $now = [datetimeoffset]::UtcNow; $installed = $now; $heads = @{}
+        $pauseUntil = Get-CodexPauseUntil $config
+        $pauseActive = $null -ne $pauseUntil -and $now -lt $pauseUntil
+        if ($pauseActive) {
+            $pauseText = $pauseUntil.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", [Globalization.CultureInfo]::InvariantCulture)
+            # Один рядок на значення паузи, не на прохід (Test-Seen).
+            if (-not (Test-Seen "codex-pause $pauseText")) {
+                Write-WrapperLog "ланцюг: пауза Codex до $pauseText (codex_pause_until у ланцюг.json): автоживий — на agy $($config.agy), не на Codex і не на Claude ноутбука; нічний Е1 і позначки диспетчера — як були"
+            }
+        }
         $statePath = Join-Path $WorkDir 'chain.json'
         $reviewed = @{}; $liveActive = $null; $liveSince = ''; $last = $main; $seen = @{}; $liveStamps = @{}; $livePending = @(); $hasLiveState = $false
         if (Test-Path -LiteralPath $statePath) {
@@ -1086,13 +1116,13 @@ function Invoke-WrapperChain {
             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
         }
         if ($null -ne $liveActive -and $null -ne $liveActive.PSObject.Properties['published'] -and -not $liveActive.published) {
-            Add-ChainMarker "автоживий-$($liveActive.stamp)" (Select-ReviewModel @([string]$config.codex, [string]$config.claude) $now) ([string]$liveActive.main) -Gpu
+            Add-ChainMarker "автоживий-$($liveActive.stamp)" (Select-ReviewModel (Get-LiveModels $config $now $pauseUntil) $now) ([string]$liveActive.main) -Gpu
             $liveActive.published = $true
             Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
         }
         elseif ($null -ne $liveActive -and $null -ne $liveActive.PSObject.Properties['published'] -and $liveActive.published) {
             # Позначка, що чекає вичерпаної квоти, переходить до доступного рушія.
-            [void](Move-BlockedMarkers "автоживий-$($liveActive.stamp)" (Select-ReviewModel @([string]$config.codex, [string]$config.claude) $now) ([string]$liveActive.main) $now -Gpu)
+            [void](Move-BlockedMarkers "автоживий-$($liveActive.stamp)" (Select-ReviewModel (Get-LiveModels $config $now $pauseUntil) $now) ([string]$liveActive.main) $now -Gpu)
         }
         Move-NightlyMarker $config $now
         Complete-EngineDrafts
