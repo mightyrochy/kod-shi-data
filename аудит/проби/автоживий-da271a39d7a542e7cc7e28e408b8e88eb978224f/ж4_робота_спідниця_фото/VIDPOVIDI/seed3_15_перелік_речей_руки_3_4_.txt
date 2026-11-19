@@ -1,0 +1,44 @@
+── ПРОМПТ (2125 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend skirt, midi length, forest green #2E4836, heavy felt.\nA crisp silk-cotton blouse, relaxed fit with a彼得潘领, ivory white #FFFFF0, woven cotton-silk blend.\nA tailored wool trench coat, knee-length, charcoal gray #36454F, gabardine fabric.\nLeather ankle boots, block heel, chocolate brown #4B3621, smooth calfskin leather.\nThin gold bar necklace, oxidized copper finish, lightweight metal chain.\nThis ensemble works because it balances the professional requirements of an office setting with the specific wish to wear a skirt. The midi length and structured wool fabric provide warmth suitable for autumn weather while maintaining a polished, neat silhouette. Earthy tones in green, brown, and gray create a cohesive and sophisticated look that transitions effortlessly from morning meetings to after-work errands without sacrificing comfort or style."}
+
+── ВІДПОВІДЬ (952 симв., 4.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "skirt",
+      "details": "structured wool-blend, midi length",
+      "slot": "bottom",
+      "color_hex": "#2E4836",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed fit with Peter Pan collar, woven cotton-silk blend",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "trench coat",
+      "details": "tailored wool, knee-length, gabardine fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "leather ankle boots with block heel",
+      "slot": "shoes",
+      "color_hex": "#4B3621",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "thin gold bar necklace with oxidized copper finish on lightweight metal chain",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
