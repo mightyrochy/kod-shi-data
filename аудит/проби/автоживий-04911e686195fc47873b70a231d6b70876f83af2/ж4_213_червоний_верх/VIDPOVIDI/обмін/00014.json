@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"На зустріч з подругами\", \"place_words\": \"з подругами\"}, \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"default\"}, \"goal\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"На зустріч з подругами\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"her_other_words\": {\"kind\": \"default\"}}, \"event\": \"На зустріч з подругами\", \"goal\": \"express\", \"occasion\": \"date\", \"formality_branch\": \"social\", \"open_zones\": \"one\", \"her_other_words\": [\"червоний верх\"], \"formality\": [\"neat\"], \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#5a3a2a\", \"#4e3022\", \"#664332\"], \"hair_hex\": \"#1d1612\", \"eyes_hex\": \"#3b2417\", \"height_cm\": 165, \"girths_cm\": {\"shoulders\": 112, \"bust\": 114, \"waist\": 104, \"hips\": 114}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Blazer in deep crimson red, structured fit with a single-breasted button closure and notch lapels, color #C9182A, wool blend.\\nWool skirt, knee-length A-line cut with a subtle pleated waistband, color matching the blazer at #C9182A, fine merino wool.\\nSilk blouse, relaxed fit with a rounded neckline and long sleeves rolled slightly at the wrists, color cream white at #FFFDD0, 100% silk chiffon.\\nLeather ankle boots, low block heel with a pointed toe and side zipper detail, color chestnut brown at #5C4033, soft calfskin leather.\\nThis ensemble works perfectly for a social autumn outing with friends because the requested red top is honored while maintaining a neat business-appropriate silhouette suitable for the season. The knee-length skirt balances professionalism with comfort, allowing for easy movement during conversation and exploration. Rich textures like the wool jacket and silk blouse provide warmth against the fall weather without feeling heavy or restrictive.\"}],\"usage\":{\"input_tokens\":775,\"output_tokens\":217},\"stop_reason\":\"end_turn\"}"
+ }
+}

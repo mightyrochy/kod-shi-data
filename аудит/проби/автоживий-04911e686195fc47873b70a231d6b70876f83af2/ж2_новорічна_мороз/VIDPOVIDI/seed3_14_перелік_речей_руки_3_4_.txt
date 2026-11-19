@@ -1,0 +1,44 @@
+── ПРОМПТ (2540 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A silk blouse in ivory (#FFFFF0), cut with a relaxed fit and a slightly dropped shoulder, falling to the mid-thigh for versatility.\nSlim-fit trousers in charcoal flannel, tailored through the hip and ankle, providing a sleek silhouette against the cool autumn air.\nClosed-toe pumps in deep emerald green, featuring a moderate heel that elongates the leg while remaining grounded for an evening event.\nA structured blazer in midnight blue velvet, offering warmth during the frosty weather without adding excessive bulk.\nA statement clutch in metallic gold, adorned with subtle festive detailing to catch the artificial restaurant lights.\n\nThis outfit strikes the perfect balance between comfort and celebration for a New Year's party at an upscale restaurant, adhering to her request for everyday formality while respecting the frosty autumn conditions. The mix of soft silk and warm velvet textures adds depth without appearing too formal, allowing her to move freely through the venue. The dark neutral palette of charcoal, midnight blue, and emerald green complements her warm skin tones beautifully under the restaurant's artificial lighting. Ultimately, this ensemble respects her wish for a relaxed dress code while ensuring she feels polished and ready for the festive occasion."}
+
+── ВІДПОВІДЬ (744 симв., 4.5 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "silk blouse",
+"details": "relaxed fit with a slightly dropped shoulder, falling to the mid-thigh",
+"slot": "top",
+"color_hex": "#FFFFF0",
+"worn": true
+},
+{
+"name": "slim-fit trousers",
+"details": "tailored through the hip and ankle, charcoal flannel",
+"slot": "bottom",
+"color_hex": null,
+"worn": true
+},
+{
+"name": "closed-toe pumps",
+"details": "moderate heel that elongates the leg",
+"slot": "shoes",
+"color_hex": null,
+"worn": true
+},
+{
+"name": "structured blazer",
+"details": "midnight blue velvet",
+"slot": "outerwear",
+"color_hex": null,
+"worn": true
+},
+{
+"name": "statement clutch",
+"details": "metallic gold with subtle festive detailing",
+"slot": "bag",
+"color_hex": null,
+"worn": true
+}
+]
+}

@@ -1,0 +1,37 @@
+── ПРОМПТ (2270 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Midi wool-blend coat in charcoal grey (#2F3640), classic A-line cut reaching mid-calf, structured yet soft drape.\nTailored high-waisted trousers in dark navy twill (#1C2533), straight-leg fit with a slight rise to avoid pressure on the hips.\nSilk-blend blouse in ivory white (#FFFFF0), relaxed boat-neck collar and drop-shoulder sleeves for ease of movement.\nLeather ankle boots in matte black (#0A0A0A), rounded toe, low block heel, and fully enclosed shafts extending above the ankle bone.\n\nThis outfit respects your wish to avoid open zones and heels by providing full coverage from toes to waist while maintaining a polished look suitable for walking into work. The heavy wool coat and thick twill trousers offer essential warmth against the frost and salted roads, ensuring you stay comfortable without sacrificing style. Every piece is selected to move freely with your stride as you navigate winter conditions, creating an optimal balance between professional neatness and practical protection from the snow."}
+
+── ВІДПОВІДЬ (910 симв., 4.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Midi wool-blend coat",
+      "details": "classic A-line cut reaching mid-calf, structured yet soft drape",
+      "slot": "outerwear",
+      "color_hex": "#2F3640",
+      "worn": true
+    },
+    {
+      "name": "Tailored high-waisted trousers",
+      "details": "straight-leg fit with a slight rise to avoid pressure on the hips",
+      "slot": "bottom",
+      "color_hex": "#1C2533",
+      "worn": true
+    },
+    {
+      "name": "Silk-blend blouse",
+      "details": "relaxed boat-neck collar and drop-shoulder sleeves for ease of movement",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "rounded toe, low block heel, and fully enclosed shafts extending above the ankle bone",
+      "slot": "shoes",
+      "color_hex": "#0A0A0A",
+      "worn": true
+    }
+  ]
+}

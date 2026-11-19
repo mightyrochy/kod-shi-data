@@ -1,0 +1,57 @@
+── ПРОМПТ (6917 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: dress_generic · about it: text н=1
+2 — kind: brooch · about it: text н=2
+3 — kind: loafers · about it: text н=3
+4 — kind: tote · about it: text н=4
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "I chose this dress for you because it sets the quiet rhythm we want for our date, carrying a line that flows from your shoulders down to your feet without needing anything else to define your shape.",
+"2": "This brooch sits on the dress to add a touch of sparkle that marks the moment as special, giving your look a focal point that speaks of celebration without cluttering the simple lines you want.",
+"3": "I selected these loafers because they ground your steps in ease and confidence for our evening out, providing a steady rhythm that keeps the whole outfit feeling relaxed yet intentional.",
+"4": "This tote is here to hold everything you need with calm simplicity, its soft shape balancing the dress and letting you move freely without worrying about what fits inside.",
+"5": "I chose this dress as your anchor because it carries the line you asked for on our date, and the brooch adds just enough detail to keep it fresh without changing its shape. The loafers bring a grounded rhythm to your step that fits an evening out, while the tote holds everything you need with a calm ease that matches your plan. Together they create one clean flow from shoulder to toe, letting your movement feel natural and confident.",
+"6": "Wear the brooch pinned near the top edge of the dress so it catches light as you move, drawing attention upward without breaking the silhouette.",
+"7": "Keep the loafers relaxed at the ankle; let them breathe with your stride so the outfit feels light rather than heavy on your feet.",
+"8": "Carry the tote in front or slightly to the side, letting its shape balance the volume of the dress while you hold it gently against your hip.",
+"9": "Лофери жіночі бірюзові — Replaces the missing shoes; these suede loafers in turquoise offer a deliberate break of color for your evening look, adding interest to the hemline while remaining casual enough for the restaurant.",
+"10": "Шкіряний тоут коричневого кольору — Replaces the missing bag; this leather tote anchors the outfit with practicality and texture, balancing the sleekness of the dress.",
+"11": "Лофери жіночі бірюзові — This gate about breaking the palette arc is intentional: the turquoise accent shoe provides the essential visual energy needed to prevent the all-black outfit from feeling too somber for a romantic date.",
+"12": "Шкіряний тоут коричневого кольору, Атласна сукня з мереживом чорна — The code notes the formal dress and low-cut shoes spread the formality range too much, but this mix creates the sophisticated 'smart-casual' balance required for an evening restaurant setting without looking like a mistake."
+}
+
+── ВІДПОВІДЬ (2533 симв., 24.4 с, HTTP 200) ──
+```json
+{
+"1": "Я обрала цю сукню для тебе, бо вона задає тихий ритм нашого побачення, маючи лінію, що тече від твоїх плечей до ніг без потреби в чомусь іншому, щоб окреслити твою фігуру.",
+"2": "Ця брошка сидить на сукні, додаючи іскринку, яка позначає момент як особливий, даруючи твоєму образу фокусну точку, що говорить про святкування без захаращення простих ліній, які ти хочеш.",
+"3": "Я обрала ці лофери, бо вони ставлять твої кроки в легкість і впевненість на наш вечір, забезпечуючи стійкий ритм, який змушує весь образ відчуватися розслабленим, але при цьому навмисним.",
+"4": "Ця сумка тут, щоб утримати все необхідне спокійною простотою, її м’яка форма врівноважує сукню і дозволяє тобі вільно рухатися без турботи про те, що поміститься всередину.",
+"5": "Я обрала цю сукню як твій якір, бо вона несе лінію, яку ти попросила на наше побачення, а брошка додає лише достатньо деталей, щоб освіжити її без зміни форми. Лофери приносять заземлений ритм твоєму кроку, який підходить для вечора, а сумка утримує все необхідне спокійною легкістю, що відповідає твоїй плані. Разом вони створюють один чистий потік від плеча до пальця ноги, дозволяючи твоєму руху відчуватися природним і впевненим.",
+"6": "Прикріпи брошку біля верхнього краю сукні так, щоб вона ловила світло під час твого руху, привертаючи увагу вгору без порушення силуету.",
+"7": "Тримай лофери розслабленими на щиколотці; дозволь їм дихати з кожним кроком, щоб образ відчувався легким, а не важким на ногах.",
+"8": "Носи сумку спереду або трохи вбік, дозволяючи її формі врівноважувати об’єм сукні, тримаючи її ніжно біля стегна.",
+"9": "Бірюзові жіночі лофери — Замінює відсутнє взуття; ці замшеві лофери у бірюзовому кольорі пропонують навмисний колірний акцент для твого вечірнього образу, додаючи інтерес до лінії подолу, залишаючись при цьому достатньо невимушеними для ресторану.",
+"10": "Коричнева шкіряна сумка — Замінює відсутню сумку; ця шкіряна сумка закріплює образ практичністю та текстурою, врівноважуючи елегантність сукні.",
+"11": "Бірюзові жіночі лофери — Цей прохід про колірний акцент навмисний: бірюзова акцентна туфля забезпечує необхідну візуальну енергію, щоб запобігти тому, що весь чорний образ здавався надто похмурим для романтичного побачення.",
+"12": "Коричнева шкіряна сумка, Чорна атласна сукня з мереживом — Код зазначає, що формальний одяг і низьке взуття розширюють діапазон формальності надто сильно, але ця комбінація створює необхідний «розумний-повсякденний» баланс для вечірнього ресторану без вигляду помилки."
+}
+```

@@ -63,6 +63,7 @@ try {
         $script:Lanes = @('codex','agy'); $script:Limits = @{slots=@{codex=8;agy=8}}
         $script:StartedNames = @(); $RunsDir = $GeminiRunsDir; $RepoDir = $seed; $MarkerMaxAgeDays = 7
         function Save-Skips { }
+        function Stop-GpuStalledRuns { }
         function Add-Skip($M, $Why) { $script:SkipNames += [string]$M.Name }
         $script:SkipNames = @()
         function Test-SlugBusy { $false }

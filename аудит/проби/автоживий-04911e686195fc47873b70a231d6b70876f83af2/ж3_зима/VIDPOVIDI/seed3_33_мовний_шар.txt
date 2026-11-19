@@ -1,0 +1,71 @@
+── ПРОМПТ (7778 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: coat · about it: text н=1
+2 — kind: boots · about it: text н=2
+3 — kind: two_piece_set · about it: text н=3
+4 — kind: scarf_generic · about it: text н=4
+5 — kind: belt · about it: text н=5
+6 — kind: backpack · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This coat is your perfect choice for a twenty-minute walk, offering the comfort and protection you need while keeping your look polished.",
+"2": "Your boots are here to anchor the outfit, providing stability for your walk and completing the bottom half of this streamlined ensemble.",
+"3": "This two-piece set creates a single, unbroken line that beautifully complements your straight figure, offering simplicity and elegance for your outing.",
+"4": "I selected this scarf to add a pop of colour near your face and the versatility you need; wear it at your neck to frame your features or wrap it around your hair if you prefer a softer touch.",
+"5": "This belt is essential for defining your waist, creating structure in this straight silhouette and drawing attention to the narrowest part of your figure.",
+"6": "Your backpack handles all your essentials securely, allowing you to move freely during your walk without compromising on style or convenience.",
+"7": "Your coat keeps you comfortable for your twenty-minute walk, while your boots ground the whole look. The two-piece set gives you a clean, continuous line that flatters your straight figure without needing to hide anything. I chose this belt and scarf to define your waist and add a touch of colour near your face, ensuring you feel put-together even in cooler weather.",
+"8": "Tuck the front of your top into your coat for a defined silhouette.",
+"9": "Wrap the scarf loosely around your neck to frame your face.",
+"10": "Чоботи SAFARI шкіряні з відкритим мисом — I kept this chocolate leather knee-high boot to serve as the primary shoe. It is durable against salt and provides a strong, dark anchor for the burgundy accents.",
+"11": "Штани прямого вільного крою з відстрочкою, пояс на резинці — I kept this beige cotton maxi two-piece set. The 'maxi' length ensures it doesn't drag on salted slush, and the loose fit handles the cold well.",
+"12": "Шарф кашеміровий із дредами — I kept this cashmere pink scarf to add a soft, warm texture that contrasts with the hard leather boots and coat, ensuring face-level warmth.",
+"13": "Коричневий ремінь зі шкіри та текстилю у фірмовий принт — I kept this textile belt to define the waist of the loose two-piece set, adding structure without adding extra bulk or layers that might slip.",
+"14": "Чоботи SAFARI шкіряні з відкритим мисом, Жіноче пальто Stella Polare — I accept this finding because it highlights how the chosen pieces are priced appropriately for their role as essential outerwear and shoes in your winter wardrobe, confirming they are not budget compromises but solid investments.",
+"15": "Чоботи SAFARI шкіряні з відкритим мисом — The burgundy shoes add necessary chroma and warmth to the otherwise monochromatic grey/brown outfit, acting as an anchor against the cold daylight.",
+"16": "Коричневий ремінь зі шкіри та текстилю у фірмовий принт — I kept this textile belt to define the waist, ensuring the jumpsuit doesn't look shapeless and adding a textural element to the outfit.",
+"17": "Коричневий ремінь зі шкіри та текстилю у фірмовий принт — I kept this textile belt to cinch the poncho at the waist, creating a defined shape and preventing the loose knit from looking baggy.",
+"18": "Шарф кашеміровий із дредами — I kept this cashmere pink scarf to add a necessary layer of warmth around the neck, protecting against the biting cold and adding soft texture."
+}
+
+── ВІДПОВІДЬ (3581 симв., 24.5 с, HTTP 200) ──
+```json
+{
+  "1": "Цей тренч стане твоїм ідеальним вибором для двадцятихвилинної прогулянки, пропонуючи комфорт та захист, які ти потребуєш, зберігаючи при цьому елегантний образ.",
+  "2": "Твої черевики тут, щоб завершити вбрання, забезпечуючи стійкість під час твоєї прогулянки та доповнюючи нижню частину цього витонченого ансамблю.",
+  "3": "Цей комплект з двох речей створює єдину безперервну лінію, яка чудово гармонує з твоїм струнким силуетом, пропонуючи простоту та елегантність для твоєї прогулянки.",
+  "4": "Я обрала цей шарф, щоб додати яскравий колір біля обличчя і ту універсальність, яка тобі потрібна; носи його на шиї, щоб підкреслити риси обличчя, або зав’яжи навколо волосся, якщо ти віддаєш перевагу м’якішому вигляду.",
+  "5": "Цей пояс необхідний для визначення твоєї талії, створюючи структуру в цьому прямому силуеті і привертаючи увагу до найвужчої частини фігури.",
+  "6": "Твій рюкзак надійно зберігає всі твої речі, дозволяючи тобі вільно пересуватися під час прогулянки без шкоди для стилю чи зручності.",
+  "7": "Твій тренч зігріває тебе протягом двадцятихвилинної прогулянки, а черевики завершують весь образ. Комплект з двох речей дарує тобі чітку та безперервну лінію, яка підкреслює твою струнку фігуру, не потребуючи нічого приховувати. Я обрала цей пояс і шарф, щоб визначити твою талію і додати нотку кольору біля обличчя, забезпечуючи тобі відчуття впевненості навіть у холодну погоду.",
+  "8": "Заправ передню частину твоєї блузи під тренч для більш вираженого силуету.",
+  "9": "Недбало загорни шарф навколо шиї, щоб обрамити обличчя.",
+  "10": "Чоботи SAFARI шкіряні з відкритим мисом — Я залишила ці шоколадні шкіряні чоботи до коліна, щоб вони служили основним взуттям. Вони міцні проти солі і забезпечують сильну темну основу для бордових акцентів.",
+  "11": "Штани прямого вільного крою з відстрочкою, пояс на резинці — Я залишила цей бежевий бавовняний максі-комплект. Довжина 'максі' гарантує, що він не буде тягнутися по замерзлій калюжі, а вільний крій добре захищає від холоду.",
+  "12": "Шарф кашеміровий із дредами — Я залишила цей рожевий кашеміровий шарф, щоб додати м’яку теплу текстуру, яка контрастує з твердими шкіряними чоботами і тренчем, забезпечуючи тепло біля обличчя.",
+  "13": "Коричневий ремінь зі шкіри та текстилю у фірмовий принт — Я залишила цей тканинний пояс, щоб підкреслити талію вільного комплекту, додавши структуру без зайвого об’єму чи шарів, які можуть сповзти.",
+  "14": "Чоботи SAFARI шкіряні з відкритим мисом, Жіноче пальто Stella Polare — Я приймаю цю знахідку, оскільки вона підкреслює те, що обрані речі мають відповідну ціну для їхньої ролі як необхідного верхнього одягу та взуття у твоєму зимовому гардеробі, підтверджуючи, що це не бюджетні компроміси, а надійні інвестиції.",
+  "15": "Чоботи SAFARI шкіряні з відкритим мисом — Бордові черевики додають необхідну яскравість і тепло до монохромного сіро-коричневого вбрання, слугуючи основою проти холодного денного світла.",
+  "16": "Коричневий ремінь зі шкіри та текстилю у фірмовий принт — Я залишила цей тканинний пояс, щоб підкреслити талію комбінезона, не дозволяючи йому виглядати безформним і додавши текстуру до вбрання.",
+  "17": "Коричневий ремінь зі шкіри та текстилю у фірмовий принт — Я залишила цей тканинний пояс, щоб підтягнути пончо на талії, створивши виражену форму і запобігши тому, щоб в’язане полотно не виглядало мішкуватим.",
+  "18": "Шарф кашеміровий із дредами — Я залишила цей рожевий кашеміровий шарф, щоб додати необхідний шар тепла навколо шиї, захищаючи від пронизливого холоду і додавши м’яку текстуру."
+}
+```

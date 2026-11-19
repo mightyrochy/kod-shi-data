@@ -1,0 +1,51 @@
+── ПРОМПТ (2163 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Sheer silk blouse with a relaxed drape, fluid cut, elbow length, ivory, crepe dechine.\nWide-leg wool-twill trousers, tapered leg, ankle length, charcoal heathered, melton fabric.\nStructured tweed blazer, single-breasted fit, hip length, forest green, boucle weave.\nPointed-toe leather loafers, classic silhouette, mid-calf height, oxblood red, smooth calfskin.\nGold-plated slim hoop earrings and a delicate chain necklace.\n\nThis ensemble balances the romantic nature of an evening date with the practical needs of possible rain and a restaurant setting in autumn. The structured blazer provides a polished look that respects the social dress code, while the flowing blouse and soft trousers ensure comfort for a long night out. Warm tones like forest green and oxblood red complement the artificial restaurant lighting and add depth to the outfit without requiring an outer layer unless rain becomes severe."}
+
+── ВІДПОВІДЬ (1033 симв., 5.0 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "relaxed drape, fluid cut, elbow length",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "wide-leg, tapered leg, ankle length",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "structured, single-breasted fit, hip length",
+      "slot": "outerwear",
+      "color_hex": "#228B22",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "pointed-toe, classic silhouette, mid-calf height",
+      "slot": "shoes",
+      "color_hex": "#5E0000",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "gold-plated slim hoop",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "delicate chain",
+      "slot": "collar_necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "час": "2026-11-17T18:49:13.359433+00:00",
+  "призначений_SHA": "d16d4fba1328a6a320e7577cd07bff1515c13f66",
+  "команди": [
+    {
+      "команда": [
+        "git",
+        "rev-parse",
+        "HEAD",
+        "origin/main"
+      ],
+      "rc": 0,
+      "stdout": "ea4558bbe4bdc044b9b3155161f3d85d209259c5\n67ad0f5ce8e7cd05d4d6d248c8ed83010a66668e\n",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "d16d4fba1328a6a320e7577cd07bff1515c13f66",
+        "origin/main"
+      ],
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "git",
+        "diff",
+        "--name-only",
+        "d16d4fba1328a6a320e7577cd07bff1515c13f66",
+        "--",
+        "аудит/проби/записати_план.py",
+        "аудит/проби/записати_сцену.py",
+        "аудит/проби/живі_сцени.txt"
+      ],
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total,memory.used,utilization.gpu",
+        "--format=csv"
+      ],
+      "rc": 0,
+      "stdout": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%]\nNVIDIA GeForce RTX 4090 Laptop GPU, 16376 MiB, 1329 MiB, 0 %\n",
+      "stderr": ""
+    },
+    {
+      "команда": [
+        "netstat",
+        "-ano",
+        "-p",
+        "tcp"
+      ],
+      "rc": 0,
+      "stdout": "  TCP    127.0.0.1:1234         0.0.0.0:0              LISTENING       19744",
+      "stderr": ""
+    }
+  ],
+  "сервер": [
+    {
+      "url": "http://127.0.0.1:1234/api/v1/models",
+      "статус": 200,
+      "відповідь": "{\n  \"models\": [\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"qwen\",\n      \"key\": \"qwen/qwen3-coder-30b\",\n      \"display_name\": \"Qwen3 Coder 30B\",\n      \"architecture\": \"qwen3moe\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 18632365388,\n      \"params_string\": \"30B-A3B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 262144,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": false,\n        \"trained_for_tool_use\": true\n      },\n      \"description\": null,\n      \"variants\": [\n        \"qwen/qwen3-coder-30b@q4_k_m\"\n      ],\n      \"selected_variant\": \"qwen/qwen3-coder-30b@q4_k_m\"\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"unsloth\",\n      \"key\": \"unsloth/qwen3-coder-30b-a3b-instruct\",\n      \"display_name\": \"Qwen3 Coder 30B A3B Instruct UD\",\n      \"architecture\": \"qwen3moe\",\n      \"quantization\": {\n        \"name\": \"Q2_K_XL\",\n        \"bits_per_weight\": 2\n      },\n      \"size_bytes\": 11788590240,\n      \"params_string\": \"30B-A3B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 262144,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": false,\n        \"trained_for_tool_use\": true\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"mistralai\",\n      \"key\": \"mistralai/devstral-small-2507\",\n      \"display_name\": \"Devstral Small 2507\",\n      \"architecture\": \"llama\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 14333939343,\n      \"params_string\": \"24B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 131072,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": false,\n        \"trained_for_tool_use\": true\n      },\n      \"description\": null,\n      \"variants\": [\n        \"mistralai/devstral-small-2507@q4_k_m\"\n      ],\n      \"selected_variant\": \"mistralai/devstral-small-2507@q4_k_m\"\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"openai\",\n      \"key\": \"openai/gpt-oss-20b\",\n      \"display_name\": \"GPT-OSS 20B\",\n      \"architecture\": \"gpt-oss\",\n      \"quantization\": {\n        \"name\": \"MXFP4\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 12109664217,\n      \"params_string\": \"20B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 131072,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": false,\n        \"trained_for_tool_use\": true,\n        \"reasoning\": {\n          \"allowed_options\": [\n            \"low\",\n            \"medium\",\n            \"high\"\n          ],\n          \"default\": \"low\"\n        }\n      },\n      \"description\": null,\n      \"variants\": [\n        \"openai/gpt-oss-20b@mxfp4\"\n      ],\n      \"selected_variant\": \"openai/gpt-oss-20b@mxfp4\"\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"skypro1111\",\n      \"key\": \"lapa-v0.1.3-instruct\",\n      \"display_name\": \"Lapa v0.1.3 Instruct\",\n      \"architecture\": \"gemma3\",\n      \"quantization\": {\n        \"name\": \"Q8_0\",\n        \"bits_per_weight\": 8\n      },\n      \"size_bytes\": 12510503072,\n      \"params_string\": \"12B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 131072,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": false,\n        \"trained_for_tool_use\": false\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"unsloth\",\n      \"key\": \"gemma-4-e4b-it\",\n      \"display_name\": \"Gemma 4 E4B Instruct\",\n      \"architecture\": \"gemma4\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 4977171584,\n      \"params_string\": \"7.5B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 131072,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": false,\n        \"trained_for_tool_use\": true,\n        \"reasoning\": {\n          \"allowed_options\": [\n            \"off\",\n            \"on\"\n          ],\n          \"default\": \"on\"\n        }\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"unsloth\",\n      \"key\": \"gemma-4-12b-it\",\n      \"display_name\": \"Gemma 4 12B Instruct\",\n      \"architecture\": \"gemma4\",\n      \"quantization\": {\n        \"name\": \"Q3_K_M\",\n        \"bits_per_weight\": 3\n      },\n      \"size_bytes\": 5868988800,\n      \"params_string\": \"12B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 262144,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": true,\n        \"trained_for_tool_use\": true,\n        \"reasoning\": {\n          \"allowed_options\": [\n            \"off\",\n            \"on\"\n          ],\n          \"default\": \"on\"\n        }\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"INSAIT-Institute\",\n      \"key\": \"mamaylm-gemma-3-12b-it-v2.0\",\n      \"display_name\": \"MamayLM Gemma 3 12B Instruct v2.0\",\n      \"architecture\": \"gemma3\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 7300778784,\n      \"params_string\": \"12B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 131072,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": false,\n        \"trained_for_tool_use\": false\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"qwen\",\n      \"key\": \"qwen/qwen3.5-9b\",\n      \"display_name\": \"Qwen3.5 9B\",\n      \"architecture\": \"qwen35\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 6548927711,\n      \"params_string\": \"9B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 262144,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": true,\n        \"trained_for_tool_use\": true,\n        \"reasoning\": {\n          \"allowed_options\": [\n            \"off\",\n            \"on\"\n          ],\n          \"default\": \"on\"\n        }\n      },\n      \"description\": null,\n      \"variants\": [\n        \"qwen/qwen3.5-9b@q4_k_m\",\n        \"qwen/qwen3.5-9b@q8_0\"\n      ],\n      \"selected_variant\": \"qwen/qwen3.5-9b@q4_k_m\"\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"lmstudio-community\",\n      \"key\": \"gemma-4-12b-it-qat\",\n      \"display_name\": \"Gemma 4 12B Instruct QAT\",\n      \"architecture\": \"gemma4\",\n      \"quantization\": {\n        \"name\": \"Q4_0\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 7150994336,\n      \"params_string\": \"12B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 262144,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": true,\n        \"trained_for_tool_use\": true,\n        \"reasoning\": {\n          \"allowed_options\": [\n            \"off\",\n            \"on\"\n          ],\n          \"default\": \"on\"\n        }\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"llm\",\n      \"publisher\": \"lmstudio-community\",\n      \"key\": \"qwen3-vl-8b-instruct\",\n      \"display_name\": \"Qwen3 VL 8B Instruct\",\n      \"architecture\": \"qwen3vl\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 6186814624,\n      \"params_string\": \"8B\",\n      \"loaded_instances\": [],\n      \"max_context_length\": 262144,\n      \"format\": \"gguf\",\n      \"capabilities\": {\n        \"vision\": true,\n        \"trained_for_tool_use\": true\n      },\n      \"description\": null\n    },\n    {\n      \"type\": \"embedding\",\n      \"publisher\": \"nomic-ai\",\n      \"key\": \"text-embedding-nomic-embed-text-v1.5\",\n      \"display_name\": \"Nomic Embed Text v1.5\",\n      \"quantization\": {\n        \"name\": \"Q4_K_M\",\n        \"bits_per_weight\": 4\n      },\n      \"size_bytes\": 84106624,\n      \"params_string\": null,\n      \"loaded_instances\": [],\n      \"max_context_length\": 2048,\n      \"format\": \"gguf\"\n    }\n  ]\n}"
+    },
+    {
+      "url": "http://127.0.0.1:1234/v1/models",
+      "статус": 200,
+      "відповідь": "{\n  \"data\": [\n    {\n      \"id\": \"qwen/qwen3-coder-30b\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    },\n    {\n      \"id\": \"unsloth/qwen3-coder-30b-a3b-instruct\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    },\n    {\n      \"id\": \"mistralai/devstral-small-2507\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    },\n    {\n      \"id\": \"openai/gpt-oss-20b\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    },\n    {\n      \"id\": \"lapa-v0.1.3-instruct\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    },\n    {\n      \"id\": \"gemma-4-e4b-it\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    },\n    {\n      \"id\": \"gemma-4-12b-it\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    },\n    {\n      \"id\": \"mamaylm-gemma-3-12b-it-v2.0\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    },\n    {\n      \"id\": \"qwen/qwen3.5-9b\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    },\n    {\n      \"id\": \"gemma-4-12b-it-qat\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    },\n    {\n      \"id\": \"qwen3-vl-8b-instruct\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    },\n    {\n      \"id\": \"text-embedding-nomic-embed-text-v1.5\",\n      \"object\": \"model\",\n      \"owned_by\": \"organization_owner\"\n    }\n  ],\n  \"object\": \"list\"\n}"
+    }
+  ],
+  "lms_PATH": null,
+  "lms_користувача": {
+    "C:\\Users\\gemini\\.lmstudio\\bin\\lms.exe": false
+  },
+  "середовище": {
+    "NODE_OPTIONS": "--require \"C:/Users/gemini/gemini-runs/slots/codex-1-browser/browser.cjs\"",
+    "PYTHONPATH": "C:\\Users\\gemini\\gemini-runs\\slots\\codex-1-browser;",
+    "NODE_PATH": null,
+    "TEKA_FOTO_SCENY": null
+  },
+  "кеш_Pyodide": {
+    "шлях": "C:\\Users\\gemini\\pyodide",
+    "наявний": true
+  },
+  "playwright": {
+    "наявний": true
+  },
+  "план": {
+    "сцен": 52,
+    "питань": 206,
+    "команд": 52,
+    "відмови_сцен": {},
+    "відмови_питань": {}
+  },
+  "перевірка_змінних": {
+    "команда": [
+      "C:\\Users\\gemini\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "аудит/проби/записати_план.py",
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261117-203853-11020a89e91e\\repo\\аудит\\проби\\автоживий-04911e686195fc47873b70a231d6b70876f83af2\\ПЛАН.json",
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261117-203853-11020a89e91e\\tmp\\збірка-призначена",
+      "C:\\Users\\gemini\\pyodide",
+      "C:\\Users\\gemini\\gemini-runs\\w\\20261117-203853-11020a89e91e\\repo\\аудит\\проби\\автоживий-04911e686195fc47873b70a231d6b70876f83af2",
+      "--лише-змінні"
+    ],
+    "rc": 0,
+    "лог": "перевірка_змінних.txt"
+  }
+}

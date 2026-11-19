@@ -1,0 +1,61 @@
+── ПРОМПТ (7448 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: coat · about it: text н=1
+2 — kind: bodysuit · about it: text н=2
+3 — kind: shoes · about it: text н=3
+4 — kind: ring · about it: text н=4
+5 — kind: trousers · about it: text н=5
+6 — kind: bag_generic · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The coat is here to guide your posture and frame you with a respectful silhouette for the service. Its neat line matches the formal tone you need without adding unnecessary weight or noise to the occasion.",
+"2": "This bodysuit provides the clean, polished base that keeps your lines smooth and unified for a formal day of mourning. It supports the quiet dignity you seek without drawing attention away from the purpose of your visit.",
+"3": "Your shoes are chosen to help you move with calm assurance during the service, offering stability and a steady step as you honor his memory. Their presence grounds you in the moment with the right amount of formality for this occasion.",
+"4": "The ring sits on your hand as a personal touch that does not distract from the solemnity of the day. It is here simply because you asked for it, adding your own presence to the service.",
+"5": "These trousers offer the straight, structured line needed to maintain a dignified and formal appearance throughout the event. They support your figure with a quiet vertical flow that suits a day of mourning on a Thursday morning.",
+"6": "This bag holds what you need for the service without adding bulk or visual clutter to your look. Its presence completes your outfit practically, allowing you to focus entirely on the memory of your grandfather.",
+"7": "You chose this coat, bodysuit, trousers, bag, shoes, and ring for the service of your grandfather. The neat level of this outfit respects the solemnity of his passing on a Thursday morning while supporting you as you walk to that place. Your choice of items brings a quiet dignity to the moment.",
+"8": "Leave the coat collar free to keep your face soft and approachable during the service.",
+"9": "Keep the bodysuit tucked and the trousers straight to honor the formal tone you need for this day.",
+"10": "Жіноче класичне вовняне пальто, чорне, двобортне, осінь-весна Stella Polare — This coat was kept as the essential outer layer to provide formality and a dark palette suitable for mourning.",
+"11": "Платинова каблучка з круглими діамантами — The ring adds a focal point that balances the heavy layers of the blazer and coat, preventing the outfit from feeling too static.",
+"12": "Поло-боді темно-синього кольору, Сірі штани з защипами на талії і стрілками, Жіноче класичне вовняне пальто, чорне, двобортне, осінь-весна Stella Polare — The layered combination of a structured wool coat, navy blazer, and grey trousers elevates the look from neat to formal, strictly honoring your need for respectability while maintaining a soft, comforting presence suitable for this Thursday morning.",
+"13": "Поло-боді темно-синього кольору — Chosen as a base layer because its fitted cut and dark tone help create a vertical line that balances the hips, addressing the need for structure in the middle without adding bulk.",
+"14": "Платинова каблучка з круглими діамантами — The ring adds a small metallic focal point that breaks the monotony of all-black without introducing loud colors, fitting for a respectful yet personal expression."
+}
+
+── ВІДПОВІДЬ (3175 симв., 21.5 с, HTTP 200) ──
+{
+"1": "Цей піджак тут, щоб допомогти тобі тримати поставу та створити поважну силует для церемонії. Його чітка лінія відповідає формальному тону, який ти потребуєш, не додаючи зайвої ваги чи шуму до цієї події.",
+"2": "Цей боді дарує тобі гладку й об’єднану основу, яка підтримує твою елегантність протягом цього дня жалоби. Він допомагає зберегти ту спокійну гідність, яку ти прагнеш, не відволікаючи увагу від мети твоєї присутності.",
+"3": "Твої черевики обрані так, щоб допомогти тобі рухатися з тихою впевненістю під час церемонії. Вони дарують стабільність і стійкий крок, коли ти вшановуєш його пам’ять. Їхня присутність заземлює тебе у моменті з потрібною кількістю формальності для цієї нагоди.",
+"4": "Каблучка лежить на твоїй руці як особистий штрих, який не відволікає від урочистості дня. Вона тут просто тому, що ти попросила її, додаючи свою власну присутність до церемонії.",
+"5": "Ці штани дарують пряму та структуровану лінію, необхідну для підтримки гідного й формального вигляду протягом усієї події. Вони підтримують твою фігуру з тихим вертикальним потоком, який пасує до дня жалоби у четвер вранці.",
+"6": "Ця сумка вміщує все потрібне тобі на церемонії без додавання зайвого об’єму чи візуального сміття до твого образу. Її присутність завершує твій образ практично, дозволяючи зосередитися повністю на спогадах про дідуся.",
+"7": "Ти обрала цей піджак, боді, штани, сумку, черевики та каблучку для церемонії вшанування пам’яті свого дідуся. Цей образ з повагою ставиться до урочистості його смерті у четвер вранці, водночас підтримуючи тебе на шляху туди. Твій вибір речей дарує тиху гідність цьому моменту.",
+"8": "Залиш комір піджака розстебнутим, щоб твоє обличчя залишалося м’яким і привітним протягом церемонії.",
+"9": "Тримай боді заправленим у штани та їх прямими, щоб вшанувати формальний тон цього дня.",
+"10": "Жіноче класичне вовняне пальто чорного кольору, двобортне, осінньо-весняна колекція Stella Polare — Це пальто було збережене як основний верхній шар для забезпечення формальності та темної палітри, яка підходить для жалоби.",
+"11": "Платинова каблучка з круглими діамантами — Каблучка додає акцентну точку, що врівноважує важкі шари блейзера та пальто, запобігаючи тому, щоб образ здавався надмірно статичним.",
+"12": "Поло-боді темно-синього кольору, Сірі штани з защипами на талії і стрілками, Жіноче класичне вовняне пальто чорного кольору, двобортне, осінньо-весняна колекція Stella Polare — Поєднання структурованого вовняного пальта, темно-синього блейзера та сірих штанів піднімає образ від охайного до формального, суворо вшановуючи твою потребу у повазі, зберігаючи при цьому м’яку й затишну присутність, яка підходить для цього четвергового ранку.",
+"13": "Поло-боді темно-синього кольору — Обрано як базовий шар, тому що його облягаючий крій і темний тон допомагають створити вертикальну лінію, яка врівноважує стегна, вирішуючи потребу у структурі посередині без додавання зайвого об’єму.",
+"14": "Платинова каблучка з круглими діамантами — Каблучка додає невелику металеву акцентну точку, яка розбиває монотонність чорного кольору, не вводячи гучних відтінків, що підходить для поважного та особистого вираження."
+}
