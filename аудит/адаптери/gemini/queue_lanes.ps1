@@ -65,8 +65,6 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
-# Межа одного публічного запиту (-TimeoutSec; раніше літерою в обох викликах); стільки ж чекають на замок бюджету, який тримають лише на файлові операції. Період опитування замка — GpuStartPollMs.
-$script:ReviewApiTimeout = 20
 # Безпечна ознака останньої відмови Get-AutoReviewState (замок, бюджет, чекання, HTTP <код>, мережа, межа часу, відповідь).
 $script:ReviewApiCause = ''
 # План живого (Get-AutoLivePlan, автоживий й Е1-нічний-живий). Вимір 07.11: `pulls?state=all` — 33 сторінки по 100 PR,
@@ -398,18 +396,22 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
     [pscustomobject]@{ Code = $(if ($timedOut) { -1 } else { $p.ExitCode }); TimedOut = $timedOut; Out = $out.Result; Err = $err.Result }
 }
 
+function Get-PollSeconds {
+    <# Інтервал між проходами (poll_minutes) у секундах: спільна межа очікування мережі, замка бюджету й застряглої передачі git.
+    Стенди підключають бібліотеку без головного скрипта: $script:Bound і $script:Limits там можуть бути не задані (strict mode). #>
+    $bound = Get-Variable -Name Bound -Scope Script -ValueOnly -ErrorAction SilentlyContinue
+    $limits = Get-Variable -Name Limits -Scope Script -ValueOnly -ErrorAction SilentlyContinue
+    $poll = [double]$script:Defaults['poll_minutes']
+    if ($bound -is [hashtable]) { $poll = Get-Limit $limits 'PollMinutes' 'poll_minutes' }
+    [int][math]::Round($poll * 60)
+}
+
 function Get-GitStallOptions([string[]]$GitArgs) {
     <# Мережевій команді git (fetch, ls-remote, push) — межа застряглої передачі: нуль байтів довше за poll_minutes (інтервал
     між проходами) обриває команду, а не тримає прохід до межі Invoke-Native (10 хв неспання). Нижча межа швидкості — 1 Б/с:
     лише повна відсутність руху. Фаза з'єднання й DNS цією межею не вимірюється. #>
     if ($GitArgs.Count -eq 0 -or $GitArgs[0] -cnotin @('fetch', 'ls-remote', 'push')) { return @() }
-    # Стенди підключають бібліотеку без головного скрипта: $script:Bound і $script:Limits там можуть бути не задані (strict mode).
-    $bound = Get-Variable -Name Bound -Scope Script -ValueOnly -ErrorAction SilentlyContinue
-    $limits = Get-Variable -Name Limits -Scope Script -ValueOnly -ErrorAction SilentlyContinue
-    $poll = [double]$script:Defaults['poll_minutes']
-    if ($bound -is [hashtable]) { $poll = Get-Limit $limits 'PollMinutes' 'poll_minutes' }
-    $seconds = [int][math]::Round($poll * 60)
-    @('-c', 'http.lowSpeedLimit=1', '-c', "http.lowSpeedTime=$seconds")
+    @('-c', 'http.lowSpeedLimit=1', '-c', "http.lowSpeedTime=$(Get-PollSeconds)")
 }
 
 function Invoke-PassFetch([string[]]$GitArgs) {
@@ -725,14 +727,15 @@ function Read-AutoApiBudget([string]$Path, [long]$Now) {
 function Open-ReviewApiLock {
     <# Замок бюджету review-api.json: зайнятий — чекає, а не відмовляє одразу. Його тримають лише на читання й запис бюджету
     (мережа поза замком), тож друга позначка того ж проходу чекає частки секунди і йде в мережу, а не в REVIEW_API.
-    Межа чекання — ReviewApiTimeout с (межа запиту). $null — теки смуги нема чи замок не звільнився за межу. #>
+    Межа чекання — інтервал проходу poll_minutes (Get-PollSeconds): довше за прохід чекати нема сенсу, наступний прохід
+    повторить; період опитування — GpuStartPollMs. $null — теки смуги нема чи замок не звільнився за межу. #>
     if (-not (Test-Path -LiteralPath $LaneDir)) { return $null }
     $path = Join-Path $LaneDir 'review-api.lock'
     $clock = [Diagnostics.Stopwatch]::StartNew()
     while ($true) {
         $lock = Open-Lock $path
         if ($null -ne $lock) { return $lock }
-        if ($clock.Elapsed.TotalSeconds -ge $script:ReviewApiTimeout) { return $null }
+        if ($clock.Elapsed.TotalSeconds -ge (Get-PollSeconds)) { return $null }
         Start-Sleep -Milliseconds $script:GpuStartPollMs
     }
 }
@@ -823,7 +826,7 @@ function Get-AutoReviewState([string]$Slug) {
     # Запит — поза замком: -TimeoutSec не міряє розпізнавання імені (гальма getaddrinfo сягали 30 с), тож замок на час
     # запиту не мав би верхньої межі, а друга позначка того ж проходу ішла б у REVIEW_API.
     try {
-        $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec $script:ReviewApiTimeout -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+        $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
         if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
         if ($pr.state -cne 'open') { return 'STALE' }
         if (-not $head) { return 'LIVE' }
@@ -2002,7 +2005,7 @@ function Get-AutoPublicItems([string]$Path, [int]$PerPage = 100, [int]$MaxPages 
         $script:AutoApiCalls++
         $separator = if ($Path.Contains('?')) { '&' } else { '?' }
         try {
-            $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=$PerPage&page=$page") -Method Get -TimeoutSec $script:ReviewApiTimeout -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+            $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=$PerPage&page=$page") -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
         } catch {
             if ($Budgeted) { Set-AutoApiPause }
             throw

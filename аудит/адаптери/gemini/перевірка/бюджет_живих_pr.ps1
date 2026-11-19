@@ -126,9 +126,9 @@ if (([IO.File]::ReadAllText((Join-Path `$LaneDir 'review-api.json')) | ConvertFr
         Check 'замок бюджету зайнятий іншим процесом: звірка чекає й проходить' ((Get-AutoReviewState "автоперевірка-998-$head") -eq 'LIVE' -and $script:ApiCalls -eq $callsBefore + 1 -and $waited.Elapsed.TotalSeconds -ge 1)
         [void]$holdProc.WaitForExit(15)
         $held = [IO.File]::Open((Join-Path $LaneDir 'review-api.lock'),'OpenOrCreate','ReadWrite','None')
-        $oldTimeout = $script:ReviewApiTimeout; $script:ReviewApiTimeout = 1
+        $oldBound = Get-Variable -Name Bound -Scope Script -ValueOnly -ErrorAction SilentlyContinue; $script:Bound = @{ PollMinutes = 0.02 }
         $r = Get-AutoReviewState "автоперевірка-998-$head"
-        $script:ReviewApiTimeout = $oldTimeout; $held.Dispose()
+        if ($null -eq $oldBound) { Remove-Variable -Name Bound -Scope Script -ErrorAction SilentlyContinue } else { $script:Bound = $oldBound }; $held.Dispose()
         Check "замок не звільнився за межу: REVIEW_API з ознакою «замок» (є «$script:ReviewApiCause»)" ($r -eq 'REVIEW_API' -and $script:ReviewApiCause -ceq 'замок' -and $script:ApiCalls -eq $callsBefore + 1)
         $LaneDir = $savedLane
         # Ознаки інших гілок відмови.
