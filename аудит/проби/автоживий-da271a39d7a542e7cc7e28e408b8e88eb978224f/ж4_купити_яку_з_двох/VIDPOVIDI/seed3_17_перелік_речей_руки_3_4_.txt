@@ -1,0 +1,44 @@
+── ПРОМПТ (2161 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Crisp white blouse, relaxed straight cut with a slightly dropped waistline, hip-length hem, Color: #FFFFFF, fine-weight cotton poplin.\nAn oversized structured blazer in camel, tailored single-breasted fit with rolled sleeves, mid-thigh length, Color: #C19A6B, wool blend suiting fabric.\nPointed-toe ankle boots, block heel height for easy walking, shaft reaching just above the ankle bone, Color: #8B4513, smooth genuine leather.\nDelicate gold bar necklace and structured tote bag in cognac leather to tie the warm autumn tones together while honoring your wish for a classic blouse as the foundation of the look. This ensemble balances professional polish with everyday comfort, perfect for navigating fall weather without feeling restricted by layers that don't meet your style needs. The camel and white palette feels timeless and sophisticated, making you feel confident and ready for any daily occasion."}
+
+── ВІДПОВІДЬ (1057 симв., 6.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blouse",
+      "details": "relaxed straight cut with a slightly dropped waistline, hip-length hem, fine-weight cotton poplin",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "worn": true
+    },
+    {
+      "name": "Blazer",
+      "details": "oversized structured, tailored single-breasted fit with rolled sleeves, mid-thigh length, wool blend suiting fabric",
+      "slot": "outerwear",
+      "color_hex": "#C19A6B",
+      "worn": true
+    },
+    {
+      "name": "Boots",
+      "details": "pointed-toe ankle boots, block heel height, shaft reaching just above the ankle bone, smooth genuine leather",
+      "slot": "shoes",
+      "color_hex": "#8B4513",
+      "worn": true
+    },
+    {
+      "name": "Necklace",
+      "details": "delicate gold bar",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Bag",
+      "details": "structured tote in cognac leather",
+      "slot": "bag",
+      "color_hex": "#8B4513",
+      "worn": true
+    }
+  ]
+}
