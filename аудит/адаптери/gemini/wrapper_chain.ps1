@@ -396,17 +396,14 @@ function Select-ReviewModel([string[]]$Candidates, [datetimeoffset]$Now) {
     $list[0]
 }
 
-function Get-CodexPauseUntil($Config) {
-    <# Необов'язкове `codex_pause_until` у ланцюг.json (UTC, `2026-11-23T10:16:00Z`): до цього часу автоживий не йде на Codex і не
-    на Claude ноутбука (їхні квоти під лімітом менеджера), а бере `agy`. Нема поля чи `null` — $null, поведінка без паузи; значення
-    не за форматом — CHAIN_CONFIG (формат і розбір — ті самі, що для часу скидання квот: ConvertFrom-QuotaStamp). PowerShell 7 сам
-    перетворює дату з JSON на DateTime: приймається лише UTC (`Z`), місцевий час чи зсув — не за форматом, а не мовчки зсув. #>
-    $prop = $Config.PSObject.Properties['codex_pause_until']
-    if ($null -eq $prop -or $null -eq $prop.Value) { return $null }
-    if ($prop.Value -is [datetime] -and $prop.Value.Kind -ne [DateTimeKind]::Utc) { throw 'CHAIN_CONFIG' }
-    $until = ConvertFrom-QuotaStamp $prop.Value
-    if ($null -eq $until) { throw 'CHAIN_CONFIG' }
-    $until
+function Get-PauseReaders {
+    <# Розбір `codex_pause_until` (Get-CodexPauseUntil) з довіреної копії queue_lanes.ps1: правило одне з gemini-run (Test-CodexPause),
+    ланцюг його не копіює; викликач підключає блок крапкою у своєму просторі. #>
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'queue_lanes.ps1'), [ref]$null, [ref]$errors)
+    $functions = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -ceq 'Get-CodexPauseUntil' }, $true))
+    if ($errors.Count -or $functions.Count -ne 1) { throw 'CHAIN_PAUSE_PARSER' }
+    [scriptblock]::Create($functions[0].Extent.Text)
 }
 
 function Get-LiveModels($Config, [datetimeoffset]$Now, $PauseUntil = $null) {
@@ -1050,6 +1047,7 @@ function Invoke-WrapperChain {
             if ($hours -lt 1 -or $hours -gt 168) { throw 'CHAIN_CONFIG' }
         }
         $now = [datetimeoffset]::UtcNow; $installed = $now; $heads = @{}
+        . (Get-PauseReaders)
         $pauseUntil = Get-CodexPauseUntil $config
         $pauseActive = $null -ne $pauseUntil -and $now -lt $pauseUntil
         if ($pauseActive) {
