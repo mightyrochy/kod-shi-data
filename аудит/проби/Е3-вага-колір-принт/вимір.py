@@ -139,6 +139,7 @@ def батарея(стан):
     for префікс in ('pal_', 'col_', 'принти_'):
         скрипти += [str(п.relative_to(ДЖЕРЕЛА)) for п in sorted((ДЖЕРЕЛА / 'проби').glob(префікс + '*.py'))
                     if п.stem not in ('pal_вердикт', 'pal_вимір')]
+    (ТУТ / (стан + '-батарея.log')).write_text('', encoding='utf-8')
     for скрипт in скрипти:
         мета['скрипт'] = скрипт
         код, вихід, помилки, argv, шляхи = 0, sys.stdout, sys.stderr, sys.argv, list(sys.path)
