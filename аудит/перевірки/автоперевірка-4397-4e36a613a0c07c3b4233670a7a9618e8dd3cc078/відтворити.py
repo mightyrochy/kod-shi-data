@@ -17,6 +17,8 @@ import time
 
 
 def виконати(назва, команда, тека):
+    if команда[0] == sys.executable:
+        команда = [sys.executable, '-X', 'utf8', *команда[1:]]
     початок = time.monotonic()
     процес = subprocess.run([str(x) for x in команда], cwd=тека,
                             capture_output=True, encoding='utf-8', errors='replace',
@@ -40,10 +42,26 @@ def головна():
                'прилади/розділи_гейтів.py', 'audit_contracts.py']:
         команда = [sys.executable, ім] + (['--дим'] if ім == 'стенд_знімок.py' else [])
         виконати('батарея-' + pathlib.Path(ім).stem, команда, ГОЛОВА / 'джерела')
+    # CLI-проби канону й спеки приймають JSON каталогу, а не XML чи gzip.
+    код = """
+import gzip, json, os, pathlib, sys
+sys.path.insert(0, str(pathlib.Path.cwd()/'джерела'))
+import feed as Ф
+кеш=pathlib.Path(os.environ['TMP'])/'е3_каталог.json.gz'
+if not кеш.exists():
+    каталог=Ф.база_прогону(Ф.каталог_на_диску('каталог_повний.xml'),ліміт_фото=0)['каталог']
+    with gzip.open(кеш,'wt',encoding='utf-8') as ф: json.dump(каталог,ф,ensure_ascii=False)
+кеш.with_suffix('').write_bytes(gzip.decompress(кеш.read_bytes()))
+print('каталог JSON підготовлено')
+"""
+    виконати('каталог-вхід', [sys.executable, '-c', код], БАЗА)
     проби = sorted({п for маска in ['wea_*.py', 'погода_*.py', 'сила_*.py']
                     for п in (ГОЛОВА / 'джерела/проби').glob(маска)})
     for проба in проби:
-        виконати('проба-' + проба.stem, [sys.executable, проба], ГОЛОВА)
+        аргументи = ([ГОЛОВА/'джерела'] if проба.stem == 'wea_вхід' else
+                     [ГОЛОВА/'джерела', ТИМЧАСОВО/'е3_каталог.json']
+                     if проба.stem in ('wea_канон', 'wea_спека') else [])
+        виконати('проба-' + проба.stem, [sys.executable, проба, *аргументи], ГОЛОВА/'джерела')
     сітка = ГОЛОВА / 'джерела/проби/е3_панчішні_сітка.py'
     for назва, дерево in [('ДО', БАЗА), ('ПІСЛЯ', ГОЛОВА)]:
         виконати('панчішні-' + назва, [sys.executable, сітка, дерево, ТИМЧАСОВО / (назва+'.json')], дерево)
