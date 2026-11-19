@@ -3029,7 +3029,7 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     OwnerPid (0 — власника нема), CallAgeMin (хвилини від останнього chat-запиту до LM Studio, -1 — не виміряно) і OnBattery
     (такт без світла). Стан `gpu-watch.json`: позначка, початок замка, початок безперервної бездіяльності карти
     (вимір не вище gpu_stall_percent; невідомий вимір ряд не рве й не подовжує), останній PID, скільки разів він змінився за
-    замок, за якого ряду бездіяльності рядок уже надіслано, хвилини неспання без chat-запитів за замок. Рядок — раз на ряд
+    замок, за якого ряду бездіяльності рядок уже надіслано, UTC останнього врахованого chat-запиту й паузи світла після нього. Рядок — раз на ряд
     бездіяльності, понад gpu_stall_minutes. Без chat-запитів понад gpu_stall_minutes неспання — вирок `gpu-stall.json` у
     $LaneDir (позначка, початок замка), за яким планувальник смуги закриває наряд сам; інакше вироку нема.
     Повертає об'єкт для #1856 (Marker, LockMinutes, IdleMinutes, PidChanges, CallAgeMinutes, NoCallMinutes, Stop) чи $null,
@@ -3054,9 +3054,11 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     # Ряд — за замок: позначка й початок замка. Повтор тієї самої позначки (повтор після сну чи квоти) — новий замок, лічба з нуля.
     $since = [string]$h[0].Since
     if ($null -eq $st -or [string](Get-JsonProp $st 'marker') -cne $marker -or ($since -cmatch $rx -and [string](Get-JsonProp $st 'lock_since') -cne $since)) {
-        $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = ''; last_at = ''; sleep_min = 0; idle_unknown = 0; prev_known = 1; nocall_min = 0 }
+        $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = '' }
     }
-    foreach ($n in @('last_at', 'sleep_min', 'idle_unknown', 'prev_known', 'nocall_min')) { if ($null -eq $st.PSObject.Properties[$n]) { Add-Member -InputObject $st -NotePropertyName $n -NotePropertyValue $(if ($n -eq 'last_at') { '' } elseif ($n -eq 'prev_known') { 1 } else { 0 }) } }
+    $defaults = [ordered]@{ last_at = ''; sleep_min = 0; idle_unknown = 0; prev_known = 1; call_utc = ''; battery = @() }
+    foreach ($n in $defaults.Keys) { if ($null -eq $st.PSObject.Properties[$n]) { Add-Member -InputObject $st -NotePropertyName $n -NotePropertyValue $defaults[$n] } }
+    $parse = { param([string]$t) [datetime]::ParseExact($t, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) }
     $idleLimit = [double](Get-Limit $script:Limits 'GpuIdleMinutes' 'gpu_stall_minutes')
     $pctLimit = [double](Get-Limit $script:Limits 'GpuIdlePercent' 'gpu_stall_percent')
     $pct = [int]$Sample.Percent; $ownerPid = [int]$Sample.OwnerPid
@@ -3076,12 +3078,11 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
         try { $readTo = & $SleepRead } catch { $readTo = $null }
         if ($readTo -is [datetime] -and $readTo.ToUniversalTime() -lt $Now) { $Now = $readTo.ToUniversalTime(); $lagged = $true }
     }
-    $lastAt = $(if ($null -ne (Get-JsonProp $st 'last_at') -and [string]$st.last_at -cmatch $rx) { [datetime]::ParseExact([string]$st.last_at, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) } elseif ([string]$st.lock_since -cmatch $rx) { [datetime]::ParseExact([string]$st.lock_since, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) } else { $null })
+    $lockAt = $(if ([string]$st.lock_since -cmatch $rx) { & $parse ([string]$st.lock_since) } else { $null })
+    $lastAt = $(if ([string]$st.last_at -cmatch $rx) { & $parse ([string]$st.last_at) } else { $lockAt })
     $stale = $lagged -and $null -ne $lastAt -and $Now -le $lastAt
-    $sleptIv = 0
     if (-not $stale -and $null -ne $lastAt -and $null -ne $Sleeps -and $Now -gt $lastAt) {
         $slept = [int](& $Sleeps $lastAt $Now)
-        $sleptIv = $slept
         if ($slept -gt 0) {
             $st.sleep_min = [int](Get-JsonProp $st 'sleep_min') + $slept
             $st.idle_since = ''
@@ -3091,19 +3092,35 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     # Невідомий вимір ряд не рве й не подовжує (15788): проміжок, чий кінець чи початок без виміру, у бездіяльність не йде.
     $interval = $(if (-not $stale -and $null -ne $lastAt -and $Now -gt $lastAt) { ($Now - $lastAt).TotalMinutes } else { 0 })
     if ([string]$st.idle_since -cmatch $rx -and ($pct -lt 0 -or [int]$st.prev_known -eq 0)) { $st.idle_unknown = [double]$st.idle_unknown + $interval }
-    # Без chat-запитів за замок — хвилини неспання: проміжок між тактами без сну (журнал Windows) і без такту на батареї (пауза
-    # світла, Wait-PowerPause); запит у проміжку лишає лише хвилини неспання після нього (сон віднімається саме з відрізка
-    # запит — вимір), журнал не читається — лічба стоїть.
-    if (-not $stale -and $callAge -ge 0) {
-        $onBattery = ($null -ne $Sample.PSObject.Properties['OnBattery'] -and [bool]$Sample.OnBattery)
-        $awakeIv = $(if ($onBattery) { 0 } else { [Math]::Max(0, $interval - $sleptIv) })
-        $callAt = $measuredAt.AddMinutes(-$callAge)
-        if ($null -ne $lastAt -and $callAt -gt $lastAt) {
-            $after = [Math]::Max(0, ($Now - $callAt).TotalMinutes)
-            $sleptAfter = $(if ($null -ne $Sleeps -and $Now -gt $callAt) { [int](& $Sleeps $callAt $Now) } else { 0 })
-            $st.nocall_min = [Math]::Min($awakeIv, [Math]::Max(0, $after - $sleptAfter))
+    # Без chat-запитів — хвилини неспання на відрізку від останнього врахованого chat-запиту (`call_utc`, абсолютний UTC; до
+    # першого — від початку замка) до виміру: без сну за журналом Windows і без пауз світла (проміжок до такту на батареї,
+    # Wait-PowerPause, — `battery`). Відрізок лічиться щоразу цілим, а не приростами від такту до такту: запит, пізніший за
+    # `call_utc`, скидає лічбу, хоч би скільки тактів пропущено чи журнал LM Studio між ними не читався; журнал не читається —
+    # `call_utc` не міняється й вироку нема.
+    $onBattery = ($null -ne $Sample.PSObject.Properties['OnBattery'] -and [bool]$Sample.OnBattery)
+    $pauses = @(@($st.battery) | Where-Object { [string]$_ -cmatch '^\S+Z/\S+Z$' } | ForEach-Object { [string]$_ })
+    if (-not $stale -and $onBattery -and $null -ne $lastAt -and $Now -gt $lastAt) {
+        $a = Get-UtcStamp $lastAt; $z = Get-UtcStamp $Now
+        if ($pauses.Count -gt 0 -and $pauses[-1].EndsWith("/$a")) { $pauses[-1] = $pauses[-1].Split('/')[0] + "/$z" } else { $pauses += "$a/$z" }
+    }
+    $callUtc = $(if ([string]$st.call_utc -cmatch $rx) { & $parse ([string]$st.call_utc) } else { $null })
+    if ($callAge -ge 0) {
+        $callAt = & $parse (Get-UtcStamp $measuredAt.AddMinutes(-$callAge))
+        if (($null -eq $callUtc -or $callAt -gt $callUtc) -and ($null -eq $lockAt -or $callAt -gt $lockAt)) { $callUtc = $callAt; $st.call_utc = Get-UtcStamp $callAt }
+    }
+    $start = $(if ($null -ne $callUtc -and ($null -eq $lockAt -or $callUtc -gt $lockAt)) { $callUtc } else { $lockAt })
+    $pauses = @($pauses | Where-Object { $null -ne $start -and (& $parse ($_.Split('/')[1])) -gt $start })
+    $st.battery = $pauses
+    $awake = { param($f, $t) if ($t -le $f) { 0 } else { [Math]::Max(0, ($t - $f).TotalMinutes - $(if ($null -ne $Sleeps) { [int](& $Sleeps $f $t) } else { 0 })) } }
+    $noCallMin = 0.0
+    if ($null -ne $start) {
+        $cur = $start
+        foreach ($p in $pauses) {
+            $pa = & $parse ($p.Split('/')[0]); $pz = & $parse ($p.Split('/')[1])
+            if ($pa -gt $cur) { $noCallMin += & $awake $cur $(if ($pa -lt $Now) { $pa } else { $Now }) }
+            if ($pz -gt $cur) { $cur = $pz }
         }
-        else { $st.nocall_min = [double]$st.nocall_min + $awakeIv }
+        $noCallMin += & $awake $cur $Now
     }
     if (-not $stale) { $st.last_at = Get-UtcStamp $Now; $st.prev_known = $(if ($pct -ge 0) { 1 } else { 0 }) }
     if ($ownerPid -gt 0) {
@@ -3115,7 +3132,7 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
         if ($pct -le $pctLimit) { if ([string]$st.idle_since -cnotmatch $rx) { $st.idle_since = Get-UtcStamp $Now; $st.idle_unknown = 0 } }
         else { $st.idle_since = ''; $st.idle_unknown = 0 }
     }
-    $from = { param([string]$t) [int][Math]::Max(0, [Math]::Floor(($Now - [datetime]::ParseExact($t, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)).TotalMinutes)) }
+    $from = { param([string]$t) [int][Math]::Max(0, [Math]::Floor(($Now - (& $parse $t)).TotalMinutes)) }
     $sleepMin = [int](Get-JsonProp $st 'sleep_min')
     $lockMin = $(if ([string]$st.lock_since -cmatch $rx) { [Math]::Max(0, (& $from ([string]$st.lock_since)) - $sleepMin) } else { 0 })
     $idleMin = $(if ([string]$st.idle_since -cmatch $rx) { [Math]::Max(0, (& $from ([string]$st.idle_since)) - [int][Math]::Floor([double]$st.idle_unknown)) } else { 0 })
@@ -3127,7 +3144,7 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
         if (& $Send "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU_IDLE $lane/$($parts[1]) ЗАМОК $lockMin СОН $sleepMin БЕЗ_РОБОТИ $idleMin PID_ЗМІН $($st.pid_changes)") { $st.sent = $cause }
     }
     Write-FileAtomic $Path ($st | ConvertTo-Json -Compress)
-    $noCall = [int][Math]::Floor([double]$st.nocall_min)
+    $noCall = [int][Math]::Floor($noCallMin)
     $stop = ($callAge -ge 0 -and $idleLimit -gt 0 -and $noCall -ge $idleLimit)
     if ($stop) { Write-FileAtomic $VerdictPath (([ordered]@{ marker = $marker; since = [string]$h[0].Since; nocall = $noCall; at = (Get-UtcStamp $Now) }) | ConvertTo-Json -Compress) }
     else { Remove-Item -LiteralPath $VerdictPath -Force -ErrorAction SilentlyContinue }

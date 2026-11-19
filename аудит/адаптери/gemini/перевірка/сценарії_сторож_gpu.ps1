@@ -391,6 +391,16 @@ Scenario 'з2 час chat-запиту і замок' {
     Check "з2 ДО: запит у проміжку, далі сон — 66 хв (мінімум неспання всього проміжку й настінного часу після запиту); ПІСЛЯ: неспання після запиту — $($w.NoCallMinutes) хв" ($w.NoCallMinutes -eq 6 -and -not $w.Stop)
     $w = & $t3 (13 * 60 + 29) 149
     Check "з2 ще 24 хв — $($w.NoCallMinutes) хв без chat-запитів, вироку нема (ДО: 90 і STALL)" ($w.NoCallMinutes -eq 30 -and -not $w.Stop -and -not (Test-Path $verdict))
+    # Chat-запит під час збою читання журналу LM Studio: о 10:00 — 85 хв без запитів, запит 10:03, такт 10:05 журналу не читає (-1),
+    # такт 10:10 — вік 7 хв.
+    $h4 = @([pscustomobject]@{ Marker = $mk; Since = '2026-11-20T08:30:00Z' })
+    $d20 = [datetime]::SpecifyKind([datetime]'2026-11-20T00:00:00', [DateTimeKind]::Utc)
+    $t4 = { param([int]$Min, [int]$Call) Update-GpuWatch $h4 ([pscustomobject]@{ Percent = 0; OwnerPid = 0; CallAgeMin = $Call }) $send "$tmp/zl/state/gpu-watch-log.json" $d20.AddMinutes($Min) { param($f, $t) 0 } $null }
+    for ($m = 8 * 60 + 35; $m -le 10 * 60; $m += 5) { $w = & $t4 $m ($m - (8 * 60 + 35)) }
+    $at10 = $w.NoCallMinutes
+    $w5 = & $t4 (10 * 60 + 5) -1
+    $w = & $t4 (10 * 60 + 10) 7
+    Check "з2 ДО: запит 10:03 під час збою журналу (о 10:00 — $at10 хв, такт 10:05 без вироку: $(-not $w5.Stop)) лічбу не скидав — 90 хв і STALL; ПІСЛЯ: $($w.NoCallMinutes) хв, вироку нема" ($at10 -eq 85 -and -not $w5.Stop -and $w.NoCallMinutes -eq 7 -and -not $w.Stop -and -not (Test-Path $verdict))
 }
 
 # --- (і) подія Codex у heartbeat і #1856 --------------------------------------------------------------------------------------------
