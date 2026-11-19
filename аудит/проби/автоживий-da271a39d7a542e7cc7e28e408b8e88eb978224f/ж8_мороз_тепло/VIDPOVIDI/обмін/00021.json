@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"movement\": \"довго на вулиці\", \"open_zones\": \"хочу вдягтись тепло\"}, \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\", \"quote\": \"хочу вдягтись тепло\"}, \"reserved_colour\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\"}, \"unknown\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"default\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"довго на вулиці\"}, \"weather_band\": {\"kind\": \"reading\"}}, \"movement\": \"walk_a_lot\", \"part_of_day\": \"day\", \"weather_band\": \"deep_frost\", \"occasion\": \"walk\", \"open_zones\": \"none\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"light\": \"daylight\"}, \"person\": {\"skin_hex\": [\"#e3c3a2\", \"#dcb995\", \"#e9ccae\"], \"hair_hex\": \"#1b1815\", \"eyes_hex\": \"#4a2f1f\", \"height_cm\": 154, \"girths_cm\": {\"shoulders\": 90, \"bust\": 84, \"waist\": 64, \"hips\": 88}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Merino wool coat, straight cut, knee length, charcoal gray (#3d3d3c), thick woven wool for deep warmth.\\nWool-blend tunic, relaxed fit, hip length, forest green (#2e4a3d), soft brushed fabric for comfort during long walks.\\nWide-leg trousers, tapered hem, ankle length, olive drab (#556b2f), heavy cotton twill to retain heat and block wind.\\nChunky leather boots, low heel, mid-calf height, dark brown (#3e2723), insulated lining and thick rubber sole for frosty conditions.\\nThis outfit works perfectly because the deep winter coat provides essential insulation for walking in deep frost, while the relaxed layers underneath allow for easy movement without feeling restricted. The earth-toned palette of charcoal, forest green, and olive harmonizes beautifully with her warm skin tone, creating a cohesive look that feels both stylish and practical for an all-day outdoor outing. By choosing heavy fabrics like wool and cotton twill, the ensemble ensures she stays cozy and protected against the cold weather without sacrificing comfort during her long walk.\"}],\"usage\":{\"input_tokens\":797,\"output_tokens\":232},\"stop_reason\":\"end_turn\"}"
+ }
+}

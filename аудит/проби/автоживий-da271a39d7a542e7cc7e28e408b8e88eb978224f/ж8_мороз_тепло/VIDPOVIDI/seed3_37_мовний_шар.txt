@@ -1,0 +1,60 @@
+── ПРОМПТ (6495 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: blouse · about it: text н=1
+2 — kind: vest · about it: text н=2
+3 — kind: casual_suit · about it: text н=3
+4 — kind: belt · about it: text н=4
+5 — kind: boots · about it: text н=5
+6 — kind: backpack · about it: text н=6
+7 — kind: coat · about it: text н=7
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This blouse fits the occasion perfectly, keeping you dressed in style even when you're walking for long stretches.",
+"2": "The vest adds warmth and structure without adding bulk, balancing the layers underneath smoothly.",
+"3": "The casual suit set brings polish to your everyday look while staying comfortable for all-day movement.",
+"4": "This belt defines your waist cleanly, helping to anchor the volume of your layered top and bottom so the whole outfit reads balanced from head to toe.",
+"5": "Your boots offer height and stability with every step, lifting your posture as you move through cold air for hours.",
+"6": "The backpack holds your essentials securely, leaving both hands free while you navigate busy streets or transit stops.",
+"7": "This coat shields you from deep frost with thick fabric that ranks highest among wool layers for maximum warmth without overheating.",
+"8": "You chose a layered look to stay warm while you're out walking for a long time. The thick coat protects you from the deep frost, and the set under it keeps you comfortable without feeling bulky. Your boots have a high heel that lifts your stride just right for movement, and the backpack carries everything you need hands-free. This outfit feels both practical and polished for an active day outdoors.",
+"9": "Wear the coat zipped up to create one clean line from collar to hip, keeping warmth trapped and your silhouette streamlined while you walk.",
+"10": "Пасок шкіряний (Hermes Kelly) Hermes — Adding a burgundy leather belt breaks the neutral column to satisfy the scheme's accent requirement without overwhelming the daylight look.",
+"11": "Рюкзак жіночий Welfare сірий, Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare, Блуза з лелітками біла — The burgundy belt is not an extra detail but the necessary accent that satisfies your palette scheme and draws attention away from the cold surroundings.",
+"12": "Костюм з кардигану на гудзиках та штанів — Choosing black as a tonal anchor against the milky/cream base creates contrast suitable for deep frost."
+}
+
+── ВІДПОВІДЬ (2142 симв., 18.3 с, HTTP 200) ──
+```json
+{
+  "1": "Ця блузка ідеально підходить для цієї події, дозволяючи тобі залишатися стильною навіть коли ти довго йдеш пішки.",
+  "2": "Жилет додає тепла та структури без зайвого об’єму, гармонійно збалансовуючи шари знизу.",
+  "3": "Цей повсякденний костюм надає вишуканості твоєму щоденному образу, залишаючись комфортним для цілоденного руху.",
+  "4": "Цей пасок чітко окреслює твою талію, допомагаючи збалансувати об’єм верхньої та нижньої частини одягу так, щоб весь образ виглядав гармонійно від голови до п’ят.",
+  "5": "Твої черевики дарують тобі висоту і стійкість на кожному кроці, піднімаючи твою поставу, коли ти рухаєшся в холодному повітрі годинами.",
+  "6": "Рюкзак безпечно тримає всі необхідні речі, залишаючи обидві руки вільними, поки ти орієнтуєшся на жвавих вулицях або зупинках транспорту.",
+  "7": "Ця куртка захищає тебе від сильного морозу щільною тканиною, яка найкраще зігріває серед вовняних шарів без перегріву.",
+  "8": "Ти обрала багатошаровий образ, щоб залишатися в теплі під час тривалої прогулянки. Товста куртка захищає тебе від сильного морозу, а комплект знизу зберігає комфорт без відчуття об’ємності. Твої черевики мають високий каблук, який ідеально піднімає твою ходу для руху, а рюкзак тримає все необхідне вільними руками. Цей образ поєднує практичність та вишуканість для активного дня на вулиці.",
+  "9": "Застебни куртку на блискавку, щоб створити одну чисту лінію від коміра до стегон, зберігаючи тепло і стрункий силует під час ходьби.",
+  "10": "Шкіряний пасок (Hermes Kelly) Hermes — Додавання бордового шкіряного паска розбавляє нейтральну гаму, щоб задовольнити вимогу акценту схеми без перевантаження денного образу.",
+  "11": "Жіночий рюкзак Welfare сірий, Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare, Блуза з оборками біла — Бордовий пасок не є додатковою деталлю, а необхідним акцентом, який задовольняє твою колірну схему і привертає увагу від холодного оточення.",
+  "12": "Костюм із кардигану на ґудзиках та штанів — Вибір чорного як тонального центру проти молочно-кремової основи створює контраст, який підходить для сильного морозу."
+}
+```
