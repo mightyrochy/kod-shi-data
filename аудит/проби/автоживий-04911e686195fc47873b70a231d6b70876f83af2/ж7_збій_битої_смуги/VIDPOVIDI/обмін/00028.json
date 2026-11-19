@@ -1,0 +1,94 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "Photo 1 — the shop's photo of #287·28 (top, blazer); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://rito.ua/image/cachewebp/catalog/FW%2025-26/7451_grey_7-824x1236.webp"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 2 — the shop's photo of #50·12 (top, bodysuit); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://feelyou.com.ua/wp-content/uploads/2025/03/bezymiannyj-kadr2974-scaled.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 3 — the shop's photo of #549·37 (shoes, boots); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://vittorossi.ua/Foto1Cv8/8c94bacd-4dd4-11f1-8285-005056003f29_1.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 4 — the shop's photo of #658·34 (bag, tote); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://images.theoriginals.com.ua/cache/webp/catalog/product_photo/65117/tout-michael-kors-1-700x500.webp"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 5 — the shop's photo of #521·35 (bottom, jeans); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://twice.com.ua/33602-home_default/dzhinsi-wide-leg-temno-siri-wl627.webp"
+      }
+     },
+     {
+      "type": "text",
+      "text": "Photo 6 — the shop's photo of #503·04 (outerwear, coat); the other clothes in it are not in her outfit:"
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://bella-bicchi.com/upload/iblock/9c7/8nyzhb0vfwntjin9yg782rzuppwxb59x/IMG_3379.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "{\"version\": \"1\", \"task\": {\"role\": \"You are the stylist of the Lyusterko styling app. You tell her why you chose this outfit for her.\", \"rules\": [\"Speak only of the items of «outfit»: no suggestions to buy or add more, no items it does not contain — no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or she may own it.\", \"Do not change the outfit yourself. A clearly different item or colour goes into «wrong_photos» or «swap»; do not invent the expected item behind that mismatch.\", \"Tell her why each item is here for her, as far as the input supports it — her occasion, her own words, the facts listed in «day», her figure, what the code found — not what it looks like: she sees it on its photo beside your words. Name an item by its kind so she recognises it. A colour, cut, length or fabric comes in only as the reason for a choice and only when clearly visible on that item's own photo; never fibre, feel, comfort or weather protection.\", \"Say each thing about an item once, in one coherent wearing plan; an alternative is a choice, not another simultaneous instruction. No sentence or attribute quota.\", \"Talk to her about the items, never about what you were given: no word about photos, frames, what else a frame shows, a photo you could not see, or the codes and data you went by, and no comparison of a photo with them — the card already shows her the photos and says under an item when it has none.\", \"Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).\", \"Every item of «outfit» is your choice: stand behind it. Do not end a doubt with «the choice is yours», «it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a decision to her only about what she asked for herself: her words in «case», an item marked «hers».\", \"Only when a photo shows that an item is not what this outfit needs — a clearly different colour, another kind of item, unfit for her occasion or her day — and that matters for this outfit, name that item in «swap»: the code then looks for a replacement of the same kind. When in doubt, leave «swap» out.\", \"Write the answer object itself: it begins with {\\\"version\\\" and ends with the brace that closes it. Do not wrap it in another object; after that brace the answer is over — write nothing more.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"Text for her. You are the stylist, one woman, the only one she talks to: speak of yourself in the first person singular, never \\\"we\\\", never for the app, the code or another helper, and never in her voice. Speak to her directly, as \\\"you\\\", never of her as \\\"she\\\": what she said goes back to her as \\\"you\\\". Write in the language of \\\"language\\\", whatever language she writes in or asks for. Plain human words, without item numbers, ids, hex codes or markdown.\", \"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \\\"on the scale\\\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer_schema\": {\"version\": \"1\", \"text\": \"<prose for her after the items: (1) optional, only when it adds something — how the shoes, the outer layer and the accessories go with the rest, in one or two sentences; (2) why it works, briefly and only where supported, taking from «day», «palette», «makeup» and «missing» only what matters most for this outfit and her occasion>\", \"how_to_wear\": [\"<one piece of advice per line, at most three, each changing how the outfit looks or lives through her day; advice that puts an item into, under or over another names that other item too, and both are items of «outfit»>\"], \"wrong_photos\": [\"<«n» of an item whose photo shows another item, a clearly different color, a placeholder or a logo; the same item on a person, from another angle, close up or with other clothes in the frame is no reason; when in doubt, leave it out>\"], \"swap\": {\"item\": \"<«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty reason — the usual case>\", \"why\": \"<one code for what the photo shows, and nothing else: «colour» — a clearly different colour, «kind» — another kind of item, «occasion» — unfit for her occasion, «day» — unfit for her weather or her way there, one of: colour, kind, occasion, day>\", \"to\": \"<only with «swap_spares» in the input: «n» of the spare you choose; leave it out to keep the item>\"}, \"named\": [{\"n\": \"<«n» of the item of «outfit» that «text» or «how_to_wear» names; a thing that is not an item of «outfit» has no «n» — and should not be named at all>\", \"what\": \"<every garment, shoe, bag, jewelry or accessory that «text» or «how_to_wear» names — each once, in a few words>\"}], \"about_items\": [{\"n\": \"<«n» of the item of «outfit»: one entry for every item of «outfit», in its order>\", \"text\": \"<why this item alone is here for her, in a sentence or two, as far as the input supports it: what it does for her occasion, her day, her figure or what she asked — not how it looks. It belongs to her outfit; never call it excluded. No other clothing or accessory, whether from its photo or «outfit»: combinations belong to «text». Her figure only through line and cut, never a shape code or «…-shape»>\"}]}, \"input\": [\"\\\"outfit\\\" — chosen items, each numbered «n», by what they are: «kind» and «type» codes. She sees every item on its photo beside your words\", \"\\\"photos\\\" — this item's photo numbers; preceding blocks are labelled «Photo N — …:» with the item's «n». «not delivered» or «not available» means no image; look only at this item's «kind» in its own numbered photos: a belt shown on a blouse is the belt, not the blouse\", \"\\\"kind\\\" — what the item is, as a code (belt, top, dress, shoes, bag…); «type» — its narrower type when the code knows it; «set» — a set sold as one item, its top and its bottom both in the outfit; «about_items» speaks of the item of this «kind» and nothing else from its photo\", \"\\\"case\\\" — her occasion: its fields as codes, her own words as quotes; «formality» is an internal 1–10 band, for you only\", \"\\\"day\\\" — day with source; only what she said about her day. When the known item properties support it, in the last part of «text» say how this outfit lives through the facts listed in «day». An item its photo shows unfit for her weather or way there is «swap»; for an item whose known property argues with a fact listed in «day», say in one plain sentence why you still chose it and what it means for her day, never handing that decision back to her. Weather, road, place, light or time of day that «day» does not carry is not a fact of her day\", \"\\\"body\\\" — measured height, shape code, zones and statements: suitable cuts, the anchor for volume, and where most conditions meet on her body; where the items' line on their photos supports it, in the last part of «text» explain the outfit's line and focus with the items responsible. Speak of its effect, never her body's lacks or what to hide. If an item opposes these statements, gently explain your choice or a remedy using only outfit items. «cuts» means item cuts: «belted» is its own belt, not an added belt. Describe her figure through line and cut, never a shape code, letter, «…-shape», body type or number\", \"\\\"shape\\\" — figure route, not a verdict: A — hips wider than shoulders; V — shoulders wider than hips; X — a marked waist; H — straight, no marked waist; HX — waist undetermined by FFIT (waist_defined=null; waist_basis explains); O — FFIT Oval/Diamond, waist wider than hips: a vertical to the face and legs, quiet middle\", \"\\\"your_declared\\\" — items you kept deliberately although the code found something against them: «item» — its «n», «statements» — what the code found, as statement codes; this was your choice, not a flaw of the item: never call it a mismatch and never name it in «swap»; in «how_to_wear» say what she does about what the code found\", \"\\\"statements\\\" — what the code found: each entry is {code, values, …}; codes are defined in \\\"statement_codes\\\"\"], \"statement_codes\": {\"pair_side_unknown\": \"her top and hip girths are measured once each, so the error of their difference is unknown and the code does not say which half is wider; the girths are facts (values: top_cm, hips_cm, difference_pct)\", \"volume_anchor\": \"a voluminous outfit keeps one anchor where the body shows: the waist (belt, wrap, tuck) or the ankle (a tapered or cropped bottom); volume without an anchor reads as \\\"the body shows nowhere\\\"\", \"body_knot\": \"most conditions meet at these zones of her body; conditions shared by both zones need ONE item for both, since a fix on one zone moves the other; the rest on the first zone is fixed separately (values: zones — per zone: conditions, tension 0 to 1; shared, own — condition codes, defined here too)\", \"one_line\": \"the contour leaves the body in ONE place below the shoulders: a voluminous top together with a voluminous bottom gives two lines, and neither reads\", \"item_below_occasion_band_unexplained\": \"by the code's measure this item is more casual than the level of the occasion, and «deliberate» of the outfit does not say why it is here: maybe a slip (values: reason — the measure's code; band — the occasion's band from…to; item — the item's formality from…to, or its photo score)\"}}, \"outfit\": {\"id\": \"o2\", \"items\": [{\"n\": \"#287·28\", \"kind\": \"top\", \"type\": \"blazer\", \"photos\": [1]}, {\"n\": \"#50·12\", \"kind\": \"top\", \"type\": \"bodysuit\", \"photos\": [2]}, {\"n\": \"#549·37\", \"kind\": \"shoes\", \"type\": \"boots\", \"photos\": [3]}, {\"n\": \"#658·34\", \"kind\": \"bag\", \"type\": \"tote\", \"photos\": [4]}, {\"n\": \"#521·35\", \"kind\": \"bottom\", \"type\": \"jeans\", \"photos\": [5]}, {\"n\": \"#503·04\", \"kind\": \"outerwear\", \"type\": \"coat\", \"photos\": [6]}]}, \"case\": {\"field_quotes\": {\"occasion\": \"йду на роботу пішки\", \"movement\": \"йду на роботу пішки\", \"intent\": \"відкритого й підборів не хочу\", \"goal\": \"відкритого й підборів не хочу\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"goal\": {\"kind\": \"reading\", \"quote\": \"відкритого й підборів не хочу\"}, \"goal_quote\": {\"kind\": \"default\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"йду на роботу пішки\"}, \"intent\": {\"kind\": \"reading\", \"quote\": \"відкритого й підборів не хочу\"}, \"intent_quote\": {\"kind\": \"default\"}, \"precipitation\": {\"kind\": \"her\", \"quote\": \"сніг\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"her_other_words\": {\"kind\": \"default\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"йду на роботу пішки\"}, \"weather_band\": {\"kind\": \"reading\"}}, \"event\": \"йду на роботу пішки\", \"intent\": \"context_optimal\", \"goal\": \"conceal\", \"occasion\": \"work\", \"open_zones\": \"none\", \"goal_quote\": \"відкритого й підборів не хочу\", \"intent_quote\": \"відкритого й підборів не хочу\", \"her_other_words\": [\"відкритого й підборів не хочу\"]}, \"day\": {\"movement\": \"walk\", \"weather_band\": \"frost\", \"precipitation\": \"snow\"}, \"body\": {\"height_cm\": 160, \"shape\": \"HX\", \"zones\": {\"top_vs_bottom\": 0, \"waist_defined\": null, \"waist_basis\": \"body_error_unknown\"}, \"statements\": [{\"code\": \"pair_side_unknown\", \"values\": {\"top_cm\": 100.0, \"hips_cm\": 100.0, \"difference_pct\": 0}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_f19929e6b5725318c54edd41\"}, {\"code\": \"volume_anchor\", \"values\": {}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_0e831db17272cc10db154708\"}, {\"code\": \"body_knot\", \"values\": {\"zones\": [{\"zone\": \"waist\", \"conditions\": 2, \"tension\": 1.0}, {\"zone\": \"ankle\", \"conditions\": 2, \"tension\": 1.0}], \"shared\": [\"volume_anchor\", \"one_line\"], \"own\": []}, \"recipient\": \"woman\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [], \"key\": \"s_852890e7338362fdb0fba965\"}]}, \"your_declared\": [{\"item\": \"#549·37\", \"statements\": [{\"code\": \"item_below_occasion_band_unexplained\", \"values\": {\"reason\": \"item_below_band\", \"band\": \"neat\", \"item\": \"everyday\", \"item_id\": \"#658·34\"}, \"recipient\": \"stylist\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [\"#658·34\"], \"key\": \"s_0e07107cea01290b12a7a77e\"}, {\"code\": \"item_below_occasion_band_unexplained\", \"values\": {\"reason\": \"item_below_band\", \"band\": \"neat\", \"item\": [\"home\", \"everyday\"], \"item_id\": \"#521·35\"}, \"recipient\": \"stylist\", \"source\": \"unknown\", \"choice\": \"unknown\", \"rank\": null, \"item_ids\": [\"#521·35\"], \"key\": \"s_9f9a53bb40602a4912e90396\"}]}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b",
+   "x-images-dropped": "6"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"version\\\": 1, \\\"text\\\": \\\"You are stepping into your work day walking in the snow without wanting to look messy or wear open shoes. The blazer brings a sharp, professional structure that anchors your outfit for an office setting while the bodysuit keeps your silhouette clean and streamlined under it. Your boots handle the frost and keep you warm without slipping, and the tote bag is ready to carry everything you need as you walk to work. The coat wraps over the top layer to shield you from the cold air and snowflakes while maintaining a neat exterior. You chose jeans for comfort on your long walk, but they are styled with enough polish to fit your work day perfectly.\\\", \\\"how_to_wear\\\": [\\\"Keep the blazer zipped or buttoned at the top to create one clean vertical line from your shoulder down to your waist, which balances the volume of your coat when you open it later.\\\", \\\"Tuck the bodysuit in flat against the jacket so there is no bulk showing at the waist as you walk, keeping your focus on a smooth silhouette all day.\\\", \\\"Walk with the tote held close to your hip so the length of your boots stays visible and the hem of your coat does not drag or get caught on the ground.\\\"], \\\"wrong_photos\\\": [], \\\"swap\\\": {\\\"item\\\": null, \\\"why\\\": null, \\\"to\\\": null}, \\\"named\\\": [], \\\"about_items\\\": [{\\\"n\\\": \\\"#287·28\\\", \\\"text\\\": \\\"This blazer provides the necessary professional structure for your work day and creates a crisp line that makes you look put-together even when walking in snow.\\\"}, {\\\"n\\\": \\\"#50·12\\\", \\\"text\\\": \\\"The bodysuit keeps your silhouette smooth and streamlined under the blazer, ensuring there is no bulk around the waist as you move through the cold air.\\\"}, {\\\"n\\\": \\\"#549·37\\\", \\\"text\\\": \\\"These boots are chosen to handle the frost and snow without open zones, keeping your feet warm and secure while walking to work in any weather.\\\"}, {\\\"n\\\": \\\"#658·34\\\", \\\"text\\\": \\\"The tote bag is ready to hold all your work essentials comfortably as you walk, providing a practical yet polished finish to your ensemble.\\\"}, {\\\"n\\\": \\\"#521·35\\\", \\\"text\\\": \\\"You chose these jeans for the comfort they offer during your long walk to work, balancing everyday ease with enough polish to meet your professional requirements.\\\"}, {\\\"n\\\": \\\"#503·04\\\", \\\"text\\\": \\\"This coat acts as a protective outer layer against the snow and frost, shielding you from the cold while maintaining a neat shape that fits your work occasion.\\\"}]}\"}],\"usage\":{\"input_tokens\":3814,\"output_tokens\":556},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,62 @@
+── ПРОМПТ (6826 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: shirt · about it: text н=1
+2 — kind: ring · about it: text н=2
+3 — kind: coat · about it: text н=3
+4 — kind: belt · about it: text н=4
+5 — kind: pumps · about it: text н=5
+6 — kind: trousers · about it: text н=6
+7 — kind: crossbody_bag · about it: text н=7
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The relaxed sweatshirt-style top brings a soft, festive ease to your look while maintaining an elegant silhouette that works well for evening wear.",
+"2": "Your rings add a delicate touch of personal style without overwhelming the outfit, perfect for a celebratory occasion.",
+"3": "The coat provides warmth and structure for your restaurant evening, balancing comfort with sophistication in cold weather.",
+"4": "The belt subtly defines your waistline without disrupting the relaxed feel of your ensemble, adding just enough detail to elevate your look.",
+"5": "Black pumps bring a refined touch of polish to your outfit while remaining comfortable enough for movement throughout your night.",
+"6": "The trousers offer comfort and ease, ensuring you can move freely through your evening while maintaining a sleek silhouette.",
+"7": "The crossbody bag keeps your essentials secure and accessible in a stylish way, perfect for navigating your festive evening effortlessly.",
+"8": "Your outfit is a thoughtful blend of comfort and style, perfect for a festive evening. The relaxed sweatshirt-style top brings a casual elegance that balances the structured feel of your coat, while the trousers offer ease of movement throughout your night. The black pumps add a touch of sophistication without sacrificing comfort, ideal for standing or dancing at a celebration. A crossbody bag keeps essentials secure and stylishly accessible, and subtle rings complete your look with quiet refinement.",
+"9": "Tuck your sweatshirt slightly into the waistband of your trousers to define your silhouette subtly while keeping the relaxed feel.",
+"10": "Вовняне пальто приталеного крою з кишенями — I added this black straight wool coat to resolve the 'no outer layer' and 'weather needs outerwear' blockers, ensuring warmth for the cold autumn evening as requested in the case.",
+"11": "Пасок шкіряний (Hermes Kelly) Hermes — I included this burgundy belt to fulfill the 'no top and bottom' blocker by acting as a defining third piece for the monochrome suit, adding structure and color contrast.",
+"12": "Слінгбеки Jacquemus червоні — I selected these red leather pumps to fix the 'no shoes' blocker, providing formal footwear appropriate for the occasion.",
+"13": "Пасок шкіряний (Hermes Kelly) Hermes — I chose this item because its color contrasts with the black dress to define the waist, solving the volume issue at the hips."
+}
+
+── ВІДПОВІДЬ (2411 симв., 16.1 с, HTTP 200) ──
+```json
+{
+  "1": "Ця вільна кофта-світшот додає м’якого святкового настрою твоєму образу, зберігаючи при цьому елегантний силует, який добре підходить для вечірнього виходу.",
+  "2": "Твої каблучки доповнюють образ делікатним особистим стилем без надмірності, ідеально пасуючи для святкової нагоди.",
+  "3": "Пальто забезпечує тепло та структуру для твого вечора в ресторані, поєднуючи комфорт із вишуканістю у холодну погоду.",
+  "4": "Пояс ледь помітно підкреслює лінію твоєї талії без порушення розслабленого настрою ансамблю, додаючи достатньо деталей для завершення образу.",
+  "5": "Чорні туфлі-човники надають вишуканий штрих до твого вбрання, залишаючись при цьому досить зручними для пересування протягом усієї ночі.",
+  "6": "Штани забезпечують комфорт і свободу рухів, дозволяючи тобі вільно рухатися під час вечора, зберігаючи при цьому елегантний силует.",
+  "7": "Сумка через плече надійно та зручно тримає твої необхідні речі в стильному вигляді, чудово підходячи для безтурботного проведення святкового вечора.",
+  "8": "Твій образ — це продумане поєднання комфорту й стилю, ідеальне для святкового вечора. Вільна кофта-світшот додає невимушеної елегантності, яка збалансовує структурований вигляд твого пальта, а штани забезпечують свободу рухів протягом усієї ночі. Чорні туфлі-човники надають штрих вишуканості без шкоди для комфорту, ідеальні для стояння чи танців на святкуванні. Сумка через плече тримає необхідне в безпеці та стильно доступно, а делікатні каблучки завершують твій образ тихою витонченістю.",
+  "9": "Злегка заправ кофту-світшот у пояс штанів, щоб ледь помітно підкреслити силует і зберегти розслаблений настрій.",
+  "10": "Вовняне пальто приталеного крою з кишенями — Я додала це чорне пряме вовняне пальто, щоб вирішити проблему відсутності верхнього одягу та потреби в ньому через холодну осінню погоду, забезпечуючи тепло.",
+  "11": "Шкіряний пояс (Hermes Kelly) Hermes — Я включила цей бордовий пояс, щоб задовольнити потребу у третьому предметі для монохромного костюма, додавши структуру та колірний контраст.",
+  "12": "Слінгбеки Jacquemus червоні — Я обрала ці червоні шкіряні туфлі-човники, щоб вирішити проблему відсутності взуття, забезпечивши формальне взуття для нагоди.",
+  "13": "Шкіряний пояс (Hermes Kelly) Hermes — Я обрала цей предмет, тому що його колір контрастує з чорною сукнею та підкреслює лінію талії, вирішуючи проблему об’єму в стегнах."
+}
+```

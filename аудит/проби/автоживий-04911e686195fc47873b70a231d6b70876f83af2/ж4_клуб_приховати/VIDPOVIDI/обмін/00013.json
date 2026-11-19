@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Charcoal wool-blend blazer, relaxed fit, elbow length, #2F3A3F.\\nOlive silk-chiffon top, straight cut, hip length, #556B2F.\\nDark wash denim trousers, wide-leg silhouette, full length, #1A1D20.\\nBlack leather ankle boots, pointed toe, mid-calf height, #000000.\\nGold minimalist hoop earrings and a delicate chain necklace.\\n\\nThis outfit works because the structured charcoal blazer provides an authoritative yet comfortable frame perfect for an autumn evening at the club without overheating. The olive silk top adds a soft, subtle contrast that draws attention to the upper body while keeping the belly area quiet and streamlined through dark, uninterrupted lines. Wide-leg trousers create a long, elegant silhouette that balances the relaxed feel of the outer layer, ensuring she feels confident and polished throughout the night.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Charcoal wool-blend blazer\\\",\\\"details\\\":\\\"relaxed fit, elbow length\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#2F3A3F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Olive silk-chiffon top\\\",\\\"details\\\":\\\"straight cut, hip length\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#556B2F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Dark wash denim trousers\\\",\\\"details\\\":\\\"wide-leg silhouette, full length\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#1A1D20\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Black leather ankle boots\\\",\\\"details\\\":\\\"pointed toe, mid-calf height\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#000000\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Gold minimalist hoop earrings\\\",\\\"details\\\":\\\"\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"null\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"delicate chain necklace\\\",\\\"details\\\":\\\"\\\",\\\"slot\\\":\\\"necklace\\\",\\\"color_hex\\\":\\\"null\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":540,\"output_tokens\":213},\"stop_reason\":\"end_turn\"}"
+ }
+}

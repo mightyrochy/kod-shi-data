@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk-blend sheath dress in navy, knee-length, A-line silhouette, color #001f3f.\\nTweed blazer in charcoal, cropped length, tailored fit, color #36454F.\\nLoafers with a modest heel, sleek profile, color #8B4513.\\nDelicate gold pendant necklace and thin hoop earrings.\\n\\nThis outfit balances the formal atmosphere of an evening theatre performance with a smart social dress code by pairing a refined sheath dress with a structured tweed blazer. The navy blue of the dress grounds the look elegantly, while the brown loafers provide a sophisticated, warm contrast that respects your wish for heeled footwear without being overly flashy. Finally, subtle gold jewelry ties the cool tones of the fabric together, ensuring the ensemble feels polished and ready for the stage lights.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Sheath dress\\\", \\\"details\\\": \\\"Silk-blend, A-line silhouette, knee-length\\\", \\\"slot\\\": \\\"dress\\\", \\\"color_hex\\\": \\\"#001f3f\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Tweed blazer\\\", \\\"details\\\": \\\"Charcoal, cropped length, tailored fit\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#36454F\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Loafers\\\", \\\"details\\\": \\\"Modest heel, sleek profile\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#8B4513\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Gold pendant necklace\\\", \\\"details\\\": \\\"Delicate\\\", \\\"slot\\\": \\\"necklace\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}, {\\\"name\\\": \\\"Hoop earrings\\\", \\\"details\\\": \\\"Thin\\\", \\\"slot\\\": \\\"earrings\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":529,\"output_tokens\":220},\"stop_reason\":\"end_turn\"}"
+ }
+}

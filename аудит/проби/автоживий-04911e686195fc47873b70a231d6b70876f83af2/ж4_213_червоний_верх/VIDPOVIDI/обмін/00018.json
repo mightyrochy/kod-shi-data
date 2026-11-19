@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Blazer in deep crimson red, structured fit with a single-breasted button closure and notch lapels, color #C9182A, wool blend.\\nWool skirt, knee-length A-line cut with a subtle pleated waistband, color matching the blazer at #C9182A, fine merino wool.\\nSilk blouse, relaxed fit with a rounded neckline and long sleeves rolled slightly at the wrists, color cream white at #FFFDD0, 100% silk chiffon.\\nLeather ankle boots, low block heel with a pointed toe and side zipper detail, color chestnut brown at #5C4033, soft calfskin leather.\\nThis ensemble works perfectly for a social autumn outing with friends because the requested red top is honored while maintaining a neat business-appropriate silhouette suitable for the season. The knee-length skirt balances professionalism with comfort, allowing for easy movement during conversation and exploration. Rich textures like the wool jacket and silk blouse provide warmth against the fall weather without feeling heavy or restrictive.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Silk blouse\\\",\\n      \\\"details\\\": \\\"relaxed fit with a rounded neckline and long sleeves rolled slightly at the wrists\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFDD0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Wool skirt\\\",\\n      \\\"details\\\": \\\"knee-length A-line cut with a subtle pleated waistband\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#C9182A\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Blazer\\\",\\n      \\\"details\\\": \\\"structured fit with a single-breasted button closure and notch lapels\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#C9182A\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather ankle boots\\\",\\n      \\\"details\\\": \\\"low block heel with a pointed toe and side zipper detail\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#5C4033\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":568,\"output_tokens\":282},\"stop_reason\":\"end_turn\"}"
+ }
+}

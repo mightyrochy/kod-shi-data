@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk satin blouse in emerald green (#0e5d4a), structured tailored fit with a deep V-neckline.\\nAnkle-width wool crepe trousers in burnt orange (#cc5500), high-waisted cut with a straight leg and mid-calf length.\\nLeather ankle boots in forest green hex #1a3c2f, pointed toe style with a moderate stiletto heel.\\nA statement clutch bag in mustard yellow (#e1ad01) featuring a metallic clasp to complete the triad color scheme.\\n\\nThis outfit captures her desire for a bright festive look by utilizing a bold emerald, burnt orange, and mustard yellow triad palette that radiates warmth against the autumn backdrop. The combination of a flowing silk top and tailored wool trousers creates a sophisticated yet approachable silhouette perfect for a social celebration. By sticking to rich jewel tones and textured fabrics like satin and crepe, the ensemble fulfills her wish for vibrancy while maintaining the requested smart formal dress code without any outer layers needed for warm autumn evenings.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"silk satin blouse\\\",\\n      \\\"details\\\": \\\"structured tailored fit with a deep V-neckline\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#0e5d4a\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"wool crepe trousers\\\",\\n      \\\"details\\\": \\\"high-waisted cut with a straight leg and mid-calf length\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#cc5500\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"leather ankle boots\\\",\\n      \\\"details\\\": \\\"pointed toe style with a moderate stiletto heel\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#1a3c2f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"statement clutch bag\\\",\\n      \\\"details\\\": \\\"featuring a metallic clasp\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#e1ad01\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":570,\"output_tokens\":274},\"stop_reason\":\"end_turn\"}"
+ }
+}

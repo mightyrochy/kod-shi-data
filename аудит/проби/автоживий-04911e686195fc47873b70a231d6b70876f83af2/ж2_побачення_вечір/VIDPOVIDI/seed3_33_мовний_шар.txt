@@ -1,0 +1,59 @@
+── ПРОМПТ (6767 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: two_piece_set · about it: text н=1
+2 — kind: earrings · about it: text н=2
+3 — kind: ring · about it: text н=3
+4 — kind: blouse · about it: text н=4
+5 — kind: pumps · about it: text н=5
+6 — kind: crossbody_bag · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This set grounds your look with a modern, neutral base that feels effortless yet refined for an evening out.",
+"2": "These earrings bring a touch of quiet glamour to your face, perfect for catching attention at the table without overpowering your presence.",
+"3": "The ring adds a personal detail that speaks to your style—subtle but meaningful, just right for a date night.",
+"4": "Your blouse brings softness and comfort with its V-neckline and relaxed fit, making you feel at ease while looking polished in an upscale setting.",
+"5": "These pumps elevate your posture and movement, giving you confidence as you glide through the restaurant.",
+"6": "Your crossbody bag strikes the perfect balance between chic design and practicality, allowing you to stay graceful and hands-free throughout your evening.",
+"7": "You are going to a date in an upscale restaurant this evening, and your outfit was chosen to reflect that elegance. The set creates a clean, polished silhouette perfect for the occasion. Your blouse adds a soft, relaxed layer that keeps you comfortable while maintaining sophistication. The pump shoes elongate your stride, giving confidence as you move through the venue. The crossbody bag is both stylish and practical for carrying essentials without distraction. Delicate earrings and ring add subtle sparkle to complete the look, honoring the evening's special nature.",
+"8": "Wear the blouse slightly tucked or half-tucked if you want to emphasize the waist",
+"9": "Carry your crossbody bag across your body for hands-free elegance while navigating the restaurant",
+"10": "Let your earrings catch the light as you turn during conversation",
+"11": "Блуза з планкою і коротким рукавом — The outfit previously lacked a third piece to style the set; adding this short-sleeved blouse adds the required volume and 'smart' finish to meet the minimum item count for a date look.",
+"12": "Шовковий костюм декорований пір'ям, Фігурні сережки на ланцюжку, Платинова каблучка з діамантами, Блуза з планкою і коротким рукавом, Туфлі човники, ATTICO, замша, колір чорний, Сумка через плече із вставками з канви — The code notes the outfit follows the 'neutrals_plus_accent' formula, which aligns with your request for a deliberate choice rather than a quiet one; the floral print and silver accents provide the necessary visual interest for a date without overwhelming you."
+}
+
+── ВІДПОВІДЬ (2473 симв., 17.7 с, HTTP 200) ──
+```json
+{
+"1": "Цей комплект заземлює твій образ сучасною нейтральною основою, яка відчувається без зусиль і водночас вишукано для вечора.",
+"2": "Ці сережки додають твоєму обличчю нотку тихої розкоші, ідеальні для того, щоб привернути увагу за столом, не перевантажуючи свою присутність.",
+"3": "Кільце додає особисту деталь, яка говорить про твій стиль — стриману, але значущу, саме те для побачення.",
+"4": "Твоя блуза дарує м’якість і комфорт завдяки V-подібному вирізу та вільному крою, змушуючи тебе почуватися невимушено, водночас виглядаючи доглянутою у престижному закладі.",
+"5": "Ці туфлі на підборах покращують твою поставу і рухи, даруючи тобі впевненість, коли ти прослизаєш крізь ресторан.",
+"6": "Твоя сумка через плече досконало поєднує вишуканий дизайн з практичністю, дозволяючи тобі залишатися елегантною і вільною від рук протягом вечора.",
+"7": "Ти йдеш на побачення у престижний ресторан цього вечора, а твій образ був обраний для того, щоб відобразити цю вишуканість. Комплект створює чилий, доглянутий силует, ідеальний для цієї події. Твоя блуза додає м’який, розслаблений шар, який зберігає твій комфорт, водночас підтримуючи елегантність. Туфлі-човники видовжують твою ходу, даруючи впевненість у русі по закладу. Сумка через плече стильна і практична для носіння необхідних речей без відволікань. Делікатні сережки та кільце додають ледь помітний блиск, щоб завершити образ, шануючи особливу атмосферу вечора.",
+"8": "Трохи заправ блузу або напівзаправ її, якщо хочеш підкреслити талію",
+"9": "Носи сумку через плече навхрест для елегантності без зайвих рук, коли пересуваєшся по ресторану.",
+"10": "Дай сережкам заграти у світлі, коли ти повертаєш голову під час розмови.",
+"11": "Блуза з планкою і коротким рукавом — Раніше в образі не вистачало третього елемента для стилізації комплекту; додавання цієї блузи з короткими рукавами додає необхідний об’єм і «розумний» фініш, щоб відповідати мінімальній кількості предметів одягу для побачення.",
+"12": "Шовковий костюм декорований пір'ям, Фігурні сережки на ланцюжку, Платинова каблучка з діамантами, Блуза з планкою і коротким рукавом, Туфлі-човники, ATTICO, замша, колір чорний, Сумка через плече із вставками з канви — Код зазначає, що образ відповідає формулі «нейтральні кольори плюс акцент», що узгоджується з твоїм проханням зробити свідомий вибір замість тихого; квітковий принт і срібні акценти забезпечують необхідний візуальний інтерес для побачення, не перевантажуючи тебе."
+}
+```

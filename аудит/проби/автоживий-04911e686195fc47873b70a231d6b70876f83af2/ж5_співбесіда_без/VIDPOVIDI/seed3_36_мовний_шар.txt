@@ -1,0 +1,62 @@
+── ПРОМПТ (7130 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: cocktail_dress · about it: text н=1
+2 — kind: coat · about it: text н=2
+3 — kind: blouse · about it: text н=3
+4 — kind: moccasins · about it: text н=4
+5 — kind: crossbody_bag · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This cocktail dress sets the right tone for your interview by offering a tailored fit that respects your shape and avoids black, ensuring you feel confident and professional without compromising on your personal style.",
+"2": "I added this coat to provide warmth during your commute while keeping your silhouette sleek; it layers cleanly over the dress to maintain a polished line that matches the formality of a banking interview.",
+"3": "The blouse serves as a refined base layer under the dress or coat, adding structure to your upper body and contributing to a cohesive, professional aesthetic suited for an office environment.",
+"4": "These moccasins were chosen for their comfort and quiet presence, allowing you to walk confidently from the street to the interview room without sacrificing style or formality.",
+"5": "This crossbody bag keeps your hands free during the interview while distributing weight evenly across your body, making it practical for carrying documents or a laptop without disrupting your posture.",
+"6": "I chose this cocktail dress for you because it anchors your interview in a polished silhouette while respecting your preference to avoid black; the coat layers over the top to streamline your look without adding bulk, and the crossbody bag keeps essentials secure as you move through the day. The moccasins offer a comfortable stride for a long walk from transport to the bank entrance, grounding the outfit in understated professionalism that aligns with your role as an analyst.",
+"7": "Wear the coat open to let the dress's cut define your waistline during the interview, then button it for warmth when stepping outside.",
+"8": "Tuck the blouse hem into the dress if the style allows, creating a seamless line that highlights your proportions without extra bulk.",
+"9": "Пальто жіноче зі складками демісезонне — Added as required outerwear to complete the set structure while keeping the warm neutral scheme.",
+"10": "Блуза з фактурними рукавами Естелла — Inserted white top to meet the 'no black' rule and add a crisp layer under the coat.",
+"11": "Топсайдери мокко CHARM — Added loafers to resolve the missing footwear blocker for the interview occasion.",
+"12": "Коктейльна сукня у білизняному стилі, Крос-боді Boy сині — This layered look with the suit and dress creates a sophisticated silhouette without breaking your formality goals; the slight excess in layering adds a 'quiet luxury' depth suitable for a bank interview rather than looking casual.",
+"13": "Пальто жіноче зі складками демісезонне — Added coat to create a complete outer layer suitable for autumn weather and banking formality.",
+"14": "Блуза з фактурними рукавами Естелла — White top added to ensure compliance with the 'no black' rule and provide a crisp neckline."
+}
+
+── ВІДПОВІДЬ (2850 симв., 18.7 с, HTTP 200) ──
+```json
+{
+  "1": "Ця коктейльна сукня задає правильний тон для твоєї співбесіди, пропонуючи приталений крій, який поважає твою фігуру та уникає чорного кольору, щоб ти відчувала себе впевнено й професійно без шкоди для свого особистого стилю.",
+  "2": "Я додала це пальто, щоб забезпечити тобі тепло під час дороги на роботу, зберігаючи при цьому стрункий силует; воно гармонійно поєднується з сукнею та підтримує вишуканий образ, який відповідає формальності банківської співбесіди.",
+  "3": "Ця блузка слугує елегантною базовою річчю під сукню або пальто, додаючи структуру верхній частині тіла й сприяючи цілісному професійному вигляду, який пасуватиме для офісного середовища.",
+  "4": "Ці мокасини були обрані за їх комфорт і стриману присутність, дозволяючи тобі впевнено пройти від вулиці до кімнати співбесіди без шкоди для стилю чи формальності.",
+  "5": "Ця сумка через плече залишає твої руки вільними під час співбесіди та рівномірно розподіляє вагу по тілу, що робить її практичною для носіння документів або ноутбука без порушення постави.",
+  "6": "Я обрала цю коктейльну сукню для тебе, тому що вона створює вишуканий силует на твоїй співбесіді та водночас поважає твоє бажання уникати чорного кольору; пальто гармонійно вдягається зверху, щоб підкреслити твій образ без зайвого об’єму, а сумка через плече зберігає необхідні речі у безпеці протягом дня. Мокасини забезпечують комфортну ходьбу з транспорту до входу в банк, створюючи стриманий професійний вигляд, який відповідає твоїй ролі аналітика.",
+  "7": "Носи пальто розстебнутим, щоб підкреслити лінію талії твоєї сукні на співбесіді, а потім застебни його для тепла, коли виходиш надвір.",
+  "8": "Заправ блузку в спідницю або штани, якщо це дозволяє фасон, створюючи безшовну лінію, яка підкреслить твої пропорції без зайвого об’єму.",
+  "9": "Пальто жіноче зі складками демісезонне — Додала необхідний верхній одяг для завершення структури комплекту та збереження теплої нейтральної гами кольорів.",
+  "10": "Блуза з фактурними рукавами Естелла — Вставила білу блузку, щоб дотриматися правила «без чорного» й додати свіжий шар під пальто.",
+  "11": "Топсайдери мокко CHARM — Додала лофери для вирішення проблеми відсутності взуття на випадок співбесіди.",
+  "12": "Коктейльна сукня у білизняному стилі, Крос-боді Boy сині — Цей багатошаровий образ з костюмом і сукнею створює вишуканий силует без порушення твоїх цілей щодо формальності; легкий надлишок шарів додає глибини «тихої розкоші», що підходить для банківської співбесіди, а не виглядає випадково.",
+  "13": "Пальто жіноче зі складками демісезонне — Додала пальто, щоб створити повний верхній шар, який відповідає осінній погоді та формальності банку.",
+  "14": "Блуза з фактурними рукавами Естелла — Біла блузка додана для забезпечення відповідності правилу «без чорного» й створення чіткої лінії декольте."
+}
+```

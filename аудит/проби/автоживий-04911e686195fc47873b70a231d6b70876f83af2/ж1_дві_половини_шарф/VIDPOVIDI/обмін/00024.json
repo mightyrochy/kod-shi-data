@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Chunky cable-knit scarf in a warm camel hue (#d4a373), loose boxy weave length reaching just under the chin to frame the face, crafted from soft organic wool.\\nWashed medium-blue cotton twill midi skirt with gentle pleats at the waist, falling mid-calf to skim over boots, offering easy movement for a walk.\\nTailored cream merino wool cardigan with dropped shoulders and long sleeves, knitted in an open rib texture that complements the split-toned hair.\\nClassic black leather Chelsea ankle boots with a low block heel, smooth finish suitable for autumn daylight and pavement.\\nDelicate gold hoop earrings in polished brass, adding a subtle touch of elegance without overwhelming the casual yet cozy ensemble.\\nThis outfit works perfectly for an autumn day walk because the chunky knit scarf acts as both a stylish focal point and practical warmth, drawing attention to the face while respecting the wearer's wish for coverage under the chin. The neutral palette of camel, cream, and black harmonizes beautifully with her unique two-toned hair, ensuring the split shades of copper and light blonde remain visible rather than being overwhelmed by clashing colors. Every piece is chosen for comfort and ease of movement, creating a refined yet relaxed look that fits effortlessly into an everyday setting without feeling overly formal or restricted.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Chunky cable-knit scarf\\\", \\\"details\\\": \\\"loose boxy weave length reaching just under the chin to frame the face, crafted from soft organic wool\\\", \\\"slot\\\": \\\"scarf\\\", \\\"color_hex\\\": \\\"#d4a373\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Washed medium-blue cotton twill midi skirt\\\", \\\"details\\\": \\\"with gentle pleats at the waist, falling mid-calf to skim over boots\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}, {\\\"name\\\": \\\"Tailored cream merino wool cardigan\\\", \\\"details\\\": \\\"with dropped shoulders and long sleeves, knitted in an open rib texture\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}, {\\\"name\\\": \\\"Classic black leather Chelsea ankle boots\\\", \\\"details\\\": \\\"with a low block heel, smooth finish\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Delicate gold hoop earrings\\\", \\\"details\\\": \\\"in polished brass\\\", \\\"slot\\\": \\\"earrings\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":620,\"output_tokens\":265},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,51 @@
+── ПРОМПТ (5935 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: t_shirt · about it: text н=1
+2 — kind: jumpsuit · about it: text н=2
+3 — kind: belt · about it: text н=3
+4 — kind: ankle_boots · about it: text н=4
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Your top is here to give you a relaxed base that adapts easily to your active routine, offering comfort while staying polished.",
+"2": "The jumpsuit is chosen for its ability to create one clean line from your shoulders down to your ankle, which suits your figure and keeps the look effortless.",
+"3": "This belt defines your waist to add structure to the outfit and prevent the silhouette from feeling overwhelming, keeping you looking put-together.",
+"4": "The ankle boots complete the ensemble by anchoring the volume at your feet, ensuring a balanced line that supports your movement all day long.",
+"5": "You chose this outfit to keep things simple yet ready for your active day. The top provides a relaxed layer that you can tuck in or leave open as the moment calls for it, while the jumpsuit offers the one-line contour the code highlighted for your silhouette by anchoring volume at your ankle with the boots. The belt sits at your waist to define that quiet middle and give you structure without adding bulk.",
+"6": "Tuck in your top to highlight your waist and keep the outfit streamlined as you move.",
+"7": "Wear the belt over your jumpsuit to emphasize your natural line and balance the volume of your legs.",
+"8": "Жіноче поло з довгими рукавами сірого кольору, Комбінезон, Ремінь жіночий Welfare коричневий, Ботильйони марсалові BAD GIRL — You chose this scheme yourself, so the neutrals-plus-accent remark serves your own palette choice rather than being a constraint.",
+"9": "Жіноче поло з довгими рукавами сірого кольору — This grey fitted top anchors the look while allowing the skirt to define the silhouette."
+}
+
+── ВІДПОВІДЬ (1685 симв., 12.0 с, HTTP 200) ──
+```json
+{
+  "1": "Твоя футболка тут, щоб дати тобі розслаблену основу, яка легко адаптується до твого активного розпорядку дня, пропонуючи комфорт і залишаючись охайною.",
+  "2": "Комбінезон обрано за його здатність створити одну чисту лінію від плечей до щиколотки, що підходить твоїй фігурі та зберігає образ без зусиль.",
+  "3": "Цей ремінь визначає твою талію, щоб надати структури вбранню і запобігти тому, щоб силует здавався надмірним, залишаючи тебе охайною.",
+  "4": "Черевики-ботільйони завершують ансамбль, закріплюючи об’єм біля твоїх ніг, забезпечуючи збалансовану лінію, яка підтримує твій рух протягом усього дня.",
+  "5": "Ти обрала цей образ, щоб залишатися простою, але готовою до свого активного дня. Футболка дає тобі розслаблений шар, який ти можеш заправити або залишити відкритим залежно від моменту, а комбінезон пропонує однолінійний контур, на який код звернув увагу для твоєї фігури, закріплюючи об’єм біля щиколотки ботільйонами. Ремінь сидить у тебе на талії, щоб визначити цю тиху середину і дати тобі структуру без додавання зайвого об’єму.",
+  "6": "Заправ футболку, щоб підкреслити твою талію і зберегти образ струнким під час руху.",
+  "7": "Одягни ремінь поверх комбінезона, щоб підкреслити свою природну лінію і збалансувати об’єм твоїх ніг.",
+  "8": "Жіноче поло з довгими рукавами сірого кольору, Комбінезон, Жіночий ремінь Welfare коричневого кольору, Марсалові ботильйони BAD GIRL — Ти сама обрала цю схему, тому зауваження про нейтральні тони плюс акцент відповідає твоєму вибору палітри.",
+  "9": "Жіноче поло з довгими рукавами сірого кольору — Ця приталена футболка сірого кольору закріплює образ і дозволяє спідниці визначити силует."
+}
+```

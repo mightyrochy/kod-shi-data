@@ -1,0 +1,30 @@
+── ПРОМПТ (2306 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Satin-blend blouse with a relaxed drape cut in a classic V-neck, length hitting mid-hip at approximately 78 cm, color deep terracotta (#c26a5f), composed of soft viscose.\nWool-cashmere blend wide-leg trousers with a high waist and gentle taper through the calf, ankle-length falling just above the shoe line, color charcoal heather (#3d4143), woven from structured yet fluid wool.\nLeather ankle boots with a low block heel and a pointed toe silhouette, shaft height resting at mid-calf, color espresso brown (#3b2a20), crafted from smooth full-grain leather.\nThis outfit balances the crispness of autumn weather with comfort through the use of a breathable viscose blouse paired with warm, durable wool trousers that drape elegantly without clinging. The deep terracotta hue complements warm skin tones while grounding the look with neutral charcoal and rich espresso accents for a polished everyday aesthetic. It honors the wish to own a versatile blouse while creating a cohesive ensemble suitable for cool fall days without feeling overly dressed up."}
+
+── ВІДПОВІДЬ (885 симв., 4.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "Satin-blend blouse with a relaxed drape cut in a classic V-neck, length hitting mid-hip at approximately 78 cm, composed of soft viscose",
+      "slot": "top",
+      "color_hex": "#c26a5f",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "Wool-cashmere blend wide-leg trousers with a high waist and gentle taper through the calf, ankle-length falling just above the shoe line, woven from structured yet fluid wool",
+      "slot": "bottom",
+      "color_hex": "#3d4143",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "Leather ankle boots with a low block heel and a pointed toe silhouette, shaft height resting at mid-calf, crafted from smooth full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#3b2a20",
+      "worn": true
+    }
+  ]
+}
