@@ -2,7 +2,7 @@
 function New-ChainFailure([string]$Code, $Result) {
     <# Виняток ланцюга після збою зовнішньої команди: Message — точно код (за ним розбирають `^CHAIN_[A-Z_]+$` і
     Write-ChainPullFailure), код виходу й stderr команди — в Data (адреса без входу): без них збій не розрізнити —
-    HTTP 5xx, мережа чи межа часу. Кидається на місці виклику: `throw (New-ChainFailure 'CHAIN_API' $r)`. #>
+    HTTP 5xx, мережа чи межа часу (їх розрізняє Get-ChainCause). Кидається на місці виклику: `throw (New-ChainFailure 'CHAIN_API' $r)`. #>
     $e = New-Object System.Exception $Code
     $e.Data['ExitCode'] = [int](Get-Prop $Result 'Code')
     $e.Data['Stderr'] = (([string](Get-Prop $Result 'Err')) -replace '://[^/@\s]*@','://')
@@ -10,13 +10,16 @@ function New-ChainFailure([string]$Code, $Result) {
 }
 
 function Get-ChainCause($Failure) {
-    <# Безпечна ознака причини для рядка диспетчерові: `HTTP <код>` зі stderr або `межа часу` (так Invoke-Native
-    позначає вбитий за межею часу процес); решта stderr — лише в state-failures.jsonl: рядок іде в відкритий репозиторій. #>
+    <# Безпечна ознака причини для рядка диспетчерові, у порядку перевірок: `межа часу` (так Invoke-Native позначає вбитий
+    за межею часу процес), `HTTP <код>` зі stderr, `мережа` (транспортний збій gh, сталі рядки помилок Go net/http: TLS
+    handshake timeout, i/o timeout, connection reset by peer, connection refused, no such host); решта stderr — лише
+    в state-failures.jsonl: рядок іде в відкритий репозиторій. #>
     $data = $Failure.Exception.Data
     if ($null -eq $data -or -not $data.Contains('Stderr')) { return '' }
     $text = [string]$data['Stderr']
     if ($text.Trim() -ceq 'межа часу') { return 'межа часу' }
     if ($text -cmatch '(?<![0-9A-Za-z])HTTP ([0-9]{3})(?![0-9])') { return "HTTP $($Matches[1])" }
+    if ($text -cmatch '(TLS handshake timeout|i/o timeout|connection reset by peer|connection refused|no such host)') { return 'мережа' }
     ''
 }
 

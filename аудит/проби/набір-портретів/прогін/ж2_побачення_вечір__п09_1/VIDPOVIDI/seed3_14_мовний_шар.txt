@@ -1,0 +1,43 @@
+── ПРОМПТ (6035 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: brown — коричневий; chocolate — шоколадний.
+
+ТЕКСТИ:
+{
+"1": "Fitted slim-cut blouse, hip-skimming length, deep emerald green, soft matte crepe\n\nMidi skirt, A-line with a gentle flare, falling just below the knee, warm chocolate brown, fine wool-blend twill\n\nTextured blazer, slightly cropped and tailored, single-breasted, hip-length, warm camel, bouclé-style wool blend\n\nAnkle boots, almond toe, low block heel, polished dark cognac [colour: brown], smooth leather\n\nSmall structured shoulder bag, compact, top-handle with a detachable strap, deep espresso [colour: chocolate], smooth leather\n\nDrop earrings, small and slender, warm gold, polished metal\n\nThin leather belt, worn at the natural waist over the blouse, dark cognac [colour: brown], smooth leather\n\nWhy this outfit works: The emerald blouse picks up the olive-green notes in your eyes and stands out beautifully against your warm skin and auburn hair. The earthy brown, camel and cognac tones stay in the same warm family as your hair, so the whole look feels cohesive and rich under the soft evening light of a restaurant. The A-line midi skirt and belted waist give a graceful, feminine line that is neat and polished without feeling stiff for a restaurant date. The textured blazer adds the layer that an autumn evening needs, while the block-heel ankle boots keep you comfortable from the street to the table.",
+"2": "Blouse",
+"3": "Midi skirt",
+"4": "Blazer",
+"5": "Ankle boots",
+"6": "Shoulder bag",
+"7": "Drop earrings",
+"8": "Belt"
+}
+
+── ВІДПОВІДЬ (1586 симв., 19.7 с, HTTP 200) ──
+{"1":"Приталена блуза вузького крою, довжиною до стегон, насичений смарагдово-зелений колір, м'який матовий креп\n\nСпідниця міді трапецієподібного силуету з легким розкльошенням, довжиною трохи нижче коліна, теплий шоколадно-коричневий колір, тонкий твіл із вовняної суміші\n\nФактурний блейзер, трохи вкорочений і приталений, однобортний, довжиною до стегон, теплий кемел, вовняна суміш у стилі букле\n\nБотильйони з мигдалеподібним носком, на низькому блоковому підборі, глянцевий темний коньячний колір, гладка шкіра\n\nНевелика структурована сумка на плече, компактна, з верхньою ручкою та знімним ремінцем, насичений колір еспресо, гладка шкіра\n\nПідвісні сережки, маленькі й тонкі, тепле золото, полірований метал\n\nТонкий шкіряний пасок, який носять на природній талії поверх блузи, темний коньячний колір, гладка шкіра\n\nЧому цей образ працює: смарагдова блуза підхоплює оливково-зелені відтінки твоїх очей і чудово виділяється на тлі твоєї теплої шкіри та каштанового волосся. Землисті коричневі, кемел і коньячні відтінки лишаються в тій самій теплій гамі, що й твоє волосся, тож увесь образ виглядає цілісним і насиченим у м'якому вечірньому світлі ресторану. Спідниця міді трапецієподібного крою та талія з паском дають граційну жіночну лінію, охайну й вишукану, але не скуту для побачення в ресторані. Фактурний блейзер додає шар, потрібний осінньому вечору, а ботильйони на блоковому підборі дають тобі змогу почуватися зручно від вулиці до столу.","2":"Блуза","3":"Спідниця міді","4":"Блейзер","5":"Ботильйони","6":"Сумка на плече","7":"Підвісні сережки","8":"Пасок"}

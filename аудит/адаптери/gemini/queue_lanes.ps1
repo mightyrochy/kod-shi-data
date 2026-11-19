@@ -41,6 +41,7 @@ $script:PausedTotal = [timespan]::Zero  # пауз живлення цього �
 $script:Pausing = $false
 $script:PauseMachine = $false  # планувальник claude-run ставить на паузу й LM Studio та ComfyUI
 $script:GpuLease = $null  # замок GPU-оренди процесу наряду (Start-GpuModels → Exit-GpuLease)
+$script:ModelPhaseJob = $null  # GPU-наряд, якому дано адресу позначки кінця фаз з моделлю (Set-ModelPhaseMark)
 # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
 $script:VersionDir = $PSScriptRoot
 
@@ -1283,7 +1284,10 @@ function Wait-PowerPause {
     08.11 кожним пробудженням відновлював роботу на відеокарті й коштував 2–3 % батареї. Перед заморожуванням
     планувальник звільняє відеокарту (Clear-GpuForPause). Час паузи не йде в межі.
     Диспетчерові про світло пише й ноутбук до доставки тримає не пауза, а один тримач світла (claude_run.ps1 -Light):
-    пауза рушія починається, лише коли рушій помітив батарею, а 17.11 Windows заснула за 3 с. #>
+    пауза рушія починається, лише коли рушій помітив батарею, а 17.11 Windows заснула за 3 с.
+    Кожен цикл очікування процесу наряду (рушій, команда) кличе цю функцію, тож тут же процес наряду відпускає карту за
+    позначкою кінця фаз з моделлю (Exit-GpuModelPhase). #>
+    Exit-GpuModelPhase
     # Серцебиття всередині паузи може дійти до Invoke-Native — друга пауза всередині першої нічого не робить.
     if ($script:Pausing -or -not (Test-OnBattery)) { return }
     $script:Pausing = $true
@@ -1451,13 +1455,52 @@ function Enter-GpuLease($Job) {
         if (-not $why -and -not (Test-ExternalGpuFree -LogAcquisition)) { $why = Get-GpuBusyReason -LockHeld }
         if ($why) { return $why }
         try { Start-GpuModels $Job } catch { return "знімок моделей недоступний: $($_.Exception.Message)" }
+        Set-ModelPhaseMark $Job
         ''
     } finally { $gate.Dispose() }
 }
 
+# Замок GPU — лише на фази прогону, що звертаються до моделі: прилад бази й підсумок автоживого моделі не кличуть, і з
+# замком на весь прогін карта під ними простоювала б, а сторож простою (gpu_stall_minutes) закривав би наряд STALL посеред
+# бази. Агент, що скінчив фази з моделлю, пише позначку (`аудит/проби/кінець_моделі.py`), і процес наряду відпускає
+# оренду, як на кінці прогону; файл слота далі каже gpu=false, тож сторож прогону без замка не лічить, а наступний
+# GPU-наряд проходить ворота. Сцен після позначки `записати_сцену.py` не пише. Наряд без позначки (старий шаблон, ручний)
+# тримає карту до кінця, як раніше.
+
+function Set-ModelPhaseMark($Job) {
+    <# Дає агентові допущеного GPU-наряду адресу позначки кінця фаз з моделлю: файл у теці запуску, змінна KINETS_MODELI
+    процесу наряду (її успадковують рушій і його команди). Завдання без теки запуску (стенд допуску) адреси не має. #>
+    $dir = [string](Get-JsonProp $Job 'dir')
+    if (-not $dir) { return }
+    $mark = Join-Path $dir 'kinets-modeli'
+    Remove-Item -LiteralPath $mark -Force -ErrorAction SilentlyContinue
+    $env:KINETS_MODELI = $mark
+    $script:ModelPhaseJob = $Job
+}
+
+function Exit-GpuModelPhase {
+    <# Агент позначив кінець фаз з моделлю, а оренда ще тримається — файл слота стає gpu=false (сторож і стан бачать
+    прогін без замка), тоді Exit-GpuLease: оренда закінчується й відпускається, як на кінці прогону. Прогін іде далі. #>
+    $job = $script:ModelPhaseJob
+    if ($null -eq $job -or $null -eq $script:GpuLease) { return }
+    $mark = [string]$env:KINETS_MODELI
+    if (-not $mark -or -not [IO.File]::Exists($mark)) { return }
+    $script:ModelPhaseJob = $null
+    $info = Join-Path $script:SlotDir "$($job.slot).json"
+    try {
+        $slot = ConvertTo-PlainJson ([IO.File]::ReadAllText($info, $script:Utf8) | ConvertFrom-Json)
+        $slot.gpu = $false
+        Write-FileAtomic $info ($slot | ConvertTo-Json -Compress)
+    } catch { Write-Log "GPU: файл слота $info не оновлено — $($_.Exception.Message)" }
+    Exit-GpuLease $job
+    Write-Log "GPU відпущено до кінця прогону $($job.name): агент позначив кінець фаз з моделлю ($mark)"
+}
+
 function Exit-GpuLease($Job) {
     <# Кінець GPU-наряду на кожному шляху виходу: під воротами закінчує оренду й прибирає те, що вже нічиє, тоді відпускає
-    замок оренди. Ворота зайняті чи збій — оренда стає мертвою, і її прибирає наступний прохід (Repair-GpuModels). #>
+    замок оренди. Ворота зайняті чи збій — оренда стає мертвою, і її прибирає наступний прохід (Repair-GpuModels).
+    Оренду, вже відпущену за кінцем фаз з моделлю (Exit-GpuModelPhase), кінець прогону не чіпає. #>
+    if ($null -eq $script:GpuLease) { return }
     $gate = Open-Lock (Get-GpuLockPath)
     try {
         if ($null -eq $gate) { Write-Log 'GPU прибирання відкладено: ворота GPU зайняті' }
@@ -2134,10 +2177,12 @@ function Read-AutoCarryPlan($Report, $History, $Cache) {
     <# План звіту автоживого чи Е1 (`аудит/проби/<наряд>/ПЛАН.json` у голові звіту), яким план живого заміняє читання
     давніх PR. Годиться лише план, складений `Get-AutoLivePlan` з полями `build` (збірка того плану — предок нинішньої),
     `since_sha` (порожня чи предок; непорожня — з номером звіту `since_pr`) і `merge` (злиття кожного PR плану).
-    Повертає @{build; since; since_pr; merge; lines; reports; unfit; report}, де lines — «PR» → рядки `ЖИВИЙ ПІСЛЯ` плану (питання
-    сцени чи вадний рядок), щоб їх розібрав той самий `Get-LiveAfterLines` проти нинішнього реєстру, а reports — звіти
-    (номер, гілка, голова, час створення), чиї записи той план визнав прогнаними. Нема голови, файла,
-    поля чи злиття хоч одного PR плану — $null: такий звіт межі читання не зсуває. Cache — «номер|голова» → план чи $false. #>
+    Повертає @{build; since; since_pr; merge; lines; reports; unfit; report}, де lines — «PR» → рядки `ЖИВИЙ ПІСЛЯ` плану
+    (питання сцени, вадний рядок і притримане `held`), щоб їх розібрав той самий `Get-LiveAfterLines` проти нинішнього
+    реєстру, а reports — звіти (номер, гілка, голова, час створення), чиї записи той план визнав прогнаними. План без
+    `held` (складений до цього поля) читається як план без притриманого: межу читання зсуває, як і раніше. Нема голови,
+    файла, поля чи злиття хоч одного PR плану — $null: такий звіт межі читання не зсуває.
+    Cache — «номер|голова» → план чи $false. #>
     if ([string]$Report.head.ref -cnotmatch '^(?:gemini|claude|codex)/(автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { return $null }
     $dir = 'аудит/проби/' + $Matches[1]
     # Під StrictMode крапка на відсутньому полі падає: head — об'єкт GitHub або словник стенда.
@@ -2162,8 +2207,10 @@ function Read-AutoCarryPlan($Report, $History, $Cache) {
         if ([string]$property.Value -cmatch '^[0-9a-f]{40}$') { $merge[$property.Name] = [string]$property.Value }
     }
     $lines = [ordered]@{}
-    foreach ($kind in @('scenes','cloud')) {
-        foreach ($scene in @((Get-JsonProp $plan $kind).PSObject.Properties)) {
+    foreach ($kind in @('scenes','cloud','held')) {
+        $data = Get-JsonProp $plan $kind
+        if ($null -eq $data) { continue }
+        foreach ($scene in @($data.PSObject.Properties)) {
             foreach ($question in @($scene.Value)) {
                 $pr = [string](Get-JsonProp $question 'pr')
                 $lines[$pr] = @($lines[$pr] | Where-Object { $_ }) + @("ЖИВИЙ ПІСЛЯ: $($scene.Name) — $([string](Get-JsonProp $question 'question'))")
@@ -2394,8 +2441,12 @@ function Get-AutoLivePlan([string]$BuildMain) {
     записи прогонів відсікають їх так само, як рядки тіла. PR, оновлений після джерела, читається з тіла.
     Не дійшли до межі за AutoPlanMaxPages сторінок — AUTO_PAGES, плану нема. План несе `build`, `since_pr`, `merge`
     (PR → злиття) і `reports` (звіти, чиї записи визнано прогнаними), щоб наступний план міг узяти його за джерело
-    й перевірити ті самі записи, не читаючи давніх звітів. Прогнане — ще й хмарні теки дерева збірки
-    (`Get-AutoRanPairs -Tree`). Сцени `scenes` і `cloud` — від найновішого злиття до найдавнішого. #>
+    й перевірити ті самі записи, не читаючи давніх звітів. Поле `held` (як `scenes`) — питання, які план не ставить лише
+    тому, що оцінка ще не сказала «не виміряно»: прогнане записом і покрите межею, яке записував прогін звіту межі.
+    Наступний план пропускає їх крізь ті самі записи й оцінки, як рядки тіла: без них план-джерело губив би питання,
+    яке пізніша оцінка повертає, а PR лишився поза читанням. Решта відкинутого (вадний рядок під межею, злиття поза
+    збіркою, пара під межею, якої прогін звіту межі не мав) від оцінки не залежить — не притримується. Прогнане — ще й
+    хмарні теки дерева збірки (`Get-AutoRanPairs -Tree`). Сцени `scenes` і `cloud` — від найновішого злиття до найдавнішого. #>
     $calls0 = $script:AutoApiCalls
     $until = [datetimeoffset]::Parse((Invoke-Git @('show','-s','--format=%cI',$BuildMain)).Out.Trim())
     # Час звіту не визначає склад прогону: PR міг злитися, поки модель ще працювала.
@@ -2463,18 +2514,39 @@ function Get-AutoLivePlan([string]$BuildMain) {
     }
     # Межа перевіреної збірки не покриває пари, яку оцінка теки звіту, що назвав межу, дала «не виміряно»: таку пару
     # план розбирає, як і непокриту (записи, оцінка, `bad` чи `scenes`), інакше межа губила б її повз оцінку.
+    # Пари, які прогін того звіту мав записати (`scenes` його плану): лише їх оцінка його теки може повернути з-під межі.
     $checkedDir = ''
+    $checkedPairs = @{}
     foreach ($report in $ranReports) {
         if ([string]$report.number -ceq [string]$boundary.pr -and
-            [string]$report.head.ref -cmatch '^(?:gemini|claude|codex)/(автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { $checkedDir = $Matches[1]; break }
+            [string]$report.head.ref -cmatch '^(?:gemini|claude|codex)/(автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') {
+            $checkedDir = $Matches[1]
+            $checkedHead = [string]$(if ($report.head -is [Collections.IDictionary]) { $report.head['sha'] } else { Get-JsonProp $report.head 'sha' })
+            $checkedScenes = $null
+            if ($checkedHead -cmatch '^[0-9a-f]{40}$') {
+                $checkedText = Invoke-Git @('show', "${checkedHead}:аудит/проби/$checkedDir/ПЛАН.json") -AllowFail
+                if ($checkedText.Code -eq 0) { try { $checkedScenes = Get-JsonProp (ConvertFrom-Json $checkedText.Out.TrimStart([char]0xFEFF)) 'scenes' } catch { } }
+            }
+            foreach ($scene in @(if ($null -ne $checkedScenes) { $checkedScenes.PSObject.Properties })) {
+                foreach ($question in @($scene.Value)) { $checkedPairs[[string](Get-JsonProp $question 'pr') + '|' + $scene.Name] = $true }
+            }
+            break
+        }
     }
     $codeHistory = @{}
     $ranBy = [ordered]@{}
     $scenes = [ordered]@{}
     $cloud = [ordered]@{}
+    $held = [ordered]@{}
     $bad = @()
     $unfitNew = 0
     $merges = [ordered]@{}
+    $hold = {
+        param($Number, $Item, $Merge)
+        if (-not $held.Contains($Item.id)) { $held[$Item.id] = @() }
+        $held[$Item.id] = @($held[$Item.id]) + @(@{pr=$Number;question=$Item.question})
+        $merges[[string]$Number] = $Merge
+    }
     $sceneRank = @{}
     # Джерела рядків: давні PR, яких читання не дійшло, — з плану звіту-джерела; прочитані злиті — з тіла.
     $sources = @()
@@ -2496,7 +2568,10 @@ function Get-AutoLivePlan([string]$BuildMain) {
         if (-not $history.ContainsKey($merge)) { continue }
         $underBound = $covered.ContainsKey($merge)
         foreach ($item in @($pr.found)) {
-            if ($underBound -and -not ($checkedDir -and -not $item.error -and $unanswered.ContainsKey("$checkedDir|$($pr.number)|$($item.id)"))) { continue }
+            if ($underBound -and -not ($checkedDir -and -not $item.error -and $unanswered.ContainsKey("$checkedDir|$($pr.number)|$($item.id)"))) {
+                if (-not $item.error -and $checkedPairs.ContainsKey("$($pr.number)|$($item.id)")) { & $hold $pr.number $item $merge }
+                continue
+            }
             if ($item.error) { $bad += @(@{pr=$pr.number;line=$item.line;reason=$item.error}); $merges[[string]$pr.number] = $merge; continue }
             # Сцена режиму «функція» — код без моделі: її ставить хмарна сесія, не ноутбук.
             $inCloud = $item.mode -cmatch '^функція'
@@ -2519,7 +2594,7 @@ function Get-AutoLivePlan([string]$BuildMain) {
                 }
                 $by = $run.report; break
             }
-            if ($by) { $ranBy[$by] = 1 + $(if ($ranBy.Contains($by)) { $ranBy[$by] } else { 0 }); continue }
+            if ($by) { $ranBy[$by] = 1 + $(if ($ranBy.Contains($by)) { $ranBy[$by] } else { 0 }); & $hold $pr.number $item $merge; continue }
             # Сцена не може відповісти (Get-LiveQuestionUnfit) чи оцінка дала тому самому тексту «не виміряно»: питання — у
             # `bad` з причиною й сценою, сцени заради нього не записуємо. Виправлений рядок (інший текст) і обрив
             # («не виміряно (обрив)») ідуть у план.
@@ -2556,7 +2631,7 @@ function Get-AutoLivePlan([string]$BuildMain) {
     if ($sifted.Count) {
         try { Write-Log ("план живого: сцен $($scenes.Count), у хмарі $($cloud.Count), відсіяно до прогону $($sifted.Count) (нових $unfitNew): " + (@($sifted | ForEach-Object { "#$($_.pr) $($_.scene) — $($_.reason)" }) -join '; ')) } catch { }
     }
-    ConvertTo-Json -InputObject @{since_sha=$checked;since_pr=[string]$boundary.pr;since=$since.ToString('o');until=$until.ToString('o');build=$BuildMain;scenes=$scenes;cloud=$cloud;bad=$bad;unfit_new=$unfitNew;ran=$ranBy;merge=$merges;reports=@($reportsOut)} -Depth 8 -Compress
+    ConvertTo-Json -InputObject @{since_sha=$checked;since_pr=[string]$boundary.pr;since=$since.ToString('o');until=$until.ToString('o');build=$BuildMain;scenes=$scenes;cloud=$cloud;bad=$bad;unfit_new=$unfitNew;ran=$ranBy;held=$held;merge=$merges;reports=@($reportsOut)} -Depth 8 -Compress
 }
 
 function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = '', [string]$Model = '') {
