@@ -40,9 +40,13 @@ import json
 import os
 import re
 import shutil
+import shlex
 import subprocess
 import sys
 from collections import OrderedDict
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
 
 ЛЮДИНА_ВІДСУТНЯ = {None, "claude_code_sdk", "claude_code_mcp", "claude_code_mcp_seed"}
 ПЕРЕЛІК_ЛИСТА_МЕНЕДЖЕРОВІ = ("СЛОВО ВЛАСНИКА", "РІШЕННЯ ПОТРІБНЕ:", "КОЛО", "ЛІМІТ", "ДИСПЕТЧЕР ПЕРЕДАЧА", "ЗВЕДЕННЯ")
@@ -658,8 +662,16 @@ def запустити_проби(проби, корінь):
             continue
         середовище = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
         try:
-            п = subprocess.run(команда, shell=True, cwd=корінь, capture_output=True, text=True, encoding="utf-8",
-                               errors="replace", env=середовище, timeout=900)
+            частини = [shlex.split(ч) for ч in команда.split(' && ')]
+            if all(ч and ч[0] in ('python', 'python3') for ч in частини):
+                for частина in частини:
+                    п = запустити_python([sys.executable, *частина[1:]], cwd=корінь, capture_output=True,
+                                         text=True, env=середовище, timeout=900)
+                    if п.returncode:
+                        break
+            else:
+                п = subprocess.run(команда, shell=True, cwd=корінь, capture_output=True, text=True, encoding="utf-8",
+                                   errors="replace", env=середовище, timeout=900)
             добре, причина = п.returncode == 0, f"код {п.returncode}: {(п.stderr or п.stdout).strip()[-200:]!r}"
         except (OSError, subprocess.SubprocessError) as е:
             добре, причина = False, f"не запустилась: {type(е).__name__}: {е}"

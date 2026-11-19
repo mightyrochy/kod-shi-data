@@ -139,11 +139,11 @@ class Трасування:
 
     def __init__(self, джерела):
         """`джерела` — тека коду продукту; прилади, проби й тести — поза нею."""
-        self.джерела, self.кадри, self.готові = str(джерела) + '/', {}, []
+        self.джерела, self.кадри, self.готові = Path(джерела).as_posix() + '/', {}, []
 
     def свій(self, кадр):
         """Кадр коду продукту, не приладу."""
-        ф = кадр.f_code.co_filename
+        ф = кадр.f_code.co_filename.replace('\\', '/')  # Windows: `co_filename` із `\`
         return ф.startswith(self.джерела) and '/прилади/' not in ф and '/проби/' not in ф
 
     def __call__(self, кадр, подія, арг):
@@ -167,7 +167,7 @@ class Трасування:
             стан['попередній'] = кадр.f_lineno
         if подія == 'return':
             self.кадри.pop(id(кадр), None)
-            self.готові.append(dict(файл=кадр.f_code.co_filename, рядок=кадр.f_lineno, вхід=стан['вхід'],
+            self.готові.append(dict(файл=кадр.f_code.co_filename.replace('\\', '/'), рядок=кадр.f_lineno, вхід=стан['вхід'],
                                     вихід=листки(арг), події=стан['події']))
         return self.місцевий
 

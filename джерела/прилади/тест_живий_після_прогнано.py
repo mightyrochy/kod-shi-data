@@ -12,6 +12,10 @@
 
 Прогін:  python3 джерела/прилади/тест_живий_після_прогнано.py   → останній рядок «OK» чи «ПРОВАЛ: N»
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import json
 import os
 import shutil
@@ -145,7 +149,7 @@ def історія():
                    sorted((з["шлях"], з["згадано"]) for з in лічба["без_межі"])
                    == [("аудит/проби/нічний/ЗВІТ.md", 2), ("аудит/проби/функція/ЗВІТ.md", 1)])
         перевірити("межа не за форматом — у переліку", лічба["не_за_форматом"] == ["аудит/проби/функція/ЗВІТ.md"])
-        вивід = subprocess.run([sys.executable, os.path.join(ТУТ, "живий_після_прогнано.py"), "--main", "main",
+        вивід = запустити_python([sys.executable, os.path.join(ТУТ, "живий_після_прогнано.py"), "--main", "main",
                                 "--від", "2026-11-05T00:00:00Z", "--зараз", "2026-11-06T18:00:00Z"],
                                capture_output=True, text=True, cwd=тека)
         рядки = вивід.stdout.strip().splitlines()
@@ -175,7 +179,7 @@ def історія():
                    and з_тіл["за_часом"] == [20] and з_тіл["лише_в_повідомленні"] == [11])
         перевірити("з тілами: прогнано #10 (тека сцени) і #20 (злиття до збірки), не #13 і #14",
                    sorted((п["pr"], п["сцена"]) for п in з_тіл["непрогнані"]) == [(13, "ж3_г"), (14, "ж1_а")])
-        вивід = subprocess.run([sys.executable, os.path.join(ТУТ, "живий_після_прогнано.py"), "--main", "main",
+        вивід = запустити_python([sys.executable, os.path.join(ТУТ, "живий_після_прогнано.py"), "--main", "main",
                                 "--від", "2026-11-05T00:00:00Z", "--зараз", "2026-11-06T18:00:00Z", "--тіла", тіла_шлях],
                                capture_output=True, text=True, cwd=тека)
         перевірити("прилад з --тіла: «прогнано: 2 з 4»", вивід.stdout.strip().splitlines()[-1] == "прогнано: 2 з 4")
@@ -211,7 +215,8 @@ def записи_історії(тека, прилад, від, зараз):
     ран = прилад.прогнані_записами("main")
     перевірити("записи: завершена сцена — пари плану, відмова питання й сцени, rc 2 і запис без обміну — ні",
                sorted(ран) == ["13|ж3_г", "14|ж1_а"])
-    перевірити("записи: ключ — PR|сцена, SHA — коду запису", ран["14|ж1_а"] == [{"sha": код, "звіт": "Е1-нічний-живий-20261106"}])
+    перевірити("записи: ключ — PR|сцена, SHA — коду запису, питання — з ПЛАН.json",
+               ран["14|ж1_а"] == [{"sha": код, "звіт": "Е1-нічний-живий-20261106", "питання": "q"}])
     лічба = прилад.лічити("main", від, зараз)
     за_записами = sorted((п["pr"], п["сцена"]) for п in лічба["питання"].values() if п["записи"])
     перевірити("лічба: прогнано за записами — (14, ж1_а); «функція» (13, ж3_г) — ні; (10, ж1_а) — відмова питання",
@@ -242,8 +247,105 @@ def записи_історії(тека, прилад, від, зараз):
     _коміт(тека, файли3, "Хмарний прогін (#21)", "2026-11-06T17:55:00Z")
     ран3 = прилад.прогнані_записами("main")
     перевірити("хмарна тека: пара її плану прогнана, звіт — назва теки",
-               ран3.get("10|ж2_в") == [{"sha": код, "звіт": "Тестовий-прогін-хмара-1106"}])
+               ран3.get("10|ж2_в") == [{"sha": код, "звіт": "Тестовий-прогін-хмара-1106", "питання": "q"}])
     паритет_записів(тека, "HEAD", "штучна історія")
+
+
+# --- 2б. придатність питання й «не виміряно» оцінок -----------------------------------------------------------------
+def придатність():
+    """`непридатне_питання` — повтор Get-LiveQuestionUnfit: лише механічні ознаки в голові питання (до першої «→»)."""
+    н = прилад.непридатне_питання
+    перевірити("replay у голові — не для живого; replay лише в полі ДО — придатне",
+               "replay" in н("чи запис повторюється без REPLAY_STALE → повне +фото → ДО", "розмова", "")
+               and н("суд ходу → розмова → ДО: суд на тих самих записах (replay_опори.py) → не гірше", "розмова", "") == "")
+    перевірити("PORTRET у голові без PORTRET= у вході й режимі — не для живого; з входом чи режимом — придатне",
+               "PORTRET" in н("PORTRET з теки фото → палітра → ДО", "палітра", "")
+               and н("PORTRET з теки фото → палітра → ДО", "палітра", "PORTRET=п.jpg") == ""
+               and н("PORTRET з теки → палітра PORTRET=п.jpg → ДО", "палітра", "") == ""
+               and н("PORTRETY не змінна", "палітра", "") == "")
+    перевірити("FOTO_RECHI у голові без змінної — не для живого; «+фото» режиму змінної не дає",
+               "FOTO_RECHI" in н("її FOTO_RECHI у репліці → повне +фото → ДО", "повне", ""))
+    перевірити("збирання при режимі «розмова» — не для живого; «розмова й повне» і режим реєстру «повне» — придатне",
+               "збирає" in н("чи збирання доходить до карток?", "розмова", "")
+               and н("чи збирання доходить → розмова й повне → ДО", "розмова", "") == ""
+               and н("чи збирання доходить до карток?", "повне", "") == "")
+    перевірити("слова «фото» й «кадр» — не ознака", н("кожне слово збігається з кадром, фото колажу → повне → —", "повне", "") == "")
+    перевірити("входи сцен — четверте поле реєстру",
+               прилад.входи_сцен("# x\nж1|a|b|PORTRET=п.jpg|палітра\nж2|a|b||повне\nкоротка|a\n", {"ж1": "палітра", "ж2": "повне"}) == {"ж1": "PORTRET=п.jpg", "ж2": ""})
+
+
+def оцінки_історія():
+    """«Не виміряно» оцінки знімає запис з прогнаних: питання — «без відповіді»; «так» іншої оцінки тієї теки, обрив,
+    змінений текст рядка; таблиця з «|» в останній клітинці й посиланням на PR; три числа приладу."""
+    тека = tempfile.mkdtemp(prefix="оцінки-")
+    стара = os.getcwd()
+    try:
+        _git(тека, "init", "-q", "-b", "main")
+        реєстр = "# id|жінка|текст|вхід|режим\nж1_а|x|y||повне\nж2_б|x|y||повне\nж3_в|x|y||розмова\nж4_г|x|y||повне\n"
+        _коміт(тека, {"аудит/проби/живі_сцени.txt": реєстр}, "основа", "2026-11-01T00:00:00Z")
+        _коміт(тека, {"а.txt": "1"}, "Перший (#301)\n\nЖИВИЙ ПІСЛЯ: ж1_а — питання один\nЖИВИЙ ПІСЛЯ: ж2_б — питання два\n"
+               "ЖИВИЙ ПІСЛЯ: ж3_в — питання три\nЖИВИЙ ПІСЛЯ: ж4_г — питання чотири", "2026-11-02T00:00:00Z")
+        код = _git(тека, "rev-parse", "HEAD")
+        д = "аудит/проби/Е1-нічний-живий-20261103"
+        план = {"scenes": {"ж1_а": [{"pr": 301, "question": "питання один"}], "ж2_б": [{"pr": 301, "question": "питання два"}],
+                           "ж3_в": [{"pr": 301, "question": "питання три"}], "ж4_г": [{"pr": 301, "question": "питання чотири"}]},
+                "cloud": {}, "build": код}
+        файли = {д + "/ПЛАН.json": json.dumps(план, ensure_ascii=False), д + "/done.txt": "\n"}
+        for сцена in план["scenes"]:
+            файли.update(запис_сцени(д + "/" + сцена, код))
+        оцінка = ("# Оцінка прогону Е1-нічний-живий-20261103\n\n| сцена | PR | питання | відповідь | доказ |\n|---|---|---|---|---|\n"
+                  "| `ж1_а` (н) | [#301](https://github.com/x/y/pull/301) | питання один | **не виміряно** | сцена — один хід | ще |\n"
+                  "| ж2_б | #301 | питання два | не виміряно | умови нема |\n"
+                  "| ж3_в | #301 | питання три | не виміряно (обрив) | стеля виводу |\n"
+                  "| ж4_г | #301 | питання чотири | так | видно |\n\n| корінь | PR | так |\n|---|---|---|\n| к | #301 | 1 |\n")
+        файли["аудит/перевірки/оцінка-Е1-нічний-живий-20261103.md"] = оцінка
+        файли["аудит/перевірки/Оцінка-друга.md"] = ("Тека Е1-нічний-живий-20261103.\n\n| # | питання | PR правки | сцена | вердикт |\n"
+                                                   "|:-:|---|---|---|---|\n| 1 | п | #301 | ж2_б | ні — видно |\n")
+        _коміт(тека, файли, "Е1 і оцінки (#302)", "2026-11-03T12:00:00Z")
+        os.chdir(тека)
+        о = прилад.без_відповіді_оцінок("main")
+        перевірити("оцінка: «не виміряно» — ключ тека|PR|сцена; «ні» другої оцінки тієї теки знімає ж2_б; «так» — не ключ",
+                   sorted(о) == ["Е1-нічний-живий-20261103|301|ж1_а", "Е1-нічний-живий-20261103|301|ж3_в"])
+        перевірити("оцінка: «|» в останній клітинці — частина причини, рядок — файл:номер, обрив — позначка",
+                   о["Е1-нічний-живий-20261103|301|ж1_а"] == {"де": "аудит/перевірки/оцінка-Е1-нічний-живий-20261103.md:5",
+                                                               "причина": "сцена — один хід | ще", "обрив": False}
+                   and о["Е1-нічний-живий-20261103|301|ж3_в"]["обрив"] and о["Е1-нічний-живий-20261103|301|ж3_в"]["причина"] == "стеля виводу")
+        тіла_шлях = os.path.join(тека, "тіла.json")
+        with open(тіла_шлях, "w", encoding="utf-8") as ф:
+            json.dump({"total_count": 1, "items": [{"number": 301, "user": {"login": "mightyrochy"},
+                                                     "pull_request": {"merged_at": "2026-11-02T00:00:00Z"},
+                                                     "body": "ЖИВИЙ ПІСЛЯ: ж1_а — питання один\nЖИВИЙ ПІСЛЯ: ж2_б — питання два\n"
+                                                             "ЖИВИЙ ПІСЛЯ: ж3_в — питання три\nЖИВИЙ ПІСЛЯ: ж4_г — інше питання"}]},
+                      ф, ensure_ascii=False)
+        тіла, _ = прилад.прочитати_тіла([тіла_шлях])
+        лічба = прилад.лічити("main", прилад._час("2026-11-01T12:00:00Z"), прилад._час("2026-11-04T00:00:00Z"), тіла)
+        перевірити("лічба: прогнано ж2_б і ж4_г, без відповіді ж1_а і ж3_в",
+                   sorted(п["сцена"] for п in лічба["без_відповіді"]) == ["ж1_а", "ж3_в"]
+                   and sorted(п["сцена"] for п in лічба["питання"].values() if п["записи"]) == ["ж2_б", "ж4_г"])
+        перевірити("лічба: той самий текст — у bad з причиною оцінки; обрив — знову в плані",
+                   [(п["сцена"], п["відсіяно"][0]) for п in лічба["відсіяно"]]
+                   == [("ж1_а", "не виміряно в оцінці аудит/перевірки/оцінка-Е1-нічний-живий-20261103.md:5: сцена — один хід | ще")])
+        вивід = subprocess.run([sys.executable, os.path.join(ТУТ, "живий_після_прогнано.py"), "--main", "main", "--від",
+                                "2026-11-01T12:00:00Z", "--зараз", "2026-11-04T00:00:00Z", "--тіла", тіла_шлях],
+                               capture_output=True, text=True, cwd=тека)
+        рядки = вивід.stdout.strip().splitlines()
+        перевірити("прилад: три числа — «прогнано: 2 · без відповіді: 2 · решта: 0 (з 4)», останній рядок — «прогнано: 2 з 4»",
+                   рядки[-2:] == ["прогнано: 2 · без відповіді: 2 · решта: 0 (з 4)", "прогнано: 2 з 4"])
+        os.chdir(стара)
+        паритет_записів(тека, "HEAD", "оцінки")
+        # Звіт теки з межею збірки, що згадує сцени: оцінка «не виміряно» знімає й зарахування через `п["звіти"]`.
+        _коміт(тека, {д + "/ЗВІТ.md": "# Звіт\n\nж1_а, ж2_б, ж3_в, ж4_г\n\nПЕРЕВІРЕНО ЗБІРКУ: " + код + "\n"},
+               "Звіт Е1 (#303)", "2026-11-03T13:00:00Z")
+        os.chdir(тека)
+        з_межею = прилад.лічити("main", прилад._час("2026-11-01T12:00:00Z"), прилад._час("2026-11-04T00:00:00Z"), тіла)
+        перевірити("лічба: звіт із ПЕРЕВІРЕНО ЗБІРКУ не робить прогнаним пару, яку оцінка теки дала «не виміряно»",
+                   sorted(п["сцена"] for п in з_межею["без_відповіді"]) == ["ж1_а", "ж3_в"]
+                   and sorted(п["сцена"] for п in з_межею["питання"].values() if п["звіти"]) == ["ж2_б", "ж4_г"]
+                   and [п["сцена"] for п in з_межею["відсіяно"]] == ["ж1_а"])
+        os.chdir(стара)
+    finally:
+        os.chdir(стара)
+        shutil.rmtree(тека, ignore_errors=True)
 
 
 # --- 3. паритет з PowerShell ----------------------------------------------------------------------------------------
@@ -256,16 +358,19 @@ $utf = New-Object Text.UTF8Encoding($false)
 $errors = $null
 $ast = [Management.Automation.Language.Parser]::ParseFile($Source, [ref]$null, [ref]$errors)
 if ($errors -and $errors.Count) { throw "queue_lanes.ps1 не розбирається" }
-$names = @('Get-LiveSceneRegistry', 'Get-LiveAfterLines')
+$names = @('Get-LiveSceneRegistry', 'Get-LiveSceneInputs', 'Get-LiveAfterLines', 'Get-LiveQuestionUnfit')
 $found = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $names -ccontains $n.Name }, $true))
 if ($found.Count -ne $names.Count) { throw 'нема функцій розбору' }
 foreach ($function in $found) { . ([scriptblock]::Create($function.Extent.Text)) }
-$registry = Get-LiveSceneRegistry ([IO.File]::ReadAllText($RegistryPath, $utf))
+$registryText = [IO.File]::ReadAllText($RegistryPath, $utf)
+$registry = Get-LiveSceneRegistry $registryText
+$inputs = Get-LiveSceneInputs $registryText $registry
 $lines = New-Object 'System.Collections.Generic.List[string]'
-$lines.Add((ConvertTo-Json -InputObject $registry -Compress))
+$lines.Add((ConvertTo-Json -InputObject @($registry, $inputs) -Compress))
 foreach ($body in @(ConvertFrom-Json ([IO.File]::ReadAllText($BodiesPath, $utf)))) {
     $items = @(Get-LiveAfterLines ([string]$body) $registry | ForEach-Object {
-        [ordered]@{line=$_.line;first=$_.first;last=$_.last;id=$_.id;question=$_.question;mode=$_.mode;error=$_.error} })
+        $unfit = if ($_.id) { Get-LiveQuestionUnfit $_.question $_.mode ([string]$inputs[$_.id]) } else { '' }
+        [ordered]@{line=$_.line;first=$_.first;last=$_.last;id=$_.id;question=$_.question;mode=$_.mode;error=$_.error;unfit=$unfit} })
     $lines.Add((ConvertTo-Json -InputObject @($items) -Compress -Depth 4))
 }
 [IO.File]::WriteAllLines($OutPath, $lines, $utf)
@@ -291,7 +396,7 @@ function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail) {
 $errors = $null
 $ast = [Management.Automation.Language.Parser]::ParseFile($Source, [ref]$null, [ref]$errors)
 if ($errors -and $errors.Count) { throw "queue_lanes.ps1 не розбирається" }
-$names = @('Get-JsonProp', 'ConvertTo-AutoTime', 'Get-AutoRanPairs')
+$names = @('Get-JsonProp', 'ConvertTo-AutoTime', 'Get-AutoRanPairs', 'Get-AutoEvalUnanswered')
 $found = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $names -ccontains $n.Name }, $true))
 if ($found.Count -ne $names.Count) { throw 'нема функцій запису' }
 foreach ($function in $found) { . ([scriptblock]::Create($function.Extent.Text)) }
@@ -302,7 +407,13 @@ foreach ($dir in @(ConvertFrom-Json ([IO.File]::ReadAllText($DirsPath, $utf)))) 
 # Хмарні теки обгортка читає з дерева збірки плану (-Tree), а не зі звітів.
 $ran = Get-AutoRanPairs $reports ([datetimeoffset]::MinValue) $Head
 $lines = New-Object 'System.Collections.Generic.List[string]'
-foreach ($key in @($ran.Keys | Sort-Object)) { $lines.Add($key + "`t" + ((@($ran[$key] | ForEach-Object { $_.sha }) | Sort-Object) -join ',')) }
+foreach ($key in @($ran.Keys)) {
+    $lines.Add((ConvertTo-Json -Compress -Depth 4 -InputObject @{k=$key; v=@($ran[$key] | ForEach-Object { ,@($_.sha, $_.folder, $_.question) })}))
+}
+$open = Get-AutoEvalUnanswered $Head
+foreach ($key in @($open.Keys)) {
+    $lines.Add((ConvertTo-Json -Compress -InputObject @{e=$key; where=$open[$key].where; reason=$open[$key].reason; cut=$open[$key].cut}))
+}
 [IO.File]::WriteAllLines($OutPath, $lines, $utf)
 """
 
@@ -335,17 +446,26 @@ def паритет_записів(тека, голова, назва):
         if готово.returncode:
             перевірити("pwsh виконав Get-AutoRanPairs (" + назва + "): " + готово.stderr[-500:], False)
             return
-        with open(вихід, encoding="utf-8") as ф:
-            очікувано = {}
+        with open(вихід, encoding="utf-8-sig") as ф:
+            очікувано, оцінки_ps = {}, {}
             for рядок in ф.read().split("\n"):
-                if рядок:
-                    ключ, _, шас = рядок.partition("\t")
-                    очікувано[ключ] = шас.split(",")
+                if not рядок:
+                    continue
+                запис = json.loads(рядок)
+                if "e" in запис:
+                    оцінки_ps[запис["e"]] = {"де": запис["where"], "причина": запис["reason"], "обрив": запис["cut"]}
+                else:
+                    очікувано[запис["k"]] = sorted(tuple(з) for з in запис["v"])
         os.chdir(тека)
-        мої = {к: sorted(з["sha"] for з in v) for к, v in прилад.прогнані_записами(sha, теки).items()}
+        мої = {к: sorted((з["sha"], з["звіт"], з["питання"]) for з in v) for к, v in прилад.прогнані_записами(sha, теки).items()}
+        оцінки = прилад.без_відповіді_оцінок(sha)
         os.chdir(стара)
         перевірити(f"паритет Get-AutoRanPairs ({назва}): тек {len(теки)}, пар {len(очікувано)}, моїх {len(мої)}",
-                   {к: sorted(v) for к, v in очікувано.items()} == мої)
+                   очікувано == мої)
+        перевірити(f"паритет Get-AutoEvalUnanswered ({назва}): «не виміряно» {len(оцінки_ps)}, моїх {len(оцінки)}",
+                   оцінки_ps == оцінки)
+        for ключ in sorted(set(оцінки_ps) ^ set(оцінки))[:3] + [к for к in оцінки if оцінки_ps.get(к) not in (None, оцінки[к])][:3]:
+            print("   ", ключ, "PowerShell:", оцінки_ps.get(ключ), "Python:", оцінки.get(ключ))
     finally:
         os.chdir(стара)
         shutil.rmtree(тимч, ignore_errors=True)
@@ -369,6 +489,9 @@ def паритет():
         "ЖИВИЙ ПІСЛЯ: ж3_співбесіда — п\n|таблиця|\nЖИВИЙ ПІСЛЯ: ж1_оціни_образ_6б — 2\n`код`",
         "\ufeffЖИВИЙ ПІСЛЯ: ж3_співбесіда — п\r\n\r\nЖИВИЙ ПІСЛЯ: \U0001d400 — п",
         "",
+        "ЖИВИЙ ПІСЛЯ: ж4_робота — PORTRET з теки → палітра → ДО\nЖИВИЙ ПІСЛЯ: ж4_робота — PORTRET → палітра PORTRET=п.jpg → ДО",
+        "ЖИВИЙ ПІСЛЯ: ж1_робота — чи Replay без STALE → повне → ДО\nЖИВИЙ ПІСЛЯ: ж1_робота — так → повне → ДО: replay_опори",
+        "ЖИВИЙ ПІСЛЯ: ж2_новорічна_мороз — збирання до карток\nЖИВИЙ ПІСЛЯ: ж2_новорічна_мороз — збирання → розмова й повне → ДО",
     ]
     log = subprocess.run(["git", "-C", КОРІНЬ, "log", "-n", "2000", "--format=%B%x1e", "HEAD"],
                          capture_output=True, check=True).stdout.decode("utf-8", "replace")
@@ -396,17 +519,22 @@ def паритет():
         with open(вихід, encoding="utf-8") as ф:
             # Лише «\n» (WriteAllLines на Linux): splitlines різав би й на U+2028, U+0085 у JSON без екранування.
             рядки = ф.read().rstrip("\n").split("\n")
-        перевірити("паритет реєстру сцен (" + str(len(реєстр)) + " id)", json.loads(рядки[0]) == реєстр)
+        with open(реєстр_шлях, encoding="utf-8") as ф:
+            входи = прилад.входи_сцен(ф.read(), реєстр)
+        перевірити("паритет реєстру сцен і входів (" + str(len(реєстр)) + " id)", json.loads(рядки[0]) == [реєстр, входи])
         розбіжних = []
-        пунктів = 0
+        пунктів = непридатних = 0
         for номер, (тіло, ps) in enumerate(zip(тіла, рядки[1:])):
             очікувано = json.loads(ps)
-            мій = [{к: п[к] for к in ("line", "first", "last", "id", "question", "mode", "error")}
+            мій = [dict({к: п[к] for к in ("line", "first", "last", "id", "question", "mode", "error")},
+                        unfit=прилад.непридатне_питання(п["question"], п["mode"], входи.get(п["id"], "")) if п["id"] else "")
                    for п in прилад.рядки_живий_після(тіло, реєстр)]
             пунктів += len(мій)
+            непридатних += sum(1 for п in мій if п["unfit"])
             if мій != очікувано:
                 розбіжних.append((номер, мій, очікувано))
-        перевірити(f"паритет Get-LiveAfterLines: тіл {len(тіла)}, пунктів {пунктів}, розбіжних {len(розбіжних)}",
+        перевірити(f"паритет Get-LiveAfterLines і Get-LiveQuestionUnfit: тіл {len(тіла)}, пунктів {пунктів}, "
+                   f"непридатних {непридатних}, розбіжних {len(розбіжних)}",
                    len(рядки) == len(тіла) + 1 and not розбіжних)
         for номер, мій, очікувано in розбіжних[:3]:
             print("   тіло", номер, "\n   Python:", json.dumps(мій, ensure_ascii=False)[:600],
@@ -418,6 +546,8 @@ def паритет():
 if __name__ == "__main__":
     розбір()
     історія()
+    придатність()
+    оцінки_історія()
     паритет()
     паритет_записів(КОРІНЬ, "HEAD", "дерево репозиторію")
     print("OK" if not провалів else f"ПРОВАЛ: {провалів}")

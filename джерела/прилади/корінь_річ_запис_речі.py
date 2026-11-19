@@ -7,6 +7,10 @@
 перекладі картки показу — опису картки (`річ_запис_її_річ.py`, окремим процесом: свої модулі продукту, не позначені
 для сторінок; переклад — `річ_запис_її_річ_переклад.cjs`). Число — різні `файл:рядок` обох частин.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import argparse
 import ast
 from collections import defaultdict
@@ -428,8 +432,8 @@ def main(argv=None):
         результат.append(dict(файл=файл, рядок=рядок, поля=деталі))
         for поле, адреси in деталі.items():
             print(f'{файл}:{рядок}\t{поле}\t{len(адреси)}/{len(вибірка)} ({len(адреси) / len(вибірка):.1%})')
-    її = subprocess.run([sys.executable, '-W', 'ignore', str(ТЕКА / 'річ_запис_її_річ.py'), '--json'], cwd=КОРІНЬ,
-                        capture_output=True, text=True, check=True)
+    її = запустити_python([sys.executable, '-W', 'ignore', str(ТЕКА / 'річ_запис_її_річ.py'), '--json'], cwd=КОРІНЬ,
+                        capture_output=True, text=True, check=True, потрібен_вивід=True)
     її_місця = defaultdict(lambda: defaultdict(set))
     for р in json.loads(її.stdout.strip().splitlines()[-1]):
         її_місця[(р['файл'], р['рядок'])][f"її річ: {р['поле']}"].add(р['вхід'])

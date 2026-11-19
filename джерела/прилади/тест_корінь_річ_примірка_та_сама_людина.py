@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 """Штучні шляхи пікселів: джерело, перенесення, суд, видимий і прихований показ."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import json
 from concurrent.futures import ProcessPoolExecutor
 import os
@@ -219,7 +223,7 @@ class Прилад(unittest.TestCase):
             дж = Path(т) / 'джерела'
             дж.mkdir()
             (дж / 'а.py').write_text('def (', encoding='utf-8')
-            процес = subprocess.run([sys.executable, str(Path(__file__).with_name('корінь_річ_примірка_та_сама_людина.py')),
+            процес = запустити_python([sys.executable, str(Path(__file__).with_name('корінь_річ_примірка_та_сама_людина.py')),
                                     '--корінь', т], capture_output=True, encoding='utf-8')
             self.assertNotEqual(процес.returncode, 0)
 

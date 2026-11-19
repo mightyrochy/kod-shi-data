@@ -1,0 +1,131 @@
+# Розгортання сайта GitHub Pages (`https://mightyrochy.github.io/kod-shi-data/`) — рядки дошки 16652–16654.
+#
+# Вбудований процес «pages build and deployment» збирав Jekyll усе дерево (75 тис. файлів, 6 ГБ) 12–23 хв, а кожен
+# новий push у `main` (медіана — раз на 4,6 хв) скасовував незакінчену збірку: до сайта доходило 28 запусків зі 179.
+# Тут сайт — лише його файли (`джерела/прилади/сайт_pages.py`: продукт, сторінки власника й тестувальниць, ~170 МБ),
+# без Jekyll, і черга без скасування:
+#  - один запуск за раз; новий чекає, поки йде поточний (`cancel-in-progress: false`), а з кількох, що чекають, лишається
+#    найновіший — він розгортає голову `main`, у якій є все попереднє, тож жоден коміт сайта не губиться;
+#  - запуск розгортає, лише коли вміст сайта на його коміті інший, ніж той, що сайт віддає зараз (відбиток
+#    `pages_vidbytok.txt` на самому сайті), — push стану, дошки, нарядів чи звітів доходить до кінця за пів хвилини
+#    й чергу не тримає;
+#  - збудники — push у `main` і кінець процесів, що пушать у `main` токеном CI (такий push інших процесів не будить):
+#    публікація показу `збірка: …` у «збірка показу» й у самозлитті, жниварка, розвідка; розклад — запас на
+#    невідомий пушер.
+# Перемикання: доки джерело Pages у налаштуваннях — гілка (`build_type` legacy), запуск лише звіряє й нічого не
+# розгортає, сайт віддає старий процес; після вибору «GitHub Actions» (Settings → Pages → Source) — перший же запуск
+# розгортає голову `main`.
+name: розгортання сайта
+
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: [збірка показу, самозлиття документа, жниварка, розвідка]
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '7,27,47 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rozghortannia-saita
+  cancel-in-progress: false
+
+jobs:
+  chy-treba:
+    name: чи сайт уже віддає цей коміт
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      treba: ${{ steps.zvirka.outputs.treba }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /джерела/прилади/сайт_pages.py
+            *.html
+            *.htm
+            *.css
+            *.svg
+          sparse-checkout-cone-mode: false
+
+      - name: звірка з сайтом
+        id: zvirka
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VIDBYTOK=$(python3 -I джерела/прилади/сайт_pages.py --відбиток HEAD)
+          if ! PAGES=$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '[.build_type, .html_url] | @tsv'); then
+            echo "налаштування Pages не прочитано — розгортання пропущено, наступний запуск звірить знову" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "treba=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          TYP=$(printf '%s' "${PAGES}" | cut -f1)
+          ADRESA=$(printf '%s' "${PAGES}" | cut -f2)
+          if [ "${TYP}" != "workflow" ]; then
+            echo "джерело Pages — ${TYP}, не «GitHub Actions»: сайт розгортає вбудований процес, цей лише звіряє (відбиток ${VIDBYTOK})" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "treba=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          NA_SAITI=$(curl -fsS --max-time 30 -H 'Cache-Control: no-cache' "${ADRESA%/}/pages_vidbytok.txt?t=$(date +%s%N)" | head -c 200 | cut -d' ' -f1 || true)
+          if [ "${NA_SAITI}" = "${VIDBYTOK}" ]; then
+            echo "сайт уже віддає вміст ${GITHUB_SHA} (відбиток ${VIDBYTOK}) — розгортати нічого" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "treba=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "сайт віддає відбиток «${NA_SAITI:-нема}», коміт ${GITHUB_SHA} — ${VIDBYTOK}: розгортаю" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "treba=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  rozghortannia:
+    name: розгорнути сайт
+    needs: chy-treba
+    if: needs.chy-treba.outputs.treba == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.rozghortannia.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /джерела/прилади/сайт_pages.py
+            *.html
+            *.htm
+            *.css
+            *.svg
+          sparse-checkout-cone-mode: false
+
+      - name: лише файли сайта
+        run: |
+          set -euo pipefail
+          python3 -I джерела/прилади/сайт_pages.py --одиниці HEAD | tee -a "$GITHUB_STEP_SUMMARY"
+          python3 -I джерела/прилади/сайт_pages.py --шаблони HEAD > "${RUNNER_TEMP}/shablony"
+          VIDBYTOK=$(python3 -I джерела/прилади/сайт_pages.py --відбиток HEAD)
+          git sparse-checkout set --no-cone --stdin < "${RUNNER_TEMP}/shablony"
+          printf '%s %s\n' "${VIDBYTOK}" "${GITHUB_SHA}" > pages_vidbytok.txt
+          echo "файлів: $(find . -path ./.git -prune -o -type f -print | wc -l), $(du -sh --exclude=.git . | cut -f1); відбиток ${VIDBYTOK}" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
+        with:
+          path: .
+
+      - id: rozghortannia
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

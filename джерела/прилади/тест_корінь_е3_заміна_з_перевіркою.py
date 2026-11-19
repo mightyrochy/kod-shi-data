@@ -4,6 +4,10 @@
 Запуск: python джерела/прилади/тест_корінь_е3_заміна_з_перевіркою.py
 Продукт, моделі, каталог і мережа не запускаються.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import os
 from pathlib import Path
 import subprocess
@@ -353,7 +357,7 @@ def заміна(кандидат, образ, межі, явний_вибір):
         """Нерозбірна частина обсягу реєструється, а CLI виходить 1."""
         self.записати('зламаний.py', 'def ф(:')
         середовище = dict(os.environ, PYTHONUTF8='1')
-        пр = subprocess.run([sys.executable, str(Path(ПРИЛАД.__file__).resolve()), '--корінь', str(self.корінь)],
+        пр = запустити_python([sys.executable, str(Path(ПРИЛАД.__file__).resolve()), '--корінь', str(self.корінь)],
                             capture_output=True, encoding='utf-8', env=середовище)
         self.assertEqual(пр.returncode, 1)
         self.assertIn('зламаний.py', пр.stderr)
@@ -368,7 +372,7 @@ def заміна(кандидат, образ, межі, явний_вибір):
     def test_стабільний_вивід_cli(self):
         """Останній рядок є договором храповика, без каталогу та npm."""
         self.записати('правило.py', 'def ф(): return dict(ремонт="додати шарф")')
-        пр = subprocess.run([sys.executable, str(Path(ПРИЛАД.__file__).resolve()), '--корінь', str(self.корінь)],
+        пр = запустити_python([sys.executable, str(Path(ПРИЛАД.__file__).resolve()), '--корінь', str(self.корінь)],
                             capture_output=True, encoding='utf-8', env=dict(os.environ, PYTHONUTF8='1'))
         self.assertEqual(пр.returncode, 0, пр.stderr)
         self.assertEqual(пр.stdout.strip().splitlines()[-1], 'місць: 1')

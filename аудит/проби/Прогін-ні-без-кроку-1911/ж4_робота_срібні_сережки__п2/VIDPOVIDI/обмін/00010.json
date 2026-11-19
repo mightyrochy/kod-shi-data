@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Blazer: single-breasted, tailored, hip-length, with notch lapels, in mid grey #8A8D91, textured wool flannel.\\nTrousers: straight-leg, high-waisted, ankle-length, from the same suit in grey #8A8D91, textured wool flannel.\\nBlouse: classic collar, relaxed fit, tucked in, long sleeves, in soft ivory #F2EDE4, matte silk-blend crepe.\\nLoafers: almond toe, low block heel, in deep burgundy #5E2A33, polished leather.\\nBelt: slim, with a small silver buckle, in deep burgundy #5E2A33, smooth leather.\\nEarrings: sculptural drop earrings, medium length, in silver #C0C0C0, polished sterling silver.\\nBag: structured medium tote with top handles, in deep burgundy #5E2A33, grained leather.\\n\\nThis is the grey suit you wanted, worn as a matching set of blazer and trousers in a textured flannel that looks neat and professional for the office. The ivory blouse brightens the grey and keeps the look soft and clean. Burgundy shoes, belt and bag add an autumn warmth and tie the outfit together. The silver earrings are the accent in your jewelry, and they stand out against the quiet palette without competing with the suit.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Blazer\\\",\\\"details\\\":\\\"single-breasted, tailored, hip-length, notch lapels, textured wool flannel\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#8A8D91\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Trousers\\\",\\\"details\\\":\\\"straight-leg, high-waisted, ankle-length, textured wool flannel, from the same suit\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#8A8D91\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Blouse\\\",\\\"details\\\":\\\"classic collar, relaxed fit, tucked in, long sleeves, matte silk-blend crepe\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F2EDE4\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Loafers\\\",\\\"details\\\":\\\"almond toe, low block heel, polished leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#5E2A33\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Belt\\\",\\\"details\\\":\\\"slim, small silver buckle, smooth leather\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#5E2A33\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"sculptural, medium length, polished sterling silver\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tote bag\\\",\\\"details\\\":\\\"structured, medium, top handles, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#5E2A33\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2095,\"output_tokens\":451},\"stop_reason\":\"end_turn\"}"
+ }
+}

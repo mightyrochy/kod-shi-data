@@ -14,6 +14,10 @@ seed*_NN_мовний_шар_{хід_розмови,репліка}.txt` (фор
 `речення_показу` з `паспорт_з_шару` (той самий `_речення_до_показу`, що дає бульбашку), а репліки —
 `суд_речень_репліки` над тим самим входом `РЕПЛІКА`, що й `суд_репліки` показу.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import argparse
 import contextlib
 import io
@@ -109,8 +113,8 @@ def main():
         return
 
     def суд(код, після):
-        вивід = subprocess.run([sys.executable, '-W', 'ignore', __file__, str(п.записи), str(п.розмітка),
-                                '--один', str(код), '1' if після else '0'], capture_output=True, text=True, check=True)
+        вивід = запустити_python([sys.executable, '-W', 'ignore', __file__, str(п.записи), str(п.розмітка),
+                                '--один', str(код), '1' if після else '0'], capture_output=True, text=True, check=True, потрібен_вивід=True)
         return json.loads(вивід.stdout.strip().splitlines()[-1])
     with tempfile.TemporaryDirectory(prefix='суд-до-') as т:
         subprocess.run('git archive %s джерела | tar -x -C %s' % (п.до, т), shell=True, check=True, cwd=_КОРІНЬ)
