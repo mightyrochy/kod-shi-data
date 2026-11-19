@@ -601,7 +601,9 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. Дозвіл дати — найбільша спроба /N
     з комітом на main: кінець /1 (CRASH від сну) його не з'їдає, а повтор — лише нова спроба /N від диспетчера. Дві спроби
     водночас не йдуть: slug у всіх спроб один, його тримає Test-SlugBusy. -OpenOnly — лише вікно: $true, коли нічний
-    відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). #>
+    відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). Умова спроби —
+    `gpu` із пріоритетом `p<0-9>` у будь-якому порядку (`gpu-p8`, `p1-gpu`): пріоритет бере планувальник із самої позначки
+    (ConvertTo-Marker), тож диспетчер піднімає нічний над іншими GPU-позначками новою спробою `/N/gpu-p<цифра>`. #>
     $utc = $Now.ToUniversalTime()
     if ($utc.Hour -lt 2) { return }
     if ($OpenOnly) { return $true }
@@ -610,7 +612,7 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     $main = Get-RefSha "$script:RemoteRoot/main"
     if ($main -cnotmatch '^[0-9a-f]{40}$') { return }
     $tries = @(foreach ($name in ((Invoke-Git @('for-each-ref', '--format=%(refname)', $head)).Out -split "`n")) {
-        if ($name.Trim() -cmatch ('^' + [regex]::Escape($head) + '([1-9][0-9]{0,2})/gpu-p8$')) { [pscustomobject]@{ N = [int]$Matches[1]; Ref = $name.Trim() } }
+        if ($name.Trim() -cmatch ('^' + [regex]::Escape($head) + '([1-9][0-9]{0,2})/(?:gpu-p[0-9]|p[0-9]-gpu)$')) { [pscustomobject]@{ N = [int]$Matches[1]; Ref = $name.Trim() } }
     })
     $n = 0; $ref = ''; $sha = ''
     foreach ($t in @($tries | Sort-Object N -Descending)) {
@@ -1764,12 +1766,52 @@ function Set-CopyWorkTree([string]$Repo) {
     [void](Invoke-Git @('config', '--worktree', 'core.worktree', $Repo) -Dir $Repo)
 }
 
+function Get-CloneConfig([string]$Clone, [string]$When) {
+    <# Спільний конфіг клону (`config --local`: без `config.worktree` копій) — ключ → значення (багатозначний ключ —
+    значення через LF). Для порівняння, а не для журналу: у значеннях бувають адреси з токенами. Не читається — рядок у
+    журнал і `$null`: без знімка зміну не виявити, а мовчазний пропуск зробив би звірку непомітно вимкненою.
+
+    Ключі `branch.*` не рахуються: гілку наряду пишуть у спільний конфіг `checkout -B` від віддаленої гілки й `push -u`,
+    це звичайна робота, а не стан клону. #>
+    $r = Invoke-Git @('config', '--local', '--list', '-z') -AllowFail -Dir $Clone
+    if ($r.Code -ne 0) {
+        Write-Log "копія задачі: спільний конфіг клону не прочитано ($When) — код $($r.Code): $(@($r.Err.Trim() -split '\r?\n')[0])"
+        return $null
+    }
+    $map = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([StringComparer]::Ordinal)
+    foreach ($e in $r.Out.Split([char]0)) {
+        if ($e -eq '') { continue }
+        $i = $e.IndexOf("`n"); $k = $(if ($i -ge 0) { $e.Substring(0, $i) } else { $e }); $v = $(if ($i -ge 0) { $e.Substring($i + 1) } else { '' })
+        if ($k.StartsWith('branch.', [StringComparison]::Ordinal)) { continue }
+        $map[$k] = $(if ($map.ContainsKey($k)) { $map[$k] + "`n" + $v } else { $v })
+    }
+    , $map
+}
+
+function Write-CloneConfigChange($Before, [string]$Clone) {
+    <# Один рядок журналу, коли між New-TaskCopy і Close-TaskCopy наряд змінив спільний конфіг клону: додано, змінено й
+    прибрано — лише ключі. Значення — лише в `remote.origin.promisor` і `remote.origin.partialclonefilter`: вони безпечні,
+    а `promisor` робить клон частковим для всіх копій (`reset --hard` довантажує blob-и з мережі). Нічого не повертає
+    назад: скидання `promisor` при відсутніх blob-ах робить сховище пошкодженим. Не кидає виняток: кличеться з `finally`. #>
+    try {
+        $after = Get-CloneConfig $Clone 'після'
+        if ($null -eq $after) { return }
+        $show = { param($k, $m) $(if ($k -ceq 'remote.origin.promisor' -or $k -ceq 'remote.origin.partialclonefilter') { "$k=$($m[$k] -replace '\s+', ' ')" } else { $k }) }
+        $added = @($after.Keys | Where-Object { -not $Before.ContainsKey($_) } | Sort-Object | ForEach-Object { & $show $_ $after })
+        $changed = @($after.Keys | Where-Object { $Before.ContainsKey($_) -and $Before[$_] -cne $after[$_] } | Sort-Object | ForEach-Object { & $show $_ $after })
+        $removed = @($Before.Keys | Where-Object { -not $after.ContainsKey($_) } | Sort-Object | ForEach-Object { & $show $_ $Before })
+        if ($added.Count + $changed.Count + $removed.Count -eq 0) { return }
+        $parts = @(if ($added) { "додано: $($added -join ', ')" }; if ($changed) { "змінено: $($changed -join ', ')" }; if ($removed) { "прибрано: $($removed -join ', ')" })
+        Write-Log "копія задачі: наряд змінив спільний конфіг клону — $($parts -join '; ')"
+    } catch { Write-Log "копія задачі: зміни спільного конфігу клону не звірено — $($_.Exception.Message)" }
+}
+
 function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
     <# Тека задачі: `repo` — git worktree клону (спільні об'єкти й посилання) без тек-архівів, `tmp` — TEMP і TMP процесу
     наряду та його нащадків. Далі git і рушій працюють у копії ($RepoDir); повертає її шлях, закриває Close-TaskCopy. #>
     $repo = Join-Path $Dir 'repo'; $tmp = Join-Path $Dir 'tmp'
     [void][IO.Directory]::CreateDirectory($tmp)
-    $script:TaskCopy = @{ Dir = $Dir; Clone = $RepoDir; Temp = $env:TEMP; Tmp = $env:TMP }
+    $script:TaskCopy = @{ Dir = $Dir; Clone = $RepoDir; Temp = $env:TEMP; Tmp = $env:TMP; Config = $null }
     # id службової теки `.git\worktrees\<id>` — basename шляху, з яким worktree створено. З `repo` в усіх копіях id
     # повторюються між процесами: `worktree remove` одного процесу хвилинами знімає дерево (першим `.git`), а свою
     # службову теку стирає наприкінці; `worktree prune` іншого процесу в цей час уже вважає її осиротілою, новий `add`
@@ -1795,6 +1837,9 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
         }
     } else { Write-Log "копія задачі: git до 2.36 — повна ($([string]$v.Value))"; $why = 'git до 2.36' }
     Set-CopyWorkTree $repo
+    # Знімок спільного конфігу клону — після власних змін обгортки (sparse-checkout вмикає `extensions.worktreeConfig`),
+    # тож Close-TaskCopy покаже лише те, що змінив наряд.
+    $script:TaskCopy.Config = Get-CloneConfig $script:TaskCopy.Clone 'до'
     [void](Invoke-CopyGit @('reset', '-q', '--hard') $repo)
     Set-Variable -Scope Script -Name RepoDir -Value $repo
     $env:TEMP = $tmp; $env:TMP = $tmp
@@ -1847,13 +1892,15 @@ function Get-TaskDirText([string]$TaskDir) {
 }
 
 function Close-TaskCopy([string[]]$Delivered) {
-    <# Після доставки: $RepoDir і TEMP/TMP — як до копії, копія — геть (Remove-TaskCopy). Повертає шлях теки, що
-    лишилась із недоставленими комітами, або ''. #>
+    <# Після доставки: $RepoDir і TEMP/TMP — як до копії, зміни спільного конфігу клону нарядом — у журнал
+    (Write-CloneConfigChange), копія — геть (Remove-TaskCopy). Повертає шлях теки, що лишилась із недоставленими комітами,
+    або ''. #>
     $c = $script:TaskCopy
     if ($null -eq $c) { return '' }
     $script:TaskCopy = $null
     Set-Variable -Scope Script -Name RepoDir -Value $c.Clone
     $env:TEMP = $c.Temp; $env:TMP = $c.Tmp
+    if ($null -ne $c.Config) { Write-CloneConfigChange $c.Config $c.Clone }
     Remove-TaskCopy $c.Dir $Delivered
 }
 
