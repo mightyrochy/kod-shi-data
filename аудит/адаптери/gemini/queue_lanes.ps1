@@ -41,6 +41,7 @@ $script:PausedTotal = [timespan]::Zero  # пауз живлення цього �
 $script:Pausing = $false
 $script:PauseMachine = $false  # планувальник claude-run ставить на паузу й LM Studio та ComfyUI
 $script:GpuLease = $null  # замок GPU-оренди процесу наряду (Start-GpuModels → Exit-GpuLease)
+$script:ModelPhaseJob = $null  # GPU-наряд, якому дано адресу позначки кінця фаз з моделлю (Set-ModelPhaseMark)
 # Тека версії цього процесу: після самооновлення — `<корінь>\versions\<SHA40>`, поряд із коренем — `active.txt`.
 $script:VersionDir = $PSScriptRoot
 
@@ -1283,7 +1284,10 @@ function Wait-PowerPause {
     08.11 кожним пробудженням відновлював роботу на відеокарті й коштував 2–3 % батареї. Перед заморожуванням
     планувальник звільняє відеокарту (Clear-GpuForPause). Час паузи не йде в межі.
     Диспетчерові про світло пише й ноутбук до доставки тримає не пауза, а один тримач світла (claude_run.ps1 -Light):
-    пауза рушія починається, лише коли рушій помітив батарею, а 17.11 Windows заснула за 3 с. #>
+    пауза рушія починається, лише коли рушій помітив батарею, а 17.11 Windows заснула за 3 с.
+    Кожен цикл очікування процесу наряду (рушій, команда) кличе цю функцію, тож тут же процес наряду відпускає карту за
+    позначкою кінця фаз з моделлю (Exit-GpuModelPhase). #>
+    Exit-GpuModelPhase
     # Серцебиття всередині паузи може дійти до Invoke-Native — друга пауза всередині першої нічого не робить.
     if ($script:Pausing -or -not (Test-OnBattery)) { return }
     $script:Pausing = $true
@@ -1451,13 +1455,52 @@ function Enter-GpuLease($Job) {
         if (-not $why -and -not (Test-ExternalGpuFree -LogAcquisition)) { $why = Get-GpuBusyReason -LockHeld }
         if ($why) { return $why }
         try { Start-GpuModels $Job } catch { return "знімок моделей недоступний: $($_.Exception.Message)" }
+        Set-ModelPhaseMark $Job
         ''
     } finally { $gate.Dispose() }
 }
 
+# Замок GPU — лише на фази прогону, що звертаються до моделі: прилад бази й підсумок автоживого моделі не кличуть, і з
+# замком на весь прогін карта під ними простоювала б, а сторож простою (gpu_stall_minutes) закривав би наряд STALL посеред
+# бази. Агент, що скінчив фази з моделлю, пише позначку (`аудит/проби/кінець_моделі.py`), і процес наряду відпускає
+# оренду, як на кінці прогону; файл слота далі каже gpu=false, тож сторож прогону без замка не лічить, а наступний
+# GPU-наряд проходить ворота. Сцен після позначки `записати_сцену.py` не пише. Наряд без позначки (старий шаблон, ручний)
+# тримає карту до кінця, як раніше.
+
+function Set-ModelPhaseMark($Job) {
+    <# Дає агентові допущеного GPU-наряду адресу позначки кінця фаз з моделлю: файл у теці запуску, змінна KINETS_MODELI
+    процесу наряду (її успадковують рушій і його команди). Завдання без теки запуску (стенд допуску) адреси не має. #>
+    $dir = [string](Get-JsonProp $Job 'dir')
+    if (-not $dir) { return }
+    $mark = Join-Path $dir 'kinets-modeli'
+    Remove-Item -LiteralPath $mark -Force -ErrorAction SilentlyContinue
+    $env:KINETS_MODELI = $mark
+    $script:ModelPhaseJob = $Job
+}
+
+function Exit-GpuModelPhase {
+    <# Агент позначив кінець фаз з моделлю, а оренда ще тримається — файл слота стає gpu=false (сторож і стан бачать
+    прогін без замка), тоді Exit-GpuLease: оренда закінчується й відпускається, як на кінці прогону. Прогін іде далі. #>
+    $job = $script:ModelPhaseJob
+    if ($null -eq $job -or $null -eq $script:GpuLease) { return }
+    $mark = [string]$env:KINETS_MODELI
+    if (-not $mark -or -not [IO.File]::Exists($mark)) { return }
+    $script:ModelPhaseJob = $null
+    $info = Join-Path $script:SlotDir "$($job.slot).json"
+    try {
+        $slot = ConvertTo-PlainJson ([IO.File]::ReadAllText($info, $script:Utf8) | ConvertFrom-Json)
+        $slot.gpu = $false
+        Write-FileAtomic $info ($slot | ConvertTo-Json -Compress)
+    } catch { Write-Log "GPU: файл слота $info не оновлено — $($_.Exception.Message)" }
+    Exit-GpuLease $job
+    Write-Log "GPU відпущено до кінця прогону $($job.name): агент позначив кінець фаз з моделлю ($mark)"
+}
+
 function Exit-GpuLease($Job) {
     <# Кінець GPU-наряду на кожному шляху виходу: під воротами закінчує оренду й прибирає те, що вже нічиє, тоді відпускає
-    замок оренди. Ворота зайняті чи збій — оренда стає мертвою, і її прибирає наступний прохід (Repair-GpuModels). #>
+    замок оренди. Ворота зайняті чи збій — оренда стає мертвою, і її прибирає наступний прохід (Repair-GpuModels).
+    Оренду, вже відпущену за кінцем фаз з моделлю (Exit-GpuModelPhase), кінець прогону не чіпає. #>
+    if ($null -eq $script:GpuLease) { return }
     $gate = Open-Lock (Get-GpuLockPath)
     try {
         if ($null -eq $gate) { Write-Log 'GPU прибирання відкладено: ворота GPU зайняті' }
