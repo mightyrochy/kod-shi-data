@@ -1,0 +1,37 @@
+── ПРОМПТ (2201 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined knit tunic in charcoal gray with a subtle ribbed texture, reaching mid-thigh for coverage against possible rain, crafted from a soft wool-blend. A tailored straight-leg trouser in matching charcoal heather, falling to the ankle to maintain a polished silhouette while allowing ease of movement for walking. Leather loafers in deep brown with a low stack heel, chosen for comfort and stability on autumn morning floors. A slim leather belt in cognac that complements the shoes without adding bulk.\nThis outfit works perfectly for an office setting in autumn by balancing professional neatness with practicality against potential rain. The knit tunic provides essential warmth while its relaxed fit ensures you remain comfortable throughout your morning commute and workday. The neutral charcoal tones harmonize beautifully with fair skin and silver-toned hair, creating a cohesive and understated look suitable for walking around the office."}
+
+── ВІДПОВІДЬ (921 симв., 4.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "knit tunic",
+      "details": "refined with subtle ribbed texture reaching mid-thigh crafted from soft wool-blend",
+      "slot": "top",
+      "color_hex": "#363b40",
+      "worn": true
+    },
+    {
+      "name": "straight-leg trouser",
+      "details": "tailored in charcoal heather falling to the ankle maintaining a polished silhouette allowing ease of movement",
+      "slot": "bottom",
+      "color_hex": "#3d4247",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "leather with low stack heel chosen for comfort and stability on autumn morning floors",
+      "slot": "shoes",
+      "color_hex": "#5c4033",
+      "worn": true
+    },
+    {
+      "name": "belt",
+      "details": "slim leather in cognac that complements the shoes without adding bulk",
+      "slot": "belt",
+      "color_hex": "#a87c50",
+      "worn": true
+    }
+  ]
+}
