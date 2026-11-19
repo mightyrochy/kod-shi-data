@@ -630,7 +630,9 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. Дозвіл дати — найбільша спроба /N
     з комітом на main: кінець /1 (CRASH від сну) його не з'їдає, а повтор — лише нова спроба /N від диспетчера. Дві спроби
     водночас не йдуть: slug у всіх спроб один, його тримає Test-SlugBusy. -OpenOnly — лише вікно: $true, коли нічний
-    відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). #>
+    відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). Умова спроби —
+    `gpu` із пріоритетом `p<0-9>` у будь-якому порядку (`gpu-p8`, `p1-gpu`): пріоритет бере планувальник із самої позначки
+    (ConvertTo-Marker), тож диспетчер піднімає нічний над іншими GPU-позначками новою спробою `/N/gpu-p<цифра>`. #>
     $utc = $Now.ToUniversalTime()
     if ($utc.Hour -lt 2) { return }
     if ($OpenOnly) { return $true }
@@ -639,7 +641,7 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     $main = Get-RefSha "$script:RemoteRoot/main"
     if ($main -cnotmatch '^[0-9a-f]{40}$') { return }
     $tries = @(foreach ($name in ((Invoke-Git @('for-each-ref', '--format=%(refname)', $head)).Out -split "`n")) {
-        if ($name.Trim() -cmatch ('^' + [regex]::Escape($head) + '([1-9][0-9]{0,2})/gpu-p8$')) { [pscustomobject]@{ N = [int]$Matches[1]; Ref = $name.Trim() } }
+        if ($name.Trim() -cmatch ('^' + [regex]::Escape($head) + '([1-9][0-9]{0,2})/(?:gpu-p[0-9]|p[0-9]-gpu)$')) { [pscustomobject]@{ N = [int]$Matches[1]; Ref = $name.Trim() } }
     })
     $n = 0; $ref = ''; $sha = ''
     foreach ($t in @($tries | Sort-Object N -Descending)) {
