@@ -23,12 +23,22 @@ def лічба_сервера(журнал, ч0, ч1):
 
 def main():
     парсер = argparse.ArgumentParser(description=__doc__)
-    парсер.add_argument("тека", type=Path)
-    парсер.add_argument("сцени", type=Path, help="JSON: масив трійок [сцена, режим, прохід]")
-    парсер.add_argument("воркер", type=int)
-    парсер.add_argument("воркерів", type=int)
-    парсер.add_argument("sha")
+    парсер.add_argument("--лічити", type=Path, nargs="+", help="порахувати записані відповіді")
+    парсер.add_argument("--сервер", type=Path, help="шлях до сервер_claude.py")
+    парсер.add_argument("тека", type=Path, nargs="?")
+    парсер.add_argument("сцени", type=Path, nargs="?", help="JSON: масив трійок [сцена, режим, прохід]")
+    парсер.add_argument("воркер", type=int, nargs="?")
+    парсер.add_argument("воркерів", type=int, nargs="?")
+    парсер.add_argument("sha", nargs="?")
     а = парсер.parse_args()
+    if а.лічити is not None:
+        for тека in а.лічити:
+            print(json.dumps({"тека": str(тека), **лічба_жива(тека)}, ensure_ascii=False))
+        return
+    if any(х is None for х in (а.тека, а.сцени, а.воркер, а.воркерів, а.sha)):
+        парсер.error("потрібні тека, сцени, воркер, кількість воркерів і SHA")
+    if not os.environ.get("ZHYVA") and not а.сервер:
+        парсер.error("без ZHYVA потрібен шлях --сервер")
     if а.воркерів < 1 or not 0 <= а.воркер < а.воркерів:
         парсер.error("воркер має бути від 0 до кількості воркерів мінус один")
     СЦЕНИ = json.loads(а.сцени.read_text(encoding="utf-8"))
@@ -39,7 +49,7 @@ def main():
     ПОРТ = 8790 + В
     ZHYVA = os.environ.get("ZHYVA")
     журнал = ТЕКА / f"журнал_викликів_{В}.jsonl"
-    сервер = None if ZHYVA else subprocess.Popen([sys.executable, str(КОРІНЬ / "аудит/проби/Тестовий-прогін-хмара-1711/сервер_claude.py"), str(ПОРТ), str(журнал)])
+    сервер = None if ZHYVA else subprocess.Popen([sys.executable, str(а.сервер.resolve()), str(ПОРТ), str(журнал)])
     time.sleep(2)
     for id_, режим, прох in СЦЕНИ[В::К]:
         д = ТЕКА / f"{id_}__{прох}"

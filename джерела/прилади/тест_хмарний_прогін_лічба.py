@@ -12,20 +12,20 @@ from pathlib import Path
 
 
 class Лічба(unittest.TestCase):
-    def test_чотири_записи(self):
-        база = КОРІНЬ / "аудит/проби/Прогін-ні-без-кроку-1911"
-        очікувані = {"ж4_робота_срібні_сережки__п1": 26,
-                     "ж4_робота_срібні_сережки__п2": 28,
-                     "ж4_робота_стримано__п1": 30,
-                     "ж4_робота_стримано__п2": 28}
-        for назва, число in очікувані.items():
-            with self.subTest(назва=назва):
-                результат = драйвер.лічба_жива(база / назва)
-                print(f"{назва}: {результат['викликів']}")
-                self.assertEqual(результат["викликів"], число)
-                for поле in ("usd", "вихід", "не200"):
-                    self.assertIsNone(результат[поле])
-                self.assertIn("не лічено:", результат["причина"])
+    def test_записані_виклики(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            тека = Path(tmp)
+            відповіді = тека / "VIDPOVIDI"
+            відповіді.mkdir()
+            for номер in range(4):
+                (відповіді / f"seed3_{номер}_модель.txt").write_text("── ВІДПОВІДЬ (1) ──", encoding="utf-8")
+            (тека / "done.txt").write_text('{}', encoding="utf-8")
+            (тека / "результат.json").write_text('{}', encoding="utf-8")
+            результат = драйвер.лічба_жива(тека)
+            self.assertEqual(результат["викликів"], 4)
+            for поле in ("usd", "вихід", "не200"):
+                self.assertIsNone(результат[поле])
+            self.assertIn("не лічено:", результат["причина"])
 
     def test_лише_відповіді(self):
         with tempfile.TemporaryDirectory() as tmp:
