@@ -312,8 +312,11 @@ try {
         $script:FailFetch = 1
         $rc = @(Main)[-1]
         Check "6 перший прохід упав на fetch: прибирання нема (origin/* застарілі), процес без нарядів вийшов (код $rc)" ($script:Fetches -eq 1 -and $script:Cleans -eq 0 -and $rc -eq 0)
+        $log6 = [IO.File]::ReadAllText("$tmp/m6/claude-run.log", $utf)
+        Check '6 журнал пише тривалість fetch проходу: збій і успіх' ($log6 -cmatch 'fetch проходу: збій за [0-9]+\.[0-9] с')
         $rc = @(Main)[-1]
         Check "6 наступний запуск, fetch успішний: прибирань $($script:Cleans) (1), код $rc" ($script:Fetches -eq 2 -and $script:Cleans -eq 1 -and $rc -eq 0)
+        Check '6 журнал: fetch проходу ок з тривалістю' ([IO.File]::ReadAllText("$tmp/m6/claude-run.log", $utf) -cmatch 'fetch проходу: ок за [0-9]+\.[0-9] с')
         # Процес із живим нарядом: fetch падає на другому проході — прибирання першого проходу не повторюється.
         $script:Fake = [pscustomobject]@{ Slot = 'claude-1'; Slug = 'x'; Gpu = $false; Marker = 'gemini-queue/x/cc-claude-sonnet-5-5-medium/1'; Proc = [pscustomobject]@{ HasExited = $false } }
         $script:OnStart = { if ($script:Starts -eq 1) { [void]$script:Workers.Add($script:Fake) } }

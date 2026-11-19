@@ -434,18 +434,27 @@ function Update-UsageCache {
     [pscustomobject]$c
 }
 
-# Вікна квоти з кешу; -Fresh чи кеш старший за usage_minutes чи за -After (unix) — agy питаємо знову.
+# Вікна квоти з кешу; -Fresh чи кеш старший за usage_minutes чи за -After (unix) — agy питаємо знову. Знімок, зроблений до
+# часу скидання нульового вікна, що вже минув, після нього не діє: кеш лишається «0 %» до кінця usage_minutes, а скидання
+# настало, — тож його перечитуємо; це правило тут, у єдиному читачі, тож його мають усі виклики (Get-Quota, обидва чекання).
 function Read-Usage([switch]$Fresh, [long]$After = 0) {
     $c = $null
     try { $c = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'usage.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $age = (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes') * 60
-    if ($Fresh -or $null -eq $c -or [long]$c.time -lt $After -or ($now - [long]$c.time) -ge $age) {
+    $u = $null
+    if (-not ($Fresh -or $null -eq $c -or [long]$c.time -lt $After -or ($now - [long]$c.time) -ge $age)) {
+        $u = ConvertFrom-UsageText ([string]$c.text) ([long]$c.time)
+        $passed = @($u.Windows | Where-Object { $_.Left -eq 0 -and $null -ne $_.Reset -and $_.Reset.ToUnixTimeSeconds() -le $now -and [long]$c.time -lt $_.Reset.ToUnixTimeSeconds() })
+        if ($passed.Count -gt 0 -and $script:Agy) { $u = $null }
+    }
+    if ($null -eq $u) {
         if (-not $script:Agy) { return [pscustomobject]@{ Known = $false; Windows = @(); Text = ''; Read = [DateTimeOffset]::UtcNow } }
         $c = Update-UsageCache
+        $u = ConvertFrom-UsageText ([string]$c.text) ([long]$c.time)
     }
     $script:AgyModels = $(if (@($c.models).Count -gt 0) { @($c.models) } else { $null })
-    ConvertFrom-UsageText ([string]$c.text) ([long]$c.time)
+    $u
 }
 
 # Known=$false — квоту не прочитано (наряд іде далі). Blocked — усі групи моделі на 0 %; Group — ASCII-ім'я для коду рядка.
@@ -2000,10 +2009,10 @@ function Main {
             $started = 0
             try {
                 [void](Repair-GpuModels)
-                [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
+                Invoke-PassFetch @('fetch', '-q', '--prune', '--no-tags', 'origin',
                         '+refs/heads/main:refs/remotes/origin/main',
                         '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
-                        '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+                        '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*')
                 $script:Limits = Get-Limits
                 # Перервані й накопичене — після першого успішного fetch: прохід, що впав на fetch, їх не знімає.
                 if ($clean) { Resume-Interrupted; Clear-TaskCopies (Join-Path $RunsDir 'w') @('--branches', '--remotes'); $clean = $false }
