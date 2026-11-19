@@ -1659,6 +1659,13 @@ for _к, _в in _ПП_ш.ПОЛЯ_ПАСПОРТА.items():
 звірка("поле схеми з відповіді ходу доходить до паспорта, а поле стилістці — ще й до case/day (шлях поля)",
        not _без_шляху_ш, ", ".join(_без_шляху_ш))
 
+
+from unittest import TextTestRunner, defaultTestLoader
+from тест_кроків_відповіді import КрокиВідповіді
+
+_кроки = TextTestRunner(stream=sys.stdout).run(defaultTestLoader.loadTestsFromTestCase(КрокиВідповіді))
+звірка("Три кроки відповіді моделі на записі с5 та зіпсованих входах", _кроки.wasSuccessful())
+
 print()
 if провали:
     print("ВПАЛО %d: %s" % (len(провали), "; ".join(провали)))
