@@ -403,16 +403,16 @@ $u = New-Object Text.UTF8Encoding($false)
             & git -C $pc fetch -q origin
             $c2 = Rev $pc 'refs/remotes/origin/main'
             $script:RepoDir = $pc
-            $m0 = Missing $pc $c2
+            $m0 = @(Missing $pc $c2)
             $a = Get-ArchiveDirs $c2 ''
-            $m1 = Missing $pc $c2
+            $m1 = @(Missing $pc $c2)
             Check "ls-tree у частковому клоні не довантажує: відсутніх blob-об'єктів $($m0.Count) → $($m1.Count)" ($m0.Count -eq 2 -and $m1.Count -eq 2)
             Check "теки з наявними blob-об'єктами виключено: $(@($a.Dirs) -join ', ')" ((@($a.Dirs) -join '|') -ceq 'аудит/проби/архів-1|аудит/проби/архів-2')
             Check "причину неповноти сказано: $($a.Why)" ($a.Why.Contains('частковий клон') -and $a.Why.Contains('2 з 5'))
             $n0 = $script:Log.Count
             $repo = New-TaskCopy (Join-Path (Join-Path $tmp 'w-pc') 'run-1') $c2 ''
             $line = @($script:Log | Select-Object -Skip $n0 | Where-Object { $_.Contains('тек-архівів не викладено') })
-            $m2 = Missing $pc $c2
+            $m2 = @(Missing $pc $c2)
             Check "рядок журналу копії — з числом і причиною: $($line -join ' | ')" ($line.Count -eq 1 -and $line[0].Contains('— 2 (частковий клон: розмір невідомий для 2 з 5'))
             Check 'копія без виключених тек; тека з невідомим розміром і решта — на місці' (-not (Test-Path -LiteralPath (Join-Path $repo 'аудит/проби/архів-1')) -and -not (Test-Path -LiteralPath (Join-Path $repo 'аудит/проби/архів-2')) -and (Test-Path -LiteralPath (Join-Path $repo 'аудит/проби/архів-3/дані.bin')) -and (Test-Path -LiteralPath (Join-Path $repo 'a.txt')))
             Check "новий blob виключеної теки копія не довантажила (відсутніх $($m2.Count))" ($m2.Count -eq 1 -and $m2[0].Substring(1) -ceq (Rev $pc "${c2}:аудит/проби/архів-1/новий.bin"))
@@ -422,7 +422,7 @@ $u = New-Object Text.UTF8Encoding($false)
             & git clone -q --no-checkout --filter=blob:none $url $pc0
             $script:RepoDir = $pc0
             $e = Get-ArchiveDirs $c2 ''
-            Check "клон без жодного blob-об'єкта: порожньо, з причиною й без довантаження: $($e.Why)" (@($e.Dirs).Count -eq 0 -and $e.Why.Contains('5 з 5') -and $e.Why.Contains('жодна тека') -and (Missing $pc0 $c2).Count -eq 6)
+            Check "клон без жодного blob-об'єкта: порожньо, з причиною й без довантаження: $($e.Why)" (@($e.Dirs).Count -eq 0 -and $e.Why.Contains('5 з 5') -and $e.Why.Contains('жодна тека') -and @(Missing $pc0 $c2).Count -eq 6)
         } finally { $script:ArchiveDirBytes = $saved }
     }
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $bad++ }
