@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A structured wool-blend blazer in a soft charcoal grey (#3a3e45), tailored with a single-breasted cut and notched lapels that reach just below the hip line. Matching wide-leg trousers made of the same heavy-weight fabric, featuring a high waist and a clean break at the shoe for a sharp silhouette. A crisp white silk-blend blouse with a relaxed collar tucked neatly into the trousers to add breathability against the frost. Ankle boots crafted from smooth oiled leather in a deep espresso brown (#3b241e), designed with a modest block heel to ensure stability on salted, snowy sidewalks during the twenty-minute walk. This outfit works because it adheres strictly to the business dress code while utilizing opaque textures and warm tones to combat the frost and snow without requiring an outer layer if temperatures are mild enough. The structured blazer and wide-leg trousers create a professional authority suitable for a business meeting, while the ankle boots provide the necessary traction and height for comfortable walking on winter roads.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"blazer\\\",\\n\\\"details\\\": \\\"single-breasted cut with notched lapels, soft wool-blend fabric\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#3a3e45\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"trousers\\\",\\n\\\"details\\\": \\\"wide-leg cut with high waist and clean break at shoe, heavy-weight wool-blend fabric matching the blazer\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#3a3e45\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"blouse\\\",\\n\\\"details\\\": \\\"relaxed collar design tucked into trousers, crisp silk-blend fabric for breathability\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#ffffff\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"ankle boots\\\",\\n\\\"details\\\": \\\"modest block heel, smooth oiled leather texture for stability on snowy sidewalks\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#3b241e\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":559,\"output_tokens\":254},\"stop_reason\":\"end_turn\"}"
+ }
+}
