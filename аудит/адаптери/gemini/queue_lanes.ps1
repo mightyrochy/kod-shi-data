@@ -65,7 +65,7 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
-# Межа одного публічного запиту (-TimeoutSec); стільки ж чекають на замок бюджету, який тримають лише на файлові операції.
+# Межа одного публічного запиту (-TimeoutSec; раніше літерою в обох викликах); стільки ж чекають на замок бюджету, який тримають лише на файлові операції. Період опитування замка — GpuStartPollMs.
 $script:ReviewApiTimeout = 20
 # Безпечна ознака останньої відмови Get-AutoReviewState (замок, бюджет, чекання, HTTP <код>, мережа, межа часу, відповідь).
 $script:ReviewApiCause = ''
@@ -403,8 +403,11 @@ function Get-GitStallOptions([string[]]$GitArgs) {
     між проходами) обриває команду, а не тримає прохід до межі Invoke-Native (10 хв неспання). Нижча межа швидкості — 1 Б/с:
     лише повна відсутність руху. Фаза з'єднання й DNS цією межею не вимірюється. #>
     if ($GitArgs.Count -eq 0 -or $GitArgs[0] -cnotin @('fetch', 'ls-remote', 'push')) { return @() }
+    # Стенди підключають бібліотеку без головного скрипта: $script:Bound і $script:Limits там можуть бути не задані (strict mode).
+    $bound = Get-Variable -Name Bound -Scope Script -ValueOnly -ErrorAction SilentlyContinue
+    $limits = Get-Variable -Name Limits -Scope Script -ValueOnly -ErrorAction SilentlyContinue
     $poll = [double]$script:Defaults['poll_minutes']
-    if ($script:Bound -is [hashtable]) { $poll = Get-Limit $script:Limits 'PollMinutes' 'poll_minutes' }
+    if ($bound -is [hashtable]) { $poll = Get-Limit $limits 'PollMinutes' 'poll_minutes' }
     $seconds = [int][math]::Round($poll * 60)
     @('-c', 'http.lowSpeedLimit=1', '-c', "http.lowSpeedTime=$seconds")
 }
@@ -711,9 +714,12 @@ function Read-AutoApiBudget([string]$Path, [long]$Now) {
     <# Спільний бюджет публічного REST (`review-api.json`): запити за рухоме вікно й спільна пауза. Файла нема — порожній
     бюджет; пошкоджений — $null (непорахованих запитів не дозволяємо). Викликач тримає замок `review-api.lock`. #>
     if (-not (Test-Path -LiteralPath $Path)) { return [pscustomobject]@{ Calls = @(); Until = 0L } }
-    $saved = [IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json
-    if ($null -eq $saved.calls -or $null -eq $saved.until) { return $null }
-    [pscustomobject]@{ Calls = @($saved.calls | Where-Object { [long]$_ -gt ($Now - $script:ReviewApiWindow) }); Until = [long]$saved.until }
+    try {
+        $saved = [IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json
+        $calls = Get-JsonProp $saved 'calls'; $until = Get-JsonProp $saved 'until'
+        if ($null -eq $calls -or $null -eq $until) { return $null }
+        [pscustomobject]@{ Calls = @($calls | Where-Object { [long]$_ -gt ($Now - $script:ReviewApiWindow) }); Until = [long]$until }
+    } catch { $null }
 }
 
 function Open-ReviewApiLock {
@@ -727,7 +733,7 @@ function Open-ReviewApiLock {
         $lock = Open-Lock $path
         if ($null -ne $lock) { return $lock }
         if ($clock.Elapsed.TotalSeconds -ge $script:ReviewApiTimeout) { return $null }
-        Start-Sleep -Milliseconds 100
+        Start-Sleep -Milliseconds $script:GpuStartPollMs
     }
 }
 
@@ -741,7 +747,7 @@ function Get-ReviewApiCause($Err) {
         $resp = $e.PSObject.Properties['Response']
         if ($null -ne $resp -and $null -ne $resp.Value -and $null -ne $resp.Value.PSObject.Properties['StatusCode']) {
             $code = [int]$resp.Value.StatusCode
-            if ($code -ge 100) { return "HTTP $code" }
+            if ($code -gt 0) { return "HTTP $code" }
         }
         $type = $e.GetType().FullName
         if ($type -ceq 'System.Net.WebException') {
