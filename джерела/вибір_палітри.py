@@ -93,6 +93,8 @@ _ТЕМП_ОСНОВИ = {"тепла": "warm", "холодна": "cool", "не�
 _ВАГА = {"ядро": "core", "звичайна": "usual", "на_межі": "borderline", "statement": "statement"}
 _ТОН_РИСИ_С_МІН = 8.0     # та сама межа, з якої `палітра_специфікація` бере тон риси якорем дуг
 _ПРИЧИН_МАКС = 3
+# Місце акценту образу — закритий перелік відповіді стилістки (`accent_place`); читач — заява ноти «Палітри»
+МІСЦЯ_АКЦЕНТУ = ("jewellery", "clothing", "other_accessories", "none")
 
 
 # ── ОЧІ Й ОСНОВА — ФАКТОМ, А НЕ ЗАЯВОЮ (аудит/ПРОДУКТ.md п.9, п.14) ──────────────────
@@ -183,13 +185,19 @@ def _до_очей(о, F):
         "The ranks come from her colouring and intent only; the occasion, the goal, the weather, "
         "the jewellery and her words are yours to weigh. Any listed option is allowed, a rarer one too.",
         "\"saturation\" is the band of the look's colours; you choose it with a neutral base.",
+        "\"accent_place\" is a fact for the note she reads: where the accent of the look goes. If she named it "
+        "(her words, her jewellery), follow her; if the accent has no place there, say none.",
     ),
     вихід="PALETTE_CHOICE",
     скелет={"scheme": "<code>", "scheme_reasons": ["<code>"], "base": "<id>",
-            "base_reasons": ["<code>"], "saturation": "muted|medium|vivid"},
+            "base_reasons": ["<code>"], "saturation": "muted|medium|vivid",
+            "accent_place": "jewellery|clothing|other_accessories|none"},
     поля_виходу={"scheme": "scheme code from \"schemes\"", "scheme_reasons": "reason code",
                  "base": "id from \"bases\"", "base_reasons": "reason code",
-                 "saturation": "band of the look's colours"},
+                 "saturation": "band of the look's colours",
+                 "accent_place": "where the look's accent is: jewellery, clothing, other_accessories (bag, scarf, "
+                                 "shoes, belt) or none — fill it when she named a place for the accent or the "
+                                 "scheme has an accent; otherwise leave it out"},
     межі=("лише_вхід",),
     мова_промпту="en",
     # схема останньою, без мітки «answer» у «task» (Е2-межі п.4; причина — `річ_з_фото.фото_речей`): записані відповіді
@@ -560,20 +568,36 @@ def _у_особі(*к):
 # про взуття; цитати полів і бажань `випадок` кладе поруч (`field_quotes`, `wish_quotes`).
 _СЛОВА_ЇЇ = tuple(_ДМ.ПОЛЯ_ВИПАДКУ[к] for к in ("бажання", "вето", "вимоги_людини", "решта", "мета_слова", "намір_слова",
                                                 "переконання", "прохання_взуття")) + ("field_quotes", "wish_quotes")
+def _назване_у(слов, *ключі):
+    """Чи названо хоч один із ключів: значення є й не `unknown` (поле, якого вона не назвала, на дроті відсутнє)."""
+    return any((слов or {}).get(к) not in (None, "", [], {}, _ВМ.UNKNOWN) for к in ключі)
+
+
+def _метал(ч, о, пер):
+    """Означення причини — метал її прикрас СЬОГОДНІ (`case.jewelry`) або метал, що личить обличчю (`person.metal`):
+    звірка читає обидва факти, а не лише другий (звірка вужча за означення знімала причину при `jewelry=silver`)."""
+    if _назване_у(пер.get("випадок"), "jewelry"):
+        return True, "jewelry=%s" % пер["випадок"]["jewelry"]
+    return bool(пер["особа"].get("metal")), "metal=none · jewelry=none"
+
+
 ЗВІРКА_ПРИЧИН = {
     "why_her_contrast": _у_особі("contrast"),
     "why_her_eyes": _ранг_і_очі,
     "why_her_undertone": _у_особі("undertone"),
     "why_her_hair": _у_особі("hair"),
-    "why_her_metal": lambda ч, о, пер: (bool(пер["особа"].get("metal")), "metal=none"),
+    "why_her_metal": _метал,
     "why_goal_flatter": _мета("flatter"),
     "why_goal_conceal": _мета("conceal"),
     "why_goal_express": _мета("express"),
-    "why_occasion": lambda ч, о, пер: (bool(any((пер.get("випадок") or {}).get(к) for к in ("occasion", "event", "place"))
-                                            or (пер.get("день") or {}).get("place")
-                                            or (пер.get("день") or {}).get("dress_code")), "occasion=none"),
-    "why_weather": lambda ч, о, пер: (any((пер.get("день") or {}).get(к) is not None
-                                          for к in ("weather", "weather_band", "season")), "day_weather=none"),
+    # «формальність і настрій нагоди та місця»: нагода, подія, місце, формат, настрій і ошатність — у `case` або в `day`
+    "why_occasion": lambda ч, о, пер: (_назване_у(пер.get("випадок"), "occasion", "event", "place", "setting", "mood",
+                                                  "formality", "dress_code")
+                                       or _назване_у(пер.get("день"), "place", "setting", "dress_code", "formality"),
+                                       "occasion=none"),
+    # «погода, сезон і світло дня»: погода, смуга, опади, сезон і частина дня
+    "why_weather": lambda ч, о, пер: (_назване_у(пер.get("день"), "weather", "weather_band", "precipitation", "season",
+                                                 "part_of_day"), "day_weather=none"),
     "why_her_words": lambda ч, о, пер: (any((пер.get("випадок") or {}).get(к) for к in _СЛОВА_ЇЇ), "her_words=none"),
     "why_first_advice": _перша_порада,
 }
@@ -678,6 +702,12 @@ def прийняти(вхід, відповідь=None, без_моделі=None
             діагностика=dict(scheme=г["код"], scheme_rank=г["ранг"], of_schemes=len(пер["схеми"]),
                              advised=bool(г["радить"]), chosen_by=ХТО_СТИЛІСТКА,
                              reasons=list(причини.get("scheme") or []))))
+    місце_акценту = None
+    if без_моделі is None and str(об.get("accent_place") or "").strip():
+        місце_акценту = str(об["accent_place"]).strip()
+        if місце_акценту not in МІСЦЯ_АКЦЕНТУ:
+            відхилено.append("accent_place_outside_list:%s · taken=none" % місце_акценту)
+            місце_акценту = None
     вк = dict(її["вк"])
     if о is not None:
         вк.update(база=о["ключ"] if not о["ахром"] else "·".join(о["ключ"].split("·")[:3] + [гама]),
@@ -687,13 +717,14 @@ def прийняти(вхід, відповідь=None, без_моделі=None
     return dict(
         вибір=dict(схема=г["схема"], ранг_схеми=г["ранг"], схема_рідша=not г["радить"],
                    вибір_кольору=(вк or None), основа_ранг=(о["ранг"] if о else None),
-                   гама=гама, обрала=обрала, причини=причини),
+                   гама=гама, обрала=обрала, причини=причини, місце_акценту=місце_акценту),
         лишила=лишила, знахідки=знахідки, відхилено=відхилено, без_моделі=без_моделі,
         повідомлення=повідомлення(г, о, гама, обрала, причини, лишила,
-                                  чому_код or ("outside_list" if відхилено else None)))
+                                  чому_код or ("outside_list" if відхилено else None),
+                                  місце_акценту, (пер.get("випадок") or {}).get("jewelry")))
 
 
-def повідомлення(г, о, гама, обрала, причини, лишила, чому_код=None):
+def повідомлення(г, о, гама, обрала, причини, лишила, чому_код=None, місце_акценту=None, метал_прикрас=None):
     """Рядок на екрані «Палітра» заявами (Ч-1, п.12) про те, що вона лишила стилістці: що обрала
     стилістка й чому; чого не обрала — чесно, і за чим тоді збирається образ. Речення пише мовна
     модель; без неї рядка нема. Обране нею тут не повторюється — про це свій рядок (нота схеми)."""
@@ -719,6 +750,13 @@ def повідомлення(г, о, гама, обрала, причини, л�
             заяви += [_ВМ.заява("stylist_did_not_choose", part="base", why=(чому_код or ПРИЧИНА_НЕМАЄ_МОДЕЛІ))] + [_ВМ.заява("base_from_her_features", part="base")]
     if "saturation" in лишила and обрала.get("saturation") == ХТО_СТИЛІСТКА and (о is None or о["ахром"]):
         заяви.append(_ВМ.заява("stylist_chose_saturation", part="saturation", saturation=ГАМА_КОД.get(гама, гама)))
+    # Місце акценту — факт стилістки (`accent_place`), не вгадка коду: нота каже його, лише коли вона його назвала.
+    # Метал прикрас — її слово з `case.jewelry`, коли акцент у прикрасах.
+    if заяви and місце_акценту in МІСЦЯ_АКЦЕНТУ and ХТО_СТИЛІСТКА in обрала.values():
+        значення = dict(place=місце_акценту)
+        if місце_акценту == "jewellery" and метал_прикрас not in (None, "", _ВМ.UNKNOWN):
+            значення["jewellery_metal"] = str(метал_прикрас)
+        заяви.append(_ВМ.заява("stylist_accent_place", part="scheme", **значення))
     if not заяви:
         return None
     вид = "palette_stylist_choice" if ХТО_СТИЛІСТКА in обрала.values() else "palette_default_scheme"
