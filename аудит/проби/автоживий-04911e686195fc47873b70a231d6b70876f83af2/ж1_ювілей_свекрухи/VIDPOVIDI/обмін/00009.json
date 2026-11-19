@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\", \"\\\"intent\\\" — what matters most to her: comfort_first (comfort and freedom of movement), context_optimal (fitting the place and the event), statement (standing out), fashion_forward (a bold fashion look, at least two sources of interest), editorial (an editorial construction, at least one source of interest); count limits do not apply to fashion_forward or editorial\"]}, \"case\": {\"formality_reason\": \"norm\", \"sources\": {\"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"host_context\": {\"kind\": \"reading\"}, \"goal\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\"}, \"intent\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"default\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"role\": {\"kind\": \"reading\"}, \"direct_sun\": {\"kind\": \"reading\"}, \"companion_formality\": {\"kind\": \"reading\"}}, \"part_of_day\": \"evening\", \"precipitation\": \"none\", \"goal\": \"flatter\", \"occasion\": \"celebration\", \"place\": \"festive_dinner\", \"open_zones\": \"two\", \"direct_sun\": false, \"host_context\": true, \"role\": \"guest\", \"companion_formality\": 10, \"formality\": [\"formal\"], \"season\": \"autumn\", \"light\": \"artificial\", \"activity\": \"children\", \"surface\": \"parquet\"}, \"person\": {\"skin_hex\": [\"#deb295\", \"#d8a98c\", \"#e2ba9f\"], \"hair_hex\": \"#e5cd99\", \"eyes_hex\": \"#759087\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}, \"intent\": \"context_optimal\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Crimson silk blend blouse with a subtle sheen and a relaxed fit, #A03030.\\nCharcoal wide-leg trousers in a soft crepe fabric, cut high-waisted for elegance, #2F2F34.\\nGold drop-earrings in polished brass, small enough to remain subtle yet catching the artificial light, #FFD700.\\nWhy this outfit works: The deep crimson blouse adds a vibrant pop of color that stands out beautifully against the cool autumn evening atmosphere and complements her warm skin tones. The wide-leg charcoal trousers provide a sophisticated silhouette that flatters the figure while ensuring comfort for mingling with children. Together, the refined textures and rich colors create an optimal balance between festive celebration and understated elegance suitable for a formal dinner.\"}],\"usage\":{\"input_tokens\":914,\"output_tokens\":165},\"stop_reason\":\"end_turn\"}"
+ }
+}

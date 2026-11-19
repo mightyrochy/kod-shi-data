@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-gauge crewneck knit top, straight cut, hip length, in deep taupe (#6B5B53), merino-blend wool\\n\\nStraight-leg trousers, high waist, full length touching the top of the shoe, in charcoal (#3A3D42), matte wool-blend suiting\\n\\nSingle-breasted textured blazer, relaxed straight cut, mid-hip length, one-button, in dark graphite (#2F3237), wool bouclé-weave tweed\\n\\nLeather loafers, almond toe, low block heel, in espresso brown (#3B2A22), smooth calf leather\\n\\nStructured leather tote, medium size, in dark chocolate (#3A2A24), grained leather\\n\\nThin belt with a small matte antique-brass buckle, in espresso brown (#3B2A22), smooth leather\\n\\nSmall stud earrings, in brushed antique gold (#A68A5B), metal\\n\\nWhy this outfit works: The palette is made of muted, deep neutrals, so it meets your wish for nothing bright and keeps the look calm and understated for a day in the office. The tonal layering of taupe, charcoal and graphite creates one smooth vertical line, while the textured blazer adds quiet interest without drawing attention. The straight trousers and relaxed jacket skim the figure instead of clinging, and the warm brown leathers and soft gold details sit well with your rich skin, dark hair and deep brown eyes. Everything falls within neat business dress: knit, tailored trousers, textured jacket and loafers, and it is comfortable and suited to an autumn office.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Crewneck knit top\\\",\\\"details\\\":\\\"Fine-gauge, straight cut, hip length, merino-blend wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#6B5B53\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg trousers\\\",\\\"details\\\":\\\"High waist, full length touching the top of the shoe, matte wool-blend suiting\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3A3D42\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Single-breasted blazer\\\",\\\"details\\\":\\\"Textured, relaxed straight cut, mid-hip length, one-button, wool bouclé-weave tweed\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#2F3237\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Leather loafers\\\",\\\"details\\\":\\\"Almond toe, low block heel, smooth calf leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#3B2A22\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Structured leather tote\\\",\\\"details\\\":\\\"Medium size, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#3A2A24\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Thin belt\\\",\\\"details\\\":\\\"Small matte antique-brass buckle, smooth leather\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#3B2A22\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Stud earrings\\\",\\\"details\\\":\\\"Small, brushed antique gold, metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#A68A5B\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2185,\"output_tokens\":461},\"stop_reason\":\"end_turn\"}"
+ }
+}

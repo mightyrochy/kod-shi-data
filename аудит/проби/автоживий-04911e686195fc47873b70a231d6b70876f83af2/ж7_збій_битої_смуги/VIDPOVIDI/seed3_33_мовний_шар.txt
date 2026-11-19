@@ -1,0 +1,53 @@
+── ПРОМПТ (6604 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: boots · about it: text н=1
+2 — kind: bag_generic · about it: text н=2
+3 — kind: twilly · about it: text н=3
+4 — kind: jacket · about it: text н=4
+5 — kind: headband · about it: text н=5
+6 — kind: jumpsuit · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "These boots offer you a secure base for your walk to work in frost and snow, honoring your wish to avoid open shoes while keeping your feet protected as you commute.",
+"2": "The bag carries your essentials with ease as you move through your day, its practical design supporting your need for mobility while staying aligned with your professional yet personal aesthetic.",
+"3": "This twilly scarf brings a hint of pattern to complement your outfit, offering versatility whether worn near the neck or on the wrist, perfectly suited to your style and occasion.",
+"4": "This jacket sits over you as a warm layer, ready to shield you from the cold air during your morning journey while maintaining your polished appearance.",
+"5": "The headband adds a personal touch that softens your look, making it feel more expressive without compromising its suitability for your workday.",
+"6": "The jumpsuit-style piece creates a clean line from waist to ankle that balances your volume and keeps the look professional without feeling too stiff for your daily routine.",
+"7": "Your outfit is ready for your walk to work today. You asked not for open zones or heels, and so this closed-toe boot in anchors you with a secure stride through the frost and snow listed in your day. The jumpsuit-style item in gives you one clean line from waist to ankle that keeps your volume balanced and reads as professional without being stiff. The outerwear jacket in sits over you as a warm layer, ready for the cold air of your morning commute, while the headband rests gently on your hair, softening the look just enough to feel personal yet polished. A twilly scarf in finds its place at your neck or wrist, adding a touch of pattern that matches your own style without cluttering your silhouette. The bag in carries your essentials with ease as you move from street to office door.",
+"8": "Wear the boots securely for your walk in frost and snow, ensuring they protect your feet on the way to work.",
+"9": "Tuck the jacket slightly if needed or let it rest naturally over the jumpsuit to keep the waist defined during movement.",
+"10": "Keep the twilly scarf near your neck or on your wrist for a subtle accent that complements your outfit's tone."
+}
+
+── ВІДПОВІДЬ (2141 симв., 14.4 с, HTTP 200) ──
+{
+"1": "Ці черевики дають тобі надійну основу для прогулянки до роботи в мороз і сніг, поважаючи твоє бажання уникати відкритого взуття та захищаючи твої ноги під час дороги.",
+"2": "Сумка легко вміщує всі необхідні речі протягом дня, її практичний дизайн відповідає твоїй потребі у русі, залишаючись при цьому узгодженим з твоїм професійним і особистим стилем.",
+"3": "Цей шовковий шарфик додає образу трохи візерунка, пропонуючи універсальність як на шиї, так і на зап’ясті, чудово підходячи до твого стилю та випадку.",
+"4": "Ця куртка зручно сидить на тобі як теплий шар, готовий захистити тебе від холодного повітря вранці, зберігаючи при цьому твій вишуканий вигляд.",
+"5": "Пов’язка додає особистого штриха, який пом’якшує образ, роблячи його більш виразним без шкоди для відповідності твоєму робочому дню.",
+"6": "Цей комбінезон створює чисту лінію від талії до щиколотки, яка збалансовує твій об’єм і зберігає професійний вигляд без зайвої скутості у повсякденному житті.",
+"7": "Твій образ готовий для прогулянки на роботу сьогодні. Ти попросила не про відкриті зони чи підбори, тому ці закриті черевики надійно фіксують тебе з впевненим кроком по морозу та снігу у твоєму розкладі. Комбінезон дарує тобі одну чисту лінію від талії до щиколотки, яка зберігає баланс об’єму і виглядає професійно без зайвої скутості. Куртка зручно сидить на тобі як теплий шар, готовий захистити тебе від холодного повітря під час ранкової поїздки, а пов’язка ніжно лежить на твоєму волоссі, пом’якшуючи образ достатньо для того, щоб він був особистим і витриманим. Шовковий шарфик знаходить своє місце біля шиї чи зап’ястя, додаючи трохи візерунка, який відповідає твоєму стилю без зайвого захаращення силуету. Сумка легко вміщує всі необхідні речі протягом дня, коли ти переходиш від вулиці до офісу.",
+"8": "Надійно одягни черевики для прогулянки в мороз і сніг, щоб вони захищали твої ноги дорогою на роботу.",
+"9": "За потреби трохи заправ куртку або дай їй вільно лежати поверх комбінезона, щоб підкреслити талію під час руху." ,
+"10": "Тримай шовковий шарфик біля шиї чи зап’ястя для ледь помітного акценту, який доповнює тон твого образу."
+}

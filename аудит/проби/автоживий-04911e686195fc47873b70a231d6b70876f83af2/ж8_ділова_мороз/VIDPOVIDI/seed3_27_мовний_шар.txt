@@ -1,0 +1,50 @@
+── ПРОМПТ (6282 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: blazer · about it: text н=1
+2 — kind: blouse · about it: text н=2
+3 — kind: ankle_boots · about it: text н=3
+4 — kind: trousers · about it: text н=4
+5 — kind: tote · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "I chose this blazer specifically for its cut; by holding it away from your body, you keep the vest defining your waist and prevent the outer layer from overwhelming your shorter stature.",
+"2": "This sleeveless vest acts as a key anchor for your figure, drawing the eye to your waist and providing a clean canvas that balances the volume of your trousers while staying professional for your meeting.",
+"3": "I chose these ankle boots because their height anchors the wide leg of your suit at the foot, creating a long, continuous line that is essential for carrying a voluminous outfit with ease on a snowy day.",
+"4": "These trousers are chosen as the second anchor for your figure; their relaxed cut provides necessary comfort and movement for your walk while the pinstripe pattern ensures you still look sharp in your business context.",
+"5": "This bag adds a grounded, practical element to the outfit that pairs well with your short stature, ensuring the ensemble feels complete and ready for your agenda without adding unnecessary bulk.",
+"6": "I chose this pinstripe suit because its sharp lines create a powerful professional silhouette for your meeting, while the open waist and relaxed trouser cut provide the breathing room you need for your twenty-minute walk in the snow. The blazer is held off your body to keep the outfit's clean line, and the ankle boots ground the look, preventing it from looking too heavy against the frost.",
+"7": "Wear the blazer loosely over your shoulders or arm, never buttoned, to let the vest define your waist.",
+"8": "Черевики жіночі Welfare темно-коричневі — Brown leather ankle boots replace the missing shoes to withstand the winter weather and ground the look.",
+"9": "Жакет Jacquemus джинсовий — The blazer's wool composition is heavy enough to act as your primary warmth buffer against the frost, satisfying the layer requirement without needing an extra coat if you are comfortable inside."
+}
+
+── ВІДПОВІДЬ (1970 симв., 13.7 с, HTTP 200) ──
+{
+"1": "Я обрала цей піджак саме через його крій; тримаючи його віддалено від тіла, ти зберігаєш жилет, який визначає твою талію, і запобігаєш тому, щоб верхній шар не переважав твій невисокий зріст.",
+"2": "Цей безрукавний жилет слугує ключовим акцентом для твоєї фігури, привертаючи увагу до твоєї талії й надаючи чисте полотно, яке врівноважує об’єм твоїх штанів і залишається професійним на твоїй зустрічі.",
+"3": "Я обрала ці черевики, тому що їхня висота фіксує широку ногу твого костюма біля стопи, створюючи довгу, безперервну лінію, яка необхідна для легкості в об’ємному одязі у сніжний день.",
+"4": "Ці штани обрано як другий акцент для твоєї фігури; їхній вільний крій забезпечує необхідний комфорт і рух під час ходьби, а стьобана тканина гарантує, що ти все ще виглядаєш елегантно у своєму діловому контексті.",
+"5": "Ця сумка додає збалансований, практичний елемент до образу, який добре поєднується з твоїм невисоким зростом, забезпечуючи завершеність ансамблю та готовність до твоєї програми без зайвого об’ємного навантаження.",
+"6": "Я обрала цей смугастий костюм, тому що його чіткі лінії створюють потужний професійний силует для твоєї зустрічі, а вільна талія й розслаблений крій штанів забезпечують тобі простір для дихання під час двадцятихвилинної прогулянки у снігу. Піджак тримається вільно на плечах або руці, ніколи не застебнутий, щоб жилет визначав твою талію, а черевики фіксують образ і запобігають тому, що він виглядатиме надто важким у морозі.",
+"7": "Носи піджак вільно на плечах або руці, ніколи не застібаючи його, щоб жилет визначав твою талію.",
+"8": "Черевики жіночі Welfare темно-коричневі — Коричневі шкіряні черевички замінюють відсутнє взуття, щоб витримати зимову погоду й зафіксувати образ.",
+"9": "Жакет Jacquemus джинсовий — Важкий вовняний склад піджака достатньо теплий, щоб слугувати твоїм основним захистом від морозу, забезпечуючи необхідність шару без потреби в додатковій куртці, якщо тобі комфортно всередині."
+}

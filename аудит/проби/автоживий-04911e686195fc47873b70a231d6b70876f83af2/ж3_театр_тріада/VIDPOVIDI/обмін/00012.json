@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"вечір у театрі, вистава о 19:00\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"host_context\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"reading\"}, \"declared_column\": {\"kind\": \"reading\"}, \"declared_break\": {\"kind\": \"reading\"}, \"creative_environment\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"вечір у театрі, вистава о 19:00\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"role\": {\"kind\": \"reading\"}, \"companion_formality\": {\"kind\": \"reading\"}}, \"event\": \"вечір у театрі, вистава о 19:00\", \"part_of_day\": \"evening\", \"occasion\": \"theatre\", \"place\": \"theatre\", \"formality_branch\": \"social\", \"open_zones\": \"one\", \"host_context\": false, \"creative_environment\": false, \"declared_break\": false, \"declared_column\": false, \"role\": \"guest\", \"companion_formality\": 0, \"formality\": [\"formal\"], \"season\": \"autumn\", \"light\": \"artificial\"}, \"person\": {\"skin_hex\": [\"#f0d6d2\", \"#ead0cc\", \"#f4dcd8\"], \"hair_hex\": \"#241f22\", \"eyes_hex\": \"#5b6e82\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Silk blend sheath dress, floor-length, charcoal gray (#3a3d40), crepe with a subtle luster.\\nPoint-toe pumps, stiletto heel, classic nude (#e6cbb2), calfskin leather.\\nGold drop earrings, polished finish, circular hoops, 18k gold-plated brass.\\n\\nThis ensemble is perfectly suited for an evening theatre visit as it falls within the social formality band required for the occasion. The charcoal sheath dress offers a sophisticated silhouette that respects the refined atmosphere of the performance without being overly restrictive. The nude pumps elongate the legs and maintain a seamless line with the skin tone, while the gold accessories add a touch of necessary glamour against the dark fabric. Together, these pieces create a balanced look that transitions effortlessly from the afternoon arrival to the evening curtain call.\"}],\"usage\":{\"input_tokens\":919,\"output_tokens\":174},\"stop_reason\":\"end_turn\"}"
+ }
+}

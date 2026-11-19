@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Blazer: single-breasted, relaxed straight cut, hip length, notch lapel, one-button closure, long sleeves, in heather grey #7A7F85, textured wool-blend flannel suiting\\n\\nTrousers: straight leg, high-rise, full length that just grazes the ankle bone, with a front crease, in heather grey #7A7F85, matching wool-blend flannel suiting\\n\\nBlouse: soft V-neck, relaxed fit, tucked in at the front, long sleeves, hip-skimming length, in deep emerald #1F5E4B, matte crepe\\n\\nLoafers: classic almond-toe, low block heel, in black #1A1A1A, smooth leather\\n\\nEarrings: bold sculptural drops, 5–6 cm long, in polished silver #C0C0C0, sterling silver\\n\\nBelt: slim, with a small brushed silver buckle, in black #1A1A1A, smooth leather\\n\\nBag: structured medium tote, in black #1A1A1A, smooth grained leather\\n\\nWhy this outfit works: The grey suit you asked for is the base of a neat business look, and the textured flannel gives it depth without making it stiff. Deep emerald under the grey stands out against your rich skin tone and dark hair and eyes, and it suits the autumn season. The silver earrings are the focal point, as you wanted, and the plain neckline and the quiet black accessories leave them as the one standout detail. The straight, easy cut of the blazer and trousers keeps the line long and comfortable through a full office day.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Blazer\\\",\\\"details\\\":\\\"single-breasted, relaxed straight cut, hip length, notch lapel, one-button closure, long sleeves, textured wool-blend flannel suiting\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#7A7F85\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Trousers\\\",\\\"details\\\":\\\"straight leg, high-rise, full length that just grazes the ankle bone, front crease, wool-blend flannel suiting\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#7A7F85\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Blouse\\\",\\\"details\\\":\\\"soft V-neck, relaxed fit, tucked in at the front, long sleeves, hip-skimming length, matte crepe\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#1F5E4B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Loafers\\\",\\\"details\\\":\\\"classic almond-toe, low block heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Earrings\\\",\\\"details\\\":\\\"bold sculptural drops, 5–6 cm long, polished sterling silver\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Belt\\\",\\\"details\\\":\\\"slim, small brushed silver buckle, smooth leather\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Bag\\\",\\\"details\\\":\\\"structured medium tote, smooth grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2169,\"output_tokens\":504},\"stop_reason\":\"end_turn\"}"
+ }
+}

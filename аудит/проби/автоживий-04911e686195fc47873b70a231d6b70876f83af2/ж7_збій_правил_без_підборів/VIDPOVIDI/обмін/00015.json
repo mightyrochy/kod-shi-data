@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Heavy wool blend coat, knee-length cut, charcoal gray (#2F4F4F), melton fabric.\\nTailored blouse, long-sleeve with a subtle collar, ivory white (#FFFFF0), fine poplin.\\nHigh-rise straight-leg trousers, full-length hem just above the ankle to allow for boots, navy blue (#000080), stretch twill.\\nAnkle boots, closed round toe and shaft to meet the trouser hem perfectly, black (#000000), smooth leather.\\n\\nThis outfit works because it strictly adheres to her request for no open zones or heels while remaining professional enough for a walk into the office. The heavy wool coat and thick twill trousers provide essential warmth against the frosty, snowy autumn weather she is facing. By choosing ankle boots in black, the look remains grounded and practical for walking on potentially salted roads without compromising the neat dress code required for work.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"coat\\\",\\n\\\"details\\\": \\\"knee-length cut, heavy wool blend, melton fabric\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#2F4F4F\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"blouse\\\",\\n\\\"details\\\": \\\"long-sleeve with a subtle collar, tailored, fine poplin\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#FFFFF0\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"trousers\\\",\\n\\\"details\\\": \\\"high-rise straight-leg, full-length hem just above the ankle\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#000080\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"ankle boots\\\",\\n\\\"details\\\": \\\"closed round toe and shaft, smooth leather\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#000000\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":547,\"output_tokens\":233},\"stop_reason\":\"end_turn\"}"
+ }
+}

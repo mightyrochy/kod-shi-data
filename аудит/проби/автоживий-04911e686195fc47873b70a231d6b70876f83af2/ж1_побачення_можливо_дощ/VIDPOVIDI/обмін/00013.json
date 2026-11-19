@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"йду увечері на побачення в ресторан\", \"place\": \"в ресторан\"}, \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"default\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"в ресторан\"}, \"occasion\": {\"kind\": \"her\", \"quote\": \"йду увечері на побачення в ресторан\"}, \"precipitation\": {\"kind\": \"reading\", \"quote\": \"можливо піде дощ\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}}, \"event\": \"йду увечері на побачення в ресторан\", \"part_of_day\": \"evening\", \"precipitation\": \"possible_rain\", \"occasion\": \"date\", \"place\": \"restaurant_casual\", \"formality_branch\": \"social\", \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Sheer silk blouse with a relaxed drape, fluid cut, elbow length, ivory, crepe dechine.\\nWide-leg wool-twill trousers, tapered leg, ankle length, charcoal heathered, melton fabric.\\nStructured tweed blazer, single-breasted fit, hip length, forest green, boucle weave.\\nPointed-toe leather loafers, classic silhouette, mid-calf height, oxblood red, smooth calfskin.\\nGold-plated slim hoop earrings and a delicate chain necklace.\\n\\nThis ensemble balances the romantic nature of an evening date with the practical needs of possible rain and a restaurant setting in autumn. The structured blazer provides a polished look that respects the social dress code, while the flowing blouse and soft trousers ensure comfort for a long night out. Warm tones like forest green and oxblood red complement the artificial restaurant lighting and add depth to the outfit without requiring an outer layer unless rain becomes severe.\"}],\"usage\":{\"input_tokens\":675,\"output_tokens\":195},\"stop_reason\":\"end_turn\"}"
+ }
+}

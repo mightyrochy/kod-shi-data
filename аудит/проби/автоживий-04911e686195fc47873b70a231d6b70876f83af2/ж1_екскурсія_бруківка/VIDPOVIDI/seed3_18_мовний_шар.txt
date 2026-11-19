@@ -1,0 +1,43 @@
+── ПРОМПТ (5577 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: blue — синій; milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "Midi length cotton blouse in a soft oat color [colour: milky] with a relaxed boxy cut and three-quarter sleeves for sun protection.\nHigh-waisted straight-leg trousers in dark indigo denim [colour: blue] featuring a durable twill weave to resist abrasion from cobblestones.\nWhite leather low-top sneakers with a grippy rubber outsole in an off-white shade .\nA thin wool-blend cardigan in warm taupe worn open at the shoulders for warmth during early morning and late evening temperatures.\n\nThis outfit works because it prioritizes comfort and durability for walking nine hours on uneven stone surfaces while staying within the everyday dress code. The high-waisted trousers and sturdy sneakers protect your feet from scratches and fatigue, allowing you to explore the old city with ease. The layered approach with the cardigan and blouse ensures you stay comfortable as temperatures fluctuate throughout the day without looking overdressed for a casual stroll.",
+"2": "cotton blouse",
+"3": "straight-leg trousers",
+"4": "leather low-top sneakers",
+"5": "wool-blend cardigan"
+}
+
+── ВІДПОВІДЬ (1064 симв., 18.1 с, HTTP 200) ──
+{
+"1": "Міді блузка з бавовни м’якого молочного кольору [colour: milky] вільного боксівського крою та рукавами три чверті для захисту від сонця.\nВисокопотані прямі штани з темно-індиго деніму [colour: blue], виготовлені з міцного саржевого переплетення, щоб протистояти стиранню об бруківку.\nБілі шкіряні низькі кеди з рельєфною гумовою підошвою в світло-бежевому відтінку.\nTонкий кардиган із суміші вовни теплого сіро-бежевого кольору, накинутий на плечі для тепла під час ранкових і вечірніх температур.\n\nЦей образ працює тому, що він пріоритетом комфорту та довговічності при ходьбі дев’ять годин по нерівних кам’яних поверхнях, залишаючись у межах повсякденного дрес-коду. Високопотані штани та міцні кеди захищають твої ноги від подряпин і втоми, дозволяючи тобі легко досліджувати старе місто. Багатошаровість з кардіганом і блузкою забезпечує комфорт у міру коливання температури протягом дня без надмірного вигляду для неквапливої прогулянки.",
+"2": "бавовняна блузка",
+"3": "прямі штани",
+"4": "шкіряні низькі кеди",
+"5": "кардиган із суміші вовни"
+}
