@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tailored wool-blend trousers in a deep charcoal heather, straight-leg cut with a full 32-inch inseam, charcoal gray (#36454F), heavy-weight gabardine weave.  \\nStructured silk-blend blouse with a pointed collar and subtle pleated front, cropped just at the waistline for ease of walking, midnight blue (#001E39), lightweight poplin fabric.  \\nOxford cloth button-down shirt layered underneath, classic fit with French cuffs, crisp white (#FFFFFF), durable cotton-poplin material.  \\nTextured cashmere-knit cardigan in a soft camel tone, relaxed boxy silhouette reaching mid-hip, light beige tan (#C19A6B), fine-gauge knit fabric.  \\nWater-resistant trench coat in a classic A-line cut, knee-length hem with side storm flaps, olive drab (#4B5320), coated cotton-twill exterior and lining.  \\nSuede ankle boots with a 2-inch stacked heel and rubber lug sole for wet traction, almond toe shape, dark forest green (#1A3C34), napped suede leather.  \\nThis outfit works because it balances professional polish with practical comfort for walking through an entire day of autumn rain. The layered textures—from the structured trench to the soft cashmere—create visual interest while remaining easy to move in. Dark neutrals like charcoal and olive are inherently weather-appropriate, while the waterproof-ready suede boots honor her specific footwear wish without compromising style.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Trousers\\\",\\n      \\\"details\\\": \\\"Tailored straight-leg cut with a full 32-inch inseam, heavy-weight gabardine weave\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Blouse\\\",\\n      \\\"details\\\": \\\"Structured with a pointed collar and subtle pleated front, cropped just at the waistline, lightweight poplin fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#001E39\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Shirt\\\",\\n      \\\"details\\\": \\\"Oxford cloth button-down, classic fit with French cuffs, durable cotton-poplin material\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFFFF\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Cardigan\\\",\\n      \\\"details\\\": \\\"Textured knit relaxed boxy silhouette reaching mid-hip, fine-gauge knit fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#C19A6B\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Trench coat\\\",\\n      \\\"details\\\": \\\"Classic A-line cut, knee-length hem with side storm flaps, coated cotton-twill exterior and lining\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#4B5320\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Ankle boots\\\",\\n      \\\"details\\\": \\\"Suede with a 2-inch stacked heel and rubber lug sole, almond toe shape, napped suede leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#1A3C34\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":670,\"output_tokens\":449},\"stop_reason\":\"end_turn\"}"
+ }
+}

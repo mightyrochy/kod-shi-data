@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на роботу пішки\", \"movement\": \"пішки\", \"wants\": \"взуття — замшеві чоботи\"}, \"wish_quotes\": [\"взуття — замшеві чоботи\"], \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"wish_quotes\": {\"kind\": \"default\"}, \"wishes\": {\"kind\": \"reading\", \"quote\": \"взуття — замшеві чоботи\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"взуття — замшеві чоботи\"}]}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"на роботу пішки\"}, \"precipitation\": {\"kind\": \"her\", \"quote\": \"увесь день дощ\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"пішки\"}}, \"event\": \"на роботу пішки\", \"movement\": \"walk\", \"part_of_day\": \"day\", \"precipitation\": \"rain\", \"wishes\": [\"ankle_boots, suede\"], \"occasion\": \"work\", \"place\": \"office\", \"open_zones\": \"one\", \"formality\": [\"home\"], \"season\": \"autumn\", \"light\": \"daylight\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Tailored wool-blend trousers in a deep charcoal heather, straight-leg cut with a full 32-inch inseam, charcoal gray (#36454F), heavy-weight gabardine weave.  \\nStructured silk-blend blouse with a pointed collar and subtle pleated front, cropped just at the waistline for ease of walking, midnight blue (#001E39), lightweight poplin fabric.  \\nOxford cloth button-down shirt layered underneath, classic fit with French cuffs, crisp white (#FFFFFF), durable cotton-poplin material.  \\nTextured cashmere-knit cardigan in a soft camel tone, relaxed boxy silhouette reaching mid-hip, light beige tan (#C19A6B), fine-gauge knit fabric.  \\nWater-resistant trench coat in a classic A-line cut, knee-length hem with side storm flaps, olive drab (#4B5320), coated cotton-twill exterior and lining.  \\nSuede ankle boots with a 2-inch stacked heel and rubber lug sole for wet traction, almond toe shape, dark forest green (#1A3C34), napped suede leather.  \\nThis outfit works because it balances professional polish with practical comfort for walking through an entire day of autumn rain. The layered textures—from the structured trench to the soft cashmere—create visual interest while remaining easy to move in. Dark neutrals like charcoal and olive are inherently weather-appropriate, while the waterproof-ready suede boots honor her specific footwear wish without compromising style.\"}],\"usage\":{\"input_tokens\":780,\"output_tokens\":307},\"stop_reason\":\"end_turn\"}"
+ }
+}
