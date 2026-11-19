@@ -32,7 +32,7 @@ try {
         foreach ($d in @($case,$script:StateDir,$script:SlotDir,$OutDir,$OutboxDir,"$case/runs")) {
             if ($d) { [void][IO.Directory]::CreateDirectory($d) }
         }
-        $script:Limits = @{slots=@{codex=4;agy=4;claude=4}}
+        $script:Limits = @{slots=@{codex=4;agy=4;claude=4}; poll_minutes=$script:Defaults['poll_minutes']}
         $script:ReadySlot = $false; $script:ApiError = ''; $script:Jobs = New-Object Collections.ArrayList
         $script:Markers = @()
         $model = switch ($lane) {codex {'gpt-6.1-sol-high'} agy {'gemini-3.8-flash-high'} claude {'cc-claude-opus-5-5-high'}}
@@ -124,7 +124,7 @@ if (([IO.File]::ReadAllText((Join-Path `$LaneDir 'review-api.json')) | ConvertFr
         $script:Clock = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); $callsBefore = $script:ApiCalls
         $waited = [Diagnostics.Stopwatch]::StartNew()
         Check 'замок бюджету зайнятий іншим процесом: звірка чекає й проходить' ((Get-AutoReviewState "автоперевірка-998-$head") -eq 'LIVE' -and $script:ApiCalls -eq $callsBefore + 1 -and $waited.Elapsed.TotalSeconds -ge 1)
-        [void]$holdProc.WaitForExit(15)
+        [void]$holdProc.WaitForExit(15000)
         $held = [IO.File]::Open((Join-Path $LaneDir 'review-api.lock'),'OpenOrCreate','ReadWrite','None')
         $oldBound = Get-Variable -Name Bound -Scope Script -ValueOnly -ErrorAction SilentlyContinue; $script:Bound = @{ PollMinutes = 0.02 }
         $r = Get-AutoReviewState "автоперевірка-998-$head"
