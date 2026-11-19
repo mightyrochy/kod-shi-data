@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Grey suit jacket, single-breasted, tailored fit, hip length, light grey (#B8BCC2), textured wool blend\\n\\nGrey suit trousers, straight cut, full length to the ankle, matching light grey (#B8BCC2), textured wool blend\\n\\nBlouse, soft relaxed cut with a classic collar, hip length, ivory (#F3EEE3), matte silk crepe\\n\\nAnkle boots, sleek almond toe, low block heel, ankle height, deep charcoal (#3A3D42), smooth leather\\n\\nBelt, slim, gently polished buckle, deep charcoal (#3A3D42), smooth leather\\n\\nEarrings, silver drop earrings with a bold sculptural shape as the accent, silver (#C0C0C0), polished sterling silver\\n\\nTote bag, structured, medium size, deep charcoal (#3A3D42), smooth leather\\n\\nLight autumn layering comes from the suit jacket itself, so the look stays polished without an extra coat. The grey suit you asked for sets a calm, professional base, and the ivory blouse brightens the face and keeps the tones soft against the grey. The silver earrings give you the accent in your jewelry that you wanted, and they stand out because everything else is quiet and clean. The charcoal ankle boots, belt and bag tie the outfit together and keep it neat for a day at work.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Grey suit jacket\\\",\\\"details\\\":\\\"single-breasted, tailored fit, hip length, textured wool blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B8BCC2\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Grey suit trousers\\\",\\\"details\\\":\\\"straight cut, full length to the ankle, textured wool blend\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#B8BCC2\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Blouse\\\",\\\"details\\\":\\\"soft relaxed cut with a classic collar, hip length, matte silk crepe\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F3EEE3\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"sleek almond toe, low block heel, ankle height, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#3A3D42\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Belt\\\",\\\"details\\\":\\\"slim, gently polished buckle, smooth leather\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#3A3D42\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Silver drop earrings\\\",\\\"details\\\":\\\"bold sculptural shape, polished sterling silver\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tote bag\\\",\\\"details\\\":\\\"structured, medium size, smooth leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#3A3D42\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2113,\"output_tokens\":448},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"робота\", \"jewelry\": \"срібні сережки\", \"wants\": \"сірого костюма\"}, \"wish_quotes\": [\"срібні сережки\", \"сірого костюма\"], \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"wish_quotes\": {\"kind\": \"default\"}, \"wishes\": {\"kind\": \"reading\", \"quote\": \"сірого костюма\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"срібні сережки\"}, {\"kind\": \"reading\", \"quote\": \"сірого костюма\"}]}, \"refusals\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"her\", \"quote\": \"робота\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"jewelry\": {\"kind\": \"reading\", \"quote\": \"срібні сережки\"}, \"her_other_words\": {\"kind\": \"reading\"}}, \"event\": \"робота\", \"jewelry\": \"silver\", \"wishes\": [\"earrings, silvery\", \"suit, grey\"], \"occasion\": \"work\", \"formality_branch\": \"business\", \"her_other_words\": [\"акцент у прикрасах\"], \"formality\": [\"neat\"], \"season\": \"autumn\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Grey suit jacket, single-breasted, hip length, tailored fit, heather grey (#8A8D91), textured wool blend\\n\\nGrey suit trousers, straight leg, ankle length, matching heather grey (#8A8D91), textured wool blend\\n\\nBlouse, classic cut with a soft collar, full-length sleeves, ivory (#F2EDE4), silk-like crepe\\n\\nLoafers, almost flat, rounded toe, deep burgundy (#6B2B36), polished leather\\n\\nBelt, slim, burgundy (#6B2B36) with a small silver buckle (#C0C0C0), smooth leather\\n\\nEarrings, small drop shape, polished sterling silver (#C0C0C0), metal\\n\\nSlim bracelet, thin chain, polished sterling silver (#C0C0C0), metal\\n\\nTote bag, structured, medium size, deep burgundy (#6B2B36), grained leather\\n\\nThis outfit gives you the grey suit you asked for in a polished, neat-casual way that suits a workday in autumn. The ivory blouse keeps the look soft and bright against the grey, while the burgundy loafers, belt and bag add warmth and a rich autumn accent. The silver earrings stand out as your jewelry accent, and the bracelet and buckle echo them so the metal looks deliberate. Everything is comfortable and practical for the office, and the suit itself provides the layering, so no extra coat is needed.\"}],\"usage\":{\"input_tokens\":2272,\"output_tokens\":469},\"stop_reason\":\"end_turn\"}"
+ }
+}
