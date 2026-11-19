@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"робочий день в офісі\", \"place\": \"в офісі\", \"vetoes\": \"без яскравого\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\", \"quote\": \"без яскравого\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"без яскравого\"}]}, \"open_zones\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"в офісі\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"робочий день в офісі\"}, \"mood\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}}, \"event\": \"робочий день в офісі\", \"refusals\": {\"colors\": [\"bright\"]}, \"mood\": [\"стриманий\"], \"occasion\": \"work\", \"place\": \"office\", \"formality_branch\": \"business\", \"open_zones\": \"one\", \"formality\": [\"neat\"], \"season\": \"autumn\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Straight-leg trousers, full length, charcoal grey (#4A4D52), fine wool-blend twill\\n\\nFitted blouse with a soft collar, hip length, long sleeves, muted ivory (#EDE6D8), matte crepe\\n\\nTextured blazer, single-breasted, hip length, slightly tailored, warm taupe-grey (#8C857B), wool bouclé-weave tweed\\n\\nLoafers, low block heel, closed toe, deep chocolate brown (#4B3A32), smooth leather\\n\\nBelt, slim, polished small buckle, deep chocolate brown (#4B3A32), smooth leather\\n\\nShoulder bag, structured medium size, dark taupe (#6B5F55), grained leather\\n\\nSmall stud earrings, brushed silver (#B8B8BA), metal\\n\\nThis outfit suits a restrained office day in autumn: every colour is muted and neutral, so nothing bright appears, in line with her wish. The blouse, trousers and textured blazer follow the neat business level, while the loafers keep it polished yet comfortable for a full day at work. The blazer adds warmth for the cool season and its texture gives depth without drawing attention. Matching the belt and shoes in one brown, with just one small metallic accent in the earrings, keeps the whole look calm and put together.\"}],\"usage\":{\"input_tokens\":2205,\"output_tokens\":426},\"stop_reason\":\"end_turn\"}"
+ }
+}
