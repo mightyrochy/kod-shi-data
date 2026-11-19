@@ -1,0 +1,30 @@
+── ПРОМПТ (2140 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool knit sweater, relaxed fit, crew neck, color #d4a59a (soft rose-brown), heavy gauge knit wool.\nHigh-waisted straight-leg trousers, tapered leg, length hitting mid-ankle, color #2b2421 (deep espresso), 100% virgin wool with a soft drape.\nLeather ankle boots, low block heel, round toe, color #5c4033 (warm cognac), smooth calfskin with slight shearling lining at the collar.\nThis outfit embodies a truly cozy autumn stroll while respecting the explicit wish for a wool sweater and something warm to combat the season. The deep espresso tones of the trousers ground the soft rose-brown knit against her fair skin, creating an intimate and inviting palette that feels perfect for a casual outing. Completing the look with cognac leather boots ties the warmth together, offering both comfort and style without any unnecessary outer layers since the wool itself provides ample protection."}
+
+── ВІДПОВІДЬ (686 симв., 3.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool knit sweater",
+      "details": "Relaxed fit, crew neck, heavy gauge knit wool",
+      "slot": "top",
+      "color_hex": "#d4a59a",
+      "worn": true
+    },
+    {
+      "name": "Straight-leg trousers",
+      "details": "High-waisted, tapered leg, length hitting mid-ankle, 100% virgin wool with a soft drape",
+      "slot": "bottom",
+      "color_hex": "#2b2421",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "Low block heel, round toe, smooth calfskin with slight shearling lining at the collar",
+      "slot": "shoes",
+      "color_hex": "#5c4033",
+      "worn": true
+    }
+  ]
+}
