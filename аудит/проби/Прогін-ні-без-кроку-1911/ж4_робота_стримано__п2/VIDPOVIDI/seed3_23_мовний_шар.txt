@@ -1,0 +1,40 @@
+── ПРОМПТ (5966 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: dress_generic · about it: text н=1
+2 — kind: blazer · about it: text н=2
+3 — kind: dress_shoes · about it: text н=3
+4 — kind: bag_generic · about it: text н=4
+5 — kind: belt · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The dress is the base of the outfit: its level suits a working day in an office and keeps the look restrained.",
+"2": "The blazer brings the office level up to a proper working day, and it is the layer that makes the outfit read as composed.",
+"3": "These shoes match the office level of the day. I can't say yet how they will feel over many hours, so judge them by how your day goes.",
+"4": "I chose the bag to complete the office look in the same quiet spirit. I can't say more than that about how it will serve you through the day.",
+"5": "The belt marks the waist, so the dress has a clear line and the outfit doesn't read as shapeless volume. I can't say how it will feel through the day.",
+"6": "I built this for a restrained office day: the dress is the base, the blazer goes over it for a polished working look, and the shoes, bag and belt finish it without anything loud. The belt matters most for your line. It gives the dress a clear waist, so the softer flare below has a starting point and the silhouette reads as one calm line. Nothing in the outfit asks for attention, which is what you wanted.",
+"7": "Wear the belt over the dress at the waist, and keep the blazer open over both so the waist stays visible.",
+"8": "Wear the blazer for the whole office day and take it off only when you need to; with it on, the outfit is at its most composed.",
+"9": "LeBERDES Туфлі коричневі, Сумка жіноча Rond Carré, Краватка-пояс вузька чорна — The shoes, bag and belt are all neutral, with no accent colour. That is what you asked for when you said restrained and nothing bright, so I am keeping it on purpose."
+}
+
+── ВІДПОВІДЬ (1559 симв., 13.8 с, HTTP 200) ──
+{"1":"Сукня — основа образу: її рівень підходить для робочого дня в офісі й робить образ стриманим.","2":"Піджак піднімає офісний рівень до справжнього робочого дня, і саме цей шар робить так, що образ виглядає зібраним.","3":"Ці туфлі відповідають офісному рівню дня. Я поки не можу сказати, як вони будуть відчуватися протягом багатьох годин, тож суди про них за тим, як пройде твій день.","4":"Я обрала сумку, щоб завершити офісний образ у тому самому спокійному дусі. Більше про те, як вона прислужиться тобі протягом дня, я сказати не можу.","5":"Пасок підкреслює талію, тож сукня має чітку лінію, а образ не виглядає безформним об'ємом. Я не можу сказати, як він буде відчуватися протягом дня.","6":"Я склала це для стриманого офісного дня: сукня — основа, піджак одягається поверх неї для бездоганного робочого образу, а туфлі, сумка й пасок завершують його без нічого гучного. Пасок найважливіший для твоєї лінії. Він дає сукні чітку талію, тож м'якшому розкльошеному низу є від чого починатися, а силует виглядає як одна спокійна лінія. Ніщо в образі не вимагає уваги, а саме цього ти й хотіла.","7":"Носи пасок поверх сукні на талії, а піджак тримай розстебнутим поверх обох, щоб талія лишалася помітною.","8":"Носи піджак увесь офісний день і знімай його лише тоді, коли потрібно; у ньому образ найзібраніший.","9":"LeBERDES Туфлі коричневі, Сумка жіноча Rond Carré, Краватка-пояс вузька чорна — Туфлі, сумка й пасок нейтральні, без кольорового акценту. Саме цього ти просила, коли сказала «стримано» і «нічого яскравого», тож я лишаю це свідомо."}

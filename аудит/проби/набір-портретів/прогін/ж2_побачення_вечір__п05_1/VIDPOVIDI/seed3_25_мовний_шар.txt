@@ -1,0 +1,43 @@
+── ПРОМПТ (6310 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: sheath_dress · about it: text н=1
+2 — kind: blazer · about it: text н=2
+3 — kind: dress_shoes · about it: text н=3
+4 — kind: bag_generic · about it: text н=4
+5 — kind: belt · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Its level fits a restaurant date in the evening, so it works as the base of the outfit.",
+"2": "Its level suits an evening date, and it gives the dress a more put-together look without making it formal.",
+"3": "These are dressy enough for a restaurant evening. I chose them on purpose as the one louder item in the outfit, so the accent sits at your feet while everything else stays calm.",
+"4": "I chose it on purpose as a quiet companion, so the shoes carry the colour and the bag stays out of their way.",
+"5": "It marks the waist, which gives the blazer's volume a place to anchor and keeps the silhouette tidy.",
+"6": "For a date at a restaurant in the evening, I built the outfit around the dress: it is dressy enough for the occasion without being heavy. The blazer goes over it for a polished, grown-up feel, and the belt at the waist keeps the blazer's volume from swallowing the dress. The shoes and bag finish it, with the shoes as the one bright accent. The line stays clean this way: the fullness sits in one place, up top, and below it everything is fitted and simple.",
+"7": "Put the belt on the dress at the waist and wear the blazer open over it, so the waist stays marked and the blazer's volume has an anchor.",
+"8": "Let the shoes be the only louder note: keep everything else quiet and don't add more accents.",
+"9": "If the restaurant is warm, take the blazer off and keep the belted dress as the whole look.",
+"10": "LeBERDES Туфлі червоні — The red shoes are the one deliberate accent against an all-black outfit, so I keep them rather than turn the look neutral.",
+"11": "LeBERDES Туфлі червоні — I keep the red shoes on purpose: they are the one warm accent that turns an all-black outfit into a date look rather than a neutral one.",
+"12": "LeBERDES Туфлі червоні, Жіноча сумка Welfare чорна — The shoes are meant to be louder than the black bag. That contrast puts the focus on your feet and the leg line, and the rest stays quiet."
+}
+
+── ВІДПОВІДЬ (1846 симв., 20.2 с, HTTP 200) ──
+{"1":"Рівень цієї сукні-футляр підходить для вечірнього побачення в ресторані, тож вона слугує основою образу.","2":"Його рівень пасує вечірньому побаченню, а ще піджак надає сукні більш зібраного вигляду, не роблячи образ офіційним.","3":"Ці туфлі достатньо ошатні для вечора в ресторані. Я свідомо обрала їх як єдину гучнішу річ в образі, щоб акцент був на твоїх ногах, а все інше лишалося спокійним.","4":"Я свідомо обрала цю сумку як тиху супутницю, щоб туфлі несли колір, а сумка не заважала їм.","5":"Пасок підкреслює талію, завдяки чому об'єм піджака має опору, а силует залишається охайним.","6":"Для побачення в ресторані ввечері я збудувала образ навколо сукні: вона достатньо ошатна для такої нагоди й не здається важкою. Піджак йде поверх неї для вишуканого, дорослого відчуття, а пасок на талії не дає об'єму піджака поглинути сукню. Туфлі й сумка завершують образ, а туфлі — єдиний яскравий акцент. Так лінія залишається чистою: об'єм лише в одному місці, нагорі, а нижче все по фігурі й просто.","7":"Надінь пасок на сукню на талії й носи піджак розстебнутим поверх неї, щоб талія лишалася підкресленою, а об'єм піджака мав опору.","8":"Нехай туфлі будуть єдиною гучнішою нотою: усе інше тримай спокійним і не додавай більше акцентів.","9":"Якщо в ресторані тепло, зніми піджак і лиши сукню з паском як цілий образ.","10":"LeBERDES Туфлі червоні — Червоні туфлі — єдиний свідомий акцент на тлі суцільно чорного образу, тому я залишаю їх, а не роблю образ нейтральним.","11":"LeBERDES Туфлі червоні — Я свідомо залишаю червоні туфлі: це єдиний теплий акцент, який перетворює суцільно чорний образ на образ для побачення, а не на нейтральний.","12":"LeBERDES Туфлі червоні, Жіноча сумка Welfare чорна — Туфлі мають бути гучнішими за чорну сумку. Цей контраст переводить фокус на твої ноги та лінію ніг, а решта лишається спокійною."}

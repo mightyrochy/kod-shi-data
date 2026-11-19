@@ -1,0 +1,41 @@
+── ПРОМПТ (5915 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: suit · about it: text н=1
+2 — kind: shirt · about it: text н=2
+3 — kind: coat · about it: text н=3
+4 — kind: boots · about it: text н=4
+5 — kind: bag_generic
+6 — kind: scarf_generic · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The suit's fabric suits deep frost, so it keeps you warm and still reads as business dress.",
+"2": "The shirt's formality fits a business meeting, so it makes a neat, appropriate layer under the suit.",
+"3": "The coat's formality fits a business meeting, and its wool is what you need in deep frost and snow. It is the warmest layer here, so it ranks above the rest.",
+"4": "The boots' formality fits a business meeting and they work for a walk in the snow. I'm not sure the sole grips on ice, so on a slippery day take short steps.",
+"5": "The scarf's fabric suits deep frost, so it protects your neck on the walk.",
+"6": "For a business meeting in deep frost with snow, this outfit keeps you warm and still looks composed. The coat goes over the suit, the scarf sits at your neck, and the boots take you through a 20-minute walk to the office. The coat's belt marks your waist, so the layers don't swallow your figure, and the suit's wide trousers and the coat's long vertical line keep the whole look calm and streamlined. If the pavements are salted or icy, I can't be sure the boots grip well, so keep your steps short and even. I still chose them because they suit a business meeting and they are tall enough to keep the snow out.",
+"7": "Tie the coat's belt at your waist and raise the coat's collar over the scarf at your neck: it adds a vertical line by your face and keeps the cold off.",
+"8": "Wear the shirt under the suit jacket so the warm layers stay in order for the walk.",
+"9": "If the roads are icy, take short, even steps in the boots."
+}
+
+── ВІДПОВІДЬ (1566 симв., 13.8 с, HTTP 200) ──
+{"1":"Тканина костюма підходить для сильного морозу, тому він зігріває тебе і водночас лишається діловим одягом.","2":"Формальність сорочки пасує до ділової зустрічі, тому вона стає охайним доречним шаром під костюмом.","3":"Формальність пальта пасує до ділової зустрічі, а його вовна — те, що потрібно в сильний мороз і сніг. Це найтепліший шар тут, тому воно важливіше за решту.","4":"Формальність чобіт пасує до ділової зустрічі, і вони годяться для прогулянки по снігу. Я не певна, що підошва тримається на льоду, тож у слизький день роби короткі кроки.","5":"Тканина шарфа підходить для сильного морозу, тому він захищає твою шию під час прогулянки.","6":"Для ділової зустрічі в сильний мороз зі снігом цей образ зігріває і водночас виглядає зібраним. Пальто йде поверх костюма, шарф лежить на твоїй шиї, а чоботи проведуть тебе 20-хвилинною дорогою до офісу. Пасок пальта підкреслює твою талію, тому шари не поглинають фігуру, а широкі штани костюма та довга вертикальна лінія пальта роблять увесь образ спокійним і струнким. Якщо тротуари посипані сіллю або вкриті льодом, я не можу бути певна, що чоботи добре тримаються, тож роби короткі й рівні кроки. Я все одно їх обрала, бо вони пасують до ділової зустрічі й достатньо високі, щоб не пускати сніг.","7":"Зав'яжи пасок пальта на талії й підніми комір пальта над шарфом на шиї: це додає вертикальну лінію біля обличчя і береже від холоду.","8":"Носи сорочку під піджаком костюма, щоб теплі шари лишалися в порядку під час прогулянки.","9":"Якщо дороги вкриті льодом, роби в чоботах короткі, рівні кроки."}

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Black structured blazer, tailored fit, hip length, deep obsidian, wool blend with a subtle matte finish.\\nCrisp white button-down shirt, classic cut, knee length when tucked, pure bright white, cotton poplin.\\nHigh-waisted black trousers, straight leg, ankle length, jet black, heavy weight twill.\\nBlack leather loafers, standard width, mid-calf height, glossy black, smooth calfskin.\\nA sleek black clutch, rectangular shape, short handle, matte black, grained leather.\\nThis outfit perfectly balances the \\\"restrained and classic\\\" request with a rock concert setting by using a sharp blazer to add structure against the energetic atmosphere. The monochromatic black-on-black palette ensures she stands out with an air of cool sophistication rather than blending in with the crowd. While a jacket is included for potential evening chill, the outfit remains lightweight enough to layer or remove as temperatures shift inside the venue.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"structured blazer\\\",\\\"details\\\":\\\"tailored fit, hip length, wool blend with a subtle matte finish\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#000000\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"button-down shirt\\\",\\\"details\\\":\\\"classic cut, knee length when tucked, cotton poplin\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#FFFFFF\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"trousers\\\",\\\"details\\\":\\\"high-waisted, straight leg, ankle length, heavy weight twill\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#000000\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"loafers\\\",\\\"details\\\":\\\"standard width, mid-calf height, smooth calfskin\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#000000\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"clutch\\\",\\\"details\\\":\\\"rectangular shape, short handle, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#000000\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":546,\"output_tokens\":214},\"stop_reason\":\"end_turn\"}"
+ }
+}

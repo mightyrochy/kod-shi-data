@@ -93,6 +93,8 @@ _ТЕМП_ОСНОВИ = {"тепла": "warm", "холодна": "cool", "не�
 _ВАГА = {"ядро": "core", "звичайна": "usual", "на_межі": "borderline", "statement": "statement"}
 _ТОН_РИСИ_С_МІН = 8.0     # та сама межа, з якої `палітра_специфікація` бере тон риси якорем дуг
 _ПРИЧИН_МАКС = 3
+# Місце акценту образу — закритий перелік відповіді стилістки (`accent_place`); читач — заява ноти «Палітри»
+МІСЦЯ_АКЦЕНТУ = ("jewellery", "clothing", "other_accessories", "none")
 
 
 # ── ОЧІ Й ОСНОВА — ФАКТОМ, А НЕ ЗАЯВОЮ (аудит/ПРОДУКТ.md п.9, п.14) ──────────────────
@@ -163,16 +165,15 @@ def _до_очей(о, F):
                           "order: rank, id, colour code, family, temperature, lightness L*, saturation "
                           "band (any: a neutral fits every band), \"fit\" 0-1 — how the code scored it "
                           "for her face; \"eyes\" — how the base relates to her eye colour: echo (it repeats "
-                          "her eye colour: the same hue family — one sector of the artist's colour wheel, "
-                          "which the broader \"family\" name can cross — at a close lightness and chroma), "
+                          "her eye colour: the same sector of the artist's colour wheel at a close "
+                          "lightness and chroma), "
                           "set_off (opposite her eyes on the artist's colour wheel); "
                           "absent — no relation to her eyes; \"advised\": false — a rarer base outside "
                           "the code's advised row, listed for its relation to her eyes; \"clothing\" — "
-                          "how many clothes (tops, bottoms, dresses, sets, outer layers) of today's "
-                          "catalogue that suit the occasion lie in this base's colour family and "
-                          "lightness band, \"clothing_maybe\" — how many more only may (the shop's "
-                          "colour word); 0 — only accessories can carry this base; absent — not "
-                          "counted (a neutral base)", треба=True),
+                          "how many of today's clothes that suit the occasion lie in this base's "
+                          "colour family and lightness band, \"clothing_maybe\" — how many more only "
+                          "may (the shop's colour word); 0 — only accessories can carry it; absent — "
+                          "not counted (a neutral base)", треба=True),
         _ЗП.Поле("fixed", "palette constraints; sources",
                  "keep; build around them", без="No fixed constraints."),
         _ЗП.Поле("reason_codes", "the only codes you may give as reasons, with their meaning",
@@ -186,12 +187,17 @@ def _до_очей(о, F):
     ),
     вихід="PALETTE_CHOICE",
     скелет={"scheme": "<code>", "scheme_reasons": ["<code>"], "base": "<id>",
-            "base_reasons": ["<code>"], "saturation": "muted|medium|vivid"},
+            "base_reasons": ["<code>"], "saturation": "muted|medium|vivid",
+            "accent_place": "<code>"},
     поля_виходу={"scheme": "scheme code from \"schemes\"", "scheme_reasons": "reason code",
                  "base": "id from \"bases\"", "base_reasons": "reason code",
-                 "saturation": "band of the look's colours"},
+                 "saturation": "band of the look's colours",
+                 "accent_place": "where the accent is: %s; jewellery when she named her jewellery or earrings for it; omit if unsure" % ", ".join(МІСЦЯ_АКЦЕНТУ)},
     межі=("лише_вхід",),
     мова_промпту="en",
+    # схема останньою, без мітки «answer» у «task» (Е2-межі п.4; причина — `річ_з_фото.фото_речей`): записані відповіді
+    # палітри йшли під обгорткою {"answer": {"PALETTE_CHOICE": {…}}} у 31 з 263
+    скелет_наприкінці=True,
 )
 
 
@@ -205,12 +211,13 @@ def _її(d):
     `вк` — її `вибір_кольору` рівно таким, як його надіслав показ (без основи з речі: ту міст
     щоразу рахує сам); до нього суддя дописує лише частини стилістки."""
     вк = dict((d or {}).get("вибір_кольору") or {})
+    обрала = обрала_за_подіями(d or {})
     d = _МВ.нормалізувати_вхід(_МВ.застосувати_паспорт(dict(d or {})))
     база = dict(d.get("вибір_кольору") or {})
     схема = str(d.get("схема") or "").strip() or None
     return d, dict(схема=схема, гілка=(None if d.get("гілка") is None else int(d["гілка"])),
                    база=(база if база.get("база_hex") else None),
-                   гама=(вк.get("насиченість") or None), вк=вк)
+                   гама=(вк.get("насиченість") or None), вк=вк, обрала=обрала)
 
 
 def _смуга_бази(база):
@@ -288,7 +295,7 @@ def перелік(вхід):
                 continue
             if її["гама"] and not ахром and ч[3] != її["гама"]:
                 continue                # гаму вона обрала сама: колір основи — лише з її смуги
-            запис = dict(ключ=о["ключ"], назва=о.get("назва") or ч[0], hex=о.get("hex"), ахром=ахром,
+            запис = dict(ключ=о["ключ"], назва=о.get("назва"), hex=о.get("hex"), ахром=ахром,
                          смуга=(None if ахром else ч[3]), L=int(ч[2]), сім_я=о.get("сім_я"), темп=ч[1],
                          бал=о.get("бал"), радить=радить)
             запис["очі"] = _до_очей(запис, F)
@@ -410,8 +417,10 @@ def з_одягом(пер, вхід):
 def _основа_дротом(о):
     """Основа переліку → дріт: коди й числа, без hex (вона не число для моделі, а назва кольору)."""
     return {"rank": о["ранг"], "id": о["id"], "colour": _ВМ.код("color_name", о["назва"]) or _ВМ.UNKNOWN,
-            "family": ("neutral" if о["ахром"] or о.get("сім_я") in (None, "нейтраль")
-                       else _ДМ.СІМ_Я.get(о["сім_я"], о["сім_я"])),
+            # сім'я — та, що на чипі (`міст_основи`: нейтраль — `колір_річ.нейтраль`); клітинка з тоном поза всіма
+            # дугами (`сім_я` None) — колір невідомої сім'ї, а не нейтраль (15941: нейтраллю стилістці йшов колір)
+            "family": ("neutral" if о["ахром"] or о.get("сім_я") == "нейтраль"
+                       else _ДМ.СІМ_Я.get(о["сім_я"], о["сім_я"]) if о.get("сім_я") else _ВМ.UNKNOWN),
             "temperature": _ТЕМП_ОСНОВИ.get(о["темп"], о["темп"]), "lightness": о["L"],
             "saturation": ("any" if о["ахром"] else ГАМА_КОД.get(о["смуга"], о["смуга"])),
             "fit": round(float(о.get("бал") or 0), 2), **({"eyes": о["очі"]} if о.get("очі") else {}),
@@ -423,7 +432,7 @@ def _основа_дротом(о):
 def її_основа_дротом(база):
     """Основа, яку обрала вона (чи дала її річ з фото), → дріт тими самими полями, що й перелік."""
     ч = str(база.get("база") or "").split("·")
-    о = {"colour": _ВМ.код("color_name", ч[0]) or _ВМ.UNKNOWN}
+    о = {"colour": _ВМ.код("color_name", база.get("база_назва")) or _ВМ.UNKNOWN}
     if len(ч) == 4:
         о.update(temperature=_ТЕМП_ОСНОВИ.get(ч[1], ч[1]), lightness=int(ч[2]),
                  saturation=("any" if ч[1] == "нейтраль" else ГАМА_КОД.get(ч[3], ч[3])))
@@ -479,13 +488,13 @@ def дані_промпта(пер):
     if її["гама"]:
         fixed["saturation"] = ГАМА_КОД.get(її["гама"], її["гама"])
     if fixed:
-        from паспорт_поля import походження, походження_автора, ТИПОВЕ, ТЛУМАЧЕННЯ
-        автори = (її.get("вк") or {}).get("обрала") or {}
-        fixed["sources"] = {к: походження_автора(_СТ.автор(автори.get(к, "her"))) for к in fixed}
+        from паспорт_поля import автор_палітри, походження_автора
+        # хто обрав — за подіями (`обрала_за_подіями`), без запису — «unknown», а не «her» (п.7); основа — з запису після
+        # паспорта: позначки коду «з речі» й «типова» сильніші за її запис
+        автори = dict(її.get("обрала") or {})
         if "base" in fixed:
-            б = її["база"]
-            if б.get("база_за_замовчуванням") or б.get("база_з_речі"):
-                fixed["sources"]["base"] = походження(ТИПОВЕ if б.get("база_за_замовчуванням") else ТЛУМАЧЕННЯ)
+            автори["base"] = автор_палітри(її["база"], "base") or _СТ.НЕВІДОМО
+        fixed["sources"] = {к: походження_автора(автори.get(к, _СТ.НЕВІДОМО)) for к in fixed}
     день = _назване(пер.get("день"))
     return dict(person=пер["особа"], case=_назване(пер["випадок"]), **({"day": день} if день else {}),
                 schemes=[dict({"rank": с["ранг"], "scheme": с["код"], "weight": с["вага"],
@@ -554,20 +563,41 @@ def _у_особі(*к):
 # про взуття; цитати полів і бажань `випадок` кладе поруч (`field_quotes`, `wish_quotes`).
 _СЛОВА_ЇЇ = tuple(_ДМ.ПОЛЯ_ВИПАДКУ[к] for к in ("бажання", "вето", "вимоги_людини", "решта", "мета_слова", "намір_слова",
                                                 "переконання", "прохання_взуття")) + ("field_quotes", "wish_quotes")
+def _назване_у(слов, *ключі):
+    """Чи названо хоч один із ключів: значення є й не `unknown` (поле, якого вона не назвала, на дроті відсутнє)."""
+    return any((слов or {}).get(к) not in (None, "", [], {}, _ВМ.UNKNOWN) for к in ключі)
+
+
+# Прикраси її дня, що несуть метал (код `jewelry` дроту): «без прикрас», перли, етно, інші металу не називають
+МЕТАЛИ_ПРИКРАС = ("gold", "silver")
+
+
+def _метал(ч, о, пер):
+    """Означення причини — метал її прикрас СЬОГОДНІ (`case.jewelry`) або метал, що личить обличчю (`person.metal`):
+    звірка читає обидва факти, а не лише другий (звірка вужча за означення знімала причину при `jewelry=silver`)."""
+    прикраси = (пер.get("випадок") or {}).get("jewelry")
+    if прикраси in МЕТАЛИ_ПРИКРАС:
+        return True, "jewelry=%s" % прикраси
+    return bool(пер["особа"].get("metal")), "metal=none · jewelry=%s" % (прикраси or "none")
+
+
 ЗВІРКА_ПРИЧИН = {
     "why_her_contrast": _у_особі("contrast"),
     "why_her_eyes": _ранг_і_очі,
     "why_her_undertone": _у_особі("undertone"),
     "why_her_hair": _у_особі("hair"),
-    "why_her_metal": lambda ч, о, пер: (bool(пер["особа"].get("metal")), "metal=none"),
+    "why_her_metal": _метал,
     "why_goal_flatter": _мета("flatter"),
     "why_goal_conceal": _мета("conceal"),
     "why_goal_express": _мета("express"),
-    "why_occasion": lambda ч, о, пер: (bool(any((пер.get("випадок") or {}).get(к) for к in ("occasion", "event", "place"))
-                                            or (пер.get("день") or {}).get("place")
-                                            or (пер.get("день") or {}).get("dress_code")), "occasion=none"),
-    "why_weather": lambda ч, о, пер: (any((пер.get("день") or {}).get(к) is not None
-                                          for к in ("weather", "weather_band", "season")), "day_weather=none"),
+    # «формальність і настрій нагоди та місця»: нагода, подія, місце, формат, настрій і ошатність — у `case` або в `day`
+    "why_occasion": lambda ч, о, пер: (_назване_у(пер.get("випадок"), "occasion", "event", "place", "setting", "mood",
+                                                  "formality", "dress_code")
+                                       or _назване_у(пер.get("день"), "place", "setting", "dress_code", "formality"),
+                                       "occasion=none"),
+    # «погода, сезон і світло дня»: погода, смуга, опади, сезон і частина дня
+    "why_weather": lambda ч, о, пер: (_назване_у(пер.get("день"), "weather", "weather_band", "precipitation", "season",
+                                                 "part_of_day"), "day_weather=none"),
     "why_her_words": lambda ч, о, пер: (any((пер.get("випадок") or {}).get(к) for к in _СЛОВА_ЇЇ), "her_words=none"),
     "why_first_advice": _перша_порада,
 }
@@ -611,7 +641,8 @@ def прийняти(вхід, відповідь=None, без_моделі=None
         # форма відповіді — реєстр (`схема_відповіді`, ВИБІР_ПАЛІТРИ); не прочиталась — один повтор словами
         # розбіжності (`промпт` — промпт кроку 1, його дає показ лише першого разу), далі — ранг коду
         схема = _СВ.СХЕМИ_ВІДПОВІДІ["ВИБІР_ПАЛІТРИ"]
-        об, чому_не, _ = схема.прочитати(str(відповідь or ""))
+        об, чому_не, _ = схема.прочитати(str(відповідь or ""),
+                                         треба=tuple(ч for ч in лишила if ч in ("scheme", "base")))
         if not isinstance(об, dict) and промпт:
             return dict(промпт_повтору=схема.промпт_повтору(промпт, чому_не), причина=чому_не)
         if not isinstance(об, dict):
@@ -671,22 +702,29 @@ def прийняти(вхід, відповідь=None, без_моделі=None
             діагностика=dict(scheme=г["код"], scheme_rank=г["ранг"], of_schemes=len(пер["схеми"]),
                              advised=bool(г["радить"]), chosen_by=ХТО_СТИЛІСТКА,
                              reasons=list(причини.get("scheme") or []))))
+    місце_акценту = None
+    if без_моделі is None and str(об.get("accent_place") or "").strip():
+        місце_акценту = str(об["accent_place"]).strip()
+        if місце_акценту not in МІСЦЯ_АКЦЕНТУ:
+            відхилено.append("accent_place_outside_list:%s · taken=none" % місце_акценту)
+            місце_акценту = None
     вк = dict(її["вк"])
     if о is not None:
         вк.update(база=о["ключ"] if not о["ахром"] else "·".join(о["ключ"].split("·")[:3] + [гама]),
-                  база_hex=о["hex"], база_тип=("нейтраль" if о["ахром"] else "колір"), база_стилістки=True)
+                  база_hex=о["hex"], база_назва=о["назва"], база_тип=("нейтраль" if о["ахром"] else "колір"), база_стилістки=True)
     if обрала["saturation"] == ХТО_СТИЛІСТКА:
         вк["насиченість"] = гама
     return dict(
         вибір=dict(схема=г["схема"], ранг_схеми=г["ранг"], схема_рідша=not г["радить"],
                    вибір_кольору=(вк or None), основа_ранг=(о["ранг"] if о else None),
-                   гама=гама, обрала=обрала, причини=причини),
+                   гама=гама, обрала=обрала, причини=причини, місце_акценту=місце_акценту),
         лишила=лишила, знахідки=знахідки, відхилено=відхилено, без_моделі=без_моделі,
         повідомлення=повідомлення(г, о, гама, обрала, причини, лишила,
-                                  чому_код or ("outside_list" if відхилено else None)))
+                                  чому_код or ("outside_list" if відхилено else None),
+                                  місце_акценту, (пер.get("випадок") or {}).get("jewelry")))
 
 
-def повідомлення(г, о, гама, обрала, причини, лишила, чому_код=None):
+def повідомлення(г, о, гама, обрала, причини, лишила, чому_код=None, місце_акценту=None, метал_прикрас=None):
     """Рядок на екрані «Палітра» заявами (Ч-1, п.12) про те, що вона лишила стилістці: що обрала
     стилістка й чому; чого не обрала — чесно, і за чим тоді збирається образ. Речення пише мовна
     модель; без неї рядка нема. Обране нею тут не повторюється — про це свій рядок (нота схеми)."""
@@ -712,6 +750,13 @@ def повідомлення(г, о, гама, обрала, причини, л�
             заяви += [_ВМ.заява("stylist_did_not_choose", part="base", why=(чому_код or ПРИЧИНА_НЕМАЄ_МОДЕЛІ))] + [_ВМ.заява("base_from_her_features", part="base")]
     if "saturation" in лишила and обрала.get("saturation") == ХТО_СТИЛІСТКА and (о is None or о["ахром"]):
         заяви.append(_ВМ.заява("stylist_chose_saturation", part="saturation", saturation=ГАМА_КОД.get(гама, гама)))
+    # Місце акценту — факт стилістки (`accent_place`), не вгадка коду: нота каже його, лише коли вона його назвала.
+    # Метал прикрас — її слово з `case.jewelry`, коли акцент у прикрасах.
+    if заяви and місце_акценту in МІСЦЯ_АКЦЕНТУ and ХТО_СТИЛІСТКА in обрала.values():
+        значення = dict(accent_in=місце_акценту)
+        if місце_акценту == "jewellery" and метал_прикрас in МЕТАЛИ_ПРИКРАС:
+            значення["jewellery_metal"] = str(метал_прикрас)
+        заяви.append(_ВМ.заява("stylist_accent_place", part="scheme", **значення))
     if not заяви:
         return None
     вид = "palette_stylist_choice" if ХТО_СТИЛІСТКА in обрала.values() else "palette_default_scheme"
@@ -719,6 +764,22 @@ def повідомлення(г, о, гама, обрала, причини, л�
 
 
 # ── ЯК ЦЕ ВИДНО СУДДІ ОБРАЗУ Й ЗВІТУ ────────────────────────────────────────
+def обрала_за_подіями(d):
+    """Частини палітри, про які вхід має подію її вибору → автор: `scheme` — її схема чи гілка входу, не підставлена зі
+    стилістки (`схема_стилістки`); `base`, `saturation` — запис `вибір_кольору` за `паспорт_поля.автор_палітри` (позначка
+    коду чи запис її дії `обрала`). Частини без події тут нема: її читач бере «unknown», а не «her» (п.7, корінь
+    Е2-опора-пояснення)."""
+    from паспорт_поля import автор_палітри
+    вих = {}
+    if (bool(str(d.get("схема") or "").strip()) or d.get("гілка") is not None) and not d.get("схема_стилістки"):
+        вих["scheme"] = ХТО_ВОНА
+    for к in ("base", "saturation"):
+        автор = автор_палітри(d.get("вибір_кольору"), к)
+        if автор:
+            вих[к] = автор
+    return вих
+
+
 def для_суду(d):
     """Хто обрав схему цього прогону — для запису вердикта й пункту P8 чекліста палітри.
 
@@ -727,6 +788,7 @@ def для_суду(d):
     обрала сама. `обрала` — dict частина (`scheme`/`base`/`saturation`) → `her` | `stylist` |
     `code_rank`; `бракує` — назване поле для «без входу», коли схему узяв ранг коду (кодом)."""
     вс = d.get("вибір_стилістки") if isinstance(d.get("вибір_стилістки"), dict) else None
+    її_частини = обрала_за_подіями(d)
     # СХЕМУ ОБРАЛА ВОНА — ЗА ЇЇ ДІЄЮ НА ЕКРАНІ (корінь Е2-втрата-слова п.6, рядок 1413): ім'я схеми
     # (`схема`) чи старий номер (`гілка`) її входу, коли схему не підставив показ зі стилістки
     # (`схема_стилістки`, як `база_стилістки` основи — `показ/стадії_збирання.js`, `вхідМостаП`). Ту саму
@@ -744,6 +806,8 @@ def для_суду(d):
             обрала["scheme"] = ХТО_КОД
         if обрала.get("scheme") != ХТО_СТИЛІСТКА:
             причини.pop("scheme", None)
+        for к, автор in її_частини.items():
+            обрала.setdefault(к, автор)
         бракує = None
         if обрала.get("scheme") == ХТО_КОД:
             бракує = "stylist_choice · %s" % (вс.get("без_моделі") or " | ".join(вс.get("відхилено") or [])
@@ -752,9 +816,9 @@ def для_суду(d):
                     знахідки=вс.get("знахідки") or [], відхилено=вс.get("відхилено") or [],
                     без_моделі=вс.get("без_моделі"), бракує=бракує)
     if її_схема:
-        return dict(обрала={"scheme": ХТО_ВОНА}, причини={}, знахідки=[], відхилено=[], без_моделі=None,
+        return dict(обрала=dict(її_частини, scheme=ХТО_ВОНА), причини={}, знахідки=[], відхилено=[], без_моделі=None,
                     бракує=None)
-    return dict(обрала={"scheme": ХТО_КОД}, причини={}, знахідки=[], відхилено=[], без_моделі=None,
+    return dict(обрала=dict(її_частини, scheme=ХТО_КОД), причини={}, знахідки=[], відхилено=[], без_моделі=None,
                 бракує="stylist_choice · not_in_input · scheme_from_code_rank:first_branch")
 
 
@@ -768,6 +832,12 @@ def лише_її(вибір_кольору, вибір_стилістки=None)
             вк.pop(к, None)
     if (((вибір_стилістки or {}).get("вибір") or {}).get("обрала") or {}).get("saturation") == ХТО_СТИЛІСТКА:
         вк.pop("насиченість", None)
+    if isinstance(вк.get("обрала"), dict):
+        обрала = {к: а for к, а in вк["обрала"].items() if а != ХТО_СТИЛІСТКА}
+        if обрала:
+            вк["обрала"] = обрала
+        else:
+            вк.pop("обрала")
     return вк or None
 
 

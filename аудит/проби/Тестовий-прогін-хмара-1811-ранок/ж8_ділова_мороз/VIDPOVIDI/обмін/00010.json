@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Wool crepe trousers, straight cut, full length with a slight break over the boot, charcoal #36393F, fine brushed wool blend\\n\\nFine merino turtleneck, regular fit, hip length, ivory #EDE6D6, soft merino wool\\n\\nWool-blend cardigan, relaxed cut, hip length with a button front, heather grey #8A8D91, textured knit\\n\\nThermal tights worn under the trousers, opaque, full length, black #1A1A1A, soft fleece-lined knit\\n\\nAnkle boots, low block heel, round toe, waterproof with a grippy rubber sole, dark brown #3B2A20, treated leather\\n\\nLong puffer coat, knee-to-calf length, hooded, with a warm insulated fill, black #1C1C1E, water-repellent nylon\\n\\nKnit beanie, close fit, charcoal #4A4D52, wool with a fleece lining\\n\\nLeather gloves, wrist length, lined, black #1A1A1A, smooth leather with a cashmere lining\\n\\nWool scarf, wide and long, wrapped twice, deep burgundy #6B2A35, dense woven wool\\n\\nTote bag, structured, medium size, closed top, black #202020, water-resistant coated leather\\n\\nWhy this outfit works: It keeps the neat business look she needs, with tailored trousers, a refined knit and a textured cardigan, while staying warm for a 20-minute walk in deep frost and snow. The waterproof boots with a grippy sole handle snowy pavement and road salt, and the treated leather is easy to wipe clean when she arrives. Layers like the thermal tights, the merino and the long puffer coat can be taken off in the office, leaving her polished for the meeting. The calm neutrals, lifted by a burgundy scarf, feel professional and put together.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Wool crepe trousers\\\",\\\"details\\\":\\\"straight cut, full length with a slight break over the boot, fine brushed wool blend\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#36393F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Fine merino turtleneck\\\",\\\"details\\\":\\\"regular fit, hip length, soft merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#EDE6D6\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wool-blend cardigan\\\",\\\"details\\\":\\\"relaxed cut, hip length with a button front, textured knit\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#8A8D91\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Thermal tights\\\",\\\"details\\\":\\\"worn under the trousers, opaque, full length, soft fleece-lined knit\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"low block heel, round toe, waterproof with a grippy rubber sole, treated leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#3B2A20\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Long puffer coat\\\",\\\"details\\\":\\\"knee-to-calf length, hooded, warm insulated fill, water-repellent nylon\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#1C1C1E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Knit beanie\\\",\\\"details\\\":\\\"close fit, wool with a fleece lining\\\",\\\"slot\\\":\\\"headwear\\\",\\\"color_hex\\\":\\\"#4A4D52\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Leather gloves\\\",\\\"details\\\":\\\"wrist length, lined, smooth leather with a cashmere lining\\\",\\\"slot\\\":\\\"gloves\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wool scarf\\\",\\\"details\\\":\\\"wide and long, wrapped twice, dense woven wool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#6B2A35\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tote bag\\\",\\\"details\\\":\\\"structured, medium size, closed top, water-resistant coated leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#202020\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2280,\"output_tokens\":658},\"stop_reason\":\"end_turn\"}"
+ }
+}

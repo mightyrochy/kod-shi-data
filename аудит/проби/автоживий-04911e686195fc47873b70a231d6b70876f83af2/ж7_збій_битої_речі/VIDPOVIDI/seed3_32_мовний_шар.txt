@@ -1,0 +1,61 @@
+── ПРОМПТ (7400 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: t_shirt · about it: text н=1
+2 — kind: skirt · about it: text н=2
+3 — kind: boots · about it: text н=3
+4 — kind: ring · about it: text н=4
+5 — kind: tote · about it: text н=5
+6 — kind: coat · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "I chose this t-shirt to keep the silhouette clean and covered, offering a soft base layer that works perfectly with the coat while you walk through the snow without exposing any skin.",
+"2": "This skirt keeps your lower body contained and neat, ensuring no accidental exposure of legs or ankles as you navigate the winter weather and your commute.",
+"3": "I picked these boots because they enclose your feet completely, giving you the stability needed for snowy roads while strictly following your wish to avoid any open-toed shoes.",
+"4": "This ring adds a small, polished detail to your hands, letting you maintain a professional look with a subtle accent that does not compete with your covered style.",
+"5": "I selected this tote bag as your practical companion for carrying your work essentials while walking, its structured shape fitting well with the modesty of your entire outfit.",
+"6": "This coat is essential for shielding you from the frost and snow, providing full coverage that honors your request to stay concealed while ensuring you stay comfortable during your walk to work.",
+"7": "I chose this look because you asked to walk to work in the snow without revealing skin or showing toes. The thick coat keeps you warm against the frost, while the t-shirt and skirt handle your daily routine with a quiet, covered silhouette. Your boots provide the necessary grip for snowy streets while remaining fully enclosed, perfectly honoring your wish to avoid open footwear. This outfit respects your need for a concealed appearance that is nonetheless practical for a winter walk.",
+"8": "Wear the coat open over the t-shirt and skirt so you can carry the tote with one hand while keeping your arms visible, balancing warmth with ease.",
+"9": "The ring adds a subtle touch of polish to your fingers as you walk through the snow, completing your professional look without drawing attention away from your covered style.",
+"10": "Жіноча сумка шопер шкіряна коричнева — Added a structured leather tote to satisfy the 'no_bag' requirement and anchor the outfit for walking on salted roads; it replaces the missing accessory slot and grounds the neutral palette.",
+"11": "Топ ажурний світла Lucy оливка — You asked for concealment and no open zones; while the shirt has an 'open_zone' fact in its description, I chose this outfit because the layering with the coat and the overall neutral palette successfully hides those areas, serving your intent to look neat and protected rather than exposed.",
+"12": "Топ ажурний світла Lucy оливка — Olive t-shirt is below_band but chosen for its texture and color contrast with the neutral palette.",
+"13": "Жіноча сумка шопер шкіряна коричнева — Added a brown leather tote to satisfy the 'no_bag' requirement and anchor the outfit for carrying work essentials while walking on slippery surfaces.",
+"14": "Жіноча сумка шопер шкіряна коричнева — Added a brown leather tote to satisfy the 'no_bag' requirement and anchor the outfit for carrying essentials while walking on slippery surfaces."
+}
+
+── ВІДПОВІДЬ (3261 симв., 20.7 с, HTTP 200) ──
+{
+"1": "Я обрала цю футболку, щоб силует залишався чистим і закритим, пропонуючи м’який базовий шар, який чудово поєднується з пальтами під час прогулянки снігом без оголення шкіри.",
+"2": "Ця спідниця тримає твою нижню частину тіла зібраною та охайною, гарантуючи відсутність випадкового відкриття ніг або щиколоток під час пересування зимовою погодою та твоєї дороги на роботу.",
+"3": "Я обрала ці черевики, тому що вони повністю закривають твої ноги, даруючи тобі стійкість, необхідну для снігових доріг, суворо дотримуючись твого бажання уникати будь-якого взуття з відкритим носком.",
+"4": "Ця каблучка додає невелику вишукану деталь на твої руки, дозволяючи тобі підтримувати професійний вигляд із ледь помітним акцентом, який не конкурує з твоєю закритим стилем.",
+"5": "Я обрала цю сумку-тоут як твого практичного супутника для перенесення необхідних речей на роботі під час прогулянки, її структурована форма добре поєднується зі скромністю всього твого образу.",
+"6": "Це пальто є важливим для захисту тебе від морозу та снігу, забезпечуючи повне покриття, яке шанує твоє прохання залишатися прихованою, водночас гарантуючи тобі комфорт під час прогулянки на роботу.",
+"7": "Я обрала цей образ, тому що ти попросила пройтися до роботи в снігу без розкриття шкіри або показу пальців ніг. Тепле пальто захищає тебе від морозу, а футболка та спідниця справляються з твоїм повсякденним розпорядком із спокійним і закритим силуетом. Твої черевики забезпечують необхідне зчеплення на снігових вулицях, залишаючись повністю закритими, чудово втілюючи твоє бажання уникати відкритого взуття. Цей образ поважає твою потребу у прихованому вигляді, який водночас є практичним для зимової прогулянки.",
+"8": "Одягни пальто розстебнутим поверх футболки та спідниці, щоб ти могла нести сумку однією рукою, тримаючи руки видимими, поєднуючи тепло з легкістю.",
+"9": "Каблучка додає ледь помітний штрих вишуканості на твої пальці під час прогулянки снігом, завершуючи твій професійний образ без відволікання уваги від твоєї закритої стилістики.",
+"10": "Жіноча сумка-шопер шкіряна коричнева — Додала структуровану сумку з натуральної шкіри, щоб задовольнити вимогу «без_сумки» та підкреслити образ для прогулянки слизькими дорогами; вона замінює відсутній аксесуарний слот і закріплює нейтральну палітру.",
+"11": "Топ ажурний світла Lucy оливковий — Ти попросила приховування та відсутність відкритих зон; хоча футболка має факт «open_zone» у своєму описі, я обрала цей образ, тому що нашарування з пальта та загальна нейтральна палітра успішно приховують ці зони, слугуючи твоєму наміру виглядати охайно та захищено, а не відкрито.",
+"12": "Топ ажурний світла Lucy оливковий — Оливкова футболка знаходиться нижче лінії пояса, але обрана за її текстуру та колірний контраст із нейтральною палітрою.",
+"13": "Жіноча сумка-шопер шкіряна коричнева — Додала сумку з натуральної шкіри коричневого кольору, щоб задовольнити вимогу «без_сумки» та підкреслити образ для перенесення необхідних речей під час прогулянки слизькими поверхнями.",
+"14": "Жіноча сумка-шопер шкіряна коричнева — Додала сумку з натуральної шкіри коричневого кольору, щоб задовольнити вимогу «без_сумки» та підкреслити образ для перенесення необхідних речей під час прогулянки слизькими поверхнями."
+}

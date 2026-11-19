@@ -33,6 +33,10 @@ argv() { $PY -c "import json
 for l in open('$(wp "$W/cc.log")', encoding='utf-8'): print(' '.join(json.loads(l)['argv']))" 2>/dev/null | tail -1; }
 prompt() { $PY -c "import json
 print([json.loads(l) for l in open('$(wp "$W/cc.log")', encoding='utf-8')][-1]['stdin'])" 2>/dev/null; }
+bgc() { $PY -c "import json
+print([json.loads(l) for l in open('$(wp "$W/cc.log")', encoding='utf-8')][-1]['bg_ceiling'])" 2>/dev/null; }
+bmx() { $PY -c "import json
+print([json.loads(l) for l in open('$(wp "$W/cc.log")', encoding='utf-8')][-1]['bash_max'])" 2>/dev/null; }
 # Тека сесії: cwd — cr/w/<прогін>/repo, TEMP і TMP — cr/w/<прогін>/tmp (з FAKE_CC_LOG).
 copydir() { $PY -c "import json, os, sys
 e = [json.loads(l) for l in open(sys.argv[1], encoding='utf-8')][-1]
@@ -51,6 +55,8 @@ setup k1; mark "$SLUG/$M/1"; cr
 SHA=$(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null)
 chk "рядок ГОТОВО claude/<наряд> <SHA origin> МОДЕЛЬ $M" '[ -n "$SHA" ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $SHA МОДЕЛЬ $M" ]'
 chk "argv: -p --model claude-sonnet-5-5 --effort medium --permission-mode auto stream-json" '[ "$(argv)" = "-p --model claude-sonnet-5-5 --effort medium --permission-mode auto --output-format stream-json --verbose" ]'
+chk "claude -p запущено зі змінною CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 (є: $(bgc))" '[ "$(bgc)" = 0 ]'
+chk "claude -p запущено з BASH_MAX_TIMEOUT_MS=2147483647: явний timeout Bash понад 10 хв не обрізається (є: $(bmx))" '[ "$(bmx)" = 2147483647 ]'
 chk "промпт: НОУТБУК.md, наряд дослівно, вимикає лише обгортка, без «Продовжуй»" 'P=$(prompt); [[ "$P" == *"аудит/НОУТБУК.md"* && "$P" == *"Підніми й зупини LM Studio."* && "$P" == *"вимикає лише обгортка за позначкою"* && "$P" != *"Продовжуй"* && "$P" != *"запускач —"* ]]'
 # Наряд 08.11 велів «НОУТБУК ГОТОВО #PR <SHA>» — BAD_BRANCH: формат звіту повторено після наряду, у рядку, що сильніший.
 chk "промпт: після наряду — формат звіту з гілкою, не номером PR" '[[ "$(prompt | sed -n "/КІНЕЦЬ НАРЯДУ/,\$p")" == *"НОУТБУК ГОТОВО <гілка claude/…>"*"не номер PR"*"формат звіту вище"* ]]'
@@ -120,6 +126,15 @@ FAKE_BOOT=b2 cr; chk "наступний прохід — нічого ново�
 setup k6b; rm "$W/cr/boot.txt"; mark "ВИМКНИ-НОУТБУК/cc-off/1"; cr
 chk "позначка до першого проходу після ввімкнення → BOOT, без shutdown" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/ВИМКНИ-НОУТБУК BOOT" ] && [ ! -e "$W/cr/shutdown.txt" ]'
 mark "ВИМКНИ-НОУТБУК/cc-off/2"; cr; chk "наступна спроба — вимикає" '[ -e "$W/cr/shutdown.txt" ]'
+echo "=== К6в вимкнення не під власником (10.11 ноутбук вимкнувся під ним)"
+setup k6c; mark "ВИМКНИ-НОУТБУК/cc-off/1"; MS=$(git -C "$W/seed" rev-parse main); FAKE_OWNER=1 cr
+chk "сеанс активний і не заблокований — рядок OWNER, без ВИМКНЕНО й shutdown" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/ВИМКНИ-НОУТБУК OWNER" ] && [ ! -e "$W/cr/shutdown.txt" ]'
+FAKE_OWNER=1 cr; chk "наступний прохід — позначка не закрита, рядка вдруге нема" '[ "$(nlines)" = 1 ] && [ ! -e "$W/cr/shutdown.txt" ] && ! grep -rqs "^OFF " "$W/cr/state"'
+cr; chk "сеанс заблоковано чи нема — ВИМКНЕНО <SHA> і shutdown, OWNER не повторено" '[ "$(nlines)" = 2 ] && [ -e "$W/cr/shutdown.txt" ] && [ "$(lines | grep -c "ВИМКНЕНО $MS")" = 1 ]'
+setup k6d; mark "ВИМКНИ-НОУТБУК/cc-off/1"; FAKE_OWNER=late cr
+chk "власник з'явився після ВИМКНЕНО — shutdown нема, є рядок OWNER, стан не OFF" '[ "$(nlines)" = 2 ] && [ "$(lines | tail -n1)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/ВИМКНИ-НОУТБУК OWNER" ] && [ ! -e "$W/cr/shutdown.txt" ] && ! grep -rqs "^OFF " "$W/cr/state"'
+FAKE_OWNER=1 cr; chk "позначку не з'їдено: власник ще є — нічого нового, shutdown нема" '[ "$(nlines)" = 2 ] && [ ! -e "$W/cr/shutdown.txt" ] && ! grep -rqs "^DONE BOOT" "$W/cr/state"'
+cr; chk "власник пішов — позначка пройшла знову: ВИМКНЕНО і shutdown" '[ -e "$W/cr/shutdown.txt" ] && [ "$(lines | grep -c "ВИМКНЕНО [0-9a-f]\{40\}")" = 2 ]'
 echo "=== К7 gemini-run позначок cc- не бере й узятими не позначає"
 setup k7; mark "$SLUG/$M/1"
 "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_run.ps1")" -ArgsJson "{\"RepoDir\":\"$(wp "$W/clone")\",\"RunsDir\":\"$(wp "$W/runs")\",\"OutDir\":\"$(wp "$W/gem")\",\"RepoUrl\":\"$(wp "$W/origin.git")\",\"AgyExe\":\"$(stub fake_agy)\",\"TurnMinutes\":0.05,\"TotalMinutes\":0.5,\"MaxNudges\":3}" >/dev/null 2>&1
@@ -158,5 +173,54 @@ chk "після звіту копії нема, давню копію слота
 setup k10b; mark "$SLUG/$M/1"; FAKE_CC_SCENARIO=unpushed cr
 chk "незапушений коміт: BLOCKED і COPY_KEPT, тека з kept.txt лишається" '[ "$(lines | LC_ALL=C sort)" = "$(printf "%s\n" "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG BLOCKED" "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG COPY_KEPT" | LC_ALL=C sort)" ] && ls "$W"/cr/w/*/kept.txt >/dev/null 2>&1'
 cr; chk "перший прохід нового запуску лишену копію не прибирає" 'ls "$W"/cr/w/*/kept.txt >/dev/null 2>&1 && [ "$(git -C "$W/clone" worktree list | wc -l)" = 2 ]'
+
+echo "=== К11 fetch сусіднього процесу між читанням посилань і записом не рухає посилань claude-run (14592)"
+# Клон спільний із сесіями й виконавцями, а їхній fetch пише refs/remotes/origin/*. Fetch claude-run стоїть у польоті на
+# отриманні пакета (посилання вже прочитано), сусідній fetch у тому ж клоні посуває origin/main — до: «cannot lock ref».
+setup k11; mark "$SLUG/$M/1"; HOLD="$W/hold"; mkdir -p "$HOLD"
+printf '#!/bin/sh\nif mkdir "$HOLD_DIR/once" 2>/dev/null; then : > "$HOLD_DIR/blocked"; i=0; while [ ! -e "$HOLD_DIR/release" ] && [ $i -lt 600 ]; do sleep 0.1; i=$((i+1)); done; fi\nexec "$@"\n' > "$W/hold.sh"
+(cd "$W/seed"; git commit -q --allow-empty -m next; git push -q origin main 2>/dev/null); NEXT=$(git -C "$W/seed" rev-parse HEAD)
+# packObjectsHook git слухає лише з глобального файла налаштувань: свій файл — лише процесу claude-run.
+printf '[uploadpack]\n\tpackObjectsHook = sh %s\n' "$(wp "$W/hold.sh")" > "$W/hold.cfg"
+( export HOLD_DIR="$(wp "$HOLD")" GIT_CONFIG_GLOBAL="$(wp "$W/hold.cfg")"; cr ) & CRP=$!
+for i in $(seq 1 300); do [ -e "$HOLD/blocked" ] && break; sleep 0.1; done
+git -C "$W/clone" fetch -q origin main 2>/dev/null; : > "$HOLD/release"; wait $CRP
+SHA=$(git -C "$W/origin.git" rev-parse "refs/heads/claude/$SLUG" 2>/dev/null)
+chk "fetch сусіда в полёті: origin/main клону посунуто ($(git -C "$W/clone" rev-parse --short refs/remotes/origin/main))" '[ "$(git -C "$W/clone" rev-parse refs/remotes/origin/main)" = "$NEXT" ]'
+chk "claude-run.log без «cannot lock ref»: $(grep -c 'cannot lock ref' "$W/cr/claude-run.log" 2>/dev/null || true) разів" '! grep -q "cannot lock ref" "$W/cr/claude-run.log" 2>/dev/null'
+chk "прохід дійшов до наряду: ГОТОВО з SHA origin (є: $(lines))" '[ -n "$SHA" ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ГОТОВО claude/$SLUG $SHA МОДЕЛЬ $M" ]'
+echo "=== К12 відстала гілка: крок «влий main» несе SHA, отриманий claude-run, а не origin/main спільного клону (14592)"
+# claude-run освіжає лише refs/claude-run/*; refs/remotes/origin/main клону лишається таким, яким його лишили сусіди, — до:
+# у промпті «git merge origin/main», тобто стара голова.
+setup k12; mark "$SLUG/$M/1"; cr
+(cd "$W/seed"; git commit -q --allow-empty -m next; git push -q origin main 2>/dev/null); NEXT=$(git -C "$W/seed" rev-parse HEAD)
+STALE=$(git -C "$W/clone" rev-parse refs/remotes/origin/main)
+mark "$SLUG/cc-claude-opus-5-5/2"; cr
+chk "origin/main клону не освіжено (стара голова $(git -C "$W/clone" rev-parse --short refs/remotes/origin/main))" '[ "$(git -C "$W/clone" rev-parse refs/remotes/origin/main)" = "$STALE" ] && [ "$STALE" != "$NEXT" ]'
+chk "промпт відстала гілка: «git merge $NEXT» (свіжий main), без origin/main" 'P=$(prompt); [[ "$P" == *"Перший крок: влий свіжий"* && "$P" == *"git merge $NEXT"* && "$P" != *"origin/main"* ]]'
+echo "=== К13 ЗНЯТО (коміт поверх позначки): CANCELLED з причиною; прогін, що йде, зупинено; публікатор знімає позначку"
+has() { git -C "$W/origin.git" rev-parse -q --verify "refs/heads/gemini-queue/$1" 2>/dev/null; }
+zn() { O=$(has "$1"); C=$(git -C "$W/seed" commit-tree "$O^{tree}" -p "$O" -m "ЗНЯТО: $2"); git -C "$W/seed" push -q origin "$C:refs/heads/gemini-queue/$1" 2>/dev/null; }
+# claude-run поруч із теки публікатора (як на ноутбуці): публікатор читає її записи на зняття.
+CRW() { mkdir -p "$W/claude-run"; cp "$W/cr/boot.txt" "$W/claude-run/"; printf '{"WorkDir":"%s"%s}' "$(wp "$W/claude-run")" "$1"; }
+pub() { "$PW" -NoProfile -File "$(wp "$H/side.ps1")" -Script "$(wp "$SRC/gemini_publish.ps1")" -ArgsJson "{\"WorkDir\":\"$(wp "$W/pub")\",\"OutDir\":\"$(wp "$W/gem")\",\"OutboxDir\":\"$(wp "$W/out")\",\"RepoUrl\":\"$(wp "$W/origin.git")\",\"ClaudeExe\":\"$(stub fake_claude)\",\"SendRetryDelaySeconds\":0}" >/dev/null 2>&1; }
+setup k13; mark "$SLUG/$M/1"; zn "$SLUG/$M/1" 'інша смуга'; cr "$(CRW '')"
+chk "до узяття: рядок CANCELLED, claude не кликано, причина в результаті" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG CANCELLED" ] && [ ! -e "$W/cc.log" ] && grep -q "\"reason\":\"інша смуга\"" "$W"/claude-run/runs/*/result.json'
+chk "запис на зняття з черги — у claude-run/finished" '[ "$(cat "$W"/claude-run/finished/*.txt)" = "gemini-queue/$SLUG/$M/1 $(has "$SLUG/$M/1")" ]'
+pub; pub; chk "публікатор зняв позначку з origin" '[ -z "$(has "$SLUG/$M/1")" ] && [ -z "$(ls "$W/claude-run/finished")" ]'
+setup k13b; mark "$SLUG/$M/1"; T0=$(date +%s); FAKE_CC_SCENARIO=hang cr "$(CRW ',"PollMinutes":0.05,"HangMinutes":5')" & CP=$!
+for i in $(seq 60); do grep -qs '^STARTED [0-9]' "$W"/claude-run/state/*.txt && break; sleep 1; done
+zn "$SLUG/$M/1" 'інша смуга'; wait "$CP"; T1=$(date +%s)
+chk "під час прогону: claude зупинено за $((T1 - T0)) с (HANG — за 5 хв), один рядок CANCELLED" '[ $((T1 - T0)) -lt 90 ] && [ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG CANCELLED" ] && [ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
+chk "стан узятого прогону й знятої позначки — DONE … CANCELLED" '[ "$(grep -l "^DONE .* CANCELLED$" "$W"/claude-run/state/*.txt | wc -l)" = 2 ]'
+
+echo "=== К14 фонові завдання агента: claude -p без власної межі очікування, обмежує лише завислість"
+# Власна межа claude -p (зупинити фон і вийти через 10 хв після останнього ходу, за годинником стіни) обривала прогін без
+# звіту; змінна 0 знімає її, і мовчазне очікування фону лишається під порогом завислості обгортки.
+setup k14; mark "$SLUG/$M/1"; T0=$(date +%s); BASH_MAX_TIMEOUT_MS=600000 CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=600000 FAKE_CC_SCENARIO=bg_wait cr; T1=$(date +%s)
+chk "змінна середовища сесії обгортку не обходить: у claude — 0, не 600000 (є: $(bgc))" '[ "$(bgc)" = 0 ]'
+chk "змінна середовища сесії BASH_MAX_TIMEOUT_MS=600000 обгортку теж не обходить: у claude — 2147483647 (є: $(bmx))" '[ "$(bmx)" = 2147483647 ]'
+chk "фон ще йде, claude мовчить → HANG за ≤ 60 с, не NO_REPORT (є: $((T1 - T0)) с, $(lines))" '[ "$(lines)" = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$SLUG HANG" ] && [ $((T1 - T0)) -le 60 ]'
+chk "процес після HANG зупинено" '[ -e "$W/cc.log.pid" ] && ! alive "$W/cc.log.pid"'
 
 echo; [ $BAD = 0 ] && echo "ВСЕ ✓" || echo "ЗБІЙ ✗"; exit $BAD

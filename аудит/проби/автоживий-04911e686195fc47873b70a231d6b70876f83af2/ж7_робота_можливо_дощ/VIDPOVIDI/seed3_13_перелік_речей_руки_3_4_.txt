@@ -1,0 +1,44 @@
+── ПРОМПТ (2337 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined silk-blend blouse with a relaxed collar, straight cut, length hitting at the hip, ivory white (#fffff0), soft drape.\nTailored wool crepe trousers, wide-leg silhouette, ankle-length hem, charcoal grey (#36454f), structured weave.\nA textured camel overcoat, single-breasted cut, knee-length, warm camel brown (#c19a6b), heavy knit fabric.\nLeather loafers with a slight heel, rounded toe, classic tan (#d2b48c), smooth calfskin leather.\nThin tortoiseshell acetate glasses, rectangular frame, neutral amber-tinted lenses, lightweight plastic.\nThis ensemble works perfectly for an autumn morning at the office because the tailored trousers and refined blouse maintain a professional \"neat\" aesthetic while allowing comfortable walking through potential rain. The camel coat provides essential warmth without sacrificing style, acting as a sophisticated outer layer that transitions seamlessly from desk work to a brief outdoor walk. The neutral color palette of ivory, charcoal, and tan complements her skin tone while ensuring she looks polished and ready for the day ahead."}
+
+── ВІДПОВІДЬ (857 симв., 5.1 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "silk-blend blouse",
+"details": "relaxed collar, straight cut, length hitting at the hip, soft drape",
+"slot": "top",
+"color_hex": "#fffff0",
+"worn": true
+},
+{
+"name": "wool crepe trousers",
+"details": "wide-leg silhouette, ankle-length hem, structured weave",
+"slot": "bottom",
+"color_hex": "#36454f",
+"worn": true
+},
+{
+"name": "textured camel overcoat",
+"details": "single-breasted cut, knee-length, heavy knit fabric",
+"slot": "outerwear",
+"color_hex": "#c19a6b",
+"worn": true
+},
+{
+"name": "leather loafers",
+"details": "slight heel, rounded toe, smooth calfskin leather",
+"slot": "shoes",
+"color_hex": "#d2b48c",
+"worn": true
+},
+{
+"name": "tortoiseshell acetate glasses",
+"details": "rectangular frame, neutral amber-tinted lenses, lightweight plastic",
+"slot": "glasses",
+"color_hex": null,
+"worn": true
+}
+]
+}

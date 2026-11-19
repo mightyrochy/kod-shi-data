@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"own\": \"<id from her_items or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\", \"\\\"her_items\\\" — her own items; an item of the description that is one of them gets its id in \\\"own\\\"\"]}, \"description\": \"Sleeveless fitted top: a square-neck bodysuit-style top in cropped length, ivory-black contrast not needed, color charcoal black (#222222), fine-gauge stretch jersey\\n\\nMidi slip skirt: bias cut, falling mid-calf, color deep forest green (#1F3D2B), satin-finish viscose\\n\\nCropped textured jacket: a boxy, collarless bouclé jacket with a hip-skimming hem, color ivory (#F2EDE3), wool-blend bouclé\\n\\nWhite leather slingback flat sandals (her own item, as in the photo): open toe, adjustable buckle strap at the heel, low black lugged sole, color white (no hex given), smooth leather\\n\\nSmall shoulder bag: structured baguette shape, color black (#1A1A1A), smooth leather\\n\\nDrop earrings: sleek, medium length, color antique gold (#B08D57), polished metal\\n\\nWhy this outfit works: The deep green satin skirt gives a party-ready sheen under evening artificial light, while the charcoal top keeps the look sleek and neat rather than overdressed. The ivory bouclé jacket adds texture and a touch of polish for an autumn Saturday night, and it can come off once you are warming up on the dance floor. Her white slingback sandals bring a clean, modern contrast, and their black sole echoes the top and the bag so the whole outfit feels intentional. Gold earrings finish it with a little celebratory glow without competing with the birthday girl.\", \"her_items\": [{\"id\": \"її-ф1\", \"name\": \"White leather slingback flat sandals\"}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Sleeveless fitted top\\\",\\\"details\\\":\\\"square-neck bodysuit-style top, cropped length, fine-gauge stretch jersey\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#222222\\\",\\\"own\\\":null,\\\"worn\\\":true},{\\\"name\\\":\\\"Midi slip skirt\\\",\\\"details\\\":\\\"bias cut, falling mid-calf, satin-finish viscose\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#1F3D2B\\\",\\\"own\\\":null,\\\"worn\\\":true},{\\\"name\\\":\\\"Cropped textured jacket\\\",\\\"details\\\":\\\"boxy, collarless bouclé jacket with a hip-skimming hem, wool-blend bouclé\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#F2EDE3\\\",\\\"own\\\":null,\\\"worn\\\":true},{\\\"name\\\":\\\"White leather slingback flat sandals\\\",\\\"details\\\":\\\"open toe, adjustable buckle strap at the heel, low black lugged sole, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":null,\\\"own\\\":\\\"її-ф1\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small shoulder bag\\\",\\\"details\\\":\\\"structured baguette shape, smooth leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"own\\\":null,\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"sleek, medium length, polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#B08D57\\\",\\\"own\\\":null,\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2256,\"output_tokens\":454},\"stop_reason\":\"end_turn\"}"
+ }
+}

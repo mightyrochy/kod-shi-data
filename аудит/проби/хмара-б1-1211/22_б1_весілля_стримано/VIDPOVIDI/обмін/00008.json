@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"я гостя на весіллі сестри\", \"place\": \"весіллі сестри\", \"setting\": \"церемонія надворі о 16:00, потім ресторан\", \"weather_band\": \"в серпні\", \"registers\": \"стримано й класично\", \"part_of_day\": \"о 16:00\", \"month\": \"в серпні\", \"role\": \"весіллі сестри\"}, \"formality_reason\": \"representing\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"reserved_colour\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"весіллі сестри\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"я гостя на весіллі сестри\"}, \"mood\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\", \"quote\": \"о 16:00\"}, \"language_model_note\": {\"kind\": \"reading\"}, \"her_registers\": {\"kind\": \"reading\", \"quote\": \"стримано й класично\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"стримано й класично\"}]}, \"role\": {\"kind\": \"reading\", \"quote\": \"весіллі сестри\"}, \"weather_band\": {\"kind\": \"reading\", \"quote\": \"в серпні\"}, \"setting\": {\"kind\": \"reading\", \"quote\": \"церемонія надворі о 16:00, потім ресторан\"}}, \"event\": \"я гостя на весіллі сестри в серпні, церемонія надворі о 16:00, потім ресторан\", \"part_of_day\": \"day\", \"weather_band\": \"warm\", \"her_registers\": [\"classic\"], \"mood\": [\"стримано\", \"класично\"], \"occasion\": \"wedding_guest\", \"place\": \"wedding\", \"role\": \"close_family\", \"formality\": [\"formal\"], \"season\": \"summer\", \"light\": \"daylight\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Dress: A-line midi dress with a fitted bodice, bateau neckline, short sleeves and a skirt that falls just below the knee, in dusty French blue (#7A8FA8), silk crepe.\\nShoes: Mid-height block-heel sandals with a slim ankle strap, in soft nude (#D2B49C), smooth leather.\\nClutch: Structured envelope clutch with a hidden clasp, in soft champagne (#C9B79C), satin-finish leather.\\nEarrings: Small round stud earrings, in pearl white (#F2EDE4), freshwater pearls with a gold setting.\\nBracelet: Thin smooth bangle, in warm gold (#C9A24B), polished metal.\\n\\nThis outfit gives a formal, noble-fabric dress that reads as restrained and classic, which suits a close family member at the wedding. Silk crepe stays cool and drapes well in August heat, and the sleeves and midi length keep it elegant for an outdoor ceremony. The dusty blue is calm and timeless, and it stays well clear of white and ivory, so the bride keeps the spotlight. The block heel is steady on grass and comfortable through the move from the ceremony into the restaurant, and the pearl and gold details add polish without fuss.\"}],\"usage\":{\"input_tokens\":2496,\"output_tokens\":1031},\"stop_reason\":\"end_turn\"}"
+ }
+}

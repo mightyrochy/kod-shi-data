@@ -1,0 +1,52 @@
+── ПРОМПТ (6764 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: coat · colour code: camel · about it: text н=1
+2 — kind code: boots · colour code: chocolate · about it: text н=2
+3 — kind code: vest · colour code: beige · about it: text н=3
+4 — kind code: crossbody_bag · colour code: graphite · about it: text н=4
+5 — kind code: trousers · colour code: black · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; camel — кемел; chocolate — шоколадний; graphite — графіт.
+
+ТЕКСТИ:
+{
+"1": "Your camel oversized coat features a structured collar, front zipper closure, and relaxed silhouette that drapes elegantly over your frame. The fabric has a soft handfeel and a subtle heathered texture that enhances its effortless character.",
+"2": "These chocolate knee-high boots are crafted from smooth, grainy leather with a rounded toe and low block heel. Their sleek shafts hug the leg without constricting movement, offering both comfort and polish for evening wear.",
+"3": "The beige quilted vest showcases a gentle wave-stitch pattern that adds warmth and dimension without bulk. Its stand collar and zip-front closure create a clean line that pairs well under your coat.",
+"4": "This graphite crossbody bag combines classic Gucci monogram canvas with the brand’s iconic green-red stripe, framed by polished leather trim and gold-toned hardware. The chain strap allows versatile carrying options while maintaining understated elegance.",
+"5": "Your black wide-leg trousers offer a fluid, unstructured drape from the high-waisted elasticized waistband down to the hem. The straight-cut silhouette creates an elongated line that balances your figure effortlessly.",
+"6": "I chose your camel oversized coat with a collar and front zipper to set a relaxed yet classic tone, paired with your chocolate knee-high boots that ground the look and add warmth for the evening. The quilted beige vest under the coat introduces subtle texture without disrupting your calm mood, while the black wide-leg trousers keep the silhouette fluid and elongated. The graphite crossbody bag in Gucci’s monogrammed canvas adds a touch of refined heritage to your ensemble.",
+"7": "Wear the camel coat over the beige vest for layering that suits the evening chill without sacrificing style.",
+"8": "Tuck the waistband of your wide-leg trousers slightly into your boots if you want to define your ankle line subtly.",
+"9": "Жокейські чоботи з натуральної шкіри — I added these knee-high leather boots to replace the missing shoes. They are essential for the cold weather and provide a structured base that elevates the relaxed sweater, satisfying the formal requirement of the occasion."
+}
+
+── ВІДПОВІДЬ (2206 симв., 24.1 с, HTTP 200) ──
+```json
+{
+"1": "Твій кемел оверсайз тренч має структурований комір, застібку-блискавку спереду та розслаблений силует, який елегантно драпірується по твоїй фігурі. Тканина приємна на дотик і має ледь помітну текстуру, що підкреслює її невимушений характер.",
+"2": "Ці шоколадні ботильйони виготовлені з гладкої зернистої шкіри із закругленим носком та низьким стійким каблуком. Їхні елегантні халяви обтягують твою ногу, не сковуючи рухів, пропонуючи комфорт і довершеність для вечірнього образу.",
+"3": "Бежевий стьобаний жилет демонструє ніжний хвилеподібний візерунок стібків, який додає тепла та об’єму без зайвої масивності. Його стоячий комір і застібка-блискавка спереду створюють чітку лінію, яка добре поєднується під твій тренч.",
+"4": "Ця графітова сумка на плечі поєднує класичний канвас з монограмою Gucci із культовою зелено-червоною смужкою бренду, обрамленими полірованим шкіряним оздобленням і золотистими деталями. Ланцюжок дозволяє носити її різними способами, зберігаючи при цьому стриману елегантність.",
+"5": "Твої чорні штани з широкими штанинами пропонують вільний, неструктурований крій від високої еластичної талії до подолу. Прямий силует створює видовжену лінію, яка гармонійно балансує твою фігуру.",
+"6": "Я обрала твій кемел оверсайз тренч з коміром і застібкою-блискавкою спереду, щоб створити розслаблений, але класичний настрій, у поєднанні з шоколадними ботильйонами до коліна, які підкреслюють образ і додають тепла для вечора. Ґудзиковий бежевий жилет під тренчем вносить ледь помітну текстуру без порушення твоєї спокійної атмосфери, а чорні штани з широкими штанинами зберігають силует плавним та видовженим. Графітова сумка на плечі з канвасом у монограмі Gucci додає до твого ансамблю нотку вишуканої спадщини.",
+"7": "Одягни кемел тренч поверх бежевого жилета для багатошаровості, яка підійде для вечірньої прохолоди без шкоди для стилю.",
+"8": "Злегка заправ трохи талії твоїх штанів з широкими штанинами у ботильйони, якщо хочеш ледь помітно окреслити щиколотку.",
+"9": "Я додала ці чоботи до коліна зі шкіри — вони необхідні для холодної погоди і забезпечують структуровану основу, яка підкреслює розслаблений светр, задовольняючи формальну вимогу події."
+}
+```

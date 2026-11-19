@@ -13,6 +13,10 @@ HTML у Python перелічується окремо для перевірки
 Запуск (з кореня репозиторію): python3 джерела/прилади/корінь_е2_текст_жінці.py джерела [--сталі] [--збіг] [--довідник] [--файли] [--json]
 Вивід: місця `файл:рядок · пункт · чому`, підсумки за пунктами, останній рядок `місць: <N>`, код 0 (формат храповика);
 `--json` — інвентар: {місць, за_пунктами, місця: [{файл, рядок, пункт, …}]}."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
+
 import ast, os, re, sys
 from походження_тексту import Походження, невідповідний
 import обсяг_приладу as ОБСЯГ  # Д10: непрочитане — код 1, не менше місць
@@ -543,10 +547,10 @@ def довідник_дерева(тека):
     (`build_артефакт._довідник_показу`: `прилади/експорт_показу.довідник()`). Не зібрався — НЕВІДОМО."""
     import json, subprocess
     try:
-        р = subprocess.run([sys.executable, '-X', 'utf8', '-c',
+        р = запустити_python([sys.executable, '-X', 'utf8', '-c',
                             "import json, sys; sys.path.insert(0, 'прилади'); from експорт_показу import довідник; "
                             "print(json.dumps(довідник(), ensure_ascii=False))"],
-                           cwd=тека, capture_output=True, encoding='utf-8', timeout=600)
+                           cwd=тека, capture_output=True, encoding='utf-8', timeout=600, потрібен_вивід=True)
         if р.returncode == 0 and р.stdout.strip():
             return json.loads(р.stdout.strip().split("\n")[-1])
         ОБСЯГ.непрочитано("джерела/прилади/експорт_показу.py", "довідник(): код %d %s" % (

@@ -71,18 +71,19 @@ def головний_колір(вибір):
     б = (вибір or {}).get("база")
     if not б:
         return None
-    слово = str(б).split("·")[0]
-    о = {"name": _ВМ.код("color_name", слово) or слово}
+    слово = (вибір or {}).get("база_назва")
+    о = {"name": (_ВМ.код("color_name", слово) or слово) if слово else _ВМ.UNKNOWN}
     if (вибір or {}).get("база_hex"):
         о["hex"] = вибір["база_hex"]
-    о["chosen_by"] = ("her_item_photo" if вибір.get("база_з_речі")
-                      else "code" if вибір.get("база_за_замовчуванням") else "her")
-    о["source"] = _ПП.походження(_ПП.ТЛУМАЧЕННЯ if вибір.get("база_з_речі")
-                                 else _ПП.ТИПОВЕ if вибір.get("база_за_замовчуванням") else _ПП.РУКА)
+    # хто обрав — одне місце, закрите за замовчуванням (`паспорт_поля.автор_палітри`): основа без позначки коду й без
+    # запису її дії — «unknown», а не її рука (п.7)
+    автор = _ПП.автор_палітри(вибір, "base")
+    о["chosen_by"] = "code" if автор == "code_rank" else автор
+    о["source"] = _ПП.походження_автора(автор)
     return о
 
 
-def її_речі(речі_паспорта):
+def її_речі(речі_паспорта, без_кадрів=False):
     """Її закріплені речі з повним описом — кодами полів, без слота.
 
     «Речі, які отримує функціональна модель, — завжди з повним описом. Модель сама знає,
@@ -105,7 +106,9 @@ def її_речі(речі_паспорта):
             к = _РФ.код_поля(поле, р.get(ключ))
             if к:
                 о[поле] = к
-        о["photo"] = bool(р.get("фото"))
+        # `без_кадрів` — кадри її речей до моделі не дійшли (Е2-опора-пояснення, п.6): «photo» хибне в кожної,
+        # інакше промпт казав би «also on the attached photos» про кадр, якого модель не бачила
+        о["photo"] = bool(р.get("фото")) and not без_кадрів
         вих.append(о)
     return вих
 
@@ -151,8 +154,9 @@ def її_речі(речі_паспорта):
                                   "(standing out), fashion_forward (a bold fashion look, at least two sources of "
                                   "interest), editorial (an editorial construction, at least one source of "
                                   "interest); count limits do not apply to fashion_forward or editorial"),
-        _ЗП.Поле("main_color", "the main color: chosen_by her, code (default), or her_item_photo (model's "
-                               "reading of an item photo); source carries its kind",
+        _ЗП.Поле("main_color", "the main color: chosen_by her, conversation (she asked for it in the chat), "
+                               "code (default), her_item_photo (model's reading of an item photo) or unknown (who chose "
+                               "it is not recorded); source carries its kind",
                  як="build the outfit around it"),
         _ЗП.Поле("her_items", "her own items; \"photo\": true — also on the attached photos",
                  як="they stay in the outfit as they are: build the rest around them, add nothing that "
@@ -166,10 +170,11 @@ def її_речі(речі_паспорта):
     правила=(
         "Items one per line, garments first, then shoes and accessories: what it is, cut, length, color "
         "with its hex code, fabric.",
-        "An outer layer only when the weather needs it; at +20 °C and warmer there is none.",
+        "An outer layer only when the weather needs it; in the warm or hot band there is none.",
         "Last, why this outfit works, in 3–4 sentences.",
     ),
     вихід="OUTFIT_TEXT",
+    мітка_задачі=True,  # руки 3–4 — як є (власник 16.10, рядок 6201)
     межі=("без_чисел_тіла",),
     мова_промпту="en",
     відповідь_як="текст",
@@ -203,7 +208,7 @@ def опис_для_жінки(проза):
     т, як = str(проза or ""), []
     if _re.match(r"\s*[\{\[]", т) or "```" in т:
         без = _re.sub(r"```(?:json)?", "", т).strip()
-        об = _ПР.розбір_останній(без, ("текст",))[0]
+        об = відповідь_руки(без, "текст")
         if isinstance(об, dict) and isinstance(об.get("текст"), str):
             т = об["текст"]
             як = [str(р).strip() for р in (об.get("як_носити") if isinstance(об.get("як_носити"), list) else [])
@@ -307,16 +312,18 @@ def паспорт_рядком(п, без_меж=False):
 
 
 def промпт_руки(рука, випадок, вимоги="", вибір=None, речі_паспорта=None, факти=None,
-                фото_її=False, мова_тексту=None, перепис=False):
+                фото_її=False, мова_тексту=None, перепис=False, без_кадрів=False):
     """Промпт руки 3 (з `факти` — `особа(...)`) чи 4 (без них) рядком JSON; `перепис` — той
-    самий промпт із попередньою відповіддю й зауваженнями мовного гейта (заглушками).
+    самий промпт із попередньою відповіддю й зауваженнями мовного гейта (заглушками);
+    `без_кадрів` — той самий промпт для виклику без кадрів: кадри не дійшли до моделі, і промпт
+    не обіцяє жодного (її речі без «photo», без «photo_of_her»).
 
     ID правил із даних вирізаються так само, як із пакета рук 1–2 (`протокол.без_ід_глибоко` —
     по значеннях, а не регулярками по готовому JSON)."""
     дані = dict(case=випадок, requirements=str(вимоги or "").strip(),
-                main_color=головний_колір(вибір), her_items=її_речі(речі_паспорта),
+                main_color=головний_колір(вибір), her_items=її_речі(речі_паспорта, без_кадрів),
                 person=(факти if рука == "3" else None),
-                photo_of_her=(True if фото_її else None),
+                photo_of_her=(True if фото_її and not без_кадрів else None),
                 previous_answer=(ЗАГЛУШКА_ОПИСУ if перепис else None),
                 remarks=(ЗАГЛУШКА_ЗАУВАЖЕНЬ if перепис else None))
     return _json.dumps(_ЗП.зібрати(ОБРАЗ, _ПР.без_ід_глибоко(дані), мова_тексту=мова_тексту),
@@ -362,6 +369,7 @@ def промпт_руки(рука, випадок, вимоги="", вибір=
         "refusal, a question or a note.",
     ),
     вихід="ITEM_LIST",
+    мітка_задачі=True,  # руки 3–4 — як є (власник 16.10, рядок 6201)
     скелет={"is_outfit": "yes|no",
             "items": [{"name": "<what the item is>",
                        "details": "<its cut, length and fabric>",
@@ -413,7 +421,7 @@ def речі_переліку(відповідь):
     `слот` None і `код_слота` як є: річ без слота розбір називає, а не губить мовчки.
     `носить` False — модель позначила слот непотрібним (`worn` false): далі в образ він не йде,
     але розбір його називає (`не_потрібні`), а не губить мовчки."""
-    об, _причина, _ = _ПР.розбір_останній(відповідь, ("items",))
+    об = відповідь_руки(відповідь, "items")
     if об is None:
         try:
             об = _json.loads(re_огорожа(str(відповідь or "")))
@@ -450,7 +458,7 @@ def опис_образ(відповідь):
 
     Слів опису код не читає (п.12): відмову моделі («I cannot fulfill…») називає кодом модель
     переліку, яка опис читає. None — перелік не прочитано або не має `is_outfit`: образом опис ніхто не назвав."""
-    об, _причина, _ = _ПР.розбір_останній(відповідь, ("is_outfit",))
+    об = відповідь_руки(відповідь, "is_outfit")
     if об is None:
         try:
             об = _json.loads(re_огорожа(str(відповідь or "")))
@@ -458,6 +466,108 @@ def опис_образ(відповідь):
             return None
     к = об.get("is_outfit") if isinstance(об, dict) else None
     return _ОБРАЗ_КОДОМ.get(str(к).strip().lower()) if к is not None else None
+
+
+def відповідь_руки(текст, поле):
+    """Відповідь руки 3–4 обʼєктом (`опис_для_жінки` — «текст», `речі_переліку` — «items», `опис_образ` —
+    «is_outfit») → обʼєкт або None. Читає так само, як доти спільний `протокол.розбір_останній` (до #3426).
+
+    РУКИ 3–4 ЧИТАЮТЬ, ЯК ДОТИ (рішення менеджера 08.11 на 14417; власник 16.10: «Руки 3–4 лишаються як є»,
+    `аудит/ПРОДУКТ.md` п.1). Спільний читач ремонт формату зняв (Е2-межі п.4), а для рук його гілки перенесено сюди
+    за змістом і лише ті, що для цих полів спрацьовують (на входах сторожа «14417» і в записах живих прогонів):
+    · огорожа ```json будь-де в тексті — її обʼєкт; інакше весь текст, далі зріз від першої «{» до останньої «}»;
+    · кілька обʼєктів поспіль — останній цілий, у якому поле непорожнє (після зняття обгортки й мітки);
+    · вада форми — кома перед дужкою (знімається), ключ без лапок (ставляться), закривні дужки, яких бракує в кінці
+      після закритого значення (ставляться); поле — непорожнє; обрив посеред значення й інші вади — не читаються;
+    · обгортка «answer» чи «answer_schema» з обʼєктом — відповідь на рівень глибше; поле з змістом поруч з нею —
+      лише коли всередині те саме;
+    · мітка задачі під нею (`{"PHOTO_ITEMS": {…}}`, ключ великими літерами з «_») — значення, коли в ньому є поле;
+      список обʼєктів під міткою, що називає поле (`*_ITEMS` → «items»), — це поле."""
+    мітка_задачі = _re.compile(r"^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$")
+    порожнє = (None, "", [], {})
+
+    def без_обгортки(об):
+        if not isinstance(об, dict):
+            return об
+        ключ = next((к for к in ("answer", "answer_schema") if к != поле and isinstance(об.get(к), (dict, list))), None)
+        вкл = об[ключ] if ключ is not None else None
+        if not isinstance(вкл, dict) or (об.get(поле) not in порожнє and вкл.get(поле) != об.get(поле)):
+            вкл = None
+        о = об if вкл is None else вкл
+        if not isinstance(о, dict) or len(о) != 1:
+            return о
+        (мітка, v), = о.items()
+        if мітка == поле or not мітка_задачі.match(str(мітка)):
+            return о
+        if isinstance(v, dict) and v.get(поле) not in порожнє:
+            return v
+        if (isinstance(v, list) and v and str(поле).upper() in str(мітка).split("_")
+                and all(isinstance(х, dict) for х in v)):
+            return {поле: v}
+        return о
+
+    def є_поле(о):
+        return isinstance(о, dict) and без_обгортки(о).get(поле) not in порожнє
+
+    def частини(т):
+        """Обʼєкти поспіль від першої «{» → їхні тексти; у кожному кома перед дужкою знята, ключ без лапок узято в лапки,
+        а останньому, що обірвався після закритого значення, дописано закривні дужки. Чужа дужка чи обрив посеред
+        рядка — частин нема; текст після обʼєкта, що не «{», кінчає перелік."""
+        вих, частини_, стек, попер, межа, рядок, ключ = [], [], [], None, False, None, None
+        for с in т:
+            if рядок is not None:                       # усередині рядка JSON: «\\» екранує наступний знак
+                вих.append(с)
+                рядок = "" if рядок == "\\" else (None if с == '"' else (с if с == "\\" else ""))
+                попер, межа = '"', False
+                continue
+            if ключ is not None:                        # ключ без лапок: до першого знака, що не літера, цифра чи «_»
+                if с.isalnum() or с == "_":
+                    ключ.append(с)
+                    continue
+                вих.append(_json.dumps("".join(ключ), ensure_ascii=False))
+                ключ, попер = None, '"'
+            if с.isspace():
+                вих.append(с) if стек else None
+                continue
+            if not стек and с != "{":
+                if частини_:
+                    break
+                continue
+            if с == '"':
+                вих.append(с)
+                рядок = ""
+                continue
+            if (с.isalpha() or с == "_") and стек[-1:] == ["{"] and попер in ("{", ","):
+                ключ = [с]
+                continue
+            if с in "}]":
+                while вих and (вих[-1].isspace() or вих[-1] == ","):
+                    вих.pop()
+                if not стек or стек.pop() != {"}": "{", "]": "["}[с]:
+                    return []
+                вих.append(с)
+                if not стек:
+                    частини_.append("".join(вих))
+                    вих = []
+                попер, межа = с, len(стек) <= 2
+                continue
+            if с in "{[":
+                стек.append(с)
+            вих.append(с)
+            попер, межа = с, с == "," and len(стек) <= 2
+        if рядок is None and ключ is None and стек and межа:
+            while вих and (вих[-1].isspace() or вих[-1] == ","):
+                вих.pop()
+            частини_.append("".join(вих) + "".join({"{": "}", "[": "]"}[с] for с in reversed(стек)))
+        return частини_
+
+    т = str(текст or "")
+    об = _ПР.розбір(т)[0]
+    if об is None:
+        # вада форми чи кілька обʼєктів: з двох і більше — останній з полем; один, відремонтований, — лише з полем
+        прочитані = [о for о in (_ПР.розбір(ч)[0] for ч in частини(т)) if є_поле(о)]
+        об = прочитані[-1] if прочитані else None
+    return без_обгортки(об)
 
 
 def re_огорожа(т):

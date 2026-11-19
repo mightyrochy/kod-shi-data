@@ -1,0 +1,67 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-nano-banana-2.1",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "image",
+      "source": {
+       "type": "base64",
+       "media_type": "image/jpeg",
+       "data": "/9j/2Q=="
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://musthave.ua/uploads/products/46706/00000044986.webp?v=1789737682"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://sezone.ua/content/images/47/1200x1800l80mc0/15769155731926.webp"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://emmeliedelage.com/content/images/11/1200x1800l80nn0/kedy-zamshevi-pisochni-mallow-31140841893730.webp"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://emmeliedelage.com/content/images/19/1200x1800l80nn0/sumka-zhovtyi-flotar-raw-63984810972106.webp"
+      }
+     },
+     {
+      "type": "image",
+      "source": {
+       "type": "url",
+       "url": "https://feelyou.com.ua/wp-content/uploads/2026/03/g43a8969-1-scaled.jpg"
+      }
+     },
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"Photo 1 is a woman. Dress her in the outfit below.\", \"rules\": [\"Change only the clothes on photo 1: her face, body, pose, hands, hair, light, background, framing and angle stay exactly as on photo 1.\", \"One image with one frame: the same single woman filling the frame, in the proportions of photo 1.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one image and no text.\"], \"input\": [\"\\\"item_photos\\\" — the items on the attached photos after photo 1, with their photo numbers; take from each photo only the item named for it: the photo may show a whole outfit on a model; draw its color, cut, length and texture as on the photo\", \"\\\"how_to_wear\\\" — how the items are worn; follow it\"]}, \"item_photos\": [{\"photo\": 2, \"slot\": \"top\", \"name\": \"Бежевий кашеміровий светр\", \"color\": \"beige\", \"color_hex\": \"#c4b09f\"}, {\"photo\": 3, \"slot\": \"bottom\", \"name\": \"Спідниця міні з воланом із деніму)\", \"color\": \"black\", \"color_hex\": \"#161a23\"}, {\"photo\": 4, \"slot\": \"shoes\", \"name\": \"Кеди замшеві пісочні MALLOW\", \"color\": \"sand\", \"color_hex\": \"#a37953\"}, {\"photo\": 5, \"slot\": \"bag\", \"name\": \"Сумка жовтий флотар RAW\", \"color\": \"yellow\"}, {\"photo\": 6, \"slot\": \"outerwear\", \"name\": \"Піджак однобортний пісок\", \"color\": \"sand\", \"color_hex\": \"#a89485\"}], \"how_to_wear\": [\"Layer the sweater under the blazer to keep your silhouette streamlined throughout the workday.\"]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 501,
+  "contentType": "application/json",
+  "body": "{\"error\":{\"message\":\"приміряння не перевіряється: локальна текстова модель картинок не малює\"}}"
+ }
+}

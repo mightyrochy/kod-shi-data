@@ -1,0 +1,67 @@
+── ПРОМПТ (7664 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: blazer · colour code: grey · about it: text н=1
+2 — kind code: blouse · colour code: white · about it: text н=2
+3 — kind code: earrings · colour code: golden · about it: text н=3
+4 — kind code: trousers · colour code: grey · about it: text н=4
+5 — kind code: ankle_boots · colour code: black · about it: text н=5
+6 — kind code: bag_generic · colour code: yellow · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; golden — золотий; grey — сірий; white — білий; yellow — жовтий.
+
+ТЕКСТИ:
+{
+"1": "This grey fitted blazer offers a sharp, professional silhouette that remains warm and structured for your morning commute.",
+"2": "The white bodycon blouse with its subtle shine provides a fresh, polished contrast against the outer layers.",
+"3": "Your gold earrings add a warm, sophisticated finish to your neckline.",
+"4": "The straight-cut grey trousers create a clean, elongated line that works perfectly with the blazer for an office-ready look.",
+"5": "These black nubuck ankle boots are tough enough to handle snowy conditions while maintaining a sleek profile under your trousers.",
+"6": "The yellow bag introduces a vibrant, cheerful accent that lifts the overall mood of your winter outfit.",
+"7": "I chose your grey fitted blazer to set a professional line for your walk to work, paired with the white bodycon blouse that adds a touch of shine without overwhelming the frosty morning. The black nubuck ankle boots provide sturdy traction against the snow while keeping your silhouette clean and vertical, balanced perfectly by the straight-cut grey trousers which maintain a neat, office-appropriate tone. A bright yellow bag brings a cheerful pop of color to your palette, and your gold earrings catch the daylight with just enough warmth to complement the cool tones around you.",
+"8": "Layer the blazer over the blouse and let it fall straight over the trousers for a seamless, elongated look as you navigate the snowy streets.",
+"9": "Сірі штани з високою талією — Black trousers added to complete the outfit with a foundation piece that fits the formal office requirement and balances the blazer's volume.",
+"10": "Черевики жіночі, ATTICO, нубук, колір чорний — Ankle boots added for warmth and durability on the snowy, salted walk, replacing the missing footwear slot.",
+"11": "Приталений піджак з відкритою спиною — Grey blazer chosen for its neutral tone that fits your palette and provides structure to the outfit.",
+"12": "Блуза з лелітками біла — White blouse is used to add brightness and contrast against the dark grey, keeping the face looking fresh in daylight.",
+"13": "Черевики жіночі, ATTICO, нубук, колір чорний — Ankle boots added to satisfy the weather needs of snow and frost; their leather withstands salted roads better than suede.",
+"14": "Черевики жіночі, ATTICO, нубук, колір чорний — Ankle boots added to meet the frosty weather requirements and protect against salted roads, replacing the missing footwear slot.",
+"15": "Черевики жіночі, ATTICO, нубук, колір чорний — Ankle boots added as they are more durable against salted roads than suede, fitting the frosty walk requirement."
+}
+
+── ВІДПОВІДЬ (2680 симв., 25.8 с, HTTP 200) ──
+```json
+{
+  "1": "Цей сірий приталений блейзер пропонує чіткий, професійний силует, який залишається теплим і структурованим для твоєї ранкової поїздки на роботу.",
+  "2": "Біла облягаюча блузка з ледь помітним блиском дарує свіжий, вишуканий контраст до верхніх шарів одягу.",
+  "3": "Твої золоті сережки додають теплий, витончений фінал твоїй лінії шиї.",
+  "4": "Прямі сірі штани створюють чисту, видовжену лінію, яка ідеально поєднується з блейзером для образу, готового до офісу.",
+  "5": "Ці чорні нубукові черевики витримають снігові умови, зберігаючи при цьому елегантний профіль під твоїми штанами.",
+  "6": "Жовта сумка вносить яскравий, життєрадісний акцент, який піднімає загальний настрій твоєї зимової сукні.",
+  "7": "Я обрала твій сірий приталений блейзер, щоб створити професійну лінію для твоєї прогулянки до роботи, в парі з білою облягаючою блузкою, яка додає трохи блиску без перевантаження морозного ранку. Чорні нубукові черевики забезпечують міцне зчеплення зі снігом, зберігаючи при цьому твій силует чистим і вертикальним, що чудово поєднується з прямими сірими штанами, які підтримують охайний тон, відповідний для офісу. Яскрава жовта сумка додає веселий колір до твоєї палітри, а золоті сережки ловлять сонячне світло з достатньою теплотою, щоб доповнити холодні тони навколо тебе.",
+  "8": "Одягни блейзер поверх блузки і дай йому вільно спадати на штани для бездоганного, видовженого вигляду під час прогулянки засніженими вулицями.",
+  "9": "Сірі штани з високою талією — Чорні штани додали завершити образ базовою річчю, яка відповідає формальним вимогам офісу і врівноважує об’єм блейзера.",
+  "10": "Черевики жіночі, ATTICO, нубук, колір чорний — Черевики додали для тепла та міцності під час сніжної прогулянки по посоленій дорозі, замінивши відсутнє місце для взуття.",
+  "11": "Приталений піджак з відкритою спиною — Сірий блейзер обрано за його нейтральний тон, який пасує до твоєї палітри і надає структури образу.",
+  "12": "Блуза з рюшами біла — Біла блузка використана для додавання яскравості та контрасту на тлі темного сірого кольору, щоб обличчя виглядало свіжим у сонячному світлі.",
+  "13": "Черевики жіночі, ATTICO, нубук, колір чорний — Черевики додали для задоволення вимог морозної погоди та захисту від посолених доріг, замінивши відсутнє місце для взуття.",
+  "14": "Черевики жіночі, ATTICO, нубук, колір чорний — Черевики додали, щоб відповідати вимогам морозної погоди та захистити від посолених доріг, замінивши відсутнє місце для взуття.",
+  "15": "Черевики жіночі, ATTICO, нубук, колір чорний — Черевики додали, оскільки вони більш міцні на посоленій дорозі, ніж замша, і відповідають вимогам морозної прогулянки."
+}
+```

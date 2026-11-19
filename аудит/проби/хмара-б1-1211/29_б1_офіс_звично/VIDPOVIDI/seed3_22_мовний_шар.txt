@@ -1,0 +1,40 @@
+── ПРОМПТ (6179 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: dress_generic · colour code: grey · about it: text н=1
+2 — kind code: coat · colour code: beige · about it: text н=2
+3 — kind code: ballet_flats · colour code: graphite · about it: text н=3
+4 — kind code: bag_generic · colour code: brown · about it: text н=4
+5 — kind code: earrings · colour code: golden · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; golden — золотий; graphite — графіт; grey — сірий.
+
+ТЕКСТИ:
+{
+"1": "A grey shift dress in a muted, slightly cool shade. Its straight, easy cut skims the body without clinging, which suits an office day.",
+"2": "A beige coat in a regular cut, soft in tone and easy to wear. It gives a warm, polished outer layer for autumn.",
+"3": "Graphite ballet flats in a deep grey. They are low and comfortable, with a neat, understated look.",
+"4": "A brown bag in a soft, warm shade. Its simple shape is practical for work and easy to match.",
+"5": "Golden earrings with a bright shine. They add a small, warm sparkle near the face.",
+"6": "The coat, bag and flats stay quiet and soft, so the golden earrings are the only shine near your face and the look stays neat for the office. The beige coat and the brown bag sit close in tone, which makes the whole outfit feel calm and put together. It works for an office day because the grey dress is simple and professional, and the flats are comfortable for hours on your feet. The coat adds autumn warmth for the commute without making the look heavy. The straight dress and the regular coat draw one clean vertical line from shoulders to ankles. That keeps your silhouette uncluttered, and the flats keep the line light at the ankle. Gold suits your palette, so the earrings fit naturally.",
+"7": "Wear the beige coat open over the grey dress so the vertical line stays unbroken from neckline to hem.",
+"8": "Let the golden earrings be your only accent and leave the rest of the look plain.",
+"9": "Keep the brown bag and the beige coat together in view as your warm pair against the cool grey of the dress."
+}
+
+── ВІДПОВІДЬ (1534 симв., 15.4 с, HTTP 200) ──
+{"1":"Сіра сукня приглушеного, трохи холодного відтінку. Її прямий, невимушений крій не облягає фігуру, тому вона личить офісному дню.","2":"Бежеве пальто звичайного крою, м'якого тону, у якому легко ходити. Воно дає теплий, охайний верхній шар на осінь.","3":"Балетки кольору графіт. Вони низькі й зручні, з охайним стриманим виглядом.","4":"Коричнева сумка м'якого теплого відтінку. Її проста форма практична для роботи, і до неї легко підібрати решту.","5":"Золоті сережки з яскравим блиском. Вони додають маленьке тепле сяйво біля обличчя.","6":"Пальто, сумка й балетки лишаються тихими та м'якими, тому золоті сережки — єдиний блиск біля твого обличчя, а образ виглядає охайно для офісу. Бежеве пальто й коричнева сумка близькі за тоном, тому весь образ здається спокійним і завершеним. Він личить офісному дню, бо сіра сукня проста й ділова, а балетки зручні, коли годинами на ногах. Пальто додає осіннього тепла по дорозі на роботу, не обтяжуючи образ. Пряма сукня й пальто звичайного крою проводять одну чисту вертикальну лінію від плечей до щиколоток. Це не перевантажує твій силует, а балетки тримають лінію легкою біля щиколотки. Золото пасує до твоєї палітри, тож сережки виглядають природно.","7":"Носи бежеве пальто розстебнутим поверх сірої сукні, щоб вертикальна лінія лишалася суцільною від горловини до подолу.","8":"Нехай золоті сережки будуть твоїм єдиним акцентом, а решту образу залиш простою.","9":"Тримай коричневу сумку й бежеве пальто разом на виду як твою теплу пару на тлі холодного сірого кольору сукні."}

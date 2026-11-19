@@ -1,0 +1,46 @@
+── ПРОМПТ (5741 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "Emerald green velvet maxi skirt, A-line silhouette, floor-length hem,, heavy woven fabric.\nBlack satin blouse, relaxed fit with a cowl neck, hip-length cut,, smooth lustrous material.\nCharcoal wool-blend tailored blazer, single-breasted notched lapel, knee-length hem,, fine knit texture.\nNude suede pumps, pointed toe with a 5 cm block heel, ankle height, [colour: milky], soft leather finish.\nPearl drop earrings, classic teardrop shape, silver-toned metal, white cultured pearl, polished sterling silver.\n\nThis outfit works perfectly for an evening at the theatre by balancing warmth and elegance in autumn weather. The emerald velvet skirt honors her specific wish for a long maxi piece while adding a luxurious texture that catches the artificial stage lights beautifully. The structured charcoal blazer provides the necessary smart layer without overpowering her silhouette, ensuring the focus remains on the flow of the skirt. Nude pumps complete the look by elongating the legs and offering the requested heel height for comfort during an evening outing.",
+"2": "Emerald green velvet maxi skirt",
+"3": "Black satin blouse",
+"4": "Charcoal wool-blend tailored blazer",
+"5": "Nude suede pumps",
+"6": "Pearl drop earrings"
+}
+
+── ВІДПОВІДЬ (1291 симв., 17.2 с, HTTP 200) ──
+{
+"1": "Смарагдова оксамитова максіспідниця, силует А-подібний, довжина до підлоги, щільна тканина. Чорна атласна блуза вільного крою з вирізом «комірці», завдовжки по стегна, гладка блискуча матерія. Вугільно-сірий приталений жакет із вовняної суміші, однобортний лацкан, довжина до коліна, тонка в’язана текстура. Молочні замшеві туфлі на підборах, загострений носок з 5 см блочним каблуком, висота по щиколотку, м’яка шкіряна обробка. Перлинні сережки-краплі класичної форми сльозинки, металевий колір срібла, перлина білого кольору, відполіроване срібло.\n\nЦей образ ідеально підходить для вечора в театрі, поєднуючи тепло та елегантність восени. Смарагдова оксамитова спідниця задовольняє її конкретне бажання щодо довгої максіспідниці, додаючи розкішну текстуру, яка чудово відбиває штучне світло сцени. Структурований вугільно-сірий жакет забезпечує необхідний розумний шар без перевантаження силуету, гарантуючи, що увага залишається на струмені спідниці. Молочні туфлі завершують образ, подовжуючи ноги та пропонуючи бажану висоту каблука для комфортного вечірнього виходу.",
+"2": "Смарагдова оксамитова максіспідниця",
+"3": "Чорна атласна блуза",
+"4": "Вугільно-сірий приталений жакет із вовняної суміші",
+"5": "Молочні замшеві туфлі на підборах",
+"6": "Перлинні сережки-краплі"
+}

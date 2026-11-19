@@ -6,7 +6,7 @@
 .DESCRIPTION
 Запускається один раз, ПІСЛЯ 1_адмін.ps1 (обгортка в C:\ProgramData\gemini-wrapper уже стоїть); повторний запуск безпечний.
 Паролів і токенів не читає й не виводить: про вхід судить лише наявність файлу чи код `codex login status`.
-Codex без `-WithCodex` скрипт не ставить і не входить. Рішення власника 25.10 (9738): Codex під gemini вмикається з основним
+Codex без `-WithCodex` скрипт не ставить і не входить; з ним ставить, коли codex нема чи `codex --version` не дорівнює `CodexRelease`. Рішення власника 25.10 (9738): Codex під gemini вмикається з основним
 акаунтом ChatGPT власника, ризик прийнято (токен лежить у `~/.codex/auth.json` профілю gemini — секрет у межі цього
 користувача, у репозиторій не йде, 9739; ізоляцію рушіїв веде М.9-Г). З `-WithCodex`:
   Codex CLI  — інсталятор закріплено за релізом (без Node.js, https://github.com/openai/codex): файл
@@ -25,6 +25,13 @@ function Stop-Here([string]$m) { Write-Host "СТОП: $m" -ForegroundColor Red;
 function Step([string]$m) { Write-Host "`n== $m" -ForegroundColor Cyan }
 function Update-Path { $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User') }
 function Has([string]$n) { [bool](Get-Command $n -ErrorAction SilentlyContinue) }
+function Test-CodexInstall([string]$Release) {
+    <# $true, коли codex треба (пере)ставити: його нема, версію не прочитано чи вона не дорівнює $Release. Збіг лише точний: `codex-cli 0.169.0-alpha.11.1` не збігається з 0.169.0. #>
+    if (-not (Has codex)) { return $true }
+    try { $line = (& codex --version 2>$null | Select-Object -First 1) } catch { return $true }
+    if ("$line".Trim() -notmatch '^codex-cli (\d+\.\d+\.\d+)$') { return $true }
+    $Matches[1] -ne $Release
+}
 
 if ($env:USERNAME -ne 'gemini') { Stop-Here "це має бути користувач gemini, а тут $env:USERNAME (Win+L → gemini)." }
 if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -54,11 +61,12 @@ if (-not $WithCodex) {
     Write-Host "`nCodex пропущено: без -WithCodex не ставиться й не входить (рішення власника 25.10, 9738: вмикати з -WithCodex)." -ForegroundColor Yellow
 } else {
     Step 'Codex CLI'
-    if (-not (Has codex)) {
-        $expected = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'хеші.psd1') -ErrorAction SilentlyContinue
+    $expected = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'хеші.psd1') -ErrorAction SilentlyContinue
+    $rel = $(if ($expected -and $expected.ContainsKey('CodexRelease')) { [string]$expected['CodexRelease'] } else { '' })
+    if ($rel -notmatch '^\d+\.\d+\.\d+$') { Stop-Here "CodexRelease у хеші.psd1 порожній чи не виду x.y.z ('$rel'). Інсталятор не виконано." }
+    if (Test-CodexInstall $rel) {
+        if (Has codex) { Write-Host "codex: $(& codex --version 2>$null) — не $rel, ставлю закріплений реліз." }
         $want = $(if ($expected -and $expected.ContainsKey('CodexInstaller')) { [string]$expected['CodexInstaller'] } else { '' })
-        $rel = $(if ($expected -and $expected.ContainsKey('CodexRelease')) { [string]$expected['CodexRelease'] } else { '' })
-        if ($rel -notmatch '^\d+\.\d+\.\d+$') { Stop-Here "CodexRelease у хеші.psd1 порожній чи не виду x.y.z ('$rel'). Інсталятор не виконано." }
         $inst = "$env:TEMP\codex_install.ps1"
         Invoke-WebRequest "https://releases.openai.com/codex/releases/$rel/install.ps1" -OutFile $inst -UseBasicParsing
         $got = (Get-FileHash $inst -Algorithm SHA256).Hash
@@ -69,6 +77,7 @@ if (-not $WithCodex) {
         & powershell -NoProfile -ExecutionPolicy Bypass -File $inst -Release $rel
         Update-Path
         if (-not (Has codex)) { Stop-Here 'codex не знайдено після установки; відкрий нове вікно PowerShell і запусти скрипт знову.' }
+        if (Test-CodexInstall $rel) { Stop-Here "після установки codex --version не $rel (бачу: $(& codex --version 2>$null | Select-Object -First 1)); у PATH може стояти стара копія — напиши диспетчерові: ЗАБЛОКОВАНО + шлях з (Get-Command codex).Source." }
     }
     Write-Host "codex: $(& codex --version)"
 

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"похорон дідуся\", \"weekday\": \"четвер\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"weekday\": {\"kind\": \"her\", \"quote\": \"четвер\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"похорон дідуся\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}}, \"event\": \"похорон дідуся\", \"part_of_day\": \"morning\", \"occasion\": \"mourning\", \"weekday\": \"thursday\", \"formality\": [\"formal\"], \"season\": \"autumn\", \"light\": \"daylight\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Charcoal wool skirt suit, tailored straight-leg trousers cut to mid-calf length, deep gray #36454F, heavy woven wool with a fine texture.\\nBlack silk blouse, classic collar with a soft drape, jet black #000000, smooth satin-finish fabric.\\nOpaque matte black tights, full leg coverage, true black #1C1C1C, thick brushed nylon blend for warmth.\\nNude leather ankle boots, low stacked heel wrapped around the foot, taupe beige #D2B48C, soft calfskin with a pointed toe.\\nSilver oxidized metal watch chain necklace, delicate link chain resting at collarbone, silver metallic #C0C0C0, lightweight sterling silver alloy.\\nThis ensemble honors the solemnity of a funeral on Thursday in autumn by adhering to strict formal dress codes while ensuring practical warmth against morning chill. The charcoal suit and black silk provide the required somber elegance without appearing overly flashy, respecting the grief of the occasion. Matte tights and nude boots maintain a polished silhouette suitable for daytime daylight, balancing traditional mourning etiquette with subtle personal style touches like the silver watch.\"}],\"usage\":{\"input_tokens\":635,\"output_tokens\":243},\"stop_reason\":\"end_turn\"}"
+ }
+}

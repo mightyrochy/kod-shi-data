@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fitted knit top, long sleeve, hip length, red (#B22234), soft merino-blend knit\\nHigh-waisted straight-leg jeans, full ankle length, dark indigo (#1F2A44), stretch cotton denim\\nAnkle boots, low block heel, round toe, cognac brown (#8B5A2B), smooth leather\\nTrench coat, single-breasted, knee length, camel (#C19A6B), cotton gabardine\\nCrossbody bag, small structured, cognac brown (#8B5A2B), smooth leather\\nSoft scarf, light drape, cream (#F2E8D5), wool-cashmere blend\\nSmall gold hoop earrings (#D4AF37), polished metal\\n\\nThis outfit works because the red knit gives her the red she asked for and puts it right at the center of the look, which is lovely for a first date. Dark jeans and leather ankle boots keep it relaxed and neat, fitting an easy walk through the park and a coffee afterward. The trench and cream scarf add warmth for an autumn day without feeling heavy, and the camel, cream and cognac tones sit softly beside the red. Everything is comfortable to walk in, so she can stay at ease and focus on the conversation.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Knit top\\\",\\\"details\\\":\\\"Fitted, long sleeve, hip length, soft merino-blend knit\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#B22234\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Jeans\\\",\\\"details\\\":\\\"High-waisted, straight-leg, full ankle length, stretch cotton denim\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#1F2A44\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"Low block heel, round toe, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#8B5A2B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Trench coat\\\",\\\"details\\\":\\\"Single-breasted, knee length, cotton gabardine\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#C19A6B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Crossbody bag\\\",\\\"details\\\":\\\"Small, structured, smooth leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#8B5A2B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Soft scarf\\\",\\\"details\\\":\\\"Light drape, wool-cashmere blend\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#F2E8D5\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Hoop earrings\\\",\\\"details\\\":\\\"Small, polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#D4AF37\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2076,\"output_tokens\":424},\"stop_reason\":\"end_turn\"}"
+ }
+}

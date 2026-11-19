@@ -98,6 +98,63 @@ try {
     try { [void](Read-ChainStateText $missing) } catch { Write-ChainFailure $_ }
     $records = @(Records | Where-Object { $_.path -ceq $missing })
     Check 'недоступні метадані — явні помилки, початковий виняток збережено' ($records.Count -eq 1 -and $records[0].object_type -ceq 'unavailable' -and @($records[0].metadata_errors).Count -eq 2 -and $records[0].exception.Contains('FileNotFoundException'))
+    # Збій зовнішньої команди ланцюга: причина (код виходу й stderr) лишається в журналі, а не губиться на `throw 'CHAIN_…'`.
+    function Resolve-Exe([string]$Name) { $Name }
+    function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirectory = '', [double]$TimeoutMinutes = 10, [string]$StdIn = $null) { $script:Native }
+    function Reset-ChainLines { Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item -Force; Get-ChildItem -LiteralPath "$WorkDir/seen" -File | Remove-Item -Force }
+    function Chain-Lines { @(Get-ChildItem -LiteralPath $OutboxDir -File | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() } | Where-Object { $_ -clike 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API*' }) }
+    function Fail-ChainApi($Result) {
+        $script:Native = $Result
+        try { [void]@(Get-ChainPulls) } catch { Write-ChainFailure $_; return $_ }
+    }
+    $url = 'https://api.github.com/repos/o/r/pulls?state=open&per_page=100&page=1'
+    Reset-ChainLines
+    $before = @(Records).Count
+    $err = Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="gh: HTTP 502: Bad Gateway ($url)`n"})
+    $rec = @(Records)[-1]
+    Check 'CHAIN_API: Message винятку — точно код' ($err.Exception.Message -ceq 'CHAIN_API' -and $err.Exception.Message -cmatch '^CHAIN_[A-Z_]+$')
+    Check 'CHAIN_API: у журналі код виходу й stderr gh' (@(Records).Count -eq $before + 1 -and $rec.code -ceq 'CHAIN_API' -and $rec.exit_code -eq 1 -and $rec.stderr.Contains('HTTP 502: Bad Gateway') -and $rec.stderr.Contains($url))
+    $lines = @(Chain-Lines)
+    Check 'CHAIN_API: у рядку диспетчерові лише HTTP 502, без stderr і адреси' ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API HTTP 502' -and (Test-OutboxLine $lines[0]) -ceq '')
+    [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="gh: HTTP 503: Service Unavailable ($url)`n"}))
+    Check 'CHAIN_API: інший stderr за годину — не новий рядок, але новий запис журналу' (@(Chain-Lines).Count -eq 1 -and @(Records).Count -eq $before + 2 -and @(Records)[-1].stderr.Contains('HTTP 503'))
+    Reset-ChainLines
+    $err = Fail-ChainApi ([pscustomobject]@{Code=-1;Out='';Err='межа часу'})
+    $rec = @(Records)[-1]; $lines = @(Chain-Lines)
+    Check 'CHAIN_API: межа часу — журнал і рядок «межа часу»' ($err.Exception.Message -ceq 'CHAIN_API' -and $rec.exit_code -eq -1 -and $rec.stderr -ceq 'межа часу' -and $lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API межа часу' -and (Test-OutboxLine $lines[0]) -ceq '')
+    Reset-ChainLines
+    [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="unknown flag: --foo`n"}))
+    $lines = @(Chain-Lines)
+    Check 'CHAIN_API: довільний stderr без ознаки — рядок без ознаки, текст лише в журналі' ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API' -and @(Records)[-1].stderr.Contains('unknown flag'))
+    Reset-ChainLines
+    $live = "Get `"https://api.github.com/repos/mightyrochy/kod-shi-data/pulls?state=open&per_page=100&page=1`": net/http: TLS handshake timeout"
+    [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err=$live}))
+    $rec = @(Records)[-1]; $lines = @(Chain-Lines)
+    Check 'CHAIN_API: живий stderr (TLS handshake timeout) — журнал повний, рядок «мережа» без адреси' ($rec.exit_code -eq 1 -and $rec.stderr -ceq $live -and $lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API мережа' -and (Test-OutboxLine $lines[0]) -ceq '')
+    foreach ($go in @('dial tcp 140.82.121.6:443: i/o timeout','read tcp 10.0.0.2:5000->140.82.121.6:443: connection reset by peer','dial tcp 127.0.0.1:443: connect: connection refused','dial tcp: lookup api.github.com: no such host')) {
+        Reset-ChainLines
+        [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="Get `"$url`": $go"}))
+        $lines = @(Chain-Lines)
+        Check "CHAIN_API: Go-помилка «$go» — «мережа»" ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API мережа')
+    }
+    Reset-ChainLines
+    [void](Fail-ChainApi ([pscustomobject]@{Code=1;Out='';Err="gh: HTTP 502: Bad Gateway ($url): i/o timeout"}))
+    $lines = @(Chain-Lines)
+    Check 'CHAIN_API: HTTP-код старший за «мережу»' ($lines.Count -eq 1 -and $lines[0] -ceq 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API HTTP 502')
+    Reset-ChainLines
+    $secret = New-ChainFailure 'CHAIN_PUSH' ([pscustomobject]@{Code=128;Out='';Err="fatal: unable to access 'https://user:token123@github.com/o/r/': HTTP 502"})
+    Check 'stderr у Data — адреса без входу' ($secret.Message -ceq 'CHAIN_PUSH' -and $secret.Data['ExitCode'] -eq 128 -and -not ([string]$secret.Data['Stderr']).Contains('token123') -and ([string]$secret.Data['Stderr']).Contains('https://github.com/o/r/'))
+    Reset-ChainLines
+    $head = 'b' * 40
+    $script:Native = [pscustomobject]@{Code=1;Out='';Err="gh: HTTP 502: Bad Gateway ($url)"}
+    try { [void](Invoke-ChainApi 'repos/o/r/pulls/12') } catch { $pullErr = $_ }
+    Write-ChainPullFailure $pullErr '12' $head
+    $lines = @(Chain-Lines)
+    Check 'один PR: рядок з HTTP 502, журнал із stderr, прохід не зупинено' ($lines.Count -eq 1 -and $lines[0] -ceq "GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API PR 12 $head HTTP 502" -and (Test-OutboxLine $lines[0]) -ceq '' -and @(Records)[-1].stderr.Contains('HTTP 502'))
+    $pushErr = New-ChainFailure 'CHAIN_PUSH' ([pscustomobject]@{Code=1;Out='';Err='rejected'})
+    $rethrown = $null
+    try { throw $pushErr } catch { try { Write-ChainPullFailure $_ '12' $head } catch { $rethrown = $_ } }
+    Check 'CHAIN_PUSH і CHAIN_REMOTE — як і раніше, перекидаються на весь прохід з причиною' ($null -ne $rethrown -and $rethrown.Exception.Message -ceq 'CHAIN_PUSH' -and $rethrown.Exception.Data['Stderr'] -ceq 'rejected')
 } catch { Check "виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
 finally {
     $resolved = [IO.Path]::GetFullPath($tmp)

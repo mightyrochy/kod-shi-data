@@ -5,7 +5,7 @@ ref = sys.argv[1] if len(sys.argv) > 1 else None
 paths = subprocess.check_output(['git', '-c', 'core.quotepath=off', 'ls-tree', '-r', '--name-only', ref, 'джерела'], text=True).splitlines() if ref else []
 files = [p for p in paths if p.endswith('.py') and p.count('/') == 1] if ref else [str(p) for p in root.glob('*.py')]
 count_codes = {'edge_branch_absent_in_catalogue', 'scheme_colour_lies_in_kinds', 'costume_one_genre_everywhere',
-               'named_metal_is_detail_not_surface', 'named_metal_reads_other_tone_on_frame', 'no_third_piece_dressed_not_styled'}
+               'no_third_piece_dressed_not_styled'}   # заяви про метал-деталь і тон кадру знято (14415)
 all_calls, subjects, counts, missing, modules = 0, 0, 0, [], set()
 for path in files:
     src = subprocess.check_output(['git', 'show', ref + ':' + path], text=True) if ref else pathlib.Path(path).read_text()

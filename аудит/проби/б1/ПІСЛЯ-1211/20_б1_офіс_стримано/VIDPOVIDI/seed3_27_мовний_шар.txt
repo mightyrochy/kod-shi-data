@@ -1,0 +1,56 @@
+── ПРОМПТ (8030 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: fur_coat · colour code: black · about it: text н=1
+2 — kind code: dress_generic · colour code: black · about it: text н=2
+3 — kind code: earrings · colour code: red · about it: text н=3
+4 — kind code: belt · colour code: powder · about it: text н=4
+5 — kind code: jewelry_generic · colour code: red · about it: text н=5
+6 — kind code: sneakers · colour code: beige · about it: text н=6
+7 — kind code: bag_generic · colour code: brown · about it: text н=7
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; black — чорний; brown — коричневий; powder — пудра; red — червоний.
+
+ТЕКСТИ:
+{
+"1": "This plush black fur coat features a generous, soft collar and a relaxed, regular cut that drapes effortlessly over your frame. The deep matte shade of black gives it a timeless, elegant feel while the luxurious texture adds warmth and richness to your overall silhouette.",
+"2": "The velvet mini dress is crafted from rich black fabric with a high neck and long sleeves that offer modesty without sacrificing style. Its form-fitting silhouette hugs your waist and hips gently, creating a clean line that elongates your legs and keeps the look refined.",
+"3": "These dangling earrings feature delicate red beads suspended from simple metal hoops. The deep crimson tone provides a beautiful accent against your skin and complements the choker worn below, tying together your upper-layer accessories with quiet sophistication.",
+"4": "This soft powder-colored belt sits at your natural waistline, offering subtle definition without overpowering the outfit. Its gentle hue brings warmth to the predominantly black ensemble and adds a touch of delicate femininity to the look.",
+"5": "The red crystal choker features large faceted stones set in gold-toned metal, catching the light with every movement. Its bold yet balanced design draws attention to your neckline while remaining elegant enough for an office setting.",
+"6": "These beige sneakers are designed with a cozy shearling lining and feature a metallic star detail on the side. Their low-top silhouette keeps them casual but stylish, perfect for walking around town without looking too sporty or out of place in a professional setting.",
+"7": "This structured brown leather handbag features a smooth texture and dual handles—one short top handle for carrying by hand, and a longer adjustable strap for crossbody wear. Its deep chocolate tone complements the black pieces while adding an earthy warmth to your overall palette.",
+"8": "Your new look is built around a foundation of rich, deep tones that feel both sophisticated and grounded for the office. The plush black fur coat acts as your first line of defense against the autumn chill while adding a touch of luxe texture. Underneath, you've chosen a sleek black velvet mini dress with a high neck, which keeps the silhouette streamlined and modern without sacrificing elegance. To add warmth to this dark ensemble, I’ve included a delicate red beaded choker that introduces a subtle pop of color right at the neckline. The matching dangling earrings echo that same deep red hue, tying your accessories together seamlessly. A soft beige sneaker with warm lining balances the formality of the outfit perfectly—casual enough for commuting but polished enough for meetings. Finally, the structured brown leather handbag offers a natural contrast to the monochrome pieces while providing practical space for your essentials.",
+"9": "Pull the coat open when you’re in transit or between appointments to reveal the dress underneath, then let it fall closed once you settle into your workspace.",
+"10": "Wear the choker as-is; if you feel too bold, simply skip it for a more understated day—but keep the earrings for that finishing touch.",
+"11": "Пасок з пір’ям декольте світла пудра — Removed the powder belt; kept it only if needed for color, but here I removed it to fix the blandness formula."
+}
+
+── ВІДПОВІДЬ (3142 симв., 51.1 с, HTTP 200) ──
+{
+"1": "Цей розкішний чорний кожушок має просторий м'який комір і вільний крій, який елегантно драпірується по твоїй фігурі. Глибокий матовий відтінок чорного надає йому позачасового вишуканого вигляду, а розкішна текстура додає тепла та багатства твоєму силуету.",
+"2": "Оксамитова мінісукня пошита з насиченої чорної тканини з високим коміром і довгими рукавами, які пропонують скромність без шкоди для стилю. Її приталений силует ніжно облягає твою талію та стегна, створюючи чисту лінію, яка видовжує ноги та зберігає вигляд елегантним.",
+"3": "Ці підвісні сережки мають ніжні червоні намистини, підвішені на простих металевих кільцях. Глибокий гранатовий тон створює гарний акцент на твоїй шкірі та доповнює чокер нижче шиї, поєднуючи верхній шар аксесуарів з тихою вишуканістю.",
+"4": "Цей м'який пасок кольору пудра сидить у тебе на лінії талії, пропонуючи ледь помітну визначеність без перевантаження образу. Його ніжний відтінок додає тепла переважно чорному ансамблю та доповнює образ делікатною жіночністю.",
+"5": "Червоний кришталевий чокер має великі фацетні камені, вставлені в металеву оправу золотистого кольору, які ловлять світло з кожним рухом. Його сміливий, але збалансований дизайн привертає увагу до твоєї лінії шиї, залишаючись достатньо елегантним для офісу.",
+"6": "Ці бежеві кросівки мають затишну підкладку зі штучного хутра та металеву деталь у вигляді зірки на боці. Їхня низька конструкція робить їх невимушеними, але стильними, ідеально підходять для прогулянок містом без надмірного спортивного вигляду чи невідповідності в професійному середовищі.",
+"7": "Ця структурована коричнева шкіряна сумка має гладку текстуру та дві ручки — одну коротку зверху для носіння в руках і довгий регульований ремінь через плече. Її глибокий шоколадний відтінок доповнює чорні елементи, додаючи природного тепла твоїй загальній палітрі.",
+"8": "Твій новий образ побудований на основі насичених темних тонів, які поєднують у собі вишуканість і практичність для офісу. Розкішний чорний кожушок служить першим захистом від осіннього холоду та додає розкоші текстури. Під ним ти обрала елегантну чорну оксамитову мінісукню з високим коміром, яка зберігає силует струнким і сучасним без шкоди для вишуканості. Щоб додати тепла цьому темному ансамблю, я додала ніжний червоний чокер з намистин, який вносить ледь помітний колір прямо на лінію шиї. Відповідні підвісні сережки повторюють той самий глибокий гранатовий відтінок, бездоганно поєднуючи твої аксесуари. Теплі бежеві кросівки з хутряною підкладкою ідеально балансують формальність образу — достатньо невимушені для щоденних переїздів, але досить елегантні для зустрічей. Нарешті, структурована коричнева шкіряна сумка пропонує природний контраст до монохромного одягу та забезпечує практичне місце для твоїх речей.",
+"9": "Відкрий кожушок під час пересування або між справами, щоб показати сукню знизу, а потім дай йому знову закритися, коли ти влаштуєшся на робочому місці.",
+"10": "Одягни чокер як є; якщо тобі здається надто сміливим, просто пропусти його для більш стриманого дня — але збережи сережки для завершального штриху.",
+"11": "Зняла пасок кольору пудра."
+}

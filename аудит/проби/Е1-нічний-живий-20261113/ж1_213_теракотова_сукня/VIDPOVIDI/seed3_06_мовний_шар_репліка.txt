@@ -1,0 +1,51 @@
+── ПРОМПТ (5894 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш жінці репліку стилістки природною українською. Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки. До неї — напряму, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); що сказала вона, стилістка каже їй у другій особі. Зміст береш лише з входу нижче: нічого не додаєш, не вирішуєш і не радиш від себе. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — «репліка стилістки»:
+- recorded — що записано з її слів цього ходу (поля сценарію кодами): коротко підтвердь це; her_words — цілі її слова з quote, без quote — уся label. Ошатність (formality) — без чисел, рівнів і шкал.
+- item_verdicts — вердикт про кожну річ: заяви кодами: передай їхній зміст, по речі; коди — не слова для неї. Річ називай її видом (item_type); коли виду нема чи він unknown — лише загальним словом її слота (slot: взуття, сумка, верх), іншого виду не добирай.
+- passport — відомі факти: про них не питай, підтверджуй лише recorded.
+- advice — порада коду; її додає показ, не пиши її в text.
+- code_data — дані коду; питай лише з required.
+- not_recorded — що з її слів цього ходу НЕ записано в сценарій: поля сценарію кодами: коротко й прямо скажи, що цього ти не записала, і що вона може написати це ще раз своїми словами; не кажи, що врахуєш, і не питай. Коди: place_words — де вона буде, кількома словами для картки.
+Пиши зміст кодів людськими словами.
+
+Визначення заяв нижче — англійською, і це ОПИС того, що сказано, про неї в третій особі: «she» і «her» — жінка; передай зміст своїми словами. «the stylist» — стилістка. Що обрала чи зробила вона, не пиши як вибір стилістки. «the selection» і «selection» в іменах заяв і видів — добір; «the code» у визначеннях — перевірка образу, яку робить стилістка. «Код», «система» чи «програма» в тексті не діють ніколи: хто дібрав чи перевірив — «я» або добір.
+
+ЗАЯВИ ВЕРДИКТІВ:
+- cannot_say_if_suits — whether it suits her cannot be said yet.
+- colour_unknown_not_checked — this item's colour is unknown, as neither a photo measured it nor a colour was named, so the item was not checked against her palette; a colour in words makes the check possible.
+- colour_role_not_judged — whether the item's colour is a neutral base or an accent was not judged (values: missing — colour_measure: neither a measurement nor a shop colour word places it on one side; a photo of the item in daylight lets it be judged).
+
+Відповідь — лише JSON-об'єкт з ключем text — перелік речень {about: [ключі входу], recorded: [коди about, які речення каже записаними], her_words: [], says: речення}.
+
+Розбіжність попередньої відповіді: немає непорожнього рядка text.
+
+РЕПЛІКА:
+{"recorded": {"occasion": {"label": "прогулянку з лляною сукнею Амора", "quote": "прогулянку з лляною сукнею Амора", "source": "reading"}, "wants": {"label": "лляною сукнею Амора", "quote": "лляною сукнею Амора", "source": "reading"}}, "item_verdicts": [{"verdict": {"kind": "her_item_verdict", "statements": [{"code": "cannot_say_if_suits", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_278d593cb4c378fd818f551c"}, {"code": "colour_unknown_not_checked", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_4e54dd80c5f33f4ba595b02a"}, {"code": "colour_role_not_judged", "values": {"missing": "colour_measure"}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_de34cf05a78293a53fc36cd2"}]}, "slot": "dress", "item_type": "sundress"}], "not_recorded": ["place_words"], "passport": {"occasion": "walk", "event": "прогулянку з лляною сукнею Амора", "wants": [{"slot": "dress", "item_type": "sundress", "color_name": "terracotta", "fabric": "linen", "quote": "лляною сукнею Амора"}], "mood": ["затишно"], "own_items": [{"name": "Амора", "slot": "dress"}], "quotes": {"occasion": "прогулянку з лляною сукнею Амора", "wants": "лляною сукнею Амора"}, "sources": {"event": {"kind": "reading"}, "occasion": {"kind": "reading", "quote": "прогулянку з лляною сукнею Амора"}, "wants": {"kind": "reading", "quote": "лляною сукнею Амора", "parts": [{"kind": "reading", "quote": "лляною сукнею Амора з vilni.store, крамниця називає її теракотовою"}, {"kind": "reading", "quote": "лляною сукнею Амора"}]}, "mood": {"kind": "reading"}, "own_items": {"kind": "reading"}, "quotes": {"kind": "default"}}}, "advice": "Розкажи, який стиль ти хочеш для прогулянки з лляною сукнею Амора?", "code_data": {"advice_topics": ["реєстр"], "not_recorded": ["not_read · step=layer · field=source_shop · model_said={\"quote\": \"з vilni.store\", \"value\": \"vilni.store\"} · code=not_taken", "not_read · step=layer · field=colouring · model_said={\"color_name\": {\"quote\": \"крамниця називає її теракотовою\", \"value\": \"terracotta\"}} · code=not_taken", "place_words_without_place · step=layer · field=place_words · model_said=\"лляною сукнею Амора з vilni.store, крамниця називає її теракотовою\" · code=not_taken"], "required": []}}
+
+── ВІДПОВІДЬ (690 симв., 7.4 с, HTTP 200) ──
+```json
+{
+  "text": [
+    {
+      "about": ["recorded", "passport"],
+      "recorded": ["occasion", "wants"],
+      "her_words": [],
+      "says": "Так, я записала твої слова про прогулянку з лляною сукнею Амора."
+    },
+    {
+      "about": ["item_verdicts"],
+      "recorded": ["item_verdicts"],
+      "her_words": [],
+      "says": "Щодо твоєї лляної сукні Амора, я поки не можу сказати чи вона тобі пасуватиме. Також колір цієї сукні мені невідомий і я його ще не оцінювала."
+    },
+    {
+      "about": ["not_recorded"],
+      "recorded": [],
+      "her_words": [],
+      "says": "Я не записала, де ти будеш. Розкажи про це, будь ласка, щоб я могла врахувати в доборі."
+    }
+  ]
+}
+```

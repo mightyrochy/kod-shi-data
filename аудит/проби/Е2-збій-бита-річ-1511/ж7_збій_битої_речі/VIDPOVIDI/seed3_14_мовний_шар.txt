@@ -1,0 +1,47 @@
+── ПРОМПТ (6439 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+8 — назва в тексті н=9
+9 — назва в тексті н=10
+10 — назва в тексті н=11
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Thermal base top: fitted long-sleeve crew neck, hip length, soft ivory, fine merino wool\n\nThermal leggings: slim, full ankle length, worn under the trousers, charcoal, merino-blend jersey\n\nSweater: refined roll neck, relaxed straight cut, hip length, soft blue, extra-fine merino wool\n\nTrousers: high-waisted straight leg, full length to the ankle bone, slate charcoal, wool-blend flannel\n\nCoat: long single-breasted padded coat with a stand collar, straight cut, below the knee, deep navy, dense wool blend with a warm insulated lining\n\nBoots: flat ankle boots with a lugged rubber sole, waterproof and shearling-lined, black, salt-resistant treated leather\n\nSocks: tall thick socks, mid-calf, heather gray, merino wool\n\nHat: close-fitting folded-cuff beanie, light silver gray, wool-cashmere knit\n\nScarf: long, wide, wrapped twice, dusty blue, soft brushed wool\n\nGloves: lined, full-finger, wrist length, black, leather with a wool lining\n\nWhy this works: Layers of merino and a padded wool coat keep you warm in deep frost while still reading as neat office dressing, with the roll neck and straight trousers giving a polished line. The cool blues, navy and charcoal echo your light eyes and silvery hair and flatter your fair skin. The flat, lugged, waterproof boots give grip and protection on snowy, salted pavements for the whole walk, with no heels. The long coat and double-wrapped scarf block wind, and everything comes off easily once you are in the office.",
+"2": "Thermal base top",
+"3": "Thermal leggings",
+"4": "Sweater",
+"5": "Trousers",
+"6": "Coat",
+"7": "Boots",
+"8": "Socks",
+"9": "Hat",
+"10": "Scarf",
+"11": "Gloves"
+}
+
+── ВІДПОВІДЬ (1898 симв., 25.2 с, HTTP 200) ──
+{"1":"Термокофта: приталена, з довгим рукавом і круглим вирізом, довжиною до стегон, м'який колір слонової кістки, тонка мериносова вовна\n\nТермолегінси: вузькі, повної довжини до щиколотки, носяться під штанами, графітові, трикотаж із мериносовою сумішшю\n\nСветр: вишуканий, з коміром-хомутом, вільного прямого крою, довжиною до стегон, м'який блакитний, найтонша мериносова вовна\n\nШтани: прямі з високою посадкою, повної довжини до щиколотки, сланцево-графітові, фланель із вовняною сумішшю\n\nПальто: довге однобортне стьобане з коміром-стійкою, прямого крою, нижче коліна, глибокий темно-синій, щільна вовняна суміш із теплою утепленою підкладкою\n\nЧоботи: пласкі ботильйони з рифленою гумовою підошвою, водонепроникні, на підкладці з овчини, чорні, шкіра з обробкою, стійкою до солі\n\nШкарпетки: високі товсті, до середини литки, сірий меланж, мериносова вовна\n\nШапка: облягаюча шапка-біні з відворотом, світлий сріблясто-сірий, трикотаж із вовни з кашеміром\n\nШарф: довгий, широкий, обмотаний двічі, приглушений блакитний, м'яка начесана вовна\n\nРукавички: на підкладці, з пальцями, довжиною до зап'ястя, чорні, шкіра на вовняній підкладці\n\nЧому це працює: шари мериносу та стьобане вовняне пальто зберігають тепло в сильний мороз, але образ усе одно виглядає охайно, як для офісу, а светр із коміром-хомутом і прямі штани дають вишукану лінію. Холодні блакитні відтінки, темно-синій і графітовий пасують до твоїх світлих очей і сріблястого волосся та пасують до твоєї світлої шкіри. Пласкі водонепроникні чоботи з рифленою підошвою дають зчеплення й захист на засніжених, посипаних сіллю тротуарах упродовж усієї дороги, без підборів. Довге пальто та двічі обмотаний шарф захищають від вітру, а все легко знімається, щойно ти в офісі.","2":"Термокофта","3":"Термолегінси","4":"Светр","5":"Штани","6":"Пальто","7":"Чоботи","8":"Шкарпетки","9":"Шапка","10":"Шарф","11":"Рукавички"}

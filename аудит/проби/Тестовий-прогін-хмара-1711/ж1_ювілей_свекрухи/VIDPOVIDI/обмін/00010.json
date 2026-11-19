@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tailored crepe blazer, single-breasted, hip length, deep burgundy (#6B1F2E), structured viscose-blend crepe\\nMidi sheath-style dress with a modest round neckline and three-quarter sleeves, knee-to-mid-calf length, deep forest green (#1F3D2B), fine wool-blend crepe\\nSheer-free opaque tights, sleek and matte, 40 denier, charcoal (#3A3A3C), nylon blend\\nPointed-toe block-heel pumps, 6 cm heel, mid-calf-friendly proportion, black (#1A1A1A), smooth leather\\nStructured top-handle handbag, small to medium, black (#1A1A1A), leather\\nPearl stud earrings, ivory (#F2EBDD), freshwater pearl\\nThin silk scarf knotted loosely at the neck, muted gold and green pattern (#B79B5A), silk twill\\n\\nThis outfit works because a polished dress and blazer sit squarely in the smart band, which suits a family birthday dinner at a restaurant on an autumn Saturday. The covered neckline, sleeves and midi length keep everything modest and tasteful, so there is nothing for anyone to comment on. The deep jewel tones feel festive and respectful of the occasion without trying to outshine the host. Block heels keep her comfortable through a long meal, and the layers give warmth for a cool autumn evening.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Tailored crepe blazer\\\",\\\"details\\\":\\\"single-breasted, hip length, structured viscose-blend crepe\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#6B1F2E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Midi sheath-style dress\\\",\\\"details\\\":\\\"modest round neckline, three-quarter sleeves, knee-to-mid-calf length, fine wool-blend crepe\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#1F3D2B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Opaque tights\\\",\\\"details\\\":\\\"sleek and matte, 40 denier, nylon blend\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#3A3A3C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Pointed-toe block-heel pumps\\\",\\\"details\\\":\\\"6 cm heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Structured top-handle handbag\\\",\\\"details\\\":\\\"small to medium, leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Pearl stud earrings\\\",\\\"details\\\":\\\"freshwater pearl\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#F2EBDD\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Thin silk scarf\\\",\\\"details\\\":\\\"knotted loosely at the neck, muted gold and green pattern, silk twill\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#B79B5A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2139,\"output_tokens\":471},\"stop_reason\":\"end_turn\"}"
+ }
+}

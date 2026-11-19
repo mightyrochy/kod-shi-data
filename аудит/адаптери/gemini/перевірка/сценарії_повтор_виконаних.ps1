@@ -14,7 +14,7 @@ try {
     $script:StateDir = "$RunsDir/state"; $script:SlotDir = "$RunsDir/slots"
     foreach ($dir in @($script:StateDir,$script:SlotDir,$OutDir,$LaneDir)) { [void][IO.Directory]::CreateDirectory($dir) }
     $script:sha = 'a' * 40; $old = $script:StateDir
-    function Mk([string]$Name) { [pscustomobject]@{ Ref = "refs/remotes/origin/gemini-queue/$Name"; Sha = $script:sha } }
+    function Mk([string]$Name) { [pscustomobject]@{ Ref = "refs/remotes/origin/gemini-queue/$Name"; Name = "gemini-queue/$Name"; Sha = $script:sha } }
     # Смуга бере позначку, коли Get-MarkerState/Test-MarkerReady (Start-Markers) бачать її готовою: NEW — береться.
     function Takes($M) { Test-MarkerReady (Get-MarkerState $M) }
     $done = Mk 'хук-збій/gpt-6.1-sol-high/2/p0'; $res = Mk 'живий/gpt-6.1-sol-high/3/gpu-p0'

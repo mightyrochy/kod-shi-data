@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"own\": \"<id from her_items or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\", \"\\\"her_items\\\" — her own items; an item of the description that is one of them gets its id in \\\"own\\\"\"]}, \"description\": \"Beige satin halter blouse with a neck tie (her own item, kept as it is): relaxed cut with a bubble hem, hip length, milky beige with no hex, satin.\\n\\nHigh-waisted straight-leg trousers: full length, espresso brown #3B2A22, wool-blend crepe.\\n\\nTextured blazer: relaxed single-breasted cut, hip length, warm camel #B58A5A, wool tweed.\\n\\nLoafers: almond toe with a low block heel, dark chocolate #2B1B14, smooth leather.\\n\\nStructured tote bag: medium size with top handles, cognac #8B5A2B, grained leather.\\n\\nSmall hoop earrings: slim, polished, warm gold #C9A24B, metal.\\n\\nWhy this outfit works: Your satin halter blouse is the centerpiece. Its neck tie and soft sheen lift a simple business look, and the blazer adds a neat, office-ready layer for autumn while keeping the blouse visible. The espresso trousers and camel jacket sit in the same warm family as the beige, and they pair well with your deep skin, dark hair and dark eyes. The tweed texture contrasts with the smooth satin, so the outfit looks put together without feeling stiff. Loafers keep the look neat and comfortable for a full day at the office.\", \"her_items\": [{\"id\": \"її-ф1\", \"name\": \"Beige satin halter blouse with neck tie\"}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Beige satin halter blouse with neck tie\\\",\\\"details\\\":\\\"relaxed cut with a bubble hem, hip length, satin\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":null,\\\"own\\\":\\\"її-ф1\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"High-waisted straight-leg trousers\\\",\\\"details\\\":\\\"full length, wool-blend crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3B2A22\\\",\\\"own\\\":null,\\\"worn\\\":true},{\\\"name\\\":\\\"Textured blazer\\\",\\\"details\\\":\\\"relaxed single-breasted cut, hip length, wool tweed\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B58A5A\\\",\\\"own\\\":null,\\\"worn\\\":true},{\\\"name\\\":\\\"Loafers\\\",\\\"details\\\":\\\"almond toe with a low block heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#2B1B14\\\",\\\"own\\\":null,\\\"worn\\\":true},{\\\"name\\\":\\\"Structured tote bag\\\",\\\"details\\\":\\\"medium size with top handles, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#8B5A2B\\\",\\\"own\\\":null,\\\"worn\\\":true},{\\\"name\\\":\\\"Small hoop earrings\\\",\\\"details\\\":\\\"slim, polished, metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A24B\\\",\\\"own\\\":null,\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2194,\"output_tokens\":404},\"stop_reason\":\"end_turn\"}"
+ }
+}

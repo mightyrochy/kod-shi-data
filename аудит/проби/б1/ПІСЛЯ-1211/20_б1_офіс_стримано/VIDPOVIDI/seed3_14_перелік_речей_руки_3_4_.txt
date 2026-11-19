@@ -1,0 +1,51 @@
+── ПРОМПТ (2484 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Tailored wool-blend blazer, structured lapel cut, knee-length hem, charcoal gray (#36454F), fine worsted wool.\nCrisp poplin blouse, pointed collar with relaxed drape, hip length, off-white (#FFFDD0), lightweight cotton poplin.\nWide-leg trousers, straight leg cut with a clean crease, ankle length, charcoal gray (#36454F), smooth virgin wool twill.\nLeather loafers, slightly rounded toe, flat sole, dark brown (#3B241A), full-grain leather.\nPearl stud earrings and a slender gold watch, small round studs, n/a (drop), white mother-of-pearl and polished yellow gold, sterling silver backing with glass crystal faces.\n\nThis outfit honors your wish for a streamlined and classic look by sticking to the \"neat\" business register with sharp tailoring in matching charcoal tones. The wool-blazer and poplin blouse provide the necessary structure and elegance expected in an office environment during autumn, while the wide-leg trousers offer a modern yet professional silhouette that remains comfortable all day. Completing the set with classic leather loafers and understated pearl jewelry ensures the ensemble feels polished without being overpowering, perfectly balancing your request for simplicity with traditional style codes."}
+
+── ВІДПОВІДЬ (1260 симв., 11.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Tailored blazer",
+      "details": "structured lapel cut, knee-length hem, fine worsted wool",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Poplin blouse",
+      "details": "pointed collar with relaxed drape, hip length, lightweight cotton poplin",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg trousers",
+      "details": "straight leg cut with a clean crease, ankle length, smooth virgin wool twill",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Leather loafers",
+      "details": "slightly rounded toe, flat sole, full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#3B241A",
+      "worn": true
+    },
+    {
+      "name": "Pearl stud earrings",
+      "details": "small round studs, white mother-of-pearl and polished yellow gold, sterling silver backing with glass crystal faces",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Gold watch",
+      "details": "slender, small round",
+      "slot": "watch",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

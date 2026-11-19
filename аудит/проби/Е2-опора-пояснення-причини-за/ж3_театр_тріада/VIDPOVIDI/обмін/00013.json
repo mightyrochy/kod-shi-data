@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tailored charcoal-plum wrap blouse, long sleeves, hip-length, silk-blend crepe, #5A3A4E\\n\\nHigh-waisted straight trousers, ankle length, black #1F1C20, wool-blend crepe\\n\\nTextured boucle jacket, slightly cropped, collarless, long sleeves, deep navy #25324A, wool-blend boucle\\n\\nPointed-toe block-heel ankle boots, black #1B1A1C, smooth leather\\n\\nStructured mini top-handle bag, black #1B1A1C, smooth leather\\n\\nSlim silver drop earrings, #C0C0C4, polished metal\\n\\nThin silk scarf, loosely knotted at the neck, dusty blue #7D8FA6, silk twill\\n\\nThis outfit suits an autumn evening at the theatre, where the dress code is neat and the light indoors is artificial. The plum blouse adds a rich, warm tone that flatters her fair, rosy skin and sits well against her very dark hair. The navy boucle jacket and dusty blue scarf pick up the blue-grey of her eyes, while the texture of the jacket gives the look polish without going formal. High-waisted trousers with a block-heel ankle boot keep the line long and comfortable for sitting through a performance and walking in cool weather.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Wrap blouse\\\",\\\"details\\\":\\\"Tailored, long sleeves, hip-length, silk-blend crepe\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#5A3A4E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight trousers\\\",\\\"details\\\":\\\"High-waisted, ankle length, wool-blend crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#1F1C20\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Boucle jacket\\\",\\\"details\\\":\\\"Textured, slightly cropped, collarless, long sleeves, wool-blend boucle\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#25324A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"Pointed-toe, block-heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1B1A1C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Top-handle bag\\\",\\\"details\\\":\\\"Structured, mini, smooth leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1B1A1C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Slim, polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C0C0C4\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Silk scarf\\\",\\\"details\\\":\\\"Thin, loosely knotted at the neck, silk twill\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#7D8FA6\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2108,\"output_tokens\":446},\"stop_reason\":\"end_turn\"}"
+ }
+}

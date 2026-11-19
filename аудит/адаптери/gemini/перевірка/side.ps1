@@ -19,10 +19,14 @@ if ((Get-Command $Script).Parameters.ContainsKey('UpdateRoot') -and -not $p.Cont
 if ((Get-Command $Script).Parameters.ContainsKey('GeminiRunsDir') -and -not $p.ContainsKey('GeminiRunsDir')) {
     $p['GeminiRunsDir'] = Join-Path ([System.IO.Path]::GetTempPath()) ('gemini-runs-' + [guid]::NewGuid().ToString('N'))
 }
+. (Join-Path $PSScriptRoot 'side_sandbox.ps1')
+# Решта шляхів до живого стану ноутбука (OutDir, RunsDir, RepoDir, …) — теж у Temp; шлях у живий стан чи справжній RepoUrl — відмова.
+Set-SideSandbox $Script $p
 # Файл, що не завантажився, — провал стенда з причиною: без Main PowerShell знайшов би main.cpl (PATHEXT має .CPL)
 # і відкрив "Миша – властивості" поверх вікон власника (29.10, 20 разів за 2 хв).
 try { . $Script @p } catch { [Console]::Error.WriteLine("СТЕНД: $Script не завантажився: $($_.Exception.Message)"); exit 2 }
 if (-not (Get-Command Main -CommandType Function -ErrorAction SilentlyContinue)) { [Console]::Error.WriteLine("СТЕНД: $Script не визначив Main"); exit 2 }
+try { Assert-SideIsolated } catch { [Console]::Error.WriteLine("СТЕНД: $($_.Exception.Message)"); exit 2 }
 # Процес наряду — знов цей стенд (а не сам скрипт), тож бере ті самі підміни, що батьківський (10164).
 $script:SideFile = $PSCommandPath; $script:SideScript = $Script; $script:SideArgs = $p
 function Get-WorkerCommand([string]$File) {

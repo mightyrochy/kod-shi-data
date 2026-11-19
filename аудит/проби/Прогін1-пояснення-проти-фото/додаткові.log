@@ -1,0 +1,80 @@
+﻿КОМАНДА python проби/промпт_опису.py
+p323_opys\m5e_ir_urok_gemma_s3\seed3_12      було  5947 симв /    — ток → стало  9465 симв /    — ток · загублено: ['о1', "Берет зі стразовим хвостиком м'ятний", 'honchstudio.com', 'Кардиган Повітря беж', 'likeangel.com.ua', 'Штани лляні в смужку, хакі']
+p323_opys\m5e_typovyi_gemma_s7\seed7_13      було  6419 симв /    — ток → стало  9665 симв /    — ток · загублено: ['о1', 'Кардиган жіночий в’язаний на гудзиках демісезонний', 'sunwin-store.com', 'Темно-сіра атласна спідниця міді довжини Айден', 'dolcedonna.com.ua', "Кашемірова бежева в'язана шапка біні"]
+p323_opys\m5e_typovyi_gemma_s7\seed7_14      було  6063 симв /    — ток → стало  9552 симв /    — ток · загублено: ['о1', 'Кардиган мохеровий на ґудзиках чорний', 'likeangel.com.ua', 'Класичні штани прямого крою (Palazzo-style) в чорному кольорі', 'maryline.ua', 'Лофери жіночі бірюзові']
+p323_opys\zb_ir_urok_gemma_s3\seed3_13       було  4787 симв /    — ток → стало  9559 симв /    — ток · загублено: ['о1', 'Жакет троянди блакитний', 'likeangel.com.ua', 'Штани лляні в смужку, хакі', 'diadia.ua', 'Мюлі жіночі світло-коричневі']
+p323_opys\zb_typovyi_gemma_s7\seed7_11       було  4631 симв /    — ток → стало  9423 симв /    — ток · загублено: ['о1', 'Кардиган жіночий в’язаний на гудзиках демісезонний', 'sunwin-store.com', 'Темно-сіра атласна спідниця міді довжини Айден', 'dolcedonna.com.ua', "Кашемірова бежева в'язана шапка біні"]
+p323_opys\zb_typovyi_gemma_s7\seed7_12       було  4701 симв /    — ток → стало  9550 симв /    — ток · загублено: ['о1', 'Подовжений чорний жакет', 'vovk.com', 'Штани мом зі стрілками', 'natalibolgar.com', 'Сумка Мозаїка із зеленим']
+p4_ir_sobaky_gemma_seed13\seed13_13          було  6230 симв /    — ток → стало  9667 симв /    — ток · загублено: ['о1', 'Черевики Жокейки Жіночі', 'giardini-shoes.com', 'Жіноча сумка Welfare', 'welfare.ua', 'світлі джинси кльош']
+p4_ir_sobaky_gemma_seed13\seed13_15          було  5902 симв /    — ток → стало  9187 симв /    — ток · загублено: ['о1', 'Ботфорти коричневі SLIM на флісі', 'emmeliedelage.com', 'Пасок базовий 2 крем', 'likeangel.com.ua', 'світлі джинси кльош']
+t7_remont\stend_seed13\seed13_11             було  6532 симв /    — ток → стало  9708 симв /    — ток · загублено: ['о2', 'світлі джинси кльош', "Худі молочний OVERSIZE 'незалежна'", 'gepur.com', "Берет зі стразовим хвостиком м'ятний", 'honchstudio.com']
+t7_remont_c59f301\stend_seed13\seed13_12     було  6247 симв /    — ток → стало  9618 симв /    — ток · загублено: ['о2', 'світлі джинси кльош', 'Бежевий приталений джемпер з віскозою', 'musthave.ua', 'Кардиган Повітря беж', 'likeangel.com.ua']
+t7_remont_c59f301\stend_seed13\seed13_13     було  6496 симв /    — ток → стало  9736 симв /    — ток · загублено: ['о2', 'світлі джинси кльош', 'Жилет жіночий вільного фасону з V-горловиною демісезонний', 'sunwin-store.com', 'Балетки з вовни (Other Brand)', 'brenda.ua']
+прогонів 11, загублених фактів разом 372
+
+КОД 0
+КОМАНДА python проби/промпти3_опис.py
+python.exe : Exception in thread Thread-1 (_readerthread):
+At line:2 char:224
++ ... n $checks) { $checkOutput = & python ('проби/' + $check) 2>&1; $check ...
++                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Exception in th..._readerthread)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Traceback (most recent call last):
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1599, in _readerthread
+    buffer.append(fh.read())
+                  ^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1251.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x98 in position 140: character maps to <undefined>
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261114-003850-d6568cf9a219\repo\джерела\проби\промпти3_опис.py", line 10, in <m
+odule>
+    до_м = types.ModuleType("розбір_до"); exec(compile(git("show", "origin/main:джерела/розбір_відповідей.py"), "до", "
+exec"), до_м.__dict__)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^
+TypeError: compile() arg 1 must be a string, bytes or AST object
+
+КОД 1
+КОМАНДА python проби/поділ_pipeline_ast.py
+python.exe : Exception in thread Thread-1 (_readerthread):
+At line:2 char:224
++ ... n $checks) { $checkOutput = & python ('проби/' + $check) 2>&1; $check ...
++                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Exception in th..._readerthread)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Traceback (most recent call last):
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1599, in _readerthread
+    buffer.append(fh.read())
+                  ^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1251.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x98 in position 44: character maps to <undefined>
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261114-003850-d6568cf9a219\repo\джерела\проби\поділ_pipeline_ast.py", line 30, 
+in <module>
+    до = вузли(було)
+         ^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261114-003850-d6568cf9a219\repo\джерела\проби\поділ_pipeline_ast.py", line 23, 
+in вузли
+    for n in ast.parse(текст).body:
+             ^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\ast.py", line 52, in parse
+    return compile(source, filename, mode, flags,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: compile() arg 1 must be a string, bytes or AST object
+
+КОД 1

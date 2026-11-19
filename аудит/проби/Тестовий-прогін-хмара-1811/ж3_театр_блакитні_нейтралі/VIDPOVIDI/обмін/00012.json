@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Midi wrap dress, A-line, knee-to-mid-calf length, deep plum (#5B2A4E), soft matte crepe with long sleeves\\nSheer tights, close to skin tone, sheer-matte (#C9A58B), fine nylon\\nPointed-toe pumps, low block heel, light blue (#8FC1E3), smooth leather\\nTailored short wool coat, straight cut, hip length, charcoal grey (#3E3F44), brushed wool\\nSmall structured top-handle bag, deep navy (#1F2A44), smooth leather\\nDrop earrings, slim, silver (#C0C0C0), polished metal\\nThin silk scarf, loosely knotted at the neck, dusty lilac (#B9A3C7), silk twill\\n\\nThis outfit suits an autumn evening at the theatre: the plum crepe dress is neat and social without being overdressed, and the wool coat keeps you warm on the way in and out. The light blue pumps are the focal point you asked for, and the deep plum lets them stand out while the navy bag and charcoal coat stay quiet beside them. The lilac scarf and silver earrings add a soft, polished touch that reads well under the warm artificial light of the auditorium. The low block heel keeps you comfortable through a long performance and the interval.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Midi wrap dress\\\",\\\"details\\\":\\\"A-line, knee-to-mid-calf length, long sleeves, soft matte crepe\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#5B2A4E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sheer tights\\\",\\\"details\\\":\\\"close to skin tone, sheer-matte, fine nylon\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#C9A58B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Pointed-toe pumps\\\",\\\"details\\\":\\\"low block heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#8FC1E3\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tailored short wool coat\\\",\\\"details\\\":\\\"straight cut, hip length, brushed wool\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#3E3F44\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small structured top-handle bag\\\",\\\"details\\\":\\\"smooth leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1F2A44\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"slim, polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Thin silk scarf\\\",\\\"details\\\":\\\"loosely knotted at the neck, silk twill\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#B9A3C7\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2097,\"output_tokens\":429},\"stop_reason\":\"end_turn\"}"
+ }
+}

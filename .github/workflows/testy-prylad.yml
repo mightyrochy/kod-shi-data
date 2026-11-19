@@ -1,0 +1,71 @@
+# Тести приладів (`джерела/прилади/тест_*.py`): усі, однією перевіркою, на кожен PR, що чіпає код `джерела/**` чи
+# `аудит/проби/**` (рядок дошки 16591). Раніше CI запускав два з шістнадцяти тестів; `тест_корінь_*.py` ішли лише
+# коли PR чіпав `джерела/прилади/` (`khrapovyk.yml`), тож правка коду продукту, що зсувала місце приладу, лишала
+# `тест_річ_запис_її_річ.py` червоним на `main`, і ніхто цього не бачив. Червона перевірка — стоп злиттю.
+# Перелік бере запускач з файлів (glob): новий тест потрапляє сюди сам; порожній перелік — не зелений.
+name: тести приладів
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'джерела/**'
+      - 'аудит/проби/**'
+      - '.github/workflows/testy-prylad.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: тести-приладів-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testy:
+    permissions:
+      contents: read
+    name: тести приладів
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      # Node потрібен тестам, що ганяють показ (`річ_запис_її_річ_переклад.cjs`): без мережі й залежностей.
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: усі тести приладів
+        run: |
+          # Запуск з кореня репозиторію й без `-I`: тести імпортують сусідні модулі зі своєї теки. Усе виконується
+          # до кінця; впалі названо наприкінці, код кроку 1, коли впав хоч один чи перелік порожній.
+          shopt -s nullglob
+          testy=(джерела/прилади/тест_*.py)
+          zhurnal="${RUNNER_TEMP}/testy_prylad.log"
+          : > "${zhurnal}"
+          vpaly=()
+          pochatok=${SECONDS}
+          for fail in "${testy[@]}"; do
+            poch=${SECONDS}
+            vyvid=$(timeout 900 python3 -X utf8 -W ignore "${fail}" 2>&1) && kod=0 || kod=$?
+            if [ "${kod}" -eq 0 ]; then
+              echo "ОК   ${fail}, $((SECONDS - poch)) с" | tee -a "${zhurnal}"
+            else
+              echo "ВПАВ ${fail}, код ${kod}, $((SECONDS - poch)) с" | tee -a "${zhurnal}"
+              printf '%s\n' "${vyvid}" | tail -n 25 | cut -c1-300 | sed 's/^/    | /' | tee -a "${zhurnal}"
+              vpaly+=("${fail} (код ${kod})")
+            fi
+          done
+          echo "---" | tee -a "${zhurnal}"
+          echo "виконано тестів ${#testy[@]}, за $((SECONDS - pochatok)) с; впало ${#vpaly[@]}" | tee -a "${zhurnal}"
+          for vpav in "${vpaly[@]}"; do echo "  впав: ${vpav}" | tee -a "${zhurnal}"; done
+          { echo '```'; cat "${zhurnal}"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${#testy[@]}" -eq 0 ]; then echo "перелік порожній — не зелений"; exit 1; fi
+          if [ "${#vpaly[@]}" -ne 0 ]; then exit 1; fi

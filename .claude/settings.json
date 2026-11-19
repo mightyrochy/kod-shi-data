@@ -19,6 +19,14 @@
   "hooks": {
     "SessionStart": [
       {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git -C \"$CLAUDE_PROJECT_DIR\" config core.hooksPath .githooks"
+          }
+        ]
+      },
+      {
         "matcher": "compact",
         "hooks": [
           {
@@ -45,6 +53,10 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/хуки/листи_менеджерові.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/хуки/дотримання_диспетчера.py\""
           }
         ]
       },
@@ -54,6 +66,15 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/хуки/фонові_завдання.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__claude-code-remote__send_later|mcp__claude-code-remote__create_trigger",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/хуки/дотримання_диспетчера.py\""
           }
         ]
       }
@@ -75,6 +96,10 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/хуки/обіцянка_без_дії.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/хуки/дотримання_диспетчера.py\""
           }
         ]
       }

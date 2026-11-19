@@ -40,9 +40,13 @@ import json
 import os
 import re
 import shutil
+import shlex
 import subprocess
 import sys
 from collections import OrderedDict
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from запуск_python import запустити_python
 
 ЛЮДИНА_ВІДСУТНЯ = {None, "claude_code_sdk", "claude_code_mcp", "claude_code_mcp_seed"}
 ПЕРЕЛІК_ЛИСТА_МЕНЕДЖЕРОВІ = ("СЛОВО ВЛАСНИКА", "РІШЕННЯ ПОТРІБНЕ:", "КОЛО", "ЛІМІТ", "ДИСПЕТЧЕР ПЕРЕДАЧА", "ЗВЕДЕННЯ")
@@ -202,7 +206,8 @@ def аналіз(роль, список, диспетчер, менеджер, �
         дії.append(Дія("К25", роль, час, повтор, ім))
     ходи, хід = [], []
     диспетчери = set(диспетчер.split(","))
-    ід_ролей = диспетчери | {менеджер, "@parent"}
+    менеджери = set(менеджер.split(","))  # попередник і наступник менеджера — на вікні обидва
+    ід_ролей = диспетчери | менеджери | {"@parent"}
     помилки = {б.get("tool_use_id"): bool(б.get("is_error")) for е in список for б in блоки(розібрати(е)[2])
                if б.get("type") == "tool_result"}
     for е in список:
@@ -210,6 +215,8 @@ def аналіз(роль, список, диспетчер, менеджер, �
         if (від and час[:len(від)] < від) or (до and час[:len(до)] >= до):
             continue
         вид, тіло, вн = розібрати(е)
+        if тіло.get("parent_tool_use_id") and not вн.get("parent_tool_use_id"):  # подія субагента (К27)
+            вн = dict(вн, parent_tool_use_id=тіло["parent_tool_use_id"])
         if вид == "system" and вн.get("subtype") == "compact_boundary":
             стиснення.append(час)
         хід.append((час, вид, вн))
@@ -231,7 +238,7 @@ def аналіз(роль, список, диспетчер, менеджер, �
                 if текст.startswith("Почни"):
                     continue
                 дії.append(Дія("К3", роль, час, кому not in ід_ролей, f"{кому[-8:]}: {коротко(текст, 70)}"))
-                if роль == "диспетчер" and кому == менеджер:
+                if роль == "диспетчер" and кому in менеджери:
                     дії.append(Дія("К4", роль, час, not текст.startswith(ПЕРЕЛІК_ЛИСТА_МЕНЕДЖЕРОВІ) and б["id"] not in відмови,
                                    коротко(текст, 70)))
                 if роль in ("перевірка", "виконавець") and кому in диспетчери:
@@ -241,7 +248,8 @@ def аналіз(роль, список, диспетчер, менеджер, �
             elif ім == "mcp__github__merge_pull_request":
                 дії.append(Дія("К7", роль, час, not SHA.fullmatch(вх.get("expectedHeadSha") or ""), f"#{вх.get('pullNumber')}"))
                 дії.append(Дія("К8", роль, час, роль != "диспетчер", f"#{вх.get('pullNumber')}"))
-            elif ім in ("mcp__github__enable_pr_auto_merge", "mcp__github__actions_run_trigger"):
+            elif ім == "mcp__github__enable_pr_auto_merge" or (
+                    ім == "mcp__github__actions_run_trigger" and вх.get("method") == "run_workflow"):  # не rerun/cancel
                 дії.append(Дія("К9", роль, час, True, ім))
             elif ім == "Bash":
                 команда = вх.get("command") or ""
@@ -303,7 +311,7 @@ def аналіз(роль, список, диспетчер, менеджер, �
                 код = [ш for ш in шляхи if ШЛЯХ_КОДУ.search(ш)]
                 if код:
                     дії.append(Дія("К26", роль, час, True, коротко(код[0], 80)))
-            if ім == "mcp__claude-code-remote__archive_session" and роль == "диспетчер":
+            if ім == "mcp__claude-code-remote__archive_session" and роль == "диспетчер" and not вн.get("parent_tool_use_id"):
                 дії.append(Дія("К27", роль, час, True, кому[-8:]))
             if ім == "Bash" and роль == "перевірка" and not вх.get("run_in_background"):
                 дії.append(Дія("К28", роль, час, bool(re.search(r"\bsleep\b|\buntil\b|\bwhile\b", вх.get("command") or "")),
@@ -336,7 +344,7 @@ def аналіз(роль, список, диспетчер, менеджер, �
             if роль == "менеджер":
                 передано = any("РІШЕННЯ_ВЛАСНИКА" in с for с in сліди)
             else:
-                передано = any("СЛОВО ВЛАСНИКА" in с and менеджер in с for с in сліди)
+                передано = any("СЛОВО ВЛАСНИКА" in с and any(м in с for м in менеджери) for с in сліди)
             дії.append(Дія("К18", роль, час, not передано, слово))
         коміти = [(ч, б["input"].get("command") or "") for ч, в, вн in подіїх if в == "assistant" for б in блоки(вн)
                   if б.get("type") == "tool_use" and б["name"] == "Bash"]
@@ -654,8 +662,16 @@ def запустити_проби(проби, корінь):
             continue
         середовище = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
         try:
-            п = subprocess.run(команда, shell=True, cwd=корінь, capture_output=True, text=True, encoding="utf-8",
-                               errors="replace", env=середовище, timeout=900)
+            частини = [shlex.split(ч) for ч in команда.split(' && ')]
+            if all(ч and ч[0] in ('python', 'python3') for ч in частини):
+                for частина in частини:
+                    п = запустити_python([sys.executable, *частина[1:]], cwd=корінь, capture_output=True,
+                                         text=True, env=середовище, timeout=900)
+                    if п.returncode:
+                        break
+            else:
+                п = subprocess.run(команда, shell=True, cwd=корінь, capture_output=True, text=True, encoding="utf-8",
+                                   errors="replace", env=середовище, timeout=900)
             добре, причина = п.returncode == 0, f"код {п.returncode}: {(п.stderr or п.stdout).strip()[-200:]!r}"
         except (OSError, subprocess.SubprocessError) as е:
             добре, причина = False, f"не запустилась: {type(е).__name__}: {е}"

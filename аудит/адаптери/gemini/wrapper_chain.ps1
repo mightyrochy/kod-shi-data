@@ -1,8 +1,32 @@
 ﻿#Requires -Version 5.1
+function New-ChainFailure([string]$Code, $Result) {
+    <# Виняток ланцюга після збою зовнішньої команди: Message — точно код (за ним розбирають `^CHAIN_[A-Z_]+$` і
+    Write-ChainPullFailure), код виходу й stderr команди — в Data (адреса без входу): без них збій не розрізнити —
+    HTTP 5xx, мережа чи межа часу (їх розрізняє Get-ChainCause). Кидається на місці виклику: `throw (New-ChainFailure 'CHAIN_API' $r)`. #>
+    $e = New-Object System.Exception $Code
+    $e.Data['ExitCode'] = [int](Get-Prop $Result 'Code')
+    $e.Data['Stderr'] = (([string](Get-Prop $Result 'Err')) -replace '://[^/@\s]*@','://')
+    $e
+}
+
+function Get-ChainCause($Failure) {
+    <# Безпечна ознака причини для рядка диспетчерові, у порядку перевірок: `межа часу` (так Invoke-Native позначає вбитий
+    за межею часу процес), `HTTP <код>` зі stderr, `мережа` (транспортний збій gh, сталі рядки помилок Go net/http: TLS
+    handshake timeout, i/o timeout, connection reset by peer, connection refused, no such host); решта stderr — лише
+    в state-failures.jsonl: рядок іде в відкритий репозиторій. #>
+    $data = $Failure.Exception.Data
+    if ($null -eq $data -or -not $data.Contains('Stderr')) { return '' }
+    $text = [string]$data['Stderr']
+    if ($text.Trim() -ceq 'межа часу') { return 'межа часу' }
+    if ($text -cmatch '(?<![0-9A-Za-z])HTTP ([0-9]{3})(?![0-9])') { return "HTTP $($Matches[1])" }
+    if ($text -cmatch '(TLS handshake timeout|i/o timeout|connection reset by peer|connection refused|no such host)') { return 'мережа' }
+    ''
+}
+
 function Invoke-ChainApi([string]$Path) {
     <# Читає JSON GitHub; збій не стає порожнім успішним списком. #>
     $r = Invoke-Native (Resolve-Exe $GhExe) @('api', $Path) $WorkDir 2
-    if ($r.Code -ne 0) { throw 'CHAIN_API' }
+    if ($r.Code -ne 0) { throw (New-ChainFailure 'CHAIN_API' $r) }
     $data = ConvertFrom-Json $r.Out
     $data
 }
@@ -20,7 +44,9 @@ function Get-ChainPulls {
 $script:ChainPaths = @{}
 
 function Get-ChainPullPaths($Pull) {
-    <# Повний список файлів API (з попередніми іменами перейменувань), один раз на голову; неповна відповідь лишає повтор. #>
+    <# Повний список файлів API (з попередніми іменами перейменувань), один раз на голову. Неповна відповідь (збій сторінки,
+    елемент без filename) лишає повтор; успішна порожня — правда: PR без змін, список порожній (журнал — раз на голову,
+    у кеш не йде: голова, яку GitHub ще не порахував, має перечитатись). #>
     $key = "$($Pull.number) $($Pull.head.sha)"
     if ($script:ChainPaths.ContainsKey($key)) { return @($script:ChainPaths[$key]) }
     $all = @(); $count = 0
@@ -36,8 +62,8 @@ function Get-ChainPullPaths($Pull) {
             $count++
         }
         if ($items.Count -lt 100) {
-            if (-not $count) { throw 'CHAIN_FILES' }
-            $script:ChainPaths = @{ $key = $all }
+            if ($count) { $script:ChainPaths = @{ $key = $all } }
+            elseif (-not (Test-Seen "chain-empty $key")) { Write-WrapperLog "ланцюг: #$($Pull.number) $($Pull.head.sha) — API віддав порожній список файлів: PR без змін, перевіряти нічого" }
             return $all
         }
     }
@@ -89,6 +115,12 @@ function Get-ChainBuildStamp([string]$Commit) {
     $stamp
 }
 
+# Функції, які ланцюг бере з queue_lanes.ps1 через AST (Get-HeadLivePublication, Get-NightlyMarker), читають
+# $script:RemoteRoot і $script:QueuePrefix, а їх задає лише верхній код queue_lanes.ps1, якого публікатор не вантажить.
+# Клон публікатора — origin, тож корінь той самий, що за замовчуванням у queue_lanes.ps1 (Set-RemoteRoot).
+$script:RemoteRoot = 'refs/remotes/origin'
+$script:QueuePrefix = "$script:RemoteRoot/gemini-queue/"
+
 function Get-EngineLivePublication([string]$Head, [string]$ExistingBody = '') {
     <# Бере лише функції читання з довіреної копії queue_lanes, без побічних дій планувальника. #>
     $errors = $null
@@ -112,16 +144,64 @@ function Save-DraftRequest([string]$Branch, [string]$Head, [string]$Model = '') 
     Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "$Branch $Head") + '.json')) ((@{branch=$Branch;head=$Head} | ConvertTo-Json -Compress))
 }
 
+function Test-ChainHeadEmpty([string]$Head) {
+    <# Голова без власних змін відносно main: diff від merge-base порожній. Недоведено (нема об'єкта, нема бази) — $false. #>
+    if ((Invoke-Git @('cat-file','-e',"$Head^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','origin',$Head) -AllowFail) }
+    $diff = Invoke-Git @('diff','--name-only',"refs/remotes/origin/main...$Head") -AllowFail
+    $diff.Code -eq 0 -and -not $diff.Out.Trim()
+}
+
+function Get-ChainRemoteHost {
+    <# Вузол віддаленого репозиторію за http(s)-адресою `origin`; локальний шлях чи збій читання — порожньо (мережі чекати нема чого). #>
+    $r = Invoke-Git @('remote','get-url','origin') -AllowFail
+    if ($r.Code -eq 0 -and ([string]$r.Out).Trim() -cmatch '^https?://(?:[^/@]*@)?([^/:@]+)') { return $Matches[1] }
+    ''
+}
+
+function Test-ChainNetwork([string]$HostName) {
+    <# Мережа встала, коли ім'я вузла розв'язується: після сну чи обриву DNS з'являється останнім. #>
+    try { [void][System.Net.Dns]::GetHostAddresses($HostName); $true } catch { $false }
+}
+
+function Wait-ChainNetwork {
+    <# Після виходу зі сну чи обриву мережа встає за секунди (журнал: ls-remote упав о 22:41:09, за секунду після пробудження),
+    тож ls-remote не питає в неї, доки ім'я вузла не розв'язується. Межа очікування — межа публікатора для мережевої відправки:
+    до $SendRetries перевірок із паузою $SendRetryDelaySeconds між ними. Не встала й тоді — далі йде ls-remote зі своїм збоєм
+    і текстом у журналі. #>
+    $remoteHost = Get-ChainRemoteHost
+    if (-not $remoteHost) { return }
+    for ($n = 1; -not (Test-ChainNetwork $remoteHost); $n++) {
+        if ($n -ge $SendRetries) { Write-WrapperLog "ланцюг: мережа до $remoteHost не встала за $n перевірок"; return }
+        Write-WrapperLog "ланцюг: мережі до $remoteHost ще нема (перевірка $n з $SendRetries) — чекаю"
+        if ($SendRetryDelaySeconds -gt 0) { Start-Sleep -Seconds $SendRetryDelaySeconds }
+    }
+    if ($n -gt 1) { Write-WrapperLog "ланцюг: мережа до $remoteHost встала на перевірці $n" }
+}
+
+function Get-ChainRemoteHeads([string]$Pattern) {
+    <# Єдине читання гілок `origin` для ланцюга: чекає мережу, а збій ls-remote лишає в журналі з кодом і текстом git
+    (адреса без входу) — сам код CHAIN_REMOTE причини не несе. #>
+    Wait-ChainNetwork
+    $r = Invoke-Git @('ls-remote','--heads','origin',$Pattern) -AllowFail
+    if ($r.Code -ne 0) {
+        $text = (([string](Get-Prop $r 'Err')).Trim() -replace '://[^/@\s]*@','://' -replace '\s*\r?\n\s*',' | ')
+        Write-WrapperLog "ланцюг: ls-remote $Pattern -> код $($r.Code): $text"
+        throw (New-ChainFailure 'CHAIN_REMOTE' $r)
+    }
+    $r
+}
+
 function Complete-EngineDrafts {
     <# Із перевірених результатів публікатора створює PR-чернетки; повтор звіряє наявний PR. #>
     $pulls = @(Get-ChainPulls)
     foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'drafts') -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+        # Кожна гілка — окремо: збій однієї чернетки лишає її завдання на повтор і не зупиняє решти.
+        try {
         $job = ConvertFrom-Json ((Read-ChainStateText $file.FullName))
         $branch = [string]$job.branch; $head = [string]$job.head
         if ($branch -cnotmatch '^gemini/[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$' -or $branch.Contains('..') -or $branch.EndsWith('.lock') -or $head -cnotmatch $script:ShaPattern) { throw 'CHAIN_DRAFT' }
         # Голова вже пройшла захист Publish-Bundle; повтор перевіряє поточний ref GitHub.
-        $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/$branch") -AllowFail
-        if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+        $r = Get-ChainRemoteHeads "refs/heads/$branch"
         if (-not $r.Out.StartsWith($head + "`t")) { continue }
         $existing = @($pulls | Where-Object {
             $_.user.login -ceq 'mightyrochy' -and $_.head.ref -ceq $branch -and $_.head.repo.full_name -ceq $GitHubRepo -and
@@ -134,6 +214,14 @@ function Complete-EngineDrafts {
                 Write-WrapperLog "ланцюг: звіт $branch без рядків дошки — гілка без PR-чернетки"
                 Remove-Item -LiteralPath $file.FullName; continue
             }
+        }
+        # Гілка прогону без власних змін відносно main (сесія лише злила main): PR-чернетка порожня, нічого перевіряти.
+        if (-not $existing.Count -and (Test-ChainHeadEmpty $head)) {
+            Write-WrapperLog "ланцюг: $branch $head — власних змін відносно main нема, PR-чернетку не відкрито"
+            if (-not (Test-Seen "empty-draft $branch $head")) {
+                Add-ChainLine "empty-draft $branch $head" "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО $branch EMPTY"
+            }
+            Remove-Item -LiteralPath $file.FullName; continue
         }
         # Список PR міг передувати допису перевірки: читаємо чинне тіло безпосередньо перед PATCH.
         $currentBody = ''
@@ -153,11 +241,12 @@ function Complete-EngineDrafts {
         }
         $body = $payload | ConvertTo-Json -Compress
         $r = Invoke-Native (Resolve-Exe $GhExe) @('api','--method',$method,$endpoint,'--input','-') $WorkDir 2 $body
-        if ($r.Code -ne 0) { throw 'CHAIN_DRAFT' }
+        if ($r.Code -ne 0) { throw (New-ChainFailure 'CHAIN_DRAFT' $r) }
         $pr = ConvertFrom-Json $r.Out
         if ([string]$pr.number -cnotmatch '^[1-9][0-9]{0,8}$') { throw 'CHAIN_DRAFT' }
         Write-WrapperLog "ланцюг: $method PR-чернетки #$($pr.number) $branch $head"
         Remove-Item -LiteralPath $file.FullName
+        } catch { Write-WrapperLog "ланцюг: чернетка $($file.Name) — $([string]$_.Exception.Message); завдання лишається на повтор"; Write-ChainFailure $_ }
     }
 }
 
@@ -180,15 +269,29 @@ function Test-LiveModels($Config) {
     $false
 }
 
-function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$Gpu, [ValidateRange(1,999)][int]$Attempt = 1) {
-    <# Створює сталу позначку один раз; порівняння lease не дозволяє затерти чужу/вже взяту спробу. #>
+function Set-QueueTracking([string]$Queue, [string]$Sha = '') {
+    <# Після успішного push у `gemini-queue/*` (`$Sha` — поставлена позначка, порожньо — знята) ставить локальне посилання
+    `refs/remotes/origin/…` у те саме, що тепер на origin. Клон `repo.git` — `init --bare` без `remote.origin.fetch`, і push
+    сам цих посилань не оновлює: без цього прийом станів того ж проходу (Receive-RunState, Remove-FinishedMarkers) бачив би
+    позначки, як їх залишив останній fetch, і відкидав би стан позначки, яку ланцюг поставив уже після нього. Збій тут не
+    скасовує вже виконаного push — наступний fetch --prune вирівняє посилання. #>
+    if ($Queue -cnotmatch '^gemini-queue/\S+$' -or $Queue.Contains('..') -or ($Sha -and $Sha -cnotmatch $script:ShaPattern)) { throw 'CHAIN_FORMAT' }
+    $ref = "refs/remotes/origin/$Queue"
+    $r = $(if ($Sha) { Invoke-Git @('update-ref',$ref,$Sha) -AllowFail } else { Invoke-Git @('update-ref','-d',$ref) -AllowFail })
+    if ($r.Code -ne 0) { Write-WrapperLog "ланцюг: локальне посилання $Queue не оновлено ($(([string](Get-Prop $r 'Err')).Trim())) — вирівняє наступний fetch" }
+}
+
+function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$Gpu, [ValidateRange(1,999)][int]$Attempt = 1, [string]$Cond = '') {
+    <# Створює сталу позначку один раз; порівняння lease не дозволяє затерти чужу/вже взяту спробу. `$Cond` — умови наявної
+    позначки, що переноситься на іншу модель (строк і пріоритет лишаються); без нього — `p2` чи `p2-gpu`. #>
     if ($Slug -cnotmatch $script:SlugPattern -or $Model -cnotmatch $script:ModelPattern -or $Main -cnotmatch $script:ShaPattern) { throw 'CHAIN_FORMAT' }
-    $ref = "refs/heads/gemini-queue/$Slug/$Model/$Attempt" + $(if ($Gpu) { '/p2-gpu' } else { '/p2' })
-    $r = Invoke-Git @('ls-remote','--heads','origin',$ref) -AllowFail
-    if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+    if ($Cond -and $Cond -cnotmatch '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gpu)){0,2}$') { throw 'CHAIN_FORMAT' }
+    $ref = "refs/heads/gemini-queue/$Slug/$Model/$Attempt" + $(if ($Cond) { "/$Cond" } elseif ($Gpu) { '/p2-gpu' } else { '/p2' })
+    $r = Get-ChainRemoteHeads $ref
     if ($r.Out.Trim()) { return }
     $r = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=${ref}:",'origin',"${Main}:$ref") -AllowFail
-    if ($r.Code -ne 0) { throw 'CHAIN_PUSH' }
+    if ($r.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PUSH' $r) }
+    Set-QueueTracking ($ref -replace '^refs/heads/','') $Main
     Write-WrapperLog "ланцюг: поставлено $ref на $Main"
 }
 
@@ -215,8 +318,26 @@ function Test-QuotaRefused($Refused, $Reset, [datetimeoffset]$Now) {
     ($null -ne $at -and $at -le $Now -and $at -gt $Now.AddMinutes(-60))
 }
 
+function Test-CodexMeasuredLeft($Limits) {
+    <# $true — останній вимір Codex (`limits` у `codex` heartbeat.json) має вікна, і в кожному залишок більший за нуль.
+    Нуль у вікні, невимірене чи порожнє — $false: вимір нічого не доводить. Те саме веде gemini_run.ps1 (публікатор його не
+    вантажить), коли вирішує, чи відмова Codex без часу скидання — квота. #>
+    $any = $false
+    foreach ($l in @($Limits)) {
+        if ($null -eq $l) { continue }
+        foreach ($w in @(Get-Prop $l 'windows')) {
+            if ($null -eq $w) { continue }
+            $left = 0.0
+            if (-not [double]::TryParse([string](Get-Prop $w 'left'), 'Float', [cultureinfo]::InvariantCulture, [ref]$left) -or $left -le 0) { return $false }
+            $any = $true
+        }
+    }
+    $any
+}
+
 function Test-ModelQuota([string]$Model, [datetimeoffset]$Now) {
-    <# $true — постачальник моделі на квоті за файлами, які смуги вже ведуть: Codex — `codex` у heartbeat.json (gemini_run),
+    <# $true — постачальник моделі на квоті за файлами, які смуги вже ведуть: Codex — `codex` у heartbeat.json (gemini_run;
+    відмова без часу скидання при вимірі із залишком у кожному вікні — збій рушія, не квота),
     Claude — quota-claude.json (claude_run, поруч із gemini-publish), agy — pools.json (gemini_run): усі групи саме цієї
     моделі на 0 % (Get-ModelGroups, як QUOTA0_<група> у смузі); групи моделі не розпізнано — доступний, як у смузі;
     pools.json без слів назви (до цієї зміни) — усі групи на 0 %. Не прочитано — доступний, як було до квот. Хмарний
@@ -226,6 +347,7 @@ function Test-ModelQuota([string]$Model, [datetimeoffset]$Now) {
         $hb = Read-QuotaJson $OutDir 'heartbeat.json'
         $c = $(if ($null -ne $hb) { Get-Prop $hb 'codex' } else { $null })
         if ($null -eq $c) { return $false }
+        if ($null -eq (ConvertFrom-QuotaStamp (Get-Prop $c 'reset')) -and (Test-CodexMeasuredLeft (Get-Prop $c 'limits'))) { return $false }
         return (Test-QuotaRefused (Get-Prop $c 'refused') (Get-Prop $c 'reset') $Now)
     }
     if ($Provider -ceq 'claude') {
@@ -352,8 +474,7 @@ function Get-ChainTaskCompletion([string]$Slug, [switch]$ReadyOnly, [switch]$Rem
         if ($result.Slug -ceq $Slug -and (-not $ReadyOnly -or $result.Kind -ceq 'ГОТОВО')) { return $result.Utc }
     }
     if ($Removed) {
-        $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
-        if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+        $r = Get-ChainRemoteHeads "refs/heads/gemini-queue/$Slug/*"
         if (-not $r.Out.Trim()) { return [datetime]::UtcNow.ToString('o') }
     }
     ''
@@ -393,11 +514,14 @@ function Write-StateFailureDiagnostic([string]$Code, $Failure, [string]$Path = '
         utc = [datetime]::UtcNow.ToString('o'); code = $Code; reason = $Why
         path = $Path; object_type = 'unavailable'; owner = $null; acl = $null; last_write_utc = $null
         exception = ''; script_stack = ''; position = ''; metadata_errors = @()
+        exit_code = $null; stderr = ''
     }
     if ($null -ne $Failure) {
         $record.exception = $Failure.Exception.ToString()
         $record.script_stack = [string]$Failure.ScriptStackTrace
         $record.position = [string]$Failure.InvocationInfo.PositionMessage
+        $data = $Failure.Exception.Data
+        if ($null -ne $data -and $data.Contains('ExitCode')) { $record.exit_code = $data['ExitCode']; $record.stderr = [string]$data['Stderr'] }
     }
     if ($Path) {
         try {
@@ -419,12 +543,18 @@ function Write-StateFailureDiagnostic([string]$Code, $Failure, [string]$Path = '
 }
 
 
+function Add-ChainLine([string]$Seed, [string]$Text) {
+    <# Рядок диспетчерові: ім’я файлу — час і 12 знаків хешу $Seed. #>
+    Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex $Seed).Substring(0,12) + '.txt') $Text
+}
+
 function Write-ChainFailure($Failure) {
     <# Пише тип, місце й JSON-шлях об’єкта в рядок; повний виняток і метадані — у журнали. #>
     $code = [string]$Failure.Exception.Message
     $diagnosticCode = $(if ($code -cmatch '^CHAIN_[A-Z_]+$') { $code } else { 'CHAIN_FAILED' })
     $path = Write-StateFailureDiagnostic $diagnosticCode $Failure
-    $detail = ''
+    $cause = $(if ($code -cmatch '^CHAIN_[A-Z_]+$') { Get-ChainCause $Failure } else { '' })
+    $detail = $(if ($cause) { " $cause" } else { '' })
     $at = $Failure.InvocationInfo
     $where = $(if ($null -ne $at -and $at.ScriptName) { (Split-Path -Leaf $at.ScriptName) + ':' + $at.ScriptLineNumber } else { '' })
     if (-not $where -and ([string]$Failure.ScriptStackTrace -split "`r?`n")[0] -cmatch '^at ([A-Za-z][A-Za-z0-9-]{0,79}),') { $where = $Matches[1] }
@@ -438,7 +568,27 @@ function Write-ChainFailure($Failure) {
     }
     Write-WrapperLog "ланцюг: $code$detail; наступний прохід повторить незавершене"
     if (-not (Test-Seen ("chain-failed $code $where " + [datetime]::UtcNow.ToString('yyyyMMddHH')))) {
-        Add-OutboxLine ((Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + (Get-Sha256Hex "chain $code $where").Substring(0,12) + '.txt') "GEMINI ОБГОРТКА: ЛАНЦЮГ $code$detail"
+        Add-ChainLine "chain $code $where" "GEMINI ОБГОРТКА: ЛАНЦЮГ $code$detail"
+    }
+}
+
+function Write-ChainPullFailure($Failure, [string]$Number, [string]$Head) {
+    <# Збій одного PR не зупиняє проходу: рядок журналу з номером і кодом, диспетчерові — раз на PR і голову;
+    наступний прохід повторить лише цей PR. Збій віддаленого репозиторію (читання чи push позначок) — спільний для всіх PR:
+    його, як і раніше, обробляє прохід цілком (Write-ChainFailure). #>
+    $code = [string]$Failure.Exception.Message
+    if ($code -cin @('CHAIN_REMOTE','CHAIN_PUSH')) { throw $Failure }
+    $diagnosticCode = $(if ($code -cmatch '^CHAIN_[A-Z_]+$') { $code } else { 'CHAIN_FAILED' })
+    [void](Write-StateFailureDiagnostic $diagnosticCode $Failure)
+    if ($code -cnotmatch '^CHAIN_[A-Z_]+$') {
+        Write-WrapperLog ("ланцюг: CHAIN_FAILED {0}: {1}`n{2}" -f $Failure.Exception.GetType().FullName, $Failure.Exception.Message, $Failure.ScriptStackTrace)
+        $code = 'CHAIN_FAILED'
+    }
+    $cause = $(if ($code -cmatch '^CHAIN_[A-Z_]+$') { Get-ChainCause $Failure } else { '' })
+    $suffix = $(if ($cause) { " $cause" } else { '' })
+    Write-WrapperLog "ланцюг: #$Number $Head — $code$suffix; PR пропущено, наступний прохід повторить лише його"
+    if (-not (Test-Seen "chain-pr-failed $Number $Head $code")) {
+        Add-ChainLine "chain-pr $code $Number $Head" "GEMINI ОБГОРТКА: ЛАНЦЮГ $code PR $Number $Head$suffix"
     }
 }
 
@@ -462,7 +612,7 @@ function Get-ChainMarkerState([string]$Ref, [string]$Sha, [string]$Model) {
     if ($Model -cnotmatch '^cc-' -and -not (Test-Path -LiteralPath (Join-Path $dir 'ready'))) {
         return [pscustomobject]@{ Kind = 'UNKNOWN'; Wait = $null }
     }
-    $marker = [pscustomobject]@{ Ref = "refs/remotes/origin/$Ref"; Sha = $Sha }
+    $marker = [pscustomobject]@{ Ref = "refs/remotes/origin/$Ref"; Name = $Ref; Sha = $Sha }
     try { Get-MarkerState $marker $dir }
     catch {
         if (-not (Get-StateFailurePath $_)) { $_.Exception.Data['StatePath'] = [IO.Path]::GetFullPath((Get-StatePath (Get-MarkerKey $marker) $dir)) }
@@ -470,24 +620,24 @@ function Get-ChainMarkerState([string]$Ref, [string]$Sha, [string]$Model) {
     }
 }
 
-function Get-ChainMarkers([string]$Slug) {
-    <# Віддалені позначки з числовою спробою й поточним станом смуги — спільне джерело вибору та перенесення. #>
-    $r = Invoke-Git @('ls-remote','--heads','origin',"refs/heads/gemini-queue/$Slug/*") -AllowFail
-    if ($r.Code -ne 0) { throw 'CHAIN_REMOTE' }
+function Get-ChainMarkers([string]$Slug, $Heads = $null) {
+    <# Віддалені позначки з числовою спробою й поточним станом смуги — спільне джерело вибору та перенесення. $Heads —
+    уже прочитаний `Get-ChainRemoteHeads` цього штампу (один ls-remote на прохід). #>
+    $r = $(if ($null -ne $Heads) { $Heads } else { Get-ChainRemoteHeads "refs/heads/gemini-queue/$Slug/*" })
     foreach ($line in ($r.Out -split "`n")) {
-        if ($line.Trim() -cnotmatch '^([0-9a-f]{40})\trefs/heads/(gemini-queue/([^/]+)/([a-z0-9][a-z0-9.-]{1,63})/([1-9][0-9]{0,2})(?:/[^/]+)?)$') { continue }
-        $sha = $Matches[1]; $ref = $Matches[2]; $task = $Matches[3]; $model = $Matches[4]; $attempt = [int]$Matches[5]
+        if ($line.Trim() -cnotmatch '^([0-9a-f]{40})\trefs/heads/(gemini-queue/([^/]+)/([a-z0-9][a-z0-9.-]{1,63})/([1-9][0-9]{0,2})(?:/([^/]+))?)$') { continue }
+        $sha = $Matches[1]; $ref = $Matches[2]; $task = $Matches[3]; $model = $Matches[4]; $attempt = [int]$Matches[5]; $cond = [string]$Matches[6]
         try { $state = Get-ChainMarkerState $ref $sha $model }
         catch {
             Write-WrapperLog "ланцюг: стан $ref недоступний; позначки цієї голови збережено"
             Write-ChainFailure $_
             $state = [pscustomobject]@{ Kind = 'UNKNOWN' }
         }
-        [pscustomobject]@{ Sha=$sha; Ref=$ref; Slug=$task; Model=$model; Attempt=$attempt; Kind=$state.Kind }
+        [pscustomobject]@{ Sha=$sha; Ref=$ref; Slug=$task; Model=$model; Attempt=$attempt; Cond=$cond; Kind=$state.Kind }
     }
 }
 
-function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu) {
+function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu, [string]$Cond = '') {
     <# Переносить NEW/WAIT із вичерпаною квотою: $true — виконано, $false — не потрібно, $null — відкладено.
 
     UNKNOWN і квота цільової моделі потребують повтору; узята чи вже доступна робота передачі не потребує. #>
@@ -499,13 +649,52 @@ function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [date
     if (-not $old.Count -or @($old | Where-Object { $_.Model -ceq $Model -or -not (Test-ModelQuota $_.Model $Now) }).Count) { return $false }
     $attempt = 1
     foreach ($m in @($all | Where-Object { $_.Model -ceq $Model })) { $attempt = [Math]::Max($attempt, $m.Attempt + 1) }
-    Add-ChainMarker $Slug $Model $Main -Gpu:$Gpu -Attempt $attempt
+    Add-ChainMarker $Slug $Model $Main -Gpu:$Gpu -Attempt $attempt -Cond $Cond
     foreach ($m in $old) {
         $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',":refs/heads/$($m.Ref)") -AllowFail
-        if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
+        if ($d.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PUSH' $d) }
+        Set-QueueTracking $m.Ref
         Write-WrapperLog "ланцюг: $($m.Ref) знято — квота постачальника вичерпана, роботу бере $Model"
     }
     $true
+}
+
+function Get-NightlyReaders {
+    <# Функції нічного Е1 з довіреної копії queue_lanes.ps1 (Get-NightlyMarker — вікно, Get-NightlyBuild — збірка дозволу):
+    правила одні, ланцюг їх не копіює; викликач підключає блоки крапкою у своєму просторі. #>
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'queue_lanes.ps1'), [ref]$null, [ref]$errors)
+    if ($errors.Count) { throw 'NIGHTLY_PARSER' }
+    $names = @('Get-NightlyMarker','Get-NightlyBuild')
+    $functions = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $names -ccontains $n.Name }, $true))
+    if ($functions.Count -ne $names.Count) { throw 'NIGHTLY_PARSER' }
+    @($functions | ForEach-Object { [scriptblock]::Create($_.Extent.Text) })
+}
+
+function Test-NightlyOpen([datetime]$Utc) {
+    <# Вікно нічного Е1 — одне, у Get-NightlyMarker (queue_lanes.ps1): беремо саму функцію з довіреної копії й питаємо лише вікно. #>
+    foreach ($reader in @(Get-NightlyReaders)) { . $reader }
+    [bool](Get-NightlyMarker $Utc -OpenOnly)
+}
+
+function Move-NightlyMarker($Config, [datetimeoffset]$Now) {
+    <# Дозвіл нічного Е1 (`Е1-нічний-живий-<дата UTC>`, читає Get-NightlyMarker) стоїть на моделі зі своєї назви, а квота її
+    постачальника може бути вичерпана (codex 0 % — QUOTA0 до ранку): тоді дозвіл переходить на модель із квотою. Порядок і
+    перенесення — ті, що в автоживого: Select-ReviewModel над `codex`, `claude` з ланцюг.json і Move-BlockedMarkers; коміт
+    і умови (`gpu-p8`) лишаються, узяту чи кінцеву позначку перенесення не чіпає. Не раніше, ніж відкриється нічний (вікно
+    Test-NightlyOpen): раніше позначка Claude стартувала б до дозволеної години. Не переносить, коли для збірки дозволу вже
+    є автоживий (`автоживий-<збірка>`): Get-NightlyMarker такого дозволу не віддає, а позначка Claude його б обійшла. #>
+    if (-not (Test-NightlyOpen $Now.UtcDateTime)) { return }
+    $slug = 'Е1-нічний-живий-' + $Now.UtcDateTime.ToString('yyyyMMdd')
+    $waiting = @(Get-ChainMarkers $slug | Where-Object { $_.Kind -cin @('NEW','WAIT') })
+    if (-not $waiting.Count) { return }
+    foreach ($reader in @(Get-NightlyReaders)) { . $reader }
+    $permit = [string]$waiting[0].Sha
+    if ((Invoke-Git @('cat-file','-e',"$permit^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','origin',$permit)) }
+    $build = Get-NightlyBuild $permit
+    if ($build -and @(Get-ChainMarkers "автоживий-$build").Count) { return }
+    $model = Select-ReviewModel @([string]$Config.codex, [string]$Config.claude) $Now
+    [void](Move-BlockedMarkers $slug $model $waiting[0].Sha $Now -Gpu -Cond $waiting[0].Cond)
 }
 
 function Test-CloudMove([string]$Slug, [datetimeoffset]$Now) {
@@ -535,7 +724,7 @@ function Get-ReviewPatchId([string]$Head, [string]$Main) {
     $diff = (Invoke-Git @('-c','core.quotePath=true','diff','--binary','--full-index','--no-ext-diff','--no-textconv','--no-renames',$base,$Head,'--')).Out
     if (-not $diff.Trim()) { return '' }
     $r = Invoke-Native $GitExe @('patch-id','--stable') $WorkDir 2 $diff
-    if ($r.Code -ne 0) { throw 'CHAIN_PATCHID' }
+    if ($r.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PATCHID' $r) }
     ($r.Out.Trim() -split '\s+')[0]
 }
 
@@ -557,11 +746,33 @@ function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
     (Get-ReviewDiff $head $Main) -ceq [string]$old.diff
 }
 
+function Test-ChainMarkerCancelled($Marker) {
+    <# Голова позначки — коміт «ЗНЯТО…» диспетчера (`ЧЕРГА.md`): смуга її не виконає, лише закриє CANCELLED.
+    Коміту нема локально й fetch не дав — не знята (жива): кінця не вигадуємо. #>
+    if ((Invoke-Git @('cat-file','-e',"$($Marker.Sha)^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','--no-tags','origin',$Marker.Sha) -AllowFail) }
+    $subject = Invoke-Git @('log','-1','--format=%s',$Marker.Sha) -AllowFail
+    $subject.Code -eq 0 -and ([string]$subject.Out).Trim() -cmatch '^ЗНЯТО'
+}
+
 function Get-LiveCompletion($Active) {
-    <# Кінець активного наряду — за позначкою, незалежно від рушія й назви гілки звіту. #>
+    <# Кінець активного наряду — за позначкою, незалежно від рушія й назви гілки звіту: рядок кінця за назвою наряду чи
+    зняття всіх його позначок, і на origin нема живої позначки того самого штампу (NEW, WAIT, TAKEN чи UNKNOWN, не знятої
+    «ЗНЯТО»). Перенесення між рушіями чи смугами — нова позначка того самого штампу, а стара закінчується рядком
+    (CANCELLED після «ЗНЯТО», відмова смуги): 17.11 о 18:39Z диспетчер переніс `автоживий-04911e68` зі смуги claude на
+    `gpt-6.1-sol-high`, кінець старої позначки звільнив прогін, і о 18:43Z ланцюг поставив `автоживий-49b680c2`, хоч
+    прогін 04911e68 ішов — дві збірки в черзі на одну відеокарту. Тепер кінець — лише коли штамп не має роботи в черзі. #>
     $published = Get-Prop $Active 'published'
     if ($null -ne $published -and -not $published) { return '' }
-    Get-ChainTaskCompletion ("автоживий-" + [string]$Active.stamp) -Removed
+    $slug = "автоживий-" + [string]$Active.stamp
+    $done = Get-ChainTaskCompletion $slug
+    # Один ls-remote: усі позначки зняті — кінець (як `-Removed`), інакше кінець — лише рядок без живої позначки.
+    $heads = Get-ChainRemoteHeads "refs/heads/gemini-queue/$slug/*"
+    if (-not $heads.Out.Trim()) { return $(if ($done) { $done } else { [datetime]::UtcNow.ToString('o') }) }
+    if (-not $done) { return '' }
+    foreach ($marker in @(Get-ChainMarkers $slug $heads)) {
+        if ($marker.Kind -cin @('NEW','WAIT','TAKEN','UNKNOWN') -and -not (Test-ChainMarkerCancelled $marker)) { return '' }
+    }
+    $done
 }
 
 function Get-LatestLivePending($Pending) {
@@ -606,9 +817,9 @@ function Test-ChainReviewPull($Pull) {
 
 function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
     <# Позначки автоперевірки, яких смуги не мають брати, знімаються до узяття: голова — не поточна голова відкритого PR
-    (злито, закрито, новий пуш), PR без коду чи вже не перевіряється, позначка Claude на ноутбуці (`cc-`: перевіряє
-    хмарний Claude чи інший постачальник — ключ знято з $Seen, тож голова отримає рецензента наново), друга позначка
-    тієї самої голови (узята, інакше NEW/WAIT; доступний постачальник, найбільша числова спроба). Кожна знята — рядок журналу, а кількість за прохід —
+    (злито, закрито, новий пуш), PR вже не перевіряється, позначка Claude на ноутбуці (`cc-`: перевіряє хмарний Claude чи
+    інший постачальник), друга позначка тієї самої голови (узята, інакше NEW/WAIT; позначка диспетчера раніше за давню
+    позначку ланцюга, `Test-OldChainMarker`; доступний постачальник, найбільша числова спроба). Кожна знята — рядок журналу, а кількість за прохід —
     рядок у зведенні обгортки; невдале зняття повторить наступний прохід. #>
     $live = @{}
     foreach ($pr in @($Pulls)) { if (Test-ChainReviewPull $pr) { $live[[string]$pr.number] = $pr } }
@@ -623,13 +834,15 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
     foreach ($g in @($refs | Group-Object -CaseSensitive { "$($_.N) $($_.Head)" })) {
         if (@($g.Group | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { continue }
         $first = $g.Group[0]; $pr = $live[$first.N]; $why = ''
+        # Збій читання одного PR лишає його позначки на місці й не зупиняє решти груп.
+        try {
         if ($null -eq $pr) { $why = 'PR не відкритий чи не перевіряється' }
         elseif ([string]$pr.head.sha -cne $first.Head) { $why = 'голова PR змінилась' }
-        elseif (-not @($Seen.Keys | Where-Object { $_ -cmatch ('^' + $first.N + ' ' + $first.Head + ' ') }).Count -and -not (Test-ChainCodePull $pr)) { $why = 'PR без коду' }
         $keep = ''
         if (-not $why) {
             $sorted = @($g.Group | Where-Object { $_.Model -cnotmatch '^cc-' } | Sort-Object `
                 @{ Expression = { if ($_.Kind -ceq 'TAKEN') { 0 } elseif ($_.Kind -cin @('NEW','WAIT')) { 1 } else { 2 } } }, `
+                @{ Expression = { [int](Test-OldChainMarker $_) } }, `
                 @{ Expression = { [int](Test-ModelQuota $_.Model $Now) } }, `
                 @{ Expression = { $_.Attempt }; Descending = $true }, Ref)
             $keep = $(if ($sorted.Count) { $sorted[0].Ref } else { '' })
@@ -640,6 +853,7 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
             $drop += [pscustomobject]@{ Ref = $m.Ref; Sha = $m.Sha; Key = "$($m.N) $($m.Head) $($m.Model)"; Cc = (-not $why -and $cc)
                 Why = $(if ($why) { $why } elseif ($cc) { 'Claude на ноутбуці не перевіряє' } else { 'друга позначка тієї самої голови' }) }
         }
+        } catch { Write-ChainPullFailure $_ $first.N $first.Head }
     }
     $removed = 0
     # Пачками: перший прохід нової версії знімає сотні позначок, а кожен push — окремий вхід на origin.
@@ -649,6 +863,7 @@ function Remove-DeadReviewMarkers($Pulls, $Seen, [datetimeoffset]$Now) {
         $d = Invoke-Git $a -AllowFail
         if ($d.Code -ne 0) { Write-WrapperLog "ланцюг: зняття $($batch.Count) позначок не вдалося — повтор наступним проходом"; continue }
         foreach ($m in $batch) {
+            Set-QueueTracking $m.Ref
             Write-WrapperLog "ланцюг: $($m.Ref) знято — $($m.Why)"
             if ($m.Cc) { $Seen.Remove($m.Key) }
         }
@@ -669,7 +884,8 @@ function Request-CloudReview([string]$Number, [string]$Head) {
     if (@($markers | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
     foreach ($m in $markers) {
         $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',":refs/heads/$($m.Ref)") -AllowFail
-        if ($d.Code -ne 0) { throw 'CHAIN_PUSH' }
+        if ($d.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PUSH' $d) }
+        Set-QueueTracking $m.Ref
         Write-WrapperLog "ланцюг: $($m.Ref) знято — перевірку бере хмарний Claude"
     }
     # Позначка «відправлено» — після рядка: збій між ними повторить рядок, а не загубить його.
@@ -875,57 +1091,12 @@ function Invoke-WrapperChain {
             # Позначка, що чекає вичерпаної квоти, переходить до доступного рушія.
             [void](Move-BlockedMarkers "автоживий-$($liveActive.stamp)" (Select-ReviewModel @([string]$config.codex, [string]$config.claude) $now) ([string]$liveActive.main) $now -Gpu)
         }
+        Move-NightlyMarker $config $now
         Complete-EngineDrafts
         $pulls = @(Get-ChainPulls)
         Remove-DeadReviewMarkers $pulls $seen $now
-        foreach ($pr in $pulls) {
-            if (-not (Test-ChainReviewPull $pr)) { continue }
-            $head = [string]$pr.head.sha; $n = [string]$pr.number
-            $eligible = Test-RecentReviewHead $pr $heads $installed $now $hours
-            Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
-            if (-not $eligible) { continue }
-            $work = Get-ChainBranchWork ([string]$pr.head.ref)
-            if ($work) { Write-WrapperLog "ланцюг: #$n $head — смуга ще пише ($work), перевірка після кінця"; continue }
-            Write-WrapperLog "ланцюг: #$n $head — активної смуги нема, звичайна перевірка голови"
-            if (-not $reviewed.ContainsKey($n)) {
-                foreach ($key in @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' [0-9a-f]{40} ') })) {
-                    $oldHead = ($key -split ' ')[1]
-                    if ((Invoke-Git @('cat-file','-e',"$oldHead^{commit}") -AllowFail).Code -eq 0 -and
-                        (Invoke-Git @('merge-base','--is-ancestor',$oldHead,$head) -AllowFail).Code -eq 0) {
-                        $reviewed[$n] = @{head=$oldHead;diff=(Get-ReviewDiff $oldHead $main);pid=(Get-ReviewPatchId $oldHead $main)}
-                        if (Test-ReviewedMerge $pr $reviewed $main) { break }
-                    }
-                }
-            }
-            if (Test-ReviewedMerge $pr $reviewed $main) { Write-WrapperLog "ланцюг: #$n $head — незмінний diff після злиття main"; continue }
-            $models = @(Get-ReviewModels $pr $config $now)
-            if (-not @($models | Where-Object { -not $seen.ContainsKey("$n $head $_") }).Count) { continue }
-            if (-not (Test-ChainCodePull $pr)) { continue }
-            # Перевірка лише на голову, наряд якої оголосив кінець, і лише для ризику Р1–Р3: проміжна голова й Р0 — без позначки.
-            if (-not (Test-ChainEndAnnounced $pr)) { Write-WrapperLog "ланцюг: #$n $head — кінець роботи не оголошено (чернетка без ГОТОВО), перевірки нема"; continue }
-            if ((Get-ChainPullRisk $pr $main) -eq 0) { Write-WrapperLog "ланцюг: #$n $head — ризик Р0, перевірки нема"; continue }
-            # Перевірку, що вже дала звіт, інший рушій не повторює.
-            if (Test-ChainReviewDone $n $head) { continue }
-            $diff = Get-ReviewDiff $head $main; $patchId = Get-ReviewPatchId $head $main
-            foreach ($model in $models) {
-                $key = "$n $head $model"
-                if ($seen.ContainsKey($key)) { continue }
-                # Одна перевірка на голову: позначка будь-якого рушія вже стоїть — нової не ставимо, лише переводимо позначки, що чекають вичерпаної квоти.
-                $marked = @($seen.Keys | Where-Object { $_ -cmatch ('^' + $n + ' ' + $head + ' ') }).Count
-                $transfer = $true
-                if ($model -ceq $script:CloudReview) {
-                    $transfer = if ($marked) { Test-CloudMove "автоперевірка-$n-$head" $now } else { $true }
-                    if ($transfer) { $transfer = Request-CloudReview $n $head }
-                }
-                elseif ($marked) { $transfer = Move-BlockedMarkers "автоперевірка-$n-$head" $model $main $now }
-                else { Add-ChainMarker "автоперевірка-$n-$head" $model $main }
-                # Лише виконана або непотрібна передача завершує рішення; відкладена повториться наступного проходу.
-                if ($null -eq $transfer) { continue }
-                $seen[$key] = $true
-                $reviewed[$n] = @{head=$head;diff=$diff;pid=$patchId}
-                Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 5)
-            }
-        }
+        # Позначки автоперевірок ланцюг більше не ставить: пачку й позначки перевірок ставить диспетчер (слово власника 08.11
+        # 15:47, `аудит/ПЕРЕВІРКА.md`, «Під обгорткою ноутбука»); тут лишилося лише зняття мертвих голів його позначок.
     } catch {
         Write-ChainFailure $_
     }

@@ -15,13 +15,26 @@ on:
       - 'build.txt'
       - '.github/workflows/zbirka.yml'
       - 'аудит/дошка/**'
+      - 'аудит/корені/*.d/**'
   workflow_dispatch:
+  # Виклик із кроку самозлиття документа (`samozlyttia.yml`): злиття токеном CI не будить `push`, тож крок викликає
+  # цей процес сам. `pislia` — коміт злиття на `main`, `pered` — `main` до злиття (замість `github.event.before`).
+  workflow_call:
+    inputs:
+      pered:
+        type: string
+        required: true
+      pislia:
+        type: string
+        required: true
 
 permissions:
   contents: read
 
+# Виклик самозлиття — своя черга: у черзі `main` новий запуск витіснив би очікувану збірку push, а легкий шлях виклику
+# не збирає її джерел.
 concurrency:
-  group: збірка-показу-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  group: збірка-показу-${{ github.event_name == 'pull_request' && github.ref || inputs.pislia && 'dokument' || 'main' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -39,15 +52,26 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 2
+          ref: ${{ inputs.pislia }}
 
       - name: які шляхи змінено
         id: zmina
         env:
           BEFORE: ${{ github.event.before }}
+          PISLIA: ${{ inputs.pislia }}
         run: |
+          # Виклик самозлиття: злито документ (`джерела/прилади/документ_без_коду.py` — жодного входу збірки, правил
+          # чи коду), тож лише легкий шлях і згортання дошки; повний шлях (і решта checkout без `ref`) тут не йде.
+          if [ -n "${PISLIA}" ]; then
+            echo "produkt=false" >> "$GITHUB_OUTPUT"
+            echo "pravyla=false" >> "$GITHUB_OUTPUT"
+            echo "виклик самозлиття документа: ${PISLIA} — легкий шлях і згортання дошки" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           # Невідомий diff і ручний запуск — повна перевірка, без тихого пропуску.
           produkt=true
           pravyla=true
+          pravyla_dok=false
           znano=false
           if [ "${GITHUB_EVENT_NAME}" = push ] && [ -n "${BEFORE//0/}" ] \
              && git fetch --no-tags --depth=1 origin "${BEFORE}" 2>/dev/null; then
@@ -67,9 +91,19 @@ jobs:
                 джерела/*|аудит/проби/*|каталог_повний.xml.gz|index.html|build.txt|.github/workflows/zbirka.yml) produkt=true ;;
               esac
               case "${shliakh}" in
-                *.md|джерела/правила.py|джерела/прилади/журнал_і_розмір_правил.py|.github/workflows/zbirka.yml) pravyla=true ;;
+                *.md|джерела/прилади/журнал_і_розмір_правил.py|.github/workflows/zbirka.yml) pravyla=true ;;
+              esac
+              # Що читає журнал власника й розмір правил: .md у корені, на верхньому рівні `аудит/` і в адаптерах.
+              case "${shliakh}" in
+                */*/*.md) [[ "${shliakh}" == аудит/адаптери/* ]] && pravyla_dok=true ;;
+                аудит/*.md|[!/]*.md) [[ "${shliakh}" != */*/* ]] && pravyla_dok=true ;;
               esac
             done < /tmp/zminy
+          fi
+          # Документний PR (джерел не змінено): журнал власника й розмір правил — лише коли PR міняє те, що вони
+          # читають. Push і кодовий PR — за будь-яким `.md`, як було.
+          if [ "${GITHUB_EVENT_NAME}" = pull_request ] && [ "${produkt}" = false ]; then
+            pravyla=${pravyla_dok}
           fi
           # Мірило новизни — опублікований штамп build.txt, а не сусідній push. Concurrency тримає одну очікувану
           # збірку й витісняє її новішою; витіснив push лише дошки — його легкий шлях index.html не збирає, і
@@ -106,6 +140,15 @@ jobs:
         if: steps.zmina.outputs.produkt == 'false'
         run: python3 джерела/прилади/згорнути_дошку.py --лише-перевірити
 
+      - name: файли паспортів згортаються (легкий шлях)
+        if: steps.zmina.outputs.produkt == 'false'
+        run: python3 джерела/прилади/згорнути_паспорти.py --лише-перевірити
+
+      # Прилад самозлиття: код називає шлях під дозволеною текою — тест червоний, доки ім'я не внесено в
+      # `ІМЕНА_КОДУ` (дошка 15815–15817). Крок на обох шляхах: рішення «документ» стосується й легкого.
+      - name: прилад «документ без коду» (імена коду, клас, рішення CI)
+        run: python3 -I джерела/прилади/тест_документ_без_коду.py
+
   perevirka:
     permissions:
       contents: read
@@ -133,6 +176,14 @@ jobs:
       - name: файли дошки згортаються (лише перевірка)
         if: github.event_name == 'pull_request'
         run: python3 джерела/прилади/згорнути_дошку.py --лише-перевірити
+
+      - name: файли паспортів згортаються (лише перевірка)
+        if: github.event_name == 'pull_request'
+        run: python3 джерела/прилади/згорнути_паспорти.py --лише-перевірити
+
+      - name: стенд паспорта-файлу-гілки (ДО → ПІСЛЯ)
+        if: github.event_name == 'pull_request'
+        run: python3 -I джерела/прилади/стенд_паспорта_файл_гілки.py | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -318,22 +369,89 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+  bazovyi:
+    permissions:
+      contents: read
+    name: базовий показ main для записаних сцен
+    needs: zminy
+    if: needs.zminy.outputs.produkt == 'true'
+    # Повну збірку базового main кожна з 10 частин записаного живого шляху робила сама (мед 5,2 хв × 10 на запуск —
+    # чверть хвилин раннерів тижня 01–08.11, а раннерів 20 на всіх: черга PR). Тепер її робить один джоб паралельно з
+    # перевіркою джерел, частини беруть готовий показ (`аудит/перевірка/ci_час_0811/`).
+    # 3.12.1 (байткод Pyodide) є в versions-manifest лише для 24.04; на 26.04 setup-python падає (прогін 42342674729)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: історія голови й бази без чужих гілок
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/checkout-history.sh
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: компілятор байткоду повного показу
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        id: pyc_python
+        with:
+          python-version: '3.12.1'
+          update-environment: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: залежності збірки
+        working-directory: джерела
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: код базового main й повна збірка
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+          LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
+        run: |
+          if [ -z "$BASE_REF" ] || ! git cat-file -e "${BASE_REF}^{commit}"; then
+            echo "Нема коду бази для храповика" >&2
+            exit 1
+          fi
+          git worktree add --detach "${RUNNER_TEMP}/main-replay" "$BASE_REF"
+          mkdir -p "${RUNNER_TEMP}/main-pokaz"
+          NODE_PATH="${GITHUB_WORKSPACE}/джерела/node_modules" LYUSTERKO_CATALOG=повний python3 "${RUNNER_TEMP}/main-replay/джерела/build_артефакт.py" \
+            "${RUNNER_TEMP}/main-replay/джерела" "${RUNNER_TEMP}/main-pokaz/index.html" показ-повний
+
+      - name: базовий показ → частинам записаного живого шляху
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: main-pokaz-${{ github.sha }}
+          path: ${{ runner.temp }}/main-pokaz
+          if-no-files-found: error
+          retention-days: 7
+
   pryimannia:
     name: записаний живий шлях у Pyodide (${{ matrix.chastyna }})
     permissions:
       contents: read
       pull-requests: read
-    needs: [zminy, perevirka]
+    needs: [zminy, perevirka, bazovyi]
     if: needs.zminy.outputs.produkt == 'true'
     # 3.12.1 (байткод Pyodide) є в versions-manifest лише для 24.04; на 26.04 setup-python падає (прогін 42342674729)
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
       NODE_PATH: джерела/node_modules
+    # 10 записаних сцен; частина — ~3,5 хв накладних (checkout, історія, залежності) на ~0,35 хв відтворення сцени
+    # (вимір 08.11, дошка 14378): 2 частини по 5 сцен — ті самі сцени й кроки, на 8 раннерів менше на запуск.
     strategy:
       fail-fast: false
       matrix:
-        chastyna: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        chastyna: [0, 1]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -348,12 +466,6 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.11'
-      - name: компілятор байткоду повного показу
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        id: pyc_python
-        with:
-          python-version: '3.12.1'
-          update-environment: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
@@ -371,19 +483,20 @@ jobs:
           path: ${{ runner.temp }}/pokaz
       - name: Pyodide 0.26.4 з диска
         run: sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
-      - name: код базового main й повна збірка
+      - name: код базового main (записи сцен бази)
         env:
           BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
-          LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
         run: |
           if [ -z "$BASE_REF" ] || ! git cat-file -e "${BASE_REF}^{commit}"; then
             echo "Нема коду бази для храповика" >&2
             exit 1
           fi
           git worktree add --detach "${RUNNER_TEMP}/main-replay" "$BASE_REF"
-          mkdir -p "${RUNNER_TEMP}/main-pokaz"
-          NODE_PATH="${GITHUB_WORKSPACE}/джерела/node_modules" LYUSTERKO_CATALOG=повний python3 "${RUNNER_TEMP}/main-replay/джерела/build_артефакт.py" \
-            "${RUNNER_TEMP}/main-replay/джерела" "${RUNNER_TEMP}/main-pokaz/index.html" показ-повний
+      - name: базовий показ main зі збірки бази
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: main-pokaz-${{ github.sha }}
+          path: ${{ runner.temp }}/main-pokaz
       - name: усі звірки мають огляд і контрприклади перевірено
         run: node аудит/проби/звірки_Е1.js
       - name: відтворення не приховує зайвих чи пропущених викликів
@@ -399,7 +512,7 @@ jobs:
           REPLAY_BASE_ROOT: ${{ runner.temp }}/main-replay
         run: |
           node аудит/проби/приймання_записів.js "${RUNNER_TEMP}/pokaz" "${RUNNER_TEMP}/pyodide" \
-            "${RUNNER_TEMP}/replay" ${{ matrix.chastyna }} 10
+            "${RUNNER_TEMP}/replay" ${{ matrix.chastyna }} 2
           GITHUB_TOKEN="${{ github.event_name == 'push' && github.token || '' }}" node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/replay"
       - name: докази всіх сцен, зокрема невдалих
         if: always()
@@ -448,7 +561,9 @@ jobs:
 
       - name: розділи гейтів (ВПАЛО має лишатись 0)
         working-directory: джерела
-        run: python3 прилади/розділи_гейтів.py
+        run: |
+          python3 прилади/розділи_гейтів.py
+          python3 gate_reach.py --образи
 
       - name: контракти (мають лишатись цілі)
         working-directory: джерела
@@ -465,36 +580,17 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
+      # Повна історія правил (`правила.py`) — поза CI (дошка 14405): у межу 180 с не вклався жоден із 324 запусків
+      # 07–08.11, а повний прогін на `main` — 14,0 хв, понад 10 (вимір 09.11, `аудит/перевірка/ci_час_0811/КРОК_2.md`).
+      # Журналу власника досить бази — першого батька голови (глибина 2).
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
-          fetch-depth: 1
-
-      - name: історія голови й бази без чужих гілок
-        env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: bash .github/scripts/checkout-history.sh
+          fetch-depth: 2
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
-
-      - name: повна історія правил (межа 180 с)
-        id: pravyla
-        continue-on-error: true
-        working-directory: джерела
-        run: |
-          set +e
-          set -o pipefail
-          timeout --signal=TERM --kill-after=5s 180s python3 -u правила.py --md "${RUNNER_TEMP}/правила.md" 2>&1 | tee "${RUNNER_TEMP}/правила.log"
-          STATUS=("${PIPESTATUS[@]}")
-          echo "kod=${STATUS[0]}" >> "$GITHUB_OUTPUT"
-          echo "log_kod=${STATUS[1]}" >> "$GITHUB_OUTPUT"
-          if [ "${STATUS[0]}" -ne 0 ]; then
-            exit "${STATUS[0]}"
-          fi
-          exit "${STATUS[1]}"
 
       - name: журнал власника ↔ файли правил і розмір правил (показ)
         if: always()
@@ -503,32 +599,12 @@ jobs:
           python3 -I джерела/прилади/журнал_і_розмір_правил.py --самоперевірка
           python3 -I джерела/прилади/журнал_і_розмір_правил.py --md "${RUNNER_TEMP}/журнал_розмір.md" | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - name: стан звіту правил у підсумок
-        if: always()
-        env:
-          REPORT_RC: ${{ steps.pravyla.outputs.kod }}
-          LOG_RC: ${{ steps.pravyla.outputs.log_kod }}
-          REPORT_OUTCOME: ${{ steps.pravyla.outcome }}
-        run: |
-          {
-            echo "### Правила — звіт, не гейт"
-            echo "- Стан кроку: ${REPORT_OUTCOME:-НЕ ВИКОНАНО}; код процесу: ${REPORT_RC:-НЕ ВИМІРЯНО}; код запису логу: ${LOG_RC:-НЕ ВИМІРЯНО}."
-            case "${REPORT_RC}" in
-              124|137) echo "- Часову межу 180 с вичерпано або процес примусово завершено; повний звіт НЕ ОТРИМАНО." ;;
-              0) echo "- Процес завершився. Код 0 не є оцінкою правил; числа й відсутність входу читаються в логу." ;;
-              "") echo "- Код процесу відсутній: звіт не завершився або крок не запускався; успіх не встановлено." ;;
-              *) echo "- Процес відмовив; частковий вивід не є повним звітом." ;;
-            esac
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: лог і отриманий довідник правил
+      - name: звіт журналу й розміру правил
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pravyla-zvit
           path: |
-            ${{ runner.temp }}/правила.log
-            ${{ runner.temp }}/правила.md
             ${{ runner.temp }}/журнал_розмір.md
           if-no-files-found: warn
           retention-days: 7
@@ -541,11 +617,14 @@ jobs:
     if: ${{ !cancelled() && needs.zminy.result == 'success' && (needs.zminy.outputs.produkt == 'false' || (needs.perevirka.result == 'success' && needs.rozdily.result == 'success' && needs.pryimannia.result == 'success')) }}
     runs-on: ubuntu-latest
     steps:
+      # Легкий шлях (продукт не змінено) кроків не має: checkout дерева в 3 ГБ — ~0,9 хв на шляху документного PR.
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        if: needs.zminy.outputs.produkt == 'true'
         with:
           persist-credentials: false
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        if: needs.zminy.outputs.produkt == 'true'
         with:
           python-version: '3.11'
 
@@ -582,12 +661,14 @@ jobs:
   publish:
     name: опублікувати перевірений показ і дошку
     needs: [zminy, zbirka]
-    if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.zbirka.result == 'success' }}
+    if: ${{ !cancelled() && (github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.pislia) && needs.zbirka.result == 'success' }}
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.pislia }}
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
@@ -608,6 +689,14 @@ jobs:
           python3 джерела/прилади/згорнути_дошку.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
           exit "${PIPESTATUS[0]}"
 
+      - name: згорнути паспорти
+        id: zghortannia_pasportiv
+        continue-on-error: true
+        run: |
+          set +e
+          python3 джерела/прилади/згорнути_паспорти.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+          exit "${PIPESTATUS[0]}"
+
       - name: закомітити артефакт
         env:
           PRODUKT: ${{ needs.zminy.outputs.produkt }}
@@ -617,7 +706,7 @@ jobs:
           ZVIT="джерела/аудит/ДОСЯЖНІСТЬ.md"
           ART="${RUNNER_TEMP}/publikatsiia"
           if [ "${PRODUKT}" = "false" ]; then
-            MSG="дошка: згорнуто файли аудит/дошка (${SOURCE_SHA})"
+            MSG="дошка й паспорти: згорнуто файли аудит/дошка й аудит/корені/*.d (${SOURCE_SHA})"
           else
             SHTAMP=$(grep -o 'const ЗБІРКА_ПОКАЗУ = "[^"]*"' index.html | head -1 | sed 's/.*= "//; s/"$//')
             if [ "${SHTAMP}" != "${SOURCE_SHA}" ]; then
@@ -656,6 +745,9 @@ jobs:
               git checkout -qf --detach "${MAIN_SHA}"
               python3 джерела/прилади/згорнути_дошку.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY" \
                 || echo "згортання дошки на ${MAIN_SHA}: файли з помилкою лишились — їх покаже збірка їхнього злиття" | tee -a "$GITHUB_STEP_SUMMARY"
+              python3 джерела/прилади/згорнути_паспорти.py 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+              [ "${PIPESTATUS[0]}" = 0 ] \
+                || echo "згортання паспортів на ${MAIN_SHA}: файли з помилкою лишились — їх покаже збірка їхнього злиття" | tee -a "$GITHUB_STEP_SUMMARY"
               OSNOVA="${MAIN_SHA}"
               KOMIT=""
               echo "main ${MAIN_SHA} новіший за джерела ${SOURCE_SHA} — публікацію складено на його голові" | tee -a "$GITHUB_STEP_SUMMARY"
@@ -669,6 +761,7 @@ jobs:
               fi
               git add -A аудит/БЕКЛОГ.md
               git add -A аудит/дошка 2>/dev/null || true
+              git add -A аудит/корені 2>/dev/null || true
               if git diff --cached --quiet; then
                 echo "артефакт, штамп, звіт і дошка не змінились — коміту нема"
                 exit 0
@@ -685,8 +778,8 @@ jobs:
           echo "п'ять спроб push не пройшли без просування main — публікація не відбулась"
           exit 1
 
-      - name: згортання дошки — помилки
-        if: always() && steps.zghortannia.outcome == 'failure'
+      - name: згортання дошки й паспортів — помилки
+        if: always() && (steps.zghortannia.outcome == 'failure' || steps.zghortannia_pasportiv.outcome == 'failure')
         run: |
-          echo "згортання аудит/дошка не вдалось повністю — файли з помилкою лишились, див. крок «згорнути дошку»" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "згортання аудит/дошка чи аудит/корені/*.d не вдалось повністю — файли з помилкою лишились, див. кроки «згорнути дошку» й «згорнути паспорти»" | tee -a "$GITHUB_STEP_SUMMARY"
           exit 1

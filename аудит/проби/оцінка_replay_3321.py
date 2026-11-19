@@ -20,7 +20,7 @@ for ф in sys.argv[2:]:
            "речі": [{"ід": і, "палітра": {"стан": {"in": "у палітрі", "edge": "на межі", "out": "поза палітрою"}.get(x.get("palette"))}} for і, x in речі.items()],
            "суд": {"findings": [{"ід": з(f["id"]), "правило": f["rule"], "регістр": {"remark": "репліка", "gate": "гейт"}.get(f["register"]), "сила_нп": f.get("sila_np"),
                                  "речі": [з(i) for i in f.get("items", [])], "ремонт_заяви": f.get("fix")} for f in д["check"].get("findings", [])]}}
-    в = О._ПР.розбір_останній(відп, ("answer", "verdict"))[0]; р = О.прийняти_оцінку(відп, суд); к = р["картка"] or {}
+    в = О._ПР.розбір(відп)[0]; р = О.прийняти_оцінку(відп, суд); к = р["картка"] or {}
     if not isinstance(в, dict): print("%s: відповідь не розібрана: %s" % (ф.split("/")[-1][:8], р["причина"])); continue
     шоп = {з(c["id"]): (c.get("with_shop") or {}).get("slot") for c in д.get("changes", [])}
     записи = [("works", x, образ, None) for x in в.get("works", [])] + [("change", x, образ + зап, з(str(x.get("id")))) for x in в.get("change", [])]

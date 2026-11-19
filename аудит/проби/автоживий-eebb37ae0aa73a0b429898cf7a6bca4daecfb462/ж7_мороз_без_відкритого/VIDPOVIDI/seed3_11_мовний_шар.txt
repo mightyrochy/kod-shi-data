@@ -1,0 +1,47 @@
+── ПРОМПТ (6521 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+8 — назва в тексті н=9
+9 — назва в тексті н=10
+10 — назва в тексті н=11
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Merino long-sleeve base layer, fitted, hip length, soft white, fine-gauge merino\nRefined turtleneck knit, regular fit, hip length, dusty blue, merino-cashmere blend\nHigh-rise straight trousers, full length to the ankle, deep navy, lined wool-blend twill\nKnee-length wrap coat, single-breasted with a hood-free collar, charcoal grey, dense wool with a down-insulated lining, windproof\nWaterproof ankle boots, low block heel with a deep lugged rubber sole, 3 cm heel, dark brown, sealed full-grain leather with a warm fleece lining\nThick wool socks, mid-calf, heather grey, merino wool\nLong scarf, wrapped at the neck, light silver grey, soft lambswool\nKnit beanie, close fit, navy, wool with a fleece band\nGloves, wrist length, charcoal, leather with a warm lining\nTote bag, structured, medium size, dark brown, water-resistant treated leather\n\nThis outfit keeps the neat office look of a refined knit with tailored trousers, while the layers and the long wool coat handle deep frost and a walk through snow. The boots have grippy soles and sealed leather, so slush and road salt won't ruin them or make her slip. Dusty blue near the face echoes her eyes and sits well with her silver hair and fair skin, and the navy and charcoal keep the whole look calm and polished. The one continuous column of dark tones, with the straight trousers and the knee-length coat, makes the silhouette look longer and tidy, and the accessories are easy to take off once she is in the office.",
+"2": "Merino long-sleeve base layer",
+"3": "Refined turtleneck knit",
+"4": "High-rise straight trousers",
+"5": "Wrap coat",
+"6": "Waterproof ankle boots",
+"7": "Thick wool socks",
+"8": "Long scarf",
+"9": "Knit beanie",
+"10": "Gloves",
+"11": "Tote bag"
+}
+
+── ВІДПОВІДЬ (2060 симв., 24.3 с, HTTP 200) ──
+{"1":"Мериносовий базовий шар з довгим рукавом, приталений, довжиною до стегон, м'який білий, тонка мериносова пряжа\nВишуканий трикотаж із коміром-гольф, звичайного крою, довжиною до стегон, припилений блакитний, суміш мериноса й кашеміру\nПрямі штани з високою посадкою, повної довжини до щиколотки, глибокий темно-синій, саржа із вовняної суміші на підкладці\nПальто на запах довжиною до коліна, однобортне, з коміром без капюшона, графітово-сіре, щільна вовна з підкладкою з пуховим утеплювачем, вітронепроникне\nВодонепроникні черевики, низький широкий підбор із глибокою рифленою гумовою підошвою, підбор 3 см, темно-коричневі, герметична шкіра повного зерна з теплою флісовою підкладкою\nТовсті вовняні шкарпетки, до середини литки, сірий меланж, мериносова вовна\nДовгий шарф, обмотаний навколо шиї, світлий сріблясто-сірий, м'яка ягняча вовна\nВ'язана шапка-біні, щільно прилягає, темно-синя, вовна з флісовою смужкою\nРукавички, довжиною до зап'ястя, графітові, шкіра з теплою підкладкою\nСумка-тоут, структурована, середнього розміру, темно-коричнева, шкіра з водовідштовхувальною обробкою\n\nЦей образ зберігає охайний офісний вигляд вишуканого трикотажу зі штанами строгого крою, а шари одягу й довге вовняне пальто дають раду сильному морозу та прогулянці снігом. Черевики мають підошву з надійним зчепленням і герметичну шкіру, тому снігова каша та дорожня сіль їх не зіпсують, а ти не послизнешся. Припилений блакитний біля обличчя перегукується з твоїми очима й гарно поєднується з твоїм сріблястим волcurrent і світлою шкірою, а темно-синій та графітовий роблять увесь образ спокійним і доглянутим. Одна суцільна вертикаль темних тонів, прямі штани та пальто до коліна роблять силует довшим і охайним, а аксесуари легко зняти, щойно ти опинишся в офісі.","2":"Мериносовий базовий шар з довгим рукавом","3":"Вишуканий трикотаж із коміром-гольф","4":"Прямі штани з високою посадкою","5":"Пальто на запах","6":"Водонепроникні черевики","7":"Товсті вовняні шкарпетки","8":"Довгий шарф","9":"В'язана шапка-біні","10":"Рукавички","11":"Сумка-тоут"}

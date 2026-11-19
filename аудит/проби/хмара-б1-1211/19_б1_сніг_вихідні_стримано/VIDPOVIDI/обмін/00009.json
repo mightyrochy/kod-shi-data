@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Dark indigo straight-leg jeans, full length with a mid rise, color navy #1F2A44, heavy cotton denim with a little stretch\\nFine-knit turtleneck sweater, slim fit, hip length, color cream #EDE6D6, merino wool\\nLong wool coat, single-breasted, tailored, knee-to-mid-calf length, color camel #B98B5E, wool-cashmere blend\\nWaterproof ankle boots, lug-sole, round toe, color dark brown #3B2A20, smooth leather with a grippy rubber outsole\\nWide scarf, color charcoal grey #4A4D52, soft lambswool\\nKnit beanie, snug fit, color dark brown #3B2A20, merino wool\\nLined gloves, color dark brown #3B2A20, soft leather with a warm lining\\nStructured shoulder bag, medium size, color dark brown #3B2A20, grained leather\\n\\nThis outfit suits a snowy Saturday of walking at -3 °C because the merino layer and the wool coat keep you warm through the afternoon and the cafés, and you can take the coat off indoors. The dark denim and sturdy waterproof boots cope with snow and salted pavements, and the lug sole gives you grip when walking on slippery streets. The cream, camel and brown palette is calm and classic, which matches your wish for something restrained, and the charcoal scarf adds a bit of depth. Everything is simple and polished enough for the city centre, yet comfortable for hours of walking.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Dark indigo straight-leg jeans\\\",\\\"details\\\":\\\"straight-leg, full length, mid rise, heavy cotton denim with a little stretch\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#1F2A44\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Fine-knit turtleneck sweater\\\",\\\"details\\\":\\\"slim fit, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#EDE6D6\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Long wool coat\\\",\\\"details\\\":\\\"single-breasted, tailored, knee-to-mid-calf length, wool-cashmere blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B98B5E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Waterproof ankle boots\\\",\\\"details\\\":\\\"lug-sole, round toe, smooth leather with a grippy rubber outsole\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#3B2A20\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wide scarf\\\",\\\"details\\\":\\\"wide, soft lambswool\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#4A4D52\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Knit beanie\\\",\\\"details\\\":\\\"snug fit, merino wool\\\",\\\"slot\\\":\\\"headwear\\\",\\\"color_hex\\\":\\\"#3B2A20\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Lined gloves\\\",\\\"details\\\":\\\"soft leather with a warm lining\\\",\\\"slot\\\":\\\"gloves\\\",\\\"color_hex\\\":\\\"#3B2A20\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Structured shoulder bag\\\",\\\"details\\\":\\\"medium size, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#3B2A20\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2169,\"output_tokens\":511},\"stop_reason\":\"end_turn\"}"
+ }
+}

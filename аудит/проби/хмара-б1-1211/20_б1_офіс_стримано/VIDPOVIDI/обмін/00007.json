@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"робочий день в офісі\", \"place\": \"робочий день в офісі\", \"goal\": \"стримано\", \"registers\": \"класично\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"goal\": {\"kind\": \"reading\", \"quote\": \"стримано\"}, \"goal_quote\": {\"kind\": \"default\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"робочий день в офісі\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"робочий день в офісі\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"her_registers\": {\"kind\": \"reading\", \"quote\": \"класично\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"класично\"}]}}, \"event\": \"робочий день в офісі\", \"goal\": \"conceal\", \"her_registers\": [\"classic\"], \"occasion\": \"work\", \"place\": \"office\", \"goal_quote\": \"стримано\", \"formality\": [\"neat\"], \"season\": \"autumn\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Silk-blend blouse, classic cut with a soft pointed collar and concealed buttons, hip-skimming length, ivory #F2EDE4, matte crepe\\n\\nTrousers, straight leg with a high waist and a front crease, full ankle length, charcoal #3E4147, fine wool blend\\n\\nTextured jacket, single-breasted and softly tailored with two buttons, hip length, muted stone-grey #9A948B, wool tweed with a subtle herringbone weave\\n\\nWool coat, single-breasted and straight, knee length, dark taupe #5B534B, brushed wool\\n\\nLoafers, almond toe with a low stacked heel, dark espresso #3B2F2A, smooth leather\\n\\nStructured tote bag, medium size with slim top handles, dark espresso #3B2F2A, matte leather\\n\\nScarf, lightweight and loosely folded, soft greige #C9C3B8, fine merino wool\\n\\nThis outfit stays within a quiet, neutral palette of ivory, stone and charcoal, so it looks polished without drawing attention. The classic shapes (a straight trouser, a tailored jacket and a simple blouse) are well suited to an office day and read as neat and professional. The tweed texture adds depth without any pattern or shine, and the loafers keep the look comfortable for a full workday. The coat and scarf cover the cooler autumn weather and stay in the same understated tones.\"}],\"usage\":{\"input_tokens\":2217,\"output_tokens\":1167},\"stop_reason\":\"end_turn\"}"
+ }
+}

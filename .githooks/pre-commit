@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""Хук git `pre-commit`: коміт файлу дошки `аудит/дошка/**` не йде, доки поля не пройшли ту саму перевірку, що в CI.
+
+Мить коміту знає git, а не текст команди оболонки: хук кличе сам git (`git commit`, `--amend`, `-a`, `-F -`, `-- <шляхи>`,
+з Claude, Codex чи `agy` — однаково), і файли коміту — це індекс, який git передає хукові (`git diff --cached`).
+Файл хука не залежить від сесії: python3 й git, без змінних Claude.
+
+- серед файлів коміту нема `аудит/дошка/**` — мовчки, код 0, прилад не запускається;
+- є — вміст цих файлів беремо З ІНДЕКСУ (те, що піде в коміт), кладемо в тимчасову теку поруч із копіями приладів,
+  паспортів і дошки й запускаємо там `джерела/прилади/згорнути_дошку.py --лише-перевірити` — те саме, що крок CI
+  «файли дошки згортаються», правил тут нема. Код ≠ 0 — коміт відхилено, у stderr — рядки «ПОМИЛКА <файл>:<рядок>: …».
+Не звіряє (git хуків не кличе): `git commit-tree` (низький рівень), `git merge` без конфлікту (pre-commit для злиття не
+запускається; файли з гілок, що зливаються, уже пройшли свій коміт і CI) та `git commit --no-verify`.
+Збій самого хука (нема приладу, тимчасова тека, прилад завис) коміт не спиняє: рядок «ЗАСТЕРЕЖЕННЯ» у stderr, код 0.
+"""
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+
+ТЕКА = "аудит/дошка/"
+ПРИЛАДИ = os.path.join("джерела", "прилади")
+ПРИЛАД = os.path.join(ПРИЛАДИ, "згорнути_дошку.py")
+МЕЖА_С = 60
+МАКС_РЯДКІВ = 40
+
+
+def git(*арг, вхід=None, cwd=None):
+    return subprocess.run(["git", "-c", "core.quotepath=off", *арг], cwd=cwd, input=вхід, capture_output=True,
+                          timeout=МЕЖА_С)
+
+
+def файли_коміту(корінь):
+    р = git("diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z", "--", ТЕКА, cwd=корінь)
+    if р.returncode != 0:
+        raise RuntimeError("git diff --cached: " + р.stderr.decode("utf-8", "replace").strip()[:200])
+    return [ш for ш in р.stdout.decode("utf-8").split("\0") if ш.startswith(ТЕКА)]
+
+
+def перевірка(корінь, файли):
+    """Рядки «ПОМИЛКА» приладу на вмісті індексу; [] — поля чисті."""
+    if not os.path.isfile(os.path.join(корінь, ПРИЛАД)):
+        raise RuntimeError("нема приладу " + ПРИЛАД)
+    т = tempfile.mkdtemp(prefix="дошка_коміт_")
+    try:
+        р = git("checkout-index", "-z", "--stdin", "--prefix=" + т + os.sep,
+                вхід=("\0".join(файли) + "\0").encode("utf-8"), cwd=корінь)
+        if р.returncode != 0:
+            raise RuntimeError("git checkout-index: " + р.stderr.decode("utf-8", "replace").strip()[:200])
+        shutil.copytree(os.path.join(корінь, ПРИЛАДИ), os.path.join(т, ПРИЛАДИ),
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        for шлях in (os.path.join("аудит", "корені"), os.path.join("аудит", "БЕКЛОГ.md")):
+            звідки = os.path.join(корінь, шлях)
+            if os.path.isdir(звідки):
+                shutil.copytree(звідки, os.path.join(т, шлях))
+            elif os.path.isfile(звідки):
+                shutil.copy(звідки, os.path.join(т, шлях))
+        п = subprocess.run([sys.executable, "-I", os.path.join(т, ПРИЛАД), "--лише-перевірити"], cwd=т,
+                           capture_output=True, text=True, timeout=МЕЖА_С)
+        if п.returncode == 0:
+            return []
+        рядки = [л for л in (п.stderr + "\n" + п.stdout).splitlines() if л.startswith("ПОМИЛКА")]
+        if not рядки:
+            raise RuntimeError("прилад вийшов з кодом %d без рядків «ПОМИЛКА»: %s" % (п.returncode, п.stderr.strip()[:200]))
+        return [л.replace(т + os.sep, "") for л in рядки]
+    finally:
+        shutil.rmtree(т, ignore_errors=True)
+
+
+def main():
+    try:
+        корінь = git("rev-parse", "--show-toplevel").stdout.decode("utf-8").strip()
+        файли = файли_коміту(корінь)
+        if not файли:
+            return 0
+        рядки = перевірка(корінь, файли)
+    except Exception as е:  # зламаний хук не спиняє коміту
+        print("ЗАСТЕРЕЖЕННЯ хук pre-commit (дошка): збій хука, коміт іде без звірки полів: %s: %s" % (type(е).__name__, е),
+              file=sys.stderr)
+        return 0
+    if not рядки:
+        return 0
+    показ = рядки[:МАКС_РЯДКІВ] + (["… ще %d" % (len(рядки) - МАКС_РЯДКІВ)] if len(рядки) > МАКС_РЯДКІВ else [])
+    print("хук pre-commit: коміт файлів дошки (%s) відхилено — поля не проходять перевірку CI "
+          "(`python3 джерела/прилади/згорнути_дошку.py --лише-перевірити`; шапка `джерела/прилади/дошка_поля.py`). "
+          "Виправ файл, додай його в індекс і коміть знову:\n%s" % (", ".join(файли), "\n".join(показ)), file=sys.stderr)
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; at +20 °C and warmer there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"goal_zones\\\" — the body zones she wants to draw the eye away from, with any goal; keep these zones quiet; the rest of the look follows goal\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"event\": \"ввечері в клуб\", \"place\": \"ввечері в клуб\", \"goal\": \"не хочу привертати уваги\", \"goal_zones\": \"приховати живіт\", \"part_of_day\": \"ввечері\"}, \"formality_reason\": \"her_words\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"goal\": {\"kind\": \"reading\", \"quote\": \"не хочу привертати уваги\"}, \"goal_zones\": {\"kind\": \"her\", \"quote\": \"приховати живіт\"}, \"goal_quote\": {\"kind\": \"default\"}, \"place\": {\"kind\": \"her\", \"quote\": \"ввечері в клуб\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"her\", \"quote\": \"ввечері в клуб\"}, \"part_of_day\": {\"kind\": \"reading\", \"quote\": \"ввечері\"}}, \"event\": \"ввечері в клуб\", \"part_of_day\": \"evening\", \"goal\": \"conceal\", \"place\": \"club\", \"goal_zones\": [\"belly\"], \"goal_quote\": \"не хочу привертати уваги\", \"formality\": [\"smart\"], \"season\": \"autumn\", \"light\": \"artificial\"}, \"person\": {\"skin_hex\": [\"#5a3a2a\", \"#4e3022\", \"#664332\"], \"hair_hex\": [\"#16110e\", \"#241a15\"], \"eyes_hex\": \"#3b2417\", \"height_cm\": 165, \"girths_cm\": {\"shoulders\": 112, \"bust\": 114, \"waist\": 104, \"hips\": 114}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Evening blouse with a high rounded neckline in ivory silk chiffon (#FFFFF0)\\nHigh-waisted tailored trousers in deep charcoal wool crepe (#36454F)\\nStructured blazer in matte black velvet (#0A0A0A)\\nPointed-toe pumps in patent black leather (#000000)\\nThis ensemble perfectly balances her request to avoid drawing attention while adhering to the evening club dress code. The high neckline and structured jacket subtly elongate the torso, effectively minimizing focus on the belly as requested. By choosing dark, solid colors like charcoal and black, the outfit creates a sleek silhouette that feels polished yet understated for an autumn night.\"}],\"usage\":{\"input_tokens\":933,\"output_tokens\":144},\"stop_reason\":\"end_turn\"}"
+ }
+}

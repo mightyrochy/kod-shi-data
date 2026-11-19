@@ -35,7 +35,7 @@ def кадр_справний(в):
         lab = в["lab"]
         if not (isinstance(lab, (list, tuple)) and len(lab) == 3 and all(isinstance(x, (int, float)) for x in lab)):
             return "lab не з трьох чисел"
-        if в.get("слово") not in V.ЛЕКСИКОН:
+        if в.get("слово") not in V.СЛОВА:
             return "слово %r поза лексиконом" % в.get("слово")
     return None
 

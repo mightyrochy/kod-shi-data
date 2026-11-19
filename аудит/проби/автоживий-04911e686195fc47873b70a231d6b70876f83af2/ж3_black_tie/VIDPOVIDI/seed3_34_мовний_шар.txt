@@ -1,0 +1,53 @@
+── ПРОМПТ (6587 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: trousers · about it: text н=1
+2 — kind: brooch
+3 — kind: pumps · about it: text н=2
+4 — kind: blazer · about it: text н=3
+5 — kind: bag_generic · about it: text н=4
+6 — kind: jewelry_generic · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "These tailored trousers ground the ensemble with a sleek, dark silhouette that aligns perfectly with the event's requirements and ensures you move with confidence through the evening.",
+"2": "The elegant pumps offer the necessary height and refinement for your black tie event, allowing you to stand comfortably while maintaining an air of sophistication throughout the night.",
+"3": "The structured cut of this blazer delivers the essential formal line needed for your black tie occasion, providing a polished frame that respects the invitation's dress code while accommodating your figure.",
+"4": "The bag is chosen for its refined capacity to hold your essentials in style, ensuring you arrive at every moment of the evening prepared and poised.",
+"5": "This jewelry piece brings a classic touch of elegance to your neck, offering just enough sparkle to complement the formal occasion without distracting from its core simplicity.",
+"6": "I chose this tailored blazer to provide the sharp silhouette and structured formality your black tie invitation demands. The dark trousers offer a sleek foundation that balances the volume of the jacket, while the pumps keep you steady as you move through the evening. This pearl and satin jewelry piece adds a touch of classic elegance to your neckline without overpowering the event's serious tone. Finally, the bag is selected for its ability to carry your essentials with refined simplicity.",
+"7": "Tuck in or wear open depending on how much you want to highlight your waistline tonight",
+"8": "Брюки палаццо зі складками темно-сині, Туфлі-човники бургунді TAIKAN, Золотиста декорована брошка у вигляді лого, Жіноча сумка Welfare жовта, Прикраса айворі, Жакет лляний Аліканте — While this outfit includes a formal black suit rather than an evening gown to meet Black Tie requirements strictly, the deliberate inclusion of velvet pumps elevates the formality beyond 'neat' to match the 'very_smart' occasion band, and the gold brooch adds the necessary sparkle for a celebration.",
+"9": "Золотиста декорована брошка у вигляді лого — Black poncho chosen for its formal weight and length; solves 'one_line' risk by pairing with a fitted bottom in separate outfit components."
+}
+
+── ВІДПОВІДЬ (2168 симв., 15.0 с, HTTP 200) ──
+```json
+{
+  "1": "Ці завужені штани створюють елегантний темний силует, який ідеально відповідає вимогам заходу та гарантує тобі впевнені рухи протягом вечора.",
+  "2": "Елегантні туфлі-човники дарують необхідну висоту й вишуканість для твого чорного смокінгу, дозволяючи тобі комфортно стояти, зберігаючи при цьому відчуття досконалості впродовж усієї ночі.",
+  "3": "Структурований крій цього жакета забезпечує необхідну офіційну лінію для твоєї події у чорному смокінгу, створюючи вишуканий силует, який відповідає дрес-коду запрошення та підкреслює твою фігуру.",
+  "4": "Ця сумка обрана за її здатність елегантно вмістити всі необхідні речі, гарантуючи, що ти будеш готова до кожної миті вечора.",
+  "5": "Цей ювелірний виріб додає класичний штрих вишуканості твоєму декольте, пропонуючи достатньо блиску, щоб підкреслити урочистий захід без зайвої уваги до деталей.",
+  "6": "Я обрала цей завужений жакет, щоб створити чіткий силует і офіційну форму, які вимагає твоє запрошення на чорний смокінг. Темні штани створюють елегантну основу, яка збалансовує об’єм піджака, а туфлі-човники дарують тобі впевненість у кожному русі протягом вечора. Цей перловий і атласний ювелірний виріб додає штрих класичної елегантності до твоєї лінії шиї без перевантаження серйозної атмосфери заходу. Насамкінець, сумка обрана за її здатність вмістити всі необхідні речі з вишуканою простотою.",
+  "7": "Заправ або носи розстебнутим залежно від того, як ти хочеш підкреслити свою талію сьогодні ввечері",
+  "8": "Темно-сині штани палаццо зі складками, Туфлі-човники бургунді TAIKAN, Золота декорована брошка з логотипом, Жовта сумка Welfare для жінок, Айворі прикраса, Льняний жакет Аліканте — Хоча цей образ включає формальний чорний костюм замість вечірньої сукні, щоб строго відповідати вимогам Black Tie, навмисне включення оксамитових туфель піднімає рівень офіційності від «охайного» до «дуже_елегантного», а золота брошка додає необхідний блиск для святкування.",
+  "9": "Золота декорована брошка з логотипом — Чорний пончо обрано за його формальну вагу та довжину; вирішує ризик «однолінійного» силуету, поєднуючись із приталеним низом у окремих компонентах образу."
+}
+```

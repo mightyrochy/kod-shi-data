@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Grey suit jacket, single-breasted, hip length, tailored fit, heather grey (#8A8D91), textured wool blend\\n\\nGrey suit trousers, straight leg, ankle length, matching heather grey (#8A8D91), textured wool blend\\n\\nBlouse, classic cut with a soft collar, full-length sleeves, ivory (#F2EDE4), silk-like crepe\\n\\nLoafers, almost flat, rounded toe, deep burgundy (#6B2B36), polished leather\\n\\nBelt, slim, burgundy (#6B2B36) with a small silver buckle (#C0C0C0), smooth leather\\n\\nEarrings, small drop shape, polished sterling silver (#C0C0C0), metal\\n\\nSlim bracelet, thin chain, polished sterling silver (#C0C0C0), metal\\n\\nTote bag, structured, medium size, deep burgundy (#6B2B36), grained leather\\n\\nThis outfit gives you the grey suit you asked for in a polished, neat-casual way that suits a workday in autumn. The ivory blouse keeps the look soft and bright against the grey, while the burgundy loafers, belt and bag add warmth and a rich autumn accent. The silver earrings stand out as your jewelry accent, and the bracelet and buckle echo them so the metal looks deliberate. Everything is comfortable and practical for the office, and the suit itself provides the layering, so no extra coat is needed.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Grey suit jacket\\\",\\\"details\\\":\\\"single-breasted, hip length, tailored fit, textured wool blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#8A8D91\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Grey suit trousers\\\",\\\"details\\\":\\\"straight leg, ankle length, textured wool blend\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#8A8D91\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Blouse\\\",\\\"details\\\":\\\"classic cut with a soft collar, full-length sleeves, silk-like crepe\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F2EDE4\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Loafers\\\",\\\"details\\\":\\\"almost flat, rounded toe, polished leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#6B2B36\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Belt\\\",\\\"details\\\":\\\"slim, small silver buckle (#C0C0C0), smooth leather\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#6B2B36\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Earrings\\\",\\\"details\\\":\\\"small drop shape, polished sterling silver, metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Slim bracelet\\\",\\\"details\\\":\\\"thin chain, polished sterling silver, metal\\\",\\\"slot\\\":\\\"bracelet\\\",\\\"color_hex\\\":\\\"#C0C0C0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tote bag\\\",\\\"details\\\":\\\"structured, medium size, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#6B2B36\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2141,\"output_tokens\":495},\"stop_reason\":\"end_turn\"}"
+ }
+}

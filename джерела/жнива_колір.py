@@ -113,7 +113,7 @@ def за_вікном_слова(сегмент, слова_крамниці_):
     def вікно(с):
         ім, в, _ = V.вікно_зі_слова(с)
         с_ = (с or "").strip().lower()
-        return (ім, в) if ім else ((с_, V.ЛЕКСИКОН[с_]) if с_ in V.ЛЕКСИКОН else (None, None))
+        return (ім, в) if ім else ((с_, V.вікно_вжитку(с_)) if с_ in V.СЛОВА else (None, None))
     ім, в = next(((і, в_) for с in слова_крамниці_ or [] for і, в_ in [вікно(с)] if і), (None, None))
     if ім is None:
         return None

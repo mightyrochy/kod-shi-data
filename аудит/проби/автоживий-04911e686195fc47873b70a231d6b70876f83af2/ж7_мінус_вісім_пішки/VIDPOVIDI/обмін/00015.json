@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Wool-blend blazer tailored with a structured shoulder, notch lapel, and single-button closure in deep charcoal gray (#36454F), heavy wool gabardine for wind resistance.\\nCrisp cotton poplin button-down shirt with a spread collar, classic fit in crisp white (#FFFFFF), lightweight woven cotton for breathability under the blazer.\\nHigh-waisted wool crepe trousers with a straight leg and side pleats, mid-length at the ankle in forest green (#228B22), dense worsted wool to repel moisture from salted cobblestones.\\nLeather chelsea boots with a slight rubber lug sole for grip on slippery stones, sleek silhouette in oxblood red (#751616) leather that is naturally water-resistant.\\nCashmere and silk blend scarf wrapped loosely around the neck, rectangular drape in navy blue (#000080), soft brushed cashmere to block wind chill while remaining light under a heavy coat if needed.\\n\\nThis outfit works because it strictly adheres to the \\\"neat\\\" business dress code required for the office environment while providing essential warmth for deep frost conditions. The wool gabardine trousers and water-resistant boot choice ensure comfort and safety against snow and salted cobblestones without compromising the professional silhouette. Layering a crisp white shirt under the charcoal blazer creates a classic, authoritative look suitable for a weekday morning meeting, while the earthy green adds a touch of seasonal sophistication.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"blazer\\\", \\\"details\\\": \\\"tailored structured shoulder notch lapel single-button closure deep charcoal gray wool gabardine\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#36454F\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"shirt\\\", \\\"details\\\": \\\"spread collar classic fit crisp white lightweight woven cotton\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#FFFFFF\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"trousers\\\", \\\"details\\\": \\\"high-waisted side pleats mid-length ankle straight leg forest green dense worsted wool\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#228B22\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"boots\\\", \\\"details\\\": \\\"slight rubber lug sole sleek silhouette oxblood red leather water-resistant\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#751616\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"scarf\\\", \\\"details\\\": \\\"rectangular drape soft brushed cashmere light navy blue silk blend\\\", \\\"slot\\\": \\\"scarf\\\", \\\"color_hex\\\": \\\"#000080\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":658,\"output_tokens\":262},\"stop_reason\":\"end_turn\"}"
+ }
+}

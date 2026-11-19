@@ -19,6 +19,7 @@ const [СТОРІНКА, ТЕКА_PYODIDE, ВХОДИ, ВИХІД, ЛИШЕ, П�
   const пд = await loadPyodide({ indexURL: path.resolve(ТЕКА_PYODIDE) + '/' });
   пд.unpackArchive(бін.buffer.slice(бін.byteOffset, бін.byteOffset + бін.byteLength), 'zip', { extractDir: '/показ' });
   пд.FS.writeFile('/tmp/знімок_мосту.py', fs.readFileSync(path.join(__dirname, 'знімок_мосту.py')));
+  пд.FS.writeFile('/tmp/сторож_таблиці.py', fs.readFileSync(path.join(__dirname, 'сторож_таблиці.py')));
   пд.FS.writeFile('/tmp/знімок_математика.py', fs.readFileSync(path.join(__dirname, 'знімок_математика.py')));
   пд.FS.writeFile('/tmp/входи.jsonl', входи);
   const підйом_мс = Date.now() - t0;

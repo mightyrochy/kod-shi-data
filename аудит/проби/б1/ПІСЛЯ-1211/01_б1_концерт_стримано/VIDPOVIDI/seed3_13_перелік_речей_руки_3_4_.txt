@@ -1,0 +1,37 @@
+── ПРОМПТ (3564 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "You asked for an outfit that is both restrained and classic while standing in a crowd at a rock concert; however, the venue is a club where the dress code aligns with home or everyday wear rather than neat or smart categories, and you explicitly requested to avoid items that conflict with your wishes. Since it is autumn with potential rain in a crowded club environment, an outer layer like a trench coat is necessary unless the temperature exceeds +20 °C, but even then, the classic vibe must be maintained without sacrificing comfort for standing. The chosen ensemble reflects your desire for restraint through clean lines and neutral tones while adhering to the home/everyday formality band that suits a club setting, ensuring you feel grounded yet stylish amidst the energy of the event.\n\nA tailored wool trench coat in slate gray (#607D8B), mid-length hitting just above the knee with a relaxed but structured boxy cut, featuring functional button closures and a defined waist seam.\nDark denim jeans in a deep indigo wash (#2C3E50), straight-leg fit that allows for ease of movement while maintaining a polished silhouette without excessive distressing or fading.\nWhite leather sneakers with a chunky sole, classic low-top design with minimal branding to keep the look understated and suitable for standing on uneven club floors.\nA minimalist gold-plated stud earring in 14k gold finish (#D4AF37), small geometric studs that catch the artificial club lights without being flashy or distracting in a crowd.\n\nThis outfit works because it honors your request for a restrained and classic aesthetic even within the casual context of a rock concert at a club, balancing elegance with practicality for standing in a dense crowd. The trench coat provides essential protection against autumn chill or rain while adding a timeless layer that elevates simple denim jeans into a sophisticated yet approachable look. Neutral colors like slate gray and deep indigo ensure you blend seamlessly with the background lighting of an artificial venue, avoiding visual noise from neon stages or strobes. By choosing white leather sneakers over dress shoes, the ensemble remains grounded in the everyday formality band appropriate for a club while still respecting your desire for classic proportions and refined fabrics."}
+
+── ВІДПОВІДЬ (1005 симв., 7.1 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Trench coat",
+      "details": "Tailored wool with relaxed but structured boxy cut, mid-length hitting just above the knee, functional button closures and a defined waist seam",
+      "slot": "outerwear",
+      "color_hex": "#607D8B",
+      "worn": true
+    },
+    {
+      "name": "Jeans",
+      "details": "Dark denim straight-leg fit with deep indigo wash, allowing ease of movement while maintaining a polished silhouette without excessive distressing or fading",
+      "slot": "bottom",
+      "color_hex": "#2C3E50",
+      "worn": true
+    },
+    {
+      "name": "Sneakers",
+      "details": "White leather low-top with chunky sole and minimal branding",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Earrings",
+      "details": "Minimalist gold-plated studs in 14k gold finish with small geometric design",
+      "slot": "earrings",
+      "color_hex": "#D4AF37",
+      "worn": true
+    }
+  ]
+}

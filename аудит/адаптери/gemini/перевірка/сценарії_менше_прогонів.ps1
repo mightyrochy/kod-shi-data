@@ -10,6 +10,11 @@ function Check([string]$Name, [bool]$Ok) {
     <# Кожен провал мірила лишається червоним і впливає на код завершення. #>
     if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:bad++ }
 }
+function Write-Log([string]$Text) {
+    <# queue_lanes.ps1 вимагає від хазяїна функцію журналу (шапка файлу): без неї збій прив'язки процесу до задачі Windows у Start-Tree
+    (процес git устиг вийти) обривав би сам виклик git замість рядка в журналі. Сценарії, що міряють журнал, задають свою. #>
+    Write-Host "  журнал обгортки: $Text"
+}
 function Scenario([string]$Name, [scriptblock]$Body) {
     <# Незалежні правила виконуються до кінця й при відсутній функції базової версії. #>
     try { & $Body } catch { Check "$Name — $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
@@ -83,6 +88,20 @@ try {
         function script:Add-ChainMarker($Slug,$Model,$Main,[switch]$Gpu) { $script:TestMarkers += $Slug }
         # Клон стенда без origin; зняття мертвих позначок на справжньому origin міряє сценарії_ланцюга.ps1.
         function script:Remove-DeadReviewMarkers { }
+        # Позначки стенд ставить підміною Add-ChainMarker: origin — їхній перелік, стан смуги — DONE, коли за назвою є
+        # рядок кінця (смуга пише стан до рядка). Кінець при живій позначці іншого рушія (перенесення) міряє
+        # сценарії_ланцюга_перенесення.ps1 на справжньому origin.
+        function script:Get-ChainRemoteHeads([string]$Pattern) {
+            $slug = $Pattern -replace '^refs/heads/gemini-queue/', '' -replace '/\*$', ''
+            $lines = @($script:TestMarkers | Where-Object { $_ -like $slug } | ForEach-Object { ('0' * 40) + "`trefs/heads/gemini-queue/$_/cc-claude-test/1/p2-gpu" })
+            [pscustomobject]@{Code = 0; Out = ($lines -join "`n"); Err = ''}
+        }
+        function script:Get-ChainMarkers([string]$Slug, $Heads = $null) {
+            foreach ($one in @($script:TestMarkers | Where-Object { $_ -like $Slug })) {
+                [pscustomobject]@{Slug = $one; Ref = "gemini-queue/$one/cc-claude-test/1/p2-gpu"; Sha = '0' * 40; Model = 'cc-claude-test'; Attempt = 1; Cond = 'p2-gpu'
+                    Kind = $(if (Get-ChainTaskCompletion $one) { 'DONE' } else { 'NEW' })}
+            }
+        }
         function script:Invoke-ChainApi([string]$Path) { [pscustomobject]@{sha=($Path -split '/')[-1];commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddSeconds(-1).ToString('o')}}} }
         $pull = [pscustomobject]@{number=9;created_at=[datetimeoffset]::UtcNow.ToString('o');title='код';user=@{login='mightyrochy'};head=@{ref='claude/task';sha=$old;repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
         $script:TestPulls = @($pull)
@@ -92,11 +111,11 @@ try {
         Invoke-WrapperChain
 
 
-        Check '1б чисте злиття main — одна позначка замість двох' (@($script:TestMarkers | Where-Object { $_ -like 'автоперевірка-*' }).Count -eq 1)
+        Check '1б чисте злиття main: автоперевірку ставить диспетчер, ланцюг позначок не ставить' (@($script:TestMarkers | Where-Object { $_ -like 'автоперевірка-*' }).Count -eq 0)
         [IO.File]::WriteAllText("$seed/a.txt","інший код`n",$utf)
         & git -C $seed commit -qam 'реальна зміна'; $pull.head.sha = (& git -C $seed rev-parse HEAD).Trim()
         Invoke-WrapperChain
-        Check '1б зміна коду — друга перевірка' (@($script:TestMarkers | Where-Object { $_ -like 'автоперевірка-*' }).Count -eq 2)
+        Check '1б зміна коду: ланцюг позначок не ставить' (@($script:TestMarkers | Where-Object { $_ -like 'автоперевірка-*' }).Count -eq 0)
     }
     Scenario '2 останній штамп' {
         $script:TestPulls = @()
@@ -246,7 +265,7 @@ try {
         Check '2 нічний звіт теж задає перевірену збірку' (($nightPlan.scenes.ж1_робота.pr -join ',') -eq '2,3')
         $report.body = 'Старий звіт без SHA'; $report.head.ref = "gemini/автоживий-$old"
         $stampPlan = ConvertFrom-Json (Get-AutoLivePlan $head)
-        Check '2 штамп у назві автоживого зберігає межу старого звіту' (($stampPlan.scenes.ж1_робота.pr -join ',') -eq '2,3')
+        Check '2 штамп у назві автоживого без рядка межі не звужує плану: обірваний звіт не губить непрогнаного' (@($stampPlan.scenes.ж1_робота).Count -eq 3)
         $report.head.ref = 'gemini/Е1-нічний-живий-20260102'
         $unknownPlan = ConvertFrom-Json (Get-AutoLivePlan $head)
         Check '2 нічний звіт без перевіреного SHA не губить питання' (@($unknownPlan.scenes.ж1_робота).Count -eq 3)
@@ -292,7 +311,7 @@ console.log('GPU_OFF');
         function Invoke-Native {
             param($Exe, $Arguments)
             if ($Arguments -contains '--query-compute-apps=pid,used_memory') { return [pscustomobject]@{Code=0;Out='23660, [N/A]'} }
-            if ($Arguments -contains '--query-gpu=memory.total,memory.free,utilization.gpu') { return [pscustomobject]@{Code=0;Out='16376, 16319, 0'} }
+            if ($Arguments -like '--query-gpu=memory.total,memory.free,utilization.gpu*') { return [pscustomobject]@{Code=0;Out='16376, 16319, 0'} }
             [pscustomobject]@{Code=1;Out='';Err='невідомий виклик'}
         }
         $old = (Invoke-Native 'nvidia-smi' @('--query-compute-apps=pid,used_memory')).Out.Trim()
@@ -300,9 +319,9 @@ console.log('GPU_OFF');
         Check '5 ПІСЛЯ: 57 MiB від AvastUI — GPU вільна' (Test-ExternalGpuFree)
         $script:Logged = @(); $LaneDir = $tmp
         function Write-Log([string]$Text) { $script:Logged += $Text }
-        Check '5 ПІСЛЯ: причина зайнятості порожня' ((Get-GpuBusyReason @()) -eq '')
+        Check '5 ПІСЛЯ: причина зайнятості порожня' ((Get-GpuBusyReason) -eq '')
         function Invoke-Native { param($Exe, $Arguments) [pscustomobject]@{Code=0;Out='16376, 7376, 0'} }
-        Check '5 чужа модель (9000 MiB) — причина називає залишок і потребу' ((Get-GpuBusyReason @()) -match 'вільно 7376 з потрібних 8925 MiB')
+        Check '5 чужа модель (9000 MiB) — причина називає залишок і потребу' ((Get-GpuBusyReason) -match 'вільно 7376 з потрібних 8925 MiB')
         $m = [pscustomobject]@{Name='gemini-queue/Е3-наживо/gpt-6.1-sol-high/1/p1-gpu'}
         $skip = Join-Path $tmp 'skipped.json'
         Add-Skip $m 'GPU: тест'; Save-Skips $skip
@@ -327,7 +346,7 @@ console.log('GPU_OFF');
         Check '5 файл є — істина' (Test-TaskFile ('a'*40) 'x')
         foreach ($name in @('gemini_run.ps1','claude_run.ps1')) {
             $source = [IO.File]::ReadAllText((Join-Path $SourceDir $name))
-            Check "5 $name підключає спільну політику до Invoke-Task" ($source -match 'Set-BrowserGpuPolicy[^\r\n]+\r?\n\s+Invoke-Task \$M \$job' -and $source.Contains('Test-ExternalGpuFree'))
+            Check "5 $name підключає спільну політику до Invoke-Task" ($source -match 'Set-BrowserGpuPolicy[^\r\n]+\r?\n\s+Invoke-Task \$M \$job' -and $source.Contains('Enter-GpuLease'))
         }
     }
 } finally {

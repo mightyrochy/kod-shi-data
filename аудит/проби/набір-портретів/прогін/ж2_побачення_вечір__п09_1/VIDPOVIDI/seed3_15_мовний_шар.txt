@@ -1,0 +1,43 @@
+── ПРОМПТ (5546 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+8 — назва в тексті н=9
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Fitted knit top, crew neckline, long sleeves, hip length, deep burgundy, fine merino wool\nHigh-waisted midi skirt, A-line, falls just below the knee, charcoal, soft wool crepe\nOpaque tights, sheer-matte finish, ankle length, black, nylon-elastane blend\nAnkle boots, almond toe, low block heel, black, smooth leather\nLight wool coat, single-breasted, straight cut, knee length, camel, brushed wool blend\nSmall crossbody bag, structured, black, smooth leather\nDrop earrings, slim, polished gold, metal\nThin leather belt, narrow, black, smooth leather\n\nThis outfit suits a relaxed restaurant date in autumn: it is neat and polished without feeling formal. The deep burgundy knit gives a warm, romantic color that looks rich in evening artificial light, while the charcoal skirt keeps the look grounded and elegant. Ankle boots with a low block heel stay comfortable through dinner and still look refined, and the camel coat adds a soft, cohesive layer for the cool evening air. Gold earrings add a small glint near the face, finishing the look without making it fussy.",
+"2": "Knit top",
+"3": "Midi skirt",
+"4": "Tights",
+"5": "Ankle boots",
+"6": "Coat",
+"7": "Crossbody bag",
+"8": "Drop earrings",
+"9": "Belt"
+}
+
+── ВІДПОВІДЬ (1442 симв., 18.2 с, HTTP 200) ──
+{"1":"Приталений трикотажний топ, круглий виріз, довгі рукави, довжина до стегон, насичений бордовий, тонка вовна мериноса\nСпідниця міді з високою талією, трапецієподібна, закінчується трохи нижче коліна, графітова, м'який вовняний креп\nНепрозорі колготки, матовий напівпрозорий ефект, довжиною до щиколоток, чорні, суміш нейлону та еластану\nБотильйони з мигдалеподібним носком, низький блоковий підбор, чорні, гладка шкіра\nЛегке вовняне пальто, однобортне, прямого крою, довжиною до коліна, кемел, суміш начесаної вовни\nМала сумка через плече, structured, чорна, гладка шкіра\nСережки-підвіски, тонкі, поліроване золото, метал\nТонкий шкіряний ремінь, вузький, чорний, гладка шкіра\n\nЦей образ пасує до невимушеного побачення в ресторані восени: він охайний і вишуканий, але не здається офіційним. Насичений бордовий трикотажний топ дає теплий романтичний колір, який виглядає багато за вечірнього штучного освітлення, а графітова спідниця міді робить образ стриманим і елегантним. Ботильйони на низькому блоковому підборі лишаються зручними протягом вечері й водночас виглядають вишукано, а пальто кольору кемел додає м'який злагоджений шар для прохолодного вечірнього повітря. Золоті сережки-підвіски додають маленький відблиск біля обличчя й завершують образ, не перевантажуючи його.","2":"Трикотажний топ","3":"Спідниця міді","4":"Колготки","5":"Ботильйони","6":"Пальто","7":"Сумка через плече","8":"Сережки-підвіски","9":"Ремінь"}

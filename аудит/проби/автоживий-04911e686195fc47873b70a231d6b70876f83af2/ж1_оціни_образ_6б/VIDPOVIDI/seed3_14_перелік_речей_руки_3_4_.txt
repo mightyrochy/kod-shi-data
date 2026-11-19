@@ -1,0 +1,37 @@
+── ПРОМПТ (2200 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cream wool-blend blazer, relaxed fit with notch lapels and patch pockets, color #f5f0e1, fabric: brushed wool.\nCharcoal grey wide-leg trousers, straight cut with a high waist and gentle crease, color #36454f, fabric: heavy cotton twill.\nCream silk-blend blouse, fluid drape with a subtle cowl neck and hidden back button closure, color #f5f0e1, fabric: viscose and silk blend.\nNude suede ankle boots, pointed toe with a 2-inch stacked heel, color #d8c4b8, fabric: smooth suede leather.\n\nThis ensemble strikes the perfect balance for an autumn office day, blending professional polish with comfortable warmth. The neutral cream palette of the blazer and blouse complements her skin tones while allowing the charcoal trousers to anchor the look in a sophisticated monochrome style. Soft textures like the brushed wool and silk add tactile richness without sacrificing the neat, business-appropriate silhouette required for a workplace environment."}
+
+── ВІДПОВІДЬ (876 симв., 4.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "Relaxed fit with notch lapels and patch pockets, brushed wool fabric",
+      "slot": "outerwear",
+      "color_hex": "#f5f0e1",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "Wide-leg with straight cut, high waist and gentle crease, heavy cotton twill fabric",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "Blouse",
+      "details": "Fluid drape with subtle cowl neck and hidden back button closure, viscose and silk blend fabric",
+      "slot": "top",
+      "color_hex": "#f5f0e1",
+      "worn": true
+    },
+    {
+      "name": "Boots",
+      "details": "Pointed toe with 2-inch stacked heel, smooth suede leather fabric",
+      "slot": "shoes",
+      "color_hex": "#d8c4b8",
+      "worn": true
+    }
+  ]
+}

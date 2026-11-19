@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine-knit turtleneck, slim fit, hip length, deep burgundy (#6D1F2F), merino wool\\nPleated midi skirt, A-line, falling below the knee, emerald green (#0B6E4F), satin-finish crepe\\nTailored textured jacket, slightly cropped, single-breasted, black with a gold thread fleck (#1F1C1A), bouclé tweed\\nLong wrap coat, straight cut, mid-calf, camel (#B98B5E), soft wool-cashmere blend\\nAnkle boots, pointed toe, block heel, black (#141414), smooth leather\\nSmall structured top-handle bag, mustard yellow (#D4A017), leather\\nDrop earrings, gold tone (#C9A24B), polished metal\\nSheer tights, black (#1A1A1A), fine knit\\n\\nThis outfit takes a bold route to standing out through color. Burgundy and emerald sit together with confidence, and the mustard bag adds one more accent without crowding the look. The satin pleats move beautifully when you walk to your seat, and the textured jacket keeps the whole look neat and theatre-appropriate. The block-heeled ankle boots stay comfortable through a 19:00 performance and the walk home, and the camel coat covers the cool autumn evening while letting the colors show when you take it off.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Turtleneck\\\",\\\"details\\\":\\\"fine-knit, slim fit, hip length, merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#6D1F2F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Pleated midi skirt\\\",\\\"details\\\":\\\"A-line, falling below the knee, satin-finish crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#0B6E4F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Tailored jacket\\\",\\\"details\\\":\\\"textured, slightly cropped, single-breasted, bouclé tweed\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#1F1C1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wrap coat\\\",\\\"details\\\":\\\"long, straight cut, mid-calf, soft wool-cashmere blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B98B5E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"pointed toe, block heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#141414\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Top-handle bag\\\",\\\"details\\\":\\\"small, structured, leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#D4A017\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A24B\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sheer tights\\\",\\\"details\\\":\\\"fine knit\\\",\\\"slot\\\":\\\"tights\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2113,\"output_tokens\":473},\"stop_reason\":\"end_turn\"}"
+ }
+}

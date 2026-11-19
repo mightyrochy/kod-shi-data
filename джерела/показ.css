@@ -224,6 +224,19 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 #збій-панель:has(#збій-стан:empty){display:none}
 #збій-панель .статус{margin:0 0 8px}
 .ряд{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+/* «Записати вердикт» видно, поки видно картку (вада 12), і ніколи не лягає на текст відгуку (вада 15984). Причина була в
+   будові: поле росло на весь текст, а кнопка липла до низу вікна ПОВЕРХ нього — довгий відгук неминуче заходив під
+   кнопку. Тепер смуга кнопки — це зайнята смуга низу вікна: поле не вище за вікно мінус ця смуга (довший текст гортається
+   в самому полі, а сторінка й кнопка лишаються на місці), а все, що браузер доводить до видимого (курсор, кінець поля),
+   зупиняється над смугою: --смуга-запису = панель знизу + кнопка 44 + відступи */
+:root{--смуга-запису:calc(var(--панель-у-вікні, 0px) + 60px)}
+html{scroll-padding-bottom:var(--смуга-запису)}
+/* липкий напис «Є новіша версія» (`#нова-версія`, угорі) теж не накриває того, що браузер доводить до видимого */
+html:has(#нова-версія:not([hidden])){scroll-padding-top:56px}
+.ряд-запису{position:sticky;bottom:calc(var(--панель-у-вікні, 0px) + 8px);z-index:2;pointer-events:none}
+.вердикт textarea.поле-вердикту{max-height:max(120px, calc(100vh - var(--смуга-запису) - 16px));
+  max-height:max(120px, calc(100dvh - var(--смуга-запису) - 16px));scroll-margin-bottom:var(--смуга-запису)}
+.ряд-запису>button{pointer-events:auto}
 #сц-мета-зони-плитки[hidden]{display:none}
 .мітка{font:500 20px/1.25 var(--дисплей);font-variation-settings:"CONT" 260;margin:22px 0 8px}
 
@@ -355,9 +368,12 @@ svg.і{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;str
 .оц-річ .оц-кр{width:16px;height:16px;border-radius:50%;border:1px solid var(--межа-темна);flex:0 0 auto}
 .оц-річ .оц-назва{flex:1 1 auto;min-width:0;font-size:14px;line-height:1.3;overflow-wrap:anywhere}
 .оц-річ .оц-замість{flex:0 0 auto;font-size:12px;color:var(--олівець)}
-/* Рядок 5771: кнопка не тікає під нижню панель — липне над нею, поки в переліку є що гортати (висоту панелі пише `відступПідПанель`) */
+/* «Так, оцінюй» стоїть ПІСЛЯ переліку речей і не липне (вада 15984, той самий механізм, що в `.ряд-запису`): липка кнопка
+   лягала на нижні рядки переліку, який жінка читає, щоб підтвердити, — довгий перелік на першому екрані втрачав рядок
+   під кнопкою. Підтвердити перелік, якого не дочитала, не можна, тож кнопка там, де перелік кінчається; над нижньою
+   панеллю її тримає відступ сторінки (`відступПідПанель`), а до видимого її доводить браузер із `scroll-padding`. */
 .оц-речі{scroll-margin-top:8px}
-.оц-речі .оц-так{margin-top:12px;width:100%;position:sticky;bottom:calc(var(--під-панеллю, 0px) + 10px)}
+.оц-речі .оц-так{margin-top:12px;width:100%;scroll-margin-bottom:var(--смуга-запису)}
 .оц-річ{cursor:pointer;position:relative}
 .оц-річ.відкр{background:var(--полотно-2,transparent)}
 .оц-мін{width:44px;height:44px;border-radius:6px;flex:0 0 auto;border:1px dashed var(--межа-темна)}
@@ -443,6 +459,8 @@ html.широко .вступ#сц-вступ,html.широко #е-огляд .
 .ряд-паспорта::after{content:"›";color:var(--олівець);font-size:18px;line-height:1;justify-self:end}
 .ряд-паспорта.відкрито{background:var(--папір)}
 .ряд-паспорта[hidden]{display:none}
+.ряд-слова::after{content:none}
+.ряд-слова>b{font-weight:400}
 .пс-шапка+.ряд-паспорта{border-top:0}
 /* редактори живуть у картці схованими; на час правки їх переносить аркуш */
 .редактор[hidden]{display:none}
@@ -630,7 +648,7 @@ button.текст{min-height:44px;background:none;border:0;color:var(--чорн�
 button.мал{min-height:44px;padding:10px 14px;font-size:14px}
 button:disabled{opacity:.45;cursor:default}
 button.зі-стрілкою{display:inline-flex;align-items:center;justify-content:center;gap:10px}
-details.розкривач{margin-top:14px}
+details.розкривач{margin-top:14px;scroll-margin-top:16px}
 summary{min-height:24px}
 details.розкривач summary{cursor:pointer;font-size:14px;color:var(--чорнило);list-style:none;
   text-decoration:underline;text-decoration-color:var(--золото);text-underline-offset:4px}
@@ -782,6 +800,8 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
    зсуву розкладки: внутрішня тінь, а не товща рамка. Її власний вибір (`.вибр`) його перекриває. */
 .чип.стилістка{border-color:var(--чорнило);box-shadow:inset 0 0 0 1px var(--чорнило)}
 .чип.стилістка.вибр{box-shadow:none}
+/* смуга гами, чиї основи зараз показано, коли гаму не обирав ніхто: пунктир — не її вибір і не вибір стилістки */
+.чип.показана{border-style:dashed;border-color:var(--чорнило)}
 /* плашка основи малює рамку не бордюром, а кільцем `clip-path` (`--кайма-колір`): тінь там обрізана */
 #пал-основа .чип.стилістка:has(.зразки){--кайма-колір:var(--чорнило)}
 #пал-рідші{margin:10px 0 0;display:flex;flex-direction:column;gap:6px}
@@ -825,7 +845,9 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
 /* ── КАРТКА ОБРАЗУ: вікно Кричевського. Колаж — плаский аркуш із вирізаним
       краєм (витинанка), без нахилу й тіні. Колір біля фото — лише лінією. ─ */
 #картки{display:block;margin:0;padding:0}
-.картка{--ск:18px;background:var(--аркуш);margin:14px 0 6px;padding:0 0 18px;overflow:hidden}
+/* `clip`, а не лише `hidden`: обрізає так само, але картка не стає власною областю гортання, і «Записати вердикт»
+   (`.ряд-запису`) липне до низу ЕКРАНА, а не картки (вада 12); `hidden` — для браузерів без `clip` */
+.картка{--ск:18px;background:var(--аркуш);margin:14px 0 6px;padding:0 0 18px;overflow:hidden;overflow:clip}
 #картки .картка[hidden]{display:none}
 #картки .картка:not([hidden]){animation:нанизати .34s cubic-bezier(.2,.7,.2,1) both}
 @keyframes нанизати{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -908,8 +930,9 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
 /* «На фото нема …» картки оцінки (рядки 6555, 8112, п.9) — шрифтом і кеглем тексту картки («Що вдало»), а не рубленим
    16 px; повний перелік у видимому тексті, на вузькому екрані переноситься на кілька рядків і не обрізається */
 .оц-нема-на-фото{font:400 15.5px/1.55 var(--голос);font-variation-settings:"CONT" 140;overflow-wrap:anywhere}
-.задум div{position:relative;padding-left:18px;font:400 15.5px/1.55 var(--голос);font-variation-settings:"CONT" 140;margin-top:4px}
-.задум div::before{content:"";position:absolute;left:0;top:11px;width:4px;height:4px;border-radius:50%;
+.задум div,.задум p.задум-чекає{position:relative;padding-left:18px;font:400 15.5px/1.55 var(--голос);font-variation-settings:"CONT" 140;margin:4px 0 0}
+.задум p.задум-чекає{color:var(--олівець)}
+.задум div::before,.задум p.задум-чекає::before{content:"";position:absolute;left:0;top:11px;width:4px;height:4px;border-radius:50%;
   background:var(--чорнило);box-shadow:6px 0 0 var(--чорнило)}
 .вердикт{margin:22px 18px 0;padding-top:22px;position:relative}
 .вердикт::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--мережка);opacity:.9}
@@ -987,6 +1010,8 @@ img.образ{max-width:100%;border:1px solid var(--межа);display:block}
 .пейджер .пж-лічба span{min-width:0}
 .пейджер .пж-оц{font-size:12px;color:var(--олівець)}
 .пейджер .пж-оц:empty{display:none}
+.пейджер .пж-запис{font-size:12px;color:var(--чорнило)}
+.пейджер .пж-запис:empty{display:none}
 #пейджер button{width:44px;height:44px;padding:0;font:400 24px/1 var(--дисплей);border-radius:50%;clip-path:none;
   border:1px solid var(--межа-темна);--кайма-колір:transparent}
 #пейджер button::after{display:none}

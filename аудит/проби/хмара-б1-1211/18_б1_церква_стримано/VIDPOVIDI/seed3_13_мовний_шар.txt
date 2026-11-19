@@ -1,0 +1,45 @@
+── ПРОМПТ (6193 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+8 — назва в тексті н=9
+9 — назва в тексті н=10
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: milky — молочний.
+
+ТЕКСТИ:
+{
+"1": "Midi skirt, A-line, falling just below the knee, deep charcoal grey, wool crepe with a soft matte finish\nBlouse, relaxed classic cut with a modest rounded neckline and long sleeves, ivory, matte silk-blend crepe\nCardigan, fine-gauge fitted cut, hip length, with covered buttons, dusty burgundy, merino wool\nTights, sheer matte, close to skin tone for a quiet look, deep taupe, fine knit nylon\nAnkle boots, low block heel, rounded toe, dark brown, smooth leather\nCoat, single-breasted, knee length, straight cut with a notch collar, camel, wool-cashmere blend\nScarf, large and soft, worn loosely over the shoulders and easy to drape over the head if wanted, warm stone [colour: milky], fine wool\nHandbag, small structured top-handle shape, dark brown, grained leather\nSmall stud earrings, round, soft gold, polished metal\n\nThis outfit suits the quiet, classic mood of a church service, with covered shoulders, a below-the-knee skirt and a muted palette that is respectful without feeling severe. The ivory blouse, charcoal skirt and burgundy cardigan add gentle depth in autumn tones, and the textured wool and crepe keep it neat and polished. The block-heeled ankle boots are comfortable for standing and sitting through the service and still look refined at the lunch with her parents afterwards. The coat and scarf provide warmth for an autumn day, and the scarf can be placed over the head if it feels appropriate.",
+"2": "Midi skirt",
+"3": "Blouse",
+"4": "Cardigan",
+"5": "Tights",
+"6": "Ankle boots",
+"7": "Coat",
+"8": "Scarf",
+"9": "Handbag",
+"10": "Stud earrings"
+}
+
+── ВІДПОВІДЬ (1717 симв., 22.7 с, HTTP 200) ──
+{"1":"Спідниця міді, А-подібного крою, трохи нижче коліна, глибокий графітово-сірий колір, вовняний крепон із м'яким матовим ефектом\nБлуза, вільний класичний крій зі стриманим округлим вирізом і довгими рукавами, колір слонової кістки, матовий крепон із шовкової суміші\nКардиган, тонкої в'язки, приталеного крою, довжиною до стегон, з обтягнутими ґудзиками, приглушений бордовий, вовна мерино\nКолготки, прозорі матові, близькі до кольору шкіри для непомітного вигляду, глибокий сіро-бежевий, тонкий трикотаж із нейлону\nЧеревики, низький широкий підбор, округлий носок, темно-коричневі, гладка шкіра\nПальто, однобортне, довжиною до коліна, прямого крою з класичним коміром із виїмкою, кемел, суміш вовни з кашеміром\nШарф, великий і м'який, його носять вільно на плечах і за бажання легко накидають на голову, молочний, тонка вовна\nСумка, невелика структурована форма з верхньою ручкою, темно-коричнева, зерниста шкіра\nМаленькі сережки-гвоздики, круглі, м'який золотий колір, полірований метал\n\nЦей образ пасує тихому класичному настрою церковної служби: закриті плечі, спідниця нижче коліна та приглушена палітра виглядають шанобливо, але не суворо. Блуза кольору слонової кістки, графітова спідниця й бордовий кардиган додають м'якої глибини осінніх відтінків, а фактурні вовна й крепон тримають образ охайним і доглянутим. Черевики на широкому підборі зручні, коли доводиться стояти й сидіти під час служби, і водночас виглядають вишукано на обіді з твоїми батьками після неї. Пальто й шарф дають тепло осіннього дня, а шарф можна накинути на голову, якщо це доречно.","2":"Спідниця міді","3":"Блуза","4":"Кардиган","5":"Колготки","6":"Черевики","7":"Пальто","8":"Шарф","9":"Сумка","10":"Сережки-гвоздики"}

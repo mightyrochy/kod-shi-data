@@ -51,7 +51,7 @@ public static class StateReader {
 }
 '@
     $ref = 'gemini-queue/стан/gpt-6.1-sol-high/1'; $sha = 'a' * 40
-    $marker = [pscustomobject]@{Ref="refs/remotes/origin/$ref";Sha=$sha}
+    $marker = [pscustomobject]@{Ref="refs/remotes/origin/$ref";Name=$ref;Sha=$sha}
     $sp = Get-StatePath (Get-MarkerKey $marker)
     Write-FileAtomic $sp 'WAIT {"until":9999999999,"group":"TEST"}'
     Write-FileAtomic ($sp + '.sleep.json') '{"id":"попередній"}'

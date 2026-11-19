@@ -3,17 +3,18 @@
 @{
     'wrapper_update.ps1' = '45F254E5CB2FB7D882BBB9CE7CA121988FDF23BACCFE65CB67A4CA3B3F426FE7'
     'wrapper_probe.ps1'  = '85116D04C22EB64CBFF52E66BCEAE9B1091577A889EDD58A8B634093A82BDBC6'
-    'wrapper_chain.ps1'  = '1E4E0C20AB8C88F586AE4D33F4A09F6F9CAAE923BF0A2D1B40276775997276D6'
-    'wrapper_health.ps1' = 'AB85BBF974EA56281C2824C12CA11BF775013C6AD7F9C67AD4E8DC433931E817'
-    'gemini_run.ps1'     = '9AA1C424DFA59A28B1E472C83CE20A4179CA55830C5BFCC54ECC7D6E3E33DC65'
-    'gemini_publish.ps1' = '6BA3002105259A6B7B232377E7D028DEBF3D6FD32FBD02F2475DF34C0E1A639A'
+    'wrapper_chain.ps1'  = 'C942152D5A71B6AB9220C7F9246D3BBB70ECAAA0D0DD2561C7E70A99DBDE86EB'
+    'wrapper_health.ps1' = '1427DF6C7CF1A6D5EDBC66072B58ED085A34C15D3DC7463750F93FB06F5FA810'
+    'gemini_run.ps1'     = 'B5E09545A2D504223BFFF8CB95C402DFB92CC4FD11D726439686EAEB50A95385'
+    'gemini_publish.ps1' = '92B99FE4E0AF3D641524775BD714CB7F19A0EC4727E94BA095C4F026969427BF'
     # Інсталятор Codex (9741) закріплено за релізом: install.ps1 — файл релізу https://releases.openai.com/codex/releases/<CodexRelease>/install.ps1
     # (незмінний URL; той самий sha256 віддає https://chatgpt.com/codex/install.ps1 — редирект на releases.openai.com — і публікує реліз
-    # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release).
+    # openai/codex). 2_під_gemini.ps1 -WithCodex виконує його лише при збігу CodexInstaller і ставить саме цей реліз (-Release), коли codex нема
+    # чи `codex --version` не дорівнює CodexRelease.
     # Оновити Codex = новий PR: нова версія, новий хеш (докази — у PR). Порожній хеш — інсталятор не виконується.
-    CodexRelease         = '0.164.0'
-    CodexInstaller       = 'A59CB66350098C33B021FF470D586AE8FE3B7CAF189CA7137B4FE3AF5D4DCE74'
-    'gemini_watch.ps1'   = '69EFEBB07FF1AF51C382B753A95C50F3C1AC27B3008F2489992BEBE3FD0213AA'
-    'queue_lanes.ps1'    = '4800713F0AF53F7C58A6475E6F8639012E6CCC8867EE482074A374D6777AAC50'
-    'claude_run.ps1'     = '00C34978884D54B08B4EB20B141FCFA9C4513DCE20284C5E6CE4677572660FA7'
+    CodexRelease         = '0.169.1'
+    CodexInstaller       = '365F40F3D0FE417388B8F75333D66657481D86769E2EAFED29967921B928484F'
+    'gemini_watch.ps1'   = '77FE75B2BC5AC2BF20B5ECE88892B52C1A2F660BEA0DD1038C73C088D6121C9A'
+    'queue_lanes.ps1'    = 'C2A4FB12CC70BB2269569863A8A602104AFA559B3FBC48F6877FF9124A796139'
+    'claude_run.ps1'     = 'FE285E905794EACCE555B0451575F3A6B5F89D6239492F046F2E9519976314ED'
 }

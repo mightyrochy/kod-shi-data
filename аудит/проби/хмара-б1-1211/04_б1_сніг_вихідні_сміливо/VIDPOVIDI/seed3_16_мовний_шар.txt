@@ -1,0 +1,43 @@
+── ПРОМПТ (5964 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+8 — назва в тексті н=9
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: blue — синій.
+
+ТЕКСТИ:
+{
+"1": "Chunky roll-neck sweater, relaxed fit, hip length, cream, soft merino wool\nStraight-leg jeans, full ankle length, deep indigo [colour: blue], heavy cotton denim\nDouble-breasted coat, midi length just below the knee, with a wide collar, emerald, dense brushed wool blend\nLug-sole ankle boots, waterproof and easy to wipe clean of salt, black, treated leather with a warm lining\nOversized scarf, long and wrapped twice at the neck, mustard, thick wool\nBeanie, slightly slouchy, cream, ribbed wool knit\nLined gloves, black, soft leather with a fleece lining\nSmall crossbody bag, cognac, smooth leather\n\nThis outfit stands out through colour rather than fussy details: the emerald coat echoes your green eyes and makes your copper hair glow, while the mustard scarf adds a second bold note. The cream knit and deep indigo denim keep the look clean and let the colour pieces take centre stage. For snow at -3 °C and salted pavements, the coat is warm and long, the boots grip and wipe clean, and the full-length jeans are sturdy. The sweater and coat are easy to take off, so you will be comfortable in the warmth of the cafés and still turn heads walking through the centre.",
+"2": "Roll-neck sweater",
+"3": "Straight-leg jeans",
+"4": "Double-breasted coat",
+"5": "Lug-sole ankle boots",
+"6": "Oversized scarf",
+"7": "Beanie",
+"8": "Lined gloves",
+"9": "Small crossbody bag"
+}
+
+── ВІДПОВІДЬ (1525 симв., 22.0 с, HTTP 200) ──
+{"1":"Светр із високим коміром грубої в'язки, вільного крою, довжиною до стегон, кремовий, з м'якої вовни мерино\nДжинси прямого крою, повної довжини до щиколоток, сині, зі щільного бавовняного деніму\nДвобортне пальто довжини міді, трохи нижче коліна, з широким коміром, смарагдове, зі щільної начесаної вовняної суміші\nЧеревики на рифленій підошві, водонепроникні й такі, що легко витираються від солі, чорні, з обробленої шкіри з теплою підкладкою\nОб'ємний шарф, довгий, обернутий двічі навколо шиї, гірчичний, з товстої вовни\nШапка-біні, трохи вільна на маківці, кремова, з вовняного трикотажу в рубчик\nРукавички на підкладці, чорні, з м'якої шкіри з флісовою підкладкою\nМаленька сумка через плече, коньячна, з гладенької шкіри\n\nЦей образ вирізняється кольором, а не дрібними деталями: смарагдове пальто перегукується з твоїми зеленими очима й змушує сяяти твоє мідне волосся, а гірчичний шарф додає другу яскраву ноту. Кремовий светр і сині джинси тримають образ чистим і дають кольоровим речам вийти на перший план. Для снігу за мінус три градуси й посолених тротуарів пальто тепле й довге, черевики міцно тримаються й легко витираються, а джинси повної довжини міцні. Светр і пальто легко знімаються, тож тобі буде зручно в теплі кав'ярень, а проходячи центром, ти все одно будеш ловити погляди.","2":"Светр із високим коміром","3":"Джинси прямого крою","4":"Двобортне пальто","5":"Черевики на рифленій підошві","6":"Об'ємний шарф","7":"Шапка-біні","8":"Рукавички на підкладці","9":"Маленька сумка через плече"}

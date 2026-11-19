@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tailored wool-blend blazer, single-breasted, hip length, deep burgundy (#6B1E2E), textured bouclé-style wool blend\\n\\nSilk-satin blouse, relaxed fit with a soft bow neckline, long sleeves, ivory (#F3EBDD), silk satin\\n\\nStraight-leg trousers, high-waisted, full length to the ankle, charcoal (#3A3D42), fine wool crepe\\n\\nAnkle boots, almond toe, low block heel, black (#1A1A1A), smooth leather\\n\\nSmall structured shoulder bag, top handle, black (#1A1A1A), soft calf leather\\n\\nDrop earrings, small teardrop shape, antique gold (#B08D57), polished metal\\n\\nThin leather belt, slim buckle, black (#1A1A1A), smooth leather\\n\\nWhy this outfit works: An autumn evening at the theatre calls for neat, polished dressing, and the textured burgundy blazer over a silk blouse and wool trousers delivers that without feeling stiff. The jacket gives enough warmth for a cool evening and doubles as the layer you can keep on in the auditorium. The ivory blouse and gold earrings catch the warm artificial light of the foyer, while the charcoal and black keep the look grounded and comfortable for sitting through a performance. Low block-heeled boots mean easy walking and a clean finish.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Blazer\\\",\\\"details\\\":\\\"Tailored, single-breasted, hip length, textured bouclé-style wool blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#6B1E2E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Blouse\\\",\\\"details\\\":\\\"Relaxed fit, soft bow neckline, long sleeves, silk satin\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F3EBDD\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Trousers\\\",\\\"details\\\":\\\"Straight-leg, high-waisted, full length to the ankle, fine wool crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3A3D42\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"Almond toe, low block heel, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Shoulder bag\\\",\\\"details\\\":\\\"Small, structured, top handle, soft calf leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Small teardrop shape, polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#B08D57\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Belt\\\",\\\"details\\\":\\\"Thin, slim buckle, smooth leather\\\",\\\"slot\\\":\\\"belt\\\",\\\"color_hex\\\":\\\"#1A1A1A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2136,\"output_tokens\":447},\"stop_reason\":\"end_turn\"}"
+ }
+}

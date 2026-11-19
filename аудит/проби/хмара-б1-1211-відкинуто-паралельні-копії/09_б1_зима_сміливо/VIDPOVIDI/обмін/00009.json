@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Fine merino turtleneck, slim fit, hip length, ivory #f2e9dc, extra-fine merino wool\\n\\nStraight-leg trousers, high waist, full length just grazing the boot shaft, charcoal #3b3f4a, lined wool crepe\\n\\nLong coat, single-breasted with a wide collar, below the knee, fuchsia #c2185b, dense double-faced wool\\n\\nAnkle boots, block heel with a lugged rubber sole, shearling-lined, black #1c1a1c, waterproof treated leather\\n\\nScarf, oversized, wrapped twice, cobalt #2a4fa0, wool-cashmere blend\\n\\nGloves, wrist length, black #1c1a1c, leather lined with cashmere\\n\\nStructured tote bag, medium, black #1c1a1c, grained leather that wipes clean of salt\\n\\nThis outfit stays within a neat office look: a refined knit with tailored trousers and ankle boots. The fuchsia coat and the cobalt scarf make the colour the statement, and both tones flatter her cool, fair skin, dark hair and steel-blue eyes. Everything else is calm and neutral, so the look reads bold but professional. For a 20-minute walk at deep frost, the lined trousers, merino layer, thick coat and shearling-lined boots keep her warm, and the grippy waterproof soles and wipe-clean leather handle snow and road salt.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Fine merino turtleneck\\\",\\\"details\\\":\\\"slim fit, hip length, extra-fine merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#f2e9dc\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Straight-leg trousers\\\",\\\"details\\\":\\\"high waist, full length just grazing the boot shaft, lined wool crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3b3f4a\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Long coat\\\",\\\"details\\\":\\\"single-breasted with a wide collar, below the knee, dense double-faced wool\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#c2185b\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"block heel with a lugged rubber sole, shearling-lined, waterproof treated leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1c1a1c\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"oversized, wrapped twice, wool-cashmere blend\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#2a4fa0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Gloves\\\",\\\"details\\\":\\\"wrist length, leather lined with cashmere\\\",\\\"slot\\\":\\\"gloves\\\",\\\"color_hex\\\":\\\"#1c1a1c\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Structured tote bag\\\",\\\"details\\\":\\\"medium, grained leather that wipes clean of salt\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#1c1a1c\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2146,\"output_tokens\":464},\"stop_reason\":\"end_turn\"}"
+ }
+}

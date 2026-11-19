@@ -1,0 +1,43 @@
+── ПРОМПТ (6642 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: shirt · colour code: grey · about it: text н=1
+2 — kind code: trousers · colour code: grey · about it: text н=2
+3 — kind code: coat · colour code: grey · about it: text н=3
+4 — kind code: pumps · colour code: black · about it: text н=4
+5 — kind code: bag_generic · colour code: pink · about it: text н=5
+6 — kind code: scarf_generic · colour code: burgundy · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; burgundy — бордовий; grey — сірий; pink — рожевий.
+
+ТЕКСТИ:
+{
+"1": "A fitted shirt in a soft, light grey. It follows your line closely and stays neat and clean.",
+"2": "Grey trousers in a muted shade with a faint cool, lilac undertone. They give a calm, straight line to the outfit.",
+"3": "A double-breasted coat in a deeper, slate grey with set-in sleeves, a hood and a belt. The belt lets you define your waist, and the hood is useful in the rain.",
+"4": "Black pumps with a heel and a glossy finish. They add a sharp, polished accent at the bottom of the outfit.",
+"5": "A bag in a soft, dusty pink. It brings gentle colour to the grey.",
+"6": "A scarf in deep burgundy. It adds a rich, warm accent that suits the autumn.",
+"7": "The black shiny pumps give the grey a crisp finish, and the hooded coat wraps it all up. The burgundy scarf and dusty pink bag add the only warm notes. Three quiet shades of grey keep you neat and composed for a client meeting in a café, and burgundy with dusty pink are close in tone, so the colour accents look deliberate. The belted, double-breasted coat marks your waist and draws one long vertical line from the shoulders down. That keeps the eye on your face and legs, while the fitted shirt and trousers stay clean underneath. For a rainy autumn day the hooded coat keeps you dry. I still chose the pumps because they give the meeting a polished finish, and the walk between the door and your table is short.",
+"8": "Drape the burgundy scarf loosely around your neck so its colour sits close to your face, against the grey coat.",
+"9": "Tie the coat's belt at your waist over the shirt and trousers to give the outfit a clear waistline.",
+"10": "Raise the coat's collar for a sharper line near your face, and pull up the hood if the rain gets heavy.",
+"11": "Чорні туфлі-човники на шпильці зі шкіри, Сумка жіноча Le Bambino Chaîne — The rose bag is a little louder than the black pumps, and that is the point. It gives the grey outfit one gentle accent that the burgundy scarf supports, so the look stays polished and does not go flat."
+}
+
+── ВІДПОВІДЬ (1937 симв., 20.7 с, HTTP 200) ──
+{"1":"Приталена м'яка сіра сорочка. Вона близько повторює твою лінію, завжди виглядає охайно і чисто.","2":"Сірі штани приглушеного відтінку з ледь помітним холодним бузковим підтоном. Вони надають образу спокійної прямої лінії.","3":"Двобортне сіре пальто із втачними рукавами, капюшоном і поясом. Пояс дає змогу підкреслити талію, а капюшон стане в пригоді під дощем.","4":"Чорні туфлі-човники на підборі з глянцевим покриттям. Вони додають чіткий, вишуканий акцент унизу образу.","5":"Рожева сумка. Вона вносить у сірий ніжний колір.","6":"Бордовий шарф. Він додає насичений, теплий акцент, який пасує до осені.","7":"Чорні блискучі туфлі-човники надають сірому чіткого завершення, а пальто з капюшоном огортає весь образ. Бордовий шарф і рожева сумка — єдині теплі нотки. Три спокійні відтінки сірого тримають тебе охайною та зібраною на зустрічі з клієнтом у кафе, а бордовий і рожевий близькі за тоном, тож колірні акценти виглядають продуманими. Двобортне пальто з поясом підкреслює твою талію і проводить одну довгу вертикальну лінію від плечей донизу. Так погляд залишається на твоєму обличчі й ногах, а приталена сорочка та штани під пальто лишаються чистими. У дощовий осінній день пальто з капюшоном збереже тебе сухою. Я все одно обрала туфлі-човники, бо вони надають зустрічі вишуканого завершення, а шлях від дверей до твого столика короткий.","8":"Накинь бордовий шарф вільно на шию, щоб його колір був близько до обличчя, на тлі сірого пальто.","9":"Зав'яжи пояс пальто на талії поверх сорочки та штанів, щоб образ мав чітку лінію талії.","10":"Підніми комір пальто, щоб лінія біля обличчя була чіткішою, а якщо дощ посилиться, натягни капюшон.","11":"Чорні туфлі-човники на шпильці зі шкіри, Сумка жіноча Le Bambino Chaîne — Рожева сумка трохи гучніша за чорні туфлі-човники, і в цьому її сенс. Вона дає сірому образу один ніжний акцент, який підтримує бордовий шарф, тож образ лишається доглянутим і не стає пласким."}

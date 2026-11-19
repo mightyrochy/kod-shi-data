@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Wool crepe trousers, straight cut with a high waist, full length to the ankle bone, charcoal grey #3E4147, lined for warmth\\n\\nFine merino turtleneck, slim fit, hip length, dusty blue #7FA6C8, soft wool\\n\\nTextured wool-blend bouclé jacket, straight cut, hip length, single-breasted, ivory grey #D9D6D0, brushed wool-bouclé with a fine lining\\n\\nLong double-breasted wool coat, belted, knee-to-mid-calf length, deep navy #232F45, heavy wool with a warm lining\\n\\nAnkle boots, low block heel, closed round toe, mid-calf shaft not needed, ankle height, black #1C1C1E, smooth leather with a grip sole and warm lining\\n\\nWool-cashmere scarf, large and soft, folded loosely, silver grey #B8BCC3, wool-cashmere blend\\n\\nLeather gloves, wrist length, lined, black #1C1C1E, soft leather with a fleece lining\\n\\nStructured tote bag, medium size, shoulder strap, charcoal #3E4147, grained leather\\n\\nWhy this outfit works: The neat business look pairs tailored trousers, a refined knit and a textured jacket, so it fits the office, and the ankle boots with their grip sole and block heel are comfortable and secure for a frosty autumn walk. The dusty blue knit echoes her eye color and sits softly near her face, while the silver grey scarf matches her hair and keeps the palette cool and harmonious. The straight, high-waisted trousers and the belted coat define the waist and create one long, clean vertical line. Layering the knit, jacket and coat keeps her warm outdoors, and she can remove the coat at the office and still look polished.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Wool crepe trousers\\\",\\\"details\\\":\\\"straight cut, high waist, full length to the ankle bone, lined for warmth, wool crepe\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#3E4147\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Fine merino turtleneck\\\",\\\"details\\\":\\\"slim fit, hip length, soft merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#7FA6C8\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Textured wool-blend bouclé jacket\\\",\\\"details\\\":\\\"straight cut, hip length, single-breasted, brushed wool-bouclé with a fine lining\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#D9D6D0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Long double-breasted wool coat\\\",\\\"details\\\":\\\"belted, knee-to-mid-calf length, heavy wool with a warm lining\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#232F45\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"low block heel, closed round toe, ankle height, smooth leather with a grip sole and warm lining\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#1C1C1E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wool-cashmere scarf\\\",\\\"details\\\":\\\"large and soft, folded loosely, wool-cashmere blend\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#B8BCC3\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Leather gloves\\\",\\\"details\\\":\\\"wrist length, lined, soft leather with a fleece lining\\\",\\\"slot\\\":\\\"gloves\\\",\\\"color_hex\\\":\\\"#1C1C1E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Structured tote bag\\\",\\\"details\\\":\\\"medium size, shoulder strap, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#3E4147\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2267,\"output_tokens\":571},\"stop_reason\":\"end_turn\"}"
+ }
+}

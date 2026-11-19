@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "gemini-3.8-flash",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Long-sleeve top: fitted crew-neck tee, hip length, cream #F1E7D3, soft cotton jersey\\nSweater: relaxed crew-neck pullover, hip length, olive #7D8260, fine merino wool\\nTrousers: straight-leg jeans, full ankle length, dark indigo #2F3B52, stretch cotton denim\\nOuter layer: field jacket with a straight cut, hip length, camel #B58B5A, cotton twill with a light lining\\nShoes: low sneakers with a cushioned, flexible rubber sole, off-white #F2EEE6, smooth leather\\nScarf: wide, light scarf, sage-grey #8FA59C, soft wool-blend\\nBag: small crossbody with a zip closure, cognac #8A5A3B, grained leather\\n\\nThis outfit suits a cool autumn day of walking, because the tee, sweater and jacket can be taken off or added as the temperature changes between shady streets and sunny squares. Cushioned sneakers and stretch denim keep you comfortable for nine hours on cobblestones, and the crossbody bag leaves your hands free. The warm olive, camel and cream tones go well with your golden hair and warm skin, and the sage scarf picks up the grey-green of your eyes. The look is neat and relaxed, so it fits old-town streets, cafés and photos.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Long-sleeve top\\\",\\\"details\\\":\\\"fitted crew-neck tee, hip length, soft cotton jersey\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#F1E7D3\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Sweater\\\",\\\"details\\\":\\\"relaxed crew-neck pullover, hip length, fine merino wool\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#7D8260\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Trousers\\\",\\\"details\\\":\\\"straight-leg jeans, full ankle length, stretch cotton denim\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#2F3B52\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Field jacket\\\",\\\"details\\\":\\\"straight cut, hip length, cotton twill with a light lining\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#B58B5A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Low sneakers\\\",\\\"details\\\":\\\"cushioned, flexible rubber sole, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#F2EEE6\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Scarf\\\",\\\"details\\\":\\\"wide, light, soft wool-blend\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#8FA59C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small crossbody bag\\\",\\\"details\\\":\\\"zip closure, grained leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#8A5A3B\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2119,\"output_tokens\":436},\"stop_reason\":\"end_turn\"}"
+ }
+}

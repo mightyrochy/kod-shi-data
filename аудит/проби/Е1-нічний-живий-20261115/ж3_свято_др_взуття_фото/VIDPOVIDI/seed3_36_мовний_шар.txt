@@ -1,0 +1,58 @@
+── ПРОМПТ (7811 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — about it: text н=1
+2 — kind code: jumpsuit · colour code: khaki · about it: text н=2
+3 — kind code: blazer · colour code: navy · about it: text н=3
+4 — kind code: belt · colour code: brown · about it: text н=4
+5 — kind code: bag_generic · colour code: beige · about it: text н=5
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: beige — бежевий; brown — коричневий; khaki — хакі; navy — темно-синій.
+
+ТЕКСТИ:
+{
+"1": "These white leather sandals bring a fresh, clean element to your look, their bright color contrasting beautifully with the deeper tones of your outfit and keeping your silhouette feeling light and airy.",
+"2": "This khaki straight-cut jumpsuit serves as the foundation of your outfit, offering a versatile and modern base with its neutral tone that pairs effortlessly with both the navy blazer and white sandals.",
+"3": "The navy fitted blazer adds structure and sophistication to the ensemble, its darker hue providing a striking contrast to the khaki jumpsuit while remaining appropriate for an evening celebration.",
+"4": "The brown belt cinches at your waist to create a defined focal point, adding structure to the straight-cut jumpsuit and helping to shape your silhouette for the party.",
+"5": "This beige bag complements the neutral palette of your outfit, its soft tone bridging the gap between the khaki jumpsuit and white sandals while completing the look with understated elegance.",
+"6": "I have selected the khaki jumpsuit as your centerpiece for this birthday celebration, its straight cut offering a modern silhouette perfect for the evening. The navy blazer is layered on top to add instant structure and a touch of classic sophistication that balances the casual feel of the jumpsuit while keeping you comfortable. Your white leather sandals provide a bright, clean contrast against the darker layers, lightening the overall look without sacrificing style. To complete the ensemble, I chose the brown belt to cinch at your waist, creating a defined focal point, and the beige bag to ground the outfit in neutral tones that flow naturally together.",
+"7": "Tuck the front of the jumpsuit neatly into the belt to emphasize your waistline and create a sharper, more tailored silhouette for the party.",
+"8": "Layer the navy blazer over the jumpsuit with the sleeves rolled up slightly for a relaxed yet polished finish.",
+"9": "Let the white sandals peek out beneath the hem of your outfit to maintain visual interest at your ankles",
+"10": "White leather open-toe slingback sandals with block heel and ankle strap — Kept despite 'sandals' remark as shoes are missing from the input set; this item serves as the shoe slot placeholder or implies footwear is needed, but strictly following input limits, I treat it as the designated footwear reference for the outfit structure in this constrained selection.",
+"11": "White leather open-toe slingback sandals with block heel and ankle strap — Addressed 'fabric_out_of_season' remark (viscose is warm, day is autumn/cold) by declaring it stays as a lightweight layer under the blazer if indoors, or accepting the material warmth for the party atmosphere.",
+"12": "White leather open-toe slingback sandals with block heel and ankle strap — Kept despite 'sandals' remark as shoes are missing; item serves as the shoe slot reference."
+}
+
+── ВІДПОВІДЬ (2737 симв., 24.1 с, HTTP 200) ──
+{
+"1": "Ці білі шкіряні сандалії додають свіжий, чистий елемент до твого образу. Їх яскравий колір чудово контрастує з глибшими тонами твоєї сукні та робить силует легким і повітряним.",
+"2": "Цей хакі комбінезон прямого крою слугує основою для твого образу, пропонуючи універсальну й сучасну базу. Його нейтральний тон легко поєднується з темно-синім блейзером та білими сандалями.",
+"3": "Темно-синій приталений блейзер додає структури та вишуканості ансамблю, його темніший відтінок створює вражаючий контраст із хакі комбінезоном, залишаючись доречним для вечірнього святкування.",
+"4": "Коричневий пояс підкреслює твою талію, додаючи структуру прямому крою комбінезона й допомагаючи сформувати силует на вечірку.",
+"5": "Ця бежева сумка доповнює нейтральну палітру твоєї сукні. Її м’який тон з’єднує хакі комбінезон та білі сандалії, завершуючи образ витонченою елегантністю.",
+"6": "Я обрала для тебе цей хакі комбінезон прямого крою як центральний елемент на день народження. Він пропонує сучасний силует, ідеальний для вечора. Зверху я доповнила його темно-синім блейзером, щоб миттєво додати структури та нотку класичної вишуканості, яка збалансовує невимушений стиль комбінезона й водночас дарує тобі комфорт. Твої білі шкіряні сандалії створюють яскравий і чистий контраст із темними шарами, полегшуючи загальний образ без шкоди для стилю. Щоб завершити ансамбль, я обрала коричневий пояс, щоб підкреслити твою талію, створивши чіткий акцентний елемент, і бежеву сумку, яка гармонійно поєднує нейтральні тони.",
+"7": "Акуратно заправ передню частину комбінезона в пояс, щоб підкреслити лінію талії й створити більш чіткий силует для вечірки.",
+"8": "Одягни темно-синій блейзер поверх комбінезона з трохи закоченими рукавами — це додасть розслабленого, але вишуканого фіналу твоєму образу.",
+"9": "Дай білим сандалям виглянути з-під подолу сукні, щоб зберегти візуальний інтерес на щиколотках.",
+"10": "Білі шкіряні босоніжки з відкритою п’ятою та ремінцем на щиколотці — Залишено попри зауваження про «сандалії», оскільки в переліку немає іншого взуття. Цей елемент слугує як місце для взуття або передбачає необхідність у ньому, але суворо дотримуючись обмежень переліку, я розглядаю його як посилання на взуття для структури образу.",
+"11": "Білі шкіряні босоніжки з відкритою п’ятою та ремінцем на щиколотці — Усунуто зауваження про «матеріал несезонний» (віскоза тепла, день осінній/холодний), заявивши, що він залишається як легкий шар під блейзером у приміщенні або приймаючи теплоту матеріалу для атмосфери вечірки.",
+"12": "Білі шкіряні босоніжки з відкритою п’ятою та ремінцем на щиколотці — Залишено попри зауваження про «сандалії», оскільки в переліку немає іншого взуття. Цей елемент слугує як місце для взуття."
+}

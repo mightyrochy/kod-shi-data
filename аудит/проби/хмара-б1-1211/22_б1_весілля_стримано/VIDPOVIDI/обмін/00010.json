@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Floor-length gown, A-line with a softly structured bodice and a gently defined waist, in deep emerald green (#0F5B45), heavy matte crepe with a subtle satin sheen, with a modest V-neckline and short flutter sleeves to cover the shoulders\\n\\nLightweight wrap shawl, hip length, in warm champagne (#E3CDA4), fine chiffon with a silk-like drape, for the evening when it cools after the outdoor ceremony and for the restaurant\\n\\nHeeled sandals, block heel about 6 cm, closed back strap with a slim ankle strap, in antique gold (#B8924A), smooth nappa leather, comfortable on grass\\n\\nClutch, structured envelope shape, in antique gold (#B8924A), matte leather with a fine texture\\n\\nDrop earrings, medium length, in polished gold (#C9A24D), metal with small pearl details\\n\\nThin bangle, in polished gold (#C9A24D), smooth metal\\n\\nWhy this outfit works: The deep emerald crepe gown meets the formal dress code with a classic, restrained line, and its rich color glows against her warm deep skin tone, hair and eyes without being flashy. The A-line shape skims the body and moves easily, while the flutter sleeves and V-neckline keep it elegant and modest for a family wedding. Block-heeled sandals stay stable on an outdoor lawn at 16:00, and the champagne chiffon shawl is a light cover-up that suits an August ceremony and can be removed in the restaurant. Gold accents add polish and keep the whole look cohesive and timeless.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Gown\\\",\\\"details\\\":\\\"Floor-length, A-line with a softly structured bodice and gently defined waist, modest V-neckline, short flutter sleeves, heavy matte crepe with a subtle satin sheen\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#0F5B45\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wrap shawl\\\",\\\"details\\\":\\\"Hip length, fine chiffon with a silk-like drape\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#E3CDA4\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Heeled sandals\\\",\\\"details\\\":\\\"Block heel about 6 cm, closed back strap with a slim ankle strap, smooth nappa leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#B8924A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Clutch\\\",\\\"details\\\":\\\"Structured envelope shape, matte leather with a fine texture\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#B8924A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Medium length, metal with small pearl details\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A24D\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Thin bangle\\\",\\\"details\\\":\\\"Smooth metal\\\",\\\"slot\\\":\\\"bracelet\\\",\\\"color_hex\\\":\\\"#C9A24D\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2205,\"output_tokens\":419},\"stop_reason\":\"end_turn\"}"
+ }
+}

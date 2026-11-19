@@ -1,0 +1,37 @@
+── ПРОМПТ (2043 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Heavy wool coat, classic trench cut, mid-thigh length, charcoal gray #36454F, thick woven fabric.\nTurtleneck sweater, relaxed fit, hip length, deep burgundy #800020, soft merino blend.\nWide-leg trousers, straight leg, ankle length, black #000000, sturdy cotton twill.\nChunky leather boots, lace-up design, mid-calf height, espresso brown #3B1D09, smooth full-grain leather.\n\nThis outfit is perfect for a long walk in deep frost because the heavy wool coat and sturdy layers provide the essential warmth she requested for staying outside comfortably. The dark color palette not only looks chic under daylight but also helps deflect wind chill while moving. Every item is selected to ensure mobility without sacrificing comfort, making it ideal for extended exposure to cold autumn weather."}
+
+── ВІДПОВІДЬ (800 симв., 3.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Wool coat",
+      "details": "classic trench cut, mid-thigh length, thick woven fabric",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Turtleneck sweater",
+      "details": "relaxed fit, hip length, soft merino blend",
+      "slot": "top",
+      "color_hex": "#800020",
+      "worn": true
+    },
+    {
+      "name": "Wide-leg trousers",
+      "details": "straight leg, ankle length, sturdy cotton twill",
+      "slot": "bottom",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "Leather boots",
+      "details": "lace-up design, mid-calf height, smooth full-grain leather",
+      "slot": "shoes",
+      "color_hex": "#3B1D09",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+── ПРОМПТ (6869 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: suit · about it: text н=1
+2 — kind: fur_coat · about it: text н=2
+3 — kind: pumps · about it: text н=3
+4 — kind: crossbody_bag · about it: text н=4
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This suit set anchors the outfit with its structured silhouette, delivering the classic and restrained aesthetic you asked for while remaining elegant enough to stand out in a lively setting like a rock concert.",
+"2": "I included this fur coat to introduce a layer of refined warmth that complements your evening plans and adds a timeless, polished element to the look.",
+"3": "These pumps bring an air of sophistication with their clean lines and moderate heel height, perfectly suited for walking through a venue while maintaining grace and composure.",
+"4": "This crossbody bag is chosen for its practicality during the evening out, offering a secure yet stylish way to carry essentials without interrupting the flow of your movement.",
+"5": "I chose this ensemble to honor your wish for restraint and classic lines at a rock concert, where you'll stand in the crowd. The suit set provides a clean, tailored foundation that reads as composed even when surrounded by energy. Over it, I placed the fur coat not just for warmth but to add a touch of quiet sophistication and structure against the evening chill outside the club. Your cream pumps complete the look with an elegant silhouette that elongates your frame without overwhelming your height, keeping the overall impression graceful and deliberate.",
+"6": "Keep your arms loose within the fur coat to allow for movement while standing in the crowd.",
+"7": "Allow the suit jacket to fall naturally at your waist so it defines your shape without feeling restrictive.",
+"8": "Костюм: піджак прямого крою з паском; штани прямі, широкі, посадка висока (Louis Vuitton) — The white suit replaces the chocolate coat to fix the formality gap (above->smart) and remove the double-coat error. It provides a clean neutral base that works with the black items.",
+"9": "Шуба — Removed due to being in the top quarter of the slot price-wise but not offering enough style variety compared to other options, contributing to blandness.",
+"10": "Слінгбеки Ducks вершкові — The red pumps are kept as they add the necessary loud color accent to break the neutrals, satisfying the occasion's festive needs without being overpowering.",
+"11": "Жіноча сумка через плече коричнева замшева, Костюм: піджак прямого крою з паском; штани прямі, широкі, посадка висока (Louis Vuitton) — The formality spread between the everyday bag and the formal coat is a deliberate choice to bridge your 'everyday' wardrobe into this 'smart' occasion; the classic register of the suit anchors the mix so it feels intentional rather than disjointed."
+}
+
+── ВІДПОВІДЬ (2583 симв., 17.8 с, HTTP 200) ──
+```json
+{
+"1": "Цей костюмний комплект задає тон образу своїм структурованим силуетом, даруючи класичну та стриману естетику, яку ти просила, залишаючись при цьому достатньо елегантним, щоб виділитися в жвавому місці, як рок-концерт.",
+"2": "Я додала цю хутряну шубу, щоб додати шар вишуканого тепла, який підходить для твоїх вечірніх планів і надає образу позачасовий та елегантний акцент.",
+"3": "Ці туфлі-човники привносять нотку витонченості своїми чистими лініями та помірною висотою підборів, чудово підходять для прогулянок по закладу, зберігаючи грацію та впевненість.",
+"4": "Ця сумка через плече обрана з огляду на її практичність під час вечора, пропонуючи безпечний і стильний спосіб носити необхідні речі без порушення твого руху.",
+"5": "Я обрала цей ансамбль, щоб вшанувати твоє бажання стриманості та класичних ліній на рок-концерті, де ти стоятимеш у натовпі. Костюмний комплект дає чисту основу з чіткими контурами, яка виглядає зібрано навіть серед енергії. Зверху я одягла хутряну шубу не лише для тепла, але й щоб додати нотку тихої елегантності та структури на вечірньому холоді біля клубу. Твої кремові туфлі-човники завершують образ витонченим силуетом, який подовжує твою фігуру без надмірності, зберігаючи загальне враження граційним і продуманим.",
+"6": "Тримай руки вільними під хутряною шубою, щоб дозволити собі рухатися, стоячи в натовпі.",
+"7": "Дозволь жакету костюма вільно спадати до талії, щоб він окреслював твою фігуру без відчуття обмеження.",
+"8": "Костюм: піджак прямого крою з паском; штани прямі, широкі, висока посадка (Louis Vuitton) — Білий костюм замінює шоколадну шубу, щоб виправити розрив у формальності (з повсякденного на ошатний) і прибрати помилку подвійного одягу. Він дає чисту нейтральну основу, яка добре поєднується з чорними речами.",
+"9": "Шуба — Вилучено через те, що вона знаходиться у верхньому чверті цінового діапазону слоту, але не пропонує достатньо стилістичного різноманіття порівняно з іншими варіантами, сприяючи нудності.",
+"10": "Слінгбеки Ducks кремові — Червоні туфлі збережено, оскільки вони додають необхідний яскравий колірний акцент, щоб розбавити нейтральні тони та задовольнити святкові потреби заходу без надмірності.",
+"11": "Жіноча сумка через плече коричнева замшева, Костюм: піджак прямого крою з паском; штани прямі, широкі, висока посадка (Louis Vuitton) — Розрив у формальності між повсякденною сумкою та ошатною шубою є свідомим вибором для переходу твого «повсякденного» гардеробу на цю «ошатну» подію; класичний стиль костюма закріплює мікс, роблячи його навмисним, а не роз’єднаним."
+}
+```

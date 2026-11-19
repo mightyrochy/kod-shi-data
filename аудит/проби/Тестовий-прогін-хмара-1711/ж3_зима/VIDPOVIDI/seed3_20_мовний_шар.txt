@@ -1,0 +1,45 @@
+── ПРОМПТ (6702 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: two_piece_set · about it: text н=1
+2 — kind: longsleeve · about it: text н=2
+3 — kind: coat · about it: text н=3
+4 — kind: boots · about it: text н=4
+5 — kind: bag_generic · about it: text н=5
+6 — kind: scarf_generic · about it: text н=6
+7 — kind: beanie · about it: text н=7
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The vest and trousers in one colour give you a tidy, business-ready outfit for the office, with a long vertical line. The vest marks your waist while the straight trousers stay quiet.",
+"2": "This longsleeve brings a soft colour near your face and adds a layer under the vest, so the office look doesn't read as stark black.",
+"3": "The coat gives the outfit a smart outer shape for the walk to work in deep frost and snow. Its short length keeps the lines of the vest and trousers visible.",
+"4": "Tall boots suit a 20-minute walk in snow and carry the dark line down to the floor, which anchors the ankle and keeps the whole outfit long and clean.",
+"5": "A compact black bag fits an office day and walking without adding bulk. It stays in the same dark range as the rest, so it doesn't compete with anything.",
+"6": "The scarf is the one bright accent, placed at the neck close to your face where colour works best. It also finishes the coat's collar area for the frost.",
+"7": "I kept the black beanie to close the dark line at the top and neaten the look for the walk. It is thin for deep frost, so the coat and scarf carry the day's warmth.",
+"8": "I built this for your office day around one clean black line: the vest and trousers, with boots that continue it down to the floor. The coat on top keeps that line unbroken for the 20-minute walk through snow. The light blue longsleeve and the red scarf give your face the colour, and the black bag and beanie stay quiet. The beanie is the one place I accepted a compromise: it is thin for deep frost and adds little warmth, so over this walk the coat and the scarf do the work. I still chose it because it finishes the dark line at the top without a competing colour.",
+"9": "Wear the blue longsleeve under the vest so its sleeves show and the vest's V stays open at the neck.",
+"10": "Wrap the scarf once around your neck and tuck it under the coat's lapels, so the red sits only by your face.",
+"11": "Wear the coat open at the front so the vest's waistline shows, and let the trousers fall straight over the tops of the boots.",
+"12": "Шапка бавовна чорна — The cotton beanie is only there to cover your ears. The coat, the suit layers and the wool scarf do the real work of keeping you warm in the deep frost."
+}
+
+── ВІДПОВІДЬ (2239 симв., 20.5 с, HTTP 200) ──
+{"1":"Жилет і штани одного кольору дають тобі охайний образ для офісу, готовий до ділового дня, з довгою вертикальною лінією. Жилет підкреслює твою талію, а прямі штани лишаються спокійними.","2":"Цей лонгслів додає м'який колір біля твого обличчя та шар під жилетом, тож офісний образ не виглядає різко чорним.","3":"Пальто дає образу елегантну верхню форму для дороги на роботу в сильний мороз і сніг. Його коротка довжина залишає видимими лінії жилета та штанів.","4":"Високі чоботи личать 20-хвилинній прогулянці снігом і продовжують темну лінію до підлоги, що закріплює щиколотку та робить увесь образ довгим і чистим.","5":"Компактна чорна сумка пасує до офісного дня та прогулянки, не додаючи об'єму. Вона лишається в тій самій темній гамі, що й решта, тож ні з чим не конкурує.","6":"Шарф — єдиний яскравий акцент, розміщений біля шиї поруч із твоїм обличчям, де колір працює найкраще. Він також доповнює зону коміра пальта на морозі.","7":"Я залишила чорну шапку, щоб закрити темну лінію вгорі та охайно завершити образ для прогулянки. Вона тонка для сильного морозу, тож тепло цього дня забезпечують пальто та шарф.","8":"Я підібрала це для твого офісного дня навколо однієї чистої чорної лінії: жилет і штани, з чоботами, які продовжують її до підлоги. Пальто зверху зберігає цю лінію непорушною на 20-хвилинну прогулянку снігом. Світло-блакитний лонгслів і червоний шарф дають твоєму обличчю колір, а чорна сумка та шапка лишаються непомітними. Шапка — єдине місце, де я погодилась на компроміс: вона тонка для сильного морозу й дає мало тепла, тож на цій прогулянці працюють пальто та шарф. Я все одно її обрала, бо вона завершує темну лінію вгорі без кольору, що конкурував би.","9":"Одягни синій лонгслів під жилет так, щоб було видно рукави, а V-подібний виріз жилета лишався відкритим біля шиї.","10":"Обгорни шарф навколо шиї один раз і заправ його під лацкани пальта, щоб червоний колір був лише біля твого обличчя.","11":"Носи пальто розстебнутим спереду, щоб було видно лінію талії жилета, а штани нехай падають прямо на верх чобіт.","12":"Шапка бавовна чорна — Бавовняна шапка потрібна лише для того, щоб закрити тобі вуха. Пальто, шари костюма та вовняний шарф по-справжньому тримають тебе в теплі в сильний мороз."}

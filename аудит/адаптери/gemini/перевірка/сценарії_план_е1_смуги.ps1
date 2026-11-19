@@ -113,11 +113,8 @@ try {
         function Get-FreeSlot { 'стенд-1' }
         function Test-SlugBusy { $false }
         function Repair-GpuModels { $true }
-        function Get-GpuBusyReason($Workers, [switch]$LockHeld) {
-            $script:GpuHoldReason = ''
-            if (@($Workers | Where-Object { $_.Gpu -and -not $_.Proc.HasExited }).Count -gt 0) { $script:GpuHoldReason = 'замок GPU іншого наряду'; return 'GPU: її тримає власний наряд обгортки' }
-            ''
-        }
+        # Карта вільна: позначки проходу тримає лише щойно запущений GPU-наряд (модель на карті міряє сценарії_gpu_процеси.ps1).
+        function Get-GpuBusyReason { $script:GpuHoldReason = ''; '' }
         $script:Behaviour = @()   # як веде себе кожен запущений процес: 'ВИЙШОВ' (пішов у чекання) чи 'ЖИВИЙ' (модель працює)
         $script:Started = New-Object Collections.ArrayList
         function Start-Worker($Job, [string]$Dir) {
@@ -147,7 +144,7 @@ try {
         $startedNow = $(if ($lane -eq 'claude') { [int]$result[0] } else { [int]$result[-1] })
         Check "$lane (3): GPU-наряд, що вийшов у чекання, віддав GPU наступній позначці того ж проходу (запущено 2 з $gpuCount)" ($startedNow -eq 2 -and $script:Started.Count -eq 2)
         $skips = Read-PassSkips
-        Check "$lane (3): решта позначок стоїть, бо GPU тепер справді за живим нарядом" ($skips.Count -eq ($gpuCount - 2) -and @($skips.Values | Where-Object { $_ -cmatch 'її тримає власний наряд обгортки|її щойно взяв наряд цього проходу' }).Count -eq $skips.Count)
+        Check "$lane (3): решта позначок стоїть, бо GPU тепер справді за живим нарядом" ($skips.Count -eq ($gpuCount - 2) -and @($skips.Values | Where-Object { $_ -cmatch 'її щойно взяв наряд цього проходу' }).Count -eq $skips.Count)
         Check "$lane (3): запущені позначки не названо «щойно взяла» через першу" (@($script:Started | Where-Object { $skips.ContainsKey($_) }).Count -eq 0)
 
         # Проход 2: перший наряд тримає GPU (модель стартувала) — решта стоїть із причиною, без очікування TIMEOUT.

@@ -1,0 +1,54 @@
+── ПРОМПТ (6719 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: stole · colour code: cappuccino · about it: text н=1
+2 — kind code: ankle_boots · colour code: brown
+3 — kind code: beret · colour code: golden · about it: text н=2
+4 — kind code: dress_generic · colour code: black · about it: text н=3
+5 — kind code: bag_generic · colour code: brown · about it: text н=4
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: black — чорний; brown — коричневий; cappuccino — капучино; golden — золотий.
+
+ТЕКСТИ:
+{
+"1": "The stole in cappuccino color features a delicate floral pattern embroidered in white, adding a soft and elegant touch to your outfit. Its rectangular shape makes it versatile for draping around the neck or shoulders.",
+"2": "The beret is a vibrant golden-red with an embellished floral brooch that adds a touch of classic charm and warmth to your headwear. Its soft texture enhances the overall elegance of your outfit.",
+"3": "This black dress features a subtle floral pattern with green accents, creating a timeless and elegant look. The three-quarter sleeves and fitted silhouette highlight your figure while maintaining a polished appearance.",
+"4": "The bag is made of high-quality brown leather with a structured shape and dual handles for versatile carrying options. Its minimalist design ensures it complements any outfit effortlessly.",
+"5": "Your black floral dress anchors the look with its timeless silhouette, while the warm cappuccino stole adds a soft, earthy layer that complements the autumn season. The rich golden-red beret injects a touch of classic elegance and warmth, perfectly suiting your request for a restrained yet sophisticated style. The dark brown ankle boots ground the outfit in understated luxury, and the sleek leather bag offers practicality without compromising on formality. Together, these pieces create a balanced, polished ensemble ideal for meeting clients in a café setting during rainy weather.",
+"6": "Tuck the stole loosely around your neck to add texture without overwhelming your clean lines.",
+"7": "Pair the beret slightly tilted for an effortless yet refined touch that complements your classic style.",
+"8": "Keep the ankle boots sleek and closed to maintain the polished look appropriate for a client meeting.",
+"9": "Берет з кашеміром із золотою брошкою червоний — The outfit lacked jewelry; I added this gold beret to introduce shine and contrast near the face while keeping the classic register.",
+"10": "Чорна сукня в квітковий принт з драпіруванням — The suede boots soak in rain; I added this black wool dress as a protective outer layer that covers the legs and solves the weather issue."
+}
+
+── ВІДПОВІДЬ (2196 симв., 24.6 с, HTTP 200) ──
+```json
+{
+  "1": "Цей шаль кольору капучино має ніжний квітковий візерунок, вишитий білим кольором, що додає м’якості та елегантності твоєму образу. Його прямокутна форма робить його універсальним для драпірування навколо шиї або плечей.",
+  "2": "Берет насиченого золотисто-червоного кольору з вишитою квітковою брошкою, що додає шарм і тепло твоєму головному убору. Його м’яка текстура підкреслює загальну елегантність твого образу.",
+  "3": "Ця чорна сукня має ледь помітний квітковий візерунок із зеленими акцентами, створюючи позачасовий і вишуканий образ. Три чверті рукавів та приталений силует підкреслюють твою фігуру, зберігаючи доглянутий вигляд.",
+  "4": "Сумка виготовлена з високоякісної коричневої шкіри зі структурованою формою і двома ручками для зручного носіння. Її мінімалістичний дизайн гарантовано гармонійно доповнить будь-який твій образ.",
+  "5": "Твоя чорна сукня в квітковий принт формує основу образу, а теплий шаль кольору капучино додає м’якого та природного шару, який підходить для осіннього сезону. Насичений золотисто-червоний берет надає дотик класичної елегантності й тепла, ідеально відповідаючи твоєму проханню створити стриманий, але вишуканий стиль. Коричневі замшеві черевики завершують образ у лаконічній розкоші, а стильна шкіряна сумка забезпечує практичність без шкоди для формальності. Разом ці речі створюють збалансований і доглянутий ансамбль, який чудово підійде для зустрічі з клієнтами в кафе у похмуру погоду.",
+  "6": "Недбало оберни шаль навколо шиї, щоб додати текстури без перевантаження твоїх чітких ліній.",
+  "7": "Одягни берет трохи набік для невимушеного та вишуканого акценту, який підкреслить твій класичний стиль.",
+  "8": "Залиш черевики елегантними й закритими, щоб зберегти доглянутий вигляд, відповідний для зустрічі з клієнтом.",
+  "9": "Берет із кашеміру золотою брошкою червоного кольору — Образ не мав прикрас; я додала цей золотий берет, щоб надати блиску та контрасту біля обличчя, зберігаючи класичний стиль.",
+  "10": "Чорна сукня в квітковий принт з драпіруванням — Замшеві черевики промокають під дощем; я додала цю чорну вовняну сукню як захисний верхній шар, який закриває ноги та вирішує проблему з погодою."
+}
+```

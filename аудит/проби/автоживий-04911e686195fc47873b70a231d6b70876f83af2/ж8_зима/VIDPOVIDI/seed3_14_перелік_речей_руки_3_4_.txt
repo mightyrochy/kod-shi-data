@@ -1,0 +1,37 @@
+── ПРОМПТ (2275 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured dark denim jacket, relaxed fit with a straight hemline, midnight blue (#1a1a2e), durable twill cotton blend.\nDark wash skinny jeans, slim cut tapering to the ankle, charcoal gray (#36454f), heavy-weight raw denim.\nA fitted ribbed knit sweater crew neck, mock turtleneck length sitting below the collarbone, cream beige (#f5f0e1), fine-gauge wool blend.\nChunky leather combat boots, mid-calf height with a thick lug sole, black leather (#0a0a0a), smooth calfskin.\n\nThis outfit works because it honors the \"everyday\" dress code while providing essential protection against frost and snow through durable materials like denim and waterproof-likely leather. The neutral cream and charcoal tones complement her warm skin undertones without competing with the bright daylight, ensuring she feels confident walking the salted roads for twenty minutes. The structured jacket adds a neat, polished edge to casual jeans, fulfilling her need for an outer layer in cold weather while maintaining comfort for movement."}
+
+── ВІДПОВІДЬ (871 симв., 4.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "dark denim jacket",
+      "details": "structured fit with straight hemline, relaxed cut",
+      "slot": "outerwear",
+      "color_hex": "#1a1a2e",
+      "worn": true
+    },
+    {
+      "name": "dark wash skinny jeans",
+      "details": "slim cut tapering to the ankle, heavy-weight raw denim",
+      "slot": "bottom",
+      "color_hex": "#36454f",
+      "worn": true
+    },
+    {
+      "name": "fitted ribbed knit sweater",
+      "details": "crew neck mock turtleneck length sitting below the collarbone, fine-gauge wool blend",
+      "slot": "top",
+      "color_hex": "#f5f0e1",
+      "worn": true
+    },
+    {
+      "name": "chunky leather combat boots",
+      "details": "mid-calf height with thick lug sole, smooth calfskin",
+      "slot": "shoes",
+      "color_hex": "#0a0a0a",
+      "worn": true
+    }
+  ]
+}

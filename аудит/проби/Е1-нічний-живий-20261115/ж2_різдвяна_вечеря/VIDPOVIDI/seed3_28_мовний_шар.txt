@@ -1,0 +1,74 @@
+── ПРОМПТ (8579 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці, поруч — її коди):
+1 — kind code: trousers · colour code: grey · about it: text н=1
+2 — kind code: collar_necklace · colour code: silvery · about it: text н=2
+3 — kind code: beanie · colour code: mustard · about it: text н=3
+4 — kind code: ballet_flats · colour code: burgundy · about it: text н=4
+5 — kind code: trench_coat · colour code: navy
+6 — kind code: vest · colour code: grey · about it: text н=5
+7 — kind code: tote · colour code: green · about it: text н=6
+When a text speaks of an item of the list, call it by the Ukrainian noun of its kind code (kind code: …) — the same noun in the right case in every text (trench_coat — «тренч», sweater — «светр», loafers — «лофери»), not by another kind or a synonym of the English word, whatever word the English text uses; a code ending in _generic names only the family (dress_generic — a dress, bag_generic — a bag). Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. The colour of an item of the list is its colour code (colour code: …): write the Ukrainian name of that code. The English colour words for that item are the stylist's impression of a photo: do not turn them into a colour of their own — the item's colour stands in their place. Colours of its details (trim, strap, buttons, print), its fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+Colour codes: burgundy — бордовий; green — зелений; grey — сірий; mustard — гірчичний; navy — темно-синій; silvery — срібний.
+
+ТЕКСТИ:
+{
+"1": "These grey trousers with subtle stripes offer a structured, straight cut that elongates your legs and provides a clean foundation for the richer colors of your top and accessories.",
+"2": "The silvery collar necklace adds a touch of understated luxury at your neckline, bridging the gap between your grey vest and the navy coat with its cool metallic sheen.",
+"3": "This mustard-colored beanie brings a festive pop of warmth to your ensemble, drawing attention to your face and adding personality without overwhelming your outfit's balance.",
+"4": "The burgundy ballet flats with a heel provide just enough height for an elegant posture while remaining comfortable throughout the evening; their deep red tone complements your grey and mustard choices beautifully.",
+"5": "Your grey fitted vest creates a sleek, modern silhouette under the layers, defining your waistline and adding structure to the outfit while keeping it comfortable for extended wear.",
+"6": "The striped tote bag adds a playful element to your sophisticated look; its pattern echoes the stripes in your trousers, creating a cohesive visual thread throughout the outfit.",
+"7": "Your look for this Christmas dinner at the restaurant brings a festive warmth that stands out against the cold outside air, anchored by the rich burgundy shoes which add depth to your grey and mustard palette. The relaxed trench coat offers an easy elegance, while the fitted vest creates a sleek silhouette under the layers.",
+"8": "Let the mustard beanie sit comfortably on your head; its bold color becomes the first point of interest when you step into the room.",
+"9": "When you feel ready, slip the navy trench coat open to reveal the grey tones of your inner outfit and let the gold and silver details of the collar necklace catch the candlelight.",
+"10": "Keep one hand free to rest lightly on the shoulder of the relaxed coat or hold your tote as you move through the restaurant; this keeps your posture natural and confident during conversation.",
+"11": "Шапка з екохутра гірчична — This mustard beanie replaces the grey skirt (which was causing 'kind twice' and formality issues) to add a deliberate color break and necessary headwear for warmth.",
+"12": "Джинсовий тренч з класичними лацканами — The navy trench coat replaces the missing outer layer to handle the cold weather band and add formality.",
+"13": "Жіночі балетки велюрові бордові — Burgundy velvet flats replace the missing shoes to fix the 'no_shoes' blocker and provide a warm, festive accent.",
+"14": "Жіночі балетки велюрові бордові — This burgundy velour item replaces the oversized sweater (which was too casual) and provides the needed color accent and warmth for the dinner occasion.",
+"15": "Жіночі балетки велюрові бордові — This item adds a second shiny surface adjacent to the patent leather earrings, but as a deliberate break to create texture interest and balance the dark tones.",
+"16": "Жіночі балетки велюрові бордові — Burgundy velvet flats replace the silvery rings as a shoe choice (fixing the 'kind twice' error) and provide a warm, festive accent color suitable for a restaurant.",
+"17": "Джинсовий тренч з класичними лацканами — The navy trench coat replaces the missing outer layer to handle the cold weather band and adds formality.",
+"18": "Жіночі балетки велюрові бордові — Burgundy velvet flats replace the missing shoes to fix the 'no_shoes' blocker and add a strong accent color for the celebration."
+}
+
+── ВІДПОВІДЬ (3445 симв., 40.1 с, HTTP 200) ──
+```json
+{
+  "1": "Ці сірі штани з ледь помітними смужками мають структурований, прямий крій, який видовжує твої ноги та створює чисту основу для більш насичених кольорів твоєї блузи й аксесуарів.",
+  "2": "Сріблястий кулон на комір додає нотку вишуканої розкоші до зони декольте, поєднуючи твій сірий жилет з темно-синім пальтом своїм прохолодним металевим блиском.",
+  "3": "Ця гірчична шапка привносить святковий акцент тепла у твій образ, привертаючи увагу до обличчя та додаючи індивідуальності без перевантаження балансу вбрання.",
+  "4": "Бордові балетки на підборах дарують достатньо висоти для елегантної постави, залишаючись комфортними протягом усього вечора; їхній глибокий червоний відтінок чудово доповнює твій сірий і гірчичний вибір.",
+  "5": "Твій приталений сірий жилет створює стрункий сучасний силует під шарами, окреслюючи талію та додаючи структури вбранню, водночас залишаючись комфортним для тривалого носіння.",
+  "6": "Сумка-тоут у смужку додає грайливий елемент до твого вишуканого образу; її візерунок перегукується зі смужками на штанах, створюючи цілісну візуальну лінію в образі.",
+  "7": "Твій образ для цього різдвяного обіду в ресторані привносить святковий теплий акцент, який виділяється на тлі холодної погоди за вікном, підкреслений насиченими бордовими туфлями, які додають глибини твоєму сіро-гірчичному палітру. Розслаблений тренч пропонує легку елегантність, а приталений жилет створює стрункий силует під шарами.",
+  "8": "Нехай гірчична шапка зручно сидить на твоїй голові; її сміливий колір стає першою точкою інтересу, коли ти заходиш до кімнати.",
+  "9": "Коли відчуєш готовність, скинь темно-синій тренч, щоб відкрити сірі відтінки твого внутрішнього вбрання та дозволь золотим і срібним деталям кулона на комір привернути увагу до свічок.",
+  "10": "Тримай одну руку вільною, легко поклавши її на плече розслабленого пальта або тримаючи сумку-тоут під час пересування рестораном; це збереже твою поставу природною та впевненою під час розмови.",
+  "11": "Гірчична шапка з екохутра — Ця гірчична шапка замінює сіру спідницю (що викликала повторення «вид двічі» і проблеми з формальністю), щоб додати навмисний колірний акцент та необхідне утеплення для голови.",
+  "12": "Джинсовий тренч з класичними лацканами — Темно-синій тренч замінює відсутній верхній шар, щоб захистити тебе від холоду та додати формальності.",
+  "13": "Бордові велюрові балетки — Бордові велюрові балетки замінюють відсутнє взуття, щоб виправити помилку «немає_взуття» і надати теплий святковий акцент.",
+  "14": "Бордові велюрові балетки — Ця бордова велюрова річ замінює об’ємний светр (що був надто повсякденним) та надає необхідний колірний акцент і тепло для святкового обіду.",
+  "15": "Бордові велюрові балетки — Цей предмет додає другу блискучу поверхню поруч із лакованими срібними сережками, але як навмисний контраст, щоб створити цікаву текстуру та збалансувати темні тони.",
+  "16": "Бордові велюрові балетки — Бордові велюрові балетки замінюють сріблясті каблучки (виправляючи помилку «вид двічі») і надають теплий святковий акцентний колір, який підходить для ресторану.",
+  "17": "Джинсовий тренч з класичними лацканами — Темно-синій тренч замінює відсутній верхній шар, щоб захистити тебе від холоду та додати формальності.",
+  "18": "Бордові велюрові балетки — Бордові велюрові балетки замінюють відсутнє взуття, щоб виправити помилку «немає_взуття» і надати сильний акцентний колір для святкування."
+}
+```
