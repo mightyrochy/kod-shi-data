@@ -718,9 +718,10 @@ function Read-AutoApiBudget([string]$Path, [long]$Now) {
     if (-not (Test-Path -LiteralPath $Path)) { return [pscustomobject]@{ Calls = @(); Until = 0L } }
     try {
         $saved = [IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json
-        $calls = Get-JsonProp $saved 'calls'; $until = Get-JsonProp $saved 'until'
-        if ($null -eq $calls -or $null -eq $until) { return $null }
-        [pscustomobject]@{ Calls = @($calls | Where-Object { [long]$_ -gt ($Now - $script:ReviewApiWindow) }); Until = [long]$until }
+        # Get-JsonProp не годиться для calls: порожній масив функція віддає в конвеєр як $null.
+        $pc = $(if ($saved -is [pscustomobject]) { $saved.PSObject.Properties['calls'] }); $pu = $(if ($saved -is [pscustomobject]) { $saved.PSObject.Properties['until'] })
+        if ($null -eq $pc -or $null -eq $pu -or $null -eq $pc.Value -or $null -eq $pu.Value) { return $null }
+        [pscustomobject]@{ Calls = @($pc.Value | Where-Object { [long]$_ -gt ($Now - $script:ReviewApiWindow) }); Until = [long]$pu.Value }
     } catch { $null }
 }
 
