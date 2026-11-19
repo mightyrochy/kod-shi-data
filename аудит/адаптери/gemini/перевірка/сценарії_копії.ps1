@@ -94,6 +94,41 @@ try {
         Clear-TaskCopies $root @('--remotes')
         Check 'звільнений слот: копію прибрано наступним проходом' (-not (Test-Path -LiteralPath $busy) -and (Test-Path -LiteralPath $dir))
     }
+    Scenario 'спільний конфіг клону: зміни нарядом — у журнал, власні зміни обгортки — ні' {
+        # ДО: наряд у копії виконав `git fetch --unshallow --filter=blob:none` — клон став частковим для всіх копій, ніхто
+        # цього не бачив (`remote.origin.promisor` лежить у спільному конфігу клону). ПІСЛЯ: Close-TaskCopy пише ключі.
+        $origin = Join-Path $tmp 'o-cfg.git'; $clone = Join-Path $tmp 'c-cfg'
+        & git init -q --bare $origin; & git init -q -b main $clone
+        & git -C $clone config user.name 'стенд'; & git -C $clone config user.email 'stend@example.invalid'
+        & git -C $clone remote add origin $origin
+        [IO.File]::WriteAllText("$clone/a.txt", '1', $utf)
+        & git -C $clone add -A; & git -C $clone commit -q -m 'початкова'; & git -C $clone push -q origin main
+        & git -C $clone fetch -q origin
+        & git -C $clone config stend.staryj 1; & git -C $clone config stend.zminnyj 1
+        $script:RepoDir = $clone; $root = Join-Path $tmp 'w-cfg'
+        $n0 = $script:Log.Count
+        $repo = New-TaskCopy (Join-Path $root 'run-1') 'refs/remotes/origin/main' ''
+        & git -C $repo checkout -q -B gemini/stend 'refs/remotes/origin/main'
+        $ext = (& git -C $clone config --local --get extensions.worktreeConfig)
+        [void](Close-TaskCopy @('--remotes'))
+        $l = @($script:Log | Select-Object -Skip $n0 | Where-Object { $_.Contains('спільний конфіг клону') })
+        "  власні зміни обгортки: extensions.worktreeConfig у конфігу клону = '$ext'; гілка наряду пише branch.*"
+        Check "копія без змін наряду (sparse-checkout, checkout -B — власні зміни обгортки): рядка нема — $($l -join ' | ')" ($l.Count -eq 0 -and $script:RepoDir -ceq $clone)
+        $n0 = $script:Log.Count
+        $repo = New-TaskCopy (Join-Path $root 'run-2') 'refs/remotes/origin/main' ''
+        & git -C $repo config remote.origin.promisor true
+        & git -C $repo config remote.origin.partialclonefilter blob:none
+        & git -C $repo config stend.novyj 1
+        & git -C $repo config stend.tajne 'tok-SEKRET-123'
+        & git -C $repo config stend.zminnyj 2
+        & git -C $repo config --unset stend.staryj
+        [void](Close-TaskCopy @('--remotes'))
+        $l = @($script:Log | Select-Object -Skip $n0 | Where-Object { $_.Contains('спільний конфіг клону') })
+        $want = 'копія задачі: наряд змінив спільний конфіг клону — додано: remote.origin.partialclonefilter=blob:none, remote.origin.promisor=true, stend.novyj, stend.tajne; змінено: stend.zminnyj; прибрано: stend.staryj'
+        Check "наряд змінив спільний конфіг: один рядок із ключами — $($l -join ' | ')" ($l.Count -eq 1 -and $l[0] -ceq $want)
+        Check 'значення ключів, окрім promisor і partialclonefilter, у журнал не йдуть' ($l.Count -eq 1 -and -not $l[0].Contains('SEKRET'))
+        Check 'нічого не повернуто назад: promisor лишився в клоні' ((& git -C $clone config --local --get remote.origin.promisor) -ceq 'true' -and $script:RepoDir -ceq $clone)
+    }
     function Put([string]$Dir, [string]$Name, [string]$Text, [string]$Msg) {
         [IO.File]::WriteAllText((Join-Path $Dir $Name), $Text, $utf)
         & git -C $Dir add -A; & git -C $Dir commit -q -m $Msg
