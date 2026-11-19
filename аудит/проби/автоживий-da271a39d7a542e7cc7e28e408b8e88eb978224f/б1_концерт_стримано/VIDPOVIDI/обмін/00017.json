@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream silk blouse, relaxed fit, knee-length, cream (F5F5DC), woven satin.\\nWool-blend straight-leg trousers, mid-rise, ankle length with a slight taper, charcoal grey (36454F), heavy wool flannel.\\nStructured tweed blazer, single-breasted notch lapel, waist length, camel brown (C19A6B), virgin wool and horsehair blend.\\nLeather pointed-toe pumps, low heel, classic almond silhouette, black (000000), calfskin.\\n\\nThis ensemble honors your request for something restrained yet classic by pairing a tailored tweed blazer with elegant charcoal trousers, creating an instant smart social look appropriate for a Friday evening club atmosphere. The cream silk blouse adds a touch of refined softness that balances the structured outer layers without appearing overly casual or loud amidst the rock concert crowd. Since you will be standing in the audience, the breathable yet substantial wool fabrics ensure comfort during movement while maintaining a polished silhouette suitable for artificial lighting.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Blouse\\\", \\\"details\\\": \\\"relaxed fit, knee-length, woven satin\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"F5F5DC\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Trousers\\\", \\\"details\\\": \\\"straight-leg, mid-rise, ankle length with a slight taper, heavy wool flannel\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"36454F\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Blazer\\\", \\\"details\\\": \\\"structured, single-breasted notch lapel, waist length, virgin wool and horsehair blend\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"C19A6B\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Pumps\\\", \\\"details\\\": \\\"pointed-toe, low heel, classic almond silhouette, calfskin\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"000000\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":566,\"output_tokens\":218},\"stop_reason\":\"end_turn\"}"
+ }
+}
