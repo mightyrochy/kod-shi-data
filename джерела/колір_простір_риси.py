@@ -117,7 +117,7 @@ def density(samples, bins=None, smooth=2, min_weight=0.10, axis=None):
     for s_ in samples:
         c=min(centers, key=lambda c: abs(s_[axis]-c)); groups[c].append(s_)
     modes=[]
-    for c,g in groups.items():
+    for _,g in groups.items():
         if not g: continue
         m=tuple(sum(x[i] for x in g)/len(g) for i in range(3))
         sd=(sum((x[axis]-m[axis])**2 for x in g)/len(g))**0.5
@@ -511,7 +511,7 @@ def регіони(F, source=ДЖЕРЕЛО_ФОТО_ТИПОВЕ):
     «як одне ціле обличчя». Ші-стиліст працює і від кожного регіону окремо (ехо кожної риси з
     її широтою й вагою), і від ансамблю (яка людина як ціле + внутрішні напруги).
     Розкид/форма/площа є лише коли їх дав вимір (зонний шлях); інакше None — чесно."""
-    рел = reliability(source)
+    reliability(source)
     розп = F.get("_розподіли", {}) or {}
     пікс = F.get("_пікселі", {}) or {}
     def _C(f):
@@ -666,5 +666,4 @@ def resonance(F, intent):
 # У ядрі лишається `features()` — простий шлях (три Lab від VLM), той, яким
 # живий шлях і ходить. Вантаж збірки від цього худне на споживача без входу,
 # а не на робочий код.
-
 

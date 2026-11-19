@@ -42,7 +42,7 @@ def _річ(р, площа=0.3, near=0.2):
 
 
 def прогін():
-    F = cs.features(cs.hx("#e8c4ad"), cs.hx("#a08e73"), cs.hx("#7b8fa1"))
+    cs.features(cs.hx("#e8c4ad"), cs.hx("#a08e73"), cs.hx("#7b8fa1"))
     впало = 0
     print("=" * 78)
     print("НАСКРІЗНО: рядок фіду → тип → інтервал → гіперребро")
