@@ -9,7 +9,7 @@ function Check([string]$Name, [bool]$Ok) {
     if ($Ok) { "✓ $Name" } else { "✗ $Name"; $script:failures++ }
 }
 try {
-    $script:ApiCalls = 0; $script:Burned = 0; $script:Models = 0
+    $script:ApiCalls = 0; $script:Burned = 0; $script:Models = 0; $script:LockHeldInRequest = $false
     $script:Clock = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $shared = Join-Path $tmp 'lanes'; [void][IO.Directory]::CreateDirectory($shared)
     $head = 'b' * 40
@@ -48,6 +48,7 @@ try {
         function Invoke-RestMethod {
             param($Uri,$Method,$TimeoutSec,$MaximumRedirection,$Headers)
             $script:ApiCalls++
+            if ((Test-Path -LiteralPath $LaneDir) -and -not (Test-LockFree (Join-Path $LaneDir 'review-api.lock'))) { $script:LockHeldInRequest = $true }
             if ($script:ApiError) { throw $script:ApiError }
             $number = ($Uri -split '/')[-1]
             [pscustomobject]@{number=[int]$number;state='open';user=@{login='mightyrochy'};head=@{sha=$head;ref='claude/живий';repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
@@ -110,6 +111,7 @@ if (([IO.File]::ReadAllText((Join-Path `$LaneDir 'review-api.json')) | ConvertFr
         Check 'спільний бюджет зберігається в новому процесі' ($LASTEXITCODE -eq 0)
         $script:Clock += 3601
         Check 'після рухомої години свіжий PR перевіряється' ((Get-AutoReviewState "автоперевірка-999-$head") -eq 'LIVE' -and $script:ApiCalls -eq 31)
+        Check 'запит REST іде поза замком бюджету (замок на час запиту не мав верхньої межі: DNS поза -TimeoutSec)' (-not $script:LockHeldInRequest)
         # Корінь «REVIEW_API» без причини: замок бюджету тримає процес, що робить запит; друга позначка того ж проходу чекає
         # (ДО — одразу REVIEW_API, ПІСЛЯ — обидві доходять) і, якщо замок не звільнився, називає причину «замок».
         $savedLane = $LaneDir; $LaneDir = Join-Path $tmp 'hold'; [void][IO.Directory]::CreateDirectory($LaneDir)

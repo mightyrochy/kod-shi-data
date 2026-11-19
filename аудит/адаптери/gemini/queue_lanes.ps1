@@ -65,7 +65,7 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
-# Межа одного публічного запиту (-TimeoutSec): стільки ж на замок бюджету, який власник тримає на час свого запиту.
+# Межа одного публічного запиту (-TimeoutSec); стільки ж чекають на замок бюджету, який тримають лише на файлові операції.
 $script:ReviewApiTimeout = 20
 # Безпечна ознака останньої відмови Get-AutoReviewState (замок, бюджет, чекання, HTTP <код>, мережа, межа часу, відповідь).
 $script:ReviewApiCause = ''
@@ -717,9 +717,9 @@ function Read-AutoApiBudget([string]$Path, [long]$Now) {
 }
 
 function Open-ReviewApiLock {
-    <# Замок бюджету review-api.json: зайнятий — чекає, а не відмовляє одразу. Його тримає процес, що саме робить запит
-    (до ReviewApiTimeout с), тож друга позначка того ж проходу чекає ту саму межу і йде в мережу, а не в REVIEW_API.
-    $null — теки смуги нема чи замок не звільнився за межу. #>
+    <# Замок бюджету review-api.json: зайнятий — чекає, а не відмовляє одразу. Його тримають лише на читання й запис бюджету
+    (мережа поза замком), тож друга позначка того ж проходу чекає частки секунди і йде в мережу, а не в REVIEW_API.
+    Межа чекання — ReviewApiTimeout с (межа запиту). $null — теки смуги нема чи замок не звільнився за межу. #>
     if (-not (Test-Path -LiteralPath $LaneDir)) { return $null }
     $path = Join-Path $LaneDir 'review-api.lock'
     $clock = [Diagnostics.Stopwatch]::StartNew()
@@ -811,24 +811,24 @@ function Get-AutoReviewState([string]$Slug) {
         if ($now -lt $until) { $script:ReviewApiCause = 'чекання'; return 'REVIEW_API' }
         if ($calls.Count -ge $script:ReviewApiLimit) { $script:ReviewApiCause = 'бюджет вичерпано'; return 'REVIEW_API' }
         # Резервуємо запит до мережі: 403/429, тайм-аут і падіння процесу також входять у бюджет.
-        $budget = [ordered]@{calls=@($calls) + @($now);until=0L}
-        Write-FileAtomic $path ($budget | ConvertTo-Json -Compress)
-        try {
-            $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec $script:ReviewApiTimeout -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
-            if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
-            if ($pr.state -cne 'open') { return 'STALE' }
-            if (-not $head) { return 'LIVE' }
-            if ($pr.head.sha -cne $head) { return 'STALE' }
-            if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or (Test-ReviewBranch ([string]$pr.head.ref))) { return 'STALE' }
-            'LIVE'
-        } catch {
-            $script:ReviewApiCause = Get-ReviewApiCause $_
-            $budget.until = $now + $script:ReviewApiBackoff
-            Write-FileAtomic $path ($budget | ConvertTo-Json -Compress)
-            'REVIEW_API'
-        }
-    } catch { $script:ReviewApiCause = 'збій обгортки'; 'REVIEW_API' }
+        Write-FileAtomic $path ([ordered]@{calls=@($calls) + @($now);until=0L} | ConvertTo-Json -Compress)
+    } catch { $script:ReviewApiCause = 'збій обгортки'; return 'REVIEW_API' }
     finally { if ($null -ne $lock) { $lock.Dispose() } }
+    # Запит — поза замком: -TimeoutSec не міряє розпізнавання імені (гальма getaddrinfo сягали 30 с), тож замок на час
+    # запиту не мав би верхньої межі, а друга позначка того ж проходу ішла б у REVIEW_API.
+    try {
+        $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec $script:ReviewApiTimeout -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+        if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
+        if ($pr.state -cne 'open') { return 'STALE' }
+        if (-not $head) { return 'LIVE' }
+        if ($pr.head.sha -cne $head) { return 'STALE' }
+        if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or (Test-ReviewBranch ([string]$pr.head.ref))) { return 'STALE' }
+        'LIVE'
+    } catch {
+        $script:ReviewApiCause = Get-ReviewApiCause $_
+        Set-AutoApiPause
+        'REVIEW_API'
+    }
 }
 
 function Enter-ReviewWait($M, [string]$Head = '', [string]$Cause = $script:ReviewApiCause) {
