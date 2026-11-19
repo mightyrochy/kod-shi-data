@@ -39,7 +39,7 @@ async function replacement(withSeal){
   w.__release(); await w.__replace;
   console.log((withSeal ? 'ЗАМІНА ПІСЛЯ ШВА ' : 'ЗАМІНА БЕЗ ШВА ') + w.eval(`JSON.stringify({той_самий_ід:П.прогін === window.__oldP.прогін,
     той_самий_обєкт:П === window.__oldP, той_самий_DOM:document.getElementById('к-0') === window.__oldNode,
-    річ:П.картки[0].речі[0].id, заміна_іде:показЗаміниП(0).іде, текст_картки:document.getElementById('к-0').textContent.slice(-500)})`));
+    річ:П.картки[0].речі[0].id, заміна_іде:показЗаміниП(0).іде})`));
   дом.window.close();
 }
 (async () => {
