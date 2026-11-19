@@ -93,17 +93,68 @@ const пнг = байтів => {
        && a_версія(а.headers), а.headers);
   тест("у тілі НЕМА `_думки` (Anthropic на зайве поле віддає 400)",
        а.body && !("_думки" in а.body), Object.keys(а.body || {}));
-  тест("модель, стеля, повідомлення доїхали як є",
-       а.body && а.body.model === "claude-sonnet-5" && а.body.max_tokens === 800
+  тест("модель і повідомлення доїхали як є; max_tokens = стеля сторінки + запас на думки (12000)",
+       а.body && а.body.model === "claude-sonnet-5" && а.body.max_tokens === 800 + 12000
        && а.body.messages[0].content[0].text === "привіт", а.body);
+  тест("effort low за замовчуванням — полем output_config (Claude 5.5 мислить завжди)",
+       а.body && а.body.output_config && а.body.output_config.effort === "low" && !("thinking" in а.body), а.body);
   тест("відповідь 200 віддається як є", в.status === 200 && (await в.clone().json()).content[0].text === "ок", в.status);
   тест("заголовки лімітів Anthropic проходять наскрізь і відкриті для сторінки",
        в.headers.get("anthropic-ratelimit-requests-remaining") === "49"
        && /anthropic-ratelimit-requests-remaining/.test(в.headers.get("Access-Control-Expose-Headers")),
        [...в.headers.keys()]);
-  тест("x-provider=anthropic, x-thinking=as-is (каскаду для claude нема)",
-       в.headers.get("x-provider") === "anthropic" && в.headers.get("x-thinking") === "as-is",
+  тест("x-provider=anthropic, x-thinking=effort",
+       в.headers.get("x-provider") === "anthropic" && в.headers.get("x-thinking") === "effort",
        [в.headers.get("x-provider"), в.headers.get("x-thinking")]);
+  вихідні.length = 0;
+  в = await М.fetch(new Request("https://w.workers.dev/", {method:"POST",
+      headers:{"content-type":"application/json", "Origin":"https://mightyrochy.github.io", "x-lyusterko-token":"tok-a1"},
+      body:JSON.stringify({model:"claude-sonnet-5-5", messages:[{role:"user", content:"x"}]})}), {...env, CLAUDE_EFFORT:"as-is"});
+  тест("CLAUDE_EFFORT=as-is → поля effort нема, x-thinking=as-is; стеля без max_tokens сторінки — 4000 + запас",
+       в.status === 200 && !("output_config" in вихідні[0].body) && вихідні[0].body.max_tokens === 16000
+       && в.headers.get("x-thinking") === "as-is", [вихідні[0].body, в.headers.get("x-thinking")]);
+  вихідні.length = 0;
+  в = await М.fetch(new Request("https://w.workers.dev/", {method:"POST",
+      headers:{"content-type":"application/json", "Origin":"https://mightyrochy.github.io", "x-lyusterko-token":"tok-a1"},
+      body:JSON.stringify({model:"claude-sonnet-5-5", messages:[{role:"user", content:"x"}]})}), {...env, CLAUDE_EFFORT:"medium", GEMINI_THINKING:"high"});
+  тест("CLAUDE_EFFORT=medium → effort medium; змінна Gemini маршрут claude не чіпає",
+       вихідні[0].body.output_config && вихідні[0].body.output_config.effort === "medium", вихідні[0].body);
+  {
+    let стук = 0;
+    відповідач = () => (++стук === 1
+      ? new Response(JSON.stringify({type:"error", error:{type:"invalid_request_error",
+          message:"output_config.effort: This model does not support the effort parameter."}}), {status:400})
+      : new Response(JSON.stringify({content:[{type:"text",text:"ок"}], stop_reason:"end_turn",
+          usage:{input_tokens:5, output_tokens:1}}), {status:200}));
+    вихідні.length = 0;
+    в = await зап({model:"claude-haiku-4-5", messages:[{role:"user", content:"x"}]});
+    тест("400 через effort (стара модель) → повтор без поля, відповідь 200, x-thinking=dropped",
+         в.status === 200 && вихідні.length === 2 && вихідні[0].body.output_config.effort === "low"
+         && !("output_config" in вихідні[1].body) && в.headers.get("x-thinking") === "dropped",
+         [в.status, вихідні.map(x => x.body.output_config), в.headers.get("x-thinking")]);
+    /* кредити з підписки скінчились: Anthropic відповідає 400 з текстом про баланс */
+    відповідач = () => new Response(JSON.stringify({type:"error", error:{type:"invalid_request_error",
+        message:"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."}}), {status:400});
+    вихідні.length = 0;
+    в = await зап({model:"claude-sonnet-5-5", temperature:0, messages:[{role:"user", content:"x"}]});
+    const тк = await в.clone().json().catch(() => ({}));
+    тест("кредити скінчились → 402 credits_exhausted, один виклик (каскад і температура не крутяться)",
+         в.status === 402 && (тк.error || {}).type === "credits_exhausted" && вихідні.length === 1
+         && /credit balance is too low/.test((тк.error || {}).message || ""),
+         [в.status, тк, вихідні.length]);
+    відповідач = () => new Response(JSON.stringify({type:"error", error:{type:"billing_error", message:"billing issue"}}), {status:402});
+    в = await зап({model:"claude-sonnet-5-5", messages:[{role:"user", content:"x"}]});
+    тест("402 billing_error → теж credits_exhausted",
+         в.status === 402 && ((await в.clone().json()).error || {}).type === "credits_exhausted", в.status);
+    відповідач = () => new Response(JSON.stringify({type:"error", error:{message:"credit balance is too low"}}), {status:400});
+    вихідні.length = 0;
+    в = await зап({model:"gemini-3.8-flash", messages:[{role:"user", content:"x"}]});
+    тест("маршрут gemini- той самий текст не перекладає в credits_exhausted (розпізнання — провайдера anthropic)",
+         в.status !== 402, в.status);
+    відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"ок"}],
+        stop_reason:"end_turn", usage:{input_tokens:5, output_tokens:1}}), {status:200,
+        headers:{"anthropic-ratelimit-requests-remaining":"49"}});
+  }
   function a_версія(h){ return !!h["anthropic-version"]; }
 
   console.log("3. МАРШРУТ gemini-: переклад туди й назад");
