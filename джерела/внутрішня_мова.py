@@ -1369,7 +1369,7 @@ def _опис_keep_by():
                           "name; shade — light, dark, absent means medium)",
     "stylist_chose_saturation": "the stylist chose the outfit's colour saturation (values: saturation — "
                                 "muted, medium, vivid)",
-    "stylist_accent_place": "the stylist says where the look's accent is (values: place — jewellery: the accent "
+    "stylist_accent_place": "the stylist says where the look's accent is (values: accent_in — jewellery: the accent "
                             "is in the jewellery she named or wears; clothing: in a garment; other_accessories: in "
                             "a bag, scarf, shoes or belt; none: the look has no separate accent; jewellery_metal — "
                             "the metal of her jewellery today, when she named it)",

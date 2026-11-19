@@ -165,16 +165,15 @@ def _до_очей(о, F):
                           "order: rank, id, colour code, family, temperature, lightness L*, saturation "
                           "band (any: a neutral fits every band), \"fit\" 0-1 — how the code scored it "
                           "for her face; \"eyes\" — how the base relates to her eye colour: echo (it repeats "
-                          "her eye colour: the same hue family — one sector of the artist's colour wheel, "
-                          "which the broader \"family\" name can cross — at a close lightness and chroma), "
+                          "her eye colour: the same sector of the artist's colour wheel at a close "
+                          "lightness and chroma), "
                           "set_off (opposite her eyes on the artist's colour wheel); "
                           "absent — no relation to her eyes; \"advised\": false — a rarer base outside "
                           "the code's advised row, listed for its relation to her eyes; \"clothing\" — "
-                          "how many clothes (tops, bottoms, dresses, sets, outer layers) of today's "
-                          "catalogue that suit the occasion lie in this base's colour family and "
-                          "lightness band, \"clothing_maybe\" — how many more only may (the shop's "
-                          "colour word); 0 — only accessories can carry this base; absent — not "
-                          "counted (a neutral base)", треба=True),
+                          "how many of today's clothes that suit the occasion lie in this base's "
+                          "colour family and lightness band, \"clothing_maybe\" — how many more only "
+                          "may (the shop's colour word); 0 — only accessories can carry it; absent — "
+                          "not counted (a neutral base)", треба=True),
         _ЗП.Поле("fixed", "palette constraints; sources",
                  "keep; build around them", без="No fixed constraints."),
         _ЗП.Поле("reason_codes", "the only codes you may give as reasons, with their meaning",
@@ -185,19 +184,15 @@ def _до_очей(о, F):
         "The ranks come from her colouring and intent only; the occasion, the goal, the weather, "
         "the jewellery and her words are yours to weigh. Any listed option is allowed, a rarer one too.",
         "\"saturation\" is the band of the look's colours; you choose it with a neutral base.",
-        "\"accent_place\" is a fact for the note she reads: where the accent of the look goes. If she named it "
-        "(her words, her jewellery), follow her; if the accent has no place there, say none.",
     ),
     вихід="PALETTE_CHOICE",
     скелет={"scheme": "<code>", "scheme_reasons": ["<code>"], "base": "<id>",
             "base_reasons": ["<code>"], "saturation": "muted|medium|vivid",
-            "accent_place": "jewellery|clothing|other_accessories|none"},
+            "accent_place": "<code>"},
     поля_виходу={"scheme": "scheme code from \"schemes\"", "scheme_reasons": "reason code",
                  "base": "id from \"bases\"", "base_reasons": "reason code",
                  "saturation": "band of the look's colours",
-                 "accent_place": "where the look's accent is: jewellery, clothing, other_accessories (bag, scarf, "
-                                 "shoes, belt) or none — fill it when she named a place for the accent or the "
-                                 "scheme has an accent; otherwise leave it out"},
+                 "accent_place": "where the accent is: %s; omit it if unsure" % ", ".join(МІСЦЯ_АКЦЕНТУ)},
     межі=("лише_вхід",),
     мова_промпту="en",
     # схема останньою, без мітки «answer» у «task» (Е2-межі п.4; причина — `річ_з_фото.фото_речей`): записані відповіді
@@ -753,7 +748,7 @@ def повідомлення(г, о, гама, обрала, причини, л�
     # Місце акценту — факт стилістки (`accent_place`), не вгадка коду: нота каже його, лише коли вона його назвала.
     # Метал прикрас — її слово з `case.jewelry`, коли акцент у прикрасах.
     if заяви and місце_акценту in МІСЦЯ_АКЦЕНТУ and ХТО_СТИЛІСТКА in обрала.values():
-        значення = dict(place=місце_акценту)
+        значення = dict(accent_in=місце_акценту)
         if місце_акценту == "jewellery" and метал_прикрас not in (None, "", _ВМ.UNKNOWN):
             значення["jewellery_metal"] = str(метал_прикрас)
         заяви.append(_ВМ.заява("stylist_accent_place", part="scheme", **значення))
