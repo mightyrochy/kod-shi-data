@@ -401,6 +401,15 @@ Scenario 'з2 час chat-запиту і замок' {
     $w5 = & $t4 (10 * 60 + 5) -1
     $w = & $t4 (10 * 60 + 10) 7
     Check "з2 ДО: запит 10:03 під час збою журналу (о 10:00 — $at10 хв, такт 10:05 без вироку: $(-not $w5.Stop)) лічбу не скидав — 90 хв і STALL; ПІСЛЯ: $($w.NoCallMinutes) хв, вироку нема" ($at10 -eq 85 -and -not $w5.Stop -and $w.NoCallMinutes -eq 7 -and -not $w.Stop -and -not (Test-Path $verdict))
+    # Стан приростами (`nocall_min`): запит 10:00, сон 11:00–13:00, `last_at` 13:05 — 65 хв; такт 13:10 бачить той самий запит (вік 190).
+    $d21 = [datetime]::SpecifyKind([datetime]'2026-11-21T00:00:00', [DateTimeKind]::Utc)
+    $h5 = @([pscustomobject]@{ Marker = $mk; Since = '2026-11-21T09:00:00Z' })
+    $old = "$tmp/zl/state/gpu-watch-old.json"
+    [IO.File]::WriteAllText($old, (([ordered]@{ marker = $mk; lock_since = '2026-11-21T09:00:00Z'; idle_since = ''; last_pid = 0; pid_changes = 0; sent = ''; last_at = '2026-11-21T13:05:00Z'; sleep_min = 120; idle_unknown = 0; prev_known = 1; nocall_min = 65 }) | ConvertTo-Json -Compress), $utf)
+    $sleep5 = { param($f, $t) $a = $d21.AddMinutes(11 * 60); $z = $d21.AddMinutes(13 * 60)
+        $lo = $(if ($f -gt $a) { $f } else { $a }); $hi = $(if ($t -lt $z) { $t } else { $z }); [int][Math]::Max(0, [Math]::Floor(($hi - $lo).TotalMinutes)) }
+    $w = Update-GpuWatch $h5 ([pscustomobject]@{ Percent = 0; OwnerPid = 0; CallAgeMin = 190 }) $send $old $d21.AddMinutes(13 * 60 + 10) $sleep5 $null
+    Check "з2 ДО: перехід старого стану (last_at − nocall_min = 12:00) вдруге віднімав сон — 10 хв; ПІСЛЯ: накопичене перенесено — $($w.NoCallMinutes) хв" ($w.NoCallMinutes -eq 70 -and -not $w.Stop)
 }
 
 # --- (і) подія Codex у heartbeat і #1856 --------------------------------------------------------------------------------------------

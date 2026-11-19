@@ -3029,7 +3029,7 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     OwnerPid (0 — власника нема), CallAgeMin (хвилини від останнього chat-запиту до LM Studio, -1 — не виміряно) і OnBattery
     (такт без світла). Стан `gpu-watch.json`: позначка, початок замка, початок безперервної бездіяльності карти
     (вимір не вище gpu_stall_percent; невідомий вимір ряд не рве й не подовжує), останній PID, скільки разів він змінився за
-    замок, за якого ряду бездіяльності рядок уже надіслано, UTC останнього врахованого chat-запиту й паузи світла після нього. Рядок — раз на ряд
+    замок, за якого ряду бездіяльності рядок уже надіслано, UTC останнього врахованого chat-запиту, паузи світла після нього й перенесене зі старого стану неспання без запитів. Рядок — раз на ряд
     бездіяльності, понад gpu_stall_minutes. Без chat-запитів понад gpu_stall_minutes неспання — вирок `gpu-stall.json` у
     $LaneDir (позначка, початок замка), за яким планувальник смуги закриває наряд сам; інакше вироку нема.
     Повертає об'єкт для #1856 (Marker, LockMinutes, IdleMinutes, PidChanges, CallAgeMinutes, NoCallMinutes, Stop) чи $null,
@@ -3057,13 +3057,15 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
         $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = '' }
     }
     $parse = { param([string]$t) [datetime]::ParseExact($t, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) }
-    # Стан без `call_utc` (простій лічився приростами `nocall_min` від `last_at`) переводиться в абсолютний раз: врахований запит —
-    # `last_at` мінус накопичене, інакше запит до `last_at`, давно врахований, лічився б заново.
+    # Стан без `call_utc` (сторож без лічби запитів чи з приростами `nocall_min`) переводиться в абсолютний раз: відрізок — від
+    # `last_at`, а накопичене до нього неспання без запитів (`nocall_min`, сон уже без нього) переноситься як є в `carry_min`, до
+    # першого нового запиту. Час запиту з них не відновлюється: настінний час мінус неспання вдруге відняв би сон.
     if ($null -eq $st.PSObject.Properties['call_utc'] -and [string](Get-JsonProp $st 'last_at') -cmatch $rx) {
-        Add-Member -InputObject $st -NotePropertyName call_utc -NotePropertyValue (Get-UtcStamp ((& $parse ([string]$st.last_at)).AddMinutes(-[double](Get-JsonProp $st 'nocall_min'))))
+        Add-Member -InputObject $st -NotePropertyName call_utc -NotePropertyValue ([string]$st.last_at)
+        Add-Member -InputObject $st -NotePropertyName carry_min -NotePropertyValue ([double](Get-JsonProp $st 'nocall_min')) -Force
     }
     $st.PSObject.Properties.Remove('nocall_min')
-    $defaults = [ordered]@{ last_at = ''; sleep_min = 0; idle_unknown = 0; prev_known = 1; call_utc = ''; battery = @() }
+    $defaults = [ordered]@{ last_at = ''; sleep_min = 0; idle_unknown = 0; prev_known = 1; call_utc = ''; carry_min = 0; battery = @() }
     foreach ($n in $defaults.Keys) { if ($null -eq $st.PSObject.Properties[$n]) { Add-Member -InputObject $st -NotePropertyName $n -NotePropertyValue $defaults[$n] } }
     $idleLimit = [double](Get-Limit $script:Limits 'GpuIdleMinutes' 'gpu_stall_minutes')
     $pctLimit = [double](Get-Limit $script:Limits 'GpuIdlePercent' 'gpu_stall_percent')
@@ -3112,13 +3114,13 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     $callUtc = $(if ([string]$st.call_utc -cmatch $rx) { & $parse ([string]$st.call_utc) } else { $null })
     if ($callAge -ge 0) {
         $callAt = & $parse (Get-UtcStamp $measuredAt.AddMinutes(-$callAge))
-        if (($null -eq $callUtc -or $callAt -gt $callUtc) -and ($null -eq $lockAt -or $callAt -gt $lockAt)) { $callUtc = $callAt; $st.call_utc = Get-UtcStamp $callAt }
+        if (($null -eq $callUtc -or $callAt -gt $callUtc) -and ($null -eq $lockAt -or $callAt -gt $lockAt)) { $callUtc = $callAt; $st.call_utc = Get-UtcStamp $callAt; $st.carry_min = 0 }
     }
     $start = $(if ($null -ne $callUtc -and ($null -eq $lockAt -or $callUtc -gt $lockAt)) { $callUtc } else { $lockAt })
     $pauses = @($pauses | Where-Object { $null -ne $start -and (& $parse ($_.Split('/')[1])) -gt $start })
     $st.battery = $pauses
     $awake = { param($f, $t) if ($t -le $f) { 0 } else { [Math]::Max(0, ($t - $f).TotalMinutes - $(if ($null -ne $Sleeps) { [int](& $Sleeps $f $t) } else { 0 })) } }
-    $noCallMin = 0.0
+    $noCallMin = [double]$st.carry_min
     if ($null -ne $start) {
         $cur = $start
         foreach ($p in $pauses) {
