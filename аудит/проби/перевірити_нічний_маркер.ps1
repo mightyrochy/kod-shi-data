@@ -129,6 +129,24 @@ try {
         Assert-That ($one.Count -eq 1 -and $one[0].N -ceq '1' -and (Get-MarkerKey $one[0]) -ceq (Get-MarkerKey $night)) 'тільки /1 (а /3 не на main) — як раніше: /1'
         [void](Git-At $origin @('update-ref', '-d', "refs/heads/$queue3"))
         [void](Git-At $clone @('fetch', '-q', '--prune', 'origin'))
+        # Диспетчер піднімає нічний над GPU-позначками з вищим пріоритетом: нова спроба з іншою цифрою пріоритету теж дозвіл.
+        foreach ($c in @(@{ Cond = 'gpu-p1'; Prio = 1 }, @{ Cond = 'p0-gpu'; Prio = 0 })) {
+            $qp = $queue -replace '/1/gpu-p8$', ('/2/' + $c.Cond)
+            [void](Git-At $seed @('push', '-q', 'origin', "${base}:refs/heads/$qp"))
+            [void](Git-At $clone @('fetch', '-q', 'origin'))
+            $hi = @(Get-NightlyMarker $clock)
+            Assert-That ($hi.Count -eq 1 -and $hi[0].N -ceq '2' -and $hi[0].Valid -and $hi[0].Gpu -and $hi[0].Prio -eq $c.Prio) "/2/$($c.Cond) — нічний дозвіл, пріоритет взятої позначки $($c.Prio)"
+            [void](Git-At $origin @('update-ref', '-d', "refs/heads/$qp"))
+            [void](Git-At $clone @('fetch', '-q', '--prune', 'origin'))
+        }
+        foreach ($bad in @('p1', 'gpu', 'gpu-p1-d202610270900')) {
+            $qb = $queue -replace '/1/gpu-p8$', ('/2/' + $bad)
+            [void](Git-At $seed @('push', '-q', 'origin', "${base}:refs/heads/$qb"))
+            [void](Git-At $clone @('fetch', '-q', 'origin'))
+            Assert-That (@(Get-NightlyMarker $clock)[0].N -ceq '1') "/2/$bad без пари gpu і p-цифри не бере — лишається /1/gpu-p8"
+            [void](Git-At $origin @('update-ref', '-d', "refs/heads/$qb"))
+            [void](Git-At $clone @('fetch', '-q', '--prune', 'origin'))
+        }
     }
     # У режимі ДО позначка є лише в локальному JSON, як у старій латці 02.
     if ($Before) {

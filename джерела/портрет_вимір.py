@@ -20,7 +20,7 @@ import math
 import random
 import re
 import statistics as _st
-from колір_простір_перетворення import to_lab, to_rgb, lch
+from колір_простір_перетворення import to_lab, to_rgb, lch, hex_з_lab
 from extract import reject_specular, reject_shadow, СІД
 
 # вхід мосту з показу: міст_вхід (`вимір_портрета`) читає ключ `портрет_вимір` — оголошення тут, при модулі
@@ -106,7 +106,8 @@ def _зона(labs, риса, шкіра=None):
         return None
     Ls = sorted(l[0] for l in labs)
     se_L, se_ab = _похибка(labs)
-    return dict(lab=[round(v, 2) for v in _медіана(labs)], n=len(labs), se_L=se_L, se_ab=se_ab,
+    lab = [round(v, 2) for v in _медіана(labs)]
+    return dict(lab=lab, hex=hex_з_lab(lab), n=len(labs), se_L=se_L, se_ab=se_ab,
                 розкид_L=round(Ls[int(0.9 * (len(Ls) - 1))] - Ls[int(0.1 * (len(Ls) - 1))], 1),
                 придатна=len(labs) >= МІН_ПІКСЕЛІВ[риса])
 
@@ -115,7 +116,8 @@ def виміряти(кадри):
     """{ім'я зони: кадр пікселів} (імена — `ЗОНИ.values()`) → запис виміру.
 
     `стан` «вимір» — ворота пройдено: шкіра (медіана ділянок, `точки` — кожна ділянка, `шум_зон` — щока проти щоки,
-    `se_L` з ним), волосся, очі (обидві райдужки разом), `джерело` «uncontrolled». «поза_воротами» — `причини` кодами
+    `se_L` з ним), волосся, очі (обидві райдужки разом), `джерело` «uncontrolled»; кожна риса несе й `hex` — той самий
+    колір для показу (плитки профілю, hex у запитах), щоб читачі не мали другого шляху до її кольору. «поза_воротами» — `причини` кодами
     `ПРИЧИНИ_ВИМІРУ`: кольорів профілю з такого виміру нема, лишається оцінка моделі."""
     кадри = кадри or {}
     причини, зони = [], {}
@@ -134,7 +136,8 @@ def виміряти(кадри):
             причини.append("portrait_uneven_light")
         точки = [зони[ім]["lab"] for ім in ШКІРА if ім in зони]
         se = max(зони[ім]["se_L"] or 0.0 for ім in ШКІРА if ім in зони)
-        шкіра = dict(lab=[round(v, 2) for v in _медіана(точки)], точки=точки, шум_зон=шум,
+        lab_шкіри = [round(v, 2) for v in _медіана(точки)]
+        шкіра = dict(lab=lab_шкіри, hex=hex_з_lab(lab_шкіри), точки=точки, шум_зон=шум,
                      se_L=round(math.hypot(se, шум), 2),
                      se_ab=max(зони[ім]["se_ab"] or 0.0 for ім in ШКІРА if ім in зони),
                      n=sum(зони[ім]["n"] for ім in ШКІРА if ім in зони))

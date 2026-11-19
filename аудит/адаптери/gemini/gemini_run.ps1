@@ -112,13 +112,20 @@ function ConvertTo-JsonString([string]$Text) {
 
 # Запуск без межі часу (Codex): процес зупиняє лише завислість — жодного нового рядка stdout (події `--json`) довше за
 # $StallMinutes. Кожен рядок одразу йде в $LogFile, а мітка часу й тип події — в $EventsFile (щоб поріг вивіряти за прогонами).
-function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, [double]$StallMinutes, [string]$LogFile, [string]$EventsFile) {
+# Хід закінчено подією `turn.completed` чи `turn.failed` — далі рушій лише закривається: пише файл відповіді $DoneFile
+# (`-o`, лише після turn.completed) і виходить. Процес, що на такті очікування після кінця ходу ще живий, а відповіді
+# чекати вже нема (turn.failed або $DoneFile є), — зупиняється з деревом: його закриття не робота наряду, а дерево
+# тримало б оренду GPU й копію задачі. Сам рушій після кінця ходу виходить за секунди; довше за такт закриття тягнеться
+# лише за збою мережі.
+function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, [double]$StallMinutes, [string]$LogFile, [string]$EventsFile, [string]$DoneFile = '') {
     $psi = New-StartInfo $Exe $Arguments $WorkDir
     $p = Start-Tree $psi
     $err = $p.StandardError.ReadToEndAsync()
     $out = New-Object System.Text.StringBuilder
     $last = Get-AwakeTime
     $stalled = $false
+    $turnEnd = ''
+    $closing = $false
     $pending = $null
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
@@ -128,6 +135,7 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
             if ($p.HasExited) { break }
+            if ($turnEnd -eq 'turn.failed' -or ($turnEnd -and $DoneFile -and [IO.File]::Exists($DoneFile))) { $closing = $true; break }
             continue
         }
         $line = $pending.Result
@@ -139,13 +147,18 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
         $type = ''
         if ($line -match '"type"\s*:\s*"([^"]{1,60})"') { $type = $Matches[1] }
         [System.IO.File]::AppendAllText($EventsFile, (Get-Date).ToString('s') + "`t" + $type + "`n", $script:Utf8)
+        if ($type -in @('turn.completed', 'turn.failed')) { $turnEnd = $type }
     }
-    if (-not $stalled -and -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
-    if (-not $stalled) { $p.WaitForExit() }
+    # Зупинений на закритті процес коду виходу не має: код — за подією кінця ходу, як вийшов би сам.
+    $closedCode = $(if ($turnEnd -eq 'turn.failed') { 1 } else { 0 })
+    if ($closing) { Write-Log "codex: хід закінчено ($turnEnd), процес не вийшов за такт очікування — зупинено з деревом" }
+    elseif (-not $stalled -and -not $p.WaitForExit([int][Math]::Min([double][int]::MaxValue, $StallMinutes * 60000))) { $stalled = $true }
+    if (-not $stalled -and -not $closing) { $p.WaitForExit() }
     Stop-Tree $p
     $errText = ''
     if ($err.Wait(15000)) { $errText = $err.Result }
-    [pscustomobject]@{ Code = $(if ($stalled) { -1 } else { $p.ExitCode }); Stalled = $stalled; Out = $out.ToString(); Err = $errText }
+    $code = $(if ($stalled) { -1 } elseif ($closing) { $closedCode } else { $p.ExitCode })
+    [pscustomobject]@{ Code = $code; Stalled = $stalled; Out = $out.ToString(); Err = $errText }
 }
 
 # --- ізоляція (GEMINI.md) -----------------------------------------------------------------------------------------
@@ -820,7 +833,8 @@ function Close-StreamRun($Run) {
 
 # Рушій без розмови (Codex): кожен хід — окремий процес; текст ходу — у файлі, аргумент без лапок і
 # метасимволів cmd. Догонка несе повний наряд, бо нової розмови рушій не пам'ятає, а стан роботи — у гілці.
-# Межі часу ходу нема: зупиняє лише завислість (Invoke-NativeUntilStall, -CodexStallMinutes) — вид ходу 'stall'.
+# Межі часу ходу нема: зупиняє лише завислість (Invoke-NativeUntilStall, -CodexStallMinutes) — вид ходу 'stall' — чи
+# процес, що після події кінця ходу не виходить (там же).
 # Прапори Codex `exec` -C/-m/-c/--json/-o/--dangerously-bypass-approvals-and-sandbox
 # (https://learn.chatgpt.com/docs/developer-commands?surface=cli): обхід пісочниці Codex — лише тому, що ізоляція ОС
 # (користувач gemini без прав і входів) уже стоїть, як вимагає документація («only inside an isolated runner»).
@@ -835,7 +849,7 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     if ($Run.Engine.Effort) { $a += @('-c', "model_reasoning_effort=$($Run.Engine.Effort)") }
     $a += @('--json', '-o', $outFile, '--dangerously-bypass-approvals-and-sandbox', $short)
     $began = [datetime]::UtcNow
-    $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $CodexStallMinutes $Run.Log (Join-Path $Run.Dir 'codex.events.tsv')
+    $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $CodexStallMinutes $Run.Log (Join-Path $Run.Dir 'codex.events.tsv') $outFile
     # Час, коли процес Codex віддав відповідь: з ним claude-run порівнює відмову іншого слота (не з ended_utc наряду, що ставиться
     # після фактів, збірки й супровідних файлів).
     $answered = Get-UtcStamp (Get-Date)
@@ -1421,6 +1435,9 @@ function Invoke-Task($M, $Job) {
         $prompt = Get-Prompt $MA $taskText $sel.Engine.Name $taskDir $mergeStep
         [IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
         $res = Invoke-Agent $MA $start $prompt $dir $sel
+        # Рушій повертається лише після Stop-Tree: факти, бандл, прибирання копії моделі не кличуть. Виняток посеред
+        # прогону дерево не зупиняє — тоді оренду відпускає кінець процесу наряду, як раніше.
+        Exit-GpuAfterAgent $Job
         $tail = $res.Tail
         $engineError = Get-EngineError $res
         if ($engineError) { $tail = (@($tail, "----- помилка рушія ($($sel.Engine.Name)) -----", $engineError) | Where-Object { $_ }) -join "`n" }
@@ -1983,10 +2000,10 @@ function Main {
             $started = 0
             try {
                 [void](Repair-GpuModels)
-                [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', 'origin',
+                Invoke-PassFetch @('fetch', '-q', '--prune', '--no-tags', 'origin',
                         '+refs/heads/main:refs/remotes/origin/main',
                         '+refs/heads/gemini/*:refs/remotes/origin/gemini/*',
-                        '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+                        '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*')
                 $script:Limits = Get-Limits
                 # Перервані й накопичене — після першого успішного fetch: прохід, що впав на fetch, їх не знімає.
                 if ($clean) { Resume-Interrupted; Clear-TaskCopies (Join-Path $RunsDir 'w') @('--branches', '--remotes'); $clean = $false }

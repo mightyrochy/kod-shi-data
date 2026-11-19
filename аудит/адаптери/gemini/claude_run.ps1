@@ -1439,6 +1439,9 @@ function Invoke-ClaudeTask($M, $Job, [string]$Exe, [string]$TaskText, [string]$C
         Add-CrashNote (Join-Path $GeminiOutDir 'blocked-reasons.json') "claude/$($M.Slug)" (Get-FailReason $_)
         return (Complete-Task $M $statePath $id 'CRASH')
     }
+    # Invoke-Claude повертається лише після Stop-Tree: звірка гілки, пуш і кінець наряду моделі не кличуть. Виняток
+    # посеред прогону дерево не зупиняє — тоді оренду відпускає кінець процесу наряду, як раніше.
+    Exit-GpuAfterAgent $Job
     if ($r.Kind) { return (Complete-Task $M $statePath $id $r.Kind) }
     $text = Get-ClaudeText $r; $isError = $false
     if ($null -ne $r.Result) {
@@ -1886,9 +1889,9 @@ function Main {
             $started = 0; $off = $null
             try {
                 [void](Repair-GpuModels)
-                [void](Invoke-Git @('fetch', '-q', '--prune', '--no-tags', '--refmap=', 'origin',
+                Invoke-PassFetch @('fetch', '-q', '--prune', '--no-tags', '--refmap=', 'origin',
                         "+refs/heads/main:$script:RemoteRoot/main",
-                        "+refs/heads/gemini-queue/*:$($script:QueuePrefix)*"))
+                        "+refs/heads/gemini-queue/*:$($script:QueuePrefix)*")
                 $script:Limits = Get-Limits
                 # Накопичене — після першого успішного fetch (до нього origin/* застарілі): прохід, що впав на
                 # fetch, прибирання не знімає.
