@@ -2937,12 +2937,17 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     $interval = $(if (-not $stale -and $null -ne $lastAt -and $Now -gt $lastAt) { ($Now - $lastAt).TotalMinutes } else { 0 })
     if ([string]$st.idle_since -cmatch $rx -and ($pct -lt 0 -or [int]$st.prev_known -eq 0)) { $st.idle_unknown = [double]$st.idle_unknown + $interval }
     # Без chat-запитів за замок — хвилини неспання: проміжок між тактами без сну (журнал Windows) і без такту на батареї (пауза
-    # світла, Wait-PowerPause); запит у проміжку лишає лише хвилини після нього, журнал не читається — лічба стоїть.
+    # світла, Wait-PowerPause); запит у проміжку лишає лише хвилини неспання після нього (сон віднімається саме з відрізка
+    # запит — вимір), журнал не читається — лічба стоїть.
     if (-not $stale -and $callAge -ge 0) {
         $onBattery = ($null -ne $Sample.PSObject.Properties['OnBattery'] -and [bool]$Sample.OnBattery)
         $awakeIv = $(if ($onBattery) { 0 } else { [Math]::Max(0, $interval - $sleptIv) })
         $callAt = $measuredAt.AddMinutes(-$callAge)
-        if ($null -ne $lastAt -and $callAt -gt $lastAt) { $st.nocall_min = [Math]::Min($awakeIv, [Math]::Max(0, ($Now - $callAt).TotalMinutes)) }
+        if ($null -ne $lastAt -and $callAt -gt $lastAt) {
+            $after = [Math]::Max(0, ($Now - $callAt).TotalMinutes)
+            $sleptAfter = $(if ($null -ne $Sleeps -and $Now -gt $callAt) { [int](& $Sleeps $callAt $Now) } else { 0 })
+            $st.nocall_min = [Math]::Min($awakeIv, [Math]::Max(0, $after - $sleptAfter))
+        }
         else { $st.nocall_min = [double]$st.nocall_min + $awakeIv }
     }
     if (-not $stale) { $st.last_at = Get-UtcStamp $Now; $st.prev_known = $(if ($pct -ge 0) { 1 } else { 0 }) }

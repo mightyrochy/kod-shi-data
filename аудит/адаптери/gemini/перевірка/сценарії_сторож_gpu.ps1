@@ -378,6 +378,19 @@ Scenario 'з2 час chat-запиту і замок' {
     $retry = @([pscustomobject]@{ Marker = $mk; Since = '2026-11-18T15:40:00Z' })
     $w = & $tk $retry (15 * 60 + 45) (15 * 60 + 45 - (14 * 60 + 3))
     Check "з2 ДО: повтор успадковував лічбу (82 + 20 хв проміжку без замка — вирок на першому такті); ПІСЛЯ: новий замок — $($w.NoCallMinutes) хв, замок $($w.LockMinutes) хв" ($w.NoCallMinutes -eq 5 -and $w.LockMinutes -eq 5 -and -not $w.Stop -and -not (Test-Path $verdict))
+    # Chat-запит у проміжку, а після нього сон: такт 10:00, запит 11:00, сон 11:01–13:00, вимір 13:05.
+    $sp = "$tmp/zl/state/gpu-watch-sleep.json"
+    $h3 = @([pscustomobject]@{ Marker = $mk; Since = '2026-11-19T09:00:00Z' })
+    $d19 = [datetime]::SpecifyKind([datetime]'2026-11-19T00:00:00', [DateTimeKind]::Utc)
+    $sleep = { param($f, $t) $a = $d19.AddMinutes(11 * 60 + 1); $z = $d19.AddMinutes(13 * 60)
+        $lo = $(if ($f -gt $a) { $f } else { $a }); $hi = $(if ($t -lt $z) { $t } else { $z }); [int][Math]::Max(0, [Math]::Floor(($hi - $lo).TotalMinutes)) }
+    $t3 = { param([int]$Min, [int]$Call) Update-GpuWatch $h3 ([pscustomobject]@{ Percent = 0; OwnerPid = 0; CallAgeMin = $Call }) $send $sp $d19.AddMinutes($Min) $sleep $null }
+    [void](& $t3 (9 * 60 + 55) 0)
+    [void](& $t3 (10 * 60) 5)
+    $w = & $t3 (13 * 60 + 5) 125
+    Check "з2 ДО: запит у проміжку, далі сон — 66 хв (мінімум неспання всього проміжку й настінного часу після запиту); ПІСЛЯ: неспання після запиту — $($w.NoCallMinutes) хв" ($w.NoCallMinutes -eq 6 -and -not $w.Stop)
+    $w = & $t3 (13 * 60 + 29) 149
+    Check "з2 ще 24 хв — $($w.NoCallMinutes) хв без chat-запитів, вироку нема (ДО: 90 і STALL)" ($w.NoCallMinutes -eq 30 -and -not $w.Stop -and -not (Test-Path $verdict))
 }
 
 # --- (і) подія Codex у heartbeat і #1856 --------------------------------------------------------------------------------------------
