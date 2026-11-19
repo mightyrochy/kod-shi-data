@@ -3056,9 +3056,15 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     if ($null -eq $st -or [string](Get-JsonProp $st 'marker') -cne $marker -or ($since -cmatch $rx -and [string](Get-JsonProp $st 'lock_since') -cne $since)) {
         $st = [pscustomobject]@{ marker = $marker; lock_since = $(if ($since -cmatch $rx) { $since } else { Get-UtcStamp $Now }); idle_since = ''; last_pid = 0; pid_changes = 0; sent = '' }
     }
+    $parse = { param([string]$t) [datetime]::ParseExact($t, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) }
+    # Стан без `call_utc` (простій лічився приростами `nocall_min` від `last_at`) переводиться в абсолютний раз: врахований запит —
+    # `last_at` мінус накопичене, інакше запит до `last_at`, давно врахований, лічився б заново.
+    if ($null -eq $st.PSObject.Properties['call_utc'] -and [string](Get-JsonProp $st 'last_at') -cmatch $rx) {
+        Add-Member -InputObject $st -NotePropertyName call_utc -NotePropertyValue (Get-UtcStamp ((& $parse ([string]$st.last_at)).AddMinutes(-[double](Get-JsonProp $st 'nocall_min'))))
+    }
+    $st.PSObject.Properties.Remove('nocall_min')
     $defaults = [ordered]@{ last_at = ''; sleep_min = 0; idle_unknown = 0; prev_known = 1; call_utc = ''; battery = @() }
     foreach ($n in $defaults.Keys) { if ($null -eq $st.PSObject.Properties[$n]) { Add-Member -InputObject $st -NotePropertyName $n -NotePropertyValue $defaults[$n] } }
-    $parse = { param([string]$t) [datetime]::ParseExact($t, $fmt, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal) }
     $idleLimit = [double](Get-Limit $script:Limits 'GpuIdleMinutes' 'gpu_stall_minutes')
     $pctLimit = [double](Get-Limit $script:Limits 'GpuIdlePercent' 'gpu_stall_percent')
     $pct = [int]$Sample.Percent; $ownerPid = [int]$Sample.OwnerPid
