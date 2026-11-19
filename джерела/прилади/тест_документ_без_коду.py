@@ -711,7 +711,7 @@ class Самоперевірка(unittest.TestCase):
                     ціль = os.path.join(тека, шлях)
                     os.makedirs(os.path.dirname(ціль), exist_ok=True)
                     shutil.copy(os.path.join(КОРІНЬ, шлях), ціль)
-                р = subprocess.run([sys.executable, "-X", "utf8", "-I", "джерела/прилади/документ_без_коду.py", "--самоперевірка"],
+                р = subprocess.run([sys.executable, "-I", "джерела/прилади/документ_без_коду.py", "--самоперевірка"],
                                    cwd=тека, capture_output=True, text=True, encoding="utf-8")
                 self.assertEqual(р.returncode, 0, f"перелік {перелік.split()}: {(р.stdout + р.stderr)[-600:]}")
 
