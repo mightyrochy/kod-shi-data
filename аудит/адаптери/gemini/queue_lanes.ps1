@@ -1243,10 +1243,14 @@ namespace GeminiWrapper {
         // Джерело живлення для стану: 0 — батарея, 1 — мережа, 255 — невідомо, -1 — Windows не відповіла.
         public static int AcLine() { Status s; return GetSystemPowerStatus(out s) ? s.AcLine : -1; }
 
-        // ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED, поки цей потік не зніме вимогу (ES_CONTINUOUS без
-        // інших прапорів). Дисплей — бо Modern Standby починається, коли гасне дисплей, а запит «система потрібна» на
-        // батареї Windows знімає за 5 хв після спливу тайм-ауту сну (НАЛАШТУВАННЯ.md, «Тримач світла»).
-        public static bool KeepAwake(bool on) { return SetThreadExecutionState(on ? 0x80000003u : 0x80000000u) != 0; }
+        // ES_CONTINUOUS | ES_SYSTEM_REQUIRED, а з display — ще й ES_DISPLAY_REQUIRED, поки цей потік не зніме вимогу
+        // (ES_CONTINUOUS без інших прапорів). Запит системи на мережі скидає таймер сну й лишає дисплей схемі Windows;
+        // дисплей просять лише на батареї: Modern Standby починається, коли гасне дисплей, а запит «система потрібна»
+        // там Windows знімає за 5 хв після спливу тайм-ауту сну (НАЛАШТУВАННЯ.md, «Тримач світла»).
+        public static bool KeepAwake(bool on, bool display) {
+            uint flags = on ? (display ? 0x80000003u : 0x80000001u) : 0x80000000u;
+            return SetThreadExecutionState(flags) != 0;
+        }
 
         public static bool Pause(int id, bool on) {
             IntPtr p = OpenProcess(0x0800, false, id);  // SUSPEND_RESUME
@@ -1289,11 +1293,12 @@ function Get-PowerSource {
     try { Add-PowerType; switch ([GeminiWrapper.Power]::AcLine()) { 0 { 'батарея' } 1 { 'мережа' } default { '?' } } } catch { '?' }
 }
 
-function Set-KeepAwake([bool]$On) {
-    <# Тримати ноутбук неспаним з увімкненим дисплеєм (чи відпустити) для потоку, що кличе: лише Windows; $false —
-    вимогу не прийнято. Кличе лише тримач світла (claude_run.ps1 -Light). #>
+function Set-KeepAwake([bool]$On, [bool]$Display = $false) {
+    <# Тримати ноутбук неспаним (чи відпустити) для потоку, що кличе: лише Windows; $false — вимогу не прийнято.
+    $Display — ще й тримати дисплей увімкненим; без нього дисплей гасне за схемою Windows. Кличе лише тримач світла
+    (claude_run.ps1 -Light). #>
     if (-not $script:OnWindows) { return $false }
-    try { Add-PowerType; [GeminiWrapper.Power]::KeepAwake($On) } catch { $false }
+    try { Add-PowerType; [GeminiWrapper.Power]::KeepAwake($On, $Display) } catch { $false }
 }
 
 function Get-PauseTargets {
