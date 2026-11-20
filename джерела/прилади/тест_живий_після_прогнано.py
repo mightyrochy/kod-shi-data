@@ -25,7 +25,7 @@ import tempfile
 
 ТУТ = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ТУТ)
-import живий_після_прогнано as прилад  # noqa: E402
+import живий_після_прогнано as прилад
 
 КОРІНЬ = os.path.abspath(os.path.join(ТУТ, "..", ".."))
 провалів = 0

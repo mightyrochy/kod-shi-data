@@ -37,7 +37,7 @@ import sys
 ТЕКА = Path(__file__).resolve().parent
 ВІДБИТКИ = ТЕКА / 'річ_запис_дані' / 'її_річ_відбитки.json'
 ПЕРЕКЛАД = ТЕКА / 'річ_запис_її_річ_переклад.cjs'
-_ЗАПИС = re.compile(r"── ПРОМПТ \(\d+ симв\.\) ──\n(.*)\n\n── ВІДПОВІДЬ \(([^\n]*)\) ──\n(.*)\n$", re.S)
+_ЗАПИС = re.compile(r"── ПРОМПТ \(\d+ симв\.\) ──\n(.*)\n\n── ВІДПОВІДЬ \(([^\n]*)\) ──\n(.*)\n$", re.DOTALL)
 _ВИДИ = (('_хід_розмови', 'розмова'), ('_хід_плиток', 'плитки'), ('_речі_з_фото_шар', 'фото'))
 _УРИВОК = re.compile(r'("quote"\s*:\s*)"((?:[^"\\]|\\.)*)"')
 _СЛОВО = re.compile(r'\w{2,}')
@@ -112,7 +112,7 @@ def обʼєкт(т):
     try:
         return json.loads(т)
     except ValueError:
-        м = re.search(r'\{.*\}', т, re.S)
+        м = re.search(r'\{.*\}', т, re.DOTALL)
         try:
             return json.loads(м.group(0)) if м else None
         except ValueError:

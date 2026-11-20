@@ -472,7 +472,7 @@ class Джерела:
             # blame рядка `main` падав «file has only N lines»; на `main` HEAD — той самий
             сире = git("blame", "--line-porcelain", "-L", "%d,%d" % (н, н), "HEAD", "--", ф).decode("utf-8", "replace")
             sha = сире.split(" ", 1)[0]
-            час = re.search(r"^author-time (\d+)", сире, re.M)
+            час = re.search(r"^author-time (\d+)", сире, re.MULTILINE)
             self.blame[ф][н] = (sha, int(час.group(1)) if час else 0)
         sha, час = self.blame[ф][н]
         if sha not in self.повідомлення:

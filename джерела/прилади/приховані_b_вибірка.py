@@ -57,12 +57,12 @@ def п17_п20():
     функції, коментарі = [], []
     for м in sorted(status.МОДУЛІ_ПРОДУКТУ):
         шлях = "джерела/%s.py" % м
-        текст = io.open(os.path.join(КОРІНЬ, шлях), encoding="utf-8").read()
+        текст = open(os.path.join(КОРІНЬ, шлях), encoding="utf-8").read()
         for в in ast.walk(ast.parse(текст)):
             if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef)) and ast.get_docstring(в) \
                     and в.end_lineno - в.lineno >= 8:
                 функції.append("%s:%d\t%s()" % (шлях, в.lineno, в.name))
-        with io.open(os.path.join(КОРІНЬ, шлях), encoding="utf-8") as ф:
+        with open(os.path.join(КОРІНЬ, шлях), encoding="utf-8") as ф:
             for т in tokenize.generate_tokens(ф.readline):
                 if т.type == tokenize.COMMENT and len(re.findall(r"[А-Яа-яІіЇїЄєҐґ]{3,}", т.string)) >= 5:
                     коментарі.append("%s:%d\t%s" % (шлях, т.start[0], т.string[:80]))
@@ -78,11 +78,11 @@ def main():
     for к, а in ДЖЕРЕЛА.items():
         рядки = з_приладу(а, (lambda р: "живий шлях" in р) if к == "п14js" else None)
         вибірка = кожне_k(рядки, k=КРОК[к])
-        io.open(os.path.join(тека, к + ".s"), "w", encoding="utf-8").write("\n".join(вибірка) + "\n")
+        open(os.path.join(тека, к + ".s"), "w", encoding="utf-8").write("\n".join(вибірка) + "\n")
         print("%-5s з %d місць — %d" % (к, len(рядки), len(вибірка)))
     ф, к, нф, нк = п17_п20()
-    io.open(os.path.join(тека, "п17.s"), "w", encoding="utf-8").write("\n".join(ф) + "\n")
-    io.open(os.path.join(тека, "п20.s"), "w", encoding="utf-8").write("\n".join(к) + "\n")
+    open(os.path.join(тека, "п17.s"), "w", encoding="utf-8").write("\n".join(ф) + "\n")
+    open(os.path.join(тека, "п20.s"), "w", encoding="utf-8").write("\n".join(к) + "\n")
     print("п17   з %d функцій — %d\nп20   з %d коментарів — %d" % (нф, len(ф), нк, len(к)))
     return 0
 
