@@ -562,6 +562,44 @@ function Get-CascadePlan([string]$Model, [string]$CodexModel = '') {
     $c
 }
 
+$script:ChainConfigPath = 'аудит/адаптери/gemini/ланцюг.json'
+
+function Get-CodexPauseUntil($Config) {
+    <# Необов'язкове `codex_pause_until` у ланцюг.json (UTC, `2026-11-23T10:16:00Z`): до цього часу автоживий і каскад agy не беруть Codex
+    (квота Codex і Claude ноутбука під рішенням менеджера). Одне місце розбору: ланцюг (wrapper_chain.ps1, Get-PauseReaders) бере
+    цю функцію з довіреної копії, gemini-run — через Test-CodexPause. Нема поля чи `null` — $null; не за формою — виняток
+    CHAIN_CONFIG. PowerShell 7 сам перетворює дату з JSON на DateTime: приймається лише UTC (`Z`), місцевий час чи зсув — не за формою. #>
+    $prop = $Config.PSObject.Properties['codex_pause_until']
+    if ($null -eq $prop -or $null -eq $prop.Value) { return $null }
+    $v = $prop.Value
+    if ($v -is [datetime]) {
+        if ($v.Kind -ne [DateTimeKind]::Utc) { throw 'CHAIN_CONFIG' }
+        return [datetimeoffset]::new($v)
+    }
+    $t = [datetimeoffset]::MinValue
+    if ([string]$v -cmatch '^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$' -and
+        [datetimeoffset]::TryParseExact([string]$v, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal, [ref]$t)) { return $t }
+    throw 'CHAIN_CONFIG'
+}
+
+$script:CodexPauseLogged = @{}
+function Test-CodexPause([datetimeoffset]$Now = [datetimeoffset]::UtcNow) {
+    <# Пауза Codex діє: `codex_pause_until` з ланцюг.json на origin/main (тим самим читанням, що й ланцюг: джерело правди одне) ще
+    попереду. Файла нема — паузи нема. Файл чи поле кривий — діє (відмова за невідомого, не мовчазний каскад на Codex), рядок
+    журналу раз на причину в процесі. Каскад agy (Get-Cascade в gemini_run.ps1) під паузою не додає Codex. #>
+    $r = Invoke-Git @('cat-file', 'blob', "$script:RemoteRoot/main:$script:ChainConfigPath") -AllowFail
+    if ($r.Code -ne 0) { return $false }
+    $why = ''
+    try {
+        $until = Get-CodexPauseUntil ($r.Out | ConvertFrom-Json)
+        if ($null -eq $until) { return $false }
+        if ($Now -ge $until) { return $false }
+        $why = 'діє до ' + $until.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture)
+    } catch { $why = 'codex_pause_until у ланцюг.json не розібрано (CHAIN_CONFIG), пауза вважається чинною' }
+    if (-not $script:CodexPauseLogged.ContainsKey($why)) { $script:CodexPauseLogged[$why] = $true; Write-Log "пауза Codex: $why — Codex у каскаді agy нема" }
+    $true
+}
+
 function ConvertTo-Marker([string]$Line) {
     <# Рядок for-each-ref (посилання, SHA, час коміту, тема коміту) -> позначка; Valid=$false — назва не за форматом.
 

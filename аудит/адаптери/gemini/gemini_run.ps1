@@ -477,7 +477,12 @@ function Get-Quota([string]$Model, [switch]$Fresh, [long]$After = 0) {
 function Test-CodexFallback { [bool]($EnableCodex -and $CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') }
 
 # Кандидати за порядком (Get-CascadePlan, queue_lanes.ps1 — той самий порядок читає claude_run.ps1 для простою).
-function Get-Cascade([string]$Model) { @(Get-CascadePlan $Model $(if (Test-CodexFallback) { $CodexFallbackModel } else { '' })) }
+# Під паузою Codex (`codex_pause_until` в ланцюг.json, Test-CodexPause) запасного Codex у каскаді нема: позначка agy на 0 % чекає
+# скидання пулу (QUOTA0), а не витрачає Codex. Лише каскад: позначки з явною моделлю Codex (нічний) Select-Engine не каскадує.
+function Get-Cascade([string]$Model) {
+    $codex = $(if ((Test-CodexFallback) -and -not (Test-CodexPause)) { $CodexFallbackModel } else { '' })
+    @(Get-CascadePlan $Model $codex)
+}
 
 # Рушій наряду за позначкою й квотою пулів. Model — фактична модель (каскад); Quota — пулу першого кандидата, якщо всі
 # на 0 % (Blocked); Exe $null — рушія нема на ноутбуці. -After — позначка чекала скидання до цього часу (unix): квоту
