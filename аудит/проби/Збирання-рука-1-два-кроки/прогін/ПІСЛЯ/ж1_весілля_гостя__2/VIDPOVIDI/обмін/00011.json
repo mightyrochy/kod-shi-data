@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Floor-length sleeveless dress with a softly structured bodice, a high rounded neckline, a defined waist and a gently flared skirt, in deep jade green (#4F6F62), made of heavy silk satin-crepe\\nBlock-heel pumps with a closed pointed toe, 6 cm heel, in warm champagne beige (#CDAE8C), made of satin\\nSmall structured clutch with a slim gold clasp, in antique gold (#B8945A), made of smooth leather\\nDrop earrings with a small pearl on a slim gold hook, in soft cream-gold (#E3CFA5), made of gold-plated metal and freshwater pearl\\nThin cuff bracelet, in antique gold (#B8945A), made of brushed metal\\n\\nWhy this outfit works: A floor-length silk dress in a deep jade green meets the formal level for a close family member at a sister's wedding, and it keeps the only bare zone to the arms, which suits the warm August afternoon. Jade picks up the grey-green of her eyes, flatters her warm skin and golden hair, and stays well away from white and ivory, which belong to the bride. Block heels stay steady on grass during the outdoor ceremony, and the satin and gold details carry the look into the restaurant evening without any change. No outer layer is needed in the warmth of a summer 16:00 ceremony.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Dress\\\",\\\"details\\\":\\\"Floor-length sleeveless dress with a softly structured bodice, a high rounded neckline, a defined waist and a gently flared skirt, made of heavy silk satin-crepe\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#4F6F62\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Block-heel pumps\\\",\\\"details\\\":\\\"Closed pointed toe, 6 cm block heel, made of satin\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#CDAE8C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Clutch\\\",\\\"details\\\":\\\"Small structured clutch with a slim gold clasp, made of smooth leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#B8945A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Small pearl on a slim gold hook, made of gold-plated metal and freshwater pearl\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#E3CFA5\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Cuff bracelet\\\",\\\"details\\\":\\\"Thin cuff, made of brushed metal\\\",\\\"slot\\\":\\\"bracelet\\\",\\\"color_hex\\\":\\\"#B8945A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2124,\"output_tokens\":377},\"stop_reason\":\"end_turn\"}"
+ }
+}
