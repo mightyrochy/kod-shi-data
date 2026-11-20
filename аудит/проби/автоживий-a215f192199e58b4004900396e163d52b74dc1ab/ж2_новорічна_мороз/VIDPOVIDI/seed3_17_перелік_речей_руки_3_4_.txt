@@ -1,0 +1,30 @@
+── ПРОМПТ (2112 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Velvet sheath dress, knee-length, emerald green (#046307), soft woven velvet.\nPointed-toe ankle boots, mid-calf height, metallic gold (#FFD700), smooth patent leather.\nDrop earrings, medium drop length, faceted cut, clear crystal with silver plating (#C0C0C0).\n\nThis outfit strikes the perfect balance for an upscale New Year's celebration at a restaurant during frosty weather. The emerald velvet sheath dress offers warmth and a rich seasonal hue while adhering to your wish for a smart social look without exceeding into formal territory. The metallic gold ankle boots provide both elegance and practicality against the cold, ensuring you remain comfortable through the evening festivities. Completing the look with clear crystal earrings adds a touch of festive sparkle that catches the warm artificial restaurant lights without being overly distracting."}
+
+── ВІДПОВІДЬ (607 симв., 6.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "Velvet, knee-length, soft woven velvet",
+      "slot": "dress",
+      "color_hex": "#046307",
+      "worn": true
+    },
+    {
+      "name": "ankle boots",
+      "details": "Pointed-toe, mid-calf height, smooth patent leather",
+      "slot": "shoes",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "drop earrings",
+      "details": "Medium drop length, faceted cut, clear crystal with silver plating",
+      "slot": "earrings",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}

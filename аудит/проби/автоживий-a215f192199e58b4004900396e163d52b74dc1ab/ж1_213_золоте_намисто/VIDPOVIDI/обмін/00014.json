@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk blouse, relaxed fit, long tunic length, gold hex #D4AF37, soft woven fabric; Gold-plated pendant necklace with dangling charms, delicate chain, golden hue hex #FFD700, lightweight metal alloy; Tailored wool-blend trousers, straight wide leg, mid-calf hemline, rich charcoal grey hex #36454F, breathable heavy-weight twill. This ensemble balances the relaxed everyday dress code requested with the upscale restaurant setting through refined fabrics and a neutral base that lets the golden necklace shine as the focal point. The autumn-appropriate trousers provide warmth and structure while maintaining comfort, ensuring the outfit feels both polished and at ease for an evening meal. The dangle of the gold pendant adds a touch of festive charm that perfectly aligns with her specific wish to wear golden jewelry with pendants.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Blouse\\\", \\\"details\\\": \\\"relaxed fit long tunic length soft woven fabric\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#D4AF37\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Pendant necklace\\\", \\\"details\\\": \\\"gold-plated with dangling charms delicate chain lightweight metal alloy\\\", \\\"slot\\\": \\\"jewelry\\\", \\\"color_hex\\\": \\\"#FFD700\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Trousers\\\", \\\"details\\\": \\\"tailored wool-blend straight wide leg mid-calf hemline breathable heavy-weight twill\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#36454F\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":526,\"output_tokens\":161},\"stop_reason\":\"end_turn\"}"
+ }
+}

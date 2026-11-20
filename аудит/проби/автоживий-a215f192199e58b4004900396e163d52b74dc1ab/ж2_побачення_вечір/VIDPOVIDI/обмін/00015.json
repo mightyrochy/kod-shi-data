@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Emerald green silk blouse with a relaxed fit and a slightly dropped shoulder cut to length at the hips, color #50c878, fabric.\\nHigh-waisted charcoal wool-blend trousers in a wide-leg silhouette that falls just above the ankle, color #36454f, fabric.\\nTan leather loafers with a low block heel and a soft sole for quiet movement, color #c19a6b, fabric.\\nThin gold link bracelet to catch the restaurant's artificial light against her warm skin tones, color #ffd700, fabric.\\nThis outfit balances the casual atmosphere of a date night at a casual restaurant with an elegant autumnal palette that complements her hair and eyes. The relaxed blouse ensures comfort during a two-hour evening engagement while the tailored trousers maintain a polished social look appropriate for a guest role. Warm neutral tones in the shoes ground the vibrant top, creating a cohesive ensemble that feels both intentional and effortlessly stylish.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"relaxed fit with slightly dropped shoulder cut to length at hips made of silk\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#50c878\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-waisted wide-leg silhouette falling just above the ankle made of wool-blend\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"loafers\\\",\\n      \\\"details\\\": \\\"tan leather with low block heel and soft sole\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#c19a6b\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"bracelet\\\",\\n      \\\"details\\\": \\\"thin gold link\\\",\\n      \\\"slot\\\": \\\"bracelet\\\",\\n      \\\"color_hex\\\": \\\"#ffd700\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":551,\"output_tokens\":273},\"stop_reason\":\"end_turn\"}"
+ }
+}

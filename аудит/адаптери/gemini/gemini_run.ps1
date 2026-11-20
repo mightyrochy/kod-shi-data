@@ -993,15 +993,21 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                 if ($r.Result.PSObject.Properties['response']) { $resp = [string]$r.Result.response }
                 $run.Responses.Add($resp)
                 if ($r.Result.PSObject.Properties['answered'] -and $r.Result.answered) { $answered = [string]$r.Result.answered }
-                if ($status -in @('ERROR', 'INVALID', 'CANCELED')) {
+                # Прийнятий звіт сильніший за статус: наступний виклик моделі після звіту міг упасти (мережа), а робота вже зроблена.
+                $failed = $status -in @('ERROR', 'INVALID', 'CANCELED')
+                $check = $null
+                if (-not $failed -or $resp.Trim()) { $check = Test-Report $M $Start $resp }
+                if ($failed) {
                     $err = ''
                     if ($r.Result.PSObject.Properties['error']) { $err = [string]$r.Result.error }
-                    $code = Get-ErrorCode $err $run.Engine.Name $run.Engine.Effort
-                    $engineErr = $err
-                    Write-Log "agy: статус $status ($code)"
-                    break
+                    if ($null -eq $check -or -not $check.Accepted) {
+                        $code = Get-ErrorCode $err $run.Engine.Name $run.Engine.Effort
+                        $engineErr = $err
+                        Write-Log "agy: статус $status ($code)"
+                        break
+                    }
+                    Write-Log "agy: статус $status попри прийнятий звіт ($($check.Kind)) — звіт прийнято; помилка рушія: $(ConvertTo-NoteText $err)"
                 }
-                $check = Test-Report $M $Start $resp
                 if ($check.Accepted) {
                     if ($check.Facts.Ahead -gt 0) {
                         $publication = Get-HeadLivePublication $check.Facts.Head

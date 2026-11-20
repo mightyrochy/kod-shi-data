@@ -1,0 +1,59 @@
+── ПРОМПТ (6447 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: casual_suit · about it: text н=1
+2 — kind: blazer · about it: text н=2
+3 — kind: ankle_boots · about it: text н=3
+4 — kind: necklace · about it: text н=4
+5 — kind: jewelry_generic · about it: text н=5
+6 — kind: crossbody_bag · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The casual suit set forms the core of your workday look, its level matching the occasion and keeping you covered without any open zones.",
+"2": "This blazer provides essential warmth against the frost while maintaining a professional silhouette for your commute.",
+"3": "Ankle boots are chosen here to ensure you stay stable and protected while walking on snowy, possibly icy surfaces during your job trip.",
+"4": "The necklace adds a subtle layer of polish that complements the suit without compromising warmth or coverage.",
+"5": "This generic jewelry piece offers a refined accent that fits your professional setting and respects your preference for closed layers.",
+"6": "The crossbody bag secures your essentials with hands-free convenience, perfect for navigating snowy streets safely.",
+"7": "For your workday walk through the snow, I chose this casual suit set as your foundation because its level fits perfectly with an office occasion. The blazer outerlayer you see keeps you warm against the frosty weather, and the ankle boots ground the look for walking on slippery streets. A delicate necklace and generic jewelry add a polished touch without exposing any open zones, while the crossbody bag stays secure as you move. This ensemble respects your wish to avoid open areas by keeping every layer covered yet stylish enough for your commute.",
+"8": "Tuck the suit set's top under the blazer if you want a sharper silhouette that defines your waist line.",
+"9": "Let the blazer remain unbuttoned at the waist to maintain comfort and an easy flow while walking in the snow.",
+"10": "Wear the crossbody bag across your body for stability on icy sidewalks, keeping your hands free for winter gloves if needed.",
+"11": "Черевики жіночі, REMONTE, шкіра/екошкіра, колір коричневий — I chose these ankle boots for comfort and fit under trousers, replacing shoes if needed as you requested.",
+"12": "Черевики жіночі, REMONTE, шкіра/екошкіра, колір коричневий — Ankle boots chosen for comfort and fit under trousers, replacing shoes if needed."
+}
+
+── ВІДПОВІДЬ (2107 симв., 26.8 с, HTTP 200) ──
+```json
+{
+  "1": "Повсякденний костюм становить основу твого робочого образу: його рівень відповідає випадку і тримає тебе вкриту без жодних відкритих зон.",
+  "2": "Цей піджак забезпечує необхідне тепло проти морозу, зберігаючи при цьому професійний силует для твоєї поїздки на роботу.",
+  "3": "Черевики обрано тут, щоб ти залишалася стійкою і захищеною, коли ходиш засніженими, можливо слизькими поверхнями під час робочої поїздки.",
+  "4": "Намисто додає ледь помітний шар вишуканості, який доповнює костюм без шкоди для тепла чи покриття.",
+  "5": "Ця ювелірна прикраса пропонує елегантний акцент, що підходить до твого професійного оточення і поважає твоє бажання закритих шарів.",
+  "6": "Сумка через плече надійно зберігає необхідні речі з можливістю тримати руки вільними, що чудово для безпечного пересування засніженими вулицями.",
+  "7": "Для твоєї робочої прогулянки снігом я обрала цей повсякденний костюм як основу, адже його рівень ідеально підходить до офіційного випадку. Піджак зовні тримає тебе в теплі проти морозної погоди, а черевики роблять образ стійким для ходьби слизькими вулицями. Делікатне намисто та ювелірна прикраса додають вишуканий штрих без відкриття будь-яких зон, а сумка через плече залишається надійною під час руху. Цей ансамбль поважає твоє бажання уникати відкритих ділянок, тримаючи кожен шар вкритим і водночас достатньо стильним для твоєї поїздки.",
+  "8": "Засунь верхню частину костюму під піджак, якщо хочеш більш чіткий силует, який окреслить твою талію.",
+  "9": "Залиш піджак розстебнутим на талії, щоб зберегти комфорт і легкість під час ходьби снігом.",
+  "10": "Носи сумку через плече навхрест для стійкості на слизьких тротуарах, залишаючи руки вільними для зимових рукавичок, якщо потрібно.",
+  "11": "Черевики жіночі, REMONTE, шкіра/екошкіра, колір коричневий — Я обрала ці черевики заради комфорту і щоб вони добре сиділи під штанами, замінюючи взуття, якщо потрібно.",
+  "12": "Черевики жіночі, REMONTE, шкіра/екошкіра, колір коричневий — Черевики обрані заради комфорту і щоб вони добре сиділи під штанами, замінюючи взуття, якщо потрібно."
+}
+```

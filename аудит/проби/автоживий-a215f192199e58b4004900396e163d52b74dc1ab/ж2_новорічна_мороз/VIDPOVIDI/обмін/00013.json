@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"Новорічна вечірка в ресторані\", \"place\": \"ресторан\"}, \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"default\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"ресторан\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"Новорічна вечірка в ресторані\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"weather_band\": {\"kind\": \"reading\"}}, \"event\": \"Новорічна вечірка в ресторані\", \"part_of_day\": \"evening\", \"weather_band\": \"frost\", \"occasion\": \"celebration\", \"place\": \"restaurant_upscale\", \"formality_branch\": \"social\", \"open_zones\": \"two\", \"formality\": [\"smart\"], \"season\": \"autumn\", \"light\": \"artificial\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Velvet sheath dress, knee-length, emerald green (#046307), soft woven velvet.\\nPointed-toe ankle boots, mid-calf height, metallic gold (#FFD700), smooth patent leather.\\nDrop earrings, medium drop length, faceted cut, clear crystal with silver plating (#C0C0C0).\\n\\nThis outfit strikes the perfect balance for an upscale New Year's celebration at a restaurant during frosty weather. The emerald velvet sheath dress offers warmth and a rich seasonal hue while adhering to your wish for a smart social look without exceeding into formal territory. The metallic gold ankle boots provide both elegance and practicality against the cold, ensuring you remain comfortable through the evening festivities. Completing the look with clear crystal earrings adds a touch of festive sparkle that catches the warm artificial restaurant lights without being overly distracting.\"}],\"usage\":{\"input_tokens\":684,\"output_tokens\":180},\"stop_reason\":\"end_turn\"}"
+ }
+}

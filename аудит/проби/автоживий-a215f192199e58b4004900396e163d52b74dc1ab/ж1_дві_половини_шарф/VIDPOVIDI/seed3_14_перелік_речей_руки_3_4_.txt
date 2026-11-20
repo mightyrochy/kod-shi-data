@@ -1,0 +1,37 @@
+── ПРОМПТ (2237 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend scarf with a long drape reaching below the chin, color #8B4513 in earthy sienna.\nHeavyweight cotton twill coat in an oversized boxy cut with elbow patches and dropped shoulders, length hitting mid-thigh, color #6F4E37 in warm taupe.\nRaw selvedge denim jeans with a straight leg that tapers slightly at the ankle, cropped just above the shoe line for layering, color #2C1810 in dark indigo.\nSuede ankle boots with a low 2-inch block heel and a rounded toe, color #A0522D in burnt orange to complement the scarf.\n\nThis outfit satisfies your request for a walk featuring a prominent long scarf while adhering to the everyday formality band for autumn daylight conditions. The oversized coat provides necessary warmth and texture without feeling heavy, allowing the statement scarf to remain the focal point of your ensemble. Choosing dark indigo denim and warm earth tones creates a cohesive, grounded look that feels effortless yet intentionally styled for a casual outing."}
+
+── ВІДПОВІДЬ (688 симв., 7.7 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "wool-blend scarf",
+"details": "long drape reaching below the chin",
+"slot": "scarf",
+"color_hex": "#8B4513",
+"worn": true
+},
+{
+"name": "cotton twill coat",
+"details": "oversized boxy cut with elbow patches and dropped shoulders, length hitting mid-thigh",
+"slot": "outerwear",
+"color_hex": "#6F4E37",
+"worn": true
+},
+{
+"name": "selvedge denim jeans",
+"details": "straight leg tapering slightly at the ankle, cropped just above the shoe line",
+"slot": "bottom",
+"color_hex": "#2C1810",
+"worn": true
+},
+{
+"name": "suede ankle boots",
+"details": "low 2-inch block heel with rounded toe",
+"slot": "shoes",
+"color_hex": "#A0522D",
+"worn": true
+}
+]
+}

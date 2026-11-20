@@ -45,6 +45,9 @@ k nothing stream BLOCKED
 l abandon_then_done print ГОТОВО
 m hang print TIMEOUT_PUBLISHED
 n abandon_then_done stream MODEL_INVALID bad-model
+o error_after_report stream ГОТОВО
+p error_after_report print ГОТОВО
+q error_plain stream AGY_ERROR
 CASES
   exit "$BAD"
 fi
