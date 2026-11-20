@@ -16,7 +16,6 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from запуск_python import запустити_python
 
-import io
 import os
 import re
 import subprocess
@@ -57,7 +56,8 @@ def п17_п20():
     функції, коментарі = [], []
     for м in sorted(status.МОДУЛІ_ПРОДУКТУ):
         шлях = "джерела/%s.py" % м
-        текст = open(os.path.join(КОРІНЬ, шлях), encoding="utf-8").read()
+        with open(os.path.join(КОРІНЬ, шлях), encoding="utf-8") as ф:
+            текст = ф.read()
         for в in ast.walk(ast.parse(текст)):
             if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef)) and ast.get_docstring(в) \
                     and в.end_lineno - в.lineno >= 8:
@@ -78,11 +78,14 @@ def main():
     for к, а in ДЖЕРЕЛА.items():
         рядки = з_приладу(а, (lambda р: "живий шлях" in р) if к == "п14js" else None)
         вибірка = кожне_k(рядки, k=КРОК[к])
-        open(os.path.join(тека, к + ".s"), "w", encoding="utf-8").write("\n".join(вибірка) + "\n")
+        with open(os.path.join(тека, к + ".s"), "w", encoding="utf-8") as файл:
+            файл.write("\n".join(вибірка) + "\n")
         print("%-5s з %d місць — %d" % (к, len(рядки), len(вибірка)))
     ф, к, нф, нк = п17_п20()
-    open(os.path.join(тека, "п17.s"), "w", encoding="utf-8").write("\n".join(ф) + "\n")
-    open(os.path.join(тека, "п20.s"), "w", encoding="utf-8").write("\n".join(к) + "\n")
+    with open(os.path.join(тека, "п17.s"), "w", encoding="utf-8") as файл:
+        файл.write("\n".join(ф) + "\n")
+    with open(os.path.join(тека, "п20.s"), "w", encoding="utf-8") as файл:
+        файл.write("\n".join(к) + "\n")
     print("п17   з %d функцій — %d\nп20   з %d коментарів — %d" % (нф, len(ф), нк, len(к)))
     return 0
 

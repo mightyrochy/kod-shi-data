@@ -95,8 +95,8 @@ class Клас(unittest.TestCase):
 
     def test_назва_з_назви(self):
         """Назва з `name`, уривок не читається (чинний код іншою формою): місця в `річ_з_фото.py` нема (чесний нуль)."""
-        м = лічба([(РІЧ, НАЗВА, '        назва = _ВМ.текст((р.get("name") or {}).get("value") if isinstance('
-                                 'р.get("name"), dict) else р.get("name"))\n')])
+        м = лічба([(РІЧ, НАЗВА, ('        назва = _ВМ.текст((р.get("name") or {}).get("value") if isinstance('
+                                 'р.get("name"), dict) else р.get("name"))\n'))])
         self.assertEqual(записи(м, РІЧ), set(), м)
 
     def test_переклад_у_спільному_виклику(self):
@@ -119,7 +119,7 @@ class Записане(unittest.TestCase):
         вих = subprocess.run(['node', str(Я.ПЕРЕКЛАД)], cwd=КОРІНЬ, capture_output=True, text=True, timeout=600,
                              input=json.dumps(dict(джерела=str(ДЖЕРЕЛА), картки=[dict(вхід=ЗАПИС, картка=к) for к in картки],
                                                    відповіді={'спідниця': 'моєї улюбленої спідниці'}),
-                                              ensure_ascii=False, default=str))
+                                              ensure_ascii=False, default=str), check=False)
         self.assertEqual(вих.returncode, 0, вих.stderr[-2000:])
         р = json.loads(вих.stdout.strip().splitlines()[-1])
         self.assertEqual([(х['до'], х['після'], х['файл'], х['рядок']) for х in р],

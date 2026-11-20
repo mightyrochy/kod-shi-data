@@ -75,7 +75,8 @@ def _git(тека, *аргументи, дата=None, автор="mightyrochy",
                     GIT_COMMITTER_NAME="GitHub", GIT_COMMITTER_EMAIL="noreply@example.invalid")
     if дата:
         оточення.update(GIT_AUTHOR_DATE=дата, GIT_COMMITTER_DATE=дата)
-    готово = subprocess.run(["git", "-C", тека, *аргументи], env=оточення, capture_output=True, text=True, input=вхід)
+    готово = subprocess.run(["git", "-C", тека, *аргументи], env=оточення, capture_output=True, text=True, input=вхід,
+                            check=False)
     if готово.returncode:
         raise RuntimeError(готово.stderr)
     return готово.stdout.strip()
@@ -151,7 +152,7 @@ def історія():
         перевірити("межа не за форматом — у переліку", лічба["не_за_форматом"] == ["аудит/проби/функція/ЗВІТ.md"])
         вивід = запустити_python([sys.executable, os.path.join(ТУТ, "живий_після_прогнано.py"), "--main", "main",
                                 "--від", "2026-11-05T00:00:00Z", "--зараз", "2026-11-06T18:00:00Z"],
-                               capture_output=True, text=True, cwd=тека)
+                               capture_output=True, text=True, cwd=тека, check=False)
         рядки = вивід.stdout.strip().splitlines()
         перевірити("прилад без тіл: код 0, «прогнано: 4 з 6» з поміткою нижньої межі, години від злиття",
                    вивід.returncode == 0 and рядки[-1] == "прогнано: 4 з 6 (без тіл PR: M — нижня межа)"
@@ -327,7 +328,7 @@ def оцінки_історія():
                    == [("ж1_а", "не виміряно в оцінці аудит/перевірки/оцінка-Е1-нічний-живий-20261103.md:5: сцена — один хід | ще")])
         вивід = subprocess.run([sys.executable, os.path.join(ТУТ, "живий_після_прогнано.py"), "--main", "main", "--від",
                                 "2026-11-01T12:00:00Z", "--зараз", "2026-11-04T00:00:00Z", "--тіла", тіла_шлях],
-                               capture_output=True, text=True, cwd=тека)
+                               capture_output=True, text=True, cwd=тека, check=False)
         рядки = вивід.stdout.strip().splitlines()
         перевірити("прилад: три числа — «прогнано: 2 · без відповіді: 2 · решта: 0 (з 4)», останній рядок — «прогнано: 2 з 4»",
                    рядки[-2:] == ["прогнано: 2 · без відповіді: 2 · решта: 0 (з 4)", "прогнано: 2 з 4"])
@@ -442,7 +443,7 @@ def паритет_записів(тека, голова, назва):
         sha = прилад._текст(прилад.git("-C", тека, "rev-parse", голова).stdout).strip()
         готово = subprocess.run([pwsh, "-NoProfile", "-NonInteractive", "-File", скрипт, "-Source",
                                  os.path.join(КОРІНЬ, "аудит/адаптери/gemini/queue_lanes.ps1"), "-Repo", тека, "-Head", sha,
-                                 "-DirsPath", вхід, "-OutPath", вихід], capture_output=True, text=True)
+                                 "-DirsPath", вхід, "-OutPath", вихід], capture_output=True, text=True, check=False)
         if готово.returncode:
             перевірити("pwsh виконав Get-AutoRanPairs (" + назва + "): " + готово.stderr[-500:], False)
             return
@@ -497,7 +498,7 @@ def паритет():
                          capture_output=True, check=True).stdout.decode("utf-8", "replace")
     тіла += [т for т in log.split("\x1e") if "ЖИВИЙ ПІСЛЯ" in т]
     файли = subprocess.run(["git", "-C", КОРІНЬ, "-c", "core.quotepath=false", "grep", "-l", "-z", "ЖИВИЙ ПІСЛЯ",
-                            "HEAD", "--", "аудит"], capture_output=True).stdout.decode("utf-8").split("\0")
+                            "HEAD", "--", "аудит"], capture_output=True, check=False).stdout.decode("utf-8").split("\0")
     for шлях in [ш.split(":", 1)[1] for ш in файли if ":" in ш][:400]:
         with open(os.path.join(КОРІНЬ, шлях), encoding="utf-8", errors="replace") as ф:
             текст = ф.read()
@@ -512,7 +513,7 @@ def паритет():
             json.dump(тіла, ф, ensure_ascii=False)
         готово = subprocess.run([pwsh, "-NoProfile", "-NonInteractive", "-File", скрипт, "-Source",
                                  os.path.join(КОРІНЬ, "аудит/адаптери/gemini/queue_lanes.ps1"), "-RegistryPath", реєстр_шлях,
-                                 "-BodiesPath", вхід, "-OutPath", вихід], capture_output=True, text=True)
+                                 "-BodiesPath", вхід, "-OutPath", вихід], capture_output=True, text=True, check=False)
         if готово.returncode:
             перевірити("pwsh виконав розбір: " + готово.stderr[-500:], False)
             return

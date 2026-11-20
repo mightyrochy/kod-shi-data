@@ -247,7 +247,7 @@ def переклад(корінь, джерела, картки):
         return []
     вих = subprocess.run(['node', str(ПЕРЕКЛАД)], cwd=корінь, capture_output=True, text=True, timeout=600,
                          input=json.dumps(dict(джерела=str(джерела), картки=картки),
-                                          ensure_ascii=False, default=str))
+                                          ensure_ascii=False, default=str), check=False)
     if вих.returncode:
         raise RuntimeError(f'переклад картки: код {вих.returncode}: {вих.stderr[-2000:]}')
     return json.loads(вих.stdout.strip().splitlines()[-1])
@@ -269,7 +269,7 @@ def один(шлях, вид, прочитане, модулі, джерела)
         print(f'{шлях}: запис лише в одному з прогонів за кожного збурення (існування — поза класом): '
               f'{", ".join(sorted(поодинокі))}', file=sys.stderr)
     вих, бачено = [], set()
-    for запис, шлях_поля, ключ, значення in поля.values():
+    for _, _, ключ, значення in поля.values():
         місце = слід.місце(ключ, значення)
         if not місце:
             raise AssertionError(f'{шлях}: «{значення}» ({ключ}) залежить від уривка, але кадру, що його записав, '

@@ -125,7 +125,7 @@ def в_pyodide(арг):
     вихід = tempfile.mkdtemp(prefix='знімок_пд_')
     команда = ['node', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'знімок_мосту_pyodide.js'),
                арг.сторінка, арг.pyodide, арг.входи, вихід, str(арг.лише or 0), арг.портативна or '']
-    п = subprocess.run(команда, text=True, capture_output=True)
+    п = subprocess.run(команда, text=True, capture_output=True, check=False)
     if п.returncode:
         sys.exit('Pyodide: rc %d\n%s%s' % (п.returncode, п.stdout[-1500:], п.stderr[-1500:]))
     return open(os.path.join(вихід, 'знімок.jsonl'), encoding='utf-8').read(), json.load(open(os.path.join(вихід, 'час.json')))
@@ -165,7 +165,8 @@ def різниця(а, б, шлях='', вихід=None, ліміт=40):
 def діф(шлях_а, шлях_б):
     """Друкує різницю двох знімків по викликах; повертає кількість різних викликів, а непорівнювані знімки
     (інші входи чи кількість викликів) рахує за помилку (+1), щоб код виходу не підтверджував порівняння, якого не було."""
-    ра, рб = [open(ш, encoding='utf-8').read().splitlines() for ш in (шлях_а, шлях_б)]
+    with open(шлях_а, encoding='utf-8') as файл_а, open(шлях_б, encoding='utf-8') as файл_б:
+        ра, рб = файл_а.read().splitlines(), файл_б.read().splitlines()
     ша, шб = json.loads(ра[0]), json.loads(рб[0])
     непорівнювані = ша['входи_sha256'] != шб['входи_sha256'] or len(ра) != len(рб)
     if ша['входи_sha256'] != шб['входи_sha256']:
@@ -179,7 +180,7 @@ def діф(шлях_а, шлях_б):
         print('УВАГА: викликів %d ≠ %d — знімки непорівнювані' % (len(ра) - 1, len(рб) - 1))
     print('викликів %d · різних %d%s' % (разом, len(різні), ' · знімки тотожні' if not різні and not непорівнювані else ''))
     за_іменем = {}
-    for н, а, б in різні:
+    for _, а, _ in різні:
         за_іменем[а['ім']] = за_іменем.get(а['ім'], 0) + 1
     if за_іменем:
         print('за викликом: ' + ', '.join('%s %d' % (к, v) for к, v in sorted(за_іменем.items())))
@@ -220,14 +221,17 @@ def main():
     if арг.діф:
         sys.exit(1 if діф(*арг.діф) else 0)
     if арг.сирі and арг.вихід:
-        open(арг.вихід, 'w', encoding='utf-8').write(з_сирих(арг.сирі, прочитати(арг.входи)))
+        with open(арг.вихід, 'w', encoding='utf-8') as файл:
+            файл.write(з_сирих(арг.сирі, прочитати(арг.входи)))
         return
     if not (арг.середовище and арг.сторінка and арг.вихід):
         р.error('потрібні середовище, --сторінка, --вихід (або --діф А Б)')
     арг.сторінка, арг.входи, арг.вихід = (os.path.abspath(x) for x in (арг.сторінка, арг.входи, арг.вихід))
     знімок, час = (в_cpython if арг.середовище == 'cpython' else в_pyodide)(арг)
-    open(арг.вихід, 'w', encoding='utf-8').write(знімок)
-    json.dump(час, open(арг.вихід + '.час.json', 'w', encoding='utf-8'), ensure_ascii=False)
+    with open(арг.вихід, 'w', encoding='utf-8') as файл:
+        файл.write(знімок)
+    with open(арг.вихід + '.час.json', 'w', encoding='utf-8') as файл:
+        json.dump(час, файл, ensure_ascii=False)
     print('%s: %d викликів за %.1f с · %s' % (арг.середовище, знімок.count('\n') - 1, час['мс_разом'] / 1000,
                                              час['версія'].split('\n')[0]))
 
