@@ -363,6 +363,9 @@ function _причинаПовторуП(з, відп, помилка, сигн�
     return {причина: 'connection_reset', мс: 2000 + Math.random()*2000};
   }
   if (!відп || ![429, 503, 502, 504, 524].includes(відп.status)) return null;
+  /* модель зображень (`gpt-image-`) на таймаут шлюзу не повторюється: виклик міг дійти до OpenAI і бути оплаченим,
+     а повтор через 20 і 60 с — ще два платні (дошка 16806). */
+  if (/^gpt-image-/i.test(String(з.модель || '')) && [502, 504, 524].includes(відп.status)) return null;
   const к = було.http || 0;
   if (к >= ЗАТРИМКИ_ПОВТОРУ_П.length) return null;
   було.http = к + 1;
@@ -666,6 +669,9 @@ function врахуватиВикликП(з, дані, відп){
   }
   з.вихід_т = u.output_tokens || 0;
   з.обрізано = !!(дані && дані.stop_reason === 'max_tokens');
+  /* гроші за виклик (міст, провайдер openai: токени × ціна з `usage`) — у запис виклику, а не лише в DevTools */
+  const гроші = відп && відп.headers && відп.headers.get ? Number(відп.headers.get('x-cost-usd')) : NaN;
+  if (Number.isFinite(гроші)) з.вартість_usd = гроші;
   const спр = відп && відп.headers && відп.headers.get ? відп.headers.get('x-attempts') : null;
   if (спр) з.спроб_мосту = Number(спр) || спр;
   ТОКЕНИ_П.вхід += з.вхід_т; ТОКЕНИ_П.кеш += з.кеш_т; ТОКЕНИ_П.вихід += з.вихід_т; ТОКЕНИ_П.викликів += 1;
@@ -792,7 +798,7 @@ async function модельП_блоки(зміст, модель, історі�
   const дані = await відп.json();
   врахуватиВикликП(запис, дані, відп);
   const свої = {};
-  відп.headers.forEach((з, і) => { if (/^x-(images-dropped|provider|thinking|runs-left|model|attempts|cached-tokens)$/i.test(і)) свої[і.toLowerCase()] = з; });
+  відп.headers.forEach((з, і) => { if (/^x-(images-dropped|provider|thinking|runs-left|model|attempts|cached-tokens|cost-usd)$/i.test(і)) свої[і.toLowerCase()] = з; });
   ОСТАННІ_ЗАГОЛОВКИ_П = свої;
   const кадри = записатиКадриП(повідомлення, свої);
   if (заголовкиВих) Object.assign(заголовкиВих, свої, {кадри});
@@ -828,7 +834,7 @@ async function модельП(промпт, фото, історія, стан, 
   const дані = await відп.json();
   врахуватиВикликП(запис, дані, відп);
   ОСТАННІ_ЗАГОЛОВКИ_П = {};
-  відп.headers.forEach((з, і) => { if (/^x-(images-dropped|provider|thinking|runs-left|model|attempts|cached-tokens)$/i.test(і)) ОСТАННІ_ЗАГОЛОВКИ_П[і.toLowerCase()] = з; });
+  відп.headers.forEach((з, і) => { if (/^x-(images-dropped|provider|thinking|runs-left|model|attempts|cached-tokens|cost-usd)$/i.test(і)) ОСТАННІ_ЗАГОЛОВКИ_П[і.toLowerCase()] = з; });
   записатиКадриП(повідомлення, ОСТАННІ_ЗАГОЛОВКИ_П);
   if (ОСТАННІ_ЗАГОЛОВКИ_П['x-model']) МОДЕЛІ_ПРОГОНУ.add(ОСТАННІ_ЗАГОЛОВКИ_П['x-model']);
   /* обрізання об стелю мовчазне — тому `stop_reason` читається; із `стан` обрізана

@@ -747,12 +747,24 @@ const пнг = байтів => {
       headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
       body:JSON.stringify({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[фото]}]})}), env);
     тест("openai: без секрета → 500 і названо OPENAI_API_KEY", в.status === 500 && /OPENAI_API_KEY/.test(await в.text()), в.status);
-    /* мертве фото за адресою випадає й рахується, не валить виклик */
+    /* ВАДА 16833: фото за адресою, що не дійшло, — 422 ДО платного виклику (масив зсунув би номери речей) */
     вихідні.length = 0;
     в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"}, фото,
-      {type:"image", source:{type:"url", url:"https://dead.example/z.png"}}]}]});
-    тест("openai: мертве фото за адресою випало (x-images-dropped=1), виклик пішов з одним зображенням",
-         в.status === 200 && в.headers.get("x-images-dropped") === "1" && вихідні[0].body.images.length === 1, в.headers.get("x-images-dropped"));
+      {type:"image", source:{type:"url", url:"https://dead.example/z.png"}}, ід("ok")]}]});
+    тест("openai: одне мертве фото → 422, виклику OpenAI нема, x-images-dropped=1",
+         в.status === 422 && вихідні.length === 0 && в.headers.get("x-images-dropped") === "1", [в.status, вихідні.length]);
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"},
+      {type:"image", source:{type:"url", url:"https://dead.example/a.png"}}]}]});
+    тест("openai: усі фото мертві → 422, без images:[] у OpenAI", в.status === 422 && вихідні.length === 0, [в.status, вихідні.length]);
+    /* ВАДА 16836: температури нема — заголовок n/a, 400 про sampling не повторюється */
+    відповідач = () => new Response(JSON.stringify({error:{message:"unsupported sampling parameter"}}), {status:400});
+    в = await запО({model:"gpt-image-2.6-flare", temperature:1, messages:[{role:"user", content:[фото]}]});
+    тест("openai: 400 зі словом sampling — один виклик (без повтору), x-temperature=n/a",
+         в.status === 400 && вихідні.length === 1 && в.headers.get("x-temperature") === "n/a", [вихідні.length, в.headers.get("x-temperature")]);
+    вихідні.length = 0;
+    відповідач = () => new Response(JSON.stringify({created:1, output_format:"png", data:[{b64_json:"R0lG"}], usage:{input_tokens:1, output_tokens:1}}), {status:200});
+    в = await запО({model:"gpt-image-2.6-flare", temperature:1, messages:[{role:"user", content:[фото]}]});
+    тест("openai: 200 з temperature у запиті сторінки — x-temperature=n/a", в.status === 200 && в.headers.get("x-temperature") === "n/a", в.headers.get("x-temperature"));
     /* відмова безпеки й порожня відповідь */
     вихідні.length = 0;
     відповідач = () => new Response(JSON.stringify({error:{code:"moderation_blocked", message:"blocked"}}), {status:400});
