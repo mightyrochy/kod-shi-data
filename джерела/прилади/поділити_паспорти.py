@@ -277,11 +277,11 @@ def мірило(реф):
     після = {к: рядки_файла(читати(os.path.join(ТЕКА, к + '.md'))) for к in до}
     історії = {к: рядки_файла(читати(шлях_історії(к))) for к in до if os.path.isfile(шлях_історії(к))}
     рядки = [f'паспортів (перший рядок «# Корінь …»): {len(до)}',
-             f'рядків у паспортах разом: {sum(map(len, до.values()))} → {sum(map(len, після.values()))} '
-             f'(+ {sum(map(len, історії.values()))} у файлах історії; усього {sum(map(len, після.values())) + sum(map(len, історії.values()))})',
+             (f'рядків у паспортах разом: {sum(map(len, до.values()))} → {sum(map(len, після.values()))} '
+              f'(+ {sum(map(len, історії.values()))} у файлах історії; усього {sum(map(len, після.values())) + sum(map(len, історії.values()))})'),
              f'найбільший паспорт: {max(map(len, до.values()))} → {max(map(len, після.values()))}',
-             f'паспортів понад {ДОВГИЙ_ПАСПОРТ} рядків: {sum(1 for в in до.values() if len(в) > ДОВГИЙ_ПАСПОРТ)} → '
-             f'{sum(1 for в in після.values() if len(в) > ДОВГИЙ_ПАСПОРТ)}',
+             (f'паспортів понад {ДОВГИЙ_ПАСПОРТ} рядків: {sum(1 for в in до.values() if len(в) > ДОВГИЙ_ПАСПОРТ)} → '
+              f'{sum(1 for в in після.values() if len(в) > ДОВГИЙ_ПАСПОРТ)}'),
              f'файлів історії: {len(історії)}']
     for к, в in sorted(після.items(), key=lambda x: -len(x[1])):
         if len(в) > ДОВГИЙ_ПАСПОРТ:

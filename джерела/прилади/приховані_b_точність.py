@@ -46,7 +46,7 @@ def _ядро():
 def _ast(шлях):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        return ast.parse(io.open(шлях, encoding="utf-8").read())
+        return ast.parse(open(шлях, encoding="utf-8").read())
 
 
 def _відн(шлях):
@@ -85,11 +85,11 @@ def _колекції_слів(дерево):
     """Імена модульного рівня, присвоєні колекції з ≥2 різними словами."""
     імена = set()
     for в in дерево.body:
-        if isinstance(в, (ast.Assign, ast.AnnAssign)) and isinstance(в.value, (ast.Dict, ast.List, ast.Tuple, ast.Set,
-                                                                                ast.Call)):
-            if len(_слова_колекції(в.value)) >= 2:
-                цілі = в.targets if isinstance(в, ast.Assign) else [в.target]
-                імена |= {ц.id for ц in цілі if isinstance(ц, ast.Name)}
+        if (isinstance(в, (ast.Assign, ast.AnnAssign)) and
+                isinstance(в.value, (ast.Dict, ast.List, ast.Tuple, ast.Set, ast.Call)) and
+                len(_слова_колекції(в.value)) >= 2):
+            цілі = в.targets if isinstance(в, ast.Assign) else [в.target]
+            імена |= {ц.id for ц in цілі if isinstance(ц, ast.Name)}
     return імена
 
 
@@ -196,7 +196,8 @@ def _ключі_паспорта():
             к.add(ім)
         if isinstance(з, dict) and isinstance(з.get("поле"), str):
             к.add(з["поле"])
-    мова = json.load(open(os.path.join(ДЖ, "внутрішня_мова.schema.json"), encoding="utf-8"))
+    with open(os.path.join(ДЖ, "внутрішня_мова.schema.json"), encoding="utf-8") as файл:
+        мова = json.load(файл)
     for ф in ("scenario", "conversation_turn"):
         вузли = []
         _властивості_json(мова["$defs"][ф], ф, вузли, мова["$defs"])
@@ -351,7 +352,7 @@ def клас_т2(файли):
 
 # ─────────────────────────────── Т4–Т6: продовження (друга сесія частини б) ───────────────────────────────
 _ОЦІНКА = re.compile(r"оцін|бал|score|ваг|сил|ймовірн|впевнен|певн|рейтинг|відповідн|схож|якіст|"
-                     r"придатн|доречн|weight|prob|conf", re.I)
+                     r"придатн|доречн|weight|prob|conf", re.IGNORECASE)
 
 
 def _імена(вузол):
@@ -389,7 +390,7 @@ def клас_т4(файли):
                 continue
             імена = _імена(вираз)
             if any(_ОЦІНКА.search(і) for і in імена) and not any(re.search(r"(^|_)(de|lab|delta|ΔE|de00|L|hue|chroma|"
-                                                                          r"піксел|площ|світлот|насич)", і, re.I)
+                                                                          r"піксел|площ|світлот|насич)", і, re.IGNORECASE)
                                                                 for і in імена):
                 місця.append(("%s:%d" % (_відн(ф), в.lineno), "%d знаків над %s" % (знаків, ast.unparse(вираз)[:40])))
     return місця
@@ -397,7 +398,7 @@ def клас_т4(файли):
 
 _СВІТ = re.compile(r"(^|_)(місяц\w*|month|температ\w*|темп|temp|temperature\w*|t_?min|t_?max|зріст\w*|height|вік|age|ваг[аи]_тіла|"
                    r"weight_kg|ціна|price|годин\w*|hour|weekday|день_тижня|широт\w*|lat|сезон_номер|uv\w*|"
-                   r"вологіст\w*|humidity|вітер|wind\w*|опади_мм|precip\w*)($|_)", re.I)
+                   r"вологіст\w*|humidity|вітер|wind\w*|опади_мм|precip\w*)($|_)", re.IGNORECASE)
 
 
 def _світовий(x):
@@ -467,7 +468,7 @@ def клас_т6(файли):
     (≥4 кириличні слова) значенням поля, що зветься як текст для людини (`текст`, `репліка`, `чому`, `пояснення`,
     `питання`, `порада`, `підказка`, `повідомлення`, `заголовок`, `причина`) — фразу складає код, не мовна модель."""
     поля = re.compile(r"^(текст|репліка|чому|пояснення|питання|порада|підказка|повідомлення|заголовок|причина|"
-                      r"text|message|hint|why|reason|label|title|рядок_жінці|для_жінки|жінці)(_|$)", re.I)
+                      r"text|message|hint|why|reason|label|title|рядок_жінці|для_жінки|жінці)(_|$)", re.IGNORECASE)
     місця = []
     for ф in файли:
         д = _ast(ф)

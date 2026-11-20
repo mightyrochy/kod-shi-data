@@ -93,9 +93,7 @@ class Аналіз:
                             о = о.args[0]
                         if isinstance(о, ast.BoolOp) and isinstance(о.op, ast.Or) and len(о.values) == 2 \
                                 and isinstance(о.values[1], ast.Constant) and о.values[1].value == 1 \
-                                and not isinstance(о.values[1].value, bool):
-                            self.тотожні.add(id(о))
-                        elif isinstance(о, ast.Call) and isinstance(о.func, ast.Attribute) and о.func.attr == "get" \
+                                and not isinstance(о.values[1].value, bool) or isinstance(о, ast.Call) and isinstance(о.func, ast.Attribute) and о.func.attr == "get" \
                                 and len(о.args) == 2 and isinstance(о.args[1], ast.Constant) \
                                 and о.args[1].value == 1 and not isinstance(о.args[1].value, bool):
                             self.тотожні.add(id(о))
@@ -710,7 +708,7 @@ class Аналіз:
         поля = "|".join(sorted(re.escape(п) for п in поля_читача)) or "^$"
         поля_колір = set()
         for т in тексти.values():
-            for м in re.finditer(r"\bКОЛІР\s*=\s*\{(.*?)\};", т, re.S):
+            for м in re.finditer(r"\bКОЛІР\s*=\s*\{(.*?)\};", т, re.DOTALL):
                 for к, з in _властивості(м.group(1)):
                     if re.search(r"\.(%s)\b" % поля, з):
                         поля_колір.add(к)

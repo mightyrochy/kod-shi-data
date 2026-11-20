@@ -21,7 +21,7 @@ def запустити_python(команда, *, потрібен_вивід=Fal
     перевірити = параметри.pop('check', False)
     if isinstance(параметри.get('input'), str):
         параметри['input'] = параметри['input'].encode('utf-8')
-    вихід = subprocess.run(команда, env=середовище, **параметри)
+    вихід = subprocess.run(команда, env=середовище, check=False, **параметри)
     причина = (вихід.stderr or b'').decode('utf-8', 'replace').strip()
     if (перевірити or потрібен_вивід) and (вихід.returncode or потрібен_вивід and not (вихід.stdout or b'').strip()):
         raise subprocess.SubprocessError(
