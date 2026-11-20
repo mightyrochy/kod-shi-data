@@ -992,6 +992,24 @@ import збирач_промптів as _ЗП6
 звірка("ВМ-2: чекліст на дроті — коди лише провалених пунктів; збирач бере в словник виклику лише провалені",
        _дч == {"excess": {"failed": ["single_focus"]}}
        and _ЗП6.коди_заяв(_дані_чк) == ["single_focus"], "%s · %s" % (_дч, _ЗП6.коди_заяв(_дані_чк)))
+# Типові поля заяв на дріт не їдуть (наряд `Збирання-запит-склад`): повна заява (code, values, key) — без `key` і
+# без службового поля з типовим значенням; нетипове значення їде; вкладені списки — так само; неповна заява (без `key`)
+# і не-заява — як були.
+_заява_т = {"code": "goal_default_no_weights", "values": {"goal": "flatter"}, "recipient": "woman", "source": "unknown",
+            "choice": "unknown", "rank": None, "item_ids": [], "key": "s_1"}
+_заява_ж = dict(_заява_т, recipient="journal", source="catalogue", rank=2, item_ids=["#1·02"], key="s_2")
+_неповна = {"code": "x", "values": {}, "recipient": "woman", "rank": None}
+_дріт_т = {"verdict": [{"findings": [{"statements": [_заява_т, _заява_ж]}], "goal_reason": {"statements": [_заява_т]}}],
+           "set": [_неповна], "rank": None, "item_ids": []}
+_дріт_б = _ДМ6.без_типових_полів_заяв(_дріт_т)
+звірка("Збирання-запит-склад: типові поля й `key` повної заяви не їдуть, нетипові — їдуть, решта дроту — як є",
+       _дріт_б == {"verdict": [{"findings": [{"statements": [
+                       {"code": "goal_default_no_weights", "values": {"goal": "flatter"}},
+                       {"code": "goal_default_no_weights", "values": {"goal": "flatter"}, "recipient": "journal",
+                        "source": "catalogue", "rank": 2, "item_ids": ["#1·02"]}]}],
+                       "goal_reason": {"statements": [{"code": "goal_default_no_weights", "values": {"goal": "flatter"}}]}}],
+                   "set": [_неповна], "rank": None, "item_ids": []}
+       and _дріт_т["verdict"][0]["goal_reason"]["statements"][0]["key"] == "s_1", str(_дріт_б)[:400])
 # ВМ-2: ід образів і знахідок на дроті — латинкою, і розбір відповіді повертає їх до ід коду
 _ід = ("о1", "з-о1-1", "з-набір-2", "б-о3-1")
 _вб, _, _ = P.розбір_за_схемою('{"version": "1", "chosen": "o3"}', "ВИБІР_V1")
