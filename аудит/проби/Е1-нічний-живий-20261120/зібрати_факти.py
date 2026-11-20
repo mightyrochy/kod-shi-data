@@ -1,6 +1,7 @@
 """Зводить факти запису без викликів моделей і без оцінки людиною."""
 from pathlib import Path
 import json
+import re
 
 тека = Path(__file__).resolve().parent
 план = json.loads((тека / "ПЛАН.json").read_text(encoding="utf-8"))
@@ -12,13 +13,18 @@ for сцена in план["scenes"]:
         continue
     р = json.loads(результат.read_text(encoding="utf-8"))
     ф = {к: р.get(к) for к in ("rc", "sha", "дерево_стенда", "секунд", "початок", "кінець", "вивантажено")}
+    підсумок = re.search(r"ВПАЛО (\d+)", (запис / "лог.txt").read_text(encoding="utf-8"))
+    ф["червоних_звірок"] = int(підсумок[1]) if підсумок else 0
     ф["червоні_рядки"] = [{"рядок": н, "текст": т[:1600]} for н, т in enumerate((запис / "лог.txt").read_text(encoding="utf-8").splitlines(), 1) if "✗" in т]
     вердикти = запис / "вердикти.txt"
     ф["журнал_паспорта"] = []
+    ф["діагноз_фото"] = []
     if вердикти.is_file():
         в = json.loads(вердикти.read_text(encoding="utf-8"))
         ф["вердиктів"] = в.get("вердиктів")
         for прогін in в.get("прогони", []):
+            for вердикт in прогін.get("вердикти", []):
+                ф["діагноз_фото"] += [д for д in вердикт.get("етапи", {}).get("діагноз_руки", []) if isinstance(д, str) and "description_with_photos_failed" in д]
             розмова = прогін.get("спільне", {}).get("етапи", {}).get("розмова", {})
             if "зміни_паспорта" in розмова:
                 ж = розмова["зміни_паспорта"]
