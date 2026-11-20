@@ -45,7 +45,8 @@ def образ_фіду(назва, сцен):
     """Один образ живого шляху: кандидати з фіду → `композитор_річ.у_річ` → площі."""
     import bridge as B, composer as КМ, fit as ПС, outfit as O
     import колір_образу as _КОЛІР   # Н-02-01, сесія 4
-    вх = json.load(open(_шлях("стенд_вх.json")))
+    with open(_шлях("стенд_вх.json")) as ф:
+        вх = json.load(ф)
     вх["сценарій"] = сцен
     вх["випадок"] = назва
     r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))

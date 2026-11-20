@@ -19,7 +19,8 @@ for rid in ІД:
     print('\n▛▀▀ %s ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀' % rid)
     канд=[]
     for f in ТЕМИ:
-        t=open(f,encoding='utf-8').read()
+        with open(f, encoding='utf-8') as потік:
+            t=потік.read()
         for m in re.finditer(r'(?:^|\n)[>\s#*]*\*{0,2}'+re.escape(rid)+r'[.\s—–,*]', t):
             кін=min([x for x in (t.find('\n\n> **',m.end()), t.find('\n### ',m.end()), m.end()+2000) if x>0])
             бл=' '.join(t[m.start():кін].split())
@@ -30,7 +31,8 @@ for rid in ІД:
         print('КОРПУС %s: %s' % (f.split('_')[0], бл[:КБ]))
     else: print('КОРПУС: блоку нема')
     for f in МОД:
-        рядки=open(f,encoding='utf-8').read().split('\n')
+        with open(f, encoding='utf-8') as потік:
+            рядки=потік.read().split('\n')
         for i,l in enumerate(рядки):
             if rid in l and ('_зн(' in l or re.search(r'правило\s*=\s*"'+re.escape(rid),l)):
                 бл='\n'.join(рядки[max(0,i-3):i+11])

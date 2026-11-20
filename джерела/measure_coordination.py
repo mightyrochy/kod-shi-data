@@ -24,7 +24,8 @@ import composer as КМ, coordination as КО, run_outfit as ПО
 
 def _каталог():
     шлях = os.path.join(tempfile.gettempdir(), "каталог_вимір.xml")
-    open(шлях, "w", encoding="utf-8").write(ПО._зібрати_xml())
+    with open(шлях, "w", encoding="utf-8") as ф:
+        ф.write(ПО._зібрати_xml())
     offers, _ = feed.читати_yml(шлях)
     речі = []
     for o in offers:
