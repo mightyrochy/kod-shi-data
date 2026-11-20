@@ -3995,11 +3995,9 @@ _ПРАВИЛО_ПЛИТОК = (
     # «invites her to tell nothing» поруч із «тему поради вона не бачить» MamayLM читала як
     # «поради не пропонуй» — запрошення в першому ході 3 з 12. Тему в `text` і так знімає суд
     # за `about` (`_текст_до_показу`), тож заборони в `text` досить «не питає».
-    "\"text\" is your answer when she asked something and \"need\" is \"none\"; when she asked nothing, nothing "
-    "more — no advice of your own. What you recorded from her new message is shown to her on the case card, "
-    "so \"text\" never reports what you recorded (such a sentence is not shown to her); it may say only "
-    "that something she told is NOT recorded (the field is in \"about\" and not in \"recorded\"). "
-    "\"text\" asks her nothing and has no question marks.",
+    "\"text\" is your answer when she asked something and \"need\" is \"none\", else nothing — no advice of your "
+    "own. The case card shows what you recorded: \"text\" never reports it, only that something she told is NOT "
+    "recorded. \"text\" asks her nothing and has no question marks.",
     # «Розкажи про стиль…», «Я запропоную тобі прикраси та стиль…» ішли
     # повз суд запрошення через `text`: код бачив лише «?». Тепер кожне речення `text` несе коди того, про що
     # воно (`about`), і суд показує лише речення про записане цього ходу чи про її питання (`суд_частин`).
@@ -5104,8 +5102,10 @@ def _речення_до_показу(частини, записано, *, ка�
                 # записаним (`recorded`), переказує рядок картки, який жінка може звірити й виправити, — воно не
                 # показується; речення про «не записано» й про її питання лишаються
                 if прийнято and картка is not None and [к for к in (р.get("recorded") or ()) if к in КОДИ_ПОЛІВ]:
+                    запасний_хід = "рядок картки"           # що записано — каже картка, а не проза
                     вердикти.append((x, False))
-                    відкинуто.append(dict(частина="text", чому="recorded_on_card", про=коди, зняте=x))
+                    відкинуто.append(dict(частина="text", чому="recorded_on_card", про=коди, зняте=x,
+                                          запасний_хід=запасний_хід))
                     continue
                 вердикти.append((x, прийнято))
                 if not прийнято:
