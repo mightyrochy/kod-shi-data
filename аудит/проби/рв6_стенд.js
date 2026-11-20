@@ -760,6 +760,7 @@ function png2x2(rgb){
        огорож ```: хай гейт формату показу сам скаже, чи вона була, — інакше прилад
        ховав би те, що має міряти.
    ЗМІННІ: ZHYVA=sonnet|haiku; ZHYVA_BIN (типово /opt/node22/bin/claude);
+   ZHYVA_EFFORT=low|… — рівень зусилля CLI (`--effort`; без неї — типовий CLI, як доти);
    ZHYVA_TIMEOUT (мс; типово 300000, складання — 600000, див. нижче). MODEL сильніша: із нею йде LM Studio, як доти.
    ЛІМІТ ПІДПИСКИ СПІЛЬНИЙ, тож прохід із живою моделлю — лише для КЛЮЧОВИХ PR
    (CLAUDE.md п.15); типово вимкнено. */
@@ -1319,7 +1320,8 @@ async function клодомCLI(тіло, тип){
     let дитя;
     try {
       дитя = require('child_process').spawn(КЛОД_БІН,
-        ['-p', '--model', КЛОД, '--tools', '', '--strict-mcp-config', '--no-session-persistence',
+        ['-p', '--model', КЛОД, ...(process.env.ZHYVA_EFFORT ? ['--effort', process.env.ZHYVA_EFFORT] : []),
+         '--tools', '', '--strict-mcp-config', '--no-session-persistence',
          '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose',
          '--system-prompt', КЛОД_СИСТЕМНИЙ],
         {cwd: КЛОД_ТЕКА, stdio: ['pipe', 'pipe', 'pipe'],
