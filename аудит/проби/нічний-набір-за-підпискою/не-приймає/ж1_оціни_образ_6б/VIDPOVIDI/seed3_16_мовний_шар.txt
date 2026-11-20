@@ -1,0 +1,43 @@
+── ПРОМПТ (5962 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+6 — назва в тексті н=7
+7 — назва в тексті н=8
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: green — зелений.
+
+ТЕКСТИ:
+{
+"1": "Ivory silk-blend blouse, relaxed fit with a soft collar, hip length, long sleeves, color ivory, crepe fabric\n\nStraight-leg trousers, high waist, full length to the ankle bone, color deep teal-slate [colour: green], fine wool-blend twill\n\nTextured blazer, single-breasted, slightly tailored, hip length, color warm camel, wool bouclé-weave\n\nLeather loafers, almond toe, low flat heel, color cognac brown, smooth calfskin\n\nSlim leather belt, thin buckle in brushed gold, color cognac brown, smooth leather\n\nSmall structured leather tote, color cognac brown, matte grain leather\n\nFine gold hoop earrings, small, color soft gold, polished metal\n\nWhy this outfit works: it sits squarely in neat business dress for an autumn office day, with a blouse, trousers, a textured jacket and loafers. The warm ivory and camel echo her golden hair and warm skin, while the muted teal-slate trousers pick up the green-grey of her eyes. The high-waisted trousers and the belt define the waist, and the hip-length blazer keeps the line balanced from shoulder to hip. The jacket supplies the extra layer an autumn morning calls for without adding bulk, and the cognac leather accessories tie the palette together.",
+"2": "Silk-blend blouse",
+"3": "Straight-leg trousers",
+"4": "Textured blazer",
+"5": "Leather loafers",
+"6": "Slim leather belt",
+"7": "Small structured leather tote",
+"8": "Fine gold hoop earrings"
+}
+
+── ВІДПОВІДЬ (1598 симв., 17.3 с, HTTP 200) ──
+{"1":"Блуза із суміші з шовком кольору слонової кістки, вільного крою з м'яким коміром, довжиною до стегон, з довгими рукавами, колір слонова кістка, крепова тканина\n\nШтани прямого крою, висока талія, повна довжина до кісточки, колір глибокий бірюзово-сланцевий, тонкий твіл із вовняною сумішшю\n\nФактурний блейзер, однобортний, трохи приталений, довжиною до стегон, колір теплий кемел, вовняне плетіння букле\n\nШкіряні лофери, мигдалеподібний носок, низький плаский підбор, колір коньячно-коричневий, гладка телячa шкіра\n\nТонкий шкіряний ремінь, тонка пряжка зі шліфованого золота, колір коньячно-коричневий, гладка шкіра\n\nНевелика структурована шкіряна сумка-тоут, колір коньячно-коричневий, матова зерниста шкіра\n\nТонкі золоті сережки-кільця, маленькі, колір м'яке золото, полірований метал\n\nЧому цей образ працює: він цілком вписується в охайний діловий стиль для осіннього офісного дня: блуза, штани, фактурний блейзер і лофери. Теплі слонова кістка та кемел перегукуються з твоїм золотистим волcurrent і теплим тоном шкіри, а приглушені бірюзово-сланцеві штани підхоплюють зелено-сірий колір твоїх очей. Штани з високою талією та ремінь підкреслюють талію, а блейзер довжиною до стегон тримає лінію збалансованою від плечей до стегон. Блейзер дає додатковий шар, якого потребує осінній ранок, не додаючи об'єму, а коньячні шкіряні аксесуари зв'язують палітру докупи.","2":"Блуза із суміші з шовком","3":"Штани прямого крою","4":"Фактурний блейзер","5":"Шкіряні лофери","6":"Тонкий шкіряний ремінь","7":"Невелика структурована шкіряна сумка-тоут","8":"Тонкі золоті сережки-кільця"}

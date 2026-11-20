@@ -7,6 +7,7 @@
 `feed` не імпортує.
 """
 import os, re, json, math, statistics
+from functools import lru_cache
 import verify as V
 from фід_розбір import (читати_yml, побудувати_запис_речі, СЕП_КОЛЬОРУ as _СЕП_КОЛЬОРУ)
 from фід_слот import (слоти, тип_набору, набір_цілий, тип_речі, тип_модифікатор,
@@ -156,19 +157,22 @@ def походження_каталогу(шлях):
     return {"каталог": os.path.abspath(шлях), "архів": арх or None, "sha256_архіву": sha or None}
 
 
-def sha_архіву(шлях, _кеш={}):
-    """sha256 файла; раз на (шлях, mtime, розмір) у процесі — `каталог_на_диску` кличуть на кожен прогін."""
-    import hashlib
+def sha_архіву(шлях):
+    """Повертає SHA-256 архіву за чинним станом файла."""
+    шлях = os.path.abspath(шлях)
     ст = os.stat(шлях)
-    ключ = (os.path.abspath(шлях), ст.st_mtime_ns, ст.st_size)
-    if ключ not in _кеш:
-        h = hashlib.sha256()
-        with open(шлях, "rb") as ф:
-            for шматок in iter(lambda: ф.read(1 << 20), b""):
-                h.update(шматок)
-        _кеш.clear()
-        _кеш[ключ] = h.hexdigest()
-    return _кеш[ключ]
+    return _sha_архіву(шлях, ст.st_mtime_ns, ст.st_size)
+
+
+@lru_cache(maxsize=1)
+def _sha_архіву(шлях, _час, _розмір):
+    """Хешує архів. Час і розмір у ключі скидають кеш після оновлення файла."""
+    import hashlib
+    h = hashlib.sha256()
+    with open(шлях, "rb") as ф:
+        for шматок in iter(lambda: ф.read(1 << 20), b""):
+            h.update(шматок)
+    return h.hexdigest()
 
 
 
