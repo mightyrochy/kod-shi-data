@@ -2408,10 +2408,12 @@ function поверненняЗаглушка(w){
     const таблиця = Object.fromEntries(Object.entries(причиниЗбою).map(([вид, п]) => [вид,
       [...new Set(місцяЗбою.map(м => w.eval("ключЗбоюЖінціП(" + JSON.stringify(м) + ", " + JSON.stringify(п) + ")")))]]));
     тест("вид збою × місце: на всіх дев'яти місцях той самий ключ шаблону виду (кредити — credits_exhausted, 504 — model_timeout…)",
-         Object.entries(таблиця).every(([вид, к]) => к.length === 1 && к[0] === w.eval("ВИДИ_ЗБОЮ_МОДЕЛІ_П")[вид].шаблон
+         Object.entries(таблиця).every(([вид, к]) => к.length === 1 && к[0] === w.eval("ШАБЛОН_ЗБОЮ_МОДЕЛІ_П")[вид]
                                                      && typeof w.eval("ШАБЛОНИ_ЗБОЮ_П")[к[0]] === "string"
                                                      && w.eval("станТекстуЖінціП(ШАБЛОНИ_ЗБОЮ_П." + к[0] + ")") === "translated")
-         && місцяЗбою.every(м => w.eval("ключЗбоюЖінціП(" + JSON.stringify(м) + ", 'text_rejected: missing_text')") === м),
+         && місцяЗбою.every(м => w.eval("ключЗбоюЖінціП(" + JSON.stringify(м) + ", 'text_rejected: missing_text')") === м)
+         /* кожен вид збою має шаблон: стан екрана несе вид, екран бере шаблон зі сталої таблиці */
+         && w.eval("Object.keys(ВИДИ_ЗБОЮ_МОДЕЛІ_П).every(в => typeof ШАБЛОНИ_ЗБОЮ_П[ШАБЛОН_ЗБОЮ_МОДЕЛІ_П[в]] === 'string')"),
          таблиця);
     тест("журнал збоїв: показаний шаблон, місце й вид збою (примірка на 402 — credits_exhausted, а не tryon_failed)",
          w.eval("(()=>{ збійЖінціП(null, 'tryon_failed', " + JSON.stringify(причиниЗбою.кредити) + "); return JSON.stringify(ЖУРНАЛ_ЗБОЇВ_ЖІНЦІ_П[ЖУРНАЛ_ЗБОЇВ_ЖІНЦІ_П.length - 1]); })()")
