@@ -387,7 +387,7 @@ const ПАСПОРТ_ПОВЕРХ = ПАСПОРТ_НАКЛАДКА;
 const знайтиФайлСцени = (змінна, ім) => {
   const тека = process.env.TEKA_FOTO_SCENY || '';
   const кандидати = path.isAbsolute(ім) ? [ім]
-    : [path.resolve(КОРІНЬ, ім), path.resolve(process.cwd(), ім)].concat(тека ? [path.join(тека, ім)] : []);
+    : [...new Set([path.resolve(КОРІНЬ, ім), path.resolve(process.cwd(), ім)].concat(тека ? [path.join(тека, ім)] : []))];
   const є = кандидати.find(к => { try { return fs.statSync(к).isFile(); } catch (_) { return false; } });
   if (є) return є;
   throw new Error('ФАЙЛА СЦЕНИ НЕМА: ' + змінна + '=' + ім + ' (сцена ' + (process.env.SCENA || 'без назви') + '). Шукано: ' + кандидати.join('; ')
@@ -655,6 +655,10 @@ function внутрішняЗПаспорта(п){
   const оп = п.опади === 'так' ? 'rain' : кодВМ('precipitation', п.опади); if (оп) в.precipitation = оп;
   for (const [поле, ім] of [['hour', 'година'], ['temperature_c', 'темп_c'], ['duration_h', 'тривалість_год'], ['legs_above_cm', 'ноги_вище_см']])
     if (typeof п[ім] === 'number') в[поле] = п[ім];
+  /* ПОГОДА — `weather_band` (смуга погоди; перелік — `conversation_tools.feel`), а не градуси: шар паспорта не бере `temperature_c` із
+     репліки без її цифри (діагноз «unknown=hour,temperature_c» стенда на ж8, оцінка a215f192, №28–30). `відчуття_погоди`
+     в PASPORT дає стендові мороз «як у живої моделі»: «надворі −12» → `deep_frost`; без ключа — як доти. */
+  if (typeof п.відчуття_погоди === 'string' && п.відчуття_погоди) в.weather_band = п.відчуття_погоди;
   if (п.подія) в.event = {free_text: String(п.подія), lang: 'uk'};
   const в_ = п.вето || {}, межі = [];
   for (const т of в_.типи || []){ const к = кодВМ('item_type', т), ф = кодВМ('feature', т), с = кодВМ('slot', т);
@@ -670,6 +674,7 @@ function внутрішняЗПаспорта(п){
   /* уривки: поле коду — уривком свого поля паспорта; межа — уривком вето */
   const поПаспорту = {occasion: 'нагода', place: 'місце', dress_code: 'дрес_код', setting: 'формат', movement: 'рух',
     intent: 'намір', goal: 'мета', jewelry: 'прикраси', precipitation: 'опади', hour: 'година', temperature_c: 'темп_c',
+    weather_band: 'відчуття_погоди',
     duration_h: 'тривалість_год', legs_above_cm: 'ноги_вище_см', registers: 'реєстр_людини'};
   const quotes = {};
   for (const [поле, ім] of Object.entries(поПаспорту)) if (поле in в && ц[ім]) quotes[поле] = ц[ім];
