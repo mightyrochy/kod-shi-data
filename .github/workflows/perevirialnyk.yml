@@ -1,0 +1,59 @@
+# Перевіряльник коду (ruff закріпленої версії) на нулі: падає на спрацюванні правила з переліку
+# `.github/ruff-правила.txt`. Не храповик і не лічильник — числа «було — стало» не веде. Перелік росте лише PR чистки:
+# правило, доведене до нуля в `джерела/*.py`, дописують до файла одним рядком (код правила). Правил, що ще не на нулі,
+# тут нема; стилю (C408, UP031, I001, UP009) і BLE001 — без слова менеджера не додавати. Ruff — без чужих налаштувань:
+# `--isolated`, жодного конфігу в репозиторії.
+name: перевіряльник коду
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'джерела/**/*.py'
+      - '.github/ruff-правила.txt'
+      - '.github/requirements/ruff.txt'
+      - '.github/workflows/perevirialnyk.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'джерела/**/*.py'
+      - '.github/ruff-правила.txt'
+      - '.github/requirements/ruff.txt'
+      - '.github/workflows/perevirialnyk.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: перевіряльник-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ruff:
+    permissions:
+      contents: read
+    name: ruff на нулі
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: ruff закріпленої версії
+        run: python3 -m pip install --quiet --only-binary=:all: --require-hashes -r .github/requirements/ruff.txt
+
+      - name: правила з переліку — 0 спрацювань у джерела/*.py
+        run: |
+          set -euo pipefail
+          pravyla=$(grep -vE '^[[:space:]]*(#|$)' .github/ruff-правила.txt | tr -d ' \t\r' | paste -sd, -)
+          [ -n "${pravyla}" ] || { echo "перелік правил порожній"; exit 1; }
+          echo "правил: $(tr ',' '\n' <<<"${pravyla}" | wc -l)"
+          python3 -m ruff --version
+          cd джерела
+          python3 -m ruff check --isolated --no-cache --select "${pravyla}" --output-format concise *.py
