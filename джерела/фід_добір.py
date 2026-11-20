@@ -561,7 +561,7 @@ def лексикон(каталог, мін_n=3, мін_впевненість=0
                 c["колір_назва"].strip().lower())
         голоси.setdefault(ключ, []).append(_КР.точка_кольору(c))
     гр, дублікатів = defaultdict(list), defaultdict(int)
-    for (дизайн, назва), labs in голоси.items():
+    for (_, назва), labs in голоси.items():
         # кілька SKU одного дизайну -> один вимір (медіана по них)
         гр[назва].append(tuple(statistics.median(x[i] for x in labs) for i in range(3)))
         дублікатів[назва] += len(labs) - 1

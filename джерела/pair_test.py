@@ -226,7 +226,7 @@ def _оцінити(F, речі, intent=ТИПОВИЙ_НАМІР, source="uncon
     їх не приймає, тож сліпота гарантована структурно, а не обіцянкою."""
     r = _СУД.review(F, речі, source=source, intent=intent)
     спрац = {}
-    for st, d in r["стани"].items():
+    for _, d in r["стани"].items():
         for z in d["знахідки"]:
             с = z.get("сила")
             if с in ("ok", "утримано", None):
@@ -354,7 +354,7 @@ def звести(прогони):
             elif a > b:      d["до"] += 1
             elif b > a:      d["після"] += 1
             else:            d["однаково"] += 1
-    for прв, d in правила.items():
+    for _, d in правила.items():
         n = len(основні)
         якщо_мало = n < МІН_ПАР
         if d["мовчить"] == n:
