@@ -855,7 +855,7 @@ def випадок(в, день=None):
             # МЕЖА НА ОДИН СЛОТ — ОБʼЄКТОМ {code, only_on}: слот, на якому код її тримає
             # (`випадок.вето.слоти`); межа без слота — голим кодом, про весь образ
             сл = v.get("слоти") or {}
-            на = lambda x, c: ({"code": c, "only_on": [код("slot", s) for s in сл[x]]} if сл.get(x) else c)
+            на = lambda x, c, слоти=сл: ({"code": c, "only_on": [код("slot", s) for s in слоти[x]]} if слоти.get(x) else c)
             v = {кк: vv for кк, vv in (
                 ("types", [на(x, _межа_типу(x)) for x in (v.get("типи") or [])]),
                 ("fabrics", [на(x, код("fabric", x)) for x in (v.get("тканини") or [])]),

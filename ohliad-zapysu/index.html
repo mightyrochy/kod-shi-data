@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="robots" content="noindex">
+<title>Огляд запису речі</title>
+<style>
+:root{color-scheme:light only;--світле:#f1f1f1;--текст:#1b1b1b;--дрібний:#555;--межа:#c9c9c9;--акцент:#1f3a5f;--готово:#2e6b3a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--світле);color:var(--текст);font:16px/1.4 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif}
+main{max-width:480px;margin:0 auto;padding:10px 12px 28px}
+h1{font-size:20px;margin:6px 0 8px}
+p{margin:6px 0}.дрібно{font-size:13px;color:var(--дрібний)}
+button{font:inherit;color:inherit;min-height:44px;padding:8px 12px;border:1px solid var(--межа);border-radius:10px;background:#fff;touch-action:manipulation}
+button.вибрано{background:var(--акцент);border-color:var(--акцент);color:#fff;font-weight:600}
+.панель{background:#fff;border:1px solid var(--межа);border-radius:12px;padding:10px 12px;margin:8px 0}
+.верх{display:flex;align-items:center;gap:6px;position:sticky;top:0;background:var(--світле);padding:6px 0}
+.верх .лічба{flex:1;text-align:center;font-weight:600}
+.фото{background:#8a8a8a;border-radius:12px;padding:6px;text-align:center}
+.фото img{max-width:100%;max-height:52vh;border-radius:6px}
+.варіанти button{display:block;width:100%;text-align:left;margin:6px 0}
+textarea{width:100%;height:90px;font:12px monospace}
+</style>
+</head>
+<body>
+<main>
+<h1>Огляд запису речі</h1>
+<div id="екран"></div>
+</main>
+<script>
+/* Сторінка для людей (не продукт). Картки — картки.json: фото речі, поле й варіанти під перемішаними літерами; джерела варіантів тут не видно.
+   Відповіді — у пам'яті браузера; «Скопіювати» дає JSON {"<ід>|<поле>": "<літера>|жодне|не видно"} для менеджера.
+   ?список=<назва> — лише картки з <назва>.json цієї теки (масив "<ід>|<поле>"), відповіді — окремо від повного огляду. */
+const СПИСОК = (new URLSearchParams(location.search).get("список") || "").match(/^[\p{L}\p{N}_-]{1,40}$/u)?.[0] || "";
+const СХОВИЩЕ = "огляд-запису-речі-v1" + (СПИСОК ? ":" + СПИСОК : "");
+let картки = [], відповіді = {}, ч = 0;
+const ПОЛЯ = {колір: "колір (відтінок)", крій: "крій", довжина: "довжина", матеріал: "матеріал", каблук: "каблук", сезон: "сезон", слот: "до якої частини образу належить річ", підошва: "підошва"};
+const екран = document.getElementById("екран");
+try { відповіді = JSON.parse(localStorage.getItem(СХОВИЩЕ) || "{}"); } catch (_) {}
+function зберегти() { try { localStorage.setItem(СХОВИЩЕ, JSON.stringify(відповіді)); } catch (_) {} }
+function ключ(к) { return к.ід + "|" + к.поле; }
+function малювати() {
+  if (!картки.length) { екран.textContent = "Завантаження…"; return; }
+  const к = картки[ч], в = відповіді[ключ(к)], зроблено = Object.keys(відповіді).length;
+  екран.innerHTML = "";
+  const верх = document.createElement("div"); верх.className = "верх";
+  const назад = Object.assign(document.createElement("button"), {textContent: "←", onclick: () => { ч = (ч + картки.length - 1) % картки.length; малювати(); }});
+  const далі = Object.assign(document.createElement("button"), {textContent: "→", onclick: () => { ч = (ч + 1) % картки.length; малювати(); }});
+  const л = Object.assign(document.createElement("div"), {className: "лічба", textContent: (ч + 1) + " з " + картки.length + " · відповіді: " + зроблено});
+  верх.append(назад, л, далі); екран.append(верх);
+  const ф = document.createElement("div"); ф.className = "фото"; const і = document.createElement("img"); і.src = к.фото; і.alt = "фото речі"; ф.append(і); екран.append(ф);
+  const п = document.createElement("div"); п.className = "панель";
+  п.innerHTML = "<p class=дрібно></p><p><b></b></p><p></p>";
+  п.children[0].textContent = к.назва; п.children[1].textContent = "Що тут правда про " + (ПОЛЯ[к.поле] || к.поле) + "?";
+  п.children[2].className = "дрібно"; п.children[2].textContent = "Дивись на фото. Обери варіант, який описує річ точніше за інші.";
+  екран.append(п);
+  const б = document.createElement("div"); б.className = "варіанти";
+  const всі = к.варіанти.map(х => ({id: х.л, текст: х.л + ". " + х.текст})).concat([{id: "жодне", текст: "жодне не підходить"}, {id: "не видно", текст: "на фото не видно"}]);
+  for (const х of всі) {
+    const кн = Object.assign(document.createElement("button"), {textContent: х.текст});
+    if (в === х.id) кн.className = "вибрано";
+    кн.onclick = () => { відповіді[ключ(к)] = х.id; зберегти(); if (ч < картки.length - 1) ч++; малювати(); };
+    б.append(кн);
+  }
+  екран.append(б);
+  const низ = document.createElement("div"); низ.className = "панель";
+  const копія = Object.assign(document.createElement("button"), {textContent: "Скопіювати всі відповіді", onclick: async () => {
+    const т = JSON.stringify(відповіді);
+    try { await navigator.clipboard.writeText(т); копія.textContent = "Скопійовано"; } catch (_) { поле.value = т; поле.select(); копія.textContent = "Виділено нижче — скопіюй"; }
+  }});
+  const поле = document.createElement("textarea"); поле.readOnly = true; поле.placeholder = "Запасний шлях: сюди потрапить текст, якщо буфер недоступний";
+  низ.append(копія, поле); екран.append(низ);
+}
+Promise.all([fetch("картки.json", {cache: "no-cache"}).then(в => в.json()),
+  СПИСОК ? fetch(encodeURIComponent(СПИСОК) + ".json", {cache: "no-cache"}).then(в => в.json()) : null])
+  .then(([д, с]) => { const н = new Set(с || []); картки = с ? д.filter(к => н.has(ключ(к))) : д; if (!картки.length) throw 0; ч = Math.max(0, картки.findIndex(к => !(ключ(к) in відповіді))); малювати(); })
+  .catch(() => { екран.textContent = "Не вдалося завантажити картки."; });
+</script>
+</body>
+</html>

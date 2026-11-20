@@ -6,7 +6,7 @@
    ключа в браузері бути не може — його побачить кожен, хто відкрив devtools.
    Отже ключ лежить тут, а сторінка ходить сюди.
 
-   ДВА ПРОВАЙДЕРИ, ОДИН ФОРМАТ. Сторінка завжди шле й читає формат Anthropic;
+   ТРИ ПРОВАЙДЕРИ, ОДИН ФОРМАТ (третій — OpenAI, лише зображення). Сторінка завжди шле й читає формат Anthropic;
    переклад у бік Google живе ТІЛЬКИ тут. Тому зміна моделі — це правка рядка
    `МОДЕЛЬ_П` у показі, і більше нічого: маршрут вибирається за префіксом імені.
    Розбір відповіді, лічба токенів, читання `stop_reason` у сторінці лишаються
@@ -16,6 +16,7 @@
    ДЕ ЦЕ ЖИВЕ: Cloudflare Workers (безкоштовний тариф). Ключі — секретами:
        GEMINI_API_KEY    — секрет: ключ з aistudio.google.com (починається на AIza)
        ANTHROPIC_API_KEY — секрет: ключ API Anthropic (текст продукту — Claude, кредити з підписки)
+       OPENAI_API_KEY    — секрет: ключ API OpenAI (зображення примірки, `gpt-image-…`; кредити з підписки)
        CLAUDE_EFFORT     — звичайна змінна, необов'язкова: `output_config.effort` для
                            `claude-` (low | medium | high | …), `as-is` — без поля. Без змінної: low.
        TESTER_TOKENS     — секрет: токени через кому, ЛИШЕ латиниця (tok-a1,tok-b2)
@@ -57,6 +58,12 @@ const ЗАПАС_ДУМОК_CLAUDE = 12000;   // токенів на думки 
 /* Зусилля мислення Claude, коли змінна CLAUDE_EFFORT не задана: low — вимір 19.11
    (`аудит/проби/модель-текст-claude/`), якість образів як без межі, вихід на чверть менший. */
 const ТИПОВЕ_ЗУСИЛЛЯ_CLAUDE = "low";
+/* OpenAI images/edits (провайдер openai). Параметри НЕ виміряні наживо — ключа не було; це пропозиція за
+   документацією («Lower complexity can suit focused edits», типова якість — auto): задати інші — правка тут. */
+const ЯКІСТЬ_ЗОБРАЖЕННЯ_OPENAI = "medium";
+const СКЛАДНІСТЬ_ЗОБРАЖЕННЯ_OPENAI = "medium";
+/* Ціни $ за млн токенів (developers.openai.com/api/docs/pricing, 19.11.2026): gpt-image-2.6-sunburst і -flare. */
+const ЦІНА_OPENAI_ВХІД_ЗОБР = 8, ЦІНА_OPENAI_ВХІД_ТЕКСТ = 5, ЦІНА_OPENAI_ВИХІД_ЗОБР = 30;
 const СТЕЛЯ_ВХОДУ_СИМВ = 400000;   // виміряно: рука з пулом ≈ 130 000 симв
 const ПРОГОНІВ_НА_ДОБУ = 40;
 
@@ -71,10 +78,11 @@ const ПРОГОНІВ_НА_ДОБУ = 40;
    стабільність паспорта не гарантувалась НІЧИМ саме на тому провайдері, на
    якому крутиться шар (`МОДЕЛЬ_МОВИ_П` — gemini-).
 
-   ЩО ТЕПЕР. Одне правило на обидва маршрути: число з `temperature` тіла їде
-   провайдеру його власним полем (Anthropic — верхній рівень, Gemini —
-   `generationConfig.temperature`), і що саме поїхало, видно в заголовку
-   `x-temperature` — без нього «дійшла чи ні» лишалось би твердженням.
+   ЩО ТЕПЕР. Число з `temperature` тіла їде провайдеру його власним полем
+   (Gemini — `generationConfig.temperature`), і що саме поїхало, видно в заголовку
+   `x-temperature` — без нього «дійшла чи ні» лишалось би твердженням. Маршрут
+   `claude-` поля не шле зовсім (`без_температури`, наряд «Модель-збої-один-шлях»):
+   моделі Claude 5 відкидали нетипове 400, і кожен такий виклик ішов двічі.
 
    ЧОМУ ЛИШЕ ЧИСЛО Й ЛИШЕ ЦЕ ПОЛЕ. Не-число (null, рядок, NaN) поле ЗНІМАЄ, а не
    перетворює: `{"temperature": null}` у `generationConfig` Gemini відкидає 400,
@@ -217,8 +225,7 @@ const ПРОВАЙДЕРИ = [
       return [{effort: з || ТИПОВЕ_ЗУСИЛЛЯ_CLAUDE}];
     },
     запит: т => { const р = з_кешем({...т}); delete р._думки; delete р._без_темп;
-                  const темп = температура_тіла(т);
-                  if (темп === null) delete р.temperature; else р.temperature = темп;
+                  delete р.temperature;
                   if (т._думки && т._думки.effort)
                     р.output_config = Object.assign({}, р.output_config, {effort: т._думки.effort});
                   р.max_tokens = (Number(т.max_tokens) || СТЕЛЯ_ВИХОДУ) + ЗАПАС_ДУМОК_CLAUDE;
@@ -231,6 +238,20 @@ const ПРОВАЙДЕРИ = [
        402 `credits_exhausted`, — а слова жінці пише сторінка (`ШАБЛОНИ_ЗБОЮ_П.credits_exhausted`). */
     без_кредитів: (статус, текст) => (статус === 400 || статус === 402)
       && /credit balance is too low|billing_error/i.test(текст),
+    /* ── ФОТО ЗА АДРЕСОЮ ТЯГНЕ МІСТ, ЯК ДЛЯ ІНШИХ ПРОВАЙДЕРІВ (наряд «Модель-збої-один-шлях») ──
+       ЩО БУЛО. Блок `source:{type:"url"}` їхав в Anthropic як є, і кадр тягнув сам Anthropic: крамниця його не
+       віддавала — 400 «Unable to download the file» на ВЕСЬ виклик (21 з 513 викликів прогону через міст 20.11, усі
+       не-200 прогону), і опис образу з фото не приходив зовсім. ЩО ТЕПЕР. Те саме визначення, що в Gemini й OpenAI:
+       байти тягне міст (CORS крамниць на нього не діє), кладе base64 у рідний блок Anthropic, а мертве фото лишає
+       своє місце текстом «(image not delivered)» і лічиться в `x-images-dropped` — решта кадрів не зсувається
+       (кожен іде під своїм підписом «Photo N:», `підписатиКадри` сторінки), і виклик іде. */
+    підготувати: т => ПРОВАЙДЕРИ.find(x => x.ім === "gemini").підготувати(т),
+    /* ── ТЕМПЕРАТУРА ДО CLAUDE НЕ ЇДЕ (наряд «Модель-збої-один-шлях») ──
+       Моделі Claude, які кличе продукт (покоління 5: `claude-sonnet-5-5`, `claude-haiku-5-5`), приймають
+       `temperature` лише типовою, а сторінка шле 0 (`ВИБІРКА_П`). Доти міст слав поле, діставав 400 «Sampling
+       parameters…», знімав його й слав той самий запит удруге: 38 з 67 викликів с8 (прогін через міст 20.11) ішли
+       двічі. Поле, яке модель відкидає, до неї тепер не йде зовсім — виклик один, `x-temperature: n/a`. */
+    без_температури: true,
     відповідь: д => д,
   },
   {
@@ -310,8 +331,8 @@ const ПРОВАЙДЕРИ = [
           : (т._думки ? {thinkingConfig: т._думки} : {})),
     }),
     /* ── ФОТО ЗА АДРЕСОЮ: ТЯГНЕ ВОРКЕР, НЕ ТЕЛЕФОН ───────────
-       Сторінка шле блок image із `source:{type:"url"}` — Anthropic такий блок
-       розуміє сам. Google — ні, тож байти тягне воркер: він сервер, CORS
+       Сторінка шле блок image із `source:{type:"url"}`. Google такого не розуміє, а Anthropic тягнув кадр сам
+       і на мертвому валив увесь виклик 400 — тож байти тягне воркер для всіх трьох провайдерів: він сервер, CORS
        магазинів на нього не діє, і 46 політик перестають бути питанням.
        Фото, яке не завантажилось, ВИПАДАЄ з запиту (не валить його) і
        рахується в заголовку `x-images-dropped`, щоб сторінка назвала це. */
@@ -435,7 +456,99 @@ const ПРОВАЙДЕРИ = [
       };
     },
   },
+  {
+    /* ── OPENAI: ЛИШЕ ЗОБРАЖЕННЯ (наряд «Модель-примірка-на-OpenAI») ─────────────────────────────
+       ЩО ВІДОМО З ДОКУМЕНТАЦІЇ (developers.openai.com, прочитано 19.11.2026; ключа в сесії нема, живого
+       виклику не було):
+       · `POST /v1/images/edits`, `Content-Type: application/json` (довідник «Create image edit»):
+         `{model, prompt, images:[{image_url | file_id}] (1…16; image_url — URL або data:-URL, до 20 МБ),
+          quality, size, complexity, output_format, moderation, safety_identifier, n}`;
+         перше зображення — те, що редагують, решта — опорні (гайд, «Create a new image using image
+         references»). Моделі `gpt-image-2.6-sunburst` / `gpt-image-2.6-flare` (сторінка цін, 19.11);
+       · відповідь: `{data:[{b64_json}], output_format, quality, size, usage:{input_tokens,
+         input_tokens_details:{image_tokens,text_tokens}, output_tokens, total_tokens}}`; `url` для
+         GPT Image не підтримано; відмова безпеки — 400 `error.code = moderation_blocked`;
+       · ціна — за токени зображення: вхід $8, вихід $30 за млн; текст входу $5 (там само).
+       ЧОГО В ДОКУМЕНТАЦІЇ НЕМА: скільки токенів дає ОДНА примірка 2.6 — калькулятор гайда рахується
+       скриптом сторінки, у тексті є лише таблиця «до gpt-image-2». Тому міст віддає `usage` і сам
+       рахує гроші заголовком `x-cost-usd`: перше число — з першого живого виклику.
+       Маршрут обирає ім'я: `gpt-image-`. Мислення, драбина й температура картинковій моделі не потрібні. */
+    ім: "openai", префікс: "gpt-image-", ключ: "OPENAI_API_KEY",
+    адреса: () => "https://api.openai.com/v1/images/edits",
+    /* `content-type` JSON — тіло не multipart: довідник приймає `application/json` з `images[]`. */
+    шапка: k => ({"content-type":"application/json", "authorization":"Bearer " + k}),
+    картинкова: () => true,
+    /* Температури в images/edits нема: заголовок `x-temperature` — `n/a`, а 400 зі словом sampling/temperature
+       не лікується її зняттям (повтор був би тим самим платним запитом). */
+    без_температури: true,
+    /* Фото за адресою воркер тягне й кладе base64 так само, як для Gemini (одне визначення): магазин
+       може не віддати фото самому OpenAI, а мертве посилання валило б увесь виклик 400. */
+    підготувати: т => ПРОВАЙДЕРИ.find(x => x.ім === "gemini").підготувати(т),
+    /* КАДР, ЩО НЕ ДІЙШОВ, — ВІДМОВА ДО ПЛАТНОГО ВИКЛИКУ. images/edits бере масив і ОДИН промпт: мертве фото
+       стискало б масив зі зсувом номерів («photo 2» — уже светр, а не пальто), а заглушка `(image not delivered)`
+       вклеювалась би в початок промпта. Тому будь-яке фото, що не дійшло, — 422 без виклику OpenAI: краще
+       «не вдалось», ніж намальоване не тими речами (клас ФОТО-513). */
+    після_підготовки: (т, випало) => випало
+      ? "images/edits: " + випало + " фото за адресою не дійшло — виклик OpenAI не зроблено (масив зображень зсунув би номери речей)"
+      : null,
+    перевірити_запит: т => {
+      const пов = т.messages || [];
+      if (пов.length !== 1 || пов[0].role !== "user")
+        return "модель «" + т.model + "» (OpenAI images/edits) бере рівно одне повідомлення user, отримано " + пов.length;
+      const зобр = зображення_openai(пов[0]);
+      if (!зобр.length) return "images/edits потребує щонайменше одного фото (блок image із base64 чи url)";
+      if (зобр.length > 16) return "images/edits приймає до 16 зображень, отримано " + зобр.length;
+      return null;
+    },
+    запит: т => {
+      const м = (т.messages || [])[0] || {};
+      const блоки = Array.isArray(м.content) ? м.content : [{type:"text", text:м.content}];
+      return {
+        model: т.model,
+        prompt: блоки.filter(б => б.type === "text" && б.text).map(б => б.text).join("\n\n"),
+        images: зображення_openai(м),
+        quality: ЯКІСТЬ_ЗОБРАЖЕННЯ_OPENAI,
+        complexity: СКЛАДНІСТЬ_ЗОБРАЖЕННЯ_OPENAI,
+        size: "auto",
+        n: 1,
+      };
+    },
+    /* Кредити API скінчились: 429 `insufficient_quota` чи 400 `billing_hard_limit_reached` — міст
+       називає це одним видом 402 `credits_exhausted`, як і в Anthropic. */
+    без_кредитів: (статус, текст) => (статус === 429 || статус === 400)
+      && /insufficient_quota|billing_hard_limit_reached|exceeded your current quota/i.test(текст),
+    відповідь: д => {
+      const кадри = ((д && д.data) || []).filter(к => к && к.b64_json);
+      if (!кадри.length)
+        return {_помилка: "OpenAI images/edits: у відповіді нема картинки"
+                          + ((д && д.error && д.error.message) ? " · " + String(д.error.message).slice(0, 300) : "")};
+      const u = (д && д.usage) || {}, дет = u.input_tokens_details || {};
+      const формат = String((д && д.output_format) || "png").toLowerCase();
+      const вхід_зобр = Number(дет.image_tokens) || 0;
+      const вхід_текст = Number(дет.text_tokens) || (Number(u.input_tokens) || 0) - вхід_зобр;
+      const вихід = Number(u.output_tokens) || 0;
+      return {
+        content: кадри.map(к => ({type:"image", source:{type:"base64",
+                  media_type: "image/" + (формат === "jpg" ? "jpeg" : формат), data: к.b64_json}})),
+        stop_reason: "end_turn",
+        usage: {input_tokens: Number(u.input_tokens) || 0, cache_read_input_tokens: 0,
+                output_tokens: вихід, thinking_tokens: 0},
+        _провайдер: "openai", _причина_сира: null,
+        _вартість_usd: (вхід_зобр * ЦІНА_OPENAI_ВХІД_ЗОБР + Math.max(0, вхід_текст) * ЦІНА_OPENAI_ВХІД_ТЕКСТ
+                        + вихід * ЦІНА_OPENAI_ВИХІД_ЗОБР) / 1e6,
+      };
+    },
+  },
 ];
+
+/* Блоки image одного повідомлення → `images` OpenAI. base64 їде data:-URL, url — як є. */
+function зображення_openai(п) {
+  const блоки = Array.isArray(п && п.content) ? п.content : [];
+  return блоки.filter(б => б.type === "image" && б.source
+                          && (б.source.type === "url" ? б.source.url : б.source.data))
+    .map(б => ({image_url: б.source.type === "url" ? б.source.url
+                : "data:" + (б.source.media_type || ТИПОВИЙ_MIME_КАРТИНКИ) + ";base64," + б.source.data}));
+}
 
 /* ── NANO BANANA 2.1 І ДАЛІ — INTERACTIONS API, А НЕ generateContent ──
    ЩО ВІДОМО (ai.google.dev/gemini-api/docs/nanobanana і /interactions):
@@ -540,7 +653,7 @@ function заголовки(п) {
       "anthropic-ratelimit-tokens-remaining, anthropic-ratelimit-tokens-reset, " +
       "anthropic-ratelimit-input-tokens-remaining, anthropic-ratelimit-output-tokens-remaining, " +
       "retry-after, x-runs-left, x-provider, x-thinking, x-images-dropped, x-model, x-attempts, " +
-      "x-temperature, x-cached-tokens, x-route",
+      "x-temperature, x-cached-tokens, x-route, x-cost-usd",
     "Access-Control-Max-Age": "86400",
   };
 }
@@ -597,18 +710,37 @@ export default {
     // ЗНАЧЕННЯ ЗАГОЛОВКА — ТЕЖ ASCII. Тире «—» тут кидало TypeError ще до
     // мережі (спіймано пробою). Те саме стосується ТОКЕНА: кириличний токен
     // тестувальниці не пройшов би вже в браузері, тож роздавати лише ASCII.
-    let лишилось = "n/a";
+    /* ПРОГІН РЕЗЕРВУЄТЬСЯ ДО ФОТО, А ВІДМОВА ЗА ФОТО ЙОГО ПОВЕРТАЄ (дошка 16838, 16868): читання й запис лічильника стоять
+       поруч, до `підготувати`, що тягне фото до 20 с. Читання до фото й запис після нього тримали read-modify-write на
+       весь час завантаження: паралельні виклики одного токена читали те саме число й писали те саме +1 (8 викликів —
+       списано 2), і межа доби переставала бути межею платних викликів. Відмова 422 `після_підготовки` — дешева, виклику
+       провайдера нема, тож узятий прогін повертається (−1, не нижче 0). */
+    let лишилось = "n/a", ключ_доби = null;
     if (env.COUNTER) {
-      const к = "д:" + токен + ":" + new Date().toISOString().slice(0,10);
-      const було = Number(await env.COUNTER.get(к)) || 0;
+      ключ_доби = "д:" + токен + ":" + new Date().toISOString().slice(0,10);
+      const було = Number(await env.COUNTER.get(ключ_доби)) || 0;
       if (було >= ПРОГОНІВ_НА_ДОБУ)
         return відмова(429, "добова межа токена вичерпана: " + ПРОГОНІВ_НА_ДОБУ, п);
-      await env.COUNTER.put(к, String(було+1), {expirationTtl: 172800});
+      await env.COUNTER.put(ключ_доби, String(було + 1), {expirationTtl: 172800});
       лишилось = String(ПРОГОНІВ_НА_ДОБУ - було - 1);
     }
 
-    // Фото за адресою для провайдера, який сам їх не тягне (Gemini)
+    // Фото за адресою міст тягне сам (усі провайдери: `підготувати`)
     const випало_фото = пров.підготувати ? await пров.підготувати(тіло) : 0;
+    const після_фото = пров.після_підготовки && пров.після_підготовки(тіло, випало_фото);
+    if (після_фото && ключ_доби) {
+      const тепер = Math.max(0, (Number(await env.COUNTER.get(ключ_доби)) || 0) - 1);
+      await env.COUNTER.put(ключ_доби, String(тепер), {expirationTtl: 172800});
+      лишилось = String(ПРОГОНІВ_НА_ДОБУ - тепер);
+    }
+    if (після_фото) {
+      const в422 = new Headers();
+      for (const [і,з] of Object.entries(заголовки(п))) в422.set(і,з);
+      в422.set("content-type", "application/json");
+      в422.set("x-runs-left", лишилось); в422.set("x-provider", пров.ім);
+      в422.set("x-images-dropped", String(випало_фото));
+      return new Response(JSON.stringify({error:{type:"провайдер", message: після_фото}}), {status:422, headers:в422});
+    }
     /* ── СТЕЛЯ ЧАСУ Й ДРАБИНА МОДЕЛЕЙ (спіймано пробою) ────────
        Cloudflare ріже підзапит воркера, що мовчить ~100 с, і віддає йому
        відповідь 524 «error code: 524»; воркер віддавав її сторінці як є —
@@ -670,7 +802,7 @@ export default {
           /* 400 через саме поле вибірки (див. `температура_тіла`): знімаємо його ОДИН раз і
              повторюємо той самий щабель тією самою формою мислення — інакше «модель не
              приймає температуру» виглядало б як поломка моделі. */
-          if (/temperature|top_p|top_k|sampling/i.test(т400) && !тіло._без_темп
+          if (/temperature|top_p|top_k|sampling/i.test(т400) && !тіло._без_темп && !пров.без_температури
               && температура_тіла(тіло) !== null) {
             тіло._без_темп = true;
             спроби[спроби.length - 1] += "(temperature dropped)";
@@ -712,13 +844,13 @@ export default {
     вих.set("x-images-dropped", String(випало_фото));
     вих.set("x-model", модель_ок);
     /* ЯКИМ МАРШРУТОМ ПІШОВ ЗАПИТ — заголовком, щоб A/B між NB2 і 2.1 було видно на відповіді. */
-    вих.set("x-route", пров.ім !== "gemini" ? "messages"
+    вих.set("x-route", пров.ім === "openai" ? "images-edits" : пров.ім !== "gemini" ? "messages"
                        : (через_interactions(модель_ок) ? "interactions" : "generateContent"));
     вих.set("x-attempts", спроби.join(" "));
     /* ASCII, як і решта значень (кирилиця в заголовку кидає TypeError ще до мережі):
        «n/a» — тим самим словом, що й `x-runs-left`, коли числа нема. */
     вих.set("x-temperature", тіло._без_темп ? "dropped"
-                            : (температура_тіла(тіло) === null ? "n/a" : String(температура_тіла(тіло))));
+                            : (пров.без_температури || температура_тіла(тіло) === null ? "n/a" : String(температура_тіла(тіло))));
 
     const сире = await відп.text();
     if (відп.status === 504 || відп.status === 524)
@@ -745,6 +877,8 @@ export default {
     /* СКІЛЬКИ ВХОДУ ПРИЙШЛО З КЕШУ — ЗАГОЛОВКОМ (К-4). Без нього «кеш працює» лишалось
        би твердженням: тіло читає показ, а ручний огляд і проби дивляться на заголовки.
        ASCII, як і решта значень; `0` — кеш не влучив, і це теж факт. */
+    /* Гроші за виклик — заголовком, а не здогадом: токени × ціна з `usage` самого OpenAI. */
+    if (наш && typeof наш._вартість_usd === "number") вих.set("x-cost-usd", наш._вартість_usd.toFixed(4));
     вих.set("x-cached-tokens", String(((наш || {}).usage || {}).cache_read_input_tokens || 0));
     return new Response(JSON.stringify(наш), {status:200, headers:вих});
   },
@@ -756,4 +890,4 @@ export default {
    перевірити ще й CORS зі СПРАВЖНЬОГО походження Pages, чого запит із
    самого воркера не перевіряє: там походження своє. */
 
-const ПРОБА = `<!doctype html>\n<html lang="uk">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Проба мосту · Люстерко</title>\n<!--\n  НАВІЩО ЦЯ СТОРІНКА, А НЕ curl.\n  curl НЕ ПЕРЕВІРЯЄ CORS. Він шле запит і читає відповідь незалежно від того,\n  що сказав «Access-Control-Allow-Origin», — бо CORS накладає БРАУЗЕР, а не\n  сервер. Тобто зелений curl нічого не доводить про те, чи запрацює показ.\n  Ця сторінка ходить тим самим шляхом, що й показ: із того самого походження,\n  тим самим заголовком токена, тим самим тілом. Що спрацювало тут — спрацює там.\n\n  ДРУГЕ: вона на телефоні. curl на Android — це Termux і півгодини; ця\n  сторінка — посилання й одна кнопка.\n\n  ТРЕТЄ: вона окремо називає ТРИ різні поломки, які інакше зливаються в одне\n  «не працює»: міст не піднявся · міст живий, але не пускає · міст пускає,\n  а провайдер відмовляє (найчастіше — невірне ім'я моделі, 404).\n-->\n<style>\n  :root { color-scheme: light dark; }\n  body { font: 16px/1.5 system-ui, sans-serif; margin: 0; padding: 18px;\n         max-width: 720px; }\n  h1 { font-size: 20px; margin: 0 0 4px; }\n  p.тьм { color: #6b6b6b; margin: 4px 0 16px; font-size: 14px; }\n  label { display: block; font-size: 13px; color: #6b6b6b; margin: 12px 0 3px; }\n  input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 15px;\n          border: 1px solid #bbb; border-radius: 8px; font-family: ui-monospace, monospace; }\n  button { margin-top: 16px; padding: 12px 18px; font-size: 16px; border: 0;\n           border-radius: 8px; background: #1a1a1a; color: #fff; width: 100%; }\n  button:disabled { opacity: .5; }\n  pre { white-space: pre-wrap; word-break: break-word; background: #f4f4f4;\n        padding: 12px; border-radius: 8px; font-size: 13px; margin-top: 16px;\n        font-family: ui-monospace, monospace; }\n  @media (prefers-color-scheme: dark) { pre { background: #1e1e1e; } }\n  .добре { color: #0a7d32; } .зле { color: #b00020; }\n</style>\n</head>\n<body>\n<h1>Проба мосту</h1>\n<p class="тьм">Три невідомих одразу: чи піднявся міст, чи пускає він це\nпоходження й токен, чи існує така модель. Кожне називається окремо.</p>\n\n<label>Адреса мосту</label>\n<input id="адреса" placeholder="https://lyusterko-mist.ТВІЙ.workers.dev" autocapitalize="off" spellcheck="false">\n<label>Токен (латиницею — кирилиця в заголовку HTTP не проходить)</label>\n<input id="токен" placeholder="tok-a1" autocapitalize="off" spellcheck="false">\n<label>Ім'я моделі</label>\n<input id="модель" value="gemini-3.5-flash-lite" autocapitalize="off" spellcheck="false">\n\n<button id="пуск">Перевірити міст</button>\n<pre id="вивід">Заповніть поля або відкрийте цю сторінку з хешем:\n#міст=АДРЕСА&amp;т=ТОКЕН&amp;модель=ІМ'Я</pre>\n\n<script>\n"use strict";\nconst $ = і => document.getElementById(і);\nconst в = $("вивід");\n\n/* Ті самі ключі, що читає показ, — щоб заповнене тут працювало і там. */\n(function(){\n  try{\n    const h = new URLSearchParams((location.hash || "").replace(/^#/, ""));\n    $("адреса").value = h.get("міст")   || localStorage.getItem("міст:адреса") || "";\n    $("токен").value  = h.get("т")      || localStorage.getItem("міст:токен")  || "";\n    $("модель").value = h.get("модель") || localStorage.getItem("міст:модель") || "gemini-3.5-flash-lite";\n  }catch(_){}\n})();\n\nfunction рядок(о){ return Object.entries(о).map(([к,з])=>к+"="+з).join("\\n"); }\nfunction повідомлення(клас, заголовок, текст){\n  const мітка = document.createElement("span");\n  мітка.className = клас;\n  мітка.textContent = заголовок;\n  в.replaceChildren(мітка, document.createTextNode(текст));\n}\n\n$("пуск").onclick = async () => {\n  const адреса = $("адреса").value.trim();\n  const токен  = $("токен").value.trim();\n  const модель = $("модель").value.trim();\n  if (!адреса || !токен){ в.textContent = "Потрібні адреса й токен."; return; }\n  /* Не-ASCII тут падає ще до мережі — краще сказати це словами, ніж дати\n     людині дивитись на TypeError у консолі, якої на телефоні нема. */\n  if (/[^\\x00-\\x7F]/.test(токен)){\n    в.textContent = "✗ Токен має не-ASCII символ. Заголовки HTTP приймають лише "\n                  + "латиницю й цифри — кириличний токен не пройде навіть до мосту.";\n    return;\n  }\n  try{\n    localStorage.setItem("міст:адреса", адреса);\n    localStorage.setItem("міст:токен", токен);\n    localStorage.setItem("міст:модель", модель);\n  }catch(_){}\n\n  $("пуск").disabled = true;\n  в.textContent = "Стукаю…\\nпоходження: " + location.origin;\n  const почато = Date.now();\n  let відп;\n  try{\n    відп = await fetch(адреса, {\n      method: "POST",\n      headers: {"Content-Type":"application/json", "x-lyusterko-token": токен},\n      /* Найдешевший можливий запит: одне слово, стеля 16 токенів. Мета —\n         перевірити ШЛЯХ, а не якість моделі. Стеля 256, а не 16: Flash мислить\n         за замовчуванням, і думки рахуються ПРОТИ неї — на 16 весь бюджет\n         з'їдали думки, текст був порожній, а виглядало це як «модель мовчить». */\n      /* \`temperature: 0\` — ЩОБ ВИДНО БУЛО, ЧИ ВОНА ДОХОДИТЬ (рядок 158, 27.09.2026).\n         Маршрут \`gemini-\` будує тіло нанову й доти губив це поле мовчки; тепер\n         проба шле його тим самим шляхом, що й показ, а рядок «температура» нижче\n         каже, що міст поклав у запит до провайдера (заголовок \`x-temperature\`). */\n      body: JSON.stringify({model: модель, max_tokens: 256, temperature: 0,\n        messages: [{role:"user", content:[{type:"text",\n          text:"Відповідай одним словом українською: яка зараз пора року в Україні у вересні?"}]}]}),\n    });\n  }catch(e){\n    повідомлення("зле", "✗ Не достукався взагалі.", "\\n\\n" + String(e) + "\\n\\n"\n      + "Найчастіші причини, у порядку ймовірності:\\n"\n      + "· адреса з друкарською помилкою або воркер не задеплоєний\\n"\n      + "· у ДОЗВОЛЕНІ_ПОХОДЖЕННЯ немає «" + location.origin + "»\\n"\n      + "  (саме це походження треба вписати у worker.js і передеплоїти)\\n"\n      + "· браузер зарізав змішаний вміст: сторінка http, міст https");\n    $("пуск").disabled = false; return;\n  }\n\n  const заг = {};\n  відп.headers.forEach((з,і)=>{ заг[і] = з; });\n  const сире = await відп.text();\n  const час = ((Date.now()-почато)/1000).toFixed(1);\n\n  if (!відп.ok){\n    let підказка = "";\n    if (відп.status === 403) підказка = "Міст ЖИВИЙ, але не пускає це походження.\\n"\n      + "Впиши «" + location.origin + "» у ДОЗВОЛЕНІ_ПОХОДЖЕННЯ й передеплой.";\n    else if (відп.status === 401 && /ACCESS_TOKEN_TYPE_UNSUPPORTED|invalid authentication/i.test(сире))\n      підказка = "МІСТ ПРАЦЮЄ. Відмовив САМ GOOGLE: ключ формату AQ. його\\n"\n      + "Generative Language API не приймає для цього проєкту.\\n"\n      + "Це відома біда переходу AIza → AQ, і вона не в твоєму коді.\\n"\n      + "Що робити: натисни «Copy cURL quickstart» на сторінці ключа —\\n"\n      + "там Google сам пише, як зараз кликати. Якщо там інший заголовок\\n"\n      + "або інша адреса — покажи мені, і я поправлю міст за десять хвилин.";\n    else if (відп.status === 401 && /"м/.test(сире)) підказка = "Міст живий і пускає "\n      + "походження, але ТОКЕН невідомий.\\nПеревір секрет TESTER_TOKENS — через кому, без пробілів.";\n    else if (відп.status === 401) підказка = "401 прийшов від провайдера, не від мосту:\\n"\n      + "ключ не підійшов. Дивись тіло нижче — воно від Google.";\n    else if (відп.status === 400) підказка = "Міст живий, але не впізнав модель.\\n"\n      + "Ім'я має починатись на gemini- або claude-.";\n    else if (відп.status === 404) підказка = "МОДЕЛІ З ТАКИМ ІМЕНЕМ НЕМА.\\n"\n      + "Це найчастіша поломка: каталог Google рухається, і ім'я треба звірити\\n"\n      + "в AI Studio. Пробуй інші, міняючи лише поле «модель».";\n    else if (відп.status === 429) підказка = "Квота вичерпана або запити занадто часті.\\n"\n      + "На дармовому тарифі Gemini це 10–15 запитів на хвилину.";\n    else if (відп.status === 503) підказка =\n      "МОДЕЛЬ ПЕРЕВАНТАЖЕНА (сплеск попиту в Google, тимчасово). Міст уже спробував\\n"\n      + "двічі. Що робити: повторити за хвилину, або задати на воркері\\n"\n      + "GEMINI_FALLBACK=gemini-3.5-flash-lite — тоді міст сам перейде на неї,\\n"\n      + "а яка модель відповіла, покаже рядок «відповіла».";\n    else if (відп.status === 504 || відп.status === 524) підказка =\n      "МІСТ ПРАЦЮЄ — МОВЧИТЬ МОДЕЛЬ. Спроби й секунди — у тілі нижче.\\n"\n      + "Це латентність провайдера, не міст. Що робити: інше ім'я моделі в полі\\n"\n      + "«модель» (напр. gemini-2.5-flash-lite), змінна GEMINI_THINKING=off,\\n"\n      + "і GEMINI_FALLBACK=gemini-2.5-flash-lite,gemini-2.5-flash на воркері —\\n"\n      + "тоді міст сам перейде на наступну, коли основна мовчить.";\n    else if (відп.status === 500 && /секрета/.test(сире)) підказка =\n      "Міст живий, але секрета з ключем на ньому нема.\\n"\n      + "Додай GEMINI_API_KEY (або ANTHROPIC_API_KEY) у Variables and Secrets.";\n    повідомлення("зле", "✗ HTTP " + відп.status, "  ·  " + час + " с\\n\\n"\n      + (підказка ? підказка + "\\n\\n" : "")\n      + "тіло відповіді:\\n" + сире.slice(0, 900) + "\\n\\nзаголовки:\\n" + рядок(заг));\n    $("пуск").disabled = false; return;\n  }\n\n  let д; try{ д = JSON.parse(сире); }catch{ д = null; }\n  const текст = д && (д.content||[]).map(б=>б.text||"").join(" ").trim();\n  const u = (д && д.usage) || {};\n  повідомлення("добре", "✓ Міст працює.", "  ·  " + час + " с\\n\\n"\n    + "провайдер   : " + (заг["x-provider"] || "?") + "\\n"\n    + "відповіла   : " + (заг["x-model"] || "?") + (заг["x-attempts"] ? "  (спроби: " + заг["x-attempts"] + ")" : "") + "\\n"\n    + "модель      : " + модель + "\\n"\n    + "відповідь   : " + (текст || "(порожньо)") + "\\n"\n    + "токени      : вхід " + (u.input_tokens ?? "?") + " · вихід " + (u.output_tokens ?? "?")\n    + (u.thinking_tokens ? " (з них думок " + u.thinking_tokens + ")" : "") + "\\n"\n    + "мислення    : " + ({"thinkingLevel":"обмежене (рівень)",\n                          "thinkingBudget":"обмежене (бюджет)",\n                          "as-is":"як у моделі за замовчуванням",\n                          "dropped-after-400":"⚠ модель не приймає це поле — знято"}\n                         [заг["x-thinking"]] || заг["x-thinking"] || "?") + "\\n"\n    + "температура : " + (заг["x-temperature"] === "dropped"\n                          ? "⚠ модель не приймає це поле — міст зняв його й повторив запит"\n                          : !заг["x-temperature"] || заг["x-temperature"] === "n/a"\n                          ? "⚠ у запит не пішла — провайдер узяв свою"\n                          : заг["x-temperature"] + " — пішла в запит до провайдера") + "\\n"\n    + "stop_reason : " + (д && д.stop_reason) + "\\n"\n    + "прогонів    : " + (заг["x-runs-left"] || "n/a") + "\\n\\n"\n    + "Тепер це саме ім'я моделі можна ставити в МОДЕЛЬ_П у показі,\\n"\n    + "а показ відкривати з #міст=" + адреса + "&т=" + токен);\n  $("пуск").disabled = false;\n};\n</script>\n</body>\n</html>\n`;
+const ПРОБА = `<!doctype html>\n<html lang="uk">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Проба мосту · Люстерко</title>\n<!--\n  НАВІЩО ЦЯ СТОРІНКА, А НЕ curl.\n  curl НЕ ПЕРЕВІРЯЄ CORS. Він шле запит і читає відповідь незалежно від того,\n  що сказав «Access-Control-Allow-Origin», — бо CORS накладає БРАУЗЕР, а не\n  сервер. Тобто зелений curl нічого не доводить про те, чи запрацює показ.\n  Ця сторінка ходить тим самим шляхом, що й показ: із того самого походження,\n  тим самим заголовком токена, тим самим тілом. Що спрацювало тут — спрацює там.\n\n  ДРУГЕ: вона на телефоні. curl на Android — це Termux і півгодини; ця\n  сторінка — посилання й одна кнопка.\n\n  ТРЕТЄ: вона окремо називає ТРИ різні поломки, які інакше зливаються в одне\n  «не працює»: міст не піднявся · міст живий, але не пускає · міст пускає,\n  а провайдер відмовляє (найчастіше — невірне ім'я моделі, 404).\n-->\n<style>\n  :root { color-scheme: light dark; }\n  body { font: 16px/1.5 system-ui, sans-serif; margin: 0; padding: 18px;\n         max-width: 720px; }\n  h1 { font-size: 20px; margin: 0 0 4px; }\n  p.тьм { color: #6b6b6b; margin: 4px 0 16px; font-size: 14px; }\n  label { display: block; font-size: 13px; color: #6b6b6b; margin: 12px 0 3px; }\n  input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 15px;\n          border: 1px solid #bbb; border-radius: 8px; font-family: ui-monospace, monospace; }\n  button { margin-top: 16px; padding: 12px 18px; font-size: 16px; border: 0;\n           border-radius: 8px; background: #1a1a1a; color: #fff; width: 100%; }\n  button:disabled { opacity: .5; }\n  pre { white-space: pre-wrap; word-break: break-word; background: #f4f4f4;\n        padding: 12px; border-radius: 8px; font-size: 13px; margin-top: 16px;\n        font-family: ui-monospace, monospace; }\n  @media (prefers-color-scheme: dark) { pre { background: #1e1e1e; } }\n  .добре { color: #0a7d32; } .зле { color: #b00020; }\n</style>\n</head>\n<body>\n<h1>Проба мосту</h1>\n<p class="тьм">Три невідомих одразу: чи піднявся міст, чи пускає він це\nпоходження й токен, чи існує така модель. Кожне називається окремо.</p>\n\n<label>Адреса мосту</label>\n<input id="адреса" placeholder="https://lyusterko-mist.ТВІЙ.workers.dev" autocapitalize="off" spellcheck="false">\n<label>Токен (латиницею — кирилиця в заголовку HTTP не проходить)</label>\n<input id="токен" placeholder="tok-a1" autocapitalize="off" spellcheck="false">\n<label>Ім'я моделі</label>\n<input id="модель" value="gemini-3.5-flash-lite" autocapitalize="off" spellcheck="false">\n\n<button id="пуск">Перевірити міст</button>\n<pre id="вивід">Заповніть поля або відкрийте цю сторінку з хешем:\n#міст=АДРЕСА&amp;т=ТОКЕН&amp;модель=ІМ'Я</pre>\n\n<script>\n"use strict";\nconst $ = і => document.getElementById(і);\nconst в = $("вивід");\n\n/* Ті самі ключі, що читає показ, — щоб заповнене тут працювало і там. */\n(function(){\n  try{\n    const h = new URLSearchParams((location.hash || "").replace(/^#/, ""));\n    $("адреса").value = h.get("міст")   || localStorage.getItem("міст:адреса") || "";\n    $("токен").value  = h.get("т")      || localStorage.getItem("міст:токен")  || "";\n    $("модель").value = h.get("модель") || localStorage.getItem("міст:модель") || "gemini-3.5-flash-lite";\n  }catch(_){}\n})();\n\nfunction рядок(о){ return Object.entries(о).map(([к,з])=>к+"="+з).join("\\n"); }\nfunction повідомлення(клас, заголовок, текст){\n  const мітка = document.createElement("span");\n  мітка.className = клас;\n  мітка.textContent = заголовок;\n  в.replaceChildren(мітка, document.createTextNode(текст));\n}\n\n$("пуск").onclick = async () => {\n  const адреса = $("адреса").value.trim();\n  const токен  = $("токен").value.trim();\n  const модель = $("модель").value.trim();\n  if (!адреса || !токен){ в.textContent = "Потрібні адреса й токен."; return; }\n  /* Не-ASCII тут падає ще до мережі — краще сказати це словами, ніж дати\n     людині дивитись на TypeError у консолі, якої на телефоні нема. */\n  if (/[^\\x00-\\x7F]/.test(токен)){\n    в.textContent = "✗ Токен має не-ASCII символ. Заголовки HTTP приймають лише "\n                  + "латиницю й цифри — кириличний токен не пройде навіть до мосту.";\n    return;\n  }\n  try{\n    localStorage.setItem("міст:адреса", адреса);\n    localStorage.setItem("міст:токен", токен);\n    localStorage.setItem("міст:модель", модель);\n  }catch(_){}\n\n  $("пуск").disabled = true;\n  в.textContent = "Стукаю…\\nпоходження: " + location.origin;\n  const почато = Date.now();\n  let відп;\n  try{\n    відп = await fetch(адреса, {\n      method: "POST",\n      headers: {"Content-Type":"application/json", "x-lyusterko-token": токен},\n      /* Найдешевший можливий запит: одне слово, стеля 16 токенів. Мета —\n         перевірити ШЛЯХ, а не якість моделі. Стеля 256, а не 16: Flash мислить\n         за замовчуванням, і думки рахуються ПРОТИ неї — на 16 весь бюджет\n         з'їдали думки, текст був порожній, а виглядало це як «модель мовчить». */\n      /* \`temperature: 0\` — ЩОБ ВИДНО БУЛО, ЧИ ВОНА ДОХОДИТЬ (рядок 158, 27.09.2026).\n         Маршрут \`gemini-\` будує тіло нанову й доти губив це поле мовчки; тепер\n         проба шле його тим самим шляхом, що й показ, а рядок «температура» нижче\n         каже, що міст поклав у запит до провайдера (заголовок \`x-temperature\`). */\n      body: JSON.stringify({model: модель, max_tokens: 256, temperature: 0,\n        messages: [{role:"user", content:[{type:"text",\n          text:"Відповідай одним словом українською: яка зараз пора року в Україні у вересні?"}]}]}),\n    });\n  }catch(e){\n    повідомлення("зле", "✗ Не достукався взагалі.", "\\n\\n" + String(e) + "\\n\\n"\n      + "Найчастіші причини, у порядку ймовірності:\\n"\n      + "· адреса з друкарською помилкою або воркер не задеплоєний\\n"\n      + "· у ДОЗВОЛЕНІ_ПОХОДЖЕННЯ немає «" + location.origin + "»\\n"\n      + "  (саме це походження треба вписати у worker.js і передеплоїти)\\n"\n      + "· браузер зарізав змішаний вміст: сторінка http, міст https");\n    $("пуск").disabled = false; return;\n  }\n\n  const заг = {};\n  відп.headers.forEach((з,і)=>{ заг[і] = з; });\n  const сире = await відп.text();\n  const час = ((Date.now()-почато)/1000).toFixed(1);\n\n  if (!відп.ok){\n    let підказка = "";\n    if (відп.status === 403) підказка = "Міст ЖИВИЙ, але не пускає це походження.\\n"\n      + "Впиши «" + location.origin + "» у ДОЗВОЛЕНІ_ПОХОДЖЕННЯ й передеплой.";\n    else if (відп.status === 401 && /ACCESS_TOKEN_TYPE_UNSUPPORTED|invalid authentication/i.test(сире))\n      підказка = "МІСТ ПРАЦЮЄ. Відмовив САМ GOOGLE: ключ формату AQ. його\\n"\n      + "Generative Language API не приймає для цього проєкту.\\n"\n      + "Це відома біда переходу AIza → AQ, і вона не в твоєму коді.\\n"\n      + "Що робити: натисни «Copy cURL quickstart» на сторінці ключа —\\n"\n      + "там Google сам пише, як зараз кликати. Якщо там інший заголовок\\n"\n      + "або інша адреса — покажи мені, і я поправлю міст за десять хвилин.";\n    else if (відп.status === 401 && /"м/.test(сире)) підказка = "Міст живий і пускає "\n      + "походження, але ТОКЕН невідомий.\\nПеревір секрет TESTER_TOKENS — через кому, без пробілів.";\n    else if (відп.status === 401) підказка = "401 прийшов від провайдера, не від мосту:\\n"\n      + "ключ не підійшов. Дивись тіло нижче — воно від Google.";\n    else if (відп.status === 400) підказка = "Міст живий, але не впізнав модель.\\n"\n      + "Ім'я має починатись на gemini-, claude- або gpt-image-.";\n    else if (відп.status === 404) підказка = "МОДЕЛІ З ТАКИМ ІМЕНЕМ НЕМА.\\n"\n      + "Це найчастіша поломка: каталог Google рухається, і ім'я треба звірити\\n"\n      + "в AI Studio. Пробуй інші, міняючи лише поле «модель».";\n    else if (відп.status === 429) підказка = "Квота вичерпана або запити занадто часті.\\n"\n      + "На дармовому тарифі Gemini це 10–15 запитів на хвилину.";\n    else if (відп.status === 503) підказка =\n      "МОДЕЛЬ ПЕРЕВАНТАЖЕНА (сплеск попиту в Google, тимчасово). Міст уже спробував\\n"\n      + "двічі. Що робити: повторити за хвилину, або задати на воркері\\n"\n      + "GEMINI_FALLBACK=gemini-3.5-flash-lite — тоді міст сам перейде на неї,\\n"\n      + "а яка модель відповіла, покаже рядок «відповіла».";\n    else if (відп.status === 504 || відп.status === 524) підказка =\n      "МІСТ ПРАЦЮЄ — МОВЧИТЬ МОДЕЛЬ. Спроби й секунди — у тілі нижче.\\n"\n      + "Це латентність провайдера, не міст. Що робити: інше ім'я моделі в полі\\n"\n      + "«модель» (напр. gemini-2.5-flash-lite), змінна GEMINI_THINKING=off,\\n"\n      + "і GEMINI_FALLBACK=gemini-2.5-flash-lite,gemini-2.5-flash на воркері —\\n"\n      + "тоді міст сам перейде на наступну, коли основна мовчить.";\n    else if (відп.status === 500 && /секрета/.test(сире)) підказка =\n      "Міст живий, але секрета з ключем на ньому нема.\\n"\n      + "Додай GEMINI_API_KEY (або ANTHROPIC_API_KEY) у Variables and Secrets.";\n    повідомлення("зле", "✗ HTTP " + відп.status, "  ·  " + час + " с\\n\\n"\n      + (підказка ? підказка + "\\n\\n" : "")\n      + "тіло відповіді:\\n" + сире.slice(0, 900) + "\\n\\nзаголовки:\\n" + рядок(заг));\n    $("пуск").disabled = false; return;\n  }\n\n  let д; try{ д = JSON.parse(сире); }catch{ д = null; }\n  const текст = д && (д.content||[]).map(б=>б.text||"").join(" ").trim();\n  const u = (д && д.usage) || {};\n  повідомлення("добре", "✓ Міст працює.", "  ·  " + час + " с\\n\\n"\n    + "провайдер   : " + (заг["x-provider"] || "?") + "\\n"\n    + "відповіла   : " + (заг["x-model"] || "?") + (заг["x-attempts"] ? "  (спроби: " + заг["x-attempts"] + ")" : "") + "\\n"\n    + "модель      : " + модель + "\\n"\n    + "відповідь   : " + (текст || "(порожньо)") + "\\n"\n    + "токени      : вхід " + (u.input_tokens ?? "?") + " · вихід " + (u.output_tokens ?? "?")\n    + (u.thinking_tokens ? " (з них думок " + u.thinking_tokens + ")" : "") + "\\n"\n    + "мислення    : " + ({"thinkingLevel":"обмежене (рівень)",\n                          "thinkingBudget":"обмежене (бюджет)",\n                          "as-is":"як у моделі за замовчуванням",\n                          "dropped-after-400":"⚠ модель не приймає це поле — знято"}\n                         [заг["x-thinking"]] || заг["x-thinking"] || "?") + "\\n"\n    + "температура : " + (заг["x-temperature"] === "dropped"\n                          ? "⚠ модель не приймає це поле — міст зняв його й повторив запит"\n                          : !заг["x-temperature"] || заг["x-temperature"] === "n/a"\n                          ? "⚠ у запит не пішла — провайдер узяв свою"\n                          : заг["x-temperature"] + " — пішла в запит до провайдера") + "\\n"\n    + "stop_reason : " + (д && д.stop_reason) + "\\n"\n    + "прогонів    : " + (заг["x-runs-left"] || "n/a") + "\\n\\n"\n    + "Тепер це саме ім'я моделі можна ставити в МОДЕЛЬ_П у показі,\\n"\n    + "а показ відкривати з #міст=" + адреса + "&т=" + токен);\n  $("пуск").disabled = false;\n};\n</script>\n</body>\n</html>\n`;
