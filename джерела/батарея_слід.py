@@ -285,12 +285,7 @@
 }
 
 
-ПРОБА_P17 = frozenset("""
-K-CHN-01 K-CLR-01 K-CLR-03 K-CLR-04 K-COL-03 K-COMP-02 K-CON-01 K-CRA-11
-K-ECHO-01 K-EYE-02 K-IO-03 K-IO-04 K-IO-05 K-KOH-03 K-KOH-07 K-KOH-09
-K-LNG-04 K-P0-01 K-PRC-01 K-SIL-07 K-SIZ-01 K-SYS-08 K-SYS-09 K-VAR-01
-K-WEA-04 R-FEED-02 R-FEED-06 R-PC-03 R-PC-09 R-PRN-07 R-SSC-01
-""".split())
+ПРОБА_P17 = frozenset(["K-CHN-01", "K-CLR-01", "K-CLR-03", "K-CLR-04", "K-COL-03", "K-COMP-02", "K-CON-01", "K-CRA-11", "K-ECHO-01", "K-EYE-02", "K-IO-03", "K-IO-04", "K-IO-05", "K-KOH-03", "K-KOH-07", "K-KOH-09", "K-LNG-04", "K-P0-01", "K-PRC-01", "K-SIL-07", "K-SIZ-01", "K-SYS-08", "K-SYS-09", "K-VAR-01", "K-WEA-04", "R-FEED-02", "R-FEED-06", "R-PC-03", "R-PC-09", "R-PRN-07", "R-SSC-01"])
 
 
 # ── ПРАВИЛА, ЧИЙ ЧЕСНИЙ ЗАПИС ЛЕЖИТЬ ПОЗА ЦІЄЮ БАТАРЕЄЮ ──────────────────────
