@@ -33,8 +33,9 @@
      чеканні квоти, GPU (вимір карти nvidia-smi з часом UTC і замок обгортки окремими рядками), межі без джерела, здоров'я машини (місце, теки, позначки за рушієм, видом і віком), аварії однієї
      причини — лише обчислене.
   8. `-Light` — тримач світла (задача `claude-light`, той самий скрипт і той самий контекст, що й планувальник):
-     постійний процес, що на мережі тримає запит «система й дисплей потрібні», а коли світло зникає, пише
-     СВІТЛА НЕМА, чекає доставки й лише тоді відпускає запит; світло повернулось — СВІТЛО Є і запит знову.
+     постійний процес, що на мережі тримає запит «система потрібна» (дисплей гасне за схемою Windows), а коли
+     світло зникає, бере ще й дисплей, пише СВІТЛА НЕМА, чекає доставки й лише тоді відпускає запит; світло
+     повернулось — СВІТЛО Є і запит «система потрібна» знову.
 #>
 [CmdletBinding()]
 param(
@@ -203,16 +204,25 @@ function Read-LightState {
     [pscustomobject]@{ Off = $off; Id = $id }
 }
 
-function Set-LightHold([bool]$On) {
-    <# Запит тримача взяти чи відпустити; $script:LightHeld — чи тримає його цей потік зараз (Set-KeepAwake). #>
-    if ($On) { $script:LightHeld = [bool](Set-KeepAwake $true); return }
+function Set-LightHold([bool]$On, [bool]$Display = $false) {
+    <# Запит тримача взяти чи відпустити; $script:LightHeld — чи тримає його цей потік зараз, $script:LightDisplay — чи
+    разом із дисплеєм (Set-KeepAwake). Новий виклик замінює прапорці попереднього: так запит міняє вигляд за переходом
+    мережа ↔ батарея, не відпускаючи системи. #>
+    if ($On) {
+        $script:LightHeld = [bool](Set-KeepAwake $true $Display)
+        $script:LightDisplay = $script:LightHeld -and $Display
+        return
+    }
     [void](Set-KeepAwake $false)
     $script:LightHeld = $false
+    $script:LightDisplay = $false
 }
 
 function Step-Light {
-    <# Один такт тримача. На мережі запит тримається заздалегідь: 17.11 Windows увійшла в Modern Standby за простоєм
-    через 3 с після переходу на батарею — раніше, ніж будь-хто встиг би щось написати. Світла нема — рядок у теку
+    <# Один такт тримача. На мережі запит «система потрібна» тримається заздалегідь, без дисплея: 17.11 Windows
+    увійшла в Modern Standby за простоєм через 3 с після переходу на батарею — раніше, ніж будь-хто встиг би щось
+    написати; запит системи скидає таймер сну, тож поріг сну батареї рахується від переходу, а дисплей гасне за
+    схемою Windows (НАЛАШТУВАННЯ.md, «Тримач світла»). На батареї запит бере й дисплей. Світла нема — рядок у теку
     вихідних, чекання доставки (Wait-LineSent -FirstPass, межа -OffWaitMinutes — та сама, що в ВИМКНЕНО) і лише тоді
     запит відпущено: сон відкладається тільки до доставки, далі ноутбук засинає за схемою Windows (рішення менеджера
     17.11). Id рядка лежить у `light.txt`, доки чекання не скінчилось: тримач, перезапущений посеред чекання, бере
@@ -226,19 +236,20 @@ function Step-Light {
             [void](Add-Line "GEMINI ОБГОРТКА: СВІТЛО Є $([datetime]::UtcNow.ToString($stamp)) ПАУЗА З $($st.Off)")
             Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
         }
-        if (-not $script:LightHeld) {
+        if (-not $script:LightHeld -or $script:LightDisplay) {
             Set-LightHold $true
             # Відмову пишемо раз, а не щотакту: тримач пробує знову кожен такт.
             if ($script:LightHeld -or -not $script:LightRefused) {
-                Write-Log "світло: мережа, запит «система й дисплей потрібні» $(if ($script:LightHeld) { 'тримається' } else { 'НЕ ПРИЙНЯТО' })"
+                Write-Log "світло: мережа, запит «система потрібна» (дисплей — за схемою Windows) $(if ($script:LightHeld) { 'тримається' } else { 'НЕ ПРИЙНЯТО' })"
             }
             $script:LightRefused = -not $script:LightHeld
         }
         return
     }
     if ($st -and -not $st.Id) { return }  # про це зникнення вже сказано й доставки дочекались; запит відпущено ще тоді
-    # Тримач стартував уже на батареї чи перезапущений посеред чекання — запит і тут, лише на час доставки.
-    if (-not $script:LightHeld) { Set-LightHold $true }
+    # Тримач стартував уже на батареї, перезапущений посеред чекання чи щойно перейшов з мережі — запит із дисплеєм
+    # (на мережі він був без дисплея), лише на час доставки.
+    if (-not $script:LightHeld -or -not $script:LightDisplay) { Set-LightHold $true $true }
     $why = 'рядок не записано'
     $off = $(if ($st) { $st.Off } else { [datetime]::UtcNow.ToString($stamp) })
     try {
@@ -265,6 +276,7 @@ function Invoke-Light {
     $lock = Open-Lock (Join-Path $WorkDir 'light.lock')
     if ($null -eq $lock) { return 0 }
     $script:LightHeld = $false
+    $script:LightDisplay = $false
     $script:LightRefused = $false
     try {
         Write-Log 'світло: тримач запущено'

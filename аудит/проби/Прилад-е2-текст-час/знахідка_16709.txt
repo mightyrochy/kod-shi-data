@@ -1,0 +1,37 @@
+3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]
+КОМАНДА: C:\Users\gemini\AppData\Local\Programs\Python\Python312\python.exe -X utf8 C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\repo\джерела\прилади\тест_документ_без_коду.py Самоперевірка.test_самоперевірка_в_розрідженому_дереві_workflow
+Exception in thread Thread-1 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\gemini\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 1599, in _readerthread
+    buffer.append(fh.read())
+                  ^^^^^^^^^
+  File "<frozen codecs>", line 322, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf1 in position 0: invalid continuation byte
+E
+======================================================================
+ERROR: test_самоперевірка_в_розрідженому_дереві_workflow (__main__.Самоперевірка.test_самоперевірка_в_розрідженому_дереві_workflow)
+Job «рішення» й «злиття» беруть розрідженим checkout лише файли зі свого `sparse-checkout`; прилад і його
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\repo\джерела\прилади\тест_документ_без_коду.py", line 716, in test_самоперевірка_в_розрідженому_дереві_workflow
+    self.assertEqual(р.returncode, 0, f"перелік {перелік.split()}: {(р.stdout + р.stderr)[-600:]}")
+                                                                     ~~~~~~~~~~^~~~~~~~~
+TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.143s
+
+FAILED (errors=1)
+КОД: 1
+3.15.0 (tags/v3.15.0:d220409, Oct  9 2026, 11:55:56) [MSC v.1951 64 bit (AMD64)]
+КОМАНДА: C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\tmp\python315\python.exe -X utf8 C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\repo\джерела\прилади\тест_документ_без_коду.py Самоперевірка.test_самоперевірка_в_розрідженому_дереві_workflow
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.454s
+
+OK
+КОД: 0

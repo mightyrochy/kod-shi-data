@@ -40,6 +40,10 @@ $script:Bot = 'chatgpt-codex-connector[bot]'
 $script:Utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:OnWindows = ($PSVersionTable.PSEdition -ne 'Core') -or [bool](Get-Variable IsWindows -ValueOnly -ErrorAction SilentlyContinue)
 $script:Rows = 0
+$script:CacheTouched = @{}
+$script:CacheVersion = '1'
+# ETag GitHub: слабкий `W/"…"` чи сильний `"…"`; усе інше з відповіді в стан і в заголовок запиту не йде.
+$script:EtagPattern = '^(W/)?"[0-9A-Za-z._-]{1,200}"\z'
 
 # Шаблони рядків (узгоджені з обгорткою доставки): рядок, що не збігся з жодним, у теку не потрапляє.
 $sl = '[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}'
@@ -173,7 +177,8 @@ function Get-Stamp($v) {
     [string]$v
 }
 
-function Invoke-Gh([string]$Path) {
+function Invoke-Gh([string]$Path, [scriptblock]$Reduce = $null) {
+    if ($null -ne $Reduce) { return (Invoke-GhCached $Path $Reduce) }
     $r = Invoke-Native (Resolve-Exe $GhExe) @('api', '-H', 'Accept: application/vnd.github+json', $Path) $WorkDir 3
     if ($r.Code -ne 0) { throw "gh api $Path -> $($r.Code): $($r.Err.Trim())" }
     # PowerShell 5.1 не перелічує масив із ConvertFrom-Json у конвеєрі; вираз розгортає його в елементи.
@@ -181,16 +186,76 @@ function Invoke-Gh([string]$Path) {
     $parsed
 }
 
+# Умовний запит (ETag). Відповідь 304 на авторизований запит з If-None-Match не йде в первинний ліміт REST (годинні 5000
+# акаунта): без цього спостерігач раз на хвилину брав ~60 викликів на незмінні дані й вичерпував ліміт.
+# https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api#use-conditional-requests-if-appropriate
+# Поведінка встановленого gh (2.103, вимір 19.11): на 304 код виходу 1, у stderr `gh: HTTP 304`, у stdout з `-i` — рядок
+# `HTTP/2.0 304 Not Modified` і заголовки; ETag у 304 приходить без `W/`, тож збережений не перезаписується. Тому 304 впізнається
+# за рядком статусу, а не за кодом виходу; будь-який статус, окрім 200 і очікуваного 304, — збій проходу, як і раніше.
+# У стані (state.json): `e:<шлях>` — ETag, `b:<шлях>` — тіло після $Reduce (лише поля, що читає спостерігач: повні
+# check-runs ~100 КБ на PR); один і той самий вигляд для 200 і 304.
+function Invoke-GhCached([string]$Path, [scriptblock]$Reduce) {
+    $ek = "e:$Path"; $bk = "b:$Path"
+    $etag = $script:State[$ek]; $cached = $script:State[$bk]
+    $have = ($null -ne $etag -and $null -ne $cached -and $etag -cmatch $script:EtagPattern)
+    $ghArgs = @('api', '-i', '-H', 'Accept: application/vnd.github+json')
+    if ($have) { $ghArgs += @('-H', "If-None-Match: $etag") }
+    $r = Invoke-Native (Resolve-Exe $GhExe) ($ghArgs + $Path) $WorkDir 3
+    $m = [regex]::Match([string]$r.Out, '\AHTTP/[0-9.]+ ([0-9]{3})')
+    $status = $(if ($m.Success) { [int]$m.Groups[1].Value } else { 0 })
+    if ($status -eq 304 -and $have) {
+        $script:CacheTouched[$ek] = $true; $script:CacheTouched[$bk] = $true
+        $parsed = $cached | ConvertFrom-Json
+        return $parsed
+    }
+    if ($r.Code -ne 0 -or $status -ne 200) { throw "gh api $Path -> $($r.Code) HTTP ${status}: $($r.Err.Trim())" }
+    $parts = [regex]::Match($r.Out, '(?s)\A(.*?)\r?\n\r?\n(.*)\z')
+    if (-not $parts.Success) { throw "gh api $Path -> відповідь без тіла" }
+    $new = [regex]::Match($parts.Groups[1].Value, '(?im)^etag:[ \t]*([^\r\n]+?)[ \t]*\r?$')
+    $items = $parts.Groups[2].Value | ConvertFrom-Json
+    $json = ConvertTo-Json -InputObject (& $Reduce $items) -Depth 8 -Compress
+    if ($new.Success -and $new.Groups[1].Value -cmatch $script:EtagPattern) {
+        $script:State[$ek] = $new.Groups[1].Value; $script:State[$bk] = $json
+        $script:CacheTouched[$ek] = $true; $script:CacheTouched[$bk] = $true
+    } else { $script:State.Remove($ek); $script:State.Remove($bk) }
+    $parsed = $json | ConvertFrom-Json
+    $parsed
+}
+
+# Кеш лише для шляхів, що ще є в обході: решта (закритий PR, стара голова, зайва сторінка) прибирається так само, як `i:*`.
+function Remove-StaleCache {
+    foreach ($k in @($script:State.Keys | Where-Object { $_ -like 'e:*' -or $_ -like 'b:*' })) {
+        if (-not $script:CacheTouched.ContainsKey($k)) { $script:State.Remove($k) }
+    }
+}
+
 # Сторінки по 100, поки не прийде неповна; лише масиви.
-function Get-GhList([string]$Path, [string]$Query = '') {
+function Get-GhList([string]$Path, [string]$Query = '', [scriptblock]$Reduce = $null) {
     $all = @()
     for ($page = 1; $page -le 50; $page++) {
         $sep = $(if ($Path.Contains('?')) { '&' } else { '?' })
-        $chunk = @(Invoke-Gh ("$Path${sep}per_page=100&page=$page$Query"))
+        $chunk = @(Invoke-Gh ("$Path${sep}per_page=100&page=$page$Query") $Reduce)
         $all += $chunk
         if ($chunk.Count -lt 100) { break }
     }
     $all
+}
+
+# Лише поля, які читає Main і Get-CiState: решта відповіді в стан не йде.
+$script:ReducePulls = {
+    param($items)
+    , @($items | ForEach-Object {
+        $h = Get-Prop $_ 'head'
+        [ordered]@{
+            number = Get-Prop $_ 'number'
+            user = [ordered]@{ login = [string](Get-Prop (Get-Prop $_ 'user') 'login') }
+            head = [ordered]@{ sha = [string](Get-Prop $h 'sha'); ref = [string](Get-Prop $h 'ref'); repo = [ordered]@{ full_name = [string](Get-Prop (Get-Prop $h 'repo') 'full_name') } }
+        }
+    })
+}
+$script:ReduceChecks = {
+    param($r)
+    , [ordered]@{ check_runs = @(@(Get-Prop $r 'check_runs') | Where-Object { $null -ne $_ } | ForEach-Object { [ordered]@{ status = [string](Get-Prop $_ 'status'); conclusion = [string](Get-Prop $_ 'conclusion') } }) }
 }
 
 # ---- тека вихідних ----
@@ -326,6 +391,7 @@ function Invoke-Transfer($Pr, [string]$CommentId, [string]$Diff, $Hashes, [int]$
 # Один джерельний PR/issue: коментарі -> рядки, потім перенос. $Pr — $null для #963.
 function Watch-Comments([int]$N, $Pr, [bool]$Baseline, [string]$Since) {
     $q = $(if ($Since) { "&since=$Since" } else { '' })
+    # Без ETag: `since` зсувається щохвилини, шлях щоразу новий і кеш не влучав би.
     $comments = @(Get-GhList "repos/$Repo/issues/$N/comments" $q)
     foreach ($c in $comments) {
         if (Test-Cap) { return $false }
@@ -363,7 +429,7 @@ function Watch-Comments([int]$N, $Pr, [bool]$Baseline, [string]$Since) {
 # ---- CI ----
 
 function Get-CiState([string]$Sha) {
-    $r = Invoke-Gh "repos/$Repo/commits/$Sha/check-runs?per_page=100"
+    $r = Invoke-Gh "repos/$Repo/commits/$Sha/check-runs?per_page=100" $script:ReduceChecks
     $runs = @(Get-Prop $r 'check_runs')
     if ($runs.Count -eq 0) { return 'pending' }
     $concl = @()
@@ -402,11 +468,17 @@ function Main {
             [void](Invoke-Git @('config', 'remote.origin.url', $RepoUrl))
         }
         $script:State = Read-State
+        $script:CacheTouched = @{}
+        # Кеш зі старим виглядом проекції не вірити: змінила $script:CacheVersion — починає з нуля.
+        if ($script:State['_cachever'] -cne $script:CacheVersion) {
+            foreach ($k in @($script:State.Keys | Where-Object { $_ -like 'e:*' -or $_ -like 'b:*' })) { $script:State.Remove($k) }
+            $script:State['_cachever'] = $script:CacheVersion
+        }
         $baseline = -not $script:State.ContainsKey('_since')
         $passStart = (Get-Date).ToUniversalTime()
         $since = $(if ($baseline) { '' } else { $script:State['_since'] })
 
-        $raw = @(Get-GhList "repos/$Repo/pulls?state=open")
+        $raw = @(Get-GhList "repos/$Repo/pulls?state=open" '' $script:ReducePulls)
         $ours = @()
         foreach ($p in $raw) {
             if ([string](Get-Prop (Get-Prop $p 'user') 'login') -cne $script:Owner) { continue }
@@ -431,6 +503,7 @@ function Main {
             $complete = Watch-Comments $o.Number $o $baseline $since
         }
         if ($complete) { Watch-Ci $ours $baseline }
+        if ($complete -and -not (Test-Cap)) { Remove-StaleCache }
 
         if ($complete -and -not (Test-Cap)) {
             $script:State['_since'] = $passStart.AddMinutes(-10).ToString("yyyy-MM-dd'T'HH:mm:ss'Z'")

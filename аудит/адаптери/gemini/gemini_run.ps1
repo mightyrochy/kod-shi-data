@@ -434,18 +434,27 @@ function Update-UsageCache {
     [pscustomobject]$c
 }
 
-# Вікна квоти з кешу; -Fresh чи кеш старший за usage_minutes чи за -After (unix) — agy питаємо знову.
+# Вікна квоти з кешу; -Fresh чи кеш старший за usage_minutes чи за -After (unix) — agy питаємо знову. Знімок, зроблений до
+# часу скидання нульового вікна, що вже минув, після нього не діє: кеш лишається «0 %» до кінця usage_minutes, а скидання
+# настало, — тож його перечитуємо; це правило тут, у єдиному читачі, тож його мають усі виклики (Get-Quota, обидва чекання).
 function Read-Usage([switch]$Fresh, [long]$After = 0) {
     $c = $null
     try { $c = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'usage.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $age = (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes') * 60
-    if ($Fresh -or $null -eq $c -or [long]$c.time -lt $After -or ($now - [long]$c.time) -ge $age) {
+    $u = $null
+    if (-not ($Fresh -or $null -eq $c -or [long]$c.time -lt $After -or ($now - [long]$c.time) -ge $age)) {
+        $u = ConvertFrom-UsageText ([string]$c.text) ([long]$c.time)
+        $passed = @($u.Windows | Where-Object { $_.Left -eq 0 -and $null -ne $_.Reset -and $_.Reset.ToUnixTimeSeconds() -le $now -and [long]$c.time -lt $_.Reset.ToUnixTimeSeconds() })
+        if ($passed.Count -gt 0 -and $script:Agy) { $u = $null }
+    }
+    if ($null -eq $u) {
         if (-not $script:Agy) { return [pscustomobject]@{ Known = $false; Windows = @(); Text = ''; Read = [DateTimeOffset]::UtcNow } }
         $c = Update-UsageCache
+        $u = ConvertFrom-UsageText ([string]$c.text) ([long]$c.time)
     }
     $script:AgyModels = $(if (@($c.models).Count -gt 0) { @($c.models) } else { $null })
-    ConvertFrom-UsageText ([string]$c.text) ([long]$c.time)
+    $u
 }
 
 # Known=$false — квоту не прочитано (наряд іде далі). Blocked — усі групи моделі на 0 %; Group — ASCII-ім'я для коду рядка.
@@ -468,7 +477,12 @@ function Get-Quota([string]$Model, [switch]$Fresh, [long]$After = 0) {
 function Test-CodexFallback { [bool]($EnableCodex -and $CodexFallbackModel -and (Get-Engine $CodexFallbackModel).Name -eq 'codex') }
 
 # Кандидати за порядком (Get-CascadePlan, queue_lanes.ps1 — той самий порядок читає claude_run.ps1 для простою).
-function Get-Cascade([string]$Model) { @(Get-CascadePlan $Model $(if (Test-CodexFallback) { $CodexFallbackModel } else { '' })) }
+# Під паузою Codex (`codex_pause_until` в ланцюг.json, Test-CodexPause) запасного Codex у каскаді нема: позначка agy на 0 % чекає
+# скидання пулу (QUOTA0), а не витрачає Codex. Лише каскад: позначки з явною моделлю Codex (нічний) Select-Engine не каскадує.
+function Get-Cascade([string]$Model) {
+    $codex = $(if ((Test-CodexFallback) -and -not (Test-CodexPause)) { $CodexFallbackModel } else { '' })
+    @(Get-CascadePlan $Model $codex)
+}
 
 # Рушій наряду за позначкою й квотою пулів. Model — фактична модель (каскад); Quota — пулу першого кандидата, якщо всі
 # на 0 % (Blocked); Exe $null — рушія нема на ноутбуці. -After — позначка чекала скидання до цього часу (unix): квоту
