@@ -576,7 +576,7 @@ try {
             $ev = Tick $false
             [pscustomobject]@{Name="запис сесії нечитаний — GPU не вільна, дисплей і причина в журналі: $ev; $($script:Log -join ' / ')";Ok=($ev -ceq 'тримання True з дисплеєм' -and $script:Log.Count -eq 1 -and $script:Log[-1] -cmatch 'GPU зайнята \(запис GPU-сесії нечитаний: ')}
             Remove-Item -LiteralPath $sessPath -Force
-            Set-LightHold $false
+            Set-LightHold $false; Clear-Box
             $script:Refuse = $true; $script:LightRefused = $false
             $ev = Tick $false
             $refused = @($script:Log | Where-Object { $_ -cmatch 'НЕ ПРИЙНЯТО' }).Count
