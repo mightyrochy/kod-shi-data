@@ -1,0 +1,37 @@
+── ПРОМПТ (5510 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Floor-length sleeveless dress with a softly structured bodice, a high rounded neckline, a defined waist and a gently flared skirt, in deep jade green, made of heavy silk satin-crepe\nBlock-heel pumps with a closed pointed toe, 6 cm heel, in warm champagne beige, made of satin\nSmall structured clutch with a slim gold clasp, in antique gold, made of smooth leather\nDrop earrings with a small pearl on a slim gold hook, in soft cream-gold, made of gold-plated metal and freshwater pearl\nThin cuff bracelet, in antique gold, made of brushed metal\n\nWhy this outfit works: A floor-length silk dress in a deep jade green meets the formal level for a close family member at a sister's wedding, and it keeps the only bare zone to the arms, which suits the warm August afternoon. Jade picks up the grey-green of her eyes, flatters her warm skin and golden hair, and stays well away from white and ivory, which belong to the bride. Block heels stay steady on grass during the outdoor ceremony, and the satin and gold details carry the look into the restaurant evening without any change. No outer layer is needed in the warmth of a summer 16:00 ceremony.",
+"2": "Dress",
+"3": "Block-heel pumps",
+"4": "Clutch",
+"5": "Drop earrings",
+"6": "Cuff bracelet"
+}
+
+── ВІДПОВІДЬ (1401 симв., 7.0 с, HTTP 200) ──
+{"1":"Сукня в підлогу без рукавів, з м'яко структурованим ліфом, високою закругленою горловиною, підкресленою талією та злегка розкльошеною спідницею, глибокого нефритово-зеленого кольору, з щільного шовкового атласного крепу\nТуфлі-човники на блоковому підборі із закритим гострим носком, підбор 6 см, теплого шампанського бежевого кольору, з атласу\nНевелика структурована сумка-клатч із тонкою золотистою застібкою, кольору старого золота, з гладкої шкіри\nСережки-краплі з маленькою перлиною на тонкому золотистому гачку, м'якого кремово-золотистого кольору, з позолоченого металу та прісноводної перлини\nТонкий браслет-манжета, кольору старого золота, з матованого металу\n\nЧому цей образ працює: Сукня в підлогу з шовку глибокого нефритово-зеленого кольору відповідає формальному рівню для близької родички на весіллі сестри, а єдина відкрита зона — руки, що пасує теплому серпневому дню. Нефритовий відтінок підхоплює сіро-зелений колір твоїх очей, пасує твоїй теплій шкірі та золотистому волcurrent, і лишається далеко від білого та кольору слонової кістки, які належать нареченій. Блокові підбори стійкі на траві під час церемонії просто неба, а атлас і золоті деталі переносять образ у вечір у ресторані без жодних змін. Верхній шар не потрібен у теплі літньої церемонії о 16:00.","2":"Сукня","3":"Туфлі-човники на блоковому підборі","4":"Клатч","5":"Сережки-краплі","6":"Браслет-манжета"}
