@@ -1,4 +1,4 @@
-── ПРОМПТ (5349 симв.) ──
+── ПРОМПТ (6015 симв.) ──
 Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською рядки, які зараз побачить жінка на екрані. Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки. До неї — напряму, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); що сказала вона, стилістка каже їй у другій особі. Рішень не приймаєш, на питання не відповідаєш, від себе нічого не додаєш, не радиш і не виправдовуєшся. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
 
 Кожен об'єкт — окрема заява з коротким номером key: напиши її власне речення. Заяв не об'єднуй. Не перенось дію, річ, вибір чи ранг з одного key на інший.
@@ -8,6 +8,8 @@ choice — автор саме цього вибору: her — її дотик;
 
 КОДИ У ЗНАЧЕННЯХ:
 - bag_generic — сумка без уточнення.
+- beige — бежевий.
+- coat — пальто.
 - crossbody — кросбоді.
 - grey — сірий.
 - hair — волосся.
@@ -20,13 +22,18 @@ choice — автор саме цього вибору: her — її дотик;
 ЗАЯВИ:
 - wear_way_not_chosen — she has not said yet how she will wear this item, and how it fits this outfit depends on that; any of the named ways is fine, and she can say hers in the conversation (values: item — the item: item_id, kind and colour codes; ways — codes of the ways: hand — in the hand, shoulder — on the shoulder, crossbody — across the body, neck — round the neck, hair — in the hair, shoulders — on the shoulders, waist — at the waist as a belt, bag_handle — on the bag handle, wrist — on the wrist, as_top — instead of a top).
 - scarf_near_face_way_unknown — whether she wears this scarf near the face; which top suits her depends on it, since a scarf near the face carries colour there by itself (values: item — the item: item_id, kind and colour codes; ways — codes of wearing ways: neck, hair, shoulders).
+- cut_not_declared_assumed_regular — the item cards here do not name the cut, so it was counted as an ordinary straight cut; what follows holds only if the cut really is such (values: items — the only items without a declared cut: item_id, kind — kind code, color — colour code; the other items keep their declared cut).
 СХЕМА ВІДПОВІДІ:
-{"type": "object", "additionalProperties": false, "required": ["1", "2"], "properties": {"1": {"type": "string", "minLength": 1}, "2": {"type": "string", "minLength": 1}}}
+{"type": "object", "additionalProperties": false, "required": ["1", "2", "3"], "properties": {"1": {"type": "string", "minLength": 1}, "2": {"type": "string", "minLength": 1}, "3": {"type": "string", "minLength": 1}}}
 Відповідь — тільки цей JSON-об'єкт: заміни значення реченням українською про відповідну заяву. Самі заяви, їхні поля й значення не копіюй у відповідь. Кожен ключ — один раз, без нових ключів.
 ФОРМА ВІДПОВІДІ:
-{"1": "<речення про цю заяву>", "2": "<речення про цю заяву>"}
+{"1": "<речення про цю заяву>", "2": "<речення про цю заяву>", "3": "<речення про цю заяву>"}
 ПОВІДОМЛЕННЯ:
-[{"code": "scarf_near_face_way_unknown", "values": {"item": {"item_id": "x1", "kind": "scarf_generic", "color": "grey"}, "ways": ["neck", "hair", "shoulders"], "item_id": "x1", "kind": "scarf_generic", "color": "grey"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["x1"], "key": "1"}, {"code": "wear_way_not_chosen", "values": {"item": {"item_id": "x2", "kind": "bag_generic", "color": "grey"}, "ways": ["hand", "shoulder", "crossbody"], "item_id": "x2", "kind": "bag_generic", "color": "grey"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["x2"], "key": "2"}]
+[{"code": "cut_not_declared_assumed_regular", "values": {"items": [{"item_id": "x1", "kind": "coat", "color": "beige"}]}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": ["x1"], "key": "1"}, {"code": "scarf_near_face_way_unknown", "values": {"item": {"item_id": "x2", "kind": "scarf_generic", "color": "grey"}, "ways": ["neck", "hair", "shoulders"], "item_id": "x2", "kind": "scarf_generic", "color": "grey"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["x2"], "key": "2"}, {"code": "wear_way_not_chosen", "values": {"item": {"item_id": "x3", "kind": "bag_generic", "color": "grey"}, "ways": ["hand", "shoulder", "crossbody"], "item_id": "x3", "kind": "bag_generic", "color": "grey"}, "recipient": "woman", "source": "catalogue", "choice": "unknown", "rank": null, "item_ids": ["x3"], "key": "3"}]
 
-── ВІДПОВІДЬ (345 симв., 2.8 с, HTTP 200) ──
-{"1": "Розкажи, чи носитимеш цей сірий шарф біля обличчя — на шиї, у волоссі чи на плечах: від цього залежить, який верх тобі пасуватиме, адже шарф біля обличчя сам несе колір туди.", "2": "Розкажи, як носитимеш цю сіру сумку — у руці, на плечі чи кросбоді: від цього залежить, як вона впишеться в образ, і будь-який із цих способів підходить."}
+── ВІДПОВІДЬ (1197 симв., 5.7 с, HTTP 200) ──
+{"1": "У картках не вказано крій бежевого пальто, тож я порахувала його як звичайний прямий, і все далі стосується лише того випадку, коли крій справді такий.", "2": "Я ще не знаю, чи носитимеш ти цей сірий шарф біля обличчя, на шиї, у волcurrent або на плечах, а від цього залежить, який верх тобі пасуватиме, адже шарф біля обличчя сам несе туди колір.", "3": "Ти ще не сказала, як понесеш сіру сумку: в руці, на плечі чи через тіло, а від цього залежить, як вона впишеться в образ; підійде будь-який із цих способів, і свій ти можеш назвати в розмові."}
+
+Wait — I must correct the second line, which contains a stray mixed-script fragment.
+
+{"1": "У картках не вказано крій бежевого пальто, тож я порахувала його як звичайний прямий, і все далі стосується лише того випадку, коли крій справді такий.", "2": "Я ще не знаю, чи носитимеш ти цей сірий шарф біля обличчя — на шиї, у волоссі чи на плечах, а від цього залежить, який верх тобі пасуватиме, адже шарф біля обличчя сам несе туди колір.", "3": "Ти ще не сказала, як понесеш сіру сумку: в руці, на плечі чи через тіло, а від цього залежить, як вона впишеться в образ; підійде будь-який із цих способів, і свій ти можеш назвати в розмові."}
