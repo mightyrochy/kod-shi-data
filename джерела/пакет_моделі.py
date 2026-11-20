@@ -10,6 +10,7 @@
 import functools as _functools
 import re
 import сценарій as _ПОГОДА
+import паспорт_поля as _ПП_В
 import json as _json_
 import протокол as _ПР
 import фрази_формату as _ФФ
@@ -562,6 +563,10 @@ import внутрішня_мова as _ВМ_П
                  як="the outfit answers each of them"),
         _ВИМ.поле("case.her_other_words"),
         _ВИМ.поле("case.language_model_note"),
+        # місце акценту стилістки — поле сценарію (`паспорт_поля`, `місце_акценту`; дошка 16711)
+        _ЗП.Поле("case.accent_place", "where the stylist placed the look's accent from her words: jewellery, "
+                                      "clothing, other_accessories, or none — no single accent",
+                 як="keep the accent of every outfit there"),
         _ЗП.Поле("case.reserved_colour", "a colour that at this event belongs to another person: near_white — "
                                          "white and colours that read as white in photos (cream, ivory, milky, "
                                          "pale yellow, pale blue) belong to the bride, and she is a guest; it "
@@ -1262,6 +1267,15 @@ def випадок_для_пакета(паспорт, рядок, сценар�
     for _к in типові_з_форми(паспорт):
         в.pop(_к, None)
     сц = сценарій or {}
+    # ПОЛЕ СЦЕНАРІЮ, ЩО ЙДЕ СТИЛІСТЦІ, ЇДЕ З ОПИСУ (наряд Код-сценарій-один-опис): поле без схеми розмови (`мова`), але з
+    # кодом `case` (`паспорт_поля.поля_стилістці`) паспорт не несе — його пише межа моста в опис сценарію (місце акценту
+    # стилістки, дошка 16711). Один перелік на всіх: нове таке поле — рядок `паспорт_поля` і його писач.
+    _зі_сценарію_поля = {}
+    for _к in _ПП_В.поля_стилістці():
+        if _к not in в and "мова" not in _ПП_В.ПОЛЯ_ПАСПОРТА[_к] and сц.get(_к) not in (None, "", [], {}):
+            в[_к] = сц.get(_к)
+            _зі_сценарію_поля[_к] = (сц.джерело(_к) if hasattr(сц, "джерело")
+                                     else _ПП_В.ПОЛЯ_ПАСПОРТА[_к].get("джерело"))
     if not str(в.get("подія") or "").strip():
         # ПОДІЮ, ЯКОЇ ВОНА НЕ НАЗИВАЛА, КОД НЕ СКЛАДАЄ СЛОВАМИ (п.12). Доти тут стояло «робота,
         # офіс корпоративний» — ключі нагоди й місця українською, і стилістка читала їх у `case.event` як
@@ -1362,6 +1376,8 @@ def випадок_для_пакета(паспорт, рядок, сценар�
         в["джерела_полів"]["прохання_взуття"] = _ПП.походження(_ПП.ВИВЕДЕНЕ)
     if в.get("переконання"):
         в["джерела_полів"]["переконання"] = _ПП.походження(_ПП.ТЛУМАЧЕННЯ)
+    for _к, _вид in _зі_сценарію_поля.items():      # поле з опису сценарію — вид з опису, а не з паспорта
+        в["джерела_полів"][_к] = _ПП.походження(_вид)
     return в
 
 
