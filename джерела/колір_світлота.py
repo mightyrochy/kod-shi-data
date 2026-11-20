@@ -158,7 +158,6 @@ def перевірка_value(E, intent=None, мета=None, вище=False):
     вагомих_речей = {e["річ"] for e in осн}
     if len(вагомих_речей) == 1 and (n == 1 if vs else len(осн) == 1):
         річ = next(iter(вагомих_речей))
-        e1 = осн[0]
         out.append(_зн(
             правило="K-COL-01",
             сила="утримано",
