@@ -24,8 +24,8 @@ import xml.etree.ElementTree as ET
 sys.path.insert(0, ТУТ)
 os.chdir(ТУТ)
 
-import bridge  # noqa: E402
-import feed  # noqa: E402
+import bridge
+import feed
 
 КАТАЛОГ = "каталог_brief.xml"
 
@@ -142,7 +142,7 @@ class Е2_СмугаПогодиЙЧастинаДня(unittest.TestCase):
 
     def test_градуси_й_година_не_доходять_полем(self):
         с = _Стенд.дати()
-        ключ_числа = re.compile(r"temperat|temp_c|\bhour|wind(?!ow)|градус|годин|темп_|вітер", re.I)
+        ключ_числа = re.compile(r"temperat|temp_c|\bhour|wind(?!ow)|градус|годин|темп_|вітер", re.IGNORECASE)
         число = re.compile(r"°|\b19:00\b|м/с|\bm/s\b")
         for де, о in [("паспорт", с["паспорт"])] + [("рука " + р, п) for р, п in с["руки"].items()]:
             for шлях, рядок in рядки_з_шляхами(о):

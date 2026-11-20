@@ -47,7 +47,7 @@ def крок(назва, аргументи, чекати):
     почато = time.time()
     try:
         п = subprocess.run([sys.executable] + аргументи, cwd=_ТУТ,
-                           capture_output=True, text=True, timeout=чекати)
+                           capture_output=True, text=True, timeout=чекати, check=False)
     except subprocess.TimeoutExpired:
         return False, round(time.time() - почато, 1), "не завершився за %d с" % чекати
     вивід = (п.stdout or "") + (п.stderr or "")

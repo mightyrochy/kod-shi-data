@@ -63,7 +63,7 @@ def hex_з_lab(lab, space=ТИПОВИЙ_ПРОСТІР):
     перше каже «як це показати», друге — «чи буває така тканина».
     """
     return "#%02x%02x%02x" % tuple(
-        int(round(max(0.0, min(1.0, c)) * 255)) for c in to_rgb(*lab, space=space))
+        round(max(0.0, min(1.0, c)) * 255) for c in to_rgb(*lab, space=space))
 
 def to_xyz(lab):
     """XYZ (D65) із Lab."""

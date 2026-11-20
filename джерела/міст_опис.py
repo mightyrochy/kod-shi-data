@@ -741,7 +741,7 @@ def опис(вхід, *, прогін_руки=None):
     свідомі_н, свідомі_поза, свідомі_без = [], [], []
     for _с in (d.get("свідомі") or []):
         _ід_с = ([_с] if isinstance(_с, str) else
-                 list((_с.get("ід") if isinstance(_с.get("ід"), list) else [_с.get("ід") or _с.get("id")]))
+                 list(_с.get("ід") if isinstance(_с.get("ід"), list) else [_с.get("ід") or _с.get("id")])
                  if isinstance(_с, dict) else [])
         _свої = [str(і) for і in _ід_с if і is not None and str(і) in _ід_оп]
         _заяви = [w for w in ((_с.get("заяви") if isinstance(_с, dict) else None) or [])
