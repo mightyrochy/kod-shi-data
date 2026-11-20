@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"formality_reason\": \"norm\", \"sources\": {\"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"host_context\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"reading\"}, \"declared_column\": {\"kind\": \"reading\"}, \"declared_break\": {\"kind\": \"reading\"}, \"creative_environment\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"default\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"role\": {\"kind\": \"reading\"}, \"companion_formality\": {\"kind\": \"reading\"}, \"duration_h\": {\"kind\": \"reading\"}}, \"duration_h\": 2, \"part_of_day\": \"evening\", \"precipitation\": \"none\", \"occasion\": \"date\", \"place\": \"restaurant_casual\", \"formality_branch\": \"social\", \"open_zones\": \"one\", \"host_context\": false, \"creative_environment\": false, \"declared_break\": false, \"declared_column\": false, \"role\": \"guest\", \"companion_formality\": 0, \"formality\": [\"neat\"], \"season\": \"autumn\", \"light\": \"artificial\"}, \"person\": {\"skin_hex\": [\"#d9b48f\", \"#d1ab86\", \"#e0bd9a\"], \"hair_hex\": \"#6d5437\", \"eyes_hex\": \"#7a7a4c\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Emerald green silk blouse with a relaxed fit and a slightly dropped shoulder cut to length at the hips, color #50c878, fabric.\\nHigh-waisted charcoal wool-blend trousers in a wide-leg silhouette that falls just above the ankle, color #36454f, fabric.\\nTan leather loafers with a low block heel and a soft sole for quiet movement, color #c19a6b, fabric.\\nThin gold link bracelet to catch the restaurant's artificial light against her warm skin tones, color #ffd700, fabric.\\nThis outfit balances the casual atmosphere of a date night at a casual restaurant with an elegant autumnal palette that complements her hair and eyes. The relaxed blouse ensures comfort during a two-hour evening engagement while the tailored trousers maintain a polished social look appropriate for a guest role. Warm neutral tones in the shoes ground the vibrant top, creating a cohesive ensemble that feels both intentional and effortlessly stylish.\"}],\"usage\":{\"input_tokens\":864,\"output_tokens\":200},\"stop_reason\":\"end_turn\"}"
+ }
+}

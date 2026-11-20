@@ -260,9 +260,21 @@ jobs:
         working-directory: джерела
         run: python3 тест_живого_шляху.py
 
+      - name: інваріанти коренів (вхід і вихід живого шляху)
+        working-directory: джерела
+        run: python3 -m unittest -v тест_інваріанти
+
       - name: протокол
         working-directory: джерела
         run: python3 тест_протоколу.py
+
+      - name: похибки вимірів тіла
+        working-directory: джерела
+        run: python3 тест_похибки_вимірів_тіла.py
+
+      - name: місце речі
+        working-directory: джерела
+        run: python3 тест_місця_речі.py
 
       - name: компілятор байткоду повного показу
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
