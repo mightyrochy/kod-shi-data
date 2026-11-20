@@ -1,0 +1,37 @@
+── ПРОМПТ (2261 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Structured wool-blend blazer in charcoal grey (#3a4045), tailored single-breasted cut with notch lapels and mid-thigh length, woven for durability. Silk-blend shell top in warm beige (#c8bfa1), relaxed button-down fit with a slightly dropped shoulder and hem resting at the hip curve. Wool-twill straight-leg trousers in slate blue (#4a5260), classic 9-inch rise with a sharp crease extending to full ankle length. Leather loafers in dark brown (#5c4d3c), soft square toe with minimal hardware and a low heel for all-day comfort.\nThis outfit works because it perfectly balances the professional requirements of an office environment with the practical needs of autumn weather, offering structure without rigidity. The neutral palette creates a sophisticated, cohesive look that complements various skin tones while maintaining a polished business-appropriate silhouette. The chosen fabrics ensure warmth and breathability throughout the day, making this ensemble both stylish and functional for a work setting."}
+
+── ВІДПОВІДЬ (935 симв., 10.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured wool-blend cut tailored single-breasted with notch lapels and mid-thigh length woven for durability",
+      "slot": "outerwear",
+      "color_hex": "#3a4045",
+      "worn": true
+    },
+    {
+      "name": "shell top",
+      "details": "silk-blend relaxed button-down fit with dropped shoulder and hem resting at hip curve",
+      "slot": "top",
+      "color_hex": "#c8bfa1",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "wool-twill straight-leg with classic 9-inch rise sharp crease extending to full ankle length",
+      "slot": "bottom",
+      "color_hex": "#4a5260",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "leather soft square toe with minimal hardware and low heel for all-day comfort",
+      "slot": "shoes",
+      "color_hex": "#5c4d3c",
+      "worn": true
+    }
+  ]
+}
