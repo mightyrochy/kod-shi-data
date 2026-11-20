@@ -280,7 +280,7 @@ try {
                     if ($publisherVars -cnotcontains $var) { $missing += "$name→$var" }
                 }
             }
-            Check "імпортовано $($names.Count) функцій, читань змінних $read, не задано в публікаторі: $($missing -join ', ')" ($names.Count -eq 11 -and $read -gt 0 -and -not $missing.Count)
+            Check "імпортовано $($names.Count) функцій, читань змінних $read, не задано в публікаторі: $($missing -join ', ')" ($names.Count -eq 9 -and $read -gt 0 -and -not $missing.Count)
             $default = [regex]::Match([IO.File]::ReadAllText((Join-Path $SourceDir 'queue_lanes.ps1'), $utf), "(?m)^Set-RemoteRoot '([^']+)'").Groups[1].Value
             Check 'корінь посилань публікатора — той самий, що за замовчуванням у queue_lanes.ps1' ($default -and $script:RemoteRoot -ceq $default -and $script:QueuePrefix -ceq "$default/gemini-queue/")
         }

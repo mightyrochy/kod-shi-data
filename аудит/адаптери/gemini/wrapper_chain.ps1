@@ -772,7 +772,10 @@ function Stop-WaitingLive($Active, [string]$Stamp) {
     (менеджер 20.11; прогони поспіль на сусідніх збірках повної відповіді не дали). Повертає $true — живих позначок
     штампу не лишилось, можна ставити новий; $false — позначку взято чи стан не прочитано: прогін іде, новий чекає його
     кінця. Позначку, яку смуга взяла між читанням стану й пушем, зупиняє Stop-CancelledRuns — той самий кінець, що від
-    зняття диспетчера. #>
+    зняття диспетчера. Резерв, ще не опублікований (push упав), не знімається: повтор публікує його цим самим проходом,
+    а позначку, прийняту до падіння, могло ще не бути в локальному трекінгу — новий поруч дав би два автоживі. #>
+    $published = Get-Prop $Active 'published'
+    if ($null -ne $published -and -not $published) { return $false }
     $slug = "автоживий-" + [string]$Active.stamp
     $live = @(Get-ChainMarkers $slug | Where-Object { $_.Kind -cin @('NEW','WAIT','TAKEN','UNKNOWN') -and -not (Test-ChainMarkerCancelled $_) })
     if (@($live | Where-Object { $_.Kind -cin @('TAKEN','UNKNOWN') }).Count) { return $false }
