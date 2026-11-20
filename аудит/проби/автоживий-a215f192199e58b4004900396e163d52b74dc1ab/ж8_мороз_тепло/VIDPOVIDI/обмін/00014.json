@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"гуляю з подругою парком біля дому\", \"place\": \"парком біля дому\", \"duration_h\": \"години дві на місці\", \"movement\": \"гуляю\", \"place_words\": \"парком біля дому\"}, \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"reserved_colour\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"парком біля дому\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"гуляю з подругою парком біля дому\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"гуляю\"}, \"weather_band\": {\"kind\": \"reading\"}, \"duration_h\": {\"kind\": \"reading\", \"quote\": \"години дві на місці\"}}, \"event\": \"гуляю з подругою парком біля дому\", \"duration_h\": 2, \"movement\": \"walk\", \"weather_band\": \"deep_frost\", \"occasion\": \"everyday\", \"place\": \"park\", \"open_zones\": \"one\", \"formality\": [\"neat\"], \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#e3c3a2\", \"#dcb995\", \"#e9ccae\"], \"hair_hex\": \"#1b1815\", \"eyes_hex\": \"#4a2f1f\", \"height_cm\": 154, \"girths_cm\": {\"shoulders\": 90, \"bust\": 84, \"waist\": 64, \"hips\": 88}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Cream linen button-down blouse, relaxed fit, knee-length hem, #F5F5DC fabric; charcoal wool-blend wide-leg trousers, tapered ankle cut, midi length, #36454F fabric.\\nBlack leather ankle boots with a low block heel, shaft height reaching mid-calf, #000000 material.\\n\\nThis outfit works perfectly for your two-hour autumn stroll in the frosty park nearby home because it balances warmth and comfort without sacrificing style. The relaxed blouse offers ease of movement while the wool-blend trousers provide necessary insulation against the cold weather band. Completing the look with sleek black ankle boots keeps your feet warm and grounded, allowing you to enjoy your time with a friend effortlessly.\"}],\"usage\":{\"input_tokens\":868,\"output_tokens\":150},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -454,7 +454,7 @@ Scenario 'и закриття GPU-наряду із записаним' {
     # Прогін GPU-наряду: копія задачі на гілці наряду, коміт агента (ПЛАН.json) і записані сцени без коміту (запускач плану
     # комітить лише після всіх сцен), процес наряду тримає замок слота.
     $run = {
-        param([string]$Slug, [string]$Id, [string]$Slot)
+        param([string]$Slug, [string]$Id, [string]$Slot, [string]$Marker = '')
         $repo = "$RunsDir/w/$Id/repo"
         [void](Invoke-Git @('worktree', 'add', '-q', '-b', "gemini/$Slug", $repo, $base))
         $dir = "$repo/аудит/проби/$Slug"
@@ -464,7 +464,7 @@ Scenario 'и закриття GPU-наряду із записаним' {
         foreach ($k in 1..3) { [void][IO.Directory]::CreateDirectory("$dir/сцена-$k"); [IO.File]::WriteAllText("$dir/сцена-$k/результат.json", "{`"k`":$k}", $utf) }
         [IO.File]::WriteAllText("$repo/поза-теки.txt", 'x', $utf)
         $M = [pscustomobject]@{ Name = "gemini-queue/$Slug/gpt-6.1-sol-high/1/p2-gpu"; Sha = $base; Slug = $Slug; Model = 'gpt-6.1-sol-high'; N = '1'; Cond = 'p2-gpu'; Gpu = $true; Lane = 'codex'; Reason = '' }
-        $st = [ordered]@{ v = 1; id = $Id; slug = $Slug; model = $M.Model; n = 1; marker = $base; cond = 'p2-gpu'; slot = $Slot; start = $base; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0
+        $st = [ordered]@{ v = 1; id = $Id; slug = $Slug; model = $M.Model; n = 1; marker = $(if ($Marker) { $Marker } else { $base }); cond = 'p2-gpu'; slot = $Slot; start = $base; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0
             engine_answer_utc = ''; minutes = 0; bundle = ''; engine = 'codex'; retakes = 0; started_utc = '2026-11-17T18:46:59.0000000Z'; ended_utc = ''; sleep_parent = '' }
         Write-FileAtomic (Get-StatePath (Get-MarkerKey $M)) ('STARTED ' + ($st | ConvertTo-Json -Compress))
         $lock = "$($script:SlotDir)/$Slot.lock"
@@ -518,12 +518,44 @@ Scenario 'и закриття GPU-наряду із записаним' {
     if (-not $lp.HasExited) { $lp.Kill(); $lp.WaitForExit() }
     Clear-TaskCopies "$RunsDir/w" @('--branches', '--remotes')
     Check 'и копія зі сценами лишилась з kept.txt і після прибирання накопиченого' ((Test-Path "$copyC/kept.txt") -and @(Get-ChildItem -LiteralPath "$($c.Repo)/аудит/проби/$slugC" -Recurse -Filter 'результат.json').Count -eq 3)
+    # Клон планувальника в житті — без робочого дерева (`git status` у ньому: «this operation must be run in a work tree»), робочі
+    # дерева мають лише копії задач: так він і стає тут, коли гілки й бандли вже не залежать від дерева клону.
+    [void](Invoke-Git @('config', 'core.bare', 'true'))
+    Check 'и2 клон без робочого дерева: git status у ньому падає, як у журналі планувальника' ((Invoke-Git @('status', '--porcelain', '-z') -AllowFail).Code -ne 0)
+
+    # ДО: Get-Facts питав `git status` у клоні — виняток «бандл: … work tree», бандла нема, STALL із комітами 0, копію прибрано.
+    $slugD = 'автоживий-' + ('d' * 40); $idD = '20261117-184659-0000000000d4'
+    $d = & $run $slugD $idD 'codex-4'
+    $mD = [pscustomobject]@{ Slug = $slugD }
+    $threw = $false
+    try { [void](Get-Facts $mD $base) } catch { $threw = $true }
+    $fd = Get-Facts $mD $base (Get-RunCopyRepo $idD)
+    $fr = Get-Facts $mD $base '' -RefsOnly
+    $headD = (Invoke-Git @('rev-parse', "gemini/$slugD")).Out.Trim()
+    Check "и2 Get-Facts: у клоні без дерева падає (ДО); з копією прогону — гілка, коміти $($fd.Ahead), незакомічених $($fd.Dirty); без копії — лише голова й коміти" ($threw -and $fd.OnBranch -and $fd.Dirty -gt 0 -and $fd.Ahead -eq 1 -and $fd.Head -ceq $headD -and $fr.Head -ceq $headD -and $fr.Ahead -eq 1 -and -not $fr.OnBranch -and $fr.Dirty -eq -1)
+    Write-FileAtomic "$LaneDir/gpu-stall.json" (([ordered]@{ marker = $d.M.Name; since = $since; nocall = 93; at = '2026-11-18T12:40:00Z' }) | ConvertTo-Json -Compress)
+    $null = Stop-GpuStalledRuns $workers
+    $rd = & $result $idD
+    Check "и2 ПІСЛЯ: STALL із бандлом з клону без дерева (комітів $($rd.ahead), голова $($rd.head))" ($d.Proc.HasExited -and $rd.code -ceq 'STALL' -and $rd.bundle -ceq "$idD.bundle" -and [int]$rd.ahead -eq 2 -and $rd.head -ceq (Invoke-Git @('rev-parse', "gemini/$slugD")).Out.Trim() -and (Test-Path "$OutDir/$idD.bundle"))
+    Check 'и2 бандл містить гілку наряду, копію прибрано (зроблене в бандлі й гілці)' ((Invoke-Git @('bundle', 'list-heads', "$OutDir/$idD.bundle") -AllowFail).Out.Contains("refs/heads/gemini/$slugD") -and -not (Test-Path "$RunsDir/w/$idD"))
+
+    # Бандл не вдався (позначка, якої нема в клоні): кінець RECORD_FAILED із причиною, копія зі сценами лишається з kept.txt.
+    $slugE = 'автоживий-' + ('e' * 40); $idE = '20261117-184659-0000000000e5'
+    $e = & $run $slugE $idE 'codex-5' ('1' * 40)
+    Write-FileAtomic "$LaneDir/gpu-stall.json" (([ordered]@{ marker = $e.M.Name; since = $since; nocall = 93; at = '2026-11-18T12:40:00Z' }) | ConvertTo-Json -Compress)
+    $null = Stop-GpuStalledRuns $workers
+    $re = & $result $idE
+    $copyE = "$RunsDir/w/$idE"
+    Check "и2 ДО: збій бандла мовчки прибирав копію з комітами; ПІСЛЯ: $($re.code), «$($re.reason)»" ($e.Proc.HasExited -and $re.code -ceq 'RECORD_FAILED' -and $re.bundle -ceq '' -and ([string]$re.reason).StartsWith('STALL: копія ') -and ([string]$re.reason).Contains($idE) -and ([string]$re.reason).Contains('бандл не створено'))
+    Clear-TaskCopies "$RunsDir/w" @('--branches', '--remotes')
+    Check 'и2 копія лишилась з kept.txt і після прибирання накопиченого, сцени цілі' ((Test-Path "$copyE/kept.txt") -and @(Get-ChildItem -LiteralPath "$($e.Repo)/аудит/проби/$slugE" -Recurse -Filter 'результат.json').Count -eq 3)
+
     Check 'и рядки STALL_PUBLISHED, CANCELLED_PUBLISHED і RECORD_FAILED_PUBLISHED — за шаблоном публікатора' (& {
         . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$g/pubw" -OutboxDir "$g/pubo"
         (Test-OutboxLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugA STALL_PUBLISHED") -eq '' -and (Test-OutboxLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugB CANCELLED_PUBLISHED") -eq '' -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugB CANCELLED_PUBLISHED") -and
             (Test-OutboxLine "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugC RECORD_FAILED_PUBLISHED") -eq '' -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/$slugC RECORD_FAILED_PUBLISHED")
     })
-    foreach ($p in @($a.Proc, $b.Proc, $c.Proc, $lp)) { if (-not $p.HasExited) { $p.Kill() } }
+    foreach ($p in @($a.Proc, $b.Proc, $c.Proc, $d.Proc, $e.Proc, $lp)) { if (-not $p.HasExited) { $p.Kill() } }
 }
 
 Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue

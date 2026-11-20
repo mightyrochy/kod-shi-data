@@ -127,6 +127,12 @@ def act(prompt):
         return 'SUCCESS', done(), ''
     if SC == 'quota429':
         return 'ERROR', '', '429 RESOURCE_EXHAUSTED: quota exceeded'
+    if SC == 'error_after_report':
+        # Звіт даний, а наступний виклик моделі впав: подія result зі статусом ERROR несе і відповідь зі звітом.
+        commit('робота/є.txt')
+        return 'ERROR', done(), 'API error (attempt 2): request failed: Post "https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse": dial tcp: lookup daily-cloudcode-pa.googleapis.com: no such host'
+    if SC == 'error_plain':
+        return 'ERROR', 'Працюю далі.', 'internal engine failure'
     if SC == 'nothing':
         return 'SUCCESS', 'ЗАБЛОКОВАНО: нема доступу', ''
     raise SystemExit('невідомий сценарій ' + SC)
