@@ -563,10 +563,6 @@ import внутрішня_мова as _ВМ_П
                  як="the outfit answers each of them"),
         _ВИМ.поле("case.her_other_words"),
         _ВИМ.поле("case.language_model_note"),
-        # місце акценту стилістки — поле сценарію (`паспорт_поля`, `місце_акценту`; дошка 16711)
-        _ЗП.Поле("case.accent_place", "where the stylist placed the look's accent from her words: jewellery, "
-                                      "clothing, other_accessories, or none — no single accent",
-                 як="keep the accent of every outfit there"),
         _ЗП.Поле("case.reserved_colour", "a colour that at this event belongs to another person: near_white — "
                                          "white and colours that read as white in photos (cream, ivory, milky, "
                                          "pale yellow, pale blue) belong to the bride, and she is a guest; it "
