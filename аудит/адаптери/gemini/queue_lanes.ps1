@@ -1283,8 +1283,9 @@ namespace GeminiWrapper {
 
         // ES_CONTINUOUS | ES_SYSTEM_REQUIRED, а з display — ще й ES_DISPLAY_REQUIRED, поки цей потік не зніме вимогу
         // (ES_CONTINUOUS без інших прапорів). Запит системи на мережі скидає таймер сну й лишає дисплей схемі Windows;
-        // дисплей просять лише на батареї: Modern Standby починається, коли гасне дисплей, а запит «система потрібна»
-        // там Windows знімає за 5 хв після спливу тайм-ауту сну (НАЛАШТУВАННЯ.md, «Тримач світла»).
+        // дисплей просять на батареї (Modern Standby починається, коли гасне дисплей, а запит «система потрібна» там Windows
+        // знімає за 5 хв після спливу тайм-ауту сну) і на мережі, поки карту тримає GPU-наряд (у Modern Standby драйвер
+        // обмежує карту до 55 Вт; НАЛАШТУВАННЯ.md, «Тримач світла»).
         public static bool KeepAwake(bool on, bool display) {
             uint flags = on ? (display ? 0x80000003u : 0x80000001u) : 0x80000000u;
             return SetThreadExecutionState(flags) != 0;
@@ -1505,6 +1506,15 @@ function Save-GpuSession($Session) {
 function Get-LiveGpuLeases($Session) {
     <# Незакінчені оренди сесії, чий процес наряду ще тримає замок оренди. #>
     @($Session.Leases | Where-Object { -not $_.done -and (Test-LeaseLive (Get-GpuLeaseLockPath $_.run)) })
+}
+
+function Get-LiveGpuMarkers {
+    <# Позначки GPU-нарядів, чия оренда жива, — лише читання (запис сесії й замки оренд так само читають смуги, Get-GpuSessionReason).
+    Нема запису сесії — порожньо; запис нечитаний — виняток: межі власності не вгадуємо. Кличе тримач світла
+    (claude_run.ps1 -Light), щоб екран не гас, поки карту тримає наряд. #>
+    $s = Read-GpuSession
+    if ($null -eq $s) { return @() }
+    @(Get-LiveGpuLeases $s | ForEach-Object { [string]$_.marker })
 }
 
 function Complete-GpuModels([string]$Run = '') {
