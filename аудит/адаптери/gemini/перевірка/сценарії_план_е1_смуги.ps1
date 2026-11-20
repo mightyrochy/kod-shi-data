@@ -64,8 +64,9 @@ try {
         $fn = $ast.Find({ param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Invoke-Task' }, $false)
         . ([scriptblock]::Create($fn.Extent.Text))
 
-        # --- (2) збій плану Е1/автоживого ---
-        $m = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/Е1-нічний-живий-20261107/$model/1/gpu-p1`t$head`t$script:Clock")
+        # --- (2) збій плану автоживого ---
+        $live1 = 'автоживий-' + ('1' * 40); $live2 = 'автоживий-' + ('2' * 40)
+        $m = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/$live1/$model/1/gpu-p1`t$head`t$script:Clock")
         if ($lane -eq 'claude') { $m = Add-ClaudeFields $m }
         $sp = Get-StatePath (Get-MarkerKey $m)
         $id = '20261107-160000-abcdefabcdef'; $dir = Join-Path $WorkDir "runs/$id"; [void][IO.Directory]::CreateDirectory($dir)
@@ -81,34 +82,31 @@ try {
         }
         Check "$lane (2): п'ять збоїв плану — WAIT із лічильником 1..5" (($kinds[0..4] -join ',') -ceq 'WAIT,WAIT,WAIT,WAIT,WAIT' -and ($retakes[0..4] -join ',') -ceq '1,2,3,4,5')
         $planLine = @($script:Lines | Where-Object { $_ -match 'PLAN_FAILED' })
-        $planDone = $(if ($lane -eq 'claude') { $planLine.Count -eq 1 -and $planLine[0] -ceq "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/Е1-нічний-живий-20261107 PLAN_FAILED" } else { $script:Final -ceq 'PLAN_FAILED' })
+        $planDone = $(if ($lane -eq 'claude') { $planLine.Count -eq 1 -and $planLine[0] -ceq "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$live1 PLAN_FAILED" } else { $script:Final -ceq 'PLAN_FAILED' })
         Check "$lane (2): шоста спроба кінчається кодом PLAN_FAILED, а не ще одним REVIEW_API" ($kinds[5] -ne 'WAIT' -and $planDone)
         Check "$lane (2): до моделі збій плану не доходить" ($script:Models -eq 0)
         Check "$lane (2): жоден рядок диспетчерові не називає збій плану REVIEW_API" (@($script:Lines | Where-Object { $_ -match 'REVIEW_API' }).Count -eq 0)
 
         # Вичерпаний бюджет запитів — чекання вікна: ні лічильника, ні PLAN_FAILED.
         $script:PlanError = 'AUTO_BUDGET'; $script:Final = ''
-        $m2 = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/Е1-нічний-живий-20261108/$model/1/gpu-p1`t$head`t$script:Clock")
+        $m2 = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/$live2/$model/1/gpu-p1`t$head`t$script:Clock")
         if ($lane -eq 'claude') { $m2 = Add-ClaudeFields $m2 }
         $sp2 = Get-StatePath (Get-MarkerKey $m2)
         $id2 = '20261107-160100-abcdefabcdef'; $dir2 = Join-Path $WorkDir "runs/$id2"; [void][IO.Directory]::CreateDirectory($dir2)
         $job2 = @{id = $id2; dir = $dir2; slot = 'стенд-1'; head = ''; sel = $job.sel}
         for ($try = 1; $try -le 10; $try++) { [void](New-Claim $m2 $id2); $null = Invoke-Task $m2 $job2; $script:Clock += 121 }
-        Check "$lane (2): AUTO_BUDGET десять разів — WAIT, retakes=0, без PLAN_FAILED" ((Get-MarkerState $m2).Kind -ceq 'WAIT' -and (Get-Retakes $sp2) -eq 0 -and $script:Final -cne 'PLAN_FAILED' -and @($script:Lines | Where-Object { $_ -match 'Е1-нічний-живий-20261108' }).Count -eq 0)
+        Check "$lane (2): AUTO_BUDGET десять разів — WAIT, retakes=0, без PLAN_FAILED" ((Get-MarkerState $m2).Kind -ceq 'WAIT' -and (Get-Retakes $sp2) -eq 0 -and $script:Final -cne 'PLAN_FAILED' -and @($script:Lines | Where-Object { $_ -match $live2 }).Count -eq 0)
 
         # --- (3) GPU решти позначок проходу ---
         $script:Markers = @()
-        $names = @('Е1-нічний-живий-20261109', 'Річ-колір-вимір', 'Річ-кадр-варіант-кадри', 'проба-gpu')
+        $names = @(('автоживий-' + ('3' * 40)), 'Річ-колір-вимір', 'Річ-кадр-варіант-кадри', 'проба-gpu')
         $conds = @('gpu-p1', 'gpu-p1', 'gpu-p2', 'gpu-p3')
         for ($i = 0; $i -lt 4; $i++) {
             $x = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/$($names[$i])/$model/1/$($conds[$i])`t$head`t$($script:Clock - 600 + $i)")
             if ($lane -eq 'claude') { $x = Add-ClaudeFields $x }
             $script:Markers += $x
         }
-        # Е1 — у нічної позначки gemini_run окремий шлях (Get-NightlyMarker); для смуги agy беремо три звичайні GPU-позначки.
-        if ($lane -ne 'claude') { $script:Markers = @($script:Markers | Select-Object -Skip 1) }
         function Get-Markers { $script:Markers }
-        function Get-NightlyMarker { }
         function Select-Engine($M, [long]$After) { [pscustomobject]@{Engine = @{Name = 'agy'; Model = 'стенд'; Effort = 'high'}; Model = $M.Model; Quota = @{Blocked = $false; Known = $false; Group = ''; Left = 0}} }
         function Get-FreeSlot { 'стенд-1' }
         function Test-SlugBusy { $false }

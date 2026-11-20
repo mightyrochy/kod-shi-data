@@ -43,7 +43,6 @@ function Set-BrowserGpuPolicy { }
 function Test-ExternalGpuFree { $true }
 function Add-HealthException { }
 function Get-Markers { }
-function Get-NightlyMarker { }
 function Save-Skips { }
 function Test-Isolation { '' }
 function Test-OwnerUser { $true }

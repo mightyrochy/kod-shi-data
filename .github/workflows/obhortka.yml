@@ -1,8 +1,6 @@
 name: стенди обгортки
 
 on:
-  schedule:
-    - cron: '0 2 * * *'
   pull_request:
     branches: [main]
     paths:
@@ -12,7 +10,6 @@ on:
       - 'аудит/проби/кінець_моделі.py'
       - 'аудит/проби/записати_сцену.py'
       - 'аудит/проби/доробка_менше_прогонів.py'
-      - 'аудит/проби/поставити_нічну_позначку.py'
       - '.github/workflows/obhortka.yml'
   push:
     branches: [main]
@@ -23,7 +20,6 @@ on:
       - 'аудит/проби/кінець_моделі.py'
       - 'аудит/проби/записати_сцену.py'
       - 'аудит/проби/доробка_менше_прогонів.py'
-      - 'аудит/проби/поставити_нічну_позначку.py'
       - '.github/workflows/obhortka.yml'
 
 permissions:
@@ -34,24 +30,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  nichna_poznachka:
-    name: довірений дозвіл нічного прогону
-    if: github.event_name == 'schedule' && github.repository == 'mightyrochy/kod-shi-data'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
-        with:
-          persist-credentials: false
-      - name: датована гілка черги без пересування наявної
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python3 -I аудит/проби/поставити_нічну_позначку.py
-
   obhortka_parts:
-    if: github.event_name != 'schedule'
     name: обгортка — частина ${{ matrix.part }}
     runs-on: windows-latest
     timeout-minutes: 60
@@ -171,7 +150,7 @@ jobs:
   obhortka:
     name: обгортка — Windows PowerShell 5.1
     needs: obhortka_parts
-    if: ${{ always() && github.event_name != 'schedule' }}
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
