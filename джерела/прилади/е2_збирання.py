@@ -487,7 +487,7 @@ def зібрати_функції(модулі, вимога):
                 continue
             номер = 0
             for н, сер in виходи_функції(в):
-                if isinstance(н, ast.Return) and re.search(r"(?:^|_)промпт(?:_|$)|prompt", ім, re.I):
+                if isinstance(н, ast.Return) and re.search(r"(?:^|_)промпт(?:_|$)|prompt", ім, re.IGNORECASE):
                     номер += 1
                     завдання.append((м, ім + ":вихід%d" % номер, н.value, сер))
                 elif isinstance(н, ast.Call):

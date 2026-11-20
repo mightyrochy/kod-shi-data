@@ -404,7 +404,7 @@ class Модулі(importlib.abc.MetaPathFinder, importlib.abc.Loader):
 
     def create_module(self, spec):
         """Доручає створення модуля штатному importlib."""
-        return None
+        return
 
     def exec_module(self, module):
         """Компілює чинний вихідний код зі спостерігачем і виконує його імпорт."""
