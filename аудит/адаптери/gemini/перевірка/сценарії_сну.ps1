@@ -462,12 +462,13 @@ try {
         $script:Events = New-Object Collections.ArrayList
         $script:Log = New-Object Collections.ArrayList
         $script:Deliver = ''; $script:Battery = @($false); $script:Refuse = $false; $script:Ver = @('')
+        $script:WaitDisplay = $null
         function Write-Log([string]$Text) { [void]$script:Log.Add($Text) }
         function Invoke-HealthBeat { }
         function Clear-GpuForPause { }
         function Get-PauseTargets { @(11, 12) }
         function Set-ProcessPause([int]$Id, [bool]$On) { $true }
-        function Set-KeepAwake([bool]$On) { [void]$script:Events.Add("тримання $On"); -not ($On -and $script:Refuse) }
+        function Set-KeepAwake([bool]$On, [bool]$Display = $false) { [void]$script:Events.Add("тримання $On" + $(if ($On -and $Display) { ' з дисплеєм' } else { '' })); -not ($On -and $script:Refuse) }
         function Test-OnBattery { $b = $script:Battery[0]; if ($script:Battery.Count -gt 1) { $script:Battery = $script:Battery[1..($script:Battery.Count - 1)] }; $b }
         function Get-VersionSwitch { $v = $script:Ver[0]; if ($script:Ver.Count -gt 1) { $script:Ver = $script:Ver[1..($script:Ver.Count - 1)] }; $v }
         function Get-Outbox { @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File | Sort-Object Name | ForEach-Object { [IO.File]::ReadAllText($_.FullName).Trim() }) }
@@ -478,6 +479,7 @@ try {
             if ($Milliseconds) { [void]$script:Events.Add('світло-чекання'); return }
             if ($Seconds -eq 1) { [void]$script:Events.Add('такт'); return }
             [void]$script:Events.Add('доставка-чекання ' + (@(Get-Outbox).Count))
+            $script:WaitDisplay = $script:LightDisplay
             Microsoft.PowerShell.Utility\Start-Sleep -Milliseconds 50
             if ($script:Deliver) {
                 foreach ($f in @(Get-ChildItem -LiteralPath $OutboxDir -Filter '*.txt' -File)) {
@@ -500,29 +502,32 @@ try {
             <# Тримач світла: запит на мережі заздалегідь; світла нема — рядок, доставка, лише тоді запит відпущено;
             світло є — рядок і запит знову. Пише лише тримач: пауза рушія рядків не пише й ноутбука не тримає. #>
             $ok = '{"line":"x","sent":true,"attempts":1}'
-            $script:LightHeld = $false; $script:LightRefused = $false
+            $script:LightHeld = $false; $script:LightDisplay = $false; $script:LightRefused = $false
             $ev = Tick $false
             [pscustomobject]@{Name="на мережі запит тримається заздалегідь, рядків нема: $ev";Ok=($ev -ceq 'тримання True' -and $script:LightHeld -and @(Get-Outbox).Count -eq 0)}
+            [pscustomobject]@{Name="на мережі лише «система потрібна» — без дисплея, дисплей гасне за схемою Windows: $ev";Ok=($ev -cnotmatch 'дисплеєм' -and -not $script:LightDisplay -and $script:Log[-1] -cmatch 'мережа, GPU вільна — запит «система потрібна» \(дисплей — за схемою Windows\) тримається$')}
             $ev = Tick $false
             [pscustomobject]@{Name="другий такт на мережі запиту не чіпає: '$ev'";Ok=($ev -ceq '' -and $script:LightHeld)}
+            $script:WaitDisplay = $null
             $ev = Tick $true $ok
+            [pscustomobject]@{Name="перехід мережа → батарея: запит міняє прапорці — система лишається, дисплей додано до кінця чекання доставки: $ev; дисплей під час чекання: $($script:WaitDisplay)";Ok=($ev -ceq 'тримання True з дисплеєм | доставка-чекання 1 | тримання False' -and $script:WaitDisplay -eq $true -and -not $script:LightHeld -and -not $script:LightDisplay)}
             $lines = @(Get-Outbox); $st = Read-LightState; $off = $(if ($st) { $st.Off } else { '' })
             [pscustomobject]@{Name="світла нема: один рядок за шаблоном, без числа процесів: $($lines -join '')";Ok=($lines.Count -eq 1 -and $off -and $lines[0] -cmatch $script:PowerOffLineTemplate -and $lines[0].EndsWith(" НЕМА $off") -and $st.Id -ceq '')}
-            [pscustomobject]@{Name="світла нема → рядок → доставка → запит відпущено: $ev; $($script:Log[-1])";Ok=($ev -ceq 'доставка-чекання 1 | тримання False' -and -not $script:LightHeld -and $script:Log[-1] -cmatch 'запит відпущено — доставлено$')}
+            [pscustomobject]@{Name="світла нема → рядок → доставка → запит відпущено: $ev; $($script:Log[-1])";Ok=($ev -ceq 'тримання True з дисплеєм | доставка-чекання 1 | тримання False' -and -not $script:LightHeld -and $script:Log[-1] -cmatch 'запит відпущено — доставлено$')}
             $ev = Tick $true $ok
             [pscustomobject]@{Name="на батареї після сказаного — ні рядка, ні запиту: '$ev'";Ok=($ev -ceq '' -and @(Get-Outbox).Count -eq 1)}
             $ev = Tick $false
             $lines = @(Get-Outbox); $on = @($lines | Where-Object { $_ -cmatch $script:PowerOnLineTemplate })
-            [pscustomobject]@{Name="світло є: рядок із часом зникнення, запит знову тримається: $ev; $($on -join '')";Ok=($lines.Count -eq 2 -and $on.Count -eq 1 -and $on[0].EndsWith(" ПАУЗА З $off") -and $ev -ceq 'тримання True' -and $script:LightHeld -and -not (Read-LightState))}
+            [pscustomobject]@{Name="світло є: рядок із часом зникнення, запит знову тримається: $ev; $($on -join '')";Ok=($lines.Count -eq 2 -and $on.Count -eq 1 -and $on[0].EndsWith(" ПАУЗА З $off") -and $ev -ceq 'тримання True' -and $script:LightHeld -and -not $script:LightDisplay -and -not (Read-LightState))}
             Clear-Box
             $ev = Tick $true ''
-            [pscustomobject]@{Name="доставки нема до -OffWaitMinutes — запит відпущено, причина в журналі: $($script:Log[-1])";Ok=($ev -cmatch '^доставка-чекання 1( \| доставка-чекання 1)* \| тримання False$' -and -not $script:LightHeld -and $script:Log[-1] -cmatch 'запит відпущено — не доставлено до межі чекання' -and @(Get-Outbox).Count -eq 1)}
+            [pscustomobject]@{Name="доставки нема до -OffWaitMinutes — запит відпущено, причина в журналі: $($script:Log[-1])";Ok=($ev -cmatch '^тримання True з дисплеєм \| доставка-чекання 1( \| доставка-чекання 1)* \| тримання False$' -and -not $script:LightHeld -and $script:Log[-1] -cmatch 'запит відпущено — не доставлено до межі чекання' -and @(Get-Outbox).Count -eq 1)}
             [void](Tick $false); Clear-Box
             $ev = Tick $true '{"line":"x","sent":false,"attempts":3}'
-            [pscustomobject]@{Name="перший прохід публікатора без доставки — запит відпущено, довше не чекає: $ev";Ok=($ev -ceq 'доставка-чекання 1 | тримання False' -and $script:Log[-1] -cmatch 'перший прохід публікатора')}
+            [pscustomobject]@{Name="перший прохід публікатора без доставки — запит відпущено, довше не чекає: $ev";Ok=($ev -ceq 'тримання True з дисплеєм | доставка-чекання 1 | тримання False' -and $script:Log[-1] -cmatch 'перший прохід публікатора')}
             [void](Tick $false); Clear-Box; Set-LightHold $false
             $ev = Tick $true $ok
-            [pscustomobject]@{Name="тримач стартував уже на батареї — запит лише на час доставки: $ev";Ok=($ev -ceq 'тримання True | доставка-чекання 1 | тримання False' -and @(Get-Outbox).Count -eq 1)}
+            [pscustomobject]@{Name="тримач стартував уже на батареї — запит лише на час доставки: $ev";Ok=($ev -ceq 'тримання True з дисплеєм | доставка-чекання 1 | тримання False' -and @(Get-Outbox).Count -eq 1)}
             $ev = Tick $true $ok
             [pscustomobject]@{Name="перезапуск на батареї після сказаного — тиша (light.txt): '$ev'";Ok=($ev -ceq '' -and @(Get-Outbox).Count -eq 1)}
             # Тримач перезапущено посеред чекання: light.txt має id рядка — новий процес бере запит і чекає саме його, без дубля.
@@ -532,8 +537,46 @@ try {
             Write-FileAtomic (Join-Path $WorkDir 'light.txt') "$off $id"
             $ev = Tick $true $ok
             $st = Read-LightState
-            [pscustomobject]@{Name="перезапуск посеред чекання доставки — запит знову, той самий рядок, без дубля: $ev; $($script:Log -join ' / ')";Ok=($ev -ceq 'тримання True | доставка-чекання 1 | тримання False' -and @(Get-Outbox).Count -eq 1 -and $st.Off -ceq $off -and $st.Id -ceq '' -and $script:Log[-1] -cmatch 'запит відпущено — доставлено$')}
+            [pscustomobject]@{Name="перезапуск посеред чекання доставки — запит знову, той самий рядок, без дубля: $ev; $($script:Log -join ' / ')";Ok=($ev -ceq 'тримання True з дисплеєм | доставка-чекання 1 | тримання False' -and @(Get-Outbox).Count -eq 1 -and $st.Off -ceq $off -and $st.Id -ceq '' -and $script:Log[-1] -cmatch 'запит відпущено — доставлено$')}
             [void](Tick $false); Clear-Box; Set-LightHold $false
+            # Запит із дисплеєм (батарея), а світло вже є: наступний такт мережі знімає дисплей, систему не відпускає.
+            Set-LightHold $true $true
+            $ev = Tick $false
+            [pscustomobject]@{Name="повернення світла з запитом із дисплеєм — знову лише система, без паузи запиту: $ev";Ok=($ev -ceq 'тримання True' -and $script:LightHeld -and -not $script:LightDisplay)}
+            Set-LightHold $false
+            # Екран за замком GPU: живу оренду GPU-наряду читає тримач тим самим кодом, що смуги (запис сесії й замок оренди).
+            $sessPath = Join-Path $LaneDir 'gpu-models.json'
+            $sess = '{"v":2,"before":[{"id":"owner","model":"m1"}],"leases":[{"run":"r1","marker":"наряд-1","join":["owner"],"done":false}],"dirty":false}'
+            [void][IO.Directory]::CreateDirectory($LaneDir)
+            [IO.File]::WriteAllText($sessPath, $sess)
+            $leaseLock = Open-Lock (Get-GpuLeaseLockPath 'r1')
+            $ev = Tick $false; $n1 = $script:Log.Count
+            [pscustomobject]@{Name="мережа, оренда GPU жива — запит із дисплеєм, один рядок: $ev; $($script:Log -join ' / ')";Ok=($ev -ceq 'тримання True з дисплеєм' -and $script:LightHeld -and $script:LightDisplay -and $n1 -eq 1 -and $script:Log[-1] -cmatch 'мережа, GPU зайнята \(наряд-1\) — запит «система й дисплей потрібні» тримається$')}
+            $ev = Tick $false
+            [pscustomobject]@{Name="друга секунда зайнятої GPU — запиту й рядка нема: '$ev'; рядків $($script:Log.Count)";Ok=($ev -ceq '' -and $script:LightDisplay -and $script:Log.Count -eq 0)}
+            $leaseLock.Dispose()
+            $ev = Tick $false
+            [pscustomobject]@{Name="мережа, оренда мертва (замок відпущено) — знову лише система, один рядок: $ev; $($script:Log -join ' / ')";Ok=($ev -ceq 'тримання True' -and $script:LightHeld -and -not $script:LightDisplay -and $script:Log.Count -eq 1 -and $script:Log[-1] -cmatch 'мережа, GPU вільна — запит «система потрібна»')}
+            $ev = Tick $false
+            [pscustomobject]@{Name="друга секунда вільної GPU — запиту й рядка нема: '$ev'";Ok=($ev -ceq '' -and -not $script:LightDisplay -and $script:Log.Count -eq 0)}
+            $leaseLock = Open-Lock (Get-GpuLeaseLockPath 'r1')
+            $ev = Tick $false
+            [pscustomobject]@{Name="вільна → зайнята знову — дисплей додано, один рядок: $ev";Ok=($ev -ceq 'тримання True з дисплеєм' -and $script:LightDisplay -and $script:Log.Count -eq 1)}
+            $script:Battery = @($true); $script:Events.Clear(); $script:Log.Clear(); $script:Deliver = $ok
+            Step-Light
+            $ev = $script:Events -join ' | '
+            [pscustomobject]@{Name="перехід на батарею за зайнятої GPU — дисплей уже є, запит не міняється до кінця доставки: $ev";Ok=($ev -ceq 'доставка-чекання 1 | тримання False' -and -not $script:LightHeld)}
+            Clear-Box
+            $ev = Tick $false
+            [pscustomobject]@{Name="світло повернулось за зайнятої GPU — запит із дисплеєм: $ev";Ok=($ev -ceq 'тримання True з дисплеєм' -and $script:LightDisplay)}
+            $leaseLock.Dispose(); Remove-Item -LiteralPath $sessPath -Force
+            $ev = Tick $false
+            [pscustomobject]@{Name="сесію закрито — знову лише система: $ev";Ok=($ev -ceq 'тримання True' -and -not $script:LightDisplay)}
+            [IO.File]::WriteAllText($sessPath, '{"v":2}')
+            $ev = Tick $false
+            [pscustomobject]@{Name="запис сесії нечитаний — GPU не вільна, дисплей і причина в журналі: $ev; $($script:Log -join ' / ')";Ok=($ev -ceq 'тримання True з дисплеєм' -and $script:Log.Count -eq 1 -and $script:Log[-1] -cmatch 'GPU зайнята \(запис GPU-сесії нечитаний: ')}
+            Remove-Item -LiteralPath $sessPath -Force
+            Set-LightHold $false; Clear-Box
             $script:Refuse = $true; $script:LightRefused = $false
             $ev = Tick $false
             $refused = @($script:Log | Where-Object { $_ -cmatch 'НЕ ПРИЙНЯТО' }).Count

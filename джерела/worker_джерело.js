@@ -6,7 +6,7 @@
    ключа в браузері бути не може — його побачить кожен, хто відкрив devtools.
    Отже ключ лежить тут, а сторінка ходить сюди.
 
-   ДВА ПРОВАЙДЕРИ, ОДИН ФОРМАТ. Сторінка завжди шле й читає формат Anthropic;
+   ТРИ ПРОВАЙДЕРИ, ОДИН ФОРМАТ (третій — OpenAI, лише зображення). Сторінка завжди шле й читає формат Anthropic;
    переклад у бік Google живе ТІЛЬКИ тут. Тому зміна моделі — це правка рядка
    `МОДЕЛЬ_П` у показі, і більше нічого: маршрут вибирається за префіксом імені.
    Розбір відповіді, лічба токенів, читання `stop_reason` у сторінці лишаються
@@ -16,6 +16,7 @@
    ДЕ ЦЕ ЖИВЕ: Cloudflare Workers (безкоштовний тариф). Ключі — секретами:
        GEMINI_API_KEY    — секрет: ключ з aistudio.google.com (починається на AIza)
        ANTHROPIC_API_KEY — секрет: ключ API Anthropic (текст продукту — Claude, кредити з підписки)
+       OPENAI_API_KEY    — секрет: ключ API OpenAI (зображення примірки, `gpt-image-…`; кредити з підписки)
        CLAUDE_EFFORT     — звичайна змінна, необов'язкова: `output_config.effort` для
                            `claude-` (low | medium | high | …), `as-is` — без поля. Без змінної: low.
        TESTER_TOKENS     — секрет: токени через кому, ЛИШЕ латиниця (tok-a1,tok-b2)
@@ -57,6 +58,12 @@ const ЗАПАС_ДУМОК_CLAUDE = 12000;   // токенів на думки 
 /* Зусилля мислення Claude, коли змінна CLAUDE_EFFORT не задана: low — вимір 19.11
    (`аудит/проби/модель-текст-claude/`), якість образів як без межі, вихід на чверть менший. */
 const ТИПОВЕ_ЗУСИЛЛЯ_CLAUDE = "low";
+/* OpenAI images/edits (провайдер openai). Параметри НЕ виміряні наживо — ключа не було; це пропозиція за
+   документацією («Lower complexity can suit focused edits», типова якість — auto): задати інші — правка тут. */
+const ЯКІСТЬ_ЗОБРАЖЕННЯ_OPENAI = "medium";
+const СКЛАДНІСТЬ_ЗОБРАЖЕННЯ_OPENAI = "medium";
+/* Ціни $ за млн токенів (developers.openai.com/api/docs/pricing, 19.11.2026): gpt-image-2.6-sunburst і -flare. */
+const ЦІНА_OPENAI_ВХІД_ЗОБР = 8, ЦІНА_OPENAI_ВХІД_ТЕКСТ = 5, ЦІНА_OPENAI_ВИХІД_ЗОБР = 30;
 const СТЕЛЯ_ВХОДУ_СИМВ = 400000;   // виміряно: рука з пулом ≈ 130 000 симв
 const ПРОГОНІВ_НА_ДОБУ = 40;
 
@@ -435,7 +442,99 @@ const ПРОВАЙДЕРИ = [
       };
     },
   },
+  {
+    /* ── OPENAI: ЛИШЕ ЗОБРАЖЕННЯ (наряд «Модель-примірка-на-OpenAI») ─────────────────────────────
+       ЩО ВІДОМО З ДОКУМЕНТАЦІЇ (developers.openai.com, прочитано 19.11.2026; ключа в сесії нема, живого
+       виклику не було):
+       · `POST /v1/images/edits`, `Content-Type: application/json` (довідник «Create image edit»):
+         `{model, prompt, images:[{image_url | file_id}] (1…16; image_url — URL або data:-URL, до 20 МБ),
+          quality, size, complexity, output_format, moderation, safety_identifier, n}`;
+         перше зображення — те, що редагують, решта — опорні (гайд, «Create a new image using image
+         references»). Моделі `gpt-image-2.6-sunburst` / `gpt-image-2.6-flare` (сторінка цін, 19.11);
+       · відповідь: `{data:[{b64_json}], output_format, quality, size, usage:{input_tokens,
+         input_tokens_details:{image_tokens,text_tokens}, output_tokens, total_tokens}}`; `url` для
+         GPT Image не підтримано; відмова безпеки — 400 `error.code = moderation_blocked`;
+       · ціна — за токени зображення: вхід $8, вихід $30 за млн; текст входу $5 (там само).
+       ЧОГО В ДОКУМЕНТАЦІЇ НЕМА: скільки токенів дає ОДНА примірка 2.6 — калькулятор гайда рахується
+       скриптом сторінки, у тексті є лише таблиця «до gpt-image-2». Тому міст віддає `usage` і сам
+       рахує гроші заголовком `x-cost-usd`: перше число — з першого живого виклику.
+       Маршрут обирає ім'я: `gpt-image-`. Мислення, драбина й температура картинковій моделі не потрібні. */
+    ім: "openai", префікс: "gpt-image-", ключ: "OPENAI_API_KEY",
+    адреса: () => "https://api.openai.com/v1/images/edits",
+    /* `content-type` JSON — тіло не multipart: довідник приймає `application/json` з `images[]`. */
+    шапка: k => ({"content-type":"application/json", "authorization":"Bearer " + k}),
+    картинкова: () => true,
+    /* Температури в images/edits нема: заголовок `x-temperature` — `n/a`, а 400 зі словом sampling/temperature
+       не лікується її зняттям (повтор був би тим самим платним запитом). */
+    без_температури: true,
+    /* Фото за адресою воркер тягне й кладе base64 так само, як для Gemini (одне визначення): магазин
+       може не віддати фото самому OpenAI, а мертве посилання валило б увесь виклик 400. */
+    підготувати: т => ПРОВАЙДЕРИ.find(x => x.ім === "gemini").підготувати(т),
+    /* КАДР, ЩО НЕ ДІЙШОВ, — ВІДМОВА ДО ПЛАТНОГО ВИКЛИКУ. images/edits бере масив і ОДИН промпт: мертве фото
+       стискало б масив зі зсувом номерів («photo 2» — уже светр, а не пальто), а заглушка `(image not delivered)`
+       вклеювалась би в початок промпта. Тому будь-яке фото, що не дійшло, — 422 без виклику OpenAI: краще
+       «не вдалось», ніж намальоване не тими речами (клас ФОТО-513). */
+    після_підготовки: (т, випало) => випало
+      ? "images/edits: " + випало + " фото за адресою не дійшло — виклик OpenAI не зроблено (масив зображень зсунув би номери речей)"
+      : null,
+    перевірити_запит: т => {
+      const пов = т.messages || [];
+      if (пов.length !== 1 || пов[0].role !== "user")
+        return "модель «" + т.model + "» (OpenAI images/edits) бере рівно одне повідомлення user, отримано " + пов.length;
+      const зобр = зображення_openai(пов[0]);
+      if (!зобр.length) return "images/edits потребує щонайменше одного фото (блок image із base64 чи url)";
+      if (зобр.length > 16) return "images/edits приймає до 16 зображень, отримано " + зобр.length;
+      return null;
+    },
+    запит: т => {
+      const м = (т.messages || [])[0] || {};
+      const блоки = Array.isArray(м.content) ? м.content : [{type:"text", text:м.content}];
+      return {
+        model: т.model,
+        prompt: блоки.filter(б => б.type === "text" && б.text).map(б => б.text).join("\n\n"),
+        images: зображення_openai(м),
+        quality: ЯКІСТЬ_ЗОБРАЖЕННЯ_OPENAI,
+        complexity: СКЛАДНІСТЬ_ЗОБРАЖЕННЯ_OPENAI,
+        size: "auto",
+        n: 1,
+      };
+    },
+    /* Кредити API скінчились: 429 `insufficient_quota` чи 400 `billing_hard_limit_reached` — міст
+       називає це одним видом 402 `credits_exhausted`, як і в Anthropic. */
+    без_кредитів: (статус, текст) => (статус === 429 || статус === 400)
+      && /insufficient_quota|billing_hard_limit_reached|exceeded your current quota/i.test(текст),
+    відповідь: д => {
+      const кадри = ((д && д.data) || []).filter(к => к && к.b64_json);
+      if (!кадри.length)
+        return {_помилка: "OpenAI images/edits: у відповіді нема картинки"
+                          + ((д && д.error && д.error.message) ? " · " + String(д.error.message).slice(0, 300) : "")};
+      const u = (д && д.usage) || {}, дет = u.input_tokens_details || {};
+      const формат = String((д && д.output_format) || "png").toLowerCase();
+      const вхід_зобр = Number(дет.image_tokens) || 0;
+      const вхід_текст = Number(дет.text_tokens) || (Number(u.input_tokens) || 0) - вхід_зобр;
+      const вихід = Number(u.output_tokens) || 0;
+      return {
+        content: кадри.map(к => ({type:"image", source:{type:"base64",
+                  media_type: "image/" + (формат === "jpg" ? "jpeg" : формат), data: к.b64_json}})),
+        stop_reason: "end_turn",
+        usage: {input_tokens: Number(u.input_tokens) || 0, cache_read_input_tokens: 0,
+                output_tokens: вихід, thinking_tokens: 0},
+        _провайдер: "openai", _причина_сира: null,
+        _вартість_usd: (вхід_зобр * ЦІНА_OPENAI_ВХІД_ЗОБР + Math.max(0, вхід_текст) * ЦІНА_OPENAI_ВХІД_ТЕКСТ
+                        + вихід * ЦІНА_OPENAI_ВИХІД_ЗОБР) / 1e6,
+      };
+    },
+  },
 ];
+
+/* Блоки image одного повідомлення → `images` OpenAI. base64 їде data:-URL, url — як є. */
+function зображення_openai(п) {
+  const блоки = Array.isArray(п && п.content) ? п.content : [];
+  return блоки.filter(б => б.type === "image" && б.source
+                          && (б.source.type === "url" ? б.source.url : б.source.data))
+    .map(б => ({image_url: б.source.type === "url" ? б.source.url
+                : "data:" + (б.source.media_type || ТИПОВИЙ_MIME_КАРТИНКИ) + ";base64," + б.source.data}));
+}
 
 /* ── NANO BANANA 2.1 І ДАЛІ — INTERACTIONS API, А НЕ generateContent ──
    ЩО ВІДОМО (ai.google.dev/gemini-api/docs/nanobanana і /interactions):
@@ -540,7 +639,7 @@ function заголовки(п) {
       "anthropic-ratelimit-tokens-remaining, anthropic-ratelimit-tokens-reset, " +
       "anthropic-ratelimit-input-tokens-remaining, anthropic-ratelimit-output-tokens-remaining, " +
       "retry-after, x-runs-left, x-provider, x-thinking, x-images-dropped, x-model, x-attempts, " +
-      "x-temperature, x-cached-tokens, x-route",
+      "x-temperature, x-cached-tokens, x-route, x-cost-usd",
     "Access-Control-Max-Age": "86400",
   };
 }
@@ -609,6 +708,15 @@ export default {
 
     // Фото за адресою для провайдера, який сам їх не тягне (Gemini)
     const випало_фото = пров.підготувати ? await пров.підготувати(тіло) : 0;
+    const після_фото = пров.після_підготовки && пров.після_підготовки(тіло, випало_фото);
+    if (після_фото) {
+      const в422 = new Headers();
+      for (const [і,з] of Object.entries(заголовки(п))) в422.set(і,з);
+      в422.set("content-type", "application/json");
+      в422.set("x-runs-left", лишилось); в422.set("x-provider", пров.ім);
+      в422.set("x-images-dropped", String(випало_фото));
+      return new Response(JSON.stringify({error:{type:"провайдер", message: після_фото}}), {status:422, headers:в422});
+    }
     /* ── СТЕЛЯ ЧАСУ Й ДРАБИНА МОДЕЛЕЙ (спіймано пробою) ────────
        Cloudflare ріже підзапит воркера, що мовчить ~100 с, і віддає йому
        відповідь 524 «error code: 524»; воркер віддавав її сторінці як є —
@@ -670,7 +778,7 @@ export default {
           /* 400 через саме поле вибірки (див. `температура_тіла`): знімаємо його ОДИН раз і
              повторюємо той самий щабель тією самою формою мислення — інакше «модель не
              приймає температуру» виглядало б як поломка моделі. */
-          if (/temperature|top_p|top_k|sampling/i.test(т400) && !тіло._без_темп
+          if (/temperature|top_p|top_k|sampling/i.test(т400) && !тіло._без_темп && !пров.без_температури
               && температура_тіла(тіло) !== null) {
             тіло._без_темп = true;
             спроби[спроби.length - 1] += "(temperature dropped)";
@@ -712,13 +820,13 @@ export default {
     вих.set("x-images-dropped", String(випало_фото));
     вих.set("x-model", модель_ок);
     /* ЯКИМ МАРШРУТОМ ПІШОВ ЗАПИТ — заголовком, щоб A/B між NB2 і 2.1 було видно на відповіді. */
-    вих.set("x-route", пров.ім !== "gemini" ? "messages"
+    вих.set("x-route", пров.ім === "openai" ? "images-edits" : пров.ім !== "gemini" ? "messages"
                        : (через_interactions(модель_ок) ? "interactions" : "generateContent"));
     вих.set("x-attempts", спроби.join(" "));
     /* ASCII, як і решта значень (кирилиця в заголовку кидає TypeError ще до мережі):
        «n/a» — тим самим словом, що й `x-runs-left`, коли числа нема. */
     вих.set("x-temperature", тіло._без_темп ? "dropped"
-                            : (температура_тіла(тіло) === null ? "n/a" : String(температура_тіла(тіло))));
+                            : (пров.без_температури || температура_тіла(тіло) === null ? "n/a" : String(температура_тіла(тіло))));
 
     const сире = await відп.text();
     if (відп.status === 504 || відп.status === 524)
@@ -745,6 +853,8 @@ export default {
     /* СКІЛЬКИ ВХОДУ ПРИЙШЛО З КЕШУ — ЗАГОЛОВКОМ (К-4). Без нього «кеш працює» лишалось
        би твердженням: тіло читає показ, а ручний огляд і проби дивляться на заголовки.
        ASCII, як і решта значень; `0` — кеш не влучив, і це теж факт. */
+    /* Гроші за виклик — заголовком, а не здогадом: токени × ціна з `usage` самого OpenAI. */
+    if (наш && typeof наш._вартість_usd === "number") вих.set("x-cost-usd", наш._вартість_usd.toFixed(4));
     вих.set("x-cached-tokens", String(((наш || {}).usage || {}).cache_read_input_tokens || 0));
     return new Response(JSON.stringify(наш), {status:200, headers:вих});
   },

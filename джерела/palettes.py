@@ -49,7 +49,6 @@ import re as _re_mod
 import trace as _TR
 import поломки_ядро as _ПОЛ
 from colorspace import reliability, MIN_TO_EMIT, регіони, розсіяння as _розсіяння
-from реєстр_правил import C
 from колір_річ import нейтраль_меж, у_дугах_кола
 import колір_річ as _КР
 import face_contrast as _KC
