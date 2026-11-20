@@ -79,7 +79,7 @@ try {
         $dir = Join-Path $root 'run-kept'
         $repo = New-TaskCopy $dir 'refs/remotes/origin/main' ''
         & git -C $repo -c user.name=стенд -c user.email=stend@example.invalid commit -q --allow-empty -m 'незапушене'
-        $kept = Close-TaskCopy @('--remotes')
+        $kept = Close-TaskCopy @()
         Check 'тека з незапушеним комітом лишається з kept.txt' ($kept -ceq $dir -and (Test-Path -LiteralPath (Join-Path $dir 'kept.txt')) -and $script:RepoDir -ceq $clone)
         $busy = Join-Path $root 'run-busy'
         [void](New-TaskCopy $busy 'refs/remotes/origin/main' ''); $script:TaskCopy = $null; $script:RepoDir = $clone
@@ -87,12 +87,47 @@ try {
         [IO.File]::WriteAllText((Join-Path $script:SlotDir 'claude-1.json'), (@{ slot = 'claude-1'; copy = $busy } | ConvertTo-Json -Compress), $utf)
         & git -C $clone worktree add -q --detach (Join-Path $root 'agy-1') 'refs/remotes/origin/main'
         $before = @(Get-ChildItem -LiteralPath $root -Directory).Count
-        Clear-TaskCopies $root @('--remotes')
+        Clear-TaskCopies $root { @() }
         $lock.Dispose()
         Check 'перший прохід прибрав давню копію слота' (-not (Test-Path -LiteralPath (Join-Path $root 'agy-1')) -and $before -eq 3)
         Check 'копію зайнятого слота й недоставлене не чіпає' ((Test-Path -LiteralPath (Join-Path $busy 'repo/a.txt')) -and (Test-Path -LiteralPath (Join-Path $dir 'kept.txt')))
-        Clear-TaskCopies $root @('--remotes')
+        Clear-TaskCopies $root { @() }
         Check 'звільнений слот: копію прибрано наступним проходом' (-not (Test-Path -LiteralPath $busy) -and (Test-Path -LiteralPath $dir))
+    }
+    Scenario 'утримана копія відв''язана від гілки наряду, локальна гілка клону — не доставлене' {
+        # ДО: процес наряду й прибирання накопиченого рахували доставленим `--branches`, тож коміт агента лише в локальній
+        # гілці клону (бандл не вдався) копію не утримував; утримана копія лишалась на гілці (`checkout --detach` падав під
+        # замком індексу), і `checkout -B` наступної спроби тієї самої позначки відкочував її HEAD на старт.
+        $origin = Join-Path $tmp 'o-hold.git'; $clone = Join-Path $tmp 'c-hold'
+        & git init -q --bare $origin; & git init -q -b main $clone
+        & git -C $clone config user.name 'стенд'; & git -C $clone config user.email 'stend@example.invalid'
+        & git -C $clone remote add origin $origin
+        [IO.File]::WriteAllText("$clone/a.txt", '1', $utf)
+        & git -C $clone add -A; & git -C $clone commit -q -m 'початкова'; & git -C $clone push -q origin main
+        & git -C $clone fetch -q origin
+        $script:RepoDir = $clone; $root = Join-Path $tmp 'w-hold'
+        $base = (Invoke-Git @('rev-parse', 'refs/remotes/origin/main')).Out.Trim()
+        # Спроба позначки, як у Invoke-Task: копія на старті й гілка наряду `checkout -f --ignore-other-worktrees -B`.
+        $attempt = {
+            param([string]$Name)
+            $r = New-TaskCopy (Join-Path $root $Name) $base ''
+            [void](Invoke-CopyGit @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', 'gemini/x', $base))
+            $r
+        }
+        $repo1 = & $attempt 'run-1'
+        & git -C $repo1 -c user.name=стенд -c user.email=stend@example.invalid commit -q --allow-empty -m 'агент'
+        [IO.File]::WriteAllText("$repo1/незакомічене.txt", 'x', $utf)
+        $agent = (Invoke-Git @('rev-parse', 'HEAD') -Dir $repo1).Out.Trim()
+        $old = [int](Invoke-Git @('rev-list', '--count', 'HEAD', '--not', '--branches', '--remotes') -Dir $repo1).Out.Trim()
+        $ilock = Join-Path (Invoke-Git @('rev-parse', '--absolute-git-dir') -Dir $repo1).Out.Trim() 'index.lock'
+        [IO.File]::WriteAllText($ilock, '', $utf)
+        $kept = Close-TaskCopy @()
+        Remove-Item -LiteralPath $ilock -Force
+        Check "16918 ДО: поза --branches --remotes недоставлених $old — копію прибирали; ПІСЛЯ: лишається з kept.txt" ($old -eq 0 -and $kept -ceq (Join-Path $root 'run-1') -and (Test-Path -LiteralPath (Join-Path $kept 'kept.txt')))
+        Check '16917 утримана під замком індексу копія відв''язана від гілки, HEAD — коміт агента' ((Invoke-Git @('symbolic-ref', '-q', 'HEAD') -AllowFail -Dir $repo1).Code -eq 1 -and (Invoke-Git @('rev-parse', 'HEAD') -Dir $repo1).Out.Trim() -ceq $agent)
+        [void](& $attempt 'run-2')
+        Check '16917 повтор позначки: гілка — на старті, утримана копія — на коміті агента з незакоміченим' ((Invoke-Git @('rev-parse', 'refs/heads/gemini/x') -Dir $clone).Out.Trim() -ceq $base -and (Invoke-Git @('rev-parse', 'HEAD') -Dir $repo1).Out.Trim() -ceq $agent -and (Test-Path -LiteralPath "$repo1/незакомічене.txt"))
+        Check 'копію повтору без комітів поза origin прибрано' ((Close-TaskCopy @()) -eq '' -and -not (Test-Path -LiteralPath (Join-Path $root 'run-2')) -and $script:RepoDir -ceq $clone)
     }
     Scenario 'спільний конфіг клону: зміни нарядом — у журнал, власні зміни обгортки — ні' {
         # ДО: наряд у копії виконав `git fetch --unshallow --filter=blob:none` — клон став частковим для всіх копій, ніхто
@@ -248,23 +283,23 @@ try {
         # ПІСЛЯ: Remove-TaskCopy скидає ACL і прибирає; журнал каже, скільки звільнено.
         $dir = Join-Path $root 'run-after'; $size = New-DeniedCopy $dir
         $script:Log.Clear()
-        $kept = Remove-TaskCopy $dir @('--remotes')
+        $kept = Remove-TaskCopy $dir @()
         Check "ПІСЛЯ: копію прибрано ($($dir)), не лишилась" ($kept -eq '' -and -not (Test-Path -LiteralPath $dir))
         $line = @($script:Log | Where-Object { $_ -like "копія задачі $dir *" })
         Check "журнал: звільнено $size байт, ACL скинуто, «не прибрана» нема" ($line.Count -eq 1 -and ($line[0] -ceq "копія задачі $dir прибрана: звільнено $size байт (ACL скинуто)" -or (-not $effective -and $line[0] -ceq "копія задачі $dir прибрана: звільнено $size байт")))
         # Те саме через накопичене: давня копія слота з забороною.
         $old = Join-Path $root 'run-old'; [void](New-DeniedCopy $old)
-        Clear-TaskCopies $root @('--remotes')
+        Clear-TaskCopies $root { @() }
         Check 'накопичене: давня копія з забороною прибирається першим проходом' (-not (Test-Path -LiteralPath $old))
         if ($env:OS -eq 'Windows_NT') {
             # Зайнятий іншим процесом файл — тимчасовий стан: копія лишається до наступного прибирання.
             $busy = Join-Path $root 'run-busy'; [void][IO.Directory]::CreateDirectory("$busy/repo")
             $h = [IO.File]::Open((Join-Path $busy 'repo/open.bin'), 'Create', 'ReadWrite', 'None')
             try {
-                $kept = Remove-TaskCopy $busy @('--remotes')
+                $kept = Remove-TaskCopy $busy @()
                 Check 'зайнятий файл: копія лишається до наступного прибирання, журнал каже «не прибрана»' ($kept -eq '' -and (Test-Path -LiteralPath $busy) -and @($script:Log | Where-Object { $_ -like "копія задачі $busy не прибрана*" }).Count -eq 1)
             } finally { $h.Dispose() }
-            [void](Remove-TaskCopy $busy @('--remotes'))
+            [void](Remove-TaskCopy $busy @())
             Check 'зайнятий файл звільнено: наступне прибирання знімає копію' (-not (Test-Path -LiteralPath $busy))
         }
     }
