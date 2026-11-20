@@ -763,9 +763,39 @@ const пнг = байтів => {
         headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
         body:JSON.stringify({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"}, фото,
           {type:"image", source:{type:"url", url:"https://dead.example/z.png"}}]}]})}), env7);
-      тест("openai: 422 за мертвим фото не списує прогону (put 0, x-runs-left=40) — дошка 16838",
-           в.status === 422 && путів === 0 && вихідні.length === 0 && в.headers.get("x-runs-left") === "40",
-           [в.status, путів, в.headers.get("x-runs-left")]);
+      const ключ = Object.keys(сховище)[0];
+      тест("openai: 422 за мертвим фото повертає взятий прогін (лічильник 0, x-runs-left=40) — дошка 16838",
+           в.status === 422 && сховище[ключ] === "0" && вихідні.length === 0 && в.headers.get("x-runs-left") === "40",
+           [в.status, сховище, в.headers.get("x-runs-left")]);
+    }
+    /* ВАДА 16868: паралельні виклики одного токена з фото за адресою. Прогін резервується ДО фото: читання й запис
+       лічильника не розділені завантаженням фото, тож N паралельних викликів списують N прогонів. KV — із затримкою
+       get/put, фото — із затримкою 300 мс, старт кожні 60 мс (як у звірці перевірки #4512). */
+    {
+      const сховище = {}, пауза = мс => new Promise(р => setTimeout(р, мс));
+      const env8 = {...env, COUNTER:{get: async к => { await пауза(20); return сховище[к] || null; },
+                                     put: async (к, з) => { await пауза(20); сховище[к] = з; }}};
+      const старий = globalThis.fetch;
+      globalThis.fetch = async (url, opts) => /slow\.example/.test(String(url))
+        ? (await пауза(300), new Response(пнг(2048), {status:200, headers:{"content-type":"image/png"}})) : старий(url, opts);
+      вихідні.length = 0;
+      відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"ок"}], stop_reason:"end_turn",
+        usage:{input_tokens:5, output_tokens:1}}), {status:200});
+      const N = 8, виклики = [];
+      for (let і = 0; і < N; і++){
+        виклики.push(М.fetch(new Request("https://w.workers.dev/", {method:"POST",
+          headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-b2"},
+          body:JSON.stringify({model:"claude-sonnet-5-5", messages:[{role:"user", content:[{type:"text", text:"x"},
+            {type:"image", source:{type:"url", url:"https://slow.example/" + і + ".png"}}]}]})}), env8));
+        await пауза(60);
+      }
+      const відп = await Promise.all(виклики);
+      globalThis.fetch = старий;
+      const провайдеру = вихідні.length; вихідні.length = 0;
+      const списано = Number(Object.values(сховище)[0]) || 0;
+      тест("16868: " + N + " паралельних викликів із фото й затримкою KV — провайдеру " + N + ", списано " + N + " з " + N,
+           відп.every(в => в.status === 200) && провайдеру === N && списано === N,
+           {статуси: відп.map(в => в.status), провайдеру, списано, лишилось: відп.map(в => в.headers.get("x-runs-left"))});
     }
     /* ВАДА 16836: температури нема — заголовок n/a, 400 про sampling не повторюється */
     відповідач = () => new Response(JSON.stringify({error:{message:"unsupported sampling parameter"}}), {status:400});
