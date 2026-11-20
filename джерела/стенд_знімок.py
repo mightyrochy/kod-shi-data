@@ -68,7 +68,7 @@ def _знахідки_рекурсивно(o, шлях=""):
             for k, v in o.items():
                 out += _знахідки_рекурсивно(v, шлях + "/" + str(k))
     elif isinstance(o, (list, tuple)):
-        for i, v in enumerate(o):
+        for _, v in enumerate(o):
             out += _знахідки_рекурсивно(v, шлях)
     return out
 

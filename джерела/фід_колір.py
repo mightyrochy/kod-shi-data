@@ -124,7 +124,7 @@ def просторові_міри(rgb, кластери):
         лінії = defaultdict(list)
         for k in rgb:
             лінії[k[1] if вісь == 0 else k[0]].append(k)
-        for ключ, точки in лінії.items():
+        for _, точки in лінії.items():
             точки.sort(key=lambda p: p[0] if вісь == 0 else p[1])
             довж, попер = 0, None
             for p in точки:
