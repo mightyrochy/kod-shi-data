@@ -117,7 +117,10 @@ function ConvertTo-JsonString([string]$Text) {
 # чекати вже нема (turn.failed або $DoneFile є), — зупиняється з деревом: його закриття не робота наряду, а дерево
 # тримало б оренду GPU й копію задачі. Сам рушій після кінця ходу виходить за секунди; довше за такт закриття тягнеться
 # лише за збою мережі.
-function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, [double]$StallMinutes, [string]$LogFile, [string]$EventsFile, [string]$DoneFile = '') {
+# $QuotaCursor (New-CodexCursor; лише хід Codex) — на такті очікування цикл раз на інтервал проходу (poll_minutes, Get-PollSeconds)
+# дочитує журнал сесії й оновлює quota-codex.json (Save-CodexRateLimits): хід триває годинами, а залишок квоти потрібен під час
+# нього, не лише після. Такт той самий, що й у перевірці завислості; окремого таймера й власного інтервалу нема.
+function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, [double]$StallMinutes, [string]$LogFile, [string]$EventsFile, [string]$DoneFile = '', $QuotaCursor = $null) {
     $psi = New-StartInfo $Exe $Arguments $WorkDir
     $p = Start-Tree $psi
     $err = $p.StandardError.ReadToEndAsync()
@@ -127,9 +130,15 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
     $turnEnd = ''
     $closing = $false
     $pending = $null
+    $quotaEvery = $(if ($null -ne $QuotaCursor) { Get-PollSeconds } else { 0 })
+    $quotaAt = Get-AwakeTime
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
         Wait-PowerPause
+        if ($null -ne $QuotaCursor -and ((Get-AwakeTime) - $quotaAt).TotalSeconds -ge $quotaEvery) {
+            $quotaAt = Get-AwakeTime
+            Save-CodexRateLimits $QuotaCursor.Since $QuotaCursor
+        }
         $left = ($last + [timespan]::FromMinutes($StallMinutes) - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { $stalled = $true; break }
         if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
@@ -586,54 +595,88 @@ function Read-CodexQuota {
 # "token_count", "info", "rate_limits":{"limit_id", "primary", "secondary", "plan_type"}}}, де вікно — {"used_percent" (0-100),
 # "window_minutes", "resets_at" (unix, секунди)} (codex-rs: protocol.rs RateLimitSnapshot/RateLimitWindow). Беремо найновіший
 # такий рядок на `limit_id` із журналів, дописаних не раніше $Since (UTC); числа — як їх дав Codex, без підстановок.
-function Read-CodexRateLimits([datetime]$Since) {
-    $found = @{}
+# Курсор читання (New-CodexCursor) ділять усі виклики одного ходу: журнал сесії сягає сотень МБ, тож кожен виклик дочитує лише
+# дописане після попереднього (позиція байтів, стан декодера й недочитаний хвіст рядка — на файл), а найновіший рядок на
+# `limit_id` лежить у курсорі. Без курсора — одноразове читання з початку.
+function New-CodexCursor([datetime]$Since) {
+    @{ Since = $Since; Files = @{}; Found = @{}; Changed = $false }
+}
+
+# Один рядок журналу сесії -> {At, Id, Windows} або $null (не token_count із rate_limits, обірваний JSON, без часу чи вікон).
+function ConvertFrom-RateLimitLine([string]$Line) {
+    if (-not $Line.Contains('"token_count"') -or -not $Line.Contains('"rate_limits"')) { return $null }
+    # Рядок — JSON будь-якого виду (serde друкує компактно, але від пробілів читач не залежить); обірваний рядок
+    # дописуваного журналу пропускаємо. PowerShell 7 віддає ISO-час уже як [datetime], 5.1 — рядком.
+    try { $ev = $Line | ConvertFrom-Json } catch { return $null }
+    $ts = Get-JsonProp $ev 'timestamp'
+    $at = [datetime]::MinValue
+    if ($ts -is [datetime]) { $at = $ts.ToUniversalTime() }
+    elseif (-not [datetime]::TryParse([string]$ts, [cultureinfo]::InvariantCulture, 'AssumeUniversal,AdjustToUniversal', [ref]$at)) { return $null }
+    $rl = Get-JsonProp (Get-JsonProp $ev 'payload') 'rate_limits'
+    if ($null -eq $rl) { return $null }
+    $id = [string](Get-JsonProp $rl 'limit_id')
+    if ($id -cnotmatch '^[A-Za-z0-9_.-]{1,40}$') { $id = 'codex' }
+    $wins = @(foreach ($name in @('primary', 'secondary')) {
+        $w = Get-JsonProp $rl $name
+        # Windows PowerShell 5.1 віддає дробове число з JSON десятковим, PowerShell 7 — double: розбираємо рядок.
+        $used = 0.0
+        if ($null -eq $w -or -not [double]::TryParse([string](Get-JsonProp $w 'used_percent'), 'Float', [cultureinfo]::InvariantCulture, [ref]$used)) { continue }
+        $min = Get-JsonProp $w 'window_minutes'; $ra = Get-JsonProp $w 'resets_at'
+        [ordered]@{ m = $(if ($min -is [int] -or $min -is [long]) { [long]$min } else { 0 }); used = [Math]::Round($used, 1)
+            left = [int][Math]::Max(0, [Math]::Round(100 - $used))
+            reset = $(if ($ra -is [int] -or $ra -is [long]) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds([long]$ra).UtcDateTime) } else { '' }) }
+    })
+    if ($wins.Count -eq 0) { return $null }
+    [pscustomobject]@{ At = $at; Id = $id; Windows = $wins }
+}
+
+# -Flush: недописаний хвіст журналу (рядок без переносу) теж рядок — для останнього читання ходу; між читаннями хвіст чекає
+# дописування, а не рахується обірваним.
+function Read-CodexRateLimits([datetime]$Since, $Cursor = $null, [switch]$Flush) {
+    if ($null -eq $Cursor) { $Cursor = New-CodexCursor $Since; $Flush = $true }
     $root = Join-Path (Get-CodexHome) 'sessions'
     if (-not (Test-Path -LiteralPath $root)) { return @() }
+    $buf = New-Object byte[] 1048576
     foreach ($f in @(Get-ChildItem -LiteralPath $root -Recurse -Filter 'rollout-*.jsonl' -File | Where-Object { $_.LastWriteTimeUtc -ge $Since })) {
-        $fs = $null; $sr = $null
+        $st = $Cursor.Files[$f.FullName]
+        if ($null -eq $st) { $st = @{ Pos = 0L; Dec = $script:Utf8.GetDecoder(); Tail = '' }; $Cursor.Files[$f.FullName] = $st }
+        $fs = $null
         try {
             # Журнал може ще дописуватись іншим ходом: відкриваємо з FileShare.ReadWrite.
             $fs = New-Object System.IO.FileStream($f.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
-            $sr = New-Object System.IO.StreamReader($fs, $script:Utf8)
-            while ($null -ne ($line = $sr.ReadLine())) {
-                if (-not $line.Contains('"token_count"') -or -not $line.Contains('"rate_limits"')) { continue }
-                # Рядок — JSON будь-якого виду (serde друкує компактно, але від пробілів читач не залежить); обірваний рядок
-                # дописуваного журналу пропускаємо. PowerShell 7 віддає ISO-час уже як [datetime], 5.1 — рядком.
-                try { $ev = $line | ConvertFrom-Json } catch { continue }
-                $ts = Get-JsonProp $ev 'timestamp'
-                $at = [datetime]::MinValue
-                if ($ts -is [datetime]) { $at = $ts.ToUniversalTime() }
-                elseif (-not [datetime]::TryParse([string]$ts, [cultureinfo]::InvariantCulture, 'AssumeUniversal,AdjustToUniversal', [ref]$at)) { continue }
-                $rl = Get-JsonProp (Get-JsonProp $ev 'payload') 'rate_limits'
-                if ($null -eq $rl) { continue }
-                $id = [string](Get-JsonProp $rl 'limit_id')
-                if ($id -cnotmatch '^[A-Za-z0-9_.-]{1,40}$') { $id = 'codex' }
-                if ($found.ContainsKey($id) -and $found[$id].At -ge $at) { continue }
-                $wins = @(foreach ($name in @('primary', 'secondary')) {
-                    $w = Get-JsonProp $rl $name
-                    # Windows PowerShell 5.1 віддає дробове число з JSON десятковим, PowerShell 7 — double: розбираємо рядок.
-                    $used = 0.0
-                    if ($null -eq $w -or -not [double]::TryParse([string](Get-JsonProp $w 'used_percent'), 'Float', [cultureinfo]::InvariantCulture, [ref]$used)) { continue }
-                    $min = Get-JsonProp $w 'window_minutes'; $ra = Get-JsonProp $w 'resets_at'
-                    [ordered]@{ m = $(if ($min -is [int] -or $min -is [long]) { [long]$min } else { 0 }); used = [Math]::Round($used, 1)
-                        left = [int][Math]::Max(0, [Math]::Round(100 - $used))
-                        reset = $(if ($ra -is [int] -or $ra -is [long]) { Get-UtcStamp ([DateTimeOffset]::FromUnixTimeSeconds([long]$ra).UtcDateTime) } else { '' }) }
-                })
-                if ($wins.Count -gt 0) { $found[$id] = [pscustomobject]@{ At = $at; Id = $id; Windows = $wins } }
+            if ($fs.Length -lt $st.Pos) { $st.Pos = 0L; $st.Dec = $script:Utf8.GetDecoder(); $st.Tail = '' }
+            [void]$fs.Seek($st.Pos, [System.IO.SeekOrigin]::Begin)
+            $lines = New-Object System.Collections.Generic.List[string]
+            while (($n = $fs.Read($buf, 0, $buf.Length)) -gt 0) {
+                $st.Pos = $fs.Position
+                $chars = New-Object char[] ($script:Utf8.GetMaxCharCount($n))
+                $k = $st.Dec.GetChars($buf, 0, $n, $chars, 0)
+                $parts = ($st.Tail + [string]::new($chars, 0, $k)).Split("`n")
+                $st.Tail = $parts[$parts.Length - 1]
+                for ($i = 0; $i -lt $parts.Length - 1; $i++) { $lines.Add($parts[$i]) }
+            }
+            if ($Flush -and $st.Tail) { $lines.Add($st.Tail); $st.Tail = '' }
+            foreach ($line in $lines) {
+                $r = ConvertFrom-RateLimitLine $line
+                if ($null -eq $r) { continue }
+                if ($Cursor.Found.ContainsKey($r.Id) -and $Cursor.Found[$r.Id].At -ge $r.At) { continue }
+                $Cursor.Found[$r.Id] = $r
+                $Cursor.Changed = $true
             }
         } catch { Write-Log "журнал Codex $($f.Name): $($_.Exception.Message)" }
-        finally { if ($null -ne $sr) { $sr.Dispose() } elseif ($null -ne $fs) { $fs.Dispose() } }
+        finally { if ($null -ne $fs) { $fs.Dispose() } }
     }
-    @($found.Values | Sort-Object Id)
+    @($Cursor.Found.Values | Sort-Object Id)
 }
 
-# Вимір після ходу Codex (і успішного, і відмовленого): у quota-codex.json — вікна кожного `limit_id` і час запису Codex;
-# відмова (refused/reset) там лишається. Збій читання журналу ходу не ламає.
-function Save-CodexRateLimits([datetime]$Since) {
+# Вимір під час і після ходу Codex (і успішного, і відмовленого): у quota-codex.json — вікна кожного `limit_id` і час запису Codex;
+# відмова (refused/reset) там лишається. З курсором файл переписується лише коли в журналі з'явився новіший рядок: без нових
+# рядків стан не міняється. Збій читання журналу ходу не ламає.
+function Save-CodexRateLimits([datetime]$Since, $Cursor = $null, [switch]$Flush) {
     try {
-        $snap = @(Read-CodexRateLimits $Since)
+        $snap = @(Read-CodexRateLimits $Since $Cursor -Flush:$Flush)
         if ($snap.Count -eq 0) { return }
+        if ($null -ne $Cursor -and -not $Cursor.Changed) { return }
         $read = Get-UtcStamp (($snap | Sort-Object At -Descending | Select-Object -First 1).At)
         $limits = @(foreach ($s in $snap) { [ordered]@{ id = $s.Id; windows = $s.Windows } })
         Update-CodexQuota {
@@ -642,6 +685,7 @@ function Save-CodexRateLimits([datetime]$Since) {
             if ($q.Contains('read') -and [string]::CompareOrdinal([string]$q.read, $read) -gt 0) { return }
             $q.read = $read; $q.limits = $limits
         }
+        if ($null -ne $Cursor) { $Cursor.Changed = $false }
     } catch { Write-Log "квота codex: $($_.Exception.Message)" }
 }
 
@@ -863,11 +907,12 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
     if ($Run.Engine.Effort) { $a += @('-c', "model_reasoning_effort=$($Run.Engine.Effort)") }
     $a += @('--json', '-o', $outFile, '--dangerously-bypass-approvals-and-sandbox', $short)
     $began = [datetime]::UtcNow
-    $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $CodexStallMinutes $Run.Log (Join-Path $Run.Dir 'codex.events.tsv') $outFile
+    $cursor = New-CodexCursor $began
+    $r = Invoke-NativeUntilStall $Run.Exe $a $RepoDir $CodexStallMinutes $Run.Log (Join-Path $Run.Dir 'codex.events.tsv') $outFile $cursor
     # Час, коли процес Codex віддав відповідь: з ним claude-run порівнює відмову іншого слота (не з ended_utc наряду, що ставиться
     # після фактів, збірки й супровідних файлів).
     $answered = Get-UtcStamp (Get-Date)
-    Save-CodexRateLimits $began
+    Save-CodexRateLimits $began $cursor -Flush
     [System.IO.File]::AppendAllText($Run.ErrLog, $r.Err, $script:Utf8)
     if ($r.Stalled) {
         Write-Log "codex: нових подій нема понад $CodexStallMinutes хв — завислість, зупинено"
