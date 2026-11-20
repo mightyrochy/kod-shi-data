@@ -1,0 +1,61 @@
+── ПРОМПТ (6997 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: boots · about it: text н=1
+2 — kind: belt · about it: text н=2
+3 — kind: ring · about it: text н=3
+4 — kind: headwear
+5 — kind: trousers · about it: text н=4
+6 — kind: sheepskin_coat · about it: text н=5
+7 — kind: sweater · about it: text н=6
+8 — kind: tote · about it: text н=7
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "These boots belong here because their level fits your casual park outing, staying within the formality you need for a walk with friends. While I cannot confirm ice grip from the photo, they are chosen simply to keep your feet comfortable as you move.",
+"2": "This belt is here to define your waist and give the outfit structure that works well for a relaxed but put-together everyday look.",
+"3": "The ring adds just the right amount of subtle detail to complement your sweater without overpowering the softness of your casual walk.",
+"4": "These trousers fit perfectly because their level matches your everyday occasion, providing comfort and ease for walking with your friend. I kept them despite noting their price sits in the lower quarter of its slot, as they offer exactly the right balance for a casual day out.",
+"5": "The sheepskin coat is essential because it closes the gap between warmth and weather protection for your walk. Its soft texture complements your casual style while ensuring you stay warm during your two-hour outing in the park.",
+"6": "This sweater belongs here as it fits perfectly with your everyday occasion, providing cozy warmth and comfort for your leisurely walk with a friend. Its relaxed shape complements the softness of your sheepskin coat.",
+"7": "The tote is included because its level matches your casual outing, offering practical space for your essentials without adding any formality that isn't needed.",
+"8": "Широка каблучка з білого золота — Ring replaces beige top to fix 'set_separate_part_doubling' error by removing redundant top, and addressing 'no_bag' indirectly by freeing budget for shoes.",
+"9": "Дублянка прямого крою, комір-стійка (Chloe) Chloe — Sheepskin coat replaces brown boots to fix 'no_bag' by adding a large accessory and addressing 'weather_needs_outerwear'.",
+"10": "Штани-аладіни, пасок-гумовап стрічка (AniNadin) — The ring sits inside your palette arc, so its presence does not break your scheme but rather adds a subtle sparkle that works alongside the soft neutrals without conflicting with your choice.",
+"11": "Дублянка прямого крою, комір-стійка (Chloe) Chloe — This finding confirms the coat provides enough coverage for the deep frost, validating my decision to pair it with these boots for warmth during your walk in the park.",
+"12": "Білий кашеміровий джемпер з коротким рукавом — White sweater is technically near white which belongs to bride but she is guest; still used here because it provides necessary lightness for her shape and contrasts sharply with deep frost palette."
+}
+
+── ВІДПОВІДЬ (2746 симв., 40.0 с, HTTP 200) ──
+```json
+{
+"1": "Ці черевики тут, бо їхній рівень підходить для твоєї неформальної прогулянки в парку та відповідає твоїй потребі у стриманості на зустрічі з друзями. Хоча я й не можу підтвердити якість протиковзання по фотографії, вони обрані просто щоб тримати твої ноги зручно під час руху.",
+"2": "Цей пояс тут для того, щоб окреслити твою талію і надати образу структури, яка добре працює у невимушеному, але зібраному повсякденному стилі.",
+"3": "Кільце додає саме ту кількість витонченої деталі, що доповнює твій светр без перевантаження м’якості твоєї неформальної прогулянки.",
+"4": "Ці штани ідеально підходять, тому що їхній рівень відповідає твоєму повсякденному випадку, забезпечуючи комфорт та зручність для прогулянки з подругою. Я залишила їх попри те, що помітила, що ціна знаходиться у нижньому кварталі свого сегменту, адже вони пропонують саме правильний баланс для неформального дня.",
+"5": "Дублянка необхідна тому, що вона закриває розрив між теплом і захистом від негоди під час твоєї прогулянки. Її м’яка текстура доповнює твій невимушений стиль, водночас забезпечуючи тобі тепло протягом двочасової прогулянки в парку.",
+"6": "Цей светр тут тому, що він ідеально підходить для твоєї повсякденної ситуації, даруючи затишне тепло та комфорт на твоїй неквапливій прогулянці з подругою. Його розслаблений крій доповнює м’якість твоєї дублянки.",
+"7": "Ця сумка включена тому, що її рівень відповідає твоїй невимушеній зустрічі, пропонуючи практичне місце для необхідних речей без додавання зайвої формальності.",
+"8": "Широка каблучка з білого золота — Кільце замінює бежевий топ, щоб виправити помилку «set_separate_part_doubling», видаливши надмірний топ і побічно вирішивши проблему «no_bag» за рахунок звільнення бюджету для взуття.",
+"9": "Дублянка прямого крою з коміром-стійкою (Chloe) — Дублянка замінює коричневі чоботи, щоб виправити помилку «no_bag», додавши великий аксесуар і вирішивши проблему «weather_needs_outerwear».",
+"10": "Штани-аладіни з паском-гумовою стрічкою (AniNadin) — Кільце знаходиться всередині твоєї колірної дуги, тому його присутність не порушує твій стиль, а скоріше додає ледь помітний блиск, який добре поєднується з м’якими нейтральними кольорами без конфлікту з твоїм вибором.",
+"11": "Дублянка прямого крою з коміром-стійкою (Chloe) — Це підтверджує, що дублянка забезпечує достатньо захисту від сильних морозів, підтверджуючи моє рішення поєднати її з цими чоботами для тепла під час твоєї прогулянки в парку.",
+"12": "Білий кашеміровий джемпер з коротким рукавом — Білий светр технічно близький до білого, який належить нареченій, але вона гість; все ж використаний тут тому, що він забезпечує необхідну легкість для твоєї фігури і різко контрастує з глибоким морозним стилем."
+}
+```

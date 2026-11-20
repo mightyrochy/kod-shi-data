@@ -1,0 +1,44 @@
+── ПРОМПТ (2257 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Pumpkin Top, relaxed fit, short length, #deb295, jersey knit.\nOlive Green Wide-Leg Trousers, straight cut, ankle length, #8b7355, matte cotton twill.\nChunky Sand Sneakers, low-top profile, mid-ankle height, #e6dcc3, durable suede and rubber sole.\nGold Hoop Earrings, medium diameter, circular shape, #ffd700, polished brass.\nThin Gold Chain Necklace, delicate link design, collarbone length, #ffd700, 14k gold vermeil.\n\nThis outfit masterfully breaks style rules by pairing a relaxed jersey knit with structured wide-leg trousers and chunky sneakers, creating an intentional sport-elegant contrast for the evening. The entire look adheres to the requested monochromatic column aesthetic using earthy pumpkin and olive tones that harmonize with her skin, while the gold accessories add a necessary touch of ceremony suitable for a restaurant event. This combination honors her recovery journey by prioritizing comfort in the fabric choices while still delivering a bold, statement-making visual impact."}
+
+── ВІДПОВІДЬ (1020 симв., 11.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Pumpkin Top",
+      "details": "relaxed fit, short length, jersey knit",
+      "slot": "top",
+      "color_hex": "#deb295",
+      "worn": true
+    },
+    {
+      "name": "Olive Green Wide-Leg Trousers",
+      "details": "straight cut, ankle length, matte cotton twill",
+      "slot": "bottom",
+      "color_hex": "#8b7355",
+      "worn": true
+    },
+    {
+      "name": "Chunky Sand Sneakers",
+      "details": "low-top profile, mid-ankle height, durable suede and rubber sole",
+      "slot": "shoes",
+      "color_hex": "#e6dcc3",
+      "worn": true
+    },
+    {
+      "name": "Gold Hoop Earrings",
+      "details": "medium diameter, circular shape, polished brass",
+      "slot": "earrings",
+      "color_hex": "#ffd700",
+      "worn": true
+    },
+    {
+      "name": "Thin Gold Chain Necklace",
+      "details": "delicate link design, collarbone length, 14k gold vermeil",
+      "slot": "necklace",
+      "color_hex": "#ffd700",
+      "worn": true
+    }
+  ]
+}

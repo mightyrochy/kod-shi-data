@@ -1,0 +1,37 @@
+── ПРОМПТ (2464 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined knit in charcoal heather with a subtle cable texture at the yoke, cut as an A-line silhouette that falls just above the knee in midi length, presented in deep slate grey with hex code #3e4a52, woven from fine merino wool for warmth against the autumn chill.\nLoafers in polished blue leather with a slight almond toe shape and a low stacked heel of 5cm, featuring hex color #2c6cb8 to honor her specific wish for blue shoes, crafted from smooth calfskin that reflects the theatre's artificial light beautifully.\nA delicate gold pendant necklace on a thin chain paired with classic black hosiery to ground the look while allowing the blue footwear and grey knit to remain the focal points of the evening ensemble.\nThis outfit works perfectly for an evening at the theatre because the smart social dress code is met with a refined knit that offers comfort without sacrificing elegance. The requested blue shoes provide the exact splash of color she desires, creating a joyful anchor against the darker, sophisticated tones of the top and hosiery. The autumn-appropriate wool blend ensures she stays warm in the cool season while the midi length and neat silhouette respect the formal nature of the venue."}
+
+── ВІДПОВІДЬ (800 симв., 9.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Knit top",
+      "details": "A-line silhouette, midi length, fine merino wool with subtle cable texture at the yoke",
+      "slot": "top",
+      "color_hex": "#3e4a52",
+      "worn": true
+    },
+    {
+      "name": "Loafers",
+      "details": "Polished calfskin leather, slight almond toe shape, low stacked heel of 5cm",
+      "slot": "shoes",
+      "color_hex": "#2c6cb8",
+      "worn": true
+    },
+    {
+      "name": "Gold pendant necklace",
+      "details": "Delicate gold pendant on a thin chain",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Black hosiery",
+      "details": "Classic black tights",
+      "slot": "tights",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

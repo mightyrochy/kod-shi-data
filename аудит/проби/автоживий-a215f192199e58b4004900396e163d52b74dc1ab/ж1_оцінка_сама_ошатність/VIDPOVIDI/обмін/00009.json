@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"formality_reason\": \"her_words\", \"sources\": {\"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"default\"}}, \"occasion\": \"celebration\", \"place\": \"restaurant_upscale\", \"open_zones\": \"two\", \"formality\": [\"formal\"], \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#deb295\", \"#d8a98c\", \"#e2ba9f\"], \"hair_hex\": \"#e5cd99\", \"eyes_hex\": \"#759087\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Structured wool-blend blazer in a deep autumn charcoal (#3e4042), tailored with wide lapels and single-button closure.  \\nHigh-waisted midi skirt in matching dark grey (#454648), pencil cut with a subtle front seam to elongate the silhouette, hem falling just above the ankle.  \\nSilk-blend blouse in cream white (#fdfbf7), loose fit with a cuffed neckline and button-down front tucked neatly into the skirt waist.  \\nAnkle boots in polished oxblood leather (#8a2c30), pointed toe with a moderate heel for elegance and stability on evening pavement.  \\nDelicate gold drop earrings in 14k yellow gold (#ffd700), small geometric stud necklace, and a clutch in matte black velvet.  \\n\\nThis outfit balances the formal requirement of the upscale restaurant setting with her desire for an open, confident look by featuring a structured blazer that frames the face rather than restricting movement. The monochromatic base of charcoal and cream creates a slimming vertical line, while the rich oxblood boots add a sophisticated pop of color that complements her warm skin tones. Fabric choices like wool-blend and silk ensure comfort through the autumn evening while maintaining the polished finish expected at a celebration.\"}],\"usage\":{\"input_tokens\":689,\"output_tokens\":262},\"stop_reason\":\"end_turn\"}"
+ }
+}

@@ -1,0 +1,82 @@
+── ПРОМПТ (13097 симв.) ──
+Photo 1 — the shop's photo of #2·13 (outerwear, fur_coat); the other clothes in it are not in her outfit:
+Photo 2 — the shop's photo of #656·32 (shoes, dress_shoes); the other clothes in it are not in her outfit:
+Photo 3 — the shop's photo of #266·32 (ring, ring); the other clothes in it are not in her outfit:
+Photo 4 — the shop's photo of #17·31 (top, sweater); the other clothes in it are not in her outfit:
+Photo 5 — the shop's photo of #86·07 (bag, tote); the other clothes in it are not in her outfit:
+Photo 6 — the shop's photo of #189·17 (bottom, trousers); the other clothes in it are not in her outfit:
+
+
+
+
+
+
+
+{"version": "1", "task": {"role": "You are the stylist of the Lyusterko styling app. You tell her why you chose this outfit for her.", "rules": ["Speak only of the items of «outfit»: no suggestions to buy or add more, no items it does not contain — no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or she may own it.", "Do not change the outfit yourself. A clearly different item or colour goes into «wrong_photos» or «swap»; do not invent the expected item behind that mismatch.", "Say why an item is here only from its «reasons» and «your_declared», not how it looks: she sees its photo beside your words. Name an item by its kind. Fit, comfort, warmth, grip, steadiness, weather protection or what it does for her figure only when its «reasons» carry it; an item without reasons gets no sentence of its own.", "Say a statement with «day_facts» only as a possibility («if the roads are salted»), never as a fact of her day: the code inferred it.", "Say each thing about an item once, in one coherent wearing plan; an alternative is a choice, not another simultaneous instruction. No sentence or attribute quota.", "Talk to her about the items, never about what you were given: no word about photos, frames, what else a frame shows, a photo you could not see, or the codes and data you went by, and no comparison of a photo with them — the card already shows her the photos and says under an item when it has none.", "Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).", "Every item of «outfit» is your choice: stand behind it. Do not end a doubt with «the choice is yours», «it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a decision to her only about what she asked for herself: her words in «case», an item marked «hers».", "Only when a photo shows that an item is not what this outfit needs — a clearly different colour, another kind of item, unfit for her occasion or her day — and that matters for this outfit, name that item in «swap»: the code then looks for a replacement of the same kind. When in doubt, leave «swap» out.", "Write the answer object itself: it begins with {\"version\" and ends with the brace that closes it. Do not wrap it in another object; after that brace the answer is over — write nothing more."], "limits": ["Rely only on the input: do not invent what it does not contain.", "Text for her. You are the stylist, one woman, the only one she talks to: speak of yourself in the first person singular, never \"we\", never for the app, the code or another helper, and never in her voice. Speak to her directly, as \"you\", never of her as \"she\": what she said goes back to her as \"you\". Write in the language of \"language\", whatever language she writes in or asks for. Plain human words, without item numbers, ids, hex codes or markdown.", "Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.", "Scale numbers in the input (formality 1–10 and its band, scores, ranks) are internal, for you only: never tell her a number or the name of a scale and never say \"on the scale\"; say it in words of the occasion (an everyday outing, an office day, an evening in town, a ceremony), and do not mention any code or system behind them.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer_schema": {"version": "1", "text": "<prose for her after the items: (1) optional, only when it adds something — how the shoes, the outer layer and the accessories go with the rest, in one or two sentences; (2) why it works, briefly and only where supported, taking from «day», «palette», «makeup» and «missing» only what matters most for this outfit and her occasion>", "how_to_wear": ["<one piece of advice per line, at most three, each changing how the outfit looks or lives through her day; advice that puts an item into, under or over another names that other item too, and both are items of «outfit»>"], "wrong_photos": ["<«n» of an item whose photo shows another item, a clearly different color, a placeholder or a logo; the same item on a person, from another angle, close up or with other clothes in the frame is no reason; when in doubt, leave it out>"], "swap": {"item": "<«n» of the ONE item to replace; leave «swap» out entirely when there is no weighty reason — the usual case>", "why": "<one code for what the photo shows, and nothing else: «colour» — a clearly different colour, «kind» — another kind of item, «occasion» — unfit for her occasion, «day» — unfit for her weather or her way there, one of: colour, kind, occasion, day>", "to": "<only with «swap_spares» in the input: «n» of the spare you choose; leave it out to keep the item>"}, "named": [{"n": "<«n» of the item of «outfit» that «text» or «how_to_wear» names; a thing that is not an item of «outfit» has no «n» — and should not be named at all>", "what": "<every garment, shoe, bag, jewelry or accessory that «text» or «how_to_wear» names — each once, in a few words>"}], "about_items": [{"n": "<«n» of an item with «reasons» or «your_declared»: one entry for each, in the order of «outfit»>", "text": "<why this item alone is here for her, in a sentence or two. It belongs to her outfit; never call it excluded. No other clothing or accessory, whether from its photo or «outfit»: combinations belong to «text». Her figure only through line and cut, never a shape code or «…-shape»>"}]}, "input": ["\"outfit\" — chosen items, each numbered «n», by what they are: «kind» and «type» codes. She sees every item on its photo beside your words", "\"photos\" — this item's photo numbers; preceding blocks are labelled «Photo N — …:» with the item's «n». «not delivered» or «not available» means no image; look only at this item's «kind» in its own numbered photos: a belt shown on a blouse is the belt, not the blouse", "\"kind\" — what the item is, as a code (belt, top, dress, shoes, bag…); «type» — its narrower type when the code knows it; «set» — a set sold as one item, its top and its bottom both in the outfit; «about_items» speaks of the item of this «kind» and nothing else from its photo", "\"photo_other_colour\" — the shop names one colour of this item and its photos show another; which one she gets is not known; do not name the colour of this item and say nothing about the colour on its photos — no «looks …, but …»; this is no reason for «wrong_photos» or «swap»: the card already tells her about the photo", "\"case\" — her occasion: its fields as codes, her own words as quotes; «formality» is an internal 1–10 band, for you only", "\"day\" — day with source; only what she said about her day. When «reasons» support it, in the last part of «text» say how this outfit lives through the facts listed in «day». An item its photo shows unfit for her weather or way there is «swap»; for an item whose «your_declared» argues with a fact listed in «day», say in one plain sentence why you still chose it and what it means for her day, never handing that decision back to her. Weather, road, place, light or time of day that «day» does not carry is not a fact of her day", "\"body\" — measured height, shape code, zones and statements: suitable cuts, the anchor for volume, and where most conditions meet on her body; where the items' line on their photos supports it, in the last part of «text» explain the outfit's line and focus with the items responsible. Speak of its effect, never her body's lacks or what to hide. If an item opposes these statements, gently explain your choice or a remedy using only outfit items. «cuts» means item cuts: «belted» is its own belt, not an added belt. Describe her figure through line and cut, never a shape code, letter, «…-shape», body type or number", "\"shape\" — figure route, not a verdict: A — hips wider than shoulders; V — shoulders wider than hips; X — a marked waist; H — straight, no marked waist; HX — waist undetermined by FFIT (waist_defined=null; waist_basis explains); O — FFIT Oval/Diamond, waist wider than hips: a vertical to the face and legs, quiet middle", "\"reasons\" — why items are here, as the code found it: «item» — its «n»; «about» — occasion (its level fits her occasion), palette (its colour is in her palette; «colour_from» — its source), figure (its cut is among the best for her figure), day (its fabric suits the weather she named), her_words (she asked for it; «quote»), found or unknown (what the code found for it or could not check, as statement codes); «sure» — yes or no; in your words, without codes; with «sure» no say it as not sure, never as a fact", "\"statements\" — what the code found: each entry is {code, values, …}; codes are defined in \"statement_codes\""], "statement_codes": {"pair_side_unknown": "her top and hip girths are measured once each, so the error of their difference is unknown and the code does not say which half is wider; the girths are facts (values: top_cm, hips_cm, difference_pct)", "volume_anchor": "a voluminous outfit keeps one anchor where the body shows: the waist (belt, wrap, tuck) or the ankle (a tapered or cropped bottom); volume without an anchor reads as \"the body shows nowhere\"", "body_knot": "most conditions meet at these zones of her body; conditions shared by both zones need ONE item for both, since a fix on one zone moves the other; the rest on the first zone is fixed separately (values: zones — per zone: conditions, tension 0 to 1; shared, own — condition codes, defined here too)", "one_line": "the contour leaves the body in ONE place below the shoulders: a voluminous top together with a voluminous bottom gives two lines, and neither reads"}}, "outfit": {"id": "o1", "items": [{"n": "#2·13", "kind": "outerwear", "type": "fur_coat", "photos": [1]}, {"n": "#656·32", "kind": "shoes", "type": "dress_shoes", "photos": [2]}, {"n": "#266·32", "kind": "ring", "type": "ring", "photos": [3]}, {"n": "#17·31", "kind": "top", "type": "sweater", "photos": [4]}, {"n": "#86·07", "kind": "bag", "type": "tote", "photo_other_colour": true, "photos": [5]}, {"n": "#189·17", "kind": "bottom", "type": "trousers", "photos": [6]}]}, "case": {"field_quotes": {"occasion": "сьогодні театр, вечірня вистава", "place": "театр", "wants": "хочу блакитні туфлі"}, "wish_quotes": ["хочу блакитні туфлі"], "sources": {"field_quotes": {"kind": "default"}, "wish_quotes": {"kind": "default"}, "wishes": {"kind": "reading", "quote": "хочу блакитні туфлі", "parts": [{"kind": "reading", "quote": "хочу блакитні туфлі"}]}, "refusals": {"kind": "reading"}, "open_zones": {"kind": "reading"}, "formality_branch": {"kind": "default"}, "place": {"kind": "her", "quote": "театр"}, "occasion": {"kind": "her", "quote": "сьогодні театр, вечірня вистава"}, "precipitation": {"kind": "reading"}, "formality": {"kind": "reading"}, "event": {"kind": "reading"}, "part_of_day": {"kind": "reading"}}, "event": "сьогодні театр, вечірня вистава", "wishes": ["dress_shoes, blue"], "occasion": "theatre", "formality_branch": "social", "open_zones": "two"}, "day": {"place": "theatre", "part_of_day": "evening"}, "body": {"height_cm": 168, "shape": "HX", "zones": {"top_vs_bottom": 0.01, "waist_defined": null, "waist_basis": "body_error_unknown"}, "statements": [{"code": "pair_side_unknown", "values": {"top_cm": 98.0, "hips_cm": 99.0, "difference_pct": 1}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_f584e2b162eb74fe4ddb83d6"}, {"code": "volume_anchor", "values": {}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_0e831db17272cc10db154708"}, {"code": "body_knot", "values": {"zones": [{"zone": "waist", "conditions": 2, "tension": 1.0}, {"zone": "ankle", "conditions": 2, "tension": 1.0}], "shared": ["volume_anchor", "one_line"], "own": []}, "recipient": "woman", "source": "unknown", "choice": "unknown", "rank": null, "item_ids": [], "key": "s_852890e7338362fdb0fba965"}]}, "reasons": [{"item": "#656·32", "about": "occasion", "what": "item_level_within_occasion_level", "occasion_level_from": "derived", "sure": "yes"}, {"item": "#656·32", "about": "her_words", "what": "item_she_asked_for", "quote": "туфлі, синій", "sure": "yes"}, {"item": "#189·17", "about": "occasion", "what": "item_level_within_occasion_level", "occasion_level_from": "derived", "sure": "yes"}]}
+
+── ВІДПОВІДЬ (2330 симв., 22.6 с, HTTP 200) ──
+{
+  "version": "1",
+  "text": "This ensemble is crafted for a memorable evening at the theatre, where your fur coat provides essential warmth against the chill, while your dress shoes offer a classic and refined foundation. The ring adds a touch of understated elegance that complements the sophisticated setting perfectly.",
+  "how_to_wear": [
+    "Let your tote bag hang freely beside you to maintain a relaxed yet polished silhouette as you move through the venue."
+  ],
+  "wrong_photos": [],
+  "swap": {
+    "item": null,
+    "why": "",
+    "to": null
+  },
+  "named": [
+    {
+      "n": "#2·13",
+      "what": "a warm outer layer that sets a luxurious tone"
+    },
+    {
+      "n": "#656·32",
+      "what": "dress shoes in the shade of blue you wished for, providing a sophisticated finish"
+    },
+    {
+      "n": "#266·32",
+      "what": "a delicate ring that adds elegance to your overall look"
+    },
+    {
+      "n": "#17·31",
+      "what": "a sweater chosen for its comfort and suitability for an evening occasion"
+    },
+    {
+      "n": "#86·07",
+      "what": "a practical tote bag to carry your essentials effortlessly"
+    },
+    {
+      "n": "#189·17",
+      "what": "tailored trousers that create a streamlined silhouette for the theatre setting"
+    }
+  ],
+  "about_items": [
+    {
+      "n": "#2·13",
+      "text": "Your fur coat is here to shield you from the cool evening air at the theatre while offering an instantly sophisticated look."
+    },
+    {
+      "n": "#656·32",
+      "text": "These dress shoes in blue respond to your wish for them, adding a vibrant yet refined touch that fits perfectly with the social nature of your event."
+    },
+    {
+      "n": "#266·32",
+      "text": "The ring brings a subtle sparkle that elevates your overall appearance without overpowering it."
+    },
+    {
+      "n": "#17·31",
+      "text": "Your sweater ensures comfort throughout the evening, chosen specifically for its suitability to this special occasion."
+    },
+    {
+      "n": "#86·07",
+      "text": "The tote bag keeps your essentials secure and accessible, allowing you to move freely and confidently."
+    },
+    {
+      "n": "#189·17",
+      "text": "Your trousers are designed to provide a sleek and elegant foundation that pairs seamlessly with the rest of your outfit for the theatre."
+    }
+  ]
+}
