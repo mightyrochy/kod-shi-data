@@ -1006,8 +1006,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
                         Write-Log "agy: статус $status ($code)"
                         break
                     }
-                    $oneLine = ($err -replace '\s+', ' ').Trim()
-                    Write-Log "agy: статус $status попри прийнятий звіт ($($check.Kind)) — звіт прийнято; помилка рушія: $($oneLine.Substring(0, [Math]::Min(300, $oneLine.Length)))"
+                    Write-Log "agy: статус $status попри прийнятий звіт ($($check.Kind)) — звіт прийнято; помилка рушія: $(ConvertTo-NoteText $err)"
                 }
                 if ($check.Accepted) {
                     if ($check.Facts.Ahead -gt 0) {
