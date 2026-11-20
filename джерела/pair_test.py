@@ -224,7 +224,7 @@ def зсув_освітлення(p):
 def _оцінити(F, речі, intent=ТИПОВИЙ_НАМІР, source="uncontrolled"):
     """Рулбук над ОДНИМ кадром. Мітки «до/після» сюди не потрапляють — сигнатура
     їх не приймає, тож сліпота гарантована структурно, а не обіцянкою."""
-    r = _СУД.review(F, речі, source=source, intent=intent)
+    r = _СУД.review(F, речі, dict(intent=intent), source=source)
     спрац = {}
     for st, d in r["стани"].items():
         for z in d["знахідки"]:

@@ -50,7 +50,7 @@ def прогін_зібраного():
             for i, r in ((x["id"], x) for x in сирі)]
     for нагода, темп in (("робота", 5.0), ("побачення", 19.0)):
         try:
-            _в = pipeline.перевірити_образ(F, речі, нагода=нагода, смуга_погоди=темп, тіло=тіло)
+            _в = pipeline.перевірити_образ(F, речі, dict(нагода=нагода, смуга_погоди=темп), тіло=тіло)
         except Exception as _e:
             import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
             if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
@@ -134,7 +134,7 @@ def _гілки_зі_шляхом(F, тіло, H):
         також_1 = set()
         for с in сцен:
             try:
-                _в = pipeline.перевірити_образ(F, [dict(r) for r in речі], тіло=тіло, **с)
+                _в = pipeline.перевірити_образ(F, [dict(r) for r in речі], с, тіло=тіло)
                 також_1 |= знахідки_дерева(_в)[1]
             except Exception as _e:
                 import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
@@ -277,8 +277,7 @@ def _навмисні_образи(F, тіло, H, зн=None, спільні=Non
         for _F, _тіло, _сцени in [(F, тіло, сцен)] + _другі:
             for с in _сцени:
                 try:
-                    _в = pipeline.перевірити_образ(_F, [dict(r) for r in речі],
-                                                   тіло=_тіло, **с)
+                    _в = pipeline.перевірити_образ(_F, [dict(r) for r in речі], с, тіло=_тіло)
                 except Exception as _e:
                     import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
                     if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()

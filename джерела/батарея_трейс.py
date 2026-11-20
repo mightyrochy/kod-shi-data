@@ -154,8 +154,7 @@ def виконані_рядки(рядки_ID=None):
         for _чому, речі in образи:
             for с in СЦЕНИ_ОБРАЗУ:
                 try:
-                    pipeline.перевірити_образ(F2, [dict(r) for r in речі],
-                                              тіло=тіло2, **с)
+                    pipeline.перевірити_образ(F2, [dict(r) for r in речі], с, тіло=тіло2)
                 except Exception as _e:
                     import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
                     if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
