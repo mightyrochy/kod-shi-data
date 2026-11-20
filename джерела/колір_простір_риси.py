@@ -117,7 +117,7 @@ def density(samples, bins=None, smooth=2, min_weight=0.10, axis=None):
     for s_ in samples:
         c=min(centers, key=lambda c: abs(s_[axis]-c)); groups[c].append(s_)
     modes=[]
-    for c,g in groups.items():
+    for g in groups.values():
         if not g: continue
         m=tuple(sum(x[i] for x in g)/len(g) for i in range(3))
         sd=(sum((x[axis]-m[axis])**2 for x in g)/len(g))**0.5
@@ -200,7 +200,7 @@ def поля_риси(lab, kind=None, lex=None, довіра=None):
     порогу, точнішого за оцінку. Так само, як ахроматична гілка `температура_шкіри`.
     """
     д = довіра or ДОВІРА_ЯВНОГО_ВХОДУ
-    L, C, h = lch(lab)
+    _, _, h = lch(lab)
     a, b = lab[1], lab[2]
     поля = dict(describe(lab, kind, lex, довіра=д))
     тон_є = поля.get("h") is not None
@@ -222,7 +222,7 @@ def позиція_шкіри(lab, довіра=None, protocol=None):
         return dict(ITA=None, depth_band=None, band_p=None, p_olive=None,
                     photo_note=None, смуга_утримана=УТРИМАНО_ДОВІРОЮ)
     sp = skin_pos(lab, protocol=protocol)
-    return dict(ITA=sp["ITA"], depth_band=list(sp["band_p"])[0], band_p=sp["band_p"],
+    return dict(ITA=sp["ITA"], depth_band=next(iter(sp["band_p"])), band_p=sp["band_p"],
                 p_olive=sp["p_olive"], photo_note=sp.get("photo_note"))
 
 
@@ -294,8 +294,8 @@ def features(lab_skin, lab_hair, lab_eye, lab_glasses=None,
         F["шкіра"].update(позиція_шкіри(hair_parts.get("шкіра", lab_skin), д,   # розв'язана трійка, не сирий вхід
                                         protocol=protocol if from_photo else None))
     if hair_unc:
-        for k in F:
-            if k.startswith("волосся"): F[k]["L_невизначеність"] = hair_unc
+        for k, поля in F.items():
+            if k.startswith("волосся"): поля["L_невизначеність"] = hair_unc
     if dists: F["_розподіли"]={k:dict(моди=len(v["моди"]),
                                       вкраплення=[dict(вага=round(x["вага"],3),
                                                        L=round(x["lab"][0],1)) for x in v["вкраплення"]],
@@ -330,7 +330,7 @@ def температура_шкіри(lab, довіра=None):
             причина_без_температури=(
                 "довіра підтону джерела %.2f < MIN_TO_EMIT %.2f: знак, сила й олива з оцінки "
                 "не стверджуються" % (д["undertone"], MIN_TO_EMIT)))
-    L, C, h = lch(lab)
+    _, C, h = lch(lab)
     _a, _b = lab[1], lab[2]
     _C = (_a*_a + _b*_b) ** 0.5
     _Ц_ПІДТ, _Р_ПІДТ = ЦЕНТР_ПІДТОНУ, РОЗКИД_ПІДТОНУ
@@ -466,7 +466,7 @@ def перерахувати_рису(F, риса, lab, kind=None, lex=None):
 # R-MUN-03 — дубль `colorspace.feature_spectrum`: хрома — самостійна вісь, не похідна value.
 def feature_spectrum(f, intent):
     """Спектр ДОЗВОЛЕНОГО від ОДНІЄЇ риси. Ахроматична риса тонових дуг НЕ дає."""
-    off,w = RELATIONS[intent]
+    _,w = RELATIONS[intent]
     if not f.get("тон_визначений", True):
         hues=[]                       # сиве/нейтральне: голосує лише світлотою й хромою
     else:
