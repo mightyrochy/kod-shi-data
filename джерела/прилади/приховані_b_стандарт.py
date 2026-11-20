@@ -579,7 +579,11 @@ def п23(с):
     стандарт сам це каже, тож п.3–5 у CI ніхто не тримає."""
     місця = []
     yml = os.path.join(КОРІНЬ, ".github", "workflows", "zbirka.yml")
-    текст = open(yml, encoding="utf-8").read() if os.path.exists(yml) else ""
+    if os.path.exists(yml):
+        with open(yml, encoding="utf-8") as файл:
+            текст = файл.read()
+    else:
+        текст = ""
     for ім in ("досяжність", "audit_contracts"):
         if ім not in текст:
             місця.append((".github/workflows/zbirka.yml:1", "нема кроку %s" % ім))
@@ -596,11 +600,12 @@ def п24(с):
         if not os.path.exists(ф):
             continue
         for в in _дерево(ф).body:
-            if isinstance(в, ast.Assign) and any(isinstance(ц, ast.Name) and re.search("ПРИЛАД|ІНСТРУМЕНТ|НЕ_СИСТЕМА|TOOLS",
-                                                                                        ц.id) for ц in в.targets):
-                if (isinstance(в.value, (ast.Tuple, ast.List, ast.Set, ast.Dict, ast.Call))):
-                    місця.append(("джерела/%s.py:%d" % (ім, в.lineno), "власний список приладів %s" %
-                                  ",".join(ц.id for ц in в.targets if isinstance(ц, ast.Name))))
+            if (isinstance(в, ast.Assign) and
+                    any(isinstance(ц, ast.Name) and re.search("ПРИЛАД|ІНСТРУМЕНТ|НЕ_СИСТЕМА|TOOLS", ц.id)
+                        for ц in в.targets) and
+                    isinstance(в.value, (ast.Tuple, ast.List, ast.Set, ast.Dict, ast.Call))):
+                місця.append(("джерела/%s.py:%d" % (ім, в.lineno), "власний список приладів %s" %
+                              ",".join(ц.id for ц in в.targets if isinstance(ц, ast.Name))))
     if len(місця) <= 1:
         return "виміряно", []
     return "виміряно", місця

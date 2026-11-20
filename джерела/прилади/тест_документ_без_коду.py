@@ -723,7 +723,7 @@ class Злиття(unittest.TestCase):
     def test_злиття_squash_з_голови(self):
         api = ФальшивийAPI(self.pr, (200, {"merged": True, "sha": "c" * 40}, ""))
         голова = self.pr["head"]["sha"]
-        злито, перед, рядки = д.злити(api, [{"номер": 3584, "голова": голова}])
+        злито, перед, _ = д.злити(api, [{"номер": 3584, "голова": голова}])
         self.assertEqual(злито, [(3584, "c" * 40)])
         self.assertEqual(перед, "b" * 40)
         put = next(в for в in api.виклики if в[0] == "PUT")
@@ -739,7 +739,7 @@ class Злиття(unittest.TestCase):
 
     def test_відмова_злиття(self):
         api = ФальшивийAPI(self.pr, (405, {"message": "Pull Request is not mergeable"}, ""))
-        злито, перед, _ = д.злити(api, [{"номер": 3584, "голова": self.pr["head"]["sha"]}])
+        злито, перед, рядки = д.злити(api, [{"номер": 3584, "голова": self.pr["head"]["sha"]}])
         self.assertEqual((злито, перед), ([], ""))
         self.assertIn("405", рядки[0])
 

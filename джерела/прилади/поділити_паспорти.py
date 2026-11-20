@@ -228,7 +228,7 @@ def не_паспорт(історія):
 
 def git_показати(реф, шлях):
     р = subprocess.run(['git', '-c', 'core.quotepath=off', 'show', f'{реф}:{шлях}'], cwd=КОРІНЬ, capture_output=True,
-                       encoding='utf-8')
+                       encoding='utf-8', check=False)
     return р.stdout if р.returncode == 0 else None
 
 
