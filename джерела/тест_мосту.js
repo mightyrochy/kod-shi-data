@@ -93,17 +93,68 @@ const пнг = байтів => {
        && a_версія(а.headers), а.headers);
   тест("у тілі НЕМА `_думки` (Anthropic на зайве поле віддає 400)",
        а.body && !("_думки" in а.body), Object.keys(а.body || {}));
-  тест("модель, стеля, повідомлення доїхали як є",
-       а.body && а.body.model === "claude-sonnet-5" && а.body.max_tokens === 800
+  тест("модель і повідомлення доїхали як є; max_tokens = стеля сторінки + запас на думки (12000)",
+       а.body && а.body.model === "claude-sonnet-5" && а.body.max_tokens === 800 + 12000
        && а.body.messages[0].content[0].text === "привіт", а.body);
+  тест("effort low за замовчуванням — полем output_config (Claude 5.5 мислить завжди)",
+       а.body && а.body.output_config && а.body.output_config.effort === "low" && !("thinking" in а.body), а.body);
   тест("відповідь 200 віддається як є", в.status === 200 && (await в.clone().json()).content[0].text === "ок", в.status);
   тест("заголовки лімітів Anthropic проходять наскрізь і відкриті для сторінки",
        в.headers.get("anthropic-ratelimit-requests-remaining") === "49"
        && /anthropic-ratelimit-requests-remaining/.test(в.headers.get("Access-Control-Expose-Headers")),
        [...в.headers.keys()]);
-  тест("x-provider=anthropic, x-thinking=as-is (каскаду для claude нема)",
-       в.headers.get("x-provider") === "anthropic" && в.headers.get("x-thinking") === "as-is",
+  тест("x-provider=anthropic, x-thinking=effort",
+       в.headers.get("x-provider") === "anthropic" && в.headers.get("x-thinking") === "effort",
        [в.headers.get("x-provider"), в.headers.get("x-thinking")]);
+  вихідні.length = 0;
+  в = await М.fetch(new Request("https://w.workers.dev/", {method:"POST",
+      headers:{"content-type":"application/json", "Origin":"https://mightyrochy.github.io", "x-lyusterko-token":"tok-a1"},
+      body:JSON.stringify({model:"claude-sonnet-5-5", messages:[{role:"user", content:"x"}]})}), {...env, CLAUDE_EFFORT:"as-is"});
+  тест("CLAUDE_EFFORT=as-is → поля effort нема, x-thinking=as-is; стеля без max_tokens сторінки — 4000 + запас",
+       в.status === 200 && !("output_config" in вихідні[0].body) && вихідні[0].body.max_tokens === 16000
+       && в.headers.get("x-thinking") === "as-is", [вихідні[0].body, в.headers.get("x-thinking")]);
+  вихідні.length = 0;
+  в = await М.fetch(new Request("https://w.workers.dev/", {method:"POST",
+      headers:{"content-type":"application/json", "Origin":"https://mightyrochy.github.io", "x-lyusterko-token":"tok-a1"},
+      body:JSON.stringify({model:"claude-sonnet-5-5", messages:[{role:"user", content:"x"}]})}), {...env, CLAUDE_EFFORT:"medium", GEMINI_THINKING:"high"});
+  тест("CLAUDE_EFFORT=medium → effort medium; змінна Gemini маршрут claude не чіпає",
+       вихідні[0].body.output_config && вихідні[0].body.output_config.effort === "medium", вихідні[0].body);
+  {
+    let стук = 0;
+    відповідач = () => (++стук === 1
+      ? new Response(JSON.stringify({type:"error", error:{type:"invalid_request_error",
+          message:"output_config.effort: This model does not support the effort parameter."}}), {status:400})
+      : new Response(JSON.stringify({content:[{type:"text",text:"ок"}], stop_reason:"end_turn",
+          usage:{input_tokens:5, output_tokens:1}}), {status:200}));
+    вихідні.length = 0;
+    в = await зап({model:"claude-haiku-4-5", messages:[{role:"user", content:"x"}]});
+    тест("400 через effort (стара модель) → повтор без поля, відповідь 200, x-thinking=dropped",
+         в.status === 200 && вихідні.length === 2 && вихідні[0].body.output_config.effort === "low"
+         && !("output_config" in вихідні[1].body) && в.headers.get("x-thinking") === "dropped",
+         [в.status, вихідні.map(x => x.body.output_config), в.headers.get("x-thinking")]);
+    /* кредити з підписки скінчились: Anthropic відповідає 400 з текстом про баланс */
+    відповідач = () => new Response(JSON.stringify({type:"error", error:{type:"invalid_request_error",
+        message:"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."}}), {status:400});
+    вихідні.length = 0;
+    в = await зап({model:"claude-sonnet-5-5", temperature:0, messages:[{role:"user", content:"x"}]});
+    const тк = await в.clone().json().catch(() => ({}));
+    тест("кредити скінчились → 402 credits_exhausted, один виклик (каскад і температура не крутяться)",
+         в.status === 402 && (тк.error || {}).type === "credits_exhausted" && вихідні.length === 1
+         && /credit balance is too low/.test((тк.error || {}).message || ""),
+         [в.status, тк, вихідні.length]);
+    відповідач = () => new Response(JSON.stringify({type:"error", error:{type:"billing_error", message:"billing issue"}}), {status:402});
+    в = await зап({model:"claude-sonnet-5-5", messages:[{role:"user", content:"x"}]});
+    тест("402 billing_error → теж credits_exhausted",
+         в.status === 402 && ((await в.clone().json()).error || {}).type === "credits_exhausted", в.status);
+    відповідач = () => new Response(JSON.stringify({type:"error", error:{message:"credit balance is too low"}}), {status:400});
+    вихідні.length = 0;
+    в = await зап({model:"gemini-3.8-flash", messages:[{role:"user", content:"x"}]});
+    тест("маршрут gemini- той самий текст не перекладає в credits_exhausted (розпізнання — провайдера anthropic)",
+         в.status !== 402, в.status);
+    відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"ок"}],
+        stop_reason:"end_turn", usage:{input_tokens:5, output_tokens:1}}), {status:200,
+        headers:{"anthropic-ratelimit-requests-remaining":"49"}});
+  }
   function a_версія(h){ return !!h["anthropic-version"]; }
 
   console.log("3. МАРШРУТ gemini-: переклад туди й назад");
@@ -650,6 +701,82 @@ const пнг = байтів => {
     відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"ок"}], stop_reason:"end_turn", usage:{input_tokens:5, output_tokens:1}}), {status:200});
     в = await зап({model:"claude-sonnet-5", messages:[{role:"user", content:"x"}]});
     тест("claude-: x-route=messages", в.headers.get("x-route") === "messages", в.headers.get("x-route"));
+  }
+
+  console.log("4ж. OPENAI images/edits: заглушка за документованим форматом (наряд «Модель-примірка-на-OpenAI»)");
+  {
+    /* Формат — з developers.openai.com (довідник «Create image edit», 19.11.2026), живого виклику НЕ було. */
+    const envО = {...env, OPENAI_API_KEY:"sk-openai-тест"};
+    const запО = тіло => М.fetch(new Request("https://w.workers.dev/", {method:"POST",
+      headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
+      body:JSON.stringify(тіло)}), envО);
+    const фото = {type:"image", source:{type:"base64", media_type:"image/jpeg", data:"QUJD"}};
+    const ід = k => ({type:"image", source:{type:"url", url:"https://img.example/" + k + ".png"}});
+    вихідні.length = 0; фотоЗапити.length = 0;
+    відповідач = () => new Response(JSON.stringify({created:1, output_format:"png", quality:"medium", size:"1024x1536",
+      data:[{b64_json:"R0lG"}],
+      usage:{input_tokens:3000, input_tokens_details:{image_tokens:2500, text_tokens:500}, output_tokens:1000, total_tokens:4000}}), {status:200});
+    в = await запО({model:"gpt-image-2.6-sunburst", max_tokens:800,
+      messages:[{role:"user", content:[{type:"text", text:"Одягни її"}, фото, ід("a"), {type:"text", text:"Речі — далі"}]}]});
+    const о = вихідні[0], тіло_о = о && о.body, д_о = await в.json();
+    тест("openai: адреса images/edits, Bearer ключа, JSON", о && о.url === "https://api.openai.com/v1/images/edits"
+         && о.headers.authorization === "Bearer sk-openai-тест" && о.headers["content-type"] === "application/json", о && о.url);
+    тест("openai: model, prompt з текстових блоків, images у порядку (data:-URL, фото за адресою вже base64)",
+         тіло_о.model === "gpt-image-2.6-sunburst" && тіло_о.prompt === "Одягни її\n\nРечі — далі"
+         && тіло_о.images.length === 2 && тіло_о.images[0].image_url === "data:image/jpeg;base64,QUJD"
+         && /^data:image\/png;base64,/.test(тіло_о.images[1].image_url), тіло_о);
+    тест("openai: у тілі нема службових полів Anthropic/Gemini", !("messages" in тіло_о) && !("max_tokens" in тіло_о)
+         && !("_думки" in тіло_о) && !("temperature" in тіло_о), Object.keys(тіло_о));
+    тест("openai: одна спроба без каскаду, x-provider=openai, x-route=images-edits, x-thinking=as-is",
+         вихідні.length === 1 && в.headers.get("x-provider") === "openai" && в.headers.get("x-route") === "images-edits"
+         && в.headers.get("x-thinking") === "as-is", в.headers.get("x-attempts"));
+    тест("openai: відповідь у форматі Anthropic — блок image base64 image/png, usage 3000/1000",
+         в.status === 200 && д_о.content.length === 1 && д_о.content[0].type === "image"
+         && д_о.content[0].source.type === "base64" && д_о.content[0].source.media_type === "image/png"
+         && д_о.content[0].source.data === "R0lG" && д_о.usage.input_tokens === 3000 && д_о.usage.output_tokens === 1000, д_о);
+    /* 2500·8 + 500·5 + 1000·30 = 20000 + 2500 + 30000 = 52500 / 1e6 = $0.0525 */
+    тест("openai: x-cost-usd = токени × ціна (0.0525)", в.headers.get("x-cost-usd") === "0.0525", в.headers.get("x-cost-usd"));
+    вихідні.length = 0;
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"}]}]});
+    тест("openai: без фото — 400 до мережі", в.status === 400 && вихідні.length === 0, в.status);
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[фото]}, {role:"assistant", content:"b"}]});
+    тест("openai: кілька повідомлень — 400 до мережі", в.status === 400 && вихідні.length === 0, в.status);
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"}, ...Array.from({length:17}, () => фото)]}]});
+    тест("openai: понад 16 зображень — 400 до мережі", в.status === 400 && вихідні.length === 0, в.status);
+    в = await М.fetch(new Request("https://w.workers.dev/", {method:"POST",
+      headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
+      body:JSON.stringify({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[фото]}]})}), env);
+    тест("openai: без секрета → 500 і названо OPENAI_API_KEY", в.status === 500 && /OPENAI_API_KEY/.test(await в.text()), в.status);
+    /* ВАДА 16833: фото за адресою, що не дійшло, — 422 ДО платного виклику (масив зсунув би номери речей) */
+    вихідні.length = 0;
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"}, фото,
+      {type:"image", source:{type:"url", url:"https://dead.example/z.png"}}, ід("ok")]}]});
+    тест("openai: одне мертве фото → 422, виклику OpenAI нема, x-images-dropped=1",
+         в.status === 422 && вихідні.length === 0 && в.headers.get("x-images-dropped") === "1", [в.status, вихідні.length]);
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"},
+      {type:"image", source:{type:"url", url:"https://dead.example/a.png"}}]}]});
+    тест("openai: усі фото мертві → 422, без images:[] у OpenAI", в.status === 422 && вихідні.length === 0, [в.status, вихідні.length]);
+    /* ВАДА 16836: температури нема — заголовок n/a, 400 про sampling не повторюється */
+    відповідач = () => new Response(JSON.stringify({error:{message:"unsupported sampling parameter"}}), {status:400});
+    в = await запО({model:"gpt-image-2.6-flare", temperature:1, messages:[{role:"user", content:[фото]}]});
+    тест("openai: 400 зі словом sampling — один виклик (без повтору), x-temperature=n/a",
+         в.status === 400 && вихідні.length === 1 && в.headers.get("x-temperature") === "n/a", [вихідні.length, в.headers.get("x-temperature")]);
+    вихідні.length = 0;
+    відповідач = () => new Response(JSON.stringify({created:1, output_format:"png", data:[{b64_json:"R0lG"}], usage:{input_tokens:1, output_tokens:1}}), {status:200});
+    в = await запО({model:"gpt-image-2.6-flare", temperature:1, messages:[{role:"user", content:[фото]}]});
+    тест("openai: 200 з temperature у запиті сторінки — x-temperature=n/a", в.status === 200 && в.headers.get("x-temperature") === "n/a", в.headers.get("x-temperature"));
+    /* відмова безпеки й порожня відповідь */
+    вихідні.length = 0;
+    відповідач = () => new Response(JSON.stringify({error:{code:"moderation_blocked", message:"blocked"}}), {status:400});
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[фото]}]});
+    тест("openai: moderation_blocked 400 — віддано як є, один виклик", в.status === 400 && вихідні.length === 1
+         && /moderation_blocked/.test(await в.text()), в.status);
+    відповідач = () => new Response(JSON.stringify({data:[], usage:{}}), {status:200});
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[фото]}]});
+    тест("openai: 200 без картинки — 422, а не «успіх»", в.status === 422, в.status);
+    відповідач = () => new Response(JSON.stringify({error:{code:"insufficient_quota", message:"You exceeded your current quota"}}), {status:429});
+    в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[фото]}]});
+    тест("openai: insufficient_quota → 402 credits_exhausted", в.status === 402 && /credits_exhausted/.test(await в.text()), в.status);
   }
 
   console.log("5. СТЕЛІ");

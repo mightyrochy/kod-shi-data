@@ -65,6 +65,8 @@ $script:WorkerGpuBusy = 4
 $script:ReviewApiLimit = 30
 $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
+# Безпечна ознака останньої відмови Get-AutoReviewState (замок, бюджет, чекання, HTTP <код>, мережа, межа часу, відповідь).
+$script:ReviewApiCause = ''
 # План живого (Get-AutoLivePlan, автоживий й Е1-нічний-живий). Вимір 07.11: `pulls?state=all` — 33 сторінки по 100 PR,
 # сторінка до 2,36 млн знаків (3273 PR); повне читання на спробу — 33 запити з 60/год без входу. Тепер сторінки по 50,
 # читання стоїть, щойно сторінка старіша за межу плану (Get-AutoPlanBoundary; запити — з бюджету review-api.json, як у
@@ -394,10 +396,37 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$Dir = '', [d
     [pscustomobject]@{ Code = $(if ($timedOut) { -1 } else { $p.ExitCode }); TimedOut = $timedOut; Out = $out.Result; Err = $err.Result }
 }
 
+function Get-PollSeconds {
+    <# Інтервал між проходами (poll_minutes) у секундах: спільна межа очікування мережі, замка бюджету й застряглої передачі git.
+    Стенди підключають бібліотеку без головного скрипта: $script:Bound і $script:Limits там можуть бути не задані (strict mode). #>
+    $bound = Get-Variable -Name Bound -Scope Script -ValueOnly -ErrorAction SilentlyContinue
+    $limits = Get-Variable -Name Limits -Scope Script -ValueOnly -ErrorAction SilentlyContinue
+    $poll = [double]$script:Defaults['poll_minutes']
+    if ($bound -is [hashtable]) { $poll = Get-Limit $limits 'PollMinutes' 'poll_minutes' }
+    [int][math]::Round($poll * 60)
+}
+
+function Get-GitStallOptions([string[]]$GitArgs) {
+    <# Мережевій команді git (fetch, ls-remote, push) — межа застряглої передачі: нуль байтів довше за poll_minutes (інтервал
+    між проходами) обриває команду, а не тримає прохід до межі Invoke-Native (10 хв неспання). Нижча межа швидкості — 1 Б/с:
+    лише повна відсутність руху. Фаза з'єднання й DNS цією межею не вимірюється. #>
+    if ($GitArgs.Count -eq 0 -or $GitArgs[0] -cnotin @('fetch', 'ls-remote', 'push')) { return @() }
+    @('-c', 'http.lowSpeedLimit=1', '-c', "http.lowSpeedTime=$(Get-PollSeconds)")
+}
+
+function Invoke-PassFetch([string[]]$GitArgs) {
+    <# `git fetch` проходу з тривалістю в журналі (норма й вбитий fetch видно поряд): успіх і збій — один рядок, збій
+    кидається далі як є. #>
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    $result = 'ок'
+    try { [void](Invoke-Git $GitArgs) } catch { $result = 'збій'; throw }
+    finally { Write-Log "fetch проходу: $result за $($clock.Elapsed.TotalSeconds.ToString('0.0', [cultureinfo]::InvariantCulture)) с" }
+}
+
 function Invoke-Git([string[]]$GitArgs, [switch]$AllowFail, [double]$TimeoutMinutes = 10, [string]$Dir = '') {
     <# git у клоні ($RepoDir) чи в робочій копії слота (-Dir) без входу й без гачків. #>
     $d = $(if ($Dir) { $Dir } else { $RepoDir })
-    $all = @('-C', $d, '-c', "core.hooksPath=$script:NoHooks", '-c', 'credential.helper=', '-c', 'core.quotepath=false') + $GitArgs
+    $all = @('-C', $d, '-c', "core.hooksPath=$script:NoHooks", '-c', 'credential.helper=', '-c', 'core.quotepath=false') + @(Get-GitStallOptions $GitArgs) + $GitArgs
     $r = Invoke-Native $GitExe $all '' $TimeoutMinutes
     if ($r.Code -ne 0 -and -not $AllowFail) { throw "git $($GitArgs -join ' ') -> $($r.Code): $($r.Err.Trim())" }
     $r
@@ -533,6 +562,44 @@ function Get-CascadePlan([string]$Model, [string]$CodexModel = '') {
     $c
 }
 
+$script:ChainConfigPath = 'аудит/адаптери/gemini/ланцюг.json'
+
+function Get-CodexPauseUntil($Config) {
+    <# Необов'язкове `codex_pause_until` у ланцюг.json (UTC, `2026-11-23T10:16:00Z`): до цього часу автоживий і каскад agy не беруть Codex
+    (квота Codex і Claude ноутбука під рішенням менеджера). Одне місце розбору: ланцюг (wrapper_chain.ps1, Get-PauseReaders) бере
+    цю функцію з довіреної копії, gemini-run — через Test-CodexPause. Нема поля чи `null` — $null; не за формою — виняток
+    CHAIN_CONFIG. PowerShell 7 сам перетворює дату з JSON на DateTime: приймається лише UTC (`Z`), місцевий час чи зсув — не за формою. #>
+    $prop = $Config.PSObject.Properties['codex_pause_until']
+    if ($null -eq $prop -or $null -eq $prop.Value) { return $null }
+    $v = $prop.Value
+    if ($v -is [datetime]) {
+        if ($v.Kind -ne [DateTimeKind]::Utc) { throw 'CHAIN_CONFIG' }
+        return [datetimeoffset]::new($v)
+    }
+    $t = [datetimeoffset]::MinValue
+    if ([string]$v -cmatch '^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$' -and
+        [datetimeoffset]::TryParseExact([string]$v, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal, [ref]$t)) { return $t }
+    throw 'CHAIN_CONFIG'
+}
+
+$script:CodexPauseLogged = @{}
+function Test-CodexPause([datetimeoffset]$Now = [datetimeoffset]::UtcNow) {
+    <# Пауза Codex діє: `codex_pause_until` з ланцюг.json на origin/main (тим самим читанням, що й ланцюг: джерело правди одне) ще
+    попереду. Файла нема — паузи нема. Файл чи поле кривий — діє (відмова за невідомого, не мовчазний каскад на Codex), рядок
+    журналу раз на причину в процесі. Каскад agy (Get-Cascade в gemini_run.ps1) під паузою не додає Codex. #>
+    $r = Invoke-Git @('cat-file', 'blob', "$script:RemoteRoot/main:$script:ChainConfigPath") -AllowFail
+    if ($r.Code -ne 0) { return $false }
+    $why = ''
+    try {
+        $until = Get-CodexPauseUntil ($r.Out | ConvertFrom-Json)
+        if ($null -eq $until) { return $false }
+        if ($Now -ge $until) { return $false }
+        $why = 'діє до ' + $until.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture)
+    } catch { $why = 'codex_pause_until у ланцюг.json не розібрано (CHAIN_CONFIG), пауза вважається чинною' }
+    if (-not $script:CodexPauseLogged.ContainsKey($why)) { $script:CodexPauseLogged[$why] = $true; Write-Log "пауза Codex: $why — Codex у каскаді agy нема" }
+    $true
+}
+
 function ConvertTo-Marker([string]$Line) {
     <# Рядок for-each-ref (посилання, SHA, час коміту, тема коміту) -> позначка; Valid=$false — назва не за форматом.
 
@@ -601,7 +668,9 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. Дозвіл дати — найбільша спроба /N
     з комітом на main: кінець /1 (CRASH від сну) його не з'їдає, а повтор — лише нова спроба /N від диспетчера. Дві спроби
     водночас не йдуть: slug у всіх спроб один, його тримає Test-SlugBusy. -OpenOnly — лише вікно: $true, коли нічний
-    відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). #>
+    відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). Умова спроби —
+    `gpu` із пріоритетом `p<0-9>` у будь-якому порядку (`gpu-p8`, `p1-gpu`): пріоритет бере планувальник із самої позначки
+    (ConvertTo-Marker), тож диспетчер піднімає нічний над іншими GPU-позначками новою спробою `/N/gpu-p<цифра>`. #>
     $utc = $Now.ToUniversalTime()
     if ($utc.Hour -lt 2) { return }
     if ($OpenOnly) { return $true }
@@ -610,7 +679,7 @@ function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnl
     $main = Get-RefSha "$script:RemoteRoot/main"
     if ($main -cnotmatch '^[0-9a-f]{40}$') { return }
     $tries = @(foreach ($name in ((Invoke-Git @('for-each-ref', '--format=%(refname)', $head)).Out -split "`n")) {
-        if ($name.Trim() -cmatch ('^' + [regex]::Escape($head) + '([1-9][0-9]{0,2})/gpu-p8$')) { [pscustomobject]@{ N = [int]$Matches[1]; Ref = $name.Trim() } }
+        if ($name.Trim() -cmatch ('^' + [regex]::Escape($head) + '([1-9][0-9]{0,2})/(?:gpu-p[0-9]|p[0-9]-gpu)$')) { [pscustomobject]@{ N = [int]$Matches[1]; Ref = $name.Trim() } }
     })
     $n = 0; $ref = ''; $sha = ''
     foreach ($t in @($tries | Sort-Object N -Descending)) {
@@ -687,9 +756,53 @@ function Read-AutoApiBudget([string]$Path, [long]$Now) {
     <# Спільний бюджет публічного REST (`review-api.json`): запити за рухоме вікно й спільна пауза. Файла нема — порожній
     бюджет; пошкоджений — $null (непорахованих запитів не дозволяємо). Викликач тримає замок `review-api.lock`. #>
     if (-not (Test-Path -LiteralPath $Path)) { return [pscustomobject]@{ Calls = @(); Until = 0L } }
-    $saved = [IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json
-    if ($null -eq $saved.calls -or $null -eq $saved.until) { return $null }
-    [pscustomobject]@{ Calls = @($saved.calls | Where-Object { [long]$_ -gt ($Now - $script:ReviewApiWindow) }); Until = [long]$saved.until }
+    try {
+        $saved = [IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json
+        # Get-JsonProp не годиться для calls: порожній масив функція віддає в конвеєр як $null.
+        $pc = $(if ($saved -is [pscustomobject]) { $saved.PSObject.Properties['calls'] }); $pu = $(if ($saved -is [pscustomobject]) { $saved.PSObject.Properties['until'] })
+        if ($null -eq $pc -or $null -eq $pu -or $null -eq $pc.Value -or $null -eq $pu.Value) { return $null }
+        [pscustomobject]@{ Calls = @($pc.Value | Where-Object { [long]$_ -gt ($Now - $script:ReviewApiWindow) }); Until = [long]$pu.Value }
+    } catch { $null }
+}
+
+function Open-ReviewApiLock {
+    <# Замок бюджету review-api.json: зайнятий — чекає, а не відмовляє одразу. Його тримають лише на читання й запис бюджету
+    (мережа поза замком), тож друга позначка того ж проходу чекає частки секунди і йде в мережу, а не в REVIEW_API.
+    Межа чекання — інтервал проходу poll_minutes (Get-PollSeconds): довше за прохід чекати нема сенсу, наступний прохід
+    повторить; період опитування — GpuStartPollMs. $null — теки смуги нема чи замок не звільнився за межу. #>
+    if (-not (Test-Path -LiteralPath $LaneDir)) { return $null }
+    $path = Join-Path $LaneDir 'review-api.lock'
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    while ($true) {
+        $lock = Open-Lock $path
+        if ($null -ne $lock) { return $lock }
+        if ($clock.Elapsed.TotalSeconds -ge (Get-PollSeconds)) { return $null }
+        Start-Sleep -Milliseconds $script:GpuStartPollMs
+    }
+}
+
+function Get-ReviewApiCause($Err) {
+    <# Безпечна ознака відмови публічного запиту: `HTTP <код>`, `межа часу`, `мережа <статус>`, `відповідь` (тіло не те, що
+    чекали), інакше `запит <тип винятку>`. Текст винятку й відповіді сервера не йде в рядок: журнал і стан відкриті. #>
+    $ex = $(if ($Err -is [Management.Automation.ErrorRecord]) { $Err.Exception } else { $Err })
+    if ($ex -isnot [Exception]) { return 'запит' }
+    if ($ex.Message -ceq 'REVIEW_RESPONSE') { return 'відповідь' }
+    for ($e = $ex; $null -ne $e; $e = $e.InnerException) {
+        $resp = $e.PSObject.Properties['Response']
+        if ($null -ne $resp -and $null -ne $resp.Value -and $null -ne $resp.Value.PSObject.Properties['StatusCode']) {
+            $code = [int]$resp.Value.StatusCode
+            if ($code -gt 0) { return "HTTP $code" }
+        }
+        $type = $e.GetType().FullName
+        if ($type -ceq 'System.Net.WebException') {
+            if ([string]$e.Status -ceq 'Timeout') { return 'межа часу' }
+            return "мережа $($e.Status)"
+        }
+        if ($type -cmatch '^System\.(?:TimeoutException|OperationCanceledException|Threading\.Tasks\.TaskCanceledException)$') { return 'межа часу' }
+        if ($type -cmatch '^System\.(?:Net\.Http\.HttpRequestException|Net\.Sockets\.SocketException|IO\.IOException)$') { return 'мережа' }
+    }
+    if ($ex.Message -cmatch '(?<![0-9A-Za-z])HTTP ([45][0-9]{2})(?![0-9])|\(([45][0-9]{2})\)') { return 'HTTP ' + $(if ($Matches[1]) { $Matches[1] } else { $Matches[2] }) }
+    "запит $($ex.GetType().Name)"
 }
 
 function Use-AutoApiBudget {
@@ -698,7 +811,7 @@ function Use-AutoApiBudget {
     спільна пауза чи вичерпано межу: викликач у мережу не йде. #>
     $lock = $null
     try {
-        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
+        $lock = Open-ReviewApiLock
         if ($null -eq $lock) { return $false }
         $path = Join-Path $LaneDir 'review-api.json'
         $now = Get-ReviewTime
@@ -714,7 +827,7 @@ function Set-AutoApiPause {
     <# Мережева відмова публічного запиту ставить спільну паузу ReviewApiBackoff с, як у Get-AutoReviewState. #>
     $lock = $null
     try {
-        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
+        $lock = Open-ReviewApiLock
         if ($null -eq $lock) { return }
         $path = Join-Path $LaneDir 'review-api.json'
         $now = Get-ReviewTime
@@ -734,41 +847,45 @@ function Get-AutoReviewState([string]$Slug) {
     if ($Slug -cmatch '^автоперевірка-([1-9][0-9]{0,8})-([0-9a-f]{40})$') { $number = $Matches[1]; $head = $Matches[2] }
     elseif ($Slug -cmatch '^перевірка-([1-9][0-9]{0,8})$') { $number = $Matches[1]; $head = '' }
     else { return 'LIVE' }
+    $script:ReviewApiCause = ''
     $lock = $null
     try {
-        $lock = Open-Lock (Join-Path $LaneDir 'review-api.lock')
-        if ($null -eq $lock) { return 'REVIEW_API' }
+        $lock = Open-ReviewApiLock
+        if ($null -eq $lock) { $script:ReviewApiCause = 'замок'; return 'REVIEW_API' }
         $path = Join-Path $LaneDir 'review-api.json'
         $now = Get-ReviewTime
         $saved = Read-AutoApiBudget $path $now
         # Пошкоджений бюджет не дозволяє непорахованих запитів.
-        if ($null -eq $saved) { return 'REVIEW_API' }
+        if ($null -eq $saved) { $script:ReviewApiCause = 'бюджет пошкоджено'; return 'REVIEW_API' }
         $calls = $saved.Calls; $until = $saved.Until
-        if ($now -lt $until -or $calls.Count -ge $script:ReviewApiLimit) { return 'REVIEW_API' }
+        if ($now -lt $until) { $script:ReviewApiCause = 'чекання'; return 'REVIEW_API' }
+        if ($calls.Count -ge $script:ReviewApiLimit) { $script:ReviewApiCause = 'бюджет вичерпано'; return 'REVIEW_API' }
         # Резервуємо запит до мережі: 403/429, тайм-аут і падіння процесу також входять у бюджет.
-        $budget = [ordered]@{calls=@($calls) + @($now);until=0L}
-        Write-FileAtomic $path ($budget | ConvertTo-Json -Compress)
-        try {
-            $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
-            if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
-            if ($pr.state -cne 'open') { return 'STALE' }
-            if (-not $head) { return 'LIVE' }
-            if ($pr.head.sha -cne $head) { return 'STALE' }
-            if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or (Test-ReviewBranch ([string]$pr.head.ref))) { return 'STALE' }
-            'LIVE'
-        } catch {
-            $budget.until = $now + $script:ReviewApiBackoff
-            Write-FileAtomic $path ($budget | ConvertTo-Json -Compress)
-            'REVIEW_API'
-        }
-    } catch { 'REVIEW_API' }
+        Write-FileAtomic $path ([ordered]@{calls=@($calls) + @($now);until=0L} | ConvertTo-Json -Compress)
+    } catch { $script:ReviewApiCause = 'збій обгортки'; return 'REVIEW_API' }
     finally { if ($null -ne $lock) { $lock.Dispose() } }
+    # Запит — поза замком: -TimeoutSec не міряє розпізнавання імені (гальма getaddrinfo сягали 30 с), тож замок на час
+    # запиту не мав би верхньої межі, а друга позначка того ж проходу ішла б у REVIEW_API.
+    try {
+        $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/mightyrochy/kod-shi-data/pulls/$number" -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+        if ([string]$pr.number -cne $number -or $pr.state -cnotin @('open','closed') -or [string]$pr.head.sha -cnotmatch '^[0-9a-f]{40}$') { throw 'REVIEW_RESPONSE' }
+        if ($pr.state -cne 'open') { return 'STALE' }
+        if (-not $head) { return 'LIVE' }
+        if ($pr.head.sha -cne $head) { return 'STALE' }
+        if ($pr.user.login -cne 'mightyrochy' -or $null -eq $pr.head.repo -or $pr.head.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.repo.full_name -cne 'mightyrochy/kod-shi-data' -or $pr.base.ref -cne 'main' -or (Test-ReviewBranch ([string]$pr.head.ref))) { return 'STALE' }
+        'LIVE'
+    } catch {
+        $script:ReviewApiCause = Get-ReviewApiCause $_
+        Set-AutoApiPause
+        'REVIEW_API'
+    }
 }
 
-function Enter-ReviewWait($M, [string]$Head = '') {
-    <# Повертає позначку після відмови REST чи вичерпання бюджету без збільшення retakes і кінцевого звіту. #>
-    [void](Set-MarkerWait $M ((Get-ReviewTime) + $script:ReviewApiBackoff) @{group='REVIEW_API';head=$Head})
-    Write-Log "позначка $($M.Name): REVIEW_API; спроба збережена, повтор у черзі"
+function Enter-ReviewWait($M, [string]$Head = '', [string]$Cause = $script:ReviewApiCause) {
+    <# Повертає позначку після відмови REST чи вичерпання бюджету без збільшення retakes і кінцевого звіту. Ознака причини
+    (Get-AutoReviewState) іде в стан позначки (`reason`) і в рядок журналу, щоб позначка, що не стартує, мала пояснення. #>
+    [void](Set-MarkerWait $M ((Get-ReviewTime) + $script:ReviewApiBackoff) @{group='REVIEW_API';head=$Head;reason=$Cause})
+    Write-Log "позначка $($M.Name): REVIEW_API ($Cause); спроба збережена, повтор у черзі"
 }
 
 function Get-PlanFailReason([string]$Message) {
@@ -785,7 +902,7 @@ function Enter-PlanWait($M, [string]$Reason, [string]$Head = '') {
     (спільна межа MaxRetakes): повертає $false, коли межу вичерпано і чекання не записано, — викликач кінчає наряд
     кодом PLAN_FAILED, який будить диспетчера (не тихий REVIEW_API без кінця). #>
     # Автоперевірка PR (не план): її збій API лишається REVIEW_API — повтор у черзі під бюджетом, як і було.
-    if ($M.Slug -cnotmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Head; return $true }
+    if ($M.Slug -cnotmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Head $(if ($Reason -ceq 'AUTO_BUDGET') { 'бюджет' } else { Get-PlanFailReason $Reason }); return $true }
     $why = Get-PlanFailReason $Reason
     $n = Set-MarkerWait $M ((Get-ReviewTime) + $script:PlanBackoff) @{group='PLAN_WAIT';reason=$why;head=$Head;retake=$true}
     if ($null -eq $n) { Write-Log "позначка $($M.Name): план не збудовано (${why}: $(([regex]::Replace($Reason, '[\x00-\x1f\x7f]+', ' ')).Trim())) понад $($script:MaxRetakes) разів — PLAN_FAILED"; return $false }
@@ -1164,10 +1281,15 @@ namespace GeminiWrapper {
         // Джерело живлення для стану: 0 — батарея, 1 — мережа, 255 — невідомо, -1 — Windows не відповіла.
         public static int AcLine() { Status s; return GetSystemPowerStatus(out s) ? s.AcLine : -1; }
 
-        // ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED, поки цей потік не зніме вимогу (ES_CONTINUOUS без
-        // інших прапорів). Дисплей — бо Modern Standby починається, коли гасне дисплей, а запит «система потрібна» на
-        // батареї Windows знімає за 5 хв після спливу тайм-ауту сну (НАЛАШТУВАННЯ.md, «Тримач світла»).
-        public static bool KeepAwake(bool on) { return SetThreadExecutionState(on ? 0x80000003u : 0x80000000u) != 0; }
+        // ES_CONTINUOUS | ES_SYSTEM_REQUIRED, а з display — ще й ES_DISPLAY_REQUIRED, поки цей потік не зніме вимогу
+        // (ES_CONTINUOUS без інших прапорів). Запит системи на мережі скидає таймер сну й лишає дисплей схемі Windows;
+        // дисплей просять на батареї (Modern Standby починається, коли гасне дисплей, а запит «система потрібна» там Windows
+        // знімає за 5 хв після спливу тайм-ауту сну) і на мережі, поки карту тримає GPU-наряд (у Modern Standby драйвер
+        // обмежує карту до 55 Вт; НАЛАШТУВАННЯ.md, «Тримач світла»).
+        public static bool KeepAwake(bool on, bool display) {
+            uint flags = on ? (display ? 0x80000003u : 0x80000001u) : 0x80000000u;
+            return SetThreadExecutionState(flags) != 0;
+        }
 
         public static bool Pause(int id, bool on) {
             IntPtr p = OpenProcess(0x0800, false, id);  // SUSPEND_RESUME
@@ -1210,11 +1332,12 @@ function Get-PowerSource {
     try { Add-PowerType; switch ([GeminiWrapper.Power]::AcLine()) { 0 { 'батарея' } 1 { 'мережа' } default { '?' } } } catch { '?' }
 }
 
-function Set-KeepAwake([bool]$On) {
-    <# Тримати ноутбук неспаним з увімкненим дисплеєм (чи відпустити) для потоку, що кличе: лише Windows; $false —
-    вимогу не прийнято. Кличе лише тримач світла (claude_run.ps1 -Light). #>
+function Set-KeepAwake([bool]$On, [bool]$Display = $false) {
+    <# Тримати ноутбук неспаним (чи відпустити) для потоку, що кличе: лише Windows; $false — вимогу не прийнято.
+    $Display — ще й тримати дисплей увімкненим; без нього дисплей гасне за схемою Windows. Кличе лише тримач світла
+    (claude_run.ps1 -Light). #>
     if (-not $script:OnWindows) { return $false }
-    try { Add-PowerType; [GeminiWrapper.Power]::KeepAwake($On) } catch { $false }
+    try { Add-PowerType; [GeminiWrapper.Power]::KeepAwake($On, $Display) } catch { $false }
 }
 
 function Get-PauseTargets {
@@ -1383,6 +1506,15 @@ function Save-GpuSession($Session) {
 function Get-LiveGpuLeases($Session) {
     <# Незакінчені оренди сесії, чий процес наряду ще тримає замок оренди. #>
     @($Session.Leases | Where-Object { -not $_.done -and (Test-LeaseLive (Get-GpuLeaseLockPath $_.run)) })
+}
+
+function Get-LiveGpuMarkers {
+    <# Позначки GPU-нарядів, чия оренда жива, — лише читання (запис сесії й замки оренд так само читають смуги, Get-GpuSessionReason).
+    Нема запису сесії — порожньо; запис нечитаний — виняток: межі власності не вгадуємо. Кличе тримач світла
+    (claude_run.ps1 -Light), щоб екран не гас, поки карту тримає наряд. #>
+    $s = Read-GpuSession
+    if ($null -eq $s) { return @() }
+    @(Get-LiveGpuLeases $s | ForEach-Object { [string]$_.marker })
 }
 
 function Complete-GpuModels([string]$Run = '') {
@@ -1764,12 +1896,52 @@ function Set-CopyWorkTree([string]$Repo) {
     [void](Invoke-Git @('config', '--worktree', 'core.worktree', $Repo) -Dir $Repo)
 }
 
+function Get-CloneConfig([string]$Clone, [string]$When) {
+    <# Спільний конфіг клону (`config --local`: без `config.worktree` копій) — ключ → значення (багатозначний ключ —
+    значення через LF). Для порівняння, а не для журналу: у значеннях бувають адреси з токенами. Не читається — рядок у
+    журнал і `$null`: без знімка зміну не виявити, а мовчазний пропуск зробив би звірку непомітно вимкненою.
+
+    Ключі `branch.*` не рахуються: гілку наряду пишуть у спільний конфіг `checkout -B` від віддаленої гілки й `push -u`,
+    це звичайна робота, а не стан клону. #>
+    $r = Invoke-Git @('config', '--local', '--list', '-z') -AllowFail -Dir $Clone
+    if ($r.Code -ne 0) {
+        Write-Log "копія задачі: спільний конфіг клону не прочитано ($When) — код $($r.Code): $(@($r.Err.Trim() -split '\r?\n')[0])"
+        return $null
+    }
+    $map = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([StringComparer]::Ordinal)
+    foreach ($e in $r.Out.Split([char]0)) {
+        if ($e -eq '') { continue }
+        $i = $e.IndexOf("`n"); $k = $(if ($i -ge 0) { $e.Substring(0, $i) } else { $e }); $v = $(if ($i -ge 0) { $e.Substring($i + 1) } else { '' })
+        if ($k.StartsWith('branch.', [StringComparison]::Ordinal)) { continue }
+        $map[$k] = $(if ($map.ContainsKey($k)) { $map[$k] + "`n" + $v } else { $v })
+    }
+    , $map
+}
+
+function Write-CloneConfigChange($Before, [string]$Clone) {
+    <# Один рядок журналу, коли між New-TaskCopy і Close-TaskCopy наряд змінив спільний конфіг клону: додано, змінено й
+    прибрано — лише ключі. Значення — лише в `remote.origin.promisor` і `remote.origin.partialclonefilter`: вони безпечні,
+    а `promisor` робить клон частковим для всіх копій (`reset --hard` довантажує blob-и з мережі). Нічого не повертає
+    назад: скидання `promisor` при відсутніх blob-ах робить сховище пошкодженим. Не кидає виняток: кличеться з `finally`. #>
+    try {
+        $after = Get-CloneConfig $Clone 'після'
+        if ($null -eq $after) { return }
+        $show = { param($k, $m) $(if ($k -ceq 'remote.origin.promisor' -or $k -ceq 'remote.origin.partialclonefilter') { "$k=$($m[$k] -replace '\s+', ' ')" } else { $k }) }
+        $added = @($after.Keys | Where-Object { -not $Before.ContainsKey($_) } | Sort-Object | ForEach-Object { & $show $_ $after })
+        $changed = @($after.Keys | Where-Object { $Before.ContainsKey($_) -and $Before[$_] -cne $after[$_] } | Sort-Object | ForEach-Object { & $show $_ $after })
+        $removed = @($Before.Keys | Where-Object { -not $after.ContainsKey($_) } | Sort-Object | ForEach-Object { & $show $_ $Before })
+        if ($added.Count + $changed.Count + $removed.Count -eq 0) { return }
+        $parts = @(if ($added) { "додано: $($added -join ', ')" }; if ($changed) { "змінено: $($changed -join ', ')" }; if ($removed) { "прибрано: $($removed -join ', ')" })
+        Write-Log "копія задачі: наряд змінив спільний конфіг клону — $($parts -join '; ')"
+    } catch { Write-Log "копія задачі: зміни спільного конфігу клону не звірено — $($_.Exception.Message)" }
+}
+
 function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
     <# Тека задачі: `repo` — git worktree клону (спільні об'єкти й посилання) без тек-архівів, `tmp` — TEMP і TMP процесу
     наряду та його нащадків. Далі git і рушій працюють у копії ($RepoDir); повертає її шлях, закриває Close-TaskCopy. #>
     $repo = Join-Path $Dir 'repo'; $tmp = Join-Path $Dir 'tmp'
     [void][IO.Directory]::CreateDirectory($tmp)
-    $script:TaskCopy = @{ Dir = $Dir; Clone = $RepoDir; Temp = $env:TEMP; Tmp = $env:TMP }
+    $script:TaskCopy = @{ Dir = $Dir; Clone = $RepoDir; Temp = $env:TEMP; Tmp = $env:TMP; Config = $null }
     # id службової теки `.git\worktrees\<id>` — basename шляху, з яким worktree створено. З `repo` в усіх копіях id
     # повторюються між процесами: `worktree remove` одного процесу хвилинами знімає дерево (першим `.git`), а свою
     # службову теку стирає наприкінці; `worktree prune` іншого процесу в цей час уже вважає її осиротілою, новий `add`
@@ -1795,6 +1967,9 @@ function New-TaskCopy([string]$Dir, [string]$Commit, [string]$TaskText) {
         }
     } else { Write-Log "копія задачі: git до 2.36 — повна ($([string]$v.Value))"; $why = 'git до 2.36' }
     Set-CopyWorkTree $repo
+    # Знімок спільного конфігу клону — після власних змін обгортки (sparse-checkout вмикає `extensions.worktreeConfig`),
+    # тож Close-TaskCopy покаже лише те, що змінив наряд.
+    $script:TaskCopy.Config = Get-CloneConfig $script:TaskCopy.Clone 'до'
     [void](Invoke-CopyGit @('reset', '-q', '--hard') $repo)
     Set-Variable -Scope Script -Name RepoDir -Value $repo
     $env:TEMP = $tmp; $env:TMP = $tmp
@@ -1847,13 +2022,15 @@ function Get-TaskDirText([string]$TaskDir) {
 }
 
 function Close-TaskCopy([string[]]$Delivered) {
-    <# Після доставки: $RepoDir і TEMP/TMP — як до копії, копія — геть (Remove-TaskCopy). Повертає шлях теки, що
-    лишилась із недоставленими комітами, або ''. #>
+    <# Після доставки: $RepoDir і TEMP/TMP — як до копії, зміни спільного конфігу клону нарядом — у журнал
+    (Write-CloneConfigChange), копія — геть (Remove-TaskCopy). Повертає шлях теки, що лишилась із недоставленими комітами,
+    або ''. #>
     $c = $script:TaskCopy
     if ($null -eq $c) { return '' }
     $script:TaskCopy = $null
     Set-Variable -Scope Script -Name RepoDir -Value $c.Clone
     $env:TEMP = $c.Temp; $env:TMP = $c.Tmp
+    if ($null -ne $c.Config) { Write-CloneConfigChange $c.Config $c.Clone }
     Remove-TaskCopy $c.Dir $Delivered
 }
 

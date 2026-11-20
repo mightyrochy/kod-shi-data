@@ -107,6 +107,44 @@ try {
     Save-CodexRateLimits ([datetime]::UtcNow.AddHours(-1))
     Check 'старіший вимір не затирає новішого в quota-codex.json' ((Read-CodexQuota).read -ceq $newer)
 
+    # Вимір під час ходу (курсор журналу, Invoke-NativeUntilStall): кожне читання дочитує лише дописане; новий token_count оновлює
+    # quota-codex.json ще до кінця ходу; без нових рядків файл не переписується; зіпсований і недописаний рядок чисел не вигадують.
+    $keepHome = $env:CODEX_HOME
+    $ch2 = Join-Path $tmp 'codexhome-live'; $env:CODEX_HOME = $ch2
+    $day2 = Join-Path $ch2 'sessions/2026/11/20'; [void][IO.Directory]::CreateDirectory($day2)
+    $rf = Join-Path $day2 'rollout-live.jsonl'
+    $rate = {
+        param([double]$Used, [int]$AgoSeconds)
+        $t = [datetime]::UtcNow.AddSeconds(-$AgoSeconds).ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'")
+        '{"timestamp":"' + $t + '","type":"event_msg","payload":{"type":"token_count","info":null,"rate_limits":{"limit_id":"codex","primary":{"used_percent":' + $Used.ToString([cultureinfo]::InvariantCulture) + ',"window_minutes":300,"resets_at":' + ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 3600) + '},"secondary":{"used_percent":90,"window_minutes":10080,"resets_at":' + ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 86400) + '}}}}'
+    }
+    [IO.File]::WriteAllText($qf, '{"refused":"2026-11-20T09:00:00Z","reset":""}', $utf)
+    [IO.File]::WriteAllText($rf, ('{"type":"session_meta"}' + "`n" + (& $rate 70 1200) + "`n"), $utf)
+    $cur = New-CodexCursor ([datetime]::UtcNow.AddHours(-1))
+    Save-CodexRateLimits $cur.Since $cur
+    $q1 = Read-CodexQuota
+    Check 'хід триває: перше читання курсором кладе вимір у quota-codex.json (30 %), відмова лишається' ($q1.limits[0].windows[0].left -eq 30 -and $q1.refused -ceq '2026-11-20T09:00:00Z')
+    [IO.File]::AppendAllText($rf, ((& $rate 96 60) + "`n"), $utf)
+    Save-CodexRateLimits $cur.Since $cur
+    $q2 = Read-CodexQuota
+    Check 'хід триває: дописаний token_count оновлює квоту до кінця ходу (4 %), read новіший' ($q2.limits[0].windows[0].left -eq 4 -and [string]::CompareOrdinal([string]$q2.read, [string]$q1.read) -gt 0)
+    $old = [datetime]::new(2026, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)
+    [IO.File]::SetLastWriteTimeUtc($qf, $old)
+    Save-CodexRateLimits $cur.Since $cur
+    Check 'журнал без нових рядків: quota-codex.json не переписується' ([IO.File]::GetLastWriteTimeUtc($qf) -eq $old)
+    [IO.File]::AppendAllText($rf, ('{"token_count" "rate_limits" зіпсовано {{' + "`n" + ((& $rate 5 30) -replace '"used_percent":[0-9.]+', '"used_percent":"abc"') + "`n"), $utf)
+    Save-CodexRateLimits $cur.Since $cur
+    $q3 = Read-CodexQuota
+    Check 'зіпсований рядок і вікна без числа: не падає, чисел не вигадує, файл не переписано' ($q3.limits[0].windows[0].left -eq 4 -and @($q3.limits[0].windows).Count -eq 2 -and [IO.File]::GetLastWriteTimeUtc($qf) -eq $old)
+    $half = & $rate 40 20
+    [IO.File]::AppendAllText($rf, $half.Substring(0, 90), $utf)
+    Save-CodexRateLimits $cur.Since $cur
+    Check 'недописаний рядок чекає дописування: стан той самий' ((Read-CodexQuota).limits[0].windows[0].left -eq 4 -and [IO.File]::GetLastWriteTimeUtc($qf) -eq $old)
+    [IO.File]::AppendAllText($rf, ($half.Substring(90) + "`n"), $utf)
+    Save-CodexRateLimits $cur.Since $cur
+    Check 'дописаний рядок, обірваний між читаннями, читається цілим (60 %)' ((Read-CodexQuota).limits[0].windows[0].left -eq 60)
+    $env:CODEX_HOME = $keepHome
+
     # Поле часу з ConvertFrom-Json буває [datetime] (PowerShell 7 для кожного ISO-рядка, 5.1 — для `\/Date(мс)\/`): порівняння й
     # повторний запис мають бачити UTC-рядок з Z, а не формат культури чи місцевий час. Обидва типи — і напряму, і крізь файл.
     $inst = [datetime]::UtcNow.AddMinutes(-10)

@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\tmp\річ-311-база\джерела\прилади\корінь_річ_запис_речі.py", line 453, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\tmp\річ-311-база\джерела\прилади\корінь_річ_запис_речі.py", line 401, in main
+    прогін = Прогін(КОРІНЬ)
+             ^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\tmp\річ-311-база\джерела\прилади\корінь_річ_запис_речі.py", line 192, in __init__
+    self.модулі = {ім: importlib.import_module(ім) for ім in ('жниварка', 'виконавець', 'складальник', 'ricamare_сторінка')}
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\tmp\річ-311-база\джерела\прилади\корінь_річ_запис_речі.py", line 192, in <dictcomp>
+    self.модулі = {ім: importlib.import_module(ім) for ім in ('жниварка', 'виконавець', 'складальник', 'ricamare_сторінка')}
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\tmp\python311\Lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\tmp\річ-311-база\джерела\прилади\річ_запис_походження.py", line 413, in exec_module
+    дерево = Позначки(файл).visit(ast.parse(шлях.read_text(encoding='utf-8-sig'), filename=файл))
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\tmp\python311\Lib\pathlib.py", line 1058, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\gemini\gemini-runs\w\20261119-190415-ce7292fc6169\tmp\python311\Lib\pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\gemini\\gemini-runs\\w\\20261119-190415-ce7292fc6169\\tmp\\річ-311-база\\zhnyvarka\\жниварка.py'
