@@ -63,7 +63,7 @@ import документ_без_коду as д  # noqa: E402
     3475: ("д", "наряд"), 3474: ("д", "звіт CI-часу й наряд"), 3473: ("д", "наряди"), 3471: ("н", "МОДЕЛІ.md"),
     3470: ("н", "обгортка"), 3469: ("н", "обгортка"), 3468: ("н", "обгортка"), 3467: ("д", "рядки дошки"),
     3466: ("н", "хук і прилад"), 3465: ("н", "обгортка"), 3458: ("н", "обгортка"), 3455: ("н", "обгортка"),
-    3453: ("д", "паспорт"), 3448: ("н", "обгортка"),
+    3453: ("н", "паспорт і .py у теці-ідентифікаторі під аудит/проби (простір імен Python)"), 3448: ("н", "обгортка"),
 }
 
 
@@ -243,6 +243,59 @@ class Робочі(unittest.TestCase):
             self.assertFalse(д.шлях(зразок)[0], зразок)
 
 
+def теки_запуску():
+    """Теки під `аудит/`, з яких CI, хук, обгортка чи код виконують скрипти: тека скрипта й `working-directory`."""
+    файли = git("ls-files", "-z", "--", "джерела", ".github", ".claude", "zhnyvarka", "аудит/адаптери")
+    код = [ф for ф in файли.split("\0") if ф.endswith((".py", ".js", ".mjs", ".cjs", ".sh", ".ps1", ".psm1", ".yml",
+                                                         ".yaml", ".json"))]
+    код += [ф for ф in git("ls-files", "-z", "--", "аудит/проби").split("\0")
+            if ф.count("/") == 2 and ф.endswith((".py", ".js", ".mjs", ".cjs", ".sh"))]
+    запуск = re.compile(r"(?:python3?|py|node|sh|bash|pwsh|powershell)(?:\s+-\S+)*\s+[\"']?"
+                        r"(аудит[/\\][^\s\"'`]+?)\.(?:py|js|mjs|cjs|sh|ps1)\b")
+    тека = re.compile(r"(?:working-directory:|cwd=|chdir\(|Set-Location|cd)\s*[\"'(]*(аудит/[^\s\"'`)]+)")
+    теки = {}
+    for ф in код:
+        try:
+            with open(os.path.join(КОРІНЬ, ф), encoding="utf-8", errors="replace") as в:
+                текст = в.read()
+        except (IsADirectoryError, FileNotFoundError):
+            continue
+        for м in запуск.finditer(текст):
+            т = м.group(1).replace("\\", "/").rsplit("/", 1)[0]
+            if not set(т) & set("$<>{}()*?"):
+                теки.setdefault(т, ф)
+        for м in тека.finditer(текст):
+            т = м.group(1).rstrip("/")
+            if not set(т) & set("$<>{}()*?"):
+                теки.setdefault(т, ф)
+    return теки
+
+
+class ТекиЗапуску(unittest.TestCase):
+    """Простір імен Python: тека-ідентифікатор із `.py` одразу під текою, з якої виконують скрипт, — модуль для
+    `import`/`from … import`. Під кожною текою запуску такий шлях — «ні»: або тека в `ТЕКИ_ЗАПУСКУ`, або під нею
+    документів нема. Нова тека запуску з документами — червоний, доки її не внесено в `ТЕКИ_ЗАПУСКУ`."""
+
+    def test_теки_знайдено(self):
+        self.assertIn("аудит/проби", теки_запуску())
+
+    def test_під_текою_запуску_простір_імен_ні(self):
+        вади = [f"{т} ← {ф}" for т, ф in sorted(теки_запуску().items())
+                if д.шлях(f"{т}/yaml/loader.py")[0] or д.шлях(f"{т}/е3_звіт/x.py")[0]]
+        self.assertEqual(вади, [], "тека запуску, під якою простір імен — документ:\n" + "\n".join(вади))
+
+    def test_механіки(self):
+        """Кожна механіка — «ні» в кожній теці звітів і в дошці; тека звіту з дефісом — не ідентифікатор, «так»."""
+        for тека in д.ТЕКИ_ЗВІТІВ:
+            for п in ("node_modules/x/index.js", "звіт-1/node_modules/x/index.js", "звіт-1/__pycache__/a.cpython-311.pyc",
+                      "звіт-1/__init__.py", "звіт-1/__main__.py", "звіт-1/package.json", "звіт-1/a.pyc", "звіт-1/a.pyo",
+                      "звіт-1/a.so", "звіт-1/a.pyd", "звіт-1/a.node", "звіт-1/a.pth", "звіт-1/__INIT__.PY"):
+                self.assertFalse(д.шлях(f"аудит/{тека}/{п}")[0], f"аудит/{тека}/{п}")
+        self.assertTrue(д.шлях("аудит/проби/звіт-1211/x/y/проба.py")[0])
+        self.assertFalse(д.шлях("аудит/проби/звіт_1211/x/y/проба.py")[0])
+        self.assertFalse(д.шлях("аудит/проби/yaml./loader.py")[0])
+
+
 class Рішення(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -315,6 +368,13 @@ class Рішення(unittest.TestCase):
 
     def test_закритий(self):
         self.не_зливати(lambda п: п["pr"].update(state="closed"), "не відкритий")
+
+    def test_гілка_copilot(self):
+        self.не_зливати(lambda п: п["pr"]["head"].update(ref="copilot/x"), "гілка голови copilot/x")
+
+    def test_гілки_сесій_зливати(self):
+        for гілка in ("claude/x", "менеджер/x", "gemini/x"):
+            self.злити(lambda п, г=гілка: п["pr"]["head"].update(ref=г))
 
     def test_червоний_запуск(self):
         self.не_зливати(lambda п: п["запуски"][2].update(conclusion="failure"), "khrapovyk.yml: failure")
