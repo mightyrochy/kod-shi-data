@@ -264,10 +264,10 @@ class Спостерігач:
         зн = функція(*арг, **ключі)
         if ім == 'BeautifulSoup' and арг and isinstance(арг[0], HTML):
             self.дерево(зн)
-        if ім in ('get_text', 'get', '__getitem__') and id(власник) in self.вузли:
+        if (ім in ('get_text', 'get', '__getitem__') and id(власник) in self.вузли
+                and (ім == 'get_text' or (арг and арг[0] not in ('class', 'id', 'style', 'itemtype', 'itemprop')))):
             # Клас, id та стилі — будова сторінки; слова — текст, title, content, value, alt.
-            if ім == 'get_text' or (арг and арг[0] not in ('class', 'id', 'style', 'itemtype', 'itemprop')):
-                return позначити(зн, self.від_вузла(файл, рядок, власник))
+            return позначити(зн, self.від_вузла(файл, рядок, власник))
         if функція is json.loads and арг and походження(арг[0]):
             return self.json_листки(зн, походження(арг[0]))
         if ім in ('мета_теги', 'ог') and isinstance(зн, dict):
