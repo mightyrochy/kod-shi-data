@@ -781,7 +781,7 @@ def _дрес_код(v):
     к = код("dress_code", v)
     if к != v:
         return к
-    for ключ, (підпис, _нота) in (_ПО.ДОВІДНИК_ПІДПИСИ.get("коди") or {}).items():
+    for ключ, (підпис, _) in (_ПО.ДОВІДНИК_ПІДПИСИ.get("коди") or {}).items():
         if v == підпис:
             return код("dress_code", ключ)
     return v

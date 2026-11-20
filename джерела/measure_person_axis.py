@@ -75,7 +75,7 @@ def main():
 
     def пройшло(рядки_запиту):
         """множина id, що проходять ХОЧ ОДИН рядок запиту свого слота; і по осях — чому відкинуто"""
-        ok = set(); чому = Counter()
+        ok = set()
         за_слотом = defaultdict(set)
         for q in рядки_запиту:
             if not isinstance(q, dict) or q.get("L_min") is None: continue
