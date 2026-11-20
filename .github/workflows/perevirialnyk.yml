@@ -46,7 +46,7 @@ jobs:
           python-version: '3.11'
 
       - name: ruff закріпленої версії
-        run: python3 -m pip install --quiet --only-binary=:all: --require-hashes -r .github/requirements/ruff.txt
+        run: 'python3 -m pip install --quiet --only-binary=:all: --require-hashes -r .github/requirements/ruff.txt'
 
       - name: правила з переліку — 0 спрацювань у джерела/*.py
         run: |
