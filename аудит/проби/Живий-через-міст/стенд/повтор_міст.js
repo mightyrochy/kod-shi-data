@@ -7,13 +7,15 @@ const джерело = fs.readFileSync(path.join(__dirname, '../../живий-я
 // Спільне визначення доступних на екрані елементів; жодного виклику моделі-жінки.
 const екран = eval('(' + джерело.slice(джерело.indexOf('async function екран('), джерело.indexOf('const {знімокРук')).trim() + ')');
 const ситуація = process.argv[2], вихід = path.resolve(process.argv[3]), порт = Number(process.argv[4]);
-const перший = path.resolve(__dirname, '../../живий-як-людина-3', ситуація);
+const перший = path.resolve(__dirname, '../../живий-як-людина-3', process.env.SCENE_BASE || ситуація);
 const тека = path.join(вихід, ситуація), службове = path.join(вихід, 'стенд/службове', ситуація);
 for (const p of [тека, службове, path.join(тека, 'знімки')]) fs.mkdirSync(p, {recursive:true});
 fs.copyFileSync(path.join(перший,'ситуація.md'),path.join(тека,'ситуація.md'));
 const сон = n => new Promise(r=>setTimeout(r,n));
 const запис = (name, text) => fs.appendFileSync(path.join(тека,name),text+'\n');
+const СЛОВА_СЦЕНИ = process.env.SCENE_WORDS || null;
 const дії = [...fs.readFileSync(path.join(перший,'хід.md'),'utf8').matchAll(/### (\d+) ·[^\n]*\n([\s\S]*?)(?=\n### |$)/g)].map(m=>({крок:Number(m[1]),текст:(m[2].match(/^- дія: ([\s\S]*?)(?=\n\n|$)/m)||[])[1]})).filter(x=>x.текст);
+if(СЛОВА_СЦЕНИ){const р=дії.findIndex(x=>/^надрукувала в «поле для тексту: підказка: Напиши, як подрузі/.test(x.текст));if(р<0){console.error('нема кроку з нагодою');process.exit(3);}дії[р].текст=дії[р].текст.replace(/»: «[\s\S]*»$/,'»: «'+СЛОВА_СЦЕНИ.replace(/\$/g,'$$$$')+'»');}
 if(process.env.REPLAY_PLAN){console.log(JSON.stringify({ситуація,дій:дії.length,слова:дії.filter(x=>x.текст.startsWith('надрукувала в ')),новий:дії.filter(x=>x.текст==='натиснула «кнопка: Новий»')}));process.exit(0);}
 let браузер, стор, активні=0, останнійВиклик=0, крок=0, прохід=1, слів=0, пропущено=0, блокер=null;
 const summary={ситуація,початок:new Date().toISOString(),слова:[],розбіжності:[],руки:[]};
@@ -127,6 +129,7 @@ async function головна(){
           const тип=await знайдено.лок.evaluate(x=>x.tagName+':'+(x.type||''));
           if(!/INPUT:file/.test(тип))await знайдено.лок.click();
           if(мітка==='кнопка: Новий')прохід++;
+          if(process.env.SCENE_STOP_AFTER_COLLECT && мітка==='кнопка: Зібрати образи'){ляг(дія,true);await сон(5000);await спокій();await кадр('сцена: після збирання образів — один прохід',true);break;}
         }
         ляг(дія,true);
       }catch(e){
