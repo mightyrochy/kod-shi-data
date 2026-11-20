@@ -1,0 +1,37 @@
+── ПРОМПТ (2473 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend coat, tailored straight cut, hip-length (mid-thigh), charcoal gray #2F353B, heavy wool with a brushed interior.\nCotton sweater, relaxed boatneck silhouette, hip-length body with long sleeves, cream white #FFFDD0, fine-gauge knit for warmth against the frost.\nHigh-waisted denim jeans, classic straight-leg fit, full length reaching the ankle, deep indigo #191970, durable stone-wash cotton to handle the snowy conditions without showing salt stains.\nChunky leather-look sneakers, robust boxy design with a thick tread sole, matte black #1C1C1C, water-resistant synthetic upper designed to keep feet dry and warm while walking on snow-covered, salted paths.\n\nThis outfit works because it prioritizes genuine warmth and safety against the harsh winter conditions of frost and snow, ensuring her comfort during a twenty-minute walk. The neutral palette of charcoal, cream, and deep indigo harmonizes beautifully with her warm skin tones and dark hair, creating a cohesive look that feels intentional rather than just bundled up. While denim is technically everyday wear, this specific construction elevates the silhouette to meet the practical needs of a frosty autumn day without sacrificing style or comfort."}
+
+── ВІДПОВІДЬ (893 симв., 5.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "coat",
+      "details": "tailored straight cut hip-length mid-thigh heavy wool with brushed interior",
+      "slot": "outerwear",
+      "color_hex": "#2F353B",
+      "worn": true
+    },
+    {
+      "name": "sweater",
+      "details": "relaxed boatneck silhouette hip-length body with long sleeves fine-gauge knit",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "jeans",
+      "details": "high-waisted classic straight-leg fit full length reaching ankle durable stone-wash cotton",
+      "slot": "bottom",
+      "color_hex": "#191970",
+      "worn": true
+    },
+    {
+      "name": "sneakers",
+      "details": "chunky leather-look robust boxy design thick tread sole water-resistant synthetic upper",
+      "slot": "shoes",
+      "color_hex": "#1C1C1C",
+      "worn": true
+    }
+  ]
+}

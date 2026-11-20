@@ -1,0 +1,54 @@
+── ПРОМПТ (6178 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: dress_generic · about it: text н=1
+2 — kind: necklace · about it: text н=2
+3 — kind: pumps · about it: text н=3
+4 — kind: blazer · about it: text н=4
+5 — kind: bag_generic · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This dress is here because its level fits the theatre evening perfectly and its colour belongs in your palette, offering a solid base that works for your figure.",
+"2": "I selected this necklace to match your palette, adding a touch of refinement that complements the dress without overpowering it.",
+"3": "The pumps are included because their formality suits the theatre outing and their colour is within your palette, giving you steadiness underfoot.",
+"4": "This blazer sits here as my deliberate choice to add structure; though it carries a different scheme family than the main block items, I kept it to give you that extra edge for the evening.",
+"5": "The bag rounds out the look with its palette-matching tone, ensuring every carry feels complete for your night out.",
+"6": "For your evening at the theatre, I chose this ensemble because the dress anchors your figure while the blazer adds a structured layer perfect for the occasion. The necklace and bag complete the palette with quiet elegance, ensuring you feel both ready for the play and confident on your way there.",
+"7": "Keep the blazer slightly open to show the dress line without adding bulk.",
+"8": "Let the pumps guide your step with a steady rhythm through the hallways.",
+"9": "Приталений жакет із вовни з шовковою підкладкою — Added a large blue item to satisfy the triad scheme requirement, carrying the missing 'blue' family on a large item (blazer) as permitted by her chosen palette scheme.",
+"10": "Перлинне намисто зі срібною застібкою, Чорні туфлі-човники на шпильці зі шкіри — Although this bag carries a higher price point per combination relative to its slot, I accept it here because it acts as a necessary 'shine' anchor that balances the dark velvet and absorbs the artificial light, preventing the look from appearing flat or overly heavy."
+}
+
+── ВІДПОВІДЬ (1797 симв., 14.8 с, HTTP 200) ──
+```json
+{
+"1": "Ця сукня тут тому, що її рівень ідеально підходить для вечірнього театру, а колір вписується у твою палітру, пропонуючи міцну основу, яка личить твоїй фігурі.",
+"2": "Я обрала цю підвіску, щоб вона гармоніювала з твоєю палітрою, додаючи нотку вишуканості, що доповнює сукню без перевантаження її.",
+"3": "Туфлі-човники включені тому, що їхня формальність відповідає театральному заходу, а колір знаходиться у твоїй палітрі, даруючи тобі стійкість під ногами.",
+"4": "Цей жакет тут як мій свідомий вибір додати структуру; хоча він має іншу сімейку кольору, ніж основні елементи образу, я залишила його, щоб ти отримала додатковий акцент на вечір.",
+"5": "Сумка завершує образ своїм тоном, що відповідає палітрі, забезпечуючи відчуття повноти під час твого виходу в світ.",
+"6": "Для твого вечора у театрі я обрала цей ансамбль тому, що сукня підкреслює твою фігуру, а жакет додає структурований шар, ідеальний для цієї нагоди. Підвіска та сумка завершують палітру тихою елегантністю, забезпечуючи тобі відчуття готовності до вистави та впевненості дорогою туди.",
+"7": "Залиш жакет трохи розстебнутим, щоб показати лінію сукні без зайвого об’єму.",
+"8": "Нехай туфлі-човники направляють твій крок рівним ритмом по коридорах.",
+"9": "Приталений жакет із вовни з шовковою підкладкою — Додала великий блакитний елемент, щоб задовольнити вимогу триадної схеми, перенісши відсутню «блакитну» сімейку на великий предмет (жакет), як це дозволено її обраною схемою палітри.",
+"10": "Перлинне намисто зі срібною застібкою, Чорні туфлі-човники на шпильці зі шкіри — Хоча ця сумка має вищу ціну відносно свого слоту, я приймаю її тут тому, що вона діє як необхідний «блиск», який збалансовує темний оксамит і поглинає штучне світло, запобігаючи появі образу плоским або надмірно важким."
+}
+```
