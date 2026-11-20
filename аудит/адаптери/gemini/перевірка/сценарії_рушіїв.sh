@@ -43,6 +43,17 @@ case_ cascade-code-stays "X=1"                abandon_then_done gemini-3.5-flash
 EXTRA='{"EnableCodex":true,"CodexFallbackModel":"gpt-6.1-sol-high"}' case_ cascade-design-claude "FAKE_USAGE=proclaude" abandon_then_done gemini-3.1-pro-high 'МОДЕЛЬ claude-opus-5-5-high'
 EXTRA='{"EnableCodex":true,"CodexFallbackModel":"gpt-6.1-sol-high"}' case_ cascade-design-codex  "FAKE_USAGE=ok"        abandon_then_done gemini-3.1-pro-high 'МОДЕЛЬ gpt-6.1-sol-high'
 case_ cascade-design-none "FAKE_USAGE=ok" abandon_then_done gemini-3.1-pro-high 'QUOTA0_GEMINI31PRO'
+# Пауза Codex (codex_pause_until у ланцюг.json на origin/main, Test-CodexPause): каскад agy не додає запасний Codex; позначка чекає
+# скидання пулу (QUOTA0), а не витрачає Codex. Явна модель Codex (нічний) пауза не чіпає; пауза минула — каскад як без неї.
+FB='{"EnableCodex":true,"CodexFallbackModel":"gpt-6.1-sol-high"}'
+CHAIN_JSON='{"v":1,"codex_pause_until":"2099-01-01T00:00:00Z"}' EXTRA="$FB" case_ pause-no-codex-cascade "FAKE_USAGE=flash0" abandon_then_done gemini-3.5-flash 'QUOTA0_GEMINI35FLASH'
+CHAIN_JSON='{"v":1,"codex_pause_until":"2099-01-01T00:00:00Z"}' EXTRA="$FB" case_ pause-no-codex-design "FAKE_USAGE=ok" abandon_then_done gemini-3.1-pro-high 'QUOTA0_GEMINI31PRO'
+CHAIN_JSON='{"v":1,"codex_pause_until":"2099-01-01T00:00:00Z"}' EXTRA="$FB" case_ pause-codex-label "X=1" abandon_then_done gpt-6.1-sol-high 'ГОТОВО gemini/М.2-проба-обгортки'
+CHAIN_JSON='{"v":1,"codex_pause_until":"2020-01-01T00:00:00Z"}' EXTRA="$FB" case_ pause-expired-cascade "FAKE_USAGE=flash0" abandon_then_done gemini-3.5-flash 'МОДЕЛЬ gpt-6.1-sol-high'
+CHAIN_JSON='{"v":1,"codex_pause_until":null}' EXTRA="$FB" case_ pause-null-cascade "FAKE_USAGE=flash0" abandon_then_done gemini-3.5-flash 'МОДЕЛЬ gpt-6.1-sol-high'
+CHAIN_JSON='{"v":1,"codex_pause_until":"завтра"}' EXTRA="$FB" case_ pause-invalid-no-codex "FAKE_USAGE=flash0" abandon_then_done gemini-3.5-flash 'QUOTA0_GEMINI35FLASH'
+grep -q 'CHAIN_CONFIG' "${TMPDIR:-/tmp}/gemini-obhortka/m9v-pause-invalid-no-codex/runs/wrapper.log" && echo "ok   pause-invalid-log" || { echo "FAIL pause-invalid-log: збою нема в журналі"; bad=1; }
+grep -q 'пауза Codex: діє до' "${TMPDIR:-/tmp}/gemini-obhortka/m9v-pause-no-codex-cascade/runs/wrapper.log" && echo "ok   pause-log" || { echo "FAIL pause-log: рядка паузи нема в журналі"; bad=1; }
 # /usage: формат табів, версійна брама
 case_ usage-tsv    "FAKE_USAGE=tsv"       abandon_then_done gemini-3.5-flash 'КВОТА GEMINI35FLASH 34'
 case_ usage-nohdr  "FAKE_USAGE=tsv_nohdr" abandon_then_done gemini-3.5-flash 'ГОТОВО gemini/М.2-проба-обгортки'

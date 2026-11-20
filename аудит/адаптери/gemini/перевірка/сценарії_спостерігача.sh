@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Стенд спостерігача М.9-Б без Windows (pwsh 7, git, python3): локальний «origin», підробний gh (fake_gh.py).
-# 11 сценаріїв: базова лінія, коментарі, CI, перенос, відмови переносу, ворожі назви, збій gh, ліміт рядків, формат теки.
+# 12 сценаріїв: базова лінія, коментарі, CI, перенос, відмови переносу, ворожі назви, збій gh, ліміт рядків, ETag, формат теки.
 # Кожен рядок теки перевіряється за шаблонами наряду. pwsh — змінна PWSH.
 H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
 BAD=0
@@ -69,7 +69,7 @@ step() {
   COUNT=$(n)
   case "${W##*/}:$1" in
     'w2:нові'|'w2:правка двох'|'w4:відповідь бота'|'w5:правка bad -> ok: переноситься'|'w5:TOO_BIG'|'w5b:хеш файлу інший'|'w8:прохід 1'|'w8:прохід 2') WANT=2 ;;
-    'w3:failure поверх success'|'w3:нова голова, cancelled'|'w5:diff від не-бота: лише коментар власника'|'w5:відповідь бота без diff: лише коментар'|'w7:gh знову працює'|'w8:прохід 3') WANT=1 ;;
+    'w3:failure поверх success'|'w10:200 з новим ETag: failure'|'w10:перезапуск того ж SHA: success'|'w3:нова голова, cancelled'|'w5:diff від не-бота: лише коментар власника'|'w5:відповідь бота без diff: лише коментар'|'w7:gh знову працює'|'w8:прохід 3') WANT=1 ;;
     'w5:вісім поганих diff') WANT=16 ;;
     'w5b:обрізаний і без хешів'|"w6:п'ять ворожих PR") WANT=4 ;;
   esac
@@ -151,7 +151,26 @@ echo "=== 7 збій gh: код 1, рядків нема, стан не прос
 export FAKE_GH_FAIL=1; watch 2>&1 | grep -q "код виходу: 1" && echo "  ✓ gh не відповідає -> код виходу 1" || echo "  ✗ код виходу не 1"; echo "  рядків: $(n)"; export FAKE_GH_FAIL=; step "gh знову працює"
 echo "=== 8 ліміт рядків: 5 нових коментарів при MaxRows 2 -> 3 проходи, без дублів"; setup w8; step "базова лінія"
 for i in 1 2 3 4 5; do cmt 963 80$i mightyrochy -30; done; step "прохід 1" -MaxRows 2; step "прохід 2" -MaxRows 2; step "прохід 3" -MaxRows 2; step "прохід 4" -MaxRows 2
-echo "=== 9 формат теки вихідних для всього, що було у w2..w8"
-for s in w2 w3 w4 w5 w5b w6 w7 w8; do W="${TMPDIR:-/tmp}/gemini-watch/$s"; printf '  %s: ' $s; check_format | tail -1; done
+echo "=== 10 ETag: 304 -> збережене тіло без рядків; 200 з новим ETag -> рядок; зниклий PR -> кеш прибрано; невідомий статус -> збій"; setup w10
+EL="$W/fake/etag.log"; SJ="$W/work/state.json"
+elog() { grep -c "^$1 " "$EL" || true; }
+expect() { if [ "$2" = "$3" ]; then echo "  ✓ $1: $2"; else echo "  ✗ $1: $2 (очікувано $3)"; BAD=1; fi; }
+pulls "[1801,mightyrochy,$HEAD0,codex/$SLUG]" "[1802,mightyrochy,$(sha a),claude/x]"; checks "$(sha a)" completed success
+: > "$EL"; step "базова лінія"; expect "відповідей 200/304" "$(elog 200)/$(elog 304)" "3/0"
+: > "$EL"; step "304 -> збережене тіло, рядків 0"; expect "відповідей 200/304 (pulls і два check-runs)" "$(elog 200)/$(elog 304)" "0/3"
+checks "$(sha a)" completed failure; : > "$EL"; step "200 з новим ETag: failure"; expect "відповідей 200/304" "$(elog 200)/$(elog 304)" "1/2"
+: > "$EL"; step "після failure без змін"; expect "відповідей 200/304" "$(elog 200)/$(elog 304)" "0/3"
+checks "$(sha a)" completed success; : > "$EL"; step "перезапуск того ж SHA: success"; expect "відповідей 200/304" "$(elog 200)/$(elog 304)" "1/2"
+pulls "[1801,mightyrochy,$HEAD0,codex/$SLUG]"; : > "$EL"; step "PR 1802 закрито: кеш прибрано"
+expect "записів кешу закритого PR 1802 у стані" "$(grep -o "commits/$(sha a)/" "$SJ" | wc -l)" 0
+expect "записів кешу відкритого PR 1801 у стані (ETag і тіло)" "$(grep -o "commits/$HEAD0/" "$SJ" | wc -l)" 2
+sed -i 's/"_cachever":"1"/"_cachever":"0"/' "$SJ"; : > "$EL"; step "інша версія кешу: усе заново"; expect "відповідей 200/304" "$(elog 200)/$(elog 304)" "2/0"
+SUM=$(md5sum < "$SJ")
+for code in 500 202; do export FAKE_GH_STATUS=$code; watch 2>&1 | grep -q "код виходу: 1" && echo "  ✓ статус $code -> код виходу 1" || echo "  ✗ статус $code: не збій"; done
+export FAKE_GH_STATUS=; [ "$(md5sum < "$SJ")" = "$SUM" ] && echo "  ✓ стан не просунувся після збоїв" || { echo "  ✗ стан змінився після збою"; BAD=1; }
+echo "  рядків після збоїв: $(n)"
+setup w10b; export FAKE_GH_STATUS=304; watch 2>&1 | grep -q "код виходу: 1" && echo "  ✓ 304 без If-None-Match -> код виходу 1" || { echo "  ✗ 304 без умовного запиту прийнято"; BAD=1; }; export FAKE_GH_STATUS=
+echo "=== 9 формат теки вихідних для всього, що було у w2..w10"
+for s in w2 w3 w4 w5 w5b w6 w7 w8 w10; do W="${TMPDIR:-/tmp}/gemini-watch/$s"; printf '  %s: ' $s; check_format | tail -1; done
 
 exit "$BAD"
