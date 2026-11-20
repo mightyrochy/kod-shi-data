@@ -151,7 +151,7 @@ def виконані_рядки(рядки_ID=None):
                     import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
                     if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
                     pass
-        for _чому, речі in образи:
+        for _, речі in образи:
             for с in СЦЕНИ_ОБРАЗУ:
                 try:
                     pipeline.перевірити_образ(F2, [dict(r) for r in речі],
