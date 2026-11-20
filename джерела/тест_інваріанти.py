@@ -337,7 +337,8 @@ class Е2_ОпораПояснення(unittest.TestCase):
 )
 
 
-def load_tests(loader, tests, pattern):
+def набір_тестів(loader, tests, pattern):
+    """Протокол `load_tests` unittest: набір із переліку ТЕСТИ, звірений з тим, що знайшов завантажувач."""
     набір = unittest.TestSuite(globals()[т.__qualname__.split(".")[0]](т.__name__) for т in ТЕСТИ)
     знайдені = set()
     стос = [tests]
@@ -352,6 +353,9 @@ def load_tests(loader, tests, pattern):
         raise RuntimeError("тести поза переліком ТЕСТИ: %s; у переліку, але нема: %s"
                            % (sorted(знайдені - названі), sorted(названі - знайдені)))
     return набір
+
+
+load_tests = набір_тестів
 
 
 if __name__ == "__main__":
