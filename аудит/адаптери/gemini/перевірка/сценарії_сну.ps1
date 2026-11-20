@@ -505,7 +505,7 @@ try {
             $script:LightHeld = $false; $script:LightDisplay = $false; $script:LightRefused = $false
             $ev = Tick $false
             [pscustomobject]@{Name="на мережі запит тримається заздалегідь, рядків нема: $ev";Ok=($ev -ceq 'тримання True' -and $script:LightHeld -and @(Get-Outbox).Count -eq 0)}
-            [pscustomobject]@{Name="на мережі лише «система потрібна» — без дисплея, дисплей гасне за схемою Windows: $ev";Ok=($ev -cnotmatch 'дисплеєм' -and -not $script:LightDisplay -and $script:Log[-1] -cmatch 'мережа, запит «система потрібна» \(дисплей — за схемою Windows\) тримається$')}
+            [pscustomobject]@{Name="на мережі лише «система потрібна» — без дисплея, дисплей гасне за схемою Windows: $ev";Ok=($ev -cnotmatch 'дисплеєм' -and -not $script:LightDisplay -and $script:Log[-1] -cmatch 'мережа, GPU вільна — запит «система потрібна» \(дисплей — за схемою Windows\) тримається$')}
             $ev = Tick $false
             [pscustomobject]@{Name="другий такт на мережі запиту не чіпає: '$ev'";Ok=($ev -ceq '' -and $script:LightHeld)}
             $script:WaitDisplay = $null
@@ -543,6 +543,39 @@ try {
             Set-LightHold $true $true
             $ev = Tick $false
             [pscustomobject]@{Name="повернення світла з запитом із дисплеєм — знову лише система, без паузи запиту: $ev";Ok=($ev -ceq 'тримання True' -and $script:LightHeld -and -not $script:LightDisplay)}
+            Set-LightHold $false
+            # Екран за замком GPU: живу оренду GPU-наряду читає тримач тим самим кодом, що смуги (запис сесії й замок оренди).
+            $sessPath = Join-Path $LaneDir 'gpu-models.json'
+            $sess = '{"v":2,"before":[{"id":"owner","model":"m1"}],"leases":[{"run":"r1","marker":"наряд-1","join":["owner"],"done":false}],"dirty":false}'
+            [void][IO.Directory]::CreateDirectory($LaneDir)
+            [IO.File]::WriteAllText($sessPath, $sess)
+            $leaseLock = Open-Lock (Get-GpuLeaseLockPath 'r1')
+            $ev = Tick $false; $n1 = $script:Log.Count
+            [pscustomobject]@{Name="мережа, оренда GPU жива — запит із дисплеєм, один рядок: $ev; $($script:Log -join ' / ')";Ok=($ev -ceq 'тримання True з дисплеєм' -and $script:LightHeld -and $script:LightDisplay -and $n1 -eq 1 -and $script:Log[-1] -cmatch 'мережа, GPU зайнята \(наряд-1\) — запит «система й дисплей потрібні» тримається$')}
+            $ev = Tick $false
+            [pscustomobject]@{Name="друга секунда зайнятої GPU — запиту й рядка нема: '$ev'; рядків $($script:Log.Count)";Ok=($ev -ceq '' -and $script:LightDisplay -and $script:Log.Count -eq 0)}
+            $leaseLock.Dispose()
+            $ev = Tick $false
+            [pscustomobject]@{Name="мережа, оренда мертва (замок відпущено) — знову лише система, один рядок: $ev; $($script:Log -join ' / ')";Ok=($ev -ceq 'тримання True' -and $script:LightHeld -and -not $script:LightDisplay -and $script:Log.Count -eq 1 -and $script:Log[-1] -cmatch 'мережа, GPU вільна — запит «система потрібна»')}
+            $ev = Tick $false
+            [pscustomobject]@{Name="друга секунда вільної GPU — запиту й рядка нема: '$ev'";Ok=($ev -ceq '' -and -not $script:LightDisplay -and $script:Log.Count -eq 0)}
+            $leaseLock = Open-Lock (Get-GpuLeaseLockPath 'r1')
+            $ev = Tick $false
+            [pscustomobject]@{Name="вільна → зайнята знову — дисплей додано, один рядок: $ev";Ok=($ev -ceq 'тримання True з дисплеєм' -and $script:LightDisplay -and $script:Log.Count -eq 1)}
+            $script:Battery = @($true); $script:Events.Clear(); $script:Log.Clear(); $script:Deliver = $ok
+            Step-Light
+            $ev = $script:Events -join ' | '
+            [pscustomobject]@{Name="перехід на батарею за зайнятої GPU — дисплей уже є, запит не міняється до кінця доставки: $ev";Ok=($ev -ceq 'доставка-чекання 1 | тримання False' -and -not $script:LightHeld)}
+            Clear-Box
+            $ev = Tick $false
+            [pscustomobject]@{Name="світло повернулось за зайнятої GPU — запит із дисплеєм: $ev";Ok=($ev -ceq 'тримання True з дисплеєм' -and $script:LightDisplay)}
+            $leaseLock.Dispose(); Remove-Item -LiteralPath $sessPath -Force
+            $ev = Tick $false
+            [pscustomobject]@{Name="сесію закрито — знову лише система: $ev";Ok=($ev -ceq 'тримання True' -and -not $script:LightDisplay)}
+            [IO.File]::WriteAllText($sessPath, '{"v":2}')
+            $ev = Tick $false
+            [pscustomobject]@{Name="запис сесії нечитаний — GPU не вільна, дисплей і причина в журналі: $ev; $($script:Log -join ' / ')";Ok=($ev -ceq 'тримання True з дисплеєм' -and $script:Log.Count -eq 1 -and $script:Log[-1] -cmatch 'GPU зайнята \(запис GPU-сесії нечитаний: ')}
+            Remove-Item -LiteralPath $sessPath -Force
             Set-LightHold $false
             $script:Refuse = $true; $script:LightRefused = $false
             $ev = Tick $false
