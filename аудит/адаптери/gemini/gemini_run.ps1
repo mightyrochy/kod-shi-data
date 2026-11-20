@@ -753,15 +753,39 @@ $TaskText
 "@
 }
 
-function Get-Facts($M, [string]$Start) {
+function Get-Facts($M, [string]$Start, [string]$Dir = '', [switch]$RefsOnly) {
+    <# Факти гілки наряду: голова, коміти поверх $Start, а в робочому дереві — чи воно на гілці й скільки в ньому незакомічених
+    файлів. Дерево — $Dir (копія задачі), без нього $RepoDir: у процесі наряду це вже копія, а клон планувальника робочого
+    дерева не має (`git status` у ньому падає), тож планувальник називає копію прогону (Get-RunCopyRepo). Посилання й
+    об'єкти копії й клону спільні. $RefsOnly — лише голова й коміти, коли копії вже нема: OnBranch тоді $false, Dirty -1. #>
     $branchRef = "refs/heads/gemini/$($M.Slug)"
     $head = Get-RefSha $branchRef
-    $cur = (Invoke-Git @('symbolic-ref', '-q', 'HEAD') -AllowFail).Out.Trim()
-    $st = (Invoke-Git @('status', '--porcelain', '-z', '--untracked-files=normal')).Out
-    $dirty = @($st -split "`0" | Where-Object { $_ }).Count
+    $cur = ''; $dirty = -1
+    if (-not $RefsOnly) {
+        $cur = (Invoke-Git @('symbolic-ref', '-q', 'HEAD') -AllowFail -Dir $Dir).Out.Trim()
+        $st = (Invoke-Git @('status', '--porcelain', '-z', '--untracked-files=normal') -Dir $Dir).Out
+        $dirty = @($st -split "`0" | Where-Object { $_ }).Count
+    }
     $ahead = 0
     if ($head) { $ahead = [int](Invoke-Git @('rev-list', '--count', "$Start..$head")).Out.Trim() }
     [pscustomobject]@{ Head = $head; OnBranch = ($cur -eq $branchRef); Dirty = $dirty; Ahead = $ahead }
+}
+
+function Get-RunCopyRepo([string]$Id) {
+    <# Робоче дерево копії задачі прогону (`$RunsDir/w/<id>/repo`) чи '', коли копії вже нема. #>
+    if (-not $Id) { return '' }
+    $repo = Join-Path (Join-Path (Join-Path $RunsDir 'w') $Id) 'repo'
+    if (Test-Path -LiteralPath (Join-Path $repo '.git')) { $repo } else { '' }
+}
+
+function Hold-RunCopy([string]$Id, [string]$Why) {
+    <# Копія задачі прогону лишається для відновлення: `kept.txt` з причиною (Clear-TaskCopies такі теки не чіпає) і рядок
+    журналу. Копії нема — лише рядок журналу. #>
+    $dir = Join-Path (Join-Path $RunsDir 'w') $Id
+    if (Test-Path -LiteralPath $dir -PathType Container) {
+        try { [IO.File]::WriteAllText((Join-Path $dir 'kept.txt'), "$Why`n", $script:Utf8) } catch { Write-Log "kept.txt копії ${dir}: $($_.Exception.Message)" }
+    }
+    Write-Log "копія задачі $dir лишається: $Why"
 }
 
 # Рядок звіту без Markdown-обрамлення (`**…**`, зворотні лапки): єдине правило приймання звіту й пошуку його
@@ -1303,11 +1327,14 @@ function Write-RunCause([string]$Id, [string]$Code, $Cause) {
 # finally. Це той самий кінець, що й STARTED без живого процесу (Resume-Interrupted): INTERRUPTED, бандл зробленого й
 # повтор після вимкнення в публікатора, а не «невідомий код» без назви наряду.
 function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$T0, [string]$Why = '', [string]$EngineError = '') {
+    $script:BundleError = ''
     if (-not $Status.code) { $Status.code = 'INTERRUPTED' }
     try {
         if ($Status.start) {
             $slugObj = [pscustomobject]@{ Slug = $Status.slug }
-            $f = Get-Facts $slugObj $Status.start
+            # Факти — з копії прогону (там робоче дерево); копії вже нема — лише посилання. Бандл будується з клону: гілка спільна.
+            $copyRepo = Get-RunCopyRepo ([string]$Status.id)
+            $f = Get-Facts $slugObj $Status.start $copyRepo -RefsOnly:(-not $copyRepo)
             $Status.head = $f.Head
             $Status.ahead = $f.Ahead
             if ($f.Ahead -gt 0) {
@@ -1322,9 +1349,16 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
         }
     } catch {
         Write-Log "бандл: $($_.Exception.Message)"
+        # Збій чи непрочитані факти — зроблене лишилось лише в гілці й копії: кінець це каже, копію не прибирають
+        # ($script:BundleError читають Close-StoppedRun і Resume-Interrupted).
+        $script:BundleError = Get-FailReason $_
         if ($Status.code -in @('DONE', 'BLOCKED')) {
             $Status.code = 'CRASH'
             Add-CrashNote (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($Status.slug)" ('бандл: ' + (Get-FailReason $_))
+        } elseif ($Status.code -in @('STALL', 'CANCELLED')) {
+            $copy = Join-Path (Join-Path $RunsDir 'w') ([string]$Status.id)
+            $Status.reason = ConvertTo-NoteText "$($Status.code): копія $copy лишилась для відновлення — бандл не створено ($script:BundleError); $($Status.reason)"
+            $Status.code = 'RECORD_FAILED'
         }
     }
     if ($T0 -ne [datetime]::MinValue) { $Status.minutes = [int][Math]::Round(((Get-Date) - $T0).TotalMinutes) }
@@ -1404,6 +1438,7 @@ function Resume-Interrupted {
         $status.code = 'INTERRUPTED'
         Write-Log "прогін $($status.id) перервано — закриваю"
         Complete-Status $status $sf.FullName '' ([datetime]::MinValue)
+        if ($script:BundleError) { Hold-RunCopy ([string]$status.id) "бандл перерваного прогону не створено: $script:BundleError" }
     }
 }
 
@@ -1667,7 +1702,8 @@ function Close-StoppedRun($Run, [string]$Code, [string]$Reason, [string]$MarkerS
     наряду — бандлом, і публікатор дає `<код>_PUBLISHED`. $MarkerSha і $StatePath — позначка й стан, які кінець закриває
     (ЗНЯТО — голова «ЗНЯТО…»: публікатор звіряє результат із позначкою на origin). Записане не закомічено — кінець
     RECORD_FAILED (причина й шлях копії — у результаті), а копія лишається з `kept.txt` для відновлення (Clear-TaskCopies її
-    не чіпає). Прогін без початку гілки — $false. #>
+    не чіпає). Так само, коли бандл не вдався чи факти гілки не прочитано (Complete-Status): зроблене тоді лише в гілці й
+    копії. Прогін без початку гілки — $false. #>
     $j = $Run.Json
     if (-not [string](Get-JsonProp $j 'start')) { return $false }
     $status = [ordered]@{}
@@ -1690,10 +1726,10 @@ function Close-StoppedRun($Run, [string]$Code, [string]$Reason, [string]$MarkerS
         if ([datetime]::TryParse([string]$s, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind, [ref]$parsed)) { $t0 = $parsed.ToLocalTime() }
     }
     Complete-Status $status $(if ($StatePath) { $StatePath } else { [string]$Run.StatePath }) '' $t0
-    if ($rec.Error) {
-        [IO.File]::WriteAllText((Join-Path $copy 'kept.txt'), "записане ${Code} не закомічено: $($rec.Error)`n", $script:Utf8)
-        Write-Log "копія задачі $copy лишається: записане не закомічено"
-    } else { [void](Remove-TaskCopy $copy @('--branches', '--remotes')) }
+    $hold = ''
+    if ($rec.Error) { $hold = "записане ${Code} не закомічено: $($rec.Error)" }
+    elseif ($script:BundleError) { $hold = "бандл ${Code} не створено: $script:BundleError" }
+    if ($hold) { Hold-RunCopy ([string]$Run.Id) $hold } else { [void](Remove-TaskCopy $copy @('--branches', '--remotes')) }
     $true
 }
 
