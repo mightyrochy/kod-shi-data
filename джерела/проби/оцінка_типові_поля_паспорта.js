@@ -13,7 +13,7 @@ const w = new JSDOM(html, {runScripts:"dangerously", pretendToBeVisual:true, url
   beforeParse(w){ w.indexedDB = new IDBFactory(); w.IDBKeyRange = IDBKeyRange; w.scrollTo = ()=>{};
     w.fetch = ()=>Promise.reject(new Error("мережі в пробі нема")); w.Element.prototype.scrollIntoView = ()=>{}; }}).window;
 const пауза = мс => new Promise(р=>setTimeout(р, мс));
-const їде = (п) => { w.eval("ПАСПОРТ_П=" + JSON.stringify(п)); return JSON.stringify(w.eval("сценарійПаспортаП()")); };
+const їде = (п) => { w.eval("змінитиПаспортП('тест', 'замінити', " + JSON.stringify(п) + ")"); return JSON.stringify(w.eval("сценарійПаспортаП()")); };
 (async ()=>{
   await пауза(900);
   const речі = {нагода:"щоденне", темп_c:18, джерело_полів:{нагода:"item_default", темп_c:"form_default"}};
