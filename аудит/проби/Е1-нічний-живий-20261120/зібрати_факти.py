@@ -5,15 +5,18 @@ import re
 
 тека = Path(__file__).resolve().parent
 план = json.loads((тека / "ПЛАН.json").read_text(encoding="utf-8"))
+база = тека / "НОВА_БАЗА.md"
+перенесено = {Path(ш).name: тека.parents[2] / ш for ш in re.findall(r"НОВА БАЗА: (\S+)", база.read_text(encoding="utf-8") if база.exists() else "")}
 факти = {}
 for сцена in план["scenes"]:
-    запис = тека / сцена
+    запис = перенесено.get(сцена, тека / сцена)
     результат = запис / "результат.json"
     if not результат.is_file():
         continue
     р = json.loads(результат.read_text(encoding="utf-8"))
     ф = {к: р.get(к) for к in ("rc", "sha", "дерево_стенда", "секунд", "початок", "кінець", "вивантажено")}
     підсумок = re.search(r"ВПАЛО (\d+)", (запис / "лог.txt").read_text(encoding="utf-8"))
+    ф["шлях"] = запис.relative_to(тека.parents[2]).as_posix()
     ф["червоних_звірок"] = int(підсумок[1]) if підсумок else 0
     ф["червоні_рядки"] = [{"рядок": н, "текст": т[:1600]} for н, т in enumerate((запис / "лог.txt").read_text(encoding="utf-8").splitlines(), 1) if "✗" in т]
     вердикти = запис / "вердикти.txt"
