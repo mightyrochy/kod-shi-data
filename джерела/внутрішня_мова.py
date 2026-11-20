@@ -3654,6 +3654,7 @@ if _спільні:
     "passport_tiles_only": "There is no passport from conversation; the scenario only came from tiles.",
     "passport_call_zero": "Call zero filled the passport without a language-model conversation turn; the model was absent or its turn fell back to main.",
     "passport_without_talk": "The seam filled the passport without a language-model conversation turn: tiles or translation without a talk.",
+    "passport_none_review": "The outfit review has no conversation passport: its scene came from her question and the screen.",
 })
 # Е3-одна-величина ч14 (рішення 06.11 п.3): ширина плеча виробу «шов–шов по спинці» й обхват плечей тіла через π —
 # різні величини; різниці код не рахує (K-FIT-01, K-OUT-41/42 — питання), моделі — лише виміряне число речі.
