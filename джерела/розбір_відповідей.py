@@ -209,46 +209,46 @@ import colorspace as _cs
     правила=(
         # ОПИС-1: вигадані речі («простий світлий топ» без топа, «золоті сережки» без сережок,
         # зачіска моделі з фото) і службові звірки назви з фото
-        "Speak only of the items of «outfit»: no suggestions to buy or add more, no items it does not contain — "
+        ("Speak only of the items of «outfit»: no suggestions to buy or add more, no items it does not contain — "
         "no top, jewelry, gloves or hairstyle that is not an item of «outfit», even when a photo shows it or "
-        "she may own it.",
-        "Do not change the outfit yourself. A clearly different item or colour goes into «wrong_photos» or «swap»; "
-        "do not invent the expected item behind that mismatch.",
+        "she may own it."),
+        ("Do not change the outfit yourself. A clearly different item or colour goes into «wrong_photos» or «swap»; "
+        "do not invent the expected item behind that mismatch."),
         # Е2-опора-пояснення, крок «без опису речі» (менеджер 17.11 за словом власника 17.11; аудит/ПРОДУКТ.md,
         # «Добір, суд і вибір»): правило #3717 «кожна властивість — з коду або з видимого на фото» лишало пояснення
         # описом речі — 17 із 20 тверджень без опори третього прогону стояли там; тепер воно каже, чому річ тут, а
         # властивість — лише як причина. Не довше за попереднє правило: воно стоїть на його місці
         # Наряд «причини-за»: правило велить казати лише причини зі входу — і вимога запису стоїть лише на речах із ними
         # (`поля_виходу`, повтор `ПОВТОР_НЕ_ОПИСАНО_EN`): заборона без зміни вимоги не допомагала (#3717, крок «без опису»)
-        "Say why an item is here only from its «reasons» and «your_declared», not how it looks: she sees its photo "
+        ("Say why an item is here only from its «reasons» and «your_declared», not how it looks: she sees its photo "
         "beside your words. Name an item by its kind. Fit, comfort, warmth, grip, steadiness, weather protection or "
         "what it does for her figure only when its «reasons» carry it; an item without reasons gets no sentence of "
-        "its own.",
+        "its own."),
         # 16409: заява, що спирається на обставину, яку код вивів (сіль — з морозу й снігу), стояла під образом як
         # обставина її дня
-        "Say a statement with «day_facts» only as a possibility («if the roads are salted»), never as a fact of her "
-        "day: the code inferred it.",
-        "Say each thing about an item once, in one coherent wearing plan; an alternative is a choice, not another "
-        "simultaneous instruction. No sentence or attribute quota.",
+        ("Say a statement with «day_facts» only as a possibility («if the roads are salted»), never as a fact of her "
+        "day: the code inferred it."),
+        ("Say each thing about an item once, in one coherent wearing plan; an alternative is a choice, not another "
+        "simultaneous instruction. No sentence or attribute quota."),
         # ПРОЗА-КАРТОК-2: «На фото є ще й підібрані сірі штани, але до цього образу належить
         # лише жакет», «Фото я не бачу, тому орієнтуюся на назву», «як сказано в назві» — службова мова
         # про кадр у картці; чого бракує на фото, картка вже каже під річчю (п.9).
         # «Не кажи про джерела» не повторюється в полі «outfit», у дужці правила 2 і в «photos» (кадр
         # з чужим одягом — і в підписі кожного кадру): вада трималась не повторами, тож усе це —
         # одним правилом тут, звірка фото з назвою й даними крамниці — теж
-        "Talk to her about the items, never about what you were given: no word about photos, frames, what "
+        ("Talk to her about the items, never about what you were given: no word about photos, frames, what "
         "else a frame shows, a photo you could not see, or the codes and data you went by, and no comparison "
         "of a photo with them — the card "
-        "already shows her the photos and says under an item when it has none.",
+        "already shows her the photos and says under an item when it has none."),
         "Give no advice on how to carry the bag (in the hand, on the shoulder, across the body).",
         # відповідальність за вибір речі — на стилістці (аудит/ПРОДУКТ.md п.17: з поясненням — свідомий вибір)
-        "Every item of «outfit» is your choice: stand behind it. Do not end a doubt with «the choice is yours», "
+        ("Every item of «outfit» is your choice: stand behind it. Do not end a doubt with «the choice is yours», "
         "«it's up to you» or «your call» — say why the item is worth it, or what she does about it. Leave a "
-        "decision to her only about what she asked for herself: her words in «case», an item marked «hers».",
-        "Only when a photo shows that an item is not what this outfit needs — a clearly different colour, "
+        "decision to her only about what she asked for herself: her words in «case», an item marked «hers»."),
+        ("Only when a photo shows that an item is not what this outfit needs — a clearly different colour, "
         "another kind of item, unfit for her occasion or her day — and that matters for this outfit, name "
         "that item in «swap»: the code then looks for a replacement of the same kind. When in doubt, "
-        "leave «swap» out.",
+        "leave «swap» out."),
         _ЗП.КІНЕЦЬ_ВІДПОВІДІ_EN,
     ),
     вихід="ОПИС_ВІДПОВІДЬ_V1",
@@ -669,7 +669,7 @@ def опис_відповідь_з_json(текст, кандидати=None, к�
         _знято = set()
         for x in список(об.get("фото_не_те")):
             р["фото_не_те"].append(str(x))
-            з, _н, _ч = розпізнати_речі(str(x), словник, за_ном, поле=True)
+            з, _, _ = розпізнати_речі(str(x), словник, за_ном, поле=True)
             for і in з:
                 if і in р["фото_не_ті"] or і in _знято:
                     continue
@@ -804,7 +804,7 @@ def за_номером(кандидати=None):
     """номер «#412» → (id, код магазину): та сама нумерація, що бачила модель."""
     if not кандидати:
         return {}
-    _ном, _коди = номери_речей(кандидати)
+    _ном, _ = номери_речей(кандидати)
     return {n: (і, к) for і, (n, к) in _ном.items()}
 
 
@@ -1115,7 +1115,7 @@ def образи_з_тексту(текст, кандидати=None, катал
     текст = str(текст or "")
     рядки_т = текст.split("\n")
     _обр = [i for i, l in enumerate(рядки_т)
-            if _re_ід.match(r"\s*ОБРАЗ\s*[:：]", l, _re_ід.I)]
+            if _re_ід.match(r"\s*ОБРАЗ\s*[:：]", l, _re_ід.IGNORECASE)]
     if not _обр:
         _злам = _зламаний_json_образів(текст, _чому)
         if _злам:
@@ -1151,7 +1151,7 @@ def образи_з_тексту(текст, кандидати=None, катал
     вих = []
     for б in блоки:
         о = ід_з_тексту(б, кандидати=кандидати, каталог=каталог)
-        п = _re_ід.search(r"ПІДПИС\s*[:：]\s*(.+)", б, _re_ід.I)
+        п = _re_ід.search(r"ПІДПИС\s*[:：]\s*(.+)", б, _re_ід.IGNORECASE)
         # ПІДПИС — 3–5 слів задуму, не пояснення. Друга ітерація відрізняє за ним
         # свідомий експеримент від огріху; без нього вона бачить лише id.
         if п: о["підпис"] = п.group(1).strip()[:60]
@@ -1184,7 +1184,7 @@ def ід_з_тексту(текст, кандидати=None, каталог=Non
                               чому="json_without_outfit_items"))
     if нот.get("ехо"):          # вердикт, переписаний назад, — не проза з образом (Т-7)
         return _ехо_записом(нот["ехо"])
-    if not _re_ід.search(r"ОБРАЗ\s*[:：]", str(текст or ""), _re_ід.I):
+    if not _re_ід.search(r"ОБРАЗ\s*[:：]", str(текст or ""), _re_ід.IGNORECASE):
         _злам = _зламаний_json_образів(текст, _чому)   # Л-4: зламаний JSON — не проза
         if _злам:
             return _злам
@@ -1192,7 +1192,7 @@ def ід_з_тексту(текст, кандидати=None, каталог=Non
     частини = {}     # id → «верх»|«низ», коли модель узяла ПОЛОВИНУ комплекту («#12·03/низ»)
     словник = словник_речей(кандидати, каталог)
     рядок = None
-    for м in _re_ід.finditer(r"ОБРАЗ\s*[:：]\s*(.+)", текст, _re_ід.I):
+    for м in _re_ід.finditer(r"ОБРАЗ\s*[:：]\s*(.+)", текст, _re_ід.IGNORECASE):
         рядок = м.group(1)                     # останній такий рядок — фінальний
     джерело = "рядок ОБРАЗ" if рядок else "id у тексті"
     _де = рядок if рядок else текст
@@ -1227,7 +1227,7 @@ def ід_з_тексту(текст, кандидати=None, каталог=Non
                          двічі=двічі)
 
 
-СВІДОМО_РЕГ = _re_ід.compile(r"^\s*(?:СВІДОМО|Свідомо|свідомо|НАВМИСНО|Навмисно|навмисно)\s*[:—–-]\s*(.+?)\s*$", _re_ід.M)
+СВІДОМО_РЕГ = _re_ід.compile(r"^\s*(?:СВІДОМО|Свідомо|свідомо|НАВМИСНО|Навмисно|навмисно)\s*[:—–-]\s*(.+?)\s*$", _re_ід.MULTILINE)
 _СЛУЖБОВИЙ_НОМЕР = _re_ід.compile(r"#(?![0-9a-fA-F]{6}\b)\d+")   # шестизначний hex-колір не є службовим номером
 # Той самий коефіцієнт, що K-KOH-03 дає ОДНОМУ свідомому розриву (T3, конвенція корпусу): запис із тіром
 # і правилом-власником, а не голий літерал, — його читає `перезважити(частка=…)`.
@@ -1297,7 +1297,7 @@ def свідомі_з_json(свідомо, словник, за_ном=None, с�
         назва = річ
         if річ:
             р["річ"] = річ
-            знайдені, _невірні, _ч = розпізнати_речі(річ, словник, за_ном, поле=True)
+            знайдені, _, _ = розпізнати_речі(річ, словник, за_ном, поле=True)
             ід = [і for і in знайдені if і in словник]
             if ід and _склад is not None:
                 _свої = [і for і in ід if і in _склад]
@@ -1340,7 +1340,7 @@ def місця_з_json(місце, словник, за_ном=None, склад=
             слово["слова"] = str(м["слова"]).strip()
         if not слово:
             continue
-        знайдені, _невірні, _ч = розпізнати_речі(str(м["річ"]), словник, за_ном, поле=True)
+        знайдені, _, _ = розпізнати_речі(str(м["річ"]), словник, за_ном, поле=True)
         for і in знайдені:
             if і in словник and (_склад is None or і in _склад):
                 вих.setdefault(і, {}).update(слово)
@@ -1426,9 +1426,7 @@ def застосувати_свідомі(знахідки, розриви, ре
         for rr in (речі if not адресати else ()):
             norm_id = str(rr.get("id") or "")
             назва = норм(rr.get("назва"))
-            if (norm_id and norm_id.lower() in т) or (len(назва) >= 8 and (назва[:24] in т or назва.split(" ")[0] in т.split(" "))):
-                адресати |= {norm_id, rr.get("назва"), rr.get("слот")}
-            elif rr.get("слот") and (" %s" % rr["слот"]) in (" " + т):
+            if (norm_id and norm_id.lower() in т) or (len(назва) >= 8 and (назва[:24] in т or назва.split(" ")[0] in т.split(" "))) or rr.get("слот") and (" %s" % rr["слот"]) in (" " + т):
                 адресати |= {norm_id, rr.get("назва"), rr.get("слот")}
         адресати.discard(None); адресати.discard("")
         р = dict(р, адресати=sorted(a for a in адресати if a), послаблено=0)
@@ -1724,7 +1722,8 @@ def речі_з_тексту(текст, перелік=None):
     fd, шлях = _tf.mkstemp(suffix=".xml"); _os.close(fd)
     fd2, кеш_ш = _tf.mkstemp(suffix=".json"); _os.close(fd2)
     try:
-        open(шлях, "w", encoding="utf-8").write(yml)
+        with open(шлях, "w", encoding="utf-8") as файл:
+            файл.write(yml)
         # справжні id (з кваліфікацією магазину, якщо феєд її дасть) — ключі кешу кольору
         оф = _Ф.читати_yml(шлях)[0]
         кеш_д, hex_за_ід = {}, {}
@@ -1737,7 +1736,8 @@ def речі_з_тексту(текст, перелік=None):
             кеш_д[o["id"]] = dict(lab=list(_cs.hx(hex_)), впевненість=0.8, розкид=None,
                                   джерело="модель", слово=hex_, впевненість_джерело=походження(ТИПОВЕ))
             hex_за_ід[o["id"]] = hex_
-        _js.dump(кеш_д, open(кеш_ш, "w", encoding="utf-8"))
+        with open(кеш_ш, "w", encoding="utf-8") as файл:
+            _js.dump(кеш_д, файл)
         # файл одноразовий — базу справжнього фіду з кеша не витісняє (Ш-1, `фід_каталог`)
         пр = _Ф.прогін(шлях, [[]], ліміт_фото=0, кеш=кеш_ш, кеш_бази=False)
     finally:
@@ -1887,14 +1887,14 @@ def запити_речей_з_тексту(текст):
                 # ядра (`протокол.з_дроту_en`) — українські слова каталогу, якими й шукає
                 # `шукати_словами`. Код поза таблицею (латиниця) у фразу не йде.
                 ключі = {к: str(п.get(к)).strip() for к in ("тип", "колір", "тканина")
-                         if isinstance(п, dict) and _re_ід.search(r"[а-яіїєґ]", str(п.get(к) or ""), _re_ід.I)}
+                         if isinstance(п, dict) and _re_ід.search(r"[а-яіїєґ]", str(п.get(к) or ""), _re_ід.IGNORECASE)}
                 if ключі:
                     з["фраза"] = " ".join(ключі.values())
                 з["коди"] = _коди_запиту(ключі, з["слот"])
                 вих.append(з)
         return вих[:5]
     return [dict(опис=м.group(1).strip(), слот=None, коди=_коди_запиту({}, None)) for м in
-            re.finditer(r"^\s*ПОТРІБНО\s*[:：]\s*(.+)$", str(текст or ""), re.M)][:5]
+            re.finditer(r"^\s*ПОТРІБНО\s*[:：]\s*(.+)$", str(текст or ""), _re_ід.MULTILINE)][:5]
 
 
 def _коди_запиту(ключі, слот):

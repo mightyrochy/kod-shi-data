@@ -51,7 +51,8 @@ def пакет_руки_1(вхід=os.path.join(ТУТ, "стенд_вх.json"))
     тут = os.getcwd()
     os.chdir(ТУТ)                      # стенд_вх називає каталог і кеш відносно джерела/
     try:
-        r = _j.loads(B.виклик("запити", open(вхід, encoding="utf-8").read()))
+        with open(вхід, encoding="utf-8") as файл:
+            r = _j.loads(B.виклик("запити", файл.read()))
         кат = {c.get("id"): c for c in B.каталог_останнього_пакета()}
     finally:
         os.chdir(тут)
@@ -119,9 +120,10 @@ def main():
     # ── швидкість з логу жнив ──
     швидкість = []
     if os.path.exists(а.лог):
-        for р in open(а.лог, encoding="utf-8"):
-            if "реч/с" in р:
-                швидкість.append(р.strip())
+        with open(а.лог, encoding="utf-8") as файл:
+            for р in файл:
+                if "реч/с" in р:
+                    швидкість.append(р.strip())
 
     Р = []
     w = Р.append
@@ -206,7 +208,8 @@ def main():
         w("Лог жнив не знайдено.")
     w("")
     os.makedirs(os.path.dirname(ЗВІТ), exist_ok=True)
-    open(ЗВІТ, "w", encoding="utf-8").write("\n".join(Р))
+    with open(ЗВІТ, "w", encoding="utf-8") as файл:
+        файл.write("\n".join(Р))
     print("\n".join(Р[:40]))
     print("… звіт: %s" % ЗВІТ)
 
