@@ -1,0 +1,60 @@
+── ПРОМПТ (6413 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: trench_coat · about it: text н=1
+2 — kind: suit · about it: text н=2
+3 — kind: belt · about it: text н=3
+4 — kind: pumps · about it: text н=4
+5 — kind: tote · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The trench coat provides the necessary warmth and style for an evening out, fitting seamlessly into your theatre occasion.",
+"2": "The suit set offers a sophisticated silhouette that is perfect for your theatre outing.",
+"3": "The belt cinches your waist to define your figure, adding a tailored look without extra bulk.",
+"4": "Pumps add height and elegance, complementing the formal nature of your theatre visit.",
+"5": "The tote bag is practical yet stylish, providing an extra touch of sophistication to your ensemble.",
+"6": "Your trench coat anchors you against the evening chill, while the suit set offers a sophisticated silhouette perfect for theatre. The belt cinches your waist to emphasize your figure without adding bulk. Pumps provide height and elegance, and the tote bag adds a practical yet stylish element to your ensemble.",
+"7": "Wear the trench coat over the suit set for added warmth and style.",
+"8": "Tie the belt at the waist to define your silhouette.",
+"9": "Пасок Базовий червоний — Swapped the pink headband for a brown leather belt on the trench to fix 'belt_ties_not_buckles' by treating the knot as a detail and adding necessary formality.",
+"10": "Туфлі човники, ATTICO, шкіра, колір чорний — Added black pumps to fix 'no_shoes' and resolve proportion issues, ensuring the outfit meets the theatre's formal requirement.",
+"11": "Бежевий плащ максі з відлітною кокеткою і поясом — The belt on the trench coat adds a necessary focal point and structure to the neutral palette, turning a potential monotony into a deliberate design choice rather than an oversight.",
+"12": "Туфлі човники, ATTICO, шкіра, колір чорний — Although 6cm heels exceed your stated comfort range of 4–6 cm, they are essential here to elongate the silhouette and ensure the shoes meet the formal theatre requirement, serving the occasion's dress code better than a lower heel would.",
+"13": "Пасок Базовий червоний — Swapped the beige skirt for this brown leather belt on the poncho to fix 'scheme_promised_accent_all_neutral' and add a focal point that breaks the monotony."
+}
+
+── ВІДПОВІДЬ (2022 симв., 31.9 с, HTTP 200) ──
+```json
+{
+  "1": "Тренч забезпечує необхідне тепло та стиль для вечора, ідеально вписуючись у твою театральну подію.",
+  "2": "Костюмний комплект пропонує вишуканий силует, який чудово підійде для твоєї прогулянки до театру.",
+  "3": "Пасок підкреслює талію, визначаючи фігуру без зайвого об’єму.",
+  "4": "Туфлі-човники додають висоти й елегантності, доповнюючи урочистий характер твого візиту в театр.",
+  "5": "Тот має практичний і стильний вигляд, надаючи додатковий штрих вишуканості твоєму образу.",
+  "6": "Твій тренч захищає тебе від вечірньої прохолоди, а костюмний комплект дарує вишуканий силует, який чудово підійде для театру. Пасок підкреслює талію, щоб акцентувати твою фігуру без зайвого об’єму. Туфлі-човники додають висоти й елегантності, а тот має практичний і стильний вигляд.",
+  "7": "Одягни тренч поверх костюмного комплекту для додаткового тепла та стилю.",
+  "8": "Зав’яжи пасок на талії, щоб підкреслити силует.",
+  "9": "Пасок Базовий червоний — Замінила рожеву пов'язку на коричневий шкіряний пасок до тренчу, щоб виправити 'belt_ties_not_buckles', розглядаючи вузол як деталь і додавши необхідну урочистість.",
+  "10": "Туфлі-човники, ATTICO, шкіра, колір чорний — Додала чорні туфлі-човники, щоб виправити 'no_shoes' та вирішити проблеми з пропорціями, забезпечуючи відповідність образу формальному вимогам театру.",
+  "11": "Бежевий плащ максі з відрізною кокеткою і поясом — Пасок на тренчі додає необхідний акцент і структуру нейтральній палітрі, перетворюючи потенційну монотонність у свідомий дизайнерський вибір.",
+  "12": "Туфлі-човники, ATTICO, шкіра, колір чорний — Хоча 6 см підборів перевищують твій заявлений комфортний діапазон від 4 до 6 см, вони необхідні тут для подовження силуету та забезпечення відповідності взуття формальним вимогам театру, краще за нижчий каблук.",
+  "13": "Пасок Базовий червоний — Замінила бежеву спідницю на цей коричневий шкіряний пасок до пончо, щоб виправити 'scheme_promised_accent_all_neutral' і додати акцент, який розбиває монотонність."
+}
+```

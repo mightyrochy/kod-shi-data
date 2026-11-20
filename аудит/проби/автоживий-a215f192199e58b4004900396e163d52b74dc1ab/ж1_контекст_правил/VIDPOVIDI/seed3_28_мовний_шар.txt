@@ -1,0 +1,60 @@
+── ПРОМПТ (7359 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: blazer · about it: text н=1
+2 — kind: bag_generic · about it: text н=2
+3 — kind: ring · about it: text н=3
+4 — kind: shoes · about it: text н=4
+5 — kind: trousers · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This blazer anchors your upper body with a tailored line that keeps the volume balanced, supporting your need for a unified column while you perform. Its presence allows the sporty element in your choice to stand out without overwhelming the occasion.",
+"2": "The bag holds your essentials securely, keeping your hands free to move through the evening with confidence as you recover and share your moment.",
+"3": "The ring adds a subtle personal touch that draws attention to your hand gestures during performance or conversation without competing with your outfit's clean lines.",
+"4": "Your shoes provide a solid base for standing and moving, grounding the monochrome column and ensuring you feel steady on the restaurant floor while you heal and express yourself.",
+"5": "The trousers define your lower line clearly, extending the vertical flow of your figure so that the blazer above reads as one continuous shape rather than separate parts.",
+"6": "I chose this blazer to lead your look with structure, carrying the formal tone of an upscale restaurant evening while supporting your conscious wish to break style rules with a sporty touch. Your trousers and shoes complete a monochrome column that unites your figure into one steady line, creating a quiet vertical focus from shoulders down through your legs. The ring and bag act as understated companions, letting the outfit itself speak without needing extra adornment.",
+"7": "Leave the blazer buttoned to maintain a clean, unified column that honors your goal of wearing one color.",
+"8": "Tuck nothing into the trousers; let the waist define your shape naturally without creating two separate lines.",
+"9": "Взуття темно-бежеве — You asked for a sporty thing and to break grammar; these black flats are essential because without them no metric of the look drops, and they anchor the loud yellow accents while respecting your recovery mood.",
+"10": "Двобортний трикотажний піджак з віскози бежевий, Брюки льон моко — I accept this item_below_band gate about the blazer's formality because breaking the grammar is your explicit intent, and the 'neat' register of the garment serves as a bold canvas for your required loud yellow accent, making the departure from ceremonial norms a deliberate statement rather than an oversight.",
+"11": "Текстильна жовта сумка Double Flap — This yellow tote is outside the palette's core, used as a deliberate break to satisfy the 'sporty thing' request.",
+"12": "Каблучка Juste un Clou з жовтого золота — The yellow ring echoes the bag, extending the break across accessories for maximum impact.",
+"13": "Взуття темно-бежеве — You asked for a monochrome column; these black flats complete the graphite suit's visual weight without adding hue, keeping the break inside the palette as you wished.",
+"14": "Взуття темно-бежеве — You asked to break grammar with a sporty thing; these black flats are essential because without them no metric of the look drops, and they anchor the loud colors while respecting your recovery mood."
+}
+
+── ВІДПОВІДЬ (2943 симв., 45.3 с, HTTP 200) ──
+{
+"1": "Цей піджак фіксує твій верх з чітким силуетом, який зберігає баланс об’єму, підтримуючи потребу в єдиному стовпі, поки ти дієш. Його присутність дозволяє спортивним елементам у твоєму виборі вирізнятися без перевантаження події.",
+"2": "Сумка надійно тримає твої необхідні речі, залишаючи руки вільними для руху вечором з упевненістю, поки ти відновлюєшся і ділиш свій момент.",
+"3": "Кільце додає ледь помітний особистий штрих, який привертає увагу до жестів твоєї руки під час виступу чи розмови без конкуренції з чіткими лініями твого образу.",
+"4": "Твоє взуття забезпечує міцну основу для стояння і руху, заземлюючи монохромний стовп і гарантуючи тобі стійкість на підлозі ресторану, поки ти одужуєш і виражаєш себе.",
+"5": "Штани чітко визначають твою нижню лінію, продовжуючи вертикальний потік твоєї фігури так, що піджак зверху читається як одна безперервна форма, а не окремі частини.",
+"6": "Я обрала цей піджак, щоб очолити свій образ структурою, несучи офіційний тон вечора в дорогому ресторані, водночас підтримуючи твоє усвідомлене бажання порушувати правила стилю спортивним акцентом. Твої штани та взуття завершують монохромний стовп, який об’єднує твою фігуру в одну стійку лінію, створюючи тихий вертикальний фокус від плечей до ніг. Кільце і сумка діють як стримані супутники, дозволяючи самому образу говорити без потреби у додатковому оздобленні.",
+"7": "Залиш піджак застебнутим, щоб зберегти чистий, єдиний стовп, який вшановує твою мету носити один колір.",
+"8": "Нічого не заправляй у штани; дозволь талії природно визначати твою форму без створення двох окремих ліній.",
+"9": "Темно-бежеве взуття — Ти попросила спортивну річ і порушити граматику; ці чорні балетки є необхідними, тому що без них жоден параметр образу не падає, і вони фіксують гучні жовті акценти, поважаючи твій настрій відновлення.",
+"10": "Двобортний трикотажний піджак з віскози бежевий, Штани льон моко — Я приймаю цей предмет нижче пояса щодо офіційності піджака, тому що порушення граматики є твоїм явним наміром, і «охайний» стиль одягу служить сміливим полотном для необхідного гучного жовтого акценту, роблячи відхід від церемоніальних норм свідомою заявою, а не недоглядом.",
+"11": "Текстильна жовта сумка Double Flap — Ця жовта сумка знаходиться за межами основної палітри і використовується як навмисний перерву для виконання запиту «спортивна річ».",
+"12": "Кільце Juste un Clou з жовтого золота — Жовте кільце відлунює сумку, продовжуючи порушення на аксесуарах для максимального ефекту.",
+"13": "Темно-бежеве взуття — Ти попросила монохромний стовп; ці чорні балетки завершують візуальну вагу графітового костюма без додавання відтінку, зберігаючи порушення всередині палітри так, як ти бажала.",
+"14": "Темно-бежеве взуття — Ти попросила порушити граматику спортивною річчю; ці чорні балетки є необхідними, тому що без них жоден параметр образу не падає, і вони фіксують гучні кольори, поважаючи твій настрій відновлення."
+}
