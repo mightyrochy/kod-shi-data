@@ -1,0 +1,30 @@
+── ПРОМПТ (1985 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Emerald green satin sheath dress, midi length, floor-sweeping silhouette, emerald green #049935, smooth lustrous fabric.\nNude suede ankle boots, pointed toe, mid-calf height, nude #EAD8AC, soft nubuck leather.\nPearl drop earrings, medium size, dangling design, white mother-of-pearl #FDFDD0, cultured pearl and sterling silver.\n\nThis outfit perfectly balances the evening theatre atmosphere with a polished yet understated elegance suitable for a social occasion. The rich emerald satin catches the warm artificial stage lighting while remaining sophisticated enough for the performance context. The nude boots elongate the leg line without drawing excessive attention, allowing the dress to remain the focal point of the ensemble."}
+
+── ВІДПОВІДЬ (680 симв., 3.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Sheath dress",
+      "details": "Emerald green satin midi length floor-sweeping silhouette smooth lustrous fabric",
+      "slot": "dress",
+      "color_hex": "#049935",
+      "worn": true
+    },
+    {
+      "name": "Ankle boots",
+      "details": "Nude suede pointed toe mid-calf height soft nubuck leather",
+      "slot": "shoes",
+      "color_hex": "#EAD8AC",
+      "worn": true
+    },
+    {
+      "name": "Drop earrings",
+      "details": "Pearl medium size dangling design white mother-of-pearl cultured pearl and sterling silver",
+      "slot": "earrings",
+      "color_hex": "#FDFDD0",
+      "worn": true
+    }
+  ]
+}

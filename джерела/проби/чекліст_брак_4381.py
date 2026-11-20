@@ -10,7 +10,7 @@ from фід_каталог import база_прогону as _база_прог�
 лічба = {п: sum(р.get(п) not in (None, "", [], {}) for р in к) for п in поля}
 print(json.dumps(dict(записів=len(к), поля_суду_в_каталозі=лічба, слоти={с: sum(р.get("слот") == с for р in к) for с in sorted({р.get("слот") for р in к})}), ensure_ascii=False, sort_keys=True))
 ч = Ч.чеклісти([], [], розмова=Ш._розмова_для_суду({}))
-в = В.чекліст_вердикту(ч); д = Д._чекліст(П._чекліст_на_дріт(в), {})
+в = В.чекліст_вердикту(ч); д = Д._чекліст(П._чекліст_на_дріт(в))
 н = sum(x["без_входу"] for x in в.values())
 assert н and not any("input_gaps" in x for x in д.values()) and "input_gaps" not in json.dumps(П._чекліст_на_дріт(в))
 assert all(x.get("бракує") for б in ("надлишок", "прісність", "палітра", "аксесуари") for x in ч[б] if x["стан"] == "без входу")
