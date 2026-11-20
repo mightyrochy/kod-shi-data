@@ -20,7 +20,10 @@ try {
     & git -C $seed remote add origin $remote
     foreach ($dir in @('аудит/наряди','аудит/адаптери/gemini','джерела')) { [void][IO.Directory]::CreateDirectory((Join-Path $seed $dir)) }
     $cfgPath = 'аудит/адаптери/gemini/ланцюг.json'
-    $baseCfg = [IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json'), $utf)
+    <# Базовий конфіг — без codex_pause_until (значення з main стенд не наслідує); SetPause дописує своє. #>
+    $baseCfg = [IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json'), $utf) -replace '(?m)^[ 	]*"codex_pause_until"[ 	]*:[^
+]*?
+', ''
     [IO.File]::WriteAllText("$seed/$cfgPath", $baseCfg, $utf)
     foreach ($task in @('автоперевірка','автоживий')) { [IO.File]::WriteAllText("$seed/аудит/наряди/$task.md", $task, $utf) }
     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
