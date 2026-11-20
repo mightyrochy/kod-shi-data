@@ -117,9 +117,9 @@ function ConvertTo-JsonString([string]$Text) {
 # чекати вже нема (turn.failed або $DoneFile є), — зупиняється з деревом: його закриття не робота наряду, а дерево
 # тримало б оренду GPU й копію задачі. Сам рушій після кінця ходу виходить за секунди; довше за такт закриття тягнеться
 # лише за збою мережі.
-# $QuotaCursor (New-CodexCursor; лише хід Codex) — на кожному такті очікування (60 с, межа однієї паузи нижче) цикл дочитує журнал
-# сесії й оновлює quota-codex.json (Save-CodexRateLimits): хід триває годинами, а залишок квоти потрібен під час нього, не лише
-# після. Такт той самий, що й у перевірці завислості; окремого таймера й іншого інтервалу нема.
+# $QuotaCursor (New-CodexCursor; лише хід Codex) — на такті очікування цикл раз на інтервал проходу (poll_minutes, Get-PollSeconds)
+# дочитує журнал сесії й оновлює quota-codex.json (Save-CodexRateLimits): хід триває годинами, а залишок квоти потрібен під час
+# нього, не лише після. Такт той самий, що й у перевірці завислості; окремого таймера й власного інтервалу нема.
 function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$WorkDir, [double]$StallMinutes, [string]$LogFile, [string]$EventsFile, [string]$DoneFile = '', $QuotaCursor = $null) {
     $psi = New-StartInfo $Exe $Arguments $WorkDir
     $p = Start-Tree $psi
@@ -130,18 +130,18 @@ function Invoke-NativeUntilStall([string]$Exe, [string[]]$Arguments, [string]$Wo
     $turnEnd = ''
     $closing = $false
     $pending = $null
-    $tickMs = 60000
+    $quotaEvery = $(if ($null -ne $QuotaCursor) { Get-PollSeconds } else { 0 })
     $quotaAt = Get-AwakeTime
     while ($true) {
         if ($null -eq $pending) { $pending = $p.StandardOutput.ReadLineAsync() }
         Wait-PowerPause
-        if ($null -ne $QuotaCursor -and ((Get-AwakeTime) - $quotaAt).TotalMilliseconds -ge $tickMs) {
+        if ($null -ne $QuotaCursor -and ((Get-AwakeTime) - $quotaAt).TotalSeconds -ge $quotaEvery) {
             $quotaAt = Get-AwakeTime
             Save-CodexRateLimits $QuotaCursor.Since $QuotaCursor
         }
         $left = ($last + [timespan]::FromMinutes($StallMinutes) - (Get-AwakeTime)).TotalMilliseconds
         if ($left -le 0) { $stalled = $true; break }
-        if (-not $pending.Wait([int][Math]::Min($left, $tickMs))) {
+        if (-not $pending.Wait([int][Math]::Min($left, 60000))) {
             # stdout міг лишитись відкритим у нащадка завершеного процесу: це не завислість.
             if ($p.HasExited) { break }
             if ($turnEnd -eq 'turn.failed' -or ($turnEnd -and $DoneFile -and [IO.File]::Exists($DoneFile))) { $closing = $true; break }
