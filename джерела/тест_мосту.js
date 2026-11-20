@@ -218,41 +218,26 @@ const пнг = байтів => {
       stop_reason:"end_turn", usage:{input_tokens:5, output_tokens:1}}), {status:200});
   вихідні.length = 0;
   в = await зап({model:"claude-sonnet-5", temperature:0, messages:[{role:"user", content:"x"}]});
-  тест("claude: temperature 0 доїжджає верхнім полем тіла, x-temperature=0",
-       вихідні.length === 1 && вихідні[0].body.temperature === 0
-       && в.headers.get("x-temperature") === "0", вихідні[0] && вихідні[0].body);
+  тест("claude: temperature 0 до Anthropic не їде (Claude 5 відкидає нетипову — другий виклик), x-temperature=n/a",
+       вихідні.length === 1 && !("temperature" in вихідні[0].body)
+       && в.headers.get("x-temperature") === "n/a", вихідні[0] && вихідні[0].body);
   вихідні.length = 0;
   в = await зап({model:"claude-sonnet-5", temperature:null, messages:[{role:"user", content:"x"}]});
   тест("claude: temperature null знімається з тіла (Anthropic віддав би 400)",
        вихідні.length === 1 && !("temperature" in вихідні[0].body)
        && в.headers.get("x-temperature") === "n/a", вихідні[0] && вихідні[0].body);
 
-  /* М-6: сучасні моделі Anthropic (Opus 4.7+, Sonnet 5, Fable 5) приймають `temperature`
-     лише типовим значенням, НЕтипове = 400 «Sampling parameters rejected». Отже рішення
-     «температура 0» на цьому маршруті впало б 400 на першому ж виклику — тож міст знімає
-     поле й повторює запит, як робить із полем мислення Gemini, і каже це заголовком. */
-  let стуків = 0;
-  відповідач = () => (++стуків === 1
-    ? new Response(JSON.stringify({type:"error", error:{type:"invalid_request_error",
-        message:"temperature: Sampling parameters are not supported for this model."}}), {status:400})
-    : new Response(JSON.stringify({content:[{type:"text",text:"ок"}], stop_reason:"end_turn",
-        usage:{input_tokens:5, output_tokens:1}}), {status:200}));
+  /* Наряд «Модель-збої-один-шлях»: доти міст слав `temperature: 0`, діставав 400 «Sampling parameters…», знімав поле
+     й повторював — 38 з 67 викликів с8 ішли двічі. Тепер поле не їде, і 400 зі словом sampling — чужа помилка як є,
+     один виклик, без повтору. */
+  відповідач = () => new Response(JSON.stringify({type:"error", error:{type:"invalid_request_error",
+      message:"temperature: Sampling parameters are not supported for this model."}}), {status:400});
   вихідні.length = 0;
   в = await зап({model:"claude-sonnet-5", temperature:0, messages:[{role:"user", content:"x"}]});
-  тест("claude: 400 через вибірку → поле знято, запит повторено, відповідь 200",
-       в.status === 200 && вихідні.length === 2 && вихідні[0].body.temperature === 0
-       && !("temperature" in вихідні[1].body), [в.status, вихідні.map(x=>x.body.temperature)]);
-  тест("claude: x-temperature=dropped, і службового поля провайдер не бачить",
-       в.headers.get("x-temperature") === "dropped" && !("_без_темп" in вихідні[1].body)
-       && /temperature dropped/.test(в.headers.get("x-attempts") || ""),
-       [в.headers.get("x-temperature"), в.headers.get("x-attempts")]);
-  стуків = 0;
-  відповідач = () => new Response(JSON.stringify({type:"error", error:{message:"model not found"}}), {status:400});
-  вихідні.length = 0;
-  в = await зап({model:"claude-sonnet-5", temperature:0, messages:[{role:"user", content:"x"}]});
-  тест("claude: 400 НЕ через вибірку — поле не знімається й повтору нема (чужа помилка як є)",
-       в.status === 400 && вихідні.length === 1 && в.headers.get("x-temperature") === "0",
-       [в.status, вихідні.length, в.headers.get("x-temperature")]);
+  тест("claude: 400 зі словом sampling — один виклик, повтору нема, x-attempts з одним записом",
+       в.status === 400 && вихідні.length === 1 && !/dropped/.test(в.headers.get("x-attempts") || "")
+       && (в.headers.get("x-attempts") || "").split(" ").length === 1,
+       [в.status, вихідні.length, в.headers.get("x-attempts")]);
   відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"ок"}],
       stop_reason:"end_turn", usage:{input_tokens:5, output_tokens:1}}), {status:200});
 
@@ -343,9 +328,22 @@ const пнг = байтів => {
   вихідні.length = 0; фотоЗапити.length = 0;
   відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"ок"}], stop_reason:"end_turn", usage:{}}), {status:200});
   в = await зап({model:"claude-sonnet-5", messages:[{role:"user", content:[
-        {type:"image", source:{type:"url", url:"https://img.example/1.jpg"}}, {type:"text", text:"опиши"}]}]});
-  тест("claude-: блок url їде як є, воркер фото НЕ тягне", вихідні[0].body.messages[0].content[0].source.type === "url"
-       && фотоЗапити.length === 0 && в.headers.get("x-images-dropped") === "0", [вихідні[0].body.messages[0].content[0].source, фотоЗапити]);
+        {type:"text", text:"Photo 1:"}, {type:"image", source:{type:"url", url:"https://img.example/1.jpg"}},
+        {type:"text", text:"Photo 2:"}, {type:"image", source:{type:"url", url:"https://dead.example/2.jpg"}},
+        {type:"text", text:"Photo 3:"}, {type:"image", source:{type:"url", url:"https://img.example/3.jpg"}},
+        {type:"text", text:"опиши"}]}]});
+  /* Наряд «Модель-збої-один-шлях»: Anthropic сам кадру крамниці не діставав — 400 «Unable to download the file» на
+     весь виклик (21 з 513 прогону через міст 20.11). Тепер фото тягне міст, як для Gemini й OpenAI. */
+  const кл = вихідні[0].body.messages[0].content;
+  тест("claude-: фото за адресою тягне міст — base64 у рідному блоці, url до Anthropic не йде",
+       фотоЗапити.length === 3 && кл[1].type === "image" && кл[1].source.type === "base64"
+       && кл[1].source.media_type === "image/png" && /^iVBOR/.test(кл[1].source.data)
+       && !кл.some(б => б.source && б.source.type === "url"), кл.map(б => б.type + ":" + ((б.source || {}).type || б.text)));
+  тест("claude-: мертве фото лишає своє місце «not delivered», третє лишається третім, виклик один, x-images-dropped=1",
+       вихідні.length === 1 && кл.length === 7 && кл[3].type === "text" && /not delivered/.test(кл[3].text)
+       && кл[4].text === "Photo 3:" && кл[5].type === "image" && кл[5].source.type === "base64"
+       && в.status === 200 && в.headers.get("x-images-dropped") === "1",
+       [вихідні.length, кл.map(б => б.type + ":" + ((б.source || {}).type || б.text)), в.headers.get("x-images-dropped")]);
   вихідні.length = 0; фотоЗапити.length = 0;
   відповідач = () => new Response(JSON.stringify({candidates:[{content:{parts:[{text:"є"}]}, finishReason:"STOP"}], usageMetadata:{}}), {status:200});
   в = await зап({model:"gemini-flash-latest", messages:[{role:"user", content:[
@@ -383,17 +381,17 @@ const пнг = байтів => {
         в.status === 200 && фотоЗапити.length === 1 && в.headers.get("x-images-dropped") === (картинка ? "0" : "1")
         && (картинка ? кадр.inline_data?.mime_type === "image/webp" && кадр.inline_data.data === вебп.toString("base64")
                      : !кадр.inline_data && /not delivered/.test(кадр.text)), кадр);
+      /* Anthropic — той самий шлях фото, що й Gemini (наряд «Модель-збої-один-шлях»): міст тягне байти сам */
       вихідні.length = 0; фотоЗапити.length = 0;
-      відповідач = () => картинка
-        ? new Response(JSON.stringify({content:[{type:"text",text:"є"}], usage:{}}), {status:200})
-        : new Response(JSON.stringify({error:{type:"invalid_request_error",message:"непідтримуване фото"}}), {status:400});
+      відповідач = () => new Response(JSON.stringify({content:[{type:"text",text:"є"}], usage:{}}), {status:200});
       в = await зап({model:"claude-sonnet-5", messages:[{role:"user", content:[
         {type:"image", source:{type:"url", url:адреса}}]}]});
-      const джерело = вихідні[0].body.messages[0].content[0].source;
-      тест("Anthropic: URL без локального MIME-фільтра — " + (картинка ? "успіх провайдера" : "відмова провайдера видима"),
-        фотоЗапити.length === 0 && джерело.type === "url" && джерело.url === адреса
-        && в.headers.get("x-images-dropped") === "0" && в.status === (картинка ? 200 : 400)
-        && (картинка || /непідтримуване фото/.test(await в.text())), [джерело, в.status]);
+      const блок = вихідні[0].body.messages[0].content[0];
+      тест("Anthropic: 200 без content-type — " + (картинка ? "WebP доходить base64 без втрат" : "не-картинка випадає, виклик іде"),
+        в.status === 200 && фотоЗапити.length === 1 && в.headers.get("x-images-dropped") === (картинка ? "0" : "1")
+        && (картинка ? блок.source && блок.source.type === "base64" && блок.source.media_type === "image/webp"
+                       && блок.source.data === вебп.toString("base64")
+                     : !блок.source && /not delivered/.test(блок.text)), блок);
     }
     globalThis.fetch = старий;
   }
@@ -756,6 +754,19 @@ const пнг = байтів => {
     в = await запО({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"},
       {type:"image", source:{type:"url", url:"https://dead.example/a.png"}}]}]});
     тест("openai: усі фото мертві → 422, без images:[] у OpenAI", в.status === 422 && вихідні.length === 0, [в.status, вихідні.length]);
+    /* ВАДА 16838: 422 за мертвим фото — дешева відмова, виклику OpenAI нема, тож добового прогону вона не списує */
+    {
+      const сховище = {}; let путів = 0;
+      const env7 = {...envО, COUNTER:{get: async к => сховище[к] || null, put: async (к, з) => { путів++; сховище[к] = з; }}};
+      вихідні.length = 0;
+      в = await М.fetch(new Request("https://w.workers.dev/", {method:"POST",
+        headers:{"content-type":"application/json", "Origin":env.ALLOWED_ORIGINS, "x-lyusterko-token":"tok-a1"},
+        body:JSON.stringify({model:"gpt-image-2.6-flare", messages:[{role:"user", content:[{type:"text", text:"x"}, фото,
+          {type:"image", source:{type:"url", url:"https://dead.example/z.png"}}]}]})}), env7);
+      тест("openai: 422 за мертвим фото не списує прогону (put 0, x-runs-left=40) — дошка 16838",
+           в.status === 422 && путів === 0 && вихідні.length === 0 && в.headers.get("x-runs-left") === "40",
+           [в.status, путів, в.headers.get("x-runs-left")]);
+    }
     /* ВАДА 16836: температури нема — заголовок n/a, 400 про sampling не повторюється */
     відповідач = () => new Response(JSON.stringify({error:{message:"unsupported sampling parameter"}}), {status:400});
     в = await запО({model:"gpt-image-2.6-flare", temperature:1, messages:[{role:"user", content:[фото]}]});
