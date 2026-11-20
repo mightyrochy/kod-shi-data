@@ -1635,9 +1635,9 @@ function Get-MarkerStateIn($M, [string]$Dir) {
     try { Get-MarkerState $M } finally { $script:StateDir = $keep }
 }
 
-# Простій — не «позначок нема», а «брати нічого»: зайнята позначка — узята смугою (.claim) чи та, яку смуга справді візьме. Не візьме:
-# нічний прохід минулого дня (gemini-run бере лише сьогоднішній, Start-Markers) і позначка на рушії з нульовою квотою —
-# Claude, Codex (скидання в майбутньому), група agy з нульовим вікном heartbeat: смуга лише поверне її в чекання. Такі
+# Простій — не «позначок нема», а «брати нічого»: зайнята позначка — узята смугою (.claim) чи та, яку смуга справді візьме. Не візьме
+# позначки на рушії з нульовою квотою — Claude, Codex (скидання в майбутньому), група agy з нульовим вікном heartbeat: смуга
+# лише поверне її в чекання. Такі
 # позначки (і ті, що вже чекають квоту) $script:IdleWhy описує для рядка: ` QUOTA0 <N> <ГРУПИ> <найраніше скидання UTC|->`.
 function Test-IdleBusy($G) {
     $script:IdleWhy = ''
@@ -1647,15 +1647,13 @@ function Test-IdleBusy($G) {
     $cxs = Get-CodexState $G.Codex
     $codexReset = $(if ($cxs.Refused -and -not $cxs.Success -and (Test-FutureUtc $cxs.Reset)) { $cxs.Reset } else { '' })
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    $today = [datetime]::UtcNow.ToString('yyyyMMdd')
     $zero = @()
     foreach ($m in @(Get-Markers | Where-Object { $_.Valid })) {
         $st = $(if ($m.Lane -eq 'claude') { Get-MarkerState $m } else { Get-MarkerStateIn $m $GeminiStateDir })
-        # Узята (.claim) — наряд іде чи стартує, хоч би й нічний прохід учорашнього дня; мертве узяття прибирають
+        # Узята (.claim) — наряд іде чи стартує; мертве узяття прибирають
         # Clear-OrphanClaims (до STARTED) і Resume-Interrupted (STARTED без живого слота) тієї смуги.
         if ($st.Kind -eq 'TAKEN') { return $true }
         if (($now - $m.Time) -gt $MarkerMaxAgeDays * 86400) { continue }
-        if ($m.Lane -ne 'claude' -and $m.Slug -cmatch '^Е1-нічний-живий-([0-9]{8})$' -and $Matches[1] -cne $today) { continue }
         $grp = $(if ($st.Kind -eq 'WAIT') { [string](Get-JsonProp $st.Wait 'group') } else { '' })
         if (-not (Test-MarkerReady $st)) {
             if ($grp -cmatch '^[A-Z0-9]{1,16}$' -and $grp -cnotin @('NETWORK', 'SLEEP', 'REVIEW_API', 'PLAN_WAIT', 'START')) {

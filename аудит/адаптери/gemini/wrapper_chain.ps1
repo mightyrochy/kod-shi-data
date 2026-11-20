@@ -118,11 +118,10 @@ function Get-ChainBuildStamp([string]$Commit) {
     $stamp
 }
 
-# Функції, які ланцюг бере з queue_lanes.ps1 через AST (Get-HeadLivePublication, Get-NightlyMarker), читають
-# $script:RemoteRoot і $script:QueuePrefix, а їх задає лише верхній код queue_lanes.ps1, якого публікатор не вантажить.
+# Функції, які ланцюг бере з queue_lanes.ps1 через AST (Get-HeadLivePublication), читають $script:RemoteRoot, а його
+# задає лише верхній код queue_lanes.ps1, якого публікатор не вантажить.
 # Клон публікатора — origin, тож корінь той самий, що за замовчуванням у queue_lanes.ps1 (Set-RemoteRoot).
 $script:RemoteRoot = 'refs/remotes/origin'
-$script:QueuePrefix = "$script:RemoteRoot/gemini-queue/"
 
 function Get-EngineLivePublication([string]$Head, [string]$ExistingBody = '') {
     <# Бере лише функції читання з довіреної копії queue_lanes, без побічних дій планувальника. #>
@@ -408,8 +407,8 @@ function Get-PauseReaders {
 
 function Get-LiveModels($Config, [datetimeoffset]$Now, $PauseUntil = $null) {
     <# Кандидати рушія для автоживого за порядком `codex`, `claude`; доки `$Now` < `$PauseUntil` (codex_pause_until) — лише `agy`: смуга
-    gemini ставить GPU-позначку так само, як codex (замок GPU, оренда й план — одні), квоту agy читає Test-ModelQuota. Нічний Е1
-    (Move-NightlyMarker) цього списку не бере: його дозвіл і позначки диспетчера з явною моделлю лишаються на своїх моделях. #>
+    gemini ставить GPU-позначку так само, як codex (замок GPU, оренда й план — одні), квоту agy читає Test-ModelQuota. Позначки
+    диспетчера з явною моделлю цього списку не беруть: лишаються на своїх моделях. #>
     if ($null -ne $PauseUntil -and $Now -lt $PauseUntil) { return @([string]$Config.agy) }
     @([string]$Config.codex, [string]$Config.claude)
 }
@@ -680,44 +679,6 @@ function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [date
     $true
 }
 
-function Get-NightlyReaders {
-    <# Функції нічного Е1 з довіреної копії queue_lanes.ps1 (Get-NightlyMarker — вікно, Get-NightlyBuild — збірка дозволу):
-    правила одні, ланцюг їх не копіює; викликач підключає блоки крапкою у своєму просторі. #>
-    $errors = $null
-    $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'queue_lanes.ps1'), [ref]$null, [ref]$errors)
-    if ($errors.Count) { throw 'NIGHTLY_PARSER' }
-    $names = @('Get-NightlyMarker','Get-NightlyBuild')
-    $functions = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $names -ccontains $n.Name }, $true))
-    if ($functions.Count -ne $names.Count) { throw 'NIGHTLY_PARSER' }
-    @($functions | ForEach-Object { [scriptblock]::Create($_.Extent.Text) })
-}
-
-function Test-NightlyOpen([datetime]$Utc) {
-    <# Вікно нічного Е1 — одне, у Get-NightlyMarker (queue_lanes.ps1): беремо саму функцію з довіреної копії й питаємо лише вікно. #>
-    foreach ($reader in @(Get-NightlyReaders)) { . $reader }
-    [bool](Get-NightlyMarker $Utc -OpenOnly)
-}
-
-function Move-NightlyMarker($Config, [datetimeoffset]$Now) {
-    <# Дозвіл нічного Е1 (`Е1-нічний-живий-<дата UTC>`, читає Get-NightlyMarker) стоїть на моделі зі своєї назви, а квота її
-    постачальника може бути вичерпана (codex 0 % — QUOTA0 до ранку): тоді дозвіл переходить на модель із квотою. Порядок і
-    перенесення — ті, що в автоживого: Select-ReviewModel над `codex`, `claude` з ланцюг.json і Move-BlockedMarkers; коміт
-    і умови (`gpu-p<цифра>`, пріоритет той самий) лишаються, узяту чи кінцеву позначку перенесення не чіпає. Не раніше, ніж відкриється нічний (вікно
-    Test-NightlyOpen): раніше позначка Claude стартувала б до дозволеної години. Не переносить, коли для збірки дозволу вже
-    є автоживий (`автоживий-<збірка>`): Get-NightlyMarker такого дозволу не віддає, а позначка Claude його б обійшла. #>
-    if (-not (Test-NightlyOpen $Now.UtcDateTime)) { return }
-    $slug = 'Е1-нічний-живий-' + $Now.UtcDateTime.ToString('yyyyMMdd')
-    $waiting = @(Get-ChainMarkers $slug | Where-Object { $_.Kind -cin @('NEW','WAIT') })
-    if (-not $waiting.Count) { return }
-    foreach ($reader in @(Get-NightlyReaders)) { . $reader }
-    $permit = [string]$waiting[0].Sha
-    if ((Invoke-Git @('cat-file','-e',"$permit^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','origin',$permit)) }
-    $build = Get-NightlyBuild $permit
-    if ($build -and @(Get-ChainMarkers "автоживий-$build").Count) { return }
-    $model = Select-ReviewModel @([string]$Config.codex, [string]$Config.claude) $Now
-    [void](Move-BlockedMarkers $slug $model $waiting[0].Sha $Now -Gpu -Cond $waiting[0].Cond)
-}
-
 function Test-CloudMove([string]$Slug, [datetimeoffset]$Now) {
     <# Визначає потребу передачі NEW/WAIT у хмару: $null — читання відкладене, $false — передача не потрібна. #>
     $all = @(Get-ChainMarkers $Slug)
@@ -802,6 +763,31 @@ function Get-LatestLivePending($Pending) {
     if (-not $items.Count) { return @() }
     foreach ($job in @($items | Select-Object -SkipLast 1)) { Write-WrapperLog "ланцюг: пропущено проміжний штамп $($job.stamp)" }
     @($items[-1])
+}
+
+function Stop-WaitingLive($Active, [string]$Stamp) {
+    <# Автоживий, що ще жде (жодна його позначка не взята), знімає штатним шляхом черги — комітом «ЗНЯТО: …» поверх кожної
+    його позначки NEW чи WAIT (смуга закриває її кінцем CANCELLED, як зняття диспетчера), щоб місце взяла свіжіша збірка
+    $Stamp: у черзі один автоживий, і він бере найсвіжішу збірку з усім злитим від останнього прогону, що дійшов кінця
+    (менеджер 20.11; прогони поспіль на сусідніх збірках повної відповіді не дали). Повертає $true — живих позначок
+    штампу не лишилось, можна ставити новий; $false — позначку взято чи стан не прочитано: прогін іде, новий чекає його
+    кінця. Позначку, яку смуга взяла між читанням стану й пушем, зупиняє Stop-CancelledRuns — той самий кінець, що від
+    зняття диспетчера. #>
+    $slug = "автоживий-" + [string]$Active.stamp
+    $live = @(Get-ChainMarkers $slug | Where-Object { $_.Kind -cin @('NEW','WAIT','TAKEN','UNKNOWN') -and -not (Test-ChainMarkerCancelled $_) })
+    if (@($live | Where-Object { $_.Kind -cin @('TAKEN','UNKNOWN') }).Count) { return $false }
+    foreach ($m in $live) {
+        $tree = (Invoke-Git @('rev-parse',"$($m.Sha)^{tree}")).Out.Trim()
+        $c = Invoke-Git @('-c','user.name=Обгортка Люстерка','-c','user.email=wrapper@users.noreply.github.com','-c','commit.gpgsign=false',
+            'commit-tree',$tree,'-p',$m.Sha,'-m',"ЗНЯТО: автоживий ще не стартував, чергу бере свіжіша збірка $Stamp") -AllowFail
+        if ($c.Code -ne 0) { throw (New-ChainFailure 'CHAIN_CANCEL' $c) }
+        $cut = $c.Out.Trim()
+        $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',"${cut}:refs/heads/$($m.Ref)") -AllowFail
+        if ($d.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PUSH' $d) }
+        Set-QueueTracking $m.Ref $cut
+        Write-WrapperLog "ланцюг: $($m.Ref) знято комітом ЗНЯТО — не стартував, чергу бере свіжіша збірка $Stamp"
+    }
+    $true
 }
 
 function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datetimeoffset]$Now, [int]$Hours) {
@@ -1026,7 +1012,8 @@ function Get-ChainBranchWork([string]$Branch) {
 }
 
 function Invoke-WrapperChain {
-    <# PR коду -> незалежна перевірка; новий штамп збірки -> один GPU-прогін на коміті збірки. #>
+    <# PR коду -> незалежна перевірка; новий штамп збірки -> GPU-прогін на коміті збірки: у черзі один автоживий, наступний
+    стає після кінця попереднього (Get-LiveCompletion) на найсвіжішій збірці, а той, що ще жде, свіжіша збірка заміняє. #>
     if ($DryRun) { return }
     $main = Get-RefSha 'refs/remotes/origin/main'
     $r = Invoke-Git @('cat-file','blob',"${main}:аудит/адаптери/gemini/ланцюг.json") -AllowFail
@@ -1054,7 +1041,7 @@ function Invoke-WrapperChain {
             $pauseText = $pauseUntil.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", [Globalization.CultureInfo]::InvariantCulture)
             # Один рядок на значення паузи, не на прохід (Test-Seen).
             if (-not (Test-Seen "codex-pause $pauseText")) {
-                Write-WrapperLog "ланцюг: пауза Codex до $pauseText (codex_pause_until у ланцюг.json): автоживий — на agy $($config.agy), не на Codex і не на Claude ноутбука; нічний Е1 і позначки диспетчера — як були"
+                Write-WrapperLog "ланцюг: пауза Codex до $pauseText (codex_pause_until у ланцюг.json): автоживий — на agy $($config.agy), не на Codex і не на Claude ноутбука; позначки диспетчера — як були"
             }
         }
         $statePath = Join-Path $WorkDir 'chain.json'
@@ -1107,11 +1094,15 @@ function Invoke-WrapperChain {
         }
         # Запис до мережі лишає ту саму роботу для повтору після падіння.
         Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
-        if ($null -eq $liveActive -and $livePending.Count -and (Test-LiveModels $config)) {
-            $job = $livePending[0]
-            $liveActive = [pscustomobject]@{stamp=$job.stamp;main=$job.main;published=$false}; $livePending = @()
-            # Резерв до push: падіння після прийнятого ref не перетворює його на пропущений штамп.
-            Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
+        if ($livePending.Count -and (Test-LiveModels $config)) {
+            # Автоживий, що ще жде, поступається свіжішій збірці (Stop-WaitingLive); той, що йде, — ні: новий чекає його кінця.
+            if ($null -ne $liveActive -and (Stop-WaitingLive $liveActive ([string]$livePending[0].stamp))) { $liveActive = $null }
+            if ($null -eq $liveActive) {
+                $job = $livePending[0]
+                $liveActive = [pscustomobject]@{stamp=$job.stamp;main=$job.main;published=$false}; $livePending = @()
+                # Резерв до push: падіння після прийнятого ref не перетворює його на пропущений штамп.
+                Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
+            }
         }
         if ($null -ne $liveActive -and $null -ne $liveActive.PSObject.Properties['published'] -and -not $liveActive.published) {
             Add-ChainMarker "автоживий-$($liveActive.stamp)" (Select-ReviewModel (Get-LiveModels $config $now $pauseUntil) $now) ([string]$liveActive.main) -Gpu
@@ -1122,7 +1113,6 @@ function Invoke-WrapperChain {
             # Позначка, що чекає вичерпаної квоти, переходить до доступного рушія.
             [void](Move-BlockedMarkers "автоживий-$($liveActive.stamp)" (Select-ReviewModel (Get-LiveModels $config $now $pauseUntil) $now) ([string]$liveActive.main) $now -Gpu)
         }
-        Move-NightlyMarker $config $now
         Complete-EngineDrafts
         $pulls = @(Get-ChainPulls)
         Remove-DeadReviewMarkers $pulls $seen $now

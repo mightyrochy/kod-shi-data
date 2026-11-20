@@ -487,7 +487,7 @@ function Test-CodexFallback { [bool]($EnableCodex -and $CodexFallbackModel -and 
 
 # Кандидати за порядком (Get-CascadePlan, queue_lanes.ps1 — той самий порядок читає claude_run.ps1 для простою).
 # Під паузою Codex (`codex_pause_until` в ланцюг.json, Test-CodexPause) запасного Codex у каскаді нема: позначка agy на 0 % чекає
-# скидання пулу (QUOTA0), а не витрачає Codex. Лише каскад: позначки з явною моделлю Codex (нічний) Select-Engine не каскадує.
+# скидання пулу (QUOTA0), а не витрачає Codex. Лише каскад: позначки з явною моделлю Codex Select-Engine не каскадує.
 function Get-Cascade([string]$Model) {
     $codex = $(if ((Test-CodexFallback) -and -not (Test-CodexPause)) { $CodexFallbackModel } else { '' })
     @(Get-CascadePlan $Model $codex)
@@ -1733,7 +1733,7 @@ function Start-Markers($Workers) {
     [void](Remove-OrphanWaits)
     $null = Stop-GpuStalledRuns $Workers
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-    $all = @(Get-Markers | Where-Object { -not $_.Slug.StartsWith('Е1-нічний-живий-') }) + @(Get-NightlyMarker)
+    $all = @(Get-Markers)
     # Позначка з назвою не за форматом — рядок диспетчерові раз на позначку: 31.10 `ВИМКНИ-НОУТБУК/cc-off/31102` (спроба з
     # п'яти цифр) стояла мовчки, у #1856 — лише «? наряд». Стан INVALID_NAME — до рядка FORMAT: такий отримує рядок раз.
     foreach ($m in @($all | Where-Object { -not $_.Valid })) {
