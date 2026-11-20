@@ -2,7 +2,7 @@
 # події `pull_request` крок обходить відкриті PR до `main` і зливає squash з `sha` голови той, що: від `mightyrochy` з
 # гілки цього репозиторію, не чернетка, прилад `джерела/прилади/документ_без_коду.py` каже «документ» на файлах PR з
 # API, а всі перевірки голови завершені й `success` чи `skipped`. Решту лишає диспетчерові; причина — у підсумку job.
-# Файли правил прилад бере з переліку ПК-дотримання (`корінь_пк_дотримання.py`, теж з `main`).
+# Файли правил прилад має у власному переліку (`ФАЙЛИ_ПЕРЕЛІКУ`, теж з `main`).
 # Безпека: прилад — з `main` (`workflow_run` бере цей файл і `github.sha` лише з типової гілки), коду гілки PR крок не
 # бере й не виконує, файли PR — лише списком з API; запис — лише в job злиття; одне злиття за раз (група job злиття).
 # Злиття токеном CI не будить `push` у `main` (документація GitHub: події `GITHUB_TOKEN` не створюють нових запусків,
@@ -12,7 +12,7 @@ name: самозлиття документа
 
 on:
   workflow_run:
-    workflows: [збірка показу, храповик кореня, рядок ЖИВИЙ ПІСЛЯ у тілі PR, стенди обгортки]
+    workflows: [збірка показу, рядок ЖИВИЙ ПІСЛЯ у тілі PR, стенди обгортки]
     types: [completed]
 
 permissions: {}
@@ -51,7 +51,6 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             джерела/прилади/документ_без_коду.py
-            джерела/прилади/корінь_пк_дотримання.py
             джерела/прилади/запуск_python.py
           sparse-checkout-cone-mode: false
 
@@ -83,7 +82,6 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             джерела/прилади/документ_без_коду.py
-            джерела/прилади/корінь_пк_дотримання.py
             джерела/прилади/запуск_python.py
           sparse-checkout-cone-mode: false
 
@@ -94,7 +92,7 @@ jobs:
           KANDYDATY: ${{ needs.rishennia.outputs.kandydaty }}
         run: python3 -I джерела/прилади/документ_без_коду.py --злити
 
-  # Робочі процеси `main`, які будить push злиття: згортання дошки й публікація, храповик, сигнал рядків кореня.
+  # Робочі процеси `main`, які будить push злиття: згортання дошки й публікація.
   # `стенди обгортки` документ не будить (його шляхи для приладу — «ні»; звіряє тест приладу).
   zbirka:
     name: збірка показу після злиття
@@ -106,28 +104,6 @@ jobs:
       contents: write
       pull-requests: read
     uses: ./.github/workflows/zbirka.yml
-    with:
-      pered: ${{ needs.zlyttia.outputs.pered }}
-      pislia: ${{ needs.zlyttia.outputs.pislia }}
-
-  khrapovyk:
-    name: храповик кореня після злиття
-    needs: zlyttia
-    if: needs.zlyttia.outputs.zlyto == 'true'
-    permissions:
-      contents: read
-    uses: ./.github/workflows/khrapovyk.yml
-    with:
-      pered: ${{ needs.zlyttia.outputs.pered }}
-      pislia: ${{ needs.zlyttia.outputs.pislia }}
-
-  syhnal:
-    name: сигнал рядків кореня після злиття
-    needs: zlyttia
-    if: needs.zlyttia.outputs.zlyto == 'true'
-    permissions:
-      contents: read
-    uses: ./.github/workflows/syhnal-ryadky.yml
     with:
       pered: ${{ needs.zlyttia.outputs.pered }}
       pislia: ${{ needs.zlyttia.outputs.pislia }}

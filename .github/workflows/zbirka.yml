@@ -260,6 +260,10 @@ jobs:
         working-directory: джерела
         run: python3 тест_живого_шляху.py
 
+      - name: інваріанти коренів (вхід і вихід живого шляху)
+        working-directory: джерела
+        run: python3 -m unittest -v тест_інваріанти
+
       - name: протокол
         working-directory: джерела
         run: python3 тест_протоколу.py

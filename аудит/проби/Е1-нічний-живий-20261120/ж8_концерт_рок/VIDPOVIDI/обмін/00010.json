@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"рок-концерт у клубі\", \"place\": \"клубі\", \"weekday\": \"п'ятниця\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"reading\"}, \"weekday\": {\"kind\": \"her\", \"quote\": \"п'ятниця\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"клубі\"}, \"month\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"рок-концерт у клубі\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\"}}, \"event\": \"рок-концерт у клубі\", \"movement\": \"walk_a_lot\", \"part_of_day\": \"evening\", \"occasion\": \"theatre\", \"place\": \"club\", \"month\": \"november\", \"weekday\": \"friday\", \"formality_branch\": \"social\", \"formality\": [\"smart\"], \"season\": \"autumn\", \"light\": \"artificial\"}, \"person\": {\"skin_hex\": [\"#e3c3a2\", \"#dcb995\", \"#e9ccae\"], \"hair_hex\": \"#1b1815\", \"eyes_hex\": \"#4a2f1f\", \"height_cm\": 154, \"girths_cm\": {\"shoulders\": 90, \"bust\": 84, \"waist\": 64, \"hips\": 88}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A structured black blouse with a relaxed collar, boxy fit, hip length, #1b1815, crisp cotton poplin.\\nDark washed denim jeans with a straight leg, knee length, #2a2f35, sturdy stretch twill.\\nBlack leather ankle boots with a chunky sole and minimal heel, mid-calf height, #0e0c0d, smooth grain leather.\\nThin black leather choker necklace and small silver hoop earrings.\\n\\nThis outfit bridges the gap between rock concert energy and smart social appropriateness while respecting the November weather in a club setting. The dark denim provides comfort for walking around the venue without looking sloppy, matching her natural hair color perfectly. The structured black top adds a polished element that elevates the look beyond basic casual wear, suitable for a Friday night out. Finally, the leather ankle boots offer practical warmth and stability on potentially crowded dance floors or wet pavement.\"}],\"usage\":{\"input_tokens\":849,\"output_tokens\":192},\"stop_reason\":\"end_turn\"}"
+ }
+}
