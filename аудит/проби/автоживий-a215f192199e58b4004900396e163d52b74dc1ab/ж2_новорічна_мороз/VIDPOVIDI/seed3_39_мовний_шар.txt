@@ -1,0 +1,58 @@
+── ПРОМПТ (6019 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: coat · about it: text н=1
+2 — kind: skirt · about it: text н=2
+3 — kind: sweater · about it: text н=3
+4 — kind: ring · about it: text н=4
+5 — kind: ankle_boots · about it: text н=5
+6 — kind: crossbody_bag · about it: text н=6
+7 — kind: blazer · about it: text н=7
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "It fits your social occasion perfectly, setting the right tone for a New Year party in a restaurant while protecting you from frost outside.",
+"2": "Its elegant line supports your figure and matches the occasion level of your event, keeping you looking polished inside an upscale venue.",
+"3": "The stripes are in your palette, the knit suits cold weather, and the cut flatters your waist; it also warms you on a frosty day to the restaurant.",
+"4": "These rings add a touch of understated sparkle that fits the celebratory mood without overwhelming your look.",
+"5": "Ankle boots give you the grip and comfort needed for an upscale restaurant setting while maintaining a sleek silhouette.",
+"6": "This crossbody bag stays secure and accessible during your evening, letting you enjoy the party without fumbling for your phone or keys.",
+"7": "The blazer provides a structured layer that elevates the softness of the sweater, adding polish to your overall appearance for this festive gathering.",
+"8": "This is your outfit for a New Year party at an upscale restaurant. The coat sets the social tone, the sweater gives you warmth against the frost, and the skirt keeps it elegant while the boots give you grip on salted paths. The blazer adds structure and polish over the softer knit, the crossbody bag offers steady carry, and the rings complete the look with quiet confidence.",
+"9": "Wear the blazer open to show off the sweater's stripes at your waist.",
+"10": "Let the coat be your first layer when you step out of the car.",
+"11": "Keep the rings on; they match the cool light in a restaurant"
+}
+
+── ВІДПОВІДЬ (1680 симв., 25.4 с, HTTP 200) ──
+```json
+{
+  "1": "Він ідеально підходить для твоєї соціальної події, створюючи правильний настрій для новорічної вечірки в ресторані та захищаючи тебе від морозу надворі.",
+  "2": "Його елегантний крій підтримує твою фігуру й відповідає рівню урочистості твоєї події, зберігаючи вишуканий вигляд у престижному закладі.",
+  "3": "Смужки вписуються у твій колір, трикотаж зігріває тебе в холодну погоду, а крій підкреслює талію; він також захищає від морозу дорогою до ресторану.",
+  "4": "Ці каблучки додають нотку стриманого блиску, який відповідає святковому настрою без перевантаження твого образу.",
+  "5": "Черевики на підборах дарують тобі зчеплення та комфорт, необхідні для перебування у вишуканому ресторані, зберігаючи при цьому елегантний силует.",
+  "6": "Ця сумка через плече залишається безпечною й доступною протягом твого вечора, дозволяючи насолоджуватися святом без пошуків телефону чи ключів.",
+  "7": "Піджак створює структурований шар, який підкреслює м’якість светра, додаючи вишуканості твоєму загальному вигляду на цьому святковому зібранні.",
+  "8": "Це твій образ для новорічної вечірки у престижному ресторані. Пальто створює соціальний тон, светр дарує тепло проти морозу, а спідниця зберігає елегантність, поки черевики забезпечують зчеплення на посипаних доріжках. Піджак додає структури та вишуканості поверх м’якого трикотажу, сумка через плече пропонує зручне носіння, а каблучки завершують образ тихою впевненістю.",
+  "9": "Одягни піджак розстебнутим, щоб показати смужки светра на талії.",
+  "10": "Нехай пальто буде твоїм першим шаром, коли ти виходиш з машини.",
+  "11": "Залиш каблучки; вони пасують до прохолодного світла в ресторані."
+}
+```

@@ -21,7 +21,10 @@ try {
     & git -C $seed config user.name 'стенд'; & git -C $seed config user.email 'stend@example.invalid'
     & git -C $seed remote add origin $remote
     foreach ($dir in @('аудит/наряди','аудит/адаптери/gemini','джерела')) { [void][IO.Directory]::CreateDirectory((Join-Path $seed $dir)) }
-    Copy-Item -LiteralPath (Join-Path $SourceDir 'ланцюг.json') -Destination "$seed/аудит/адаптери/gemini/ланцюг.json"
+    <# Базовий конфіг стенду — без codex_pause_until: справжнє значення в main не має міняти порядок моделей у сценаріях. #>
+    [IO.File]::WriteAllText("$seed/аудит/адаптери/gemini/ланцюг.json", ([IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json'), $utf) -replace '(?m)^[ 	]*"codex_pause_until"[ 	]*:[^
+]*?
+', ''), $utf)
     foreach ($task in @('автоперевірка','автоживий')) { [IO.File]::WriteAllText("$seed/аудит/наряди/$task.md", $task, $utf) }
     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main

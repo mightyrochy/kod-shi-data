@@ -1,0 +1,65 @@
+── ПРОМПТ (6638 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: blazer · about it: text н=1
+2 — kind: dress_generic · about it: text н=2
+3 — kind: boots · about it: text н=3
+4 — kind: clutch · about it: text н=4
+5 — kind: scarf_generic · about it: text н=5
+6 — kind: coat · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The blazer gives your casual outing a polished edge, fitting perfectly within the everyday occasion you are preparing for.",
+"2": "The black dress provides a versatile and elegant foundation that matches the casual park setting you described.",
+"3": "The boots offer sturdy support for your walk while complementing your color palette, ensuring you are ready for two hours of movement.",
+"4": "The clutch is a stylish accessory that completes the outfit without adding extra bulk.",
+"5": "The scarf brings warmth and a touch of color to your ensemble, enhancing your natural beauty while keeping you cozy.",
+"6": "The coat provides essential protection against the park weather, ensuring you stay warm and comfortable throughout your day.",
+"7": "You chose a classic black dress and a tailored blazer to create a sophisticated base for your casual walk. The burgundy scarf adds a warm pop of color that matches your palette perfectly, while the long coat ensures you stay comfortable in the cooler park weather.",
+"8": "Tuck the scarf loosely at your waist or drape it over your shoulders for warmth and style.",
+"9": "Приталений жакет сірого кольору з ремінцем — Heavy wool blazer chosen as an outer layer to replace the missing coat and meet the deep frost requirement, adding necessary warmth and structure.",
+"10": "Клатч жіночий, ATTICO, замша, колір капучино — Added burgundy clutch to resolve the 'no_bag' issue and provide a formal accessory anchor for the occasion.",
+"11": "Шарф \"Легкий\" бордовий — Added beige scarf to protect the head and neck from wind and cold, addressing 'frost_head_neck_uncovered' and adding warmth.",
+"12": "Жіноче вовняне пальто кемел з англійським коміром, двобортне Stella Polare — I accept the remark that this wool goes higher because the coat must extend enough to cover the waist and protect you from the deep frost while walking in the park.",
+"13": "Клатч жіночий, ATTICO, замша, колір капучино — Added burgundy clutch to fix 'no_bag'.",
+"14": "Шарф \"Легкий\" бордовий — Added beige scarf (replacing red belt idea) for neck warmth against deep frost, fixing 'frost_head_neck_uncovered'.",
+"15": "Шарф \"Легкий\" бордовий — Added beige scarf (replacing red belt concept) for neck warmth against deep frost."
+}
+
+── ВІДПОВІДЬ (2348 симв., 37.1 с, HTTP 200) ──
+```json
+{
+  "1": "Піджак додає твоїй повсякденній прогулянці вишуканості, ідеально вписуючись у звичайну подію, до якої ти готуєшся.",
+  "2": "Чорна сукня дарує універсальну та елегантну основу, яка пасує до невимушеного паркового оточення, яке ти описала.",
+  "3": "Черевики забезпечують надійну підтримку під час твоєї прогулянки, водночас гармонійно поєднуючись з твоїм колірним рішенням і гарантуючи готовність до двох годин активності.",
+  "4": "Клатч — стильний аксесуар, який завершує образ без зайвого об’ємного навантаження.",
+  "5": "Шарф додає тепла та яскравості твоєму ансамблю, підкреслюючи твою природну красу й зігріваючи тебе.",
+  "6": "Пальто забезпечує необхідний захист від паркової погоди, гарантуючи тобі тепло та комфорт протягом усього дня.",
+  "7": "Ти обрала класичну чорну сукню та приталений піджак, щоб створити вишукану основу для твоєї невимушеної прогулянки. Бургундський шарф додає теплий колірний акцент, який ідеально поєднується з твоїм рішенням, а довге пальто гарантує тобі комфорт у прохолодну паркову погоду.",
+  "8": "Недбало зав’яжи шарф на талії або розправ його на плечах для тепла й стилю.",
+  "9": "Приталений сірий жакет з ремінцем — Heavy wool blazer обрано як верхній одяг замість відсутнього пальто, щоб задовольнити вимогу глибокого морозу. Він додає необхідного тепла та структури.",
+  "10": "Клатч жіночий, ATTICO, замша, колір капучино — Додала бургундський клатч, щоб вирішити проблему 'no_bag' і надати формальний аксесуарний акцент для цієї події.",
+  "11": "Шарф \"Легкий\" бордовий — Додала бежевий шарф, щоб захистити голову та шию від вітру й холоду, усунувши 'frost_head_neck_uncovered' і додавши тепла.",
+  "12": "Жіноче вовняне пальто кемел з англійським коміром, двобортне Stella Polare — Я приймаю зауваження про те, що ця шерсть вища, оскільки пальта має бути достатньо довгим, щоб прикрити талію й захистити тебе від глибокого морозу під час прогулянки в парку.",
+  "13": "Клатч жіночий, ATTICO, замша, колір капучино — Додала бургундський клатч, щоб виправити 'no_bag'.",
+  "14": "Шарф \"Легкий\" бордовий — Додала бежевий шарф (замінивши ідею червоного ременя) для тепла шиї проти глибокого морозу, усунувши 'frost_head_neck_uncovered'.",
+  "15": "Шарф \"Легкий\" бордовий — Додала бежевий шарф (замінивши концепцію червоного ременя) для тепла шиї проти глибокого морозу."
+}
+```

@@ -45,6 +45,9 @@ k nothing stream BLOCKED
 l abandon_then_done print ГОТОВО
 m hang print TIMEOUT_PUBLISHED
 n abandon_then_done stream MODEL_INVALID bad-model
+o error_after_report stream ГОТОВО
+p error_after_report print ГОТОВО
+q error_plain stream AGY_ERROR
 CASES
   exit "$BAD"
 fi
@@ -60,6 +63,7 @@ printf 'Т | наряд\n\n%sЗроби щось.\n%s' "${TASK_ROLE:+Роль �
 }" "${TASK_TAIL:-}" > "аудит/наряди/$SLUG.md"
 printf '| роль | сесія |\n|---|---|\n| диспетчер | session_01TEST (ДИСПЕТЧЕР) | x |\n' > аудит/СТАН.md
 echo 'on: push' > .github/workflows/x.yml; echo '#' > аудит/адаптери/gemini/gemini_publish.ps1
+[ -n "${CHAIN_JSON:-}" ] && printf '%s' "$CHAIN_JSON" > аудит/адаптери/gemini/ланцюг.json  # ланцюг.json на origin/main: пауза Codex (codex_pause_until)
 git add -A; git commit -q -m init; git push -q origin main
 git push -q origin "main:refs/heads/gemini-queue/$SLUG/$MODEL/1"
 cd "$W"; git clone -q origin.git clone; git -C clone config user.name g; git -C clone config user.email g@x

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Sleeveless column gown, bateau neckline, floor-length, soft sage-teal (#5F8579), matte crepe with a slight drape that skims the body and does not cling\\n\\nSheer pashmina-weight wrap, open-front, hip-length, warm champagne (#E3CFA6), lightweight silk-chiffon, carried or draped on the elbows for the venue's air conditioning\\n\\nHeeled sandals, open-toe, low block heel about 6 cm, warm nude (#D9AE91), soft satin-lined leather with an ankle strap for steady walking on stage\\n\\nClutch, small envelope shape, soft gold (#C9A96A), smooth metallic leather\\n\\nDrop earrings, slender and teardrop-shaped, soft gold (#C9A96A), polished metal\\n\\nThin cuff bracelet, open, soft gold (#C9A96A), brushed metal\\n\\nWhy this outfit works: The sage-teal gown picks up the soft green-gray of her eyes and sits calmly against her warm skin and golden-blond hair, so she looks rested and luminous under evening light. The full-length crepe matches the weight of her husband's tuxedo and suits a formal charity evening, while its gentle drape keeps her comfortable and lets her move and stand easily while speaking. The block-heel sandals give her stability and a polished finish without strain, and the nude tone lengthens the leg line. The soft gold accents stay quiet and consistent with her natural palette, so the look feels like a refined version of her own style rather than a sudden change.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:claude-sonnet-5-5"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Column gown\\\",\\\"details\\\":\\\"Sleeveless, bateau neckline, floor-length, matte crepe with a slight drape that skims the body and does not cling\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#5F8579\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wrap\\\",\\\"details\\\":\\\"Sheer pashmina-weight, open-front, hip-length, lightweight silk-chiffon, carried or draped on the elbows\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#E3CFA6\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Heeled sandals\\\",\\\"details\\\":\\\"Open-toe, low block heel about 6 cm, soft satin-lined leather with an ankle strap\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#D9AE91\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Clutch\\\",\\\"details\\\":\\\"Small envelope shape, smooth metallic leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#C9A96A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Slender and teardrop-shaped, polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C9A96A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Cuff bracelet\\\",\\\"details\\\":\\\"Thin, open, brushed metal\\\",\\\"slot\\\":\\\"bracelet\\\",\\\"color_hex\\\":\\\"#C9A96A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2193,\"output_tokens\":428},\"stop_reason\":\"end_turn\"}"
+ }
+}

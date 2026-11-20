@@ -1,0 +1,44 @@
+── ПРОМПТ (2342 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer, tailored fit with notched lapels, charcoal gray (#36454F), fine worsted wool.  \nA silk-chiffon blouse, relaxed silhouette with a subtle cowl neck, ivory white (#FFFFF0), smooth chiffon.  \nHigh-waisted wide-leg trousers, fluid drape with a slight pleat front, stone beige (#F5F5DC), heavy crepe.  \nStrappy stiletto pumps, open toe with a thin ankle strap, burgundy red (#800020), patent leather.  \nA delicate gold chain necklace and small pearl drop earrings, simple geometric pendants, metallic gold (#D4AF37) and lustrous white (#FDF5E6), polished metal and cultured pearls.\n\nThis ensemble bridges the gap between daytime practicality and evening elegance perfectly suited for an autumn theater visit. The structured blazer provides a professional silhouette while the soft silk blouse adds a touch of romance appropriate for a social event. Wide-leg trousers offer comfortable movement during intermission without sacrificing sophistication, and the burgundy pumps introduce a bold, stylish accent that complements the artificial lighting of the venue."}
+
+── ВІДПОВІДЬ (1004 симв., 10.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Blazer",
+      "details": "structured wool-blend tailored fit with notched lapels",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Blouse",
+      "details": "silk-chiffon relaxed silhouette with a subtle cowl neck",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "Trousers",
+      "details": "high-waisted wide-leg fluid drape with a slight pleat front",
+      "slot": "bottom",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "Pumps",
+      "details": "strappy stiletto open toe with a thin ankle strap",
+      "slot": "shoes",
+      "color_hex": "#800020",
+      "worn": true
+    },
+    {
+      "name": "Jewelry",
+      "details": "delicate gold chain necklace and small pearl drop earrings with simple geometric pendants",
+      "slot": "jewelry",
+      "color_hex": "#D4AF37",
+      "worn": true
+    }
+  ]
+}

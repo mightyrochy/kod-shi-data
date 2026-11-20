@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"екскурсія старим містом цілий день: 9 год на ногах по бруківці, +12 °C, без дощу\", \"place\": \"старим містом\", \"walk_min\": \"9 год на ногах\", \"movement\": \"9 год на ногах по бруківці\", \"place_words\": \"старим містом\"}, \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"walk_min\": {\"kind\": \"reading\", \"quote\": \"9 год на ногах\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"старим містом\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"екскурсія старим містом цілий день: 9 год на ногах по бруківці, +12 °C, без дощу\"}, \"precipitation\": {\"kind\": \"reading\", \"quote\": \"без дощу\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"9 год на ногах по бруківці\"}, \"weather_band\": {\"kind\": \"reading\"}, \"duration_h\": {\"kind\": \"reading\"}, \"setting\": {\"kind\": \"reading\"}}, \"event\": \"екскурсія старим містом цілий день: 9 год на ногах по бруківці, +12 °C, без дощу\", \"setting\": \"outdoor\", \"duration_h\": 9, \"movement\": \"walk_a_lot\", \"part_of_day\": \"day\", \"weather_band\": \"cold\", \"precipitation\": \"none\", \"occasion\": \"walk\", \"place\": \"park\", \"walk_min\": 540, \"open_zones\": \"one\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"light\": \"daylight\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A high-waisted midi skirt in charcoal grey with a relaxed A-line cut and an above-knee length, woven from a durable cotton-twill blend that resists scuffs.\\nA lightweight merino wool-blend cardigan in forest green featuring a longline silhouette and dropped shoulders for layering warmth.\\nFlat leather loafers in black with a non-slip tread sole and an ankle-high fit to ensure stability on cobblestones.\\nA small crossbody bag in textured vegan leather with multiple secure compartments to keep hands free during a nine-hour walk.\\nThis outfit works because the durable fabrics and supportive footwear are chosen specifically for long days of walking on uneven historic streets without getting wet. The neutral skirt and earth-toned cardigan provide easy temperature regulation as weather shifts throughout the day in an outdoor setting. Every piece prioritizes comfort and practicality while maintaining a neat, everyday aesthetic suitable for exploring the city freely.\"}],\"usage\":{\"input_tokens\":865,\"output_tokens\":188},\"stop_reason\":\"end_turn\"}"
+ }
+}
