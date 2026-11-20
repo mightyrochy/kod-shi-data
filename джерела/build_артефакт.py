@@ -1223,8 +1223,8 @@ def _довідник_показу(джерело):
     тієї ж причини, що й зонд вище: збирач міг бути запущений з іншої теки, а
     `pipeline`, імпортований раніше, — бути не тим, що пакується."""
     r = subprocess.run([sys.executable, "-X", "utf8", "-c",
-                        "import json, sys; sys.path.insert(0, 'прилади'); from експорт_показу import довідник; "
-                        "print(json.dumps(довідник(), ensure_ascii=False))"],
+                        ("import json, sys; sys.path.insert(0, 'прилади'); from експорт_показу import довідник; "
+                         "print(json.dumps(довідник(), ensure_ascii=False))")],
                        cwd=джерело, capture_output=True, text=True, encoding="utf-8", timeout=300)
     if r.returncode != 0:
         raise SystemExit("показ: довідник не зібрався:\n%s" % (r.stderr or r.stdout)[-700:])
@@ -1239,8 +1239,8 @@ def _вибірка_показу(джерело):
     пересилає в тіло виклику, а задача з іншою вибіркою віддає свою поруч із промптом
     свого ендпойнта. Підпроцес — з тієї ж причини, що довідник і промпт кольору."""
     r = subprocess.run([sys.executable, "-X", "utf8", "-c",
-                        "import json, збирач_промптів as З; "
-                        "print(json.dumps(З.вибірка(З.ВИБІРКА_ТИПОВА)))"],
+                        ("import json, збирач_промптів as З; "
+                         "print(json.dumps(З.вибірка(З.ВИБІРКА_ТИПОВА)))")],
                        cwd=джерело, capture_output=True, text=True, encoding="utf-8", timeout=300)
     if r.returncode != 0:
         raise SystemExit("показ: вибірка не зібралась:\n%s" % (r.stderr or r.stdout)[-700:])
@@ -1255,8 +1255,8 @@ def _промпт_кольору_показу(джерело):
     фото, у виклику нема, тож промпт складається тут, під час збірки, а не на телефоні: перше
     зчитування на знайомстві не чекає Pyodide. Підпроцес — з тієї ж причини, що й довідник."""
     r = subprocess.run([sys.executable, "-X", "utf8", "-c",
-                        "import json, міст_вхід; "
-                        "print(json.dumps(міст_вхід.промпт_кольору(), ensure_ascii=False)[1:-1])"],
+                        ("import json, міст_вхід; "
+                         "print(json.dumps(міст_вхід.промпт_кольору(), ensure_ascii=False)[1:-1])")],
                        cwd=джерело, capture_output=True, text=True, encoding="utf-8", timeout=300)
     if r.returncode != 0:
         raise SystemExit("показ: промпт кольору не зібрався:\n%s" % (r.stderr or r.stdout)[-700:])

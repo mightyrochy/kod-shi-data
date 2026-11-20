@@ -114,11 +114,11 @@ _КОНТЕКСТ = (
     правила=(
         "Judge EVERY item of «items»: each «n» exactly once, none skipped, none added.",
         "Judge each item on its own, not as part of an outfit.",
-        "«fits» — the item suits her and this occasion. Otherwise give the code of the main "
-        "reason it does not: «occasion» — wrong for the occasion or dress code; «weather» — wrong "
-        "for the weather of her day; «colour» — colour outside her palette; «cut» — cut or "
-        "silhouette that does not suit her body; «style» — not her style; «refusal» — breaks what "
-        "she refused; «other» — another reason.",
+        ("«fits» — the item suits her and this occasion. Otherwise give the code of the main "
+         "reason it does not: «occasion» — wrong for the occasion or dress code; «weather» — wrong "
+         "for the weather of her day; «colour» — colour outside her palette; «cut» — cut or "
+         "silhouette that does not suit her body; «style» — not her style; «refusal» — breaks what "
+         "she refused; «other» — another reason."),
     ),
     вихід="ОЦІНКИ_V1",
     поля_виходу={"ratings.<ключ>": "the verdict for the item whose «n» is the key"},
@@ -574,4 +574,3 @@ def прогнати(спосіб_, пак, модель, сід_руки, сц�
         цілі = set((вр.get("звіт") or {}).get("без_переможців") or [])
         обрані = [н for г, п in (стан.get("переможці") or {}).items() if г not in цілі for н in п]
     return вр, [(н,) + місця[н] for н in обрані if н in місця]
-
