@@ -1,0 +1,57 @@
+── ПРОМПТ (6210 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: jacket · about it: text н=1
+2 — kind: jeans · about it: text н=2
+3 — kind: baguette_bag · about it: text н=3
+4 — kind: belt · about it: text н=4
+5 — kind: ballet_flats · about it: text н=5
+6 — kind: bodysuit · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The jacket fits your occasion perfectly and its fabric is built to keep you warm in the cold weather.",
+"2": "The jeans are suitable for your day, giving you comfort and stability as you walk on cobblestones.",
+"3": "I chose this baguette bag deliberately to keep its vibrant floral print even though it falls outside your palette; it adds a lively touch of colour that stands out while you explore the city.",
+"4": "The belt is included as an essential anchor for your figure, helping to define your waist and ensure the outfit stays secure after hours of movement.",
+"5": "The ballet flats suit your occasion and are chosen because their fabric keeps your feet comfortable in the cold conditions.",
+"6": "The bodysuit works well for your occasion, providing a smooth base layer that remains neat under your jacket all day long.",
+"7": "For your long day of walking through the old town, this jacket keeps you warm against the cold air, while the sturdy jeans and ballet flats handle the cobblestones comfortably without slipping. The bodysuit offers a clean line that stays smooth under all those layers, and the belt finds a gentle anchor at your waist to hold everything together as you move.",
+"8": "Tuck the top slightly or let it fall straight so the jacket flows easily over the bag while you walk.",
+"9": "Wear the belt to secure the fit around the waist and prevent the outfit from feeling loose after hours of movement.",
+"10": "Сумка багет Теракотова — Replacing this floral-patterned bag with a solid color leather piece removes visual noise and ensures the outfit stays focused on your silhouette during the walk.",
+"11": "Пасок з пір’ям декольте світла пудра — Swapping this belt for one made of a stiffer material prevents it from disappearing under the jacket, maintaining a defined waistline while walking."
+}
+
+── ВІДПОВІДЬ (1830 симв., 28.4 с, HTTP 200) ──
+```json
+{
+  "1": "Цей піджак ідеально пасує до твоєї нагоди, а його тканина створена для того, щоб зігріти тебе в холодну погоду.",
+  "2": "Джинси чудово підходять для твого дня, даруючи тобі комфорт та стійкість при ходьбі по бруківці.",
+  "3": "Я навмисно обрала цю сумку-багет, щоб зберегти її яскравий квітковий візерунок, навіть якщо він виходить за межі твоєї палітри; вона додає жвавого кольорового акценту, який вирізняється під час прогулянки містом.",
+  "4": "Цей пояс включено як важливу деталь для фігури, допомагаючи визначити твою талію і забезпечувати надійність вбрання після багатьох годин руху.",
+  "5": "Балетки підходять до твоєї нагоди і обрані тому, що їх тканина тримає твої ноги комфортними у холодних умовах.",
+  "6": "Боді чудово працює для твоєї нагоди, забезпечуючи гладкий базовий шар, який залишається охайним під піджаком протягом всього дня.",
+  "7": "Для довгого дня прогулянок старовинним містом цей піджак зігріває тебе від холодного повітря, а джинси та балетки зручно справляються з бруківкою без ковзання. Боді пропонує чисту лінію, яка залишається гладкою під усіма цими шарами, і пояс знаходить ніжну опору на твоїй талії, щоб тримати все разом у русі.",
+  "8": "Злегка заправ боді або дай йому вільно спадати, щоб піджак легко струменів під час ходьби.",
+  "9": "Одягни пояс, щоб надійно закріпити вбрання навколо талії і запобігти його розхитуванню після багатьох годин руху.",
+  "10": "Сумка-багет теракотова — Замінивши цю сумку з квітковим візерунком на шкіряну однотонну, ти прибереш зайві деталі і забезпечиш зосередженість вбрання на твоїй фігурі під час прогулянки.",
+  "11": "Пасок з пір’ям декольте світла пудра — Замінивши цей пояс на виготовлений із більш жорсткого матеріалу, ти запобігтимеш його пропадання під піджаком і збережеш чітко окреслену талію під час ходьби."
+}
+```

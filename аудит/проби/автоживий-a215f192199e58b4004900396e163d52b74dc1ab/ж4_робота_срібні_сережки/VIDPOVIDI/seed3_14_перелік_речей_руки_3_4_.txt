@@ -1,0 +1,44 @@
+── ПРОМПТ (2238 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Navy blue wool-blend blazer, structured tailored fit, knee-length hem, hex #000080, heavy felted wool.  \nCream silk-cambric blouse, relaxed collar, midi length hitting mid-thigh, hex #FFFDD0, lightweight crepe de Chine.  \nGrey wool-pipe trousers, flat-front cut, ankle-grazing length, hex #808080, fine melton wool.  \nCharcoal leather loafers, classic cap-toe design, low-cut vamp, hex #36454F, full-grain calfskin leather.  \nSilver pearl drop earrings, teardrop shape with a polished finish, hex #C0C0C0 tone for metal, cultured freshwater pearl and sterling silver.  \nThis ensemble balances professional polish with your desire for accessory focus through the gleaming silver pearls that catch the autumn light. The neutral grey and cream palette ensures the jewelry remains the undisputed focal point without clashing with the classic navy suit. The textured wool fabrics add depth to your look, while the relaxed blouse collar keeps the silhouette comfortable for a full workday."}
+
+── ВІДПОВІДЬ (1037 симв., 5.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured tailored fit, knee-length hem, heavy felted wool",
+      "slot": "outerwear",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed collar, midi length hitting mid-thigh, lightweight crepe de Chine",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "flat-front cut, ankle-grazing length, fine melton wool",
+      "slot": "bottom",
+      "color_hex": "#808080",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "classic cap-toe design, low-cut vamp, full-grain calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "teardrop shape with a polished finish, cultured freshwater pearl and sterling silver",
+      "slot": "earrings",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}
