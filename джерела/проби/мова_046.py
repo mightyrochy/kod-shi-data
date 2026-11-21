@@ -7,7 +7,8 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bridge as B, feed as Ф, pipeline as PL
 
-вх = json.load(open("стенд_вх.json", encoding="utf-8"))
+with open("стенд_вх.json", encoding="utf-8") as файл:
+    вх = json.load(файл)
 вх["каталог"] = Ф.каталог_на_диску("каталог_brief.xml")
 r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 ід = [r["кандидати"][с][0]["id"] for с in list(r["кандидати"])[:3]]

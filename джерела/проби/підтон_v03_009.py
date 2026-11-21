@@ -7,7 +7,8 @@ import json, sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bridge
 
-вх = json.load(open(os.path.join(os.path.dirname(__file__), "..", "стенд_вх.json"), encoding="utf-8"))
+with open(os.path.join(os.path.dirname(__file__), "..", "стенд_вх.json"), encoding="utf-8") as файл:
+    вх = json.load(файл)
 база = {k: вх[k] for k in ("зріст", "обхвати", "шкіра", "волосся", "очі")}
 база.update(намір="conventional", без_фото=1)
 

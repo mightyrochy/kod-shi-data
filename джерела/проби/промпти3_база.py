@@ -22,7 +22,7 @@ def до_після(скрипт, ref=os.environ.get("БАЗА", "origin/main"))
     """(ДО, ПІСЛЯ): JSON останнього рядка `скрипт --json` у `джерела` дерева `ref` і цього дерева."""
     def _прогін(тека):
         р = subprocess.run([sys.executable, os.path.abspath(скрипт), "--json"], cwd=тека, capture_output=True,
-                           text=True, env=dict(os.environ, PYTHONPATH=тека))
+                           text=True, check=False, env=dict(os.environ, PYTHONPATH=тека))
         if р.returncode:
             raise SystemExit(р.stderr[-2000:])
         return json.loads(р.stdout.strip().splitlines()[-1])
@@ -35,6 +35,6 @@ def записи(маска, ref="origin/claude/zhyvi-pachka-15"):
     for ш in _git("ls-tree", "-r", "--name-only", ref, "--", "../аудит").splitlines():
         if "/VIDPOVIDI/" in ш and re.search(маска, ш.rsplit("/", 1)[-1]):
             г = re.match(r"── ПРОМПТ \(\d+ симв\.\) ──\n(.*)\n\n── ВІДПОВІДЬ \([^\n]*\) ──\n(.*)$",
-                         _git("show", "%s:%s" % (ref, ш)), re.S)
+                         _git("show", "%s:%s" % (ref, ш)), re.DOTALL)
             вих += [(ш, г.group(1), г.group(2))] if г else []
     return вих

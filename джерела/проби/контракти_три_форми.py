@@ -19,8 +19,8 @@ import audit_contracts as АК
      'СТАЛА = "поле_сталої"\ndef f(v):\n    return dict({СТАЛА: v})\n',
      'СТАЛА = "поле_сталої"\ndef f():\n    return [СТАЛА]\n'),
     ("3 перейменування", "поле_таблиці",
-     'Т = {"к": "поле_таблиці"}\nпер = lambda с: Т.get(с, с)\n'
-     'def f(v):\n    d = {}\n    d[пер("к")] = v\n    return d\n',
+     ('Т = {"к": "поле_таблиці"}\nпер = lambda с: Т.get(с, с)\n'
+      'def f(v):\n    d = {}\n    d[пер("к")] = v\n    return d\n'),
      'Т = {"к": "поле_таблиці"}\ndef f(м):\n    return Т.get(м, м)\n'),
 ]
 

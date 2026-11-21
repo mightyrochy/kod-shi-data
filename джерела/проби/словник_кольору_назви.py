@@ -7,10 +7,13 @@ import json, os, sys
 import словник_кольору as СК
 ТЕКА = os.path.join(ТУТ, "прилади", "рядки_5190"); етап = sys.argv[1] if len(sys.argv) > 1 else "round3_c70011d9"
 пари, рядків = [], 0
-for з in json.load(open(os.path.join(ТЕКА, "попередні_спроби.json"), encoding="utf-8"))["records"]:
+with open(os.path.join(ТЕКА, "попередні_спроби.json"), encoding="utf-8") as файл:
+    records = json.load(файл)["records"]
+for з in records:
     if з["stage"] != етап:
         continue
-    відповідь = json.load(open(os.path.join(ТЕКА, "попередні_спроби", os.path.basename(з["file"])), encoding="utf-8"))
+    with open(os.path.join(ТЕКА, "попередні_спроби", os.path.basename(з["file"])), encoding="utf-8") as файл:
+        відповідь = json.load(файл)
     for р in json.loads(відповідь["response"]["choices"][0]["message"]["content"])["rows"]:
         рядків += 1
         пари += [(к["quote"], к["code"]) for г in р.get("variants", []) for к in г["colors"]]

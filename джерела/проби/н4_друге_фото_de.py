@@ -23,7 +23,8 @@ def корінь_файлу(ф):
     return re.sub(r"[_-]?\d+$", "", б)                       # хвостовий номер кадру
 
 
-записи = json.load(gzip.open(КОРІНЬ / "каталог_кадри.json.gz", "rt", encoding="utf-8"))["записи"]
+with gzip.open(КОРІНЬ / "каталог_кадри.json.gz", "rt", encoding="utf-8") as файл:
+    записи = json.load(файл)["записи"]
 пари = []
 import колір_річ as _КОЛІР
 for кадри in записи.values():

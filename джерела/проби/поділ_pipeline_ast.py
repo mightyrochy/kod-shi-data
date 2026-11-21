@@ -31,7 +31,9 @@ def вузли(текст):
 де, розбіжні, зайві = {}, [], []
 for м in МОДУЛІ:
     if not os.path.exists(os.path.join(ДЖЕРЕЛА, м + ".py")): continue
-    for ім, д in вузли(open(os.path.join(ДЖЕРЕЛА, м + ".py"), encoding="utf-8").read()).items():
+    with open(os.path.join(ДЖЕРЕЛА, м + ".py"), encoding="utf-8") as файл:
+        модуль = вузли(файл.read())
+    for ім, д in модуль.items():
         if ім not in до: зайві.append((м, ім)); continue
         де.setdefault(ім, м)
         if до[ім] != д: розбіжні.append((м, ім))
