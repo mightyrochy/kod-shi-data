@@ -4,7 +4,8 @@
 Запуск: python3 джерела/проби/каталог_проблеми_г_стеля.py"""
 import collections, os, re
 Ф = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "zhnyvarka", "зведення_жнив.tsv")
-рядки = [р.rstrip("\n").split("\t") for р in open(Ф, encoding="utf-8")]
+with open(Ф, encoding="utf-8") as ф:
+    рядки = [р.rstrip("\n").split("\t") for р in ф]
 ш = рядки[0]; рядки = [р for р in рядки[1:] if len(р) >= 12 and re.match(r"\d{4}-\d\d-\d\d$", р[0])]
 І = {к: ш.index(к) for к in ("дата", "домен", "транспорт", "адрес_знайдено", "відкрито", "карток", "збоїв", "нотатка")}
 чим = collections.Counter()

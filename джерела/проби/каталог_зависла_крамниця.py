@@ -11,7 +11,8 @@ def перевірити(місце):
         обхід.main(["--журнал", ж, "--магазини", "ok.com,hang.com",
                     "--секунд-на-магазин", "1", "--секунд-на-цикл", "2",
                     "--циклів", "1", "--паралельно", "2", "--заглушка", місце])
-        рядки = {р["домен"]: р for р in csv.DictReader(open(Path(ж) / "обхід_стан.tsv", encoding="utf-8"), delimiter="\t")}
+        with open(Path(ж) / "обхід_стан.tsv", encoding="utf-8") as ф:
+            рядки = {р["домен"]: р for р in csv.DictReader(ф, delimiter="\t")}
         assert рядки["hang.com"]["стан_код"] == "WAIT" and рядки["hang.com"]["причина_код"] == "TIMEOUT"
         assert рядки["ok.com"]["стан_код"] == "CATALOG"
         cmd = [sys.executable, str(Path(__file__).parent / "каталог_обхід_стан.py"), ж]
@@ -21,7 +22,8 @@ def перевірити(місце):
         if місце == "контекст":
             обхід.main(["--журнал", ж, "--магазини", "hang.com", "--секунд-на-магазин", "1",
                         "--секунд-на-цикл", "2", "--циклів", "1", "--заглушка", "успіх"])
-            повтор = {р["домен"]: р for р in csv.DictReader(open(Path(ж) / "обхід_стан.tsv", encoding="utf-8"), delimiter="\t")}
+            with open(Path(ж) / "обхід_стан.tsv", encoding="utf-8") as ф:
+                повтор = {р["домен"]: р for р in csv.DictReader(ф, delimiter="\t")}
             assert повтор["hang.com"]["стан_код"] == "CATALOG"
         return f"{місце}: hang.com=WAIT/{рядки['hang.com']['причина_код']}, ok.com=CATALOG"
 

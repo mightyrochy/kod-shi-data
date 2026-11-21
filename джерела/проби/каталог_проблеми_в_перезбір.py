@@ -9,13 +9,17 @@ sys.path.insert(0, os.path.abspath(sys.argv[1]))
 СХОЖІ = re.compile(r"схожі товари|вам також|з цим товаром|ви переглядали|дивіться також", re.IGNORECASE)   # без «рекомендуємо»: це слово самого опису
 відс = lambda с: [int(x) for x in re.findall(r"(\d{1,3})\s*%", с)]
 сума = lambda в: any(sum(в[:i]) == 100 for i in range(1, len(в) + 1))
-for крамниця, адреси in json.load(open(sys.argv[3], encoding="utf-8")).items():
+with open(sys.argv[3], encoding="utf-8") as ф:
+    записи = json.load(ф)
+for крамниця, адреси in записи.items():
     р = C.Counter(); початки = C.Counter()
     for u in адреси:
         шлях = os.path.join(sys.argv[2], hashlib.sha1(u.encode()).hexdigest()[:16] + ".html")
         if not os.path.exists(шлях):
             continue
-        ф = ж.факти_з_картки(open(шлях, encoding="utf-8").read(), u, *([ж.рецепт_селекторів(крамниця)] if hasattr(ж, "рецепт_селекторів") else []))
+        with open(шлях, encoding="utf-8") as файл:
+            текст = файл.read()
+        ф = ж.факти_з_картки(текст, u, *([ж.рецепт_селекторів(крамниця)] if hasattr(ж, "рецепт_селекторів") else []))
         з = ж.канонічний_запис(ф, {"домен": крамниця, "платформа": None}, "картка")
         с, оп = з.get("склад") or "", з.get("опис") or ""
         р["карток"] += 1; р["зі складом"] += bool(с); р["склад без %"] += bool(с and not відс(с))

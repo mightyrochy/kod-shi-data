@@ -13,6 +13,7 @@ with tempfile.TemporaryDirectory(prefix="обхід-стан-") as ж:
                         готово=2, лишилось=2, цикл=1, підстава="картки збережено"))
     обхід.main(["--журнал", ж, "--магазини", "hang.com", "--секунд-на-магазин", "9",
                 "--секунд-на-цикл", "1", "--циклів", "1", "--заглушка", "синхронний_блок"])
-    р = next(csv.DictReader(open(шлях, encoding="utf-8"), delimiter="\t"))
+    with open(шлях, encoding="utf-8") as ф:
+        р = next(csv.DictReader(ф, delimiter="\t"))
     assert р["стан_код"] == "CATALOG" and р["лишилось"] == "2" and р["причина_код"] == "TIMEOUT"
     print("5.3-Б ПІСЛЯ: CATALOG з картками не понижено; без черги лишилось=2")

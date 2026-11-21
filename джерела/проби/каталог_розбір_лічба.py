@@ -5,11 +5,14 @@
 import collections, json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import каталог_розбір as КР, каталог_розбір_прогін as П, фід_каталог as ФК, фід_розбір as ФР
-тека = sys.argv[1] if len(sys.argv) > 1 else sys.exit("треба тека прогону"); мірка = json.load(open(os.path.join(тека, "прогін.json"), encoding="utf-8"))
+тека = sys.argv[1] if len(sys.argv) > 1 else sys.exit("треба тека прогону")
+with open(os.path.join(тека, "прогін.json"), encoding="utf-8") as ф:
+    мірка = json.load(ф)
 офери = {o["id"]: o for o in ФР.читати_yml(ФК.каталог_на_диску(), показ=False)[0]}
 валідні, причини, покр, види, незгоди, збої_коду, ос = 0, [], dict.fromkeys(КР.покриття({}), 0), {}, [], {}, collections.Counter()
 for р in мірка["речі"]:
-    дані, відп = П.розділити(open(os.path.join(тека, р["файл"]), encoding="utf-8").read())  # що модель бачила
+    with open(os.path.join(тека, р["файл"]), encoding="utf-8") as ф:
+        дані, відп = П.розділити(ф.read())  # що модель бачила
     поля, пр = КР.з_відповіді(відп, дані)                                     # сторож цитат (РЗ-К)
     причини += [(р["файл"], т) for т in пр]
     if not поля: continue

@@ -5,7 +5,8 @@ import sys, os, math, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import colorspace as cs, bases as ОС, outfit as _O, palette as П, face_contrast as KC
-вх = json.load(open("стенд_вх.json", encoding="utf-8"))
+with open("стенд_вх.json", encoding="utf-8") as ф:
+    вх = json.load(ф)
 F = cs.features(cs.hx(вх["шкіра"]), cs.hx(вх["волосся"][0]), cs.hx(вх["очі"]))
 к = _O.контраст_особи(F, "uncontrolled")
 КОНТР = dict(щілина=к.get("value_gap"), value_gap=к.get("value_gap"), рівень=к.get("рівень"))

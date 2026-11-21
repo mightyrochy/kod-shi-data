@@ -14,7 +14,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import build_артефакт as B
 
 Б = lambda т: len(т.encode("utf-8"))
-сирий = open(os.path.join(os.path.dirname(B.__file__), "показ.html"), encoding="utf-8").read()
+with open(os.path.join(os.path.dirname(B.__file__), "показ.html"), encoding="utf-8") as ф:
+    сирий = ф.read()
 чистий = B._чистка_показу(сирий)
 
 js = lambda т: "\n".join(м.group(1) for м in __import__("re").finditer(

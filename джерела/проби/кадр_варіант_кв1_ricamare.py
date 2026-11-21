@@ -8,7 +8,8 @@ sys.path[:0] = [str(КОРІНЬ / "джерела"), str(КОРІНЬ / "zhnyva
 import ricamare_сторінка as р, фід_власник_кадру as в
 
 ф = json.loads((КОРІНЬ / "zhnyvarka/фікстури/ricamare_3448.json").read_text(encoding="utf-8"))
-html = gzip.open(КОРІНЬ / "zhnyvarka/фікстури/ricamare_3448.html.gz", "rt", encoding="utf-8").read()
+with gzip.open(КОРІНЬ / "zhnyvarka/фікстури/ricamare_3448.html.gz", "rt", encoding="utf-8") as ф:
+    html = ф.read()
 
 
 def власник(h):

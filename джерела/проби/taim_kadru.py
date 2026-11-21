@@ -17,7 +17,7 @@ import gzip, json, os, re, subprocess, sys, tempfile
          "--тайм-кадру", str(стеля), "--ліміт", str(речей), "--крамниці", "sunwin-store.com",
          "--кеш-індекс", os.path.join(тимч, "zhnyva_v2_cache", "кадри_індекс_proba.json"),
          "--вихід", вих]
-п = subprocess.run(наказ, cwd=ТУТ, capture_output=True, text=True, encoding="utf-8", errors="replace")
+п = subprocess.run(наказ, cwd=ТУТ, capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
 часи = [float(м) for м in re.findall(r"з кешу \d+, ([\d.]+) с", п.stdout)]
 повторів = len(re.findall(r"^повтор \[", п.stdout, re.MULTILINE))
 if not часи:
@@ -26,7 +26,8 @@ if not часи:
 ЗАПАС = 1.5                                  # накладні на запуск потоків і запис кадру на диск
 for н, с in enumerate(часи, 1):
     print("річ %d: %.1f с%s" % (н, с, "  ← ПОНАД СТЕЛЮ" if с > стеля + ЗАПАС else ""))
-зп = json.load(gzip.open(вих, "rt", encoding="utf-8"))["записи"]
+with gzip.open(вих, "rt", encoding="utf-8") as ф:
+    зп = json.load(ф)["записи"]
 не_встигло = sum(1 for р in зп.values() for в in р if в.get("не_встиг"))
 print("стеля %.0f с; найдовша річ %.1f с; кадрів не встигло %d; речей у черзі повтору %d"
       % (стеля, max(часи), не_встигло, повторів))

@@ -3,9 +3,12 @@ import json,gzip,sys,collections as K,random
 sys.path.insert(0,".")
 import bridge as B, стенд_знімок as СЗ, колір_річ as КР
 import фід_збагачення as ФЗ, verify as V
-вх=json.load(open("стенд_вх.json",encoding="utf-8"))
+with open("стенд_вх.json", encoding="utf-8") as ф:
+    вх = json.load(ф)
 B.виклик("запити",json.dumps(dict(вх,сценарій=СЗ.СЦЕНАРІЇ["офіс·18°C"],випадок="офіс"),ensure_ascii=False))
-кат,зб=B.каталог_останнього_пакета(),json.load(gzip.open("каталог_збагачення.json.gz"))
+кат = B.каталог_останнього_пакета()
+with gzip.open("каталог_збагачення.json.gz") as ф:
+    зб = json.load(ф)
 G=K.defaultdict(list)
 import колір_річ as _КОЛІР
 for r in кат:
@@ -23,5 +26,6 @@ rnd=random.Random(7); out=[]
 for g in ["0.8","0.75","0.6","0.55"]:
     xs=sorted(G[g]); rnd.shuffle(xs); out+= [dict(id=a,слово=b,hex=c,згода=d,магазин=e,назва=f,група=g) for a,b,c,d,e,f in xs[:10]]
 import os,tempfile; вих=sys.argv[1] if len(sys.argv)>1 else os.path.join(tempfile.mkdtemp(),"sample40.json"); print("вихід:",вих)
-json.dump(out,open(вих,"w"),ensure_ascii=False,indent=0)
+with open(вих, "w") as ф:
+    json.dump(out, ф, ensure_ascii=False, indent=0)
 print(len(out))

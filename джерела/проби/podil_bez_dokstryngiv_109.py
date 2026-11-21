@@ -13,7 +13,8 @@ import sys
 from поділ_спільне import dump_без_докстрінгів
 
 ФАЙЛ, ІМ_Я = "аксесуари_реєстр.py", "зн"
-текст = open(ФАЙЛ, encoding="utf-8").read()
+with open(ФАЙЛ, encoding="utf-8") as ф:
+    текст = ф.read()
 з_докстрінгом = next(n for n in ast.parse(текст).body
                       if isinstance(n, ast.FunctionDef) and n.name == ІМ_Я)
 assert ast.get_docstring(з_докстрінгом) is not None, "тестова функція мусить мати докстрінг"

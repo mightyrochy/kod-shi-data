@@ -18,8 +18,8 @@ import feed, фід_слот as FS
 }
 сирий = os.path.join(tempfile.gettempdir(), "_139_сирий.xml")
 if not os.path.exists(сирий):
-    with gzip.open(os.path.join(ТУТ, "..", "..", "каталог_повний.xml.gz"), "rb") as вх:
-        open(сирий, "wb").write(вх.read())
+    with gzip.open(os.path.join(ТУТ, "..", "..", "каталог_повний.xml.gz"), "rb") as вх, open(сирий, "wb") as ф:
+        ф.write(вх.read())
 к = feed.читати_yml(сирий)
 к = к[0] if isinstance(к, tuple) else к
 рух, збої = collections.Counter(), []

@@ -15,7 +15,8 @@ import os, re, sys
 ЧОЛОВІЧЕ = re.compile(r"стиліст(а|у|ові|ом)?\b", re.IGNORECASE)
 _п = lambda m: "\n" * m.group(0).count("\n")
 
-т = open(os.path.join(ДЖЕРЕЛА, "показ.html"), encoding="utf-8").read()
+with open(os.path.join(ДЖЕРЕЛА, "показ.html"), encoding="utf-8") as ф:
+    т = ф.read()
 усього = len(ЧОЛОВІЧЕ.findall(т))
 т = re.sub(r"<!--.*?-->", _п, re.sub(r"/\*.*?\*/", _п, т, flags=re.DOTALL), flags=re.DOTALL)
 у_коді = [(i, р.strip()[:100]) for i, р in enumerate(т.split("\n"), 1) if ЧОЛОВІЧЕ.search(р)]
