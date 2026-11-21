@@ -1,0 +1,37 @@
+── ПРОМПТ (2168 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Champagne silk chiffon midi dress, flowing A-line silhouette falling mid-calf, #FDF5E6, lightweight fluid fabric.\nSilver pearl-drop chandelier earrings with diamond accents, intricate filigree cut, #C0C0C0, polished metal alloy.\nGold oxidized bangle bracelet, solid tube shape, #FFD700, brushed brass material.\nNude suede strappy sandals, block heel of 3 inches, #E6C2BF, soft nappa leather.\n\nThis ensemble perfectly balances the summer heat with an evening-appropriate elegance for a wedding guest, adhering to her wish for formal attire without heavy outer layers. The champagne silk catches the artificial lighting and natural sunset hues while maintaining comfort during the transition from outdoor ceremony to dinner. The delicate silver jewelry provides the requested accent at the ears without overwhelming the neckline of the dress, creating a refined yet joyful look suitable for celebrating with family."}
+
+── ВІДПОВІДЬ (857 симв., 3.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "silk chiffon midi dress",
+      "details": "flowing A-line silhouette falling mid-calf, lightweight fluid fabric",
+      "slot": "dress",
+      "color_hex": "#FDF5E6",
+      "worn": true
+    },
+    {
+      "name": "pearl-drop chandelier earrings",
+      "details": "with diamond accents, intricate filigree cut, polished metal alloy",
+      "slot": "earrings",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    },
+    {
+      "name": "oxidized bangle bracelet",
+      "details": "solid tube shape, brushed brass material",
+      "slot": "bracelet",
+      "color_hex": "#FFD700",
+      "worn": true
+    },
+    {
+      "name": "suede strappy sandals",
+      "details": "block heel of 3 inches, soft nappa leather",
+      "slot": "shoes",
+      "color_hex": "#E6C2BF",
+      "worn": true
+    }
+  ]
+}

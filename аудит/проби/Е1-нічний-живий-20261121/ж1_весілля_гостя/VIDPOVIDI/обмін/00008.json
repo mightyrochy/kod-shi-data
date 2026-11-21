@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"я гостя на весіллі сестри в серпні, церемонія надворі о 16:00, потім ресторан\", \"place\": \"церемонія надворі о 16:00, потім ресторан\", \"month\": \"в серпні\", \"weekday\": \"о 16:00\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"weekday\": {\"kind\": \"reading\", \"quote\": \"о 16:00\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"церемонія надворі о 16:00, потім ресторан\"}, \"accent_place\": {\"kind\": \"reading\"}, \"month\": {\"kind\": \"reading\", \"quote\": \"в серпні\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"я гостя на весіллі сестри в серпні, церемонія надворі о 16:00, потім ресторан\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}}, \"event\": \"я гостя на весіллі сестри в серпні, церемонія надворі о 16:00, потім ресторан\", \"part_of_day\": \"evening\", \"occasion\": \"wedding_guest\", \"place\": \"house_party\", \"month\": \"august\", \"weekday\": \"today\", \"accent_place\": \"jewellery\", \"formality\": [\"formal\"], \"season\": \"summer\", \"light\": \"artificial\"}, \"person\": {\"skin_hex\": [\"#deb295\", \"#d8a98c\", \"#e2ba9f\"], \"hair_hex\": \"#e5cd99\", \"eyes_hex\": \"#759087\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Mid-thigh sheath dress with a subtle V-neckline, A-line silhouette, flowing length to knee, color #e5d0bd, silk crepe de chine.\\nStrapped ankle-strap pump with a moderate heel, pointed toe, color #deb295, satin fabric.\\nDrop-ear diamond stud earrings in 18k white gold, metal finish, color silver/white, polished gold vermeil.\\nDelicate pearl strand necklace, round pearls, single strand, color white/cream, cultured freshwater pearls.\\n\\nThis outfit is perfect for an August wedding as the silk dress offers a flowing, elegant drape suitable for warm evening temperatures while remaining modest enough for transitioning from an outdoor ceremony to an indoor reception. The champagne and pale gold tones complement the wearer's skin tones and hair, creating a cohesive look that fits the \\\"formal\\\" dress code without appearing overly heavy for the season. The ankle-strap heels provide necessary height and grace for dancing under artificial lighting, while the understated jewelry adds a touch of sparkle to the accessories focus requested by her wishes.\"}],\"usage\":{\"input_tokens\":964,\"output_tokens\":224},\"stop_reason\":\"end_turn\"}"
+ }
+}
