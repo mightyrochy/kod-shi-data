@@ -75,7 +75,7 @@ class Клас(unittest.TestCase):
     def test_уривок(self):
         """Назва знову з `quote` перед `name` — те саме місце, ті самі чотири записи."""
         м = self.мутант(УРИВОК + ' or ')
-        self.assertEqual({(р['файл'], р['рядок']) for р in м}, {(РІЧ, 2328)}, м)
+        self.assertEqual({(р['файл'], р['рядок']) for р in м}, {(РІЧ, 2326)}, м)
         self.assertEqual(записи(м, РІЧ), УСІ)
 
     def test_дописок(self):
