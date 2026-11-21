@@ -11,10 +11,13 @@ import sys, os, json, tempfile, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import bridge as B, pipeline as PL, feed as F
 
-вх = json.load(open("стенд_вх.json", encoding="utf-8"))
+with open("стенд_вх.json", encoding="utf-8") as файл:
+    вх = json.load(файл)
 вх["каталог"] = F.каталог_на_диску("каталог_brief.xml")
 вх["кеш_кольорів"] = os.path.join(tempfile.gettempdir(), "кеш_живого_шляху.json")
-if not os.path.exists(вх["кеш_кольорів"]): json.dump({}, open(вх["кеш_кольорів"], "w"))
+if not os.path.exists(вх["кеш_кольорів"]):
+    with open(вх["кеш_кольорів"], "w") as файл:
+        json.dump({}, файл)
 міст = lambda ім, d: json.loads(B.виклик(ім, json.dumps(d, ensure_ascii=False)))
 опис_відп = lambda н: json.dumps(dict(версія="1", текст="проза для жінки.",
                                       як_носити=[], фото_не_те=н), ensure_ascii=False)

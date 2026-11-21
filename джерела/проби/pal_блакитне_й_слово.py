@@ -11,7 +11,8 @@ import sys, pathlib, gzip, json, collections as K
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import колір_річ as КР, palettes as PAL, палітра_схеми as ПСХ, colorspace as cs, verify as V, фід_збагачення as ФЗ
 
-зб = json.load(gzip.open("каталог_збагачення.json.gz", "rt"))
+with gzip.open("каталог_збагачення.json.gz", "rt") as файл:
+    зб = json.load(файл)
 пох = K.Counter()
 for v in зб.values():
     x = v.get("колір_основний") or {}

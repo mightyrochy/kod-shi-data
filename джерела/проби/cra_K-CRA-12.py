@@ -13,7 +13,9 @@ import sys, pathlib, json
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import bridge as B
 
-вх = json.load(open("стенд_вх.json", encoding="utf-8")); вх["гілка"] = 0
+with open("стенд_вх.json", encoding="utf-8") as файл:
+    вх = json.load(файл)
+вх["гілка"] = 0
 json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 кат = {c["id"]: c for c in B.каталог_останнього_пакета()}
 хустки = [c for c in кат.values() if c["слот"] == "шарф"]

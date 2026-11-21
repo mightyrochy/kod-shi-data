@@ -82,9 +82,8 @@ def зона_світлоти(F, intent="conventional"):
     for k, v in (F or {}).items():
         if k.startswith("_") or not isinstance(v, dict):
             continue
-        if k == "шкіра" or k.startswith("волосся"):
-            if v.get("L") is not None:
-                L.append(float(v["L"]))
+        if (k == "шкіра" or k.startswith("волосся")) and v.get("L") is not None:
+            L.append(float(v["L"]))
     if not L:
         return 40.0, 80.0
     низ, верх = min(L), max(L)
@@ -132,7 +131,7 @@ def з_тілом(г, T, intent="conventional"):
     for р in тіл:
         # ребра тіла лягають лише на ЗОНИ ТІЛА: вони не залежать від речей і не
         # мають права зсувати вузол напруги слотів (виміряно: інакше «взуття» → «верх»)
-        вузли = sorted(set(u for u in (р.get("вузли") or []) if u in ЗОНИ_ТІЛА) or [ЛЮДИНА])
+        вузли = sorted({u for u in (р.get("вузли") or []) if u in ЗОНИ_ТІЛА} or [ЛЮДИНА])
         ребра.append(dict(ід="тіло:%s" % р.get("ід"), правило=р.get("джерело") or ("тіло:%s" % р.get("ід")),
                           вузли=вузли, напруга=float(р.get("напруга") or 0.0), регістр="тіло",
                           блокує=False, суть=str(р.get("рядок") or р.get("ід") or "")[:120], тіло=True))

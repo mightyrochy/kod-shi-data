@@ -11,6 +11,7 @@ p (як у ребрах тону), корені уточнено бісекці�
 """
 import argparse
 import importlib.util
+import itertools
 import json
 import math
 from pathlib import Path
@@ -197,7 +198,7 @@ def поєднати(списки, від, до):
     """Спільне подрібнення кількох [(від, до, знак)] — [(від, до, [знаки])]."""
     точки = sorted({від, до} | {x for с in списки for p, q, _ in с for x in (p, q)})
     результат = []
-    for p, q in zip(точки, точки[1:]):
+    for p, q in itertools.pairwise(точки):
         m = (p + q) / 2
         результат.append((p, q, [next(з for a, b, з in с if a <= m <= b) for с in списки]))
     return результат
