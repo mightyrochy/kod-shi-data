@@ -22,7 +22,7 @@ def знахідки(в):
     if isinstance(в, dict): return ([в] if isinstance(в.get("правило"), str) else []) + [з for х in в.values() for з in знахідки(х)]
     return [з for х in в for з in знахідки(х)] if isinstance(в, (list, tuple)) else []
 def зліпок():
-    вих = [з for о in ОБРАЗИ for з in знахідки(PL.перевірити_образ(F, [dict(x) for x in о], тіло=T, нагода="робота", смуга_погоди="mild"))]
+    вих = [з for о in ОБРАЗИ for з in знахідки(PL.перевірити_образ(F, [dict(x) for x in о], dict(нагода="робота", смуга_погоди="mild"), тіло=T))]
     return [dict({к: з.get(к) for к in ПОЛЯ}, ремонт=bool(з.get("ремонт") or з.get("ремонт_заяви"))) for з in вих]
 if __name__ == "__main__":
     стало = зліпок()
