@@ -1,0 +1,58 @@
+── ПРОМПТ (6076 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: blazer · about it: text н=1
+2 — kind: shirt · about it: text н=2
+3 — kind: blazer · about it: text н=3
+4 — kind: ankle_boots · about it: text н=4
+5 — kind: ring · about it: text н=5
+6 — kind: skirt · about it: text н=6
+7 — kind: backpack · about it: text н=7
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This blazer offers structure and warmth for your cold day while staying comfortable enough for walking.",
+"2": "Your shirt sits perfectly under the jacket, keeping the look polished yet easy to move in.",
+"3": "This second blayer adds depth to your silhouette and ensures you stay covered and warm as you explore.",
+"4": "These ankle boots give you the steadiness you need for cobblestones and long walks without adding bulk.",
+"5": "The ring is a perfect touch that hints at occasion without getting in your way while you move.",
+"6": "This skirt balances the volume of your layers and lets your legs breathe during the tour.",
+"7": "Your backpack frees your hands so you can focus on the sights around you all day long.",
+"8": "You are ready for a full day of walking through the old town with this layered look. The blazer and shirt pair perfectly for movement, while your ankle boots and backpack keep you comfortable over long distances. The ring adds just the right amount of polish without weighing you down.",
+"9": "Keep the blazer collar open for a relaxed feel that suits your walk.",
+"10": "Жакет на ґудзиках з коміром-трансформером сірий — I raised the collar to add a vertical line near the face and sharpen the silhouette, creating a deliberate styling command that counters any potential flatness of the knit fabric.",
+"11": "Рюкзак жіночий Welfare, Жакет на ґудзиках з коміром-трансформером сірий, Сорочка з довгими рукавами шоколадно-бежева — I accept this register gate because the classic blazer provides the structural contrast needed for a long walk, balancing the everyday softness of the knit so you feel put-together rather than casual."
+}
+
+── ВІДПОВІДЬ (1737 симв., 17.0 с, HTTP 200) ──
+```json
+{
+"1": "Цей блейзер дарує тобі структуру та тепло в холодний день, залишаючись при цьому достатньо комфортним для прогулянок.",
+"2": "Твоя сорочка ідеально сидить під жакетом, зберігаючи образ охайним, але зручним у русі.",
+"3": "Цей другий блейзер додає глибини твоєму силуету та гарантує, що ти будеш вкрита й зігріта, поки досліджуєш місто.",
+"4": "Ці черевики дають тобі стійкість, необхідну для прогулянок по бруківці та довгих піших переходів, не додаючи зайвого об’єму.",
+"5": "Кільце — ідеальний штрих, який натякає на особливу подію, але при цьому не заважає тобі рухатися.",
+"6": "Ця спідниця збалансовує об’єм твоїх шарів та дарує ногам дихати під час екскурсії.",
+"7": "Твій рюкзак звільняє руки, щоб ти могла зосередитися на красі навколо тебе цілий день.",
+"8": "Ти готова до насиченого дня прогулянок старовинним містом у цьому багатошаровому образі. Блейзер та сорочка ідеально поєднуються для зручності, а черевики та рюкзак забезпечують комфорт на великих відстанях. Кільце додає саме ту кількість вишуканості, яка не обтяжує тебе.",
+"9": "Залиш комір блейзера відкритим для невимушеного вигляду, який підходить до твоєї прогулянки.",
+"10": "Жакет на ґудзиках з коміром-трансформером сірий — Я підняла комір, щоб додати вертикальну лінію біля обличчя та загострити силует, створивши стилістичний акцент, який протистоїть будь-якій потенційній площинності трикотажної тканини.",
+"11": "Рюкзак жіночий Welfare, Жакет на ґудзиках з коміром-трансформером сірий, Сорочка з довгими рукавами шоколадно-бежева — Я приймаю цей класичний блейзер, адже він дає необхідний структурний контраст для довгої прогулянки, балансуючи повсякденну м’якість трикотажу так, що ти почуваєш себе зібрано, а не просто невимушено."
+}
+```

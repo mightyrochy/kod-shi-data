@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tan trench coat, relaxed fit, knee length, #C6B09C, waxed cotton with a storm flap.\\nWool-blend midi skirt, A-line cut, just below the knee, #8D7B68, heavy ponte knit.\\nOversized structured blazer, cropped at the waist, charcoal grey, #3A3F42, wool crepe with shoulder pads.\\nCream silk blouse, loose silhouette, hip length, #F5F1E6, raw silk chiffon.\\nLeather ankle boots, block heel for stability on cobblestones, brown, #8B6C59, smooth calfskin.\\nTwill flat cap, bucket style to shield from autumn rain, olive green, #556B2F, durable canvas.\\n\\nThis ensemble prioritizes comfort and durability for a full day of walking through an old town in cold weather, featuring waterproof layers and slip-resistant footwear. The neutral palette of earth tones and charcoal allows you to move freely without feeling weighed down, while the structured blazer provides warmth and a polished look suitable for various outdoor settings. Every item chosen respects your refusal to wear anything restrictive, ensuring the outfit supports long hours on your feet without sacrificing style or practicality against the elements.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"trench coat\\\",\\n      \\\"details\\\": \\\"relaxed fit, knee length, waxed cotton with a storm flap\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#C6B09C\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"skirt\\\",\\n      \\\"details\\\": \\\"A-line cut, midi length just below the knee, wool-blend heavy ponte knit\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#8D7B68\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"oversized structured cropped at the waist, shoulder pads, wool crepe\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#3A3F42\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blouse\\\",\\n      \\\"details\\\": \\\"loose silhouette, hip length, raw silk chiffon\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#F5F1E6\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"boots\\\",\\n      \\\"details\\\": \\\"leather ankle block heel for stability on cobblestones, smooth calfskin\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#8B6C59\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"cap\\\",\\n      \\\"details\\\": \\\"flat bucket style to shield from autumn rain, durable canvas\\\",\\n      \\\"slot\\\": \\\"headwear\\\",\\n      \\\"color_hex\\\": \\\"#556B2F\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":616,\"output_tokens\":416},\"stop_reason\":\"end_turn\"}"
+ }
+}
