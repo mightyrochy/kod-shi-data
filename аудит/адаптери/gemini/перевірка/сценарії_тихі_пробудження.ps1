@@ -67,7 +67,7 @@ try {
         Check '1 STALE із зайвим словом у рядку будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО gemini/крок X STALE')
         Check '1 ТРИВОГА будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ТРИВОГА AUTH CLOUD')
         Check '1 ЛАНЦЮГ будить' (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_API')
-        foreach ($kind in @('перевірка-12', 'pachka-3', 'автоживий-штамп', 'автоперевірка-9', 'Е1-нічний-живий-1')) {
+        foreach ($kind in @('перевірка-12', 'pachka-3', 'автоживий-штамп', 'автоперевірка-9')) {
             Write-FileAtomic "$WorkDir/state/kind.json" ((@{slug=$kind;line="GEMINI ОБГОРТКА: ГОТОВО gemini/$kind $sha"}) | ConvertTo-Json)
             Check "1 ГОТОВО $kind — будить" (Test-DispatcherAction "GEMINI ОБГОРТКА: ГОТОВО gemini/$kind $sha")
         }

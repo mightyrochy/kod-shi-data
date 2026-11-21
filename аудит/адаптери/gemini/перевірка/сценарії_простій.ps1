@@ -114,13 +114,7 @@ Scenario 'а простій' {
     $past = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - 7200; $futS = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 7200
     $n1 = & $mk 'codex' 11; $n1.Slug = 'Е1-нічний-живий-' + (& $day 1); $n1.Name = "gemini-queue/$($n1.Slug)/gpt/1"; $n1.Ref = $n1.Name
     $script:Marks = @($n1); & $putG $n1 'CODEX' $past
-    Check 'а нічний прохід учорашнього дня зі скінченим чеканням (смуга його не бере) — простій' (-not (Test-IdleBusy $g))
-    $n2 = & $mk 'codex' 12; $n2.Slug = 'Е1-нічний-живий-' + (& $day 0); $n2.Name = "gemini-queue/$($n2.Slug)/gpt/1"; $n2.Ref = $n2.Name
-    $script:Marks = @($n2); & $putG $n2 'CODEX' $past
-    Check 'а нічний прохід сьогодні зі скінченим чеканням (смуга його візьме) — робота' (Test-IdleBusy $g)
-    $nc = & $mk 'claude' 13; $nc.Slug = 'Е1-нічний-живий-' + (& $day 1); $nc.Name = "gemini-queue/$($nc.Slug)/cc-x/1"; $nc.Ref = $nc.Name
-    $script:Marks = @($nc)
-    Check 'а нічний прохід учорашнього дня на смузі Claude (її правило дати інше) — робота' (Test-IdleBusy $g)
+    Check 'а давня нічна позначка зі скінченим чеканням — робота: окремого нічного нема, смуга бере її як звичайну й закриває' (Test-IdleBusy $g)
 
     # Групи agy, як їх пише gemini-run у pools.json (назва малими буквами); каскад моделі — за Get-CascadePlan.
     [void][IO.Directory]::CreateDirectory("$tmp/gout")

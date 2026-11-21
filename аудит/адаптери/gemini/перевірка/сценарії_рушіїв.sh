@@ -44,7 +44,7 @@ EXTRA='{"EnableCodex":true,"CodexFallbackModel":"gpt-6.1-sol-high"}' case_ casca
 EXTRA='{"EnableCodex":true,"CodexFallbackModel":"gpt-6.1-sol-high"}' case_ cascade-design-codex  "FAKE_USAGE=ok"        abandon_then_done gemini-3.1-pro-high 'МОДЕЛЬ gpt-6.1-sol-high'
 case_ cascade-design-none "FAKE_USAGE=ok" abandon_then_done gemini-3.1-pro-high 'QUOTA0_GEMINI31PRO'
 # Пауза Codex (codex_pause_until у ланцюг.json на origin/main, Test-CodexPause): каскад agy не додає запасний Codex; позначка чекає
-# скидання пулу (QUOTA0), а не витрачає Codex. Явна модель Codex (нічний) пауза не чіпає; пауза минула — каскад як без неї.
+# скидання пулу (QUOTA0), а не витрачає Codex. Явну модель Codex пауза не чіпає; пауза минула — каскад як без неї.
 FB='{"EnableCodex":true,"CodexFallbackModel":"gpt-6.1-sol-high"}'
 CHAIN_JSON='{"v":1,"codex_pause_until":"2099-01-01T00:00:00Z"}' EXTRA="$FB" case_ pause-no-codex-cascade "FAKE_USAGE=flash0" abandon_then_done gemini-3.5-flash 'QUOTA0_GEMINI35FLASH'
 CHAIN_JSON='{"v":1,"codex_pause_until":"2099-01-01T00:00:00Z"}' EXTRA="$FB" case_ pause-no-codex-design "FAKE_USAGE=ok" abandon_then_done gemini-3.1-pro-high 'QUOTA0_GEMINI31PRO'

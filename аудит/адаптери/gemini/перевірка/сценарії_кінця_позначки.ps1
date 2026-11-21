@@ -55,12 +55,26 @@ try {
             # Тека станів смуги Codex/agy, яку смуга вже ініціювала (без `ready` читач дає UNKNOWN).
             if (($name -split '/')[2] -cnotmatch '^cc-') { Write-FileAtomic (Join-Path $dir 'ready') '1' }
             Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "refs/remotes/origin/$name $sha") + '.txt')) 'DONE стенд DONE'
+            Remove-Item -LiteralPath (Join-Path $dir ((Get-Sha256Hex "refs/remotes/origin/$name $sha") + '.claim')) -ErrorAction SilentlyContinue
+        }
+    }
+    function Take-Lane([string]$Stamp) {
+        <# Смуга взяла позначку штампу (`.claim`, як Get-MarkerState): прогін іде, тож свіжіша збірка його не знімає
+        (Stop-WaitingLive) — новий автоживий чекає його кінця. #>
+        foreach ($ref in @(LiveMarkers | Where-Object { $_ -like "*/автоживий-$Stamp/*" })) {
+            $name = $ref.Substring('refs/heads/'.Length)
+            $sha = (& git -C $remote rev-parse $ref).Trim()
+            $dir = $(if (($name -split '/')[2] -cmatch '^cc-') { "$tmp/claude-run/state" } else { Join-Path $OutDir 'marker-state' })
+            [void][IO.Directory]::CreateDirectory($dir)
+            if (($name -split '/')[2] -cnotmatch '^cc-') { Write-FileAtomic (Join-Path $dir 'ready') '1' }
+            Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "refs/remotes/origin/$name $sha") + '.claim')) 'стенд'
         }
     }
     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
     Invoke-WrapperChain
     foreach ($engine in @('claude','codex','agy')) {
         $first = Build; Invoke-WrapperChain
+        Take-Lane $first
         $middle = Build; Invoke-WrapperChain
         $latest = Build; Invoke-WrapperChain
         $count = @(LiveMarkers).Count

@@ -17,7 +17,8 @@ try {
     foreach ($dir in @('аудит/наряди','аудит/адаптери/gemini','джерела')) { [void][IO.Directory]::CreateDirectory((Join-Path $seed $dir)) }
     <# Базовий конфіг стенду — без codex_pause_until: справжнє значення в main не має міняти порядок моделей у сценаріях. #>
     [IO.File]::WriteAllText("$seed/аудит/адаптери/gemini/ланцюг.json", ([IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json'), $utf) -replace '(?m)^[ 	]*"codex_pause_until"[ 	]*:[^
-]*?
+]*
+?
 ', ''), $utf)
     foreach ($task in @('автоперевірка','автоживий')) { [IO.File]::WriteAllText("$seed/аудит/наряди/$task.md", $task, $utf) }
     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
@@ -173,23 +174,9 @@ try {
     Check 'автоживий при Codex на квоті — одна позначка Claude' (@(SlugMarkers "автоживий-$newer").Count -eq 1 -and @(SlugMarkers "автоживий-$newer")[0] -match '/cc-claude-sonnet-5-5-medium/1/p2-gpu$')
     SetCodex $false; Invoke-WrapperChain
     Check 'відновлення Codex не дублює автоживий' (@(SlugMarkers "автоживий-$newer").Count -eq 1)
-    # Нічний Е1: дозвіл стоїть на codex, квота codex вичерпана — дозвіл переходить на модель із квотою (та сама квота й порядок, що в автоживого).
-    Check 'нічний Е1 відкривається з 02:00 UTC' (-not (Test-NightlyOpen ([datetime]::new(2026, 11, 9, 1, 59, 0, [DateTimeKind]::Utc))) -and (Test-NightlyOpen ([datetime]::new(2026, 11, 9, 2, 0, 0, [DateTimeKind]::Utc))))
-    function Test-NightlyOpen([datetime]$Utc) { $true }
-    $night = 'Е1-нічний-живий-' + [datetimeoffset]::UtcNow.UtcDateTime.ToString('yyyyMMdd')
-    & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
-    SetCodex $true; SetClaude $false; Invoke-WrapperChain
-    $nm = @(SlugMarkers $night)
-    Check 'нічний, codex 0 %: дозвіл перейшов на Claude з квотою — одна позначка, умови gpu-p8 і коміт ті самі' ($nm.Count -eq 1 -and $nm[0] -match '/cc-claude-sonnet-5-5-medium/1/gpu-p8$' -and (& git -C $remote rev-parse $nm[0]).Trim() -ceq $newer)
-    "  мірило: нічний при codex 0 % — було gpt-6.1-sol-high/1, стало $(($nm[0] -split '/')[-3])/$(($nm[0] -split '/')[-2])"
-    SetCodex $false; Invoke-WrapperChain
-    Check 'відновлення codex не повертає й не дублює нічний дозвіл' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/cc-claude-sonnet-5-5-medium/1/gpu-p8$')
-    & git -C $seed push -q origin ":$($nm[0])"
-    & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
-    Invoke-WrapperChain
-    Check 'нічний, codex з квотою: дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
     # Відмова Codex без часу скидання — квота лише тоді, коли останній вимір не показує залишку в кожному вікні (heartbeat.codex.limits);
-    # відмова з часом скидання — квота завжди, як було. Дозвіл після кожного перенесення повертається на codex.
+    # відмова з часом скидання — квота завжди, як було. Позначка автоживого після кожного перенесення повертається на codex.
+    $live = "автоживий-$newer"
     function SetCodexRefused([string]$Reset, $Limits) {
         $v = @{refused=(Stamp -0.5);reset=$Reset}
         if ($null -ne $Limits) { $v.read = (Stamp -0.2); $v.limits = $Limits }
@@ -197,31 +184,24 @@ try {
     }
     function CodexLimits([int[]]$Left) { , @(@{id='codex';windows=@(foreach ($l in $Left) { @{m=300;used=(100-$l);left=$l;reset=(Stamp 1)} })}) }
     function BackToCodex {
-        foreach ($m in @(SlugMarkers $night)) { & git -C $seed push -q origin ":$m" }
-        & git -C $seed push -q origin "${newer}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
+        foreach ($m in @(SlugMarkers $live)) { & git -C $seed push -q origin ":$m" }
+        & git -C $seed push -q origin "${built}:refs/heads/gemini-queue/$live/gpt-6.1-sol-high/1/p2-gpu"
     }
+    BackToCodex
     SetClaude $false
     SetCodexRefused '' (CodexLimits 72, 72); Invoke-WrapperChain
-    Check 'нічний, відмова codex без часу скидання, вимір 72 і 72 % вільних: збій рушія, дозвіл лишається на codex' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
+    Check 'автоживий, відмова codex без часу скидання, вимір 72 і 72 % вільних: збій рушія, позначка лишається на codex' (@(SlugMarkers $live).Count -eq 1 -and @(SlugMarkers $live)[0] -match '/gpt-6\.1-sol-high/1/p2-gpu$')
     $moved = @(
         @{Why='відмова без часу скидання, виміру нема: квота, як було'; Reset=''; Limits=$null},
         @{Why='відмова без часу скидання, одне вікно виміру на 0 %: квота'; Reset=''; Limits=(CodexLimits 72, 0)},
         @{Why='відмова з часом скидання, вимір 72 % вільних: справжня квота'; Reset=(Stamp 140); Limits=(CodexLimits 72, 72)})
     foreach ($c in $moved) {
         SetCodexRefused $c.Reset $c.Limits; Invoke-WrapperChain
-        Check "нічний, $($c.Why): дозвіл перейшов на Claude" (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/cc-claude-sonnet-5-5-medium/1/gpu-p8$')
+        Check "автоживий, $($c.Why): позначка перейшла на Claude" (@(SlugMarkers $live).Count -eq 1 -and @(SlugMarkers $live)[0] -match '/cc-claude-sonnet-5-5-medium/1/p2-gpu$')
         BackToCodex
     }
-    "  мірило: відмова codex без часу скидання, вимір 72 % вільних — було перенесення на Claude, стало: лишається на codex"
     SetCodex $true; SetClaude $true; Invoke-WrapperChain
-    Check 'нічний, обидва на квоті: дозвіл чекає на codex, не переходить' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
-    & git -C $seed push -q origin ":$(@(SlugMarkers $night)[0])"
-    # Дозвіл на збірці, для якої автоживий уже є ($built несе build.txt = $newer, автоживий-$newer стоїть): Get-NightlyMarker
-    # такого дозволу не віддає, тож і перенесення до Claude його не обходить.
-    & git -C $seed push -q origin "${built}:refs/heads/gemini-queue/$night/gpt-6.1-sol-high/1/gpu-p8"
-    SetCodex $true; SetClaude $false; Invoke-WrapperChain
-    Check 'нічний, codex 0 %, але автоживий цієї збірки вже є: дозвіл не переходить до Claude' (@(SlugMarkers $night).Count -eq 1 -and @(SlugMarkers $night)[0] -match '/gpt-6\.1-sol-high/1/gpu-p8$')
-    & git -C $seed push -q origin ":$(@(SlugMarkers $night)[0])"
+    Check 'автоживий, обидва на квоті: позначка чекає на codex, не переходить' (@(SlugMarkers $live).Count -eq 1 -and @(SlugMarkers $live)[0] -match '/gpt-6\.1-sol-high/1/p2-gpu$')
     SetCodex $false; SetClaude $false
     # Збій не з кодом CHAIN_*: у рядку тип і рядок скрипту, без шляхів і тексту.
     Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
@@ -355,7 +335,6 @@ try {
     $fullText = "наряд`nПЛАН ЖИВОГО — ДАНІ (JSON):`n" + '{"since_sha":"","scenes":{"ж1_сцена":[{"pr":1,"question":"q"}]}}' + "`n"
     Check 'автоживий на порожньому плані: ні прогону, ні PR' (Test-AutoPlanEmpty "автоживий-$newer" $emptyText)
     Check 'автоживий із рядками ЖИВИЙ ПІСЛЯ іде на прогін' (-not (Test-AutoPlanEmpty "автоживий-$newer" $fullText))
-    Check 'нічний Е1 на порожньому плані виконує мінімальну сцену' (-not (Test-AutoPlanEmpty 'Е1-нічний-живий-20261031' $emptyText))
     # Вікно рахується за SHA й committer, а коментар не оживляє початковий архів.
     $clock = [datetimeoffset]::UtcNow; $installed = $clock.AddDays(-2); $heads = @{}
     $script:HeadDate = $clock.AddHours(-25)
