@@ -191,10 +191,10 @@ try {
         function Get-ReviewTime { $script:Clock }
         function Write-Log([string]$Text) { }
         $results = @()
-        for ($i = 1; $i -le 7; $i++) { $results += [bool](Enter-PlanWait $m 'AUTO_PAGES' ('c' * 40)) }
+        for ($i = 1; $i -le 7; $i++) { $results += [bool](Enter-PlanWait $m 'AUTO_PAGES' @{ head = ('c' * 40); base = ('d' * 40) }) }
         Check '5 чекань, далі межа: PLAN_FAILED' (($results[0..4] -join ',') -ceq 'True,True,True,True,True' -and -not $results[5] -and -not $results[6])
         $state = Get-MarkerState $m
-        Check '5 останнє чекання записане з лічильником, часом +300 с і причиною' ($state.Kind -ceq 'WAIT' -and [int]$state.Wait.retakes -eq 5 -and [long]$state.Wait.until -eq 1000300 -and $state.Wait.reason -ceq 'AUTO_PAGES' -and $state.Wait.group -ceq 'PLAN_WAIT')
+        Check '5 останнє чекання записане з лічильником, часом +300 с, причиною й продовженням (head, base)' ($state.Kind -ceq 'WAIT' -and [int]$state.Wait.retakes -eq 5 -and [long]$state.Wait.until -eq 1000300 -and $state.Wait.reason -ceq 'AUTO_PAGES' -and $state.Wait.group -ceq 'PLAN_WAIT' -and $state.Wait.head -ceq ('c' * 40) -and $state.Wait.base -ceq ('d' * 40))
         Check '5 причина збою: код обгортки, статус HTTP або PLAN_ERROR — без тексту сервера' ((Get-PlanFailReason 'AUTO_PAGES') -ceq 'AUTO_PAGES' -and (Get-PlanFailReason 'The remote server returned an error: (403) rate limit exceeded.') -ceq 'HTTP_403' -and (Get-PlanFailReason 'Response status code does not indicate success: 429 (Too Many Requests).') -ceq 'HTTP_429' -and (Get-PlanFailReason 'щось інше') -ceq 'PLAN_ERROR')
         # AUTO_BUDGET — чекання вікна, а не вада: лічильник не росте, межі нема.
         $n = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/автоживий-$('2' * 40)/cc-claude-sonnet-5-5-medium/1/gpu-p1`t$buildMain`t1")

@@ -778,12 +778,34 @@ function Get-RunCopyRepo([string]$Id) {
     if (Test-Path -LiteralPath (Join-Path $repo '.git')) { $repo } else { '' }
 }
 
+function Get-RunStart([string]$Published, [string]$Main, [hashtable]$Resume) {
+    <# Звідки йде прогін наряду: Start — голова, з якої починає агент; Base — основа доставки, від якої рахують зроблене
+    (Get-Facts, бандл, звіт ГОТОВО) і яку Get-RunDelivered вважає доставленою; Attempt — Get-AttemptStart нової спроби
+    ($null — повтор). Повтор після чекання — від голови попередньої спроби ($Resume.head), коли опублікована гілка
+    $Published — її предок (інакше NOT_FF), з основою, яку записала перша спроба ($Resume.base); основи нема чи вона не
+    предок голови (сон: голова вже опублікована; чекання давнішої обгортки) — опублікована гілка, без неї $Main.
+    Від голови повтору рахувати не можна: повтор без нових комітів мав 0 комітів, бандла не робив, а чекання писало
+    порожню голову — коміти попередньої спроби не публікувались і губились. #>
+    $wh = [string]$Resume.head
+    if ($wh -match '^[0-9a-f]{40}$' -and (Get-RefSha $wh) -and (-not $Published -or (Invoke-Git @('merge-base', '--is-ancestor', $Published, $wh) -AllowFail).Code -eq 0)) {
+        $base = [string]$Resume.base
+        if ($base -notmatch '^[0-9a-f]{40}$' -or -not (Get-RefSha $base) -or (Invoke-Git @('merge-base', '--is-ancestor', $base, $wh) -AllowFail).Code -ne 0) {
+            $base = $(if ($Published) { $Published } else { $Main })
+        }
+        return [pscustomobject]@{ Start = $wh; Base = $base; Attempt = $null }
+    }
+    # Нова спроба, не повтор: гілка попередньої — лише коли не злита; злита чи відсутня — від свіжого main (Get-AttemptStart).
+    $att = Get-AttemptStart $Published $Main
+    [pscustomobject]@{ Start = $att.Start; Base = $att.Start; Attempt = $att }
+}
+
 function Get-RunDelivered([string]$Id, [string[]]$Also = @()) {
     <# Доставлене копії задачі прогону понад віддалені гілки (Remove-TaskCopy): те, що записано поза клоном, — голови бандла
     прогону (`<OutDir>\<id>.bundle`, `bundle list-heads`) і старт прогону з його результату (`<OutDir>\<id>.json`); $Also —
     те саме з пам'яті процесу наряду, поки результату нема (старт, голова чекання квоти в стані позначки).
-    Старт — уже доставлене: main чи опублікована гілка, злиття main обгорткою (без роботи агента) або голова чекання
-    квоти, яку попередня спроба записала в стан позначки і з якої продовжила ця. #>
+    Старт — основа доставки (Get-RunStart): main чи опублікована гілка або злиття main обгорткою (без роботи агента).
+    Голова попередньої спроби, з якої продовжив повтор, сюди не входить: вона доставлена, лише коли є в бандлі цього
+    прогону чи в стані чекання. #>
     $out = @($Also | Where-Object { $_ })
     if (-not $Id) { return $out }
     $res = Join-Path $OutDir ($Id + '.json')
@@ -1502,21 +1524,15 @@ function Invoke-Task($M, $Job) {
         $MA = $M | Select-Object *
         $MA.Model = $sel.Model
         if (-not $sel.Exe) { $status.code = 'ENGINE_MISSING'; return }
-        $start = Get-RefSha "refs/remotes/origin/gemini/$($M.Slug)"
-        # Повтор після відмови за квотою: від голови того прогону, якщо опублікована гілка — її предок (інакше NOT_FF).
-        $wh = [string]$Job.head
-        $att = $null
-        if ($wh -match '^[0-9a-f]{40}$' -and (Get-RefSha $wh) -and (-not $start -or (Invoke-Git @('merge-base', '--is-ancestor', $start, $wh) -AllowFail).Code -eq 0)) { $start = $wh }
-        else {
-            # Нова спроба, не повтор: гілка попередньої — лише коли не злита; злита чи відсутня — від свіжого main (Get-AttemptStart).
-            $att = Get-AttemptStart $start $main
-            $start = $att.Start
-            if ($att.Mode -in @('MERGED', 'BEHIND')) { Write-Log "старт нової спроби $($M.Name): гілка $(if ($att.Mode -eq 'MERGED') { 'злита — від main' } else { 'відстала — main буде влито' })" }
-        }
+        # Наряд старого планувальника (до самооновлення) поля base не має.
+        $resume = @{ head = [string]$Job.head; base = [string]$(if ($Job -is [Collections.IDictionary]) { $Job['base'] } else { Get-JsonProp $Job 'base' }) }
+        $run = Get-RunStart (Get-RefSha "refs/remotes/origin/gemini/$($M.Slug)") $main $resume
+        $start = $run.Start; $base = $run.Base; $att = $run.Attempt
+        if ($att -and $att.Mode -in @('MERGED', 'BEHIND')) { Write-Log "старт нової спроби $($M.Name): гілка $(if ($att.Mode -eq 'MERGED') { 'злита — від main' } else { 'відстала — main буде влито' })" }
         # Звірка голови — до копії задачі: мертва позначка копії не отримує.
         $review = Get-AutoReviewState $M.Slug
         if ($review -eq 'REVIEW_API') {
-            Enter-ReviewWait $M ([string]$Job.head)
+            Enter-ReviewWait $M $resume
             $waiting = $true; $waitCode = 'REVIEW_API'
             return
         }
@@ -1524,7 +1540,7 @@ function Invoke-Task($M, $Job) {
         try { $taskText = Add-AutoTaskContext $M.Slug $taskText $M.Sha $M.Model }
         catch {
             # Збій контексту (план живого, вхід автоперевірки): чекання з лічильником; на межі — PLAN_FAILED, що будить диспетчера.
-            if (Enter-PlanWait $M $_.Exception.Message ([string]$Job.head)) { $waiting = $true; $waitCode = 'PLAN_WAIT' }
+            if (Enter-PlanWait $M $_.Exception.Message $resume) { $waiting = $true; $waitCode = 'PLAN_WAIT' }
             else {
                 $status.code = 'PLAN_FAILED'
                 try { Add-Note (Join-Path $OutDir 'blocked-reasons.json') "gemini/$($M.Slug)" ('PLAN_FAILED: ' + (Get-PlanFailReason $_.Exception.Message)) } catch { Write-Log "причина PLAN_FAILED не записана: $($_.Exception.Message)" }
@@ -1537,16 +1553,17 @@ function Invoke-Task($M, $Job) {
         [void](Invoke-CopyGit @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$($M.Slug)", $start))
         $mergeStep = ''
         if ($att -and $att.Mode -eq 'BEHIND') {
-            # Старт — після злиття: його коміт не рахується за роботу агента (Get-Facts: $start..голова).
+            # Основа — після злиття: його коміт не рахується за роботу агента (Get-Facts: основа..голова).
             $merged = Merge-MainIntoCopy $main "gemini/$($M.Slug)"
-            if ($merged) { $start = $merged } else { $mergeStep = Get-MergeStepText "gemini/$($M.Slug)" }
+            if ($merged) { $base = $merged } else { $mergeStep = Get-MergeStepText "gemini/$($M.Slug)" }
         }
-        $status.start = $start
+        # `start` результату й стану — основа доставки (Get-RunStart), а не голова, з якої почав повтор.
+        $status.start = $base
         # Стан із початком гілки: перерваний прогін наступний запуск закриє й забандлить (Resume-Interrupted).
         Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
         $prompt = Get-Prompt $MA $taskText $sel.Engine.Name $taskDir $mergeStep
         [IO.File]::WriteAllText((Join-Path $dir 'prompt.md'), $prompt, $script:Utf8)
-        $res = Invoke-Agent $MA $start $prompt $dir $sel
+        $res = Invoke-Agent $MA $base $prompt $dir $sel
         # Рушій повертається лише після Stop-Tree: факти, бандл, прибирання копії моделі не кличуть. Виняток посеред
         # прогону дерево не зупиняє — тоді оренду відпускає кінець процесу наряду, як раніше.
         Exit-GpuAfterAgent $Job
@@ -1626,8 +1643,10 @@ function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
     }
     $known = $until -gt 0
     if (-not $known) { $until = $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) }
+    # Продовження: зроблене від основи доставки (і попередніми спробами теж) — голова й ця основа; нічого — нова спроба.
     $f = Get-Facts $M $Status.start
-    $n = Set-MarkerWait $M $until @{ retake = $true; group = $group; head = $(if ($f.Ahead -gt 0) { $f.Head } else { '' }) }
+    $resume = $(if ($f.Ahead -gt 0) { @{ head = $f.Head; base = [string]$Status.start } } else { @{ head = ''; base = '' } })
+    $n = Set-MarkerWait $M $until (@{ retake = $true; group = $group } + $resume)
     if ($null -eq $n) { Write-Log "квота: $($M.Name) — повернень у чергу понад $script:MaxRetakes, кінець $($Status.code)"; return $false }
     if ($engineFailure) { return $true }
     Write-QuotaStatus $M (New-RunId (Get-MarkerKey $M)) $group $until @{ engine = $Sel.Engine.Name; turns = $Status.turns; retake = $n }
@@ -1664,8 +1683,7 @@ function Enter-StartQuotaWait($M, $Q, $State) {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     # Скидання — час із /usage; минув, а група ще на нулі, чи невідомий — quota_wait_minutes.
     $until = $(if ($Q.ResetAt -gt $now) { [long]$Q.ResetAt } else { $now + [long](60 * (Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes')) })
-    $head = $(if ($State.Kind -eq 'WAIT') { [string](Get-JsonProp $State.Wait 'head') } else { '' })
-    [void](Set-MarkerWait $M $until @{ group = $Q.Group; head = $head })
+    [void](Set-MarkerWait $M $until (@{ group = $Q.Group } + (Get-WaitResume $(if ($State.Kind -eq 'WAIT') { $State.Wait } else { $null }))))
     if ($State.Kind -eq 'NEW') { Write-QuotaStatus $M (New-RunId (Get-MarkerKey $M)) $Q.Group $until @{} }
 }
 
@@ -1829,9 +1847,9 @@ function Start-Markers($Workers) {
         try {
             $dir = Join-Path $RunsDir $id
             [void](New-Item -ItemType Directory -Force -Path $dir)
-            $job = @{ id = $id; dir = $dir; slot = $slot; lane = $lane; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
+            # Продовження попередньої спроби (голова й основа доставки) — поля head і base наряду.
+            $job = (Get-WaitResume $(if ($st.Kind -eq 'WAIT') { $st.Wait } else { $null })) + @{ id = $id; dir = $dir; slot = $slot; lane = $lane; ref = $m.Ref; sha = $m.Sha; time = $m.Time; name = $m.Name
                 slug = $m.Slug; model = $m.Model; n = $m.N; cond = $m.Cond; prio = $m.Prio; deadline = $m.Deadline; gpu = $m.Gpu
-                head = $(if ($st.Kind -eq 'WAIT') { [string](Get-JsonProp $st.Wait 'head') } else { '' })
                 sel = @{ engine = $sel.Engine.Name; emodel = $sel.Engine.Model; effort = $sel.Engine.Effort; model = $sel.Model
                     qknown = $sel.Quota.Known; qleft = $sel.Quota.Left; qgroup = $sel.Quota.Group }
                 limits = $script:Limits }
