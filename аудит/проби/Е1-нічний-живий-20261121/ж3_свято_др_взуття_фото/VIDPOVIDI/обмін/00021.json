@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"own\": \"<id from her_items or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\", \"\\\"her_items\\\" — her own items; an item of the description that is one of them gets its id in \\\"own\\\"\"]}, \"description\": \"Black silk slip dress, fluid cut to just above knee, deep midnight black (#0a0a0a), 100% silk  \\nWhite leather slingback sandals with block heel, open-toe silhouette, length 24 cm (shoe size), white upper with black sole, smooth leather  \\n\\nThis outfit works because the clean lines of the slip dress and the crisp white sandals create a striking contrast that feels both elegant and effortlessly chic. The black fabric absorbs ambient light while the white footwear reflects it—perfect for an evening under artificial lighting at a birthday party. With only two open zones—the neckline and ankle strap—the silhouette stays refined without feeling exposed, honoring your wish to wear those special shoes as the centerpiece of the look.\", \"her_items\": [{\"id\": \"її-ф1\", \"name\": \"White leather slingback sandals with block heel\"}]}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Black silk slip dress\\\",\\n      \\\"details\\\": \\\"fluid cut to just above knee, deep midnight black, 100% silk\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#0a0a0a\\\",\\n      \\\"own\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"White leather slingback sandals with block heel\\\",\\n      \\\"details\\\": \\\"open-toe silhouette, length 24 cm, white upper with black sole, smooth leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#ffffff\\\",\\n      \\\"own\\\": \\\"її-ф1\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":571,\"output_tokens\":184},\"stop_reason\":\"end_turn\"}"
+ }
+}

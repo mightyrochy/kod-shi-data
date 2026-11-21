@@ -1,0 +1,60 @@
+── ПРОМПТ (6682 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — about it: text н=1
+2 — kind: bag_generic · about it: text н=2
+3 — kind: scarf_generic · about it: text н=3
+4 — kind: necklace · about it: text н=4
+5 — kind: dress_generic · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "You picked these shoes to keep your own style intact.",
+"2": "Its neutral tone keeps it from overpowering the rest of your outfit.",
+"3": "A soft, earthy colour that adds warmth to your face and complements the overall palette.",
+"4": "Its subtle presence enhances the look without stealing the spotlight.",
+"5": "The simple silhouette creates a clean base for your chosen accessories and shoes.",
+"6": "You chose the white sandals to keep your favorite piece from the photo. The neutral-toned scarf softens the look and brings warmth near your face, while the simple necklace and bag complete the ensemble without competing for attention. This balanced combination works well for a casual Saturday gathering with friends.",
+"7": "Wrap the scarf loosely around your neck so it sits comfortably against your collarbone.",
+"8": "Бордова в'язана сукня міді з віскозою — Replacing the velvet coat with the burgundy knit dress solves the 'no_top_bottom_or_dress' blocker and creates a monochromatic base that lets the pink bag shine as an accent.",
+"9": "White leather slingback sandals with block heel, Бордова в'язана сукня міді з віскозою — The formal spread is only an artifact of the code's strict measurement on your sandals; as the sole footwear breaking up the rich burgundy dress, they act as the necessary bright spot and casual anchor for your Saturday party, making the 'spread' a stylistic choice rather than a failure.",
+"10": "Бордова в'язана сукня міді з віскозою — The burgundy knit bodycon dress replaces the separate top/bottom combo to fix 'no_top_bottom_or_dress', while matching the coat's color for a cohesive 'tonal' scheme.",
+"11": "Бордова в'язана сукня міді з віскозою — Replacing the coat with the burgundy knit dress fixes 'no_top_bottom_or_dress' and adds necessary warmth/color for the autumn evening, while allowing the silvery ring to act as the cool accent.",
+"12": "Бордова в'язана сукня міді з віскозою — Replacing the chocolate dress with the burgundy knit dress fixes 'scheme_tonal_tone_not_on_large_items' by bringing the deep red into the main silhouette, matching the coat's color family.",
+"13": "Срібне намисто з акцентною застібкою — Replacing the red earrings with the silvery necklace adds a cool-toned contrast to the warm burgundy/beige palette, balancing the look and adding more focal interest."
+}
+
+── ВІДПОВІДЬ (2398 симв., 20.2 с, HTTP 200) ──
+```json
+{
+  "1": "Ти обрала ці черевики, щоб зберегти свій власний стиль.",
+  "2": "Її нейтральний тон не дає їй переважати над іншим твоїм образом.",
+  "3": "М'який, землистий колір, який додає тепла твоєму обличчю та доповнює загальну палітру.",
+  "4": "Її ледь помітна присутність підкреслює образ без того, щоб привертати всю увагу.",
+  "5": "Простий силует створює чисту основу для твоїх обраних аксесуарів і взуття.",
+  "6": "Ти обрала білі сандалії на платформі, щоб зберегти свою улюблену річ з фото. Нейтрально-тонований шарф пом'якшує образ і додає тепла поблизу твого обличчя, а просте намисто та сумка завершують ансамбль без конкуренції за увагу. Ця збалансована комбінація добре підходить для неформальної зустрічі з друзями в суботу.",
+  "7": "Нещільним чином обгорни шарф навколо шиї, щоб він зручно лежав на ключиці.",
+  "8": "Бордова в'язана міді-сукня з віскозою — Заміна оксамитового пальта бордовою в'язаною сукнею вирішує проблему «відсутність верху/низу або сукні» та створює монохромну основу, яка дозволяє рожевій сумці сяяти як акцент.",
+  "9": "Білі шкіряні сандалії на підборах з блоком, Бордова в'язана міді-сукня з віскозою — Формальний розкид є лише артефактом суворого вимірювання коду твоїх сандалій; будучи єдиним взуттям, що розділяє багатий бордовий колір сукні, вони діють як необхідна яскрава пляма та повсякденний якір для твоєї вечірки в суботу, роблячи «розкид» стилістичним вибором, а не невдачею.",
+  "10": "Бордова в'язана міді-сукня з віскозою — Бордова в’язана обтисла сукня замінює окремий комплект верху/низу, щоб виправити «відсутність верху/низу або сукні», а також відповідає кольору пальта для цілісної тональної схеми.",
+  "11": "Бордова в’язана міді-сукня з віскозою — Заміна пальта бордовою в'язаною сукнею вирішує проблему «відсутність верху/низу або сукні» та додає необхідне тепло й колір для осіннього вечора, а також дозволяє срібному перстню діяти як прохолодний акцент.",
+  "12": "Бордова в'язана міді-сукня з віскозою — Заміна шоколадної сукні бордовою в'язаною сукнею вирішує проблему «схема тональна тон не на великих предметах», додаючи глибокий червоний колір до основного силуету та відповідаючи кольоровій гамі пальта.",
+  "13": "Срібне намисто з акцентною застібкою — Заміна червоних сережок срібним намистом додає прохолодний контраст теплому бордово-бежевому колориту, балансуючи образ і додаючи більше фокальної уваги."
+}
+```
