@@ -595,6 +595,11 @@ _АБО_НЕВІДОМО = lambda схема: {"oneOf": [схема, {"const": U
 }
 
 from паспорт_поля import ПОЛЯ_ПАСПОРТА
+# Коди нового поля стоять у його записі паспорта («коди»), а не другим рядком тут (`паспорт_поля`, шапка).
+for _в in ПОЛЯ_ПАСПОРТА.values():
+    if "коди" in _в:
+        assert _в["поле"] not in ТАБЛИЦЯ, "коди поля %s — і тут, і в записі паспорта" % _в["поле"]
+        ТАБЛИЦЯ[_в["поле"]] = dict(_в["коди"])
 from types import SimpleNamespace as _Контекст
 _КОНТЕКСТ_ПОЛІВ = _Контекст(перелік=_перелік, список=_список, число=_число,
                           або_невідомо=_АБО_НЕВІДОМО, вільний=_ВІЛЬНИЙ, невідомо=UNKNOWN)
@@ -3654,6 +3659,7 @@ if _спільні:
     "passport_tiles_only": "There is no passport from conversation; the scenario only came from tiles.",
     "passport_call_zero": "Call zero filled the passport without a language-model conversation turn; the model was absent or its turn fell back to main.",
     "passport_without_talk": "The seam filled the passport without a language-model conversation turn: tiles or translation without a talk.",
+    "passport_none_review": "The outfit review has no conversation passport: its scene came from her question and the screen.",
 })
 # Е3-одна-величина ч14 (рішення 06.11 п.3): ширина плеча виробу «шов–шов по спинці» й обхват плечей тіла через π —
 # різні величини; різниці код не рахує (K-FIT-01, K-OUT-41/42 — питання), моделі — лише виміряне число речі.

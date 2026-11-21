@@ -6,7 +6,8 @@
 не дістав — заголовком `x-images-dropped`. Назад — {content:[{type:text}], usage, stop_reason}.
 Журнал (JSONL): секунди, токени й долари з `claude -p`. Стеля — сума total_cost_usd; після неї 503.
 Відмінність від `хмара-б1-1211/сервер_claude.py`: там форма OpenAI й фото речей відкидались; тут фото доходять.
-Запуск: python3 міст_claude.py <порт> <журнал.jsonl> [стеля_доларів]"""
+Запуск: python3 міст_claude.py <порт> <журнал.jsonl> [стеля_доларів]
+ZHYVA_BODY_MODEL=1 — модель `claude-` з тіла сторінки (перекладачка на своїй моделі), інакше — CLAUDE_MODEL."""
 import base64, json, os, re, subprocess, sys, tempfile, threading, time, urllib.parse, urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -86,7 +87,8 @@ class О(BaseHTTPRequestHandler):
                  "фото": фото, "фото_не_дійшло": дропи, "стеля_сторінки": тіло.get("max_tokens")}
         ітог = None; помилка = None
         try:
-            р = subprocess.run([БІН, "-p", "--model", МОДЕЛЬ, "--tools", "", "--strict-mcp-config",
+            модель = тіло.get("model") if os.environ.get("ZHYVA_BODY_MODEL") and str(тіло.get("model") or "").startswith("claude-") else МОДЕЛЬ
+            р = subprocess.run([БІН, "-p", "--model", модель, "--tools", "", "--strict-mcp-config",
                                 "--no-session-persistence", "--input-format", "stream-json",
                                 "--output-format", "stream-json", "--verbose", "--system-prompt", СИСТЕМНИЙ],
                                input=рядок, capture_output=True, text=True, timeout=900, cwd=ТЕКА,
@@ -117,7 +119,7 @@ class О(BaseHTTPRequestHandler):
                       "сума_usd": round(сума_зараз, 4), "макс_одночасно_досі": макс_одночасно})
         with замок, open(ЖУРНАЛ, "a", encoding="utf-8") as ф:
             ф.write(json.dumps(запис, ensure_ascii=False) + "\n")
-        заг = {"x-model": МОДЕЛЬ}
+        заг = {"x-model": модель}
         if фото: заг["x-images-dropped"] = str(дропи)
         if статус != 200:
             return self._відп(статус, {"error": {"message": помилка or "модель не відповіла"}}, заг)

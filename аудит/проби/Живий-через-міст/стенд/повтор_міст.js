@@ -1,4 +1,4 @@
-/* Прилад проби «Живий-як-людина-4»: повтор записаних дій без моделі-жінки (скрипт із хід.md третього прогону). Запуск: node повтор.js <ситуація> <вихід> <порт>.
+/* Прилад проби «Живий-як-людина-4»: повтор записаних дій без моделі-жінки (скрипт із хід.md третього прогону). Запуск: node повтор.js <ситуація> <вихід> <порт>. MIST_LOCAL=<адреса> — міст сторінки йде на місцевий стенд (`живий-як-людина-3/стенд/міст_claude.py`, за підпискою), а не на справжній.
    STOR — свіжа збірка, PYODIDE — кеш. Слова беруться лише з хід.md третього прогону. */
 const fs = require('fs'), path = require('path'), http = require('http');
 const {chromium} = require('playwright');
@@ -104,7 +104,7 @@ async function головна(){
     if(route.request().method()!=='POST')return route.fallback();
     активні++;останнійВиклик=Date.now();const т0=Date.now();const тіло=route.request().postData()||'{}',початок=new Date().toISOString();
     try{
-      const r=await route.fetch({timeout:960000});const body=await r.text();const h=r.headers();
+      const r=await route.fetch(process.env.MIST_LOCAL?{url:process.env.MIST_LOCAL,timeout:960000}:{timeout:960000});const body=await r.text();const h=r.headers();
       const x={};for(const n in h)if(/^x-|^retry-after|^anthropic-ratelimit/.test(n))x[n]=h[n];
       fs.appendFileSync(path.join(службове,'обміни.jsonl'),JSON.stringify({час:початок,с:(Date.now()-т0)/1000,прохід,статус:r.status(),заголовки:x,запит:тіло,відповідь:body})+'\n');
       if(r.status()===429||r.status()===402)блокер='ЗАБЛОКОВАНО: '+r.status()+' від моста: '+body.slice(0,300);
