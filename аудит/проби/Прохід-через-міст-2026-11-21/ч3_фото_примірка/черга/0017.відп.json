@@ -1,0 +1,77 @@
+{
+ "n": 17,
+ "к": {
+  "дія": "js",
+  "код": "new Promise(res=>{const r=indexedDB.open(\"показ\");r.onsuccess=()=>{const db=r.result;const names=[...db.objectStoreNames];const out={v:db.version,stores:{}};const tx=db.transaction(names,\"readonly\");let left=names.length;names.forEach(n=>{const st=tx.objectStore(n);const q=st.getAll();const qk=st.getAllKeys();q.onsuccess=()=>{qk.onsuccess=()=>{out.stores[n]={keyPath:st.keyPath,auto:st.autoIncrement,n:q.result.length,keys:qk.result.slice(0,20).map(String),types:q.result.slice(0,5).map(v=>Object.prototype.toString.call(v)+\":\"+(typeof v===\"string\"?v.length:JSON.stringify(v).length))};if(--left==0)res(out);};};});};})",
+  "чекати": false
+ },
+ "початок": "2026-11-21T10:00:49.737Z",
+ "js": {
+  "v": 3,
+  "stores": {
+   "вердикти": {
+    "keyPath": null,
+    "auto": true,
+    "n": 0,
+    "keys": [],
+    "types": []
+   },
+   "кв": {
+    "keyPath": null,
+    "auto": false,
+    "n": 8,
+    "keys": [
+     "активний",
+     "випадок:пф-gsz7p5",
+     "назви-очищено",
+     "пристрій",
+     "профіль:пф-gsz7p5",
+     "профілі",
+     "фото-зріст:пф-gsz7p5",
+     "фото-портрет:пф-gsz7p5"
+    ],
+    "types": [
+     "[object String]:9",
+     "[object Object]:290803",
+     "[object Boolean]:4",
+     "[object String]:8",
+     "[object Object]:469"
+    ]
+   },
+   "образи": {
+    "keyPath": null,
+    "auto": false,
+    "n": 1,
+    "keys": [
+     "пр-mwq8l0qtcat9"
+    ],
+    "types": [
+     "[object Object]:1364793"
+    ]
+   },
+   "сценарії": {
+    "keyPath": null,
+    "auto": false,
+    "n": 0,
+    "keys": [],
+    "types": []
+   }
+  }
+ },
+ "кінець": "2026-11-21T10:00:51.084Z",
+ "текст": "люстерко\nНіч\nТвої образи.\nПерший варіант готовий — решта ще збирається. Вердикт — за тобою.\nСвято, вечірка Заклад Ввечері У суботу Холодно\nЗмінити сценарій\nЗібрати ще раз\nУсі образи ›\nВідкрити сценарій цього образу\nПерший образ\nоцю свою синю сукню Якщо хочеш, розкажи, які прикраси та який стиль тобі потрібні для цього образу, а можеш пропустити, і я все одно складу образи.\nСценарій\nОбрази\nОцінити\n· Профіль",
+ "елем": [
+  "[1] кнопка: люстерко",
+  "[2] кнопка: Ніч",
+  "[3] кнопка: Змінити сценарій",
+  "[4] кнопка: Зібрати ще раз",
+  "[5] кнопка: Усі образи ›",
+  "[6] кнопка: Відкрити сценарій цього образу",
+  "[7] кнопка: оцю свою синю сукню Якщо хочеш, розкажи, які прикраси та який стиль тобі потрібні для цього образу, а можеш пропустити, і я все одно складу ",
+  "[8] кнопка: Сценарій",
+  "[9] кнопка: Образи",
+  "[10] кнопка: Оцінити",
+  "[11] кнопка: · Профіль"
+ ],
+ "справжніх": 30
+}

@@ -83,6 +83,22 @@ async function головна() {
   const адреса = СТОРІНКА + '#міст=' + МІСТ + '&т=tok-stub' + (process.env.HESH ? "&" + process.env.HESH : '');
   журнал('відкриваю ' + адреса + ' міст=' + МІСТ_РЕЖИМ + ' ' + ш + '×' + в);
   await стор.goto(адреса, {waitUntil: 'load', timeout: 300000}); await сон(5000); await спокій();
+  /* RESTORE=<json> — стан IndexedDB «показ» з попереднього запуску ([[ключ, значення]] на сховище; фото — File з RESTORE_PHOTOS
+     «префікс=шлях;…»): продовжити прохід з тим самим профілем і образами без повторних викликів моста. */
+  if (process.env.RESTORE) {
+    const стан = JSON.parse(fs.readFileSync(process.env.RESTORE, 'utf8')), фото = {};
+    for (const п of (process.env.RESTORE_PHOTOS || '').split(';').filter(Boolean)) { const [пр, шл] = п.split('='); фото[пр] = {ім: path.basename(шл), b64: fs.readFileSync(шл).toString('base64')}; }
+    журнал('відновлюю стан: ' + await стор.evaluate(([стан, фото]) => new Promise((res, rej) => {
+      const r = indexedDB.open('показ'); r.onerror = () => rej(r.error);
+      r.onsuccess = () => { const db = r.result, tx = db.transaction(Object.keys(стан), 'readwrite'); let n = 0;
+        for (const [сх, пари] of Object.entries(стан)) for (const [к, з] of пари) {
+          const пр = Object.keys(фото).find(p => String(к).startsWith(p + ':'));
+          const зн = пр ? new File([Uint8Array.from(atob(фото[пр].b64), c => c.charCodeAt(0))], фото[пр].ім, {type: 'image/jpeg'}) : з;
+          tx.objectStore(сх).put(зн, к); n++; }
+        tx.oncomplete = () => res(n); tx.onerror = () => rej(tx.error); };
+    }), [стан, фото]));
+    await стор.reload({waitUntil: 'load', timeout: 300000}); await сон(5000); await спокій();
+  }
   fs.writeFileSync(path.join(вихід, 'готово.txt'), new Date().toISOString());
   let n = 0;
   while (true) {
