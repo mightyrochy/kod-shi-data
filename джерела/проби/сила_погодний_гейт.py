@@ -12,8 +12,8 @@ import суд_образу
 def main():
     """Перевірити сам вираз гейта після зміни контракту сирої ваги."""
     шлях = pathlib.Path(__file__).resolve().parent.parent / 'прилади/розділи_гейтів.py'
-    тіло = next(n.body for n in ast.parse(шлях.read_text(encoding='utf-8')).body
-                if isinstance(n, ast.FunctionDef) and n.name == 'main')
+    модуль = ast.parse(шлях.read_text(encoding='utf-8')).body
+    тіло = next(n.body for n in модуль if isinstance(n, ast.FunctionDef) and n.name == 'main')
     імена = {'_пара121', '_речі121', '_п5', '_п1'}
     вибрані = [n for n in тіло if isinstance(n, ast.Assign)
                and any(isinstance(t, ast.Name) and t.id in імена for t in n.targets)]

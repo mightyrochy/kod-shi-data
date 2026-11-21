@@ -21,7 +21,7 @@ def _профіль(σ=None):
             F[k]["se_L"] = X.zone_stats(_px(cs.hx(hx), σ))["se_L"]
     return F
 def _kclr02(F):
-    в = PL.перевірити_образ(F, РЕЧІ, тіло=T, нагода="робота", темп_c=18)
+    в = PL.перевірити_образ(F, РЕЧІ, dict(нагода="робота", темп_c=18), тіло=T)
     z = next((z for _, z in _знахідки_рекурсивно(в) if z.get("правило") == "K-CLR-02"), None)
     г = cs.gate_conclusions("uncontrolled", se_L=в["особа"].get("розкид"))   # як pipeline.підготувати → гейт_джерела
     return ((z["сила"], z.get("сила_нп")) if z else ("нема", None), г["надійність"]["contrast"], г["утримано"])
