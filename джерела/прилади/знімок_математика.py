@@ -69,7 +69,7 @@ def atan(x):
 
 
 def atan2(y, x):
-    if x != x or y != y:
+    if math.isnan(x) or math.isnan(y):
         return float('nan')
     if x == 0.0 and y == 0.0 or math.isinf(x) or math.isinf(y):
         return СПРАВЖНЄ['atan2'](y, x)    # нуль і нескінченності: спец. значення однакові скрізь

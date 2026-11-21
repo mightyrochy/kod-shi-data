@@ -111,7 +111,8 @@ def _старий_лексикон(каталог, мін_n=3, мін_впевн
 
 def прогін():
     шлях = os.path.join(tempfile.gettempdir(), "фікстура.xml")
-    open(шлях, "w", encoding="utf-8").write(ФІКСТУРА)
+    with open(шлях, "w", encoding="utf-8") as ф:
+        ф.write(ФІКСТУРА)
     offers, діаг = feed.читати_yml(шлях)
 
     print("=" * 78); print("ПАРСЕР ФІДУ: фікстура трьох діалектів"); print("=" * 78)

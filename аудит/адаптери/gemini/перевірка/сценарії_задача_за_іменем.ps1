@@ -2,7 +2,8 @@
 <# Стенд «задача процесів за іменем»: процес наряду (окремий powershell з queue_lanes.ps1) через Start-Tree запускає корінь,
 корінь — дочірній процес, той — онука й виходить, тож онук відірваний (батька нема, taskkill /T за батьком його не бачить).
 Зупиняє цей процес, у чиєму $script:TreeJobs задачі нема, — як новий планувальник після самооновлення (Stop-CancelledRuns)
-чи наступний прохід claude-run після смерті процесу наряду (Resume-Interrupted). Лише Windows: задача процесів — Windows. #>
+чи наступний прохід claude-run після смерті процесу наряду (Resume-Interrupted). г, д — нащадок Git Bash (оболонки claude),
+запущений у фоні: лишається в задачі наряду й зупиняється з нею. Лише Windows: задача процесів — Windows. #>
 param([Parameter(Mandatory = $true)][string]$SourceDir)
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
@@ -30,8 +31,12 @@ function Spawn([string]$Next) {
 }
 if ($Role -eq 'root') { $c = Spawn 'child'; $c.WaitForExit(); Start-Sleep -Seconds 600 }
 elseif ($Role -eq 'child') { $g = Spawn 'grand'; [IO.File]::WriteAllText("$Dir\$Tag.grand", [string]$g.Id) }
+elseif ($Role -eq 'leaf') { [IO.File]::WriteAllText("$Dir\$Tag.leaf", [string]$PID); Start-Sleep -Seconds 600 }
 else { Start-Sleep -Seconds 600 }
 '@)
+# Git Bash запускає лист і виходить (як команда сесії з `&`); node — як claude: дочірній bash і вихід разом із ним.
+[IO.File]::WriteAllText((Join-Path $tmp 'leaf.sh'), "`"`$LEAF_PS`" -NoProfile -ExecutionPolicy Bypass -File `"`$LEAF_FILE`" -Role leaf -Dir `"`$LEAF_DIR`" -Tag `"`$LEAF_TAG`" &`n")
+[IO.File]::WriteAllText((Join-Path $tmp 'leaf.js'), "require('child_process').spawn(process.env.LEAF_BASH, [process.env.LEAF_SH], { stdio: 'ignore' }).on('exit', () => process.exit(0));`n")
 # Процес наряду: справжні New-StartInfo і Start-Tree обгортки; дескриптор задачі — лише в ньому (і копія в корені).
 [IO.File]::WriteAllText((Join-Path $tmp 'worker.ps1'), @'
 param([string]$Src, [string]$Dir, [string]$Tag)
@@ -45,6 +50,29 @@ Start-Sleep -Seconds 600
 function Test-Alive([int]$Id) { try { $null = Get-Process -Id $Id -ErrorAction Stop; $true } catch { $false } }
 function Wait-Until([scriptblock]$Cond) { for ($i = 0; $i -lt 300 -and -not (& $Cond); $i++) { Start-Sleep -Milliseconds 200 }; [bool](& $Cond) }
 function Read-Pid([string]$Path) { if (Test-Path -LiteralPath $Path) { [int]([IO.File]::ReadAllText($Path).Trim()) } else { 0 } }
+function Find-GitBash {
+    <# bash.exe середовища MSYS із Git for Windows (не WSL): usr\bin над теками git.exe. #>
+    $d = Split-Path (Get-Command git.exe -ErrorAction Stop).Source
+    while ($d -and -not (Test-Path -LiteralPath (Join-Path $d 'usr\bin\bash.exe'))) { $d = Split-Path $d }
+    if (-not $d) { throw 'bash.exe Git for Windows не знайдено' }
+    Join-Path $d 'usr\bin\bash.exe'
+}
+function Test-LeafInJob([string]$Tag, [string]$Exe, [string[]]$Arguments) {
+    <# Через Start-Tree — $Exe, що запускає лист через Git Bash і виходить; тоді Stop-Tree. Чи був лист у задачі наряду
+    й чи живий після зупинки дерева. #>
+    $bash = Find-GitBash
+    $psi = New-StartInfo $Exe $Arguments '' -NoRedirect
+    $vars = @{ LEAF_PS = (Get-Process -Id $PID).Path; LEAF_FILE = "$tmp\node.ps1"; LEAF_DIR = $tmp; LEAF_TAG = $Tag; LEAF_BASH = $bash; LEAF_SH = "$tmp\leaf.sh".Replace('\', '/') }
+    foreach ($k in $vars.Keys) { $psi.EnvironmentVariables[$k] = $vars[$k] }
+    $p = Start-Tree $psi; $script:Pids.Add($p.Id)
+    $started = Wait-Until { (Read-Pid "$tmp\$Tag.leaf") -gt 0 }
+    $leaf = Read-Pid "$tmp\$Tag.leaf"; if ($leaf -gt 0) { $script:Pids.Add($leaf) }
+    $exited = Wait-Until { $p.HasExited }
+    $inJob = $started -and $script:TreeJobs.ContainsKey($p.Id) -and @([GeminiWrapper.TreeJob]::Members($script:TreeJobs[$p.Id])) -contains $leaf
+    $script:Logged.Clear()
+    Stop-Tree $p
+    [pscustomobject]@{ Started = $started; Exited = $exited; Leaf = $leaf; InJob = $inJob; Gone = ($started -and (Wait-Until { -not (Test-Alive $leaf) })) }
+}
 function Start-Lane([string]$Tag) {
     <# Процес наряду, як Start-Worker планувальника (без задачі); чекає кореня й відірваного онука. #>
     $psi = New-Object Diagnostics.ProcessStartInfo ((Get-Process -Id $PID).Path), ("-NoProfile -ExecutionPolicy Bypass -File `"$tmp\worker.ps1`" -Src `"$SourceDir`" -Dir `"$tmp`" -Tag $Tag")
@@ -92,6 +120,23 @@ try {
         Stop-Tree (Get-Process -Id $t.Root)
         $gone = Wait-Until { -not (Test-Alive $t.Root) -and -not (Test-Alive $t.Grand) }
         Check "в ПІСЛЯ: Stop-Tree кореня після смерті творця задачі зупинив відірваного онука $($t.Grand): $($script:Logged -join ' | ')" $gone
+    }
+
+    Scenario 'г вихід із задачі через Git Bash' {
+        # Оболонка claude — Git Bash: середовище MSYS ставить нащадкам CREATE_BREAKAWAY_FROM_JOB, коли задача це дозволяє.
+        $r = Test-LeafInJob 'g' (Find-GitBash) @("$tmp\leaf.sh".Replace('\', '/'))
+        Check "г bash запустив лист $($r.Leaf) і вийшов" ($r.Started -and $r.Exited)
+        Check "г лист bash — у задачі наряду" $r.InJob
+        Check "г Stop-Tree після виходу bash зупинив лист: $($script:Logged -join ' | ')" $r.Gone
+    }
+
+    Scenario 'д вихід із задачі через node і Git Bash' {
+        # Як claude: node (libuv кладе дочірні процеси у власну вкладену задачу з BREAKAWAY_OK) → bash → лист.
+        $node = (Get-Command node.exe -ErrorAction Stop).Source
+        $r = Test-LeafInJob 'd' $node @("$tmp\leaf.js")
+        Check "д node → bash запустили лист $($r.Leaf), node вийшов" ($r.Started -and $r.Exited)
+        Check "д лист — у задачі наряду" $r.InJob
+        Check "д Stop-Tree після виходу node зупинив лист: $($script:Logged -join ' | ')" $r.Gone
     }
 } finally {
     # Лише живі powershell стенда: pid процесу, що вже вийшов, міг дістатися іншому процесу раннера.

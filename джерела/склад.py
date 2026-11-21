@@ -61,7 +61,8 @@ def модулі_системи(джерело=".", старт=ТИПОВИЙ_С
     мод = {f[:-3] for f in os.listdir(джерело) if f.endswith(".py")}
 
     def імп(м):
-        дерево = ast.parse(open(os.path.join(джерело, м + ".py"), encoding="utf-8").read())
+        with open(os.path.join(джерело, м + ".py"), encoding="utf-8") as ф:
+            дерево = ast.parse(ф.read())
         знайдені = set()
         for вузол in ast.walk(дерево):
             if isinstance(вузол, ast.Import):
@@ -111,7 +112,8 @@ def модулі_гілки(фасад, джерело=None):
     шлях = os.path.join(джерело, фасад + ".py")
     if not os.path.exists(шлях):
         return []
-    дерево = ast.parse(open(шлях, encoding="utf-8").read())
+    with open(шлях, encoding="utf-8") as ф:
+        дерево = ast.parse(ф.read())
     out = []
     for вузол in дерево.body:
         if (isinstance(вузол, ast.ImportFrom) and вузол.level == 0 and вузол.module

@@ -30,7 +30,7 @@ import unittest
 ТУТ = os.path.dirname(os.path.abspath(__file__))
 КОРІНЬ = os.path.normpath(os.path.join(ТУТ, "..", ".."))
 sys.path.insert(0, ТУТ)
-import документ_без_коду as д  # noqa: E402
+import документ_без_коду as д
 
 # Розмітка виконавця: номер PR → клас («д» документ, «н» ні) і чому, з назви й файлів PR. Паспорт кореня, план і
 # картина — документ (рішення менеджера 12.11 18:42, доробка #3585).
@@ -199,10 +199,10 @@ def тригери_pr():
             continue
         with open(os.path.join(тек, ім_я), encoding="utf-8") as ф:
             текст = ф.read()
-        блок = re.search(r"^on:\n((?:[ \t].*\n|\n)*)", текст, re.M)
-        pr = re.search(r"^  pull_request:\n((?:    .*\n)*)", блок.group(1), re.M) if блок else None
+        блок = re.search(r"^on:\n((?:[ \t].*\n|\n)*)", текст, re.MULTILINE)
+        pr = re.search(r"^  pull_request:\n((?:    .*\n)*)", блок.group(1), re.MULTILINE) if блок else None
         підсумок[f".github/workflows/{ім_я}"] = (pr is not None,
-                                                 bool(pr and re.search(r"^    paths(-ignore)?:", pr.group(1), re.M)))
+                                                 bool(pr and re.search(r"^    paths(-ignore)?:", pr.group(1), re.MULTILINE)))
     return підсумок
 
 
@@ -229,7 +229,7 @@ class Робочі(unittest.TestCase):
     def test_шляхи_обгортки_ні(self):
         with open(os.path.join(КОРІНЬ, ".github/workflows/obhortka.yml"), encoding="utf-8") as ф:
             текст = ф.read()
-        шляхи = re.findall(r"^      - '([^']+)'", текст, re.M)
+        шляхи = re.findall(r"^      - '([^']+)'", текст, re.MULTILINE)
         self.assertTrue(шляхи)
         for п in шляхи:
             зразок = п.replace("**", "x/y.md").replace("*", "x")
@@ -498,15 +498,15 @@ def групи_з_yml(шлях=".github/workflows/samozlyttia.yml"):
     {job: умова `if`}). Група — стала назва: вираз `${{ … }}` у групі job — помилка тесту (модель треба розширити)."""
     with open(os.path.join(КОРІНЬ, шлях), encoding="utf-8") as ф:
         текст = ф.read()
-    процесу = re.search(r"^concurrency:\n  group: (.+)\n", текст, re.M)
+    процесу = re.search(r"^concurrency:\n  group: (.+)\n", текст, re.MULTILINE)
     jobs, умови = {}, {}
     for блок in re.split(r"\n(?=  [A-Za-z_-]+:\n)", текст.split("\njobs:\n", 1)[1]):
         ім_я = re.match(r"\s*([A-Za-z_-]+):", блок).group(1)
-        к = re.search(r"^    concurrency:\n      group: (.+)\n      cancel-in-progress: (\w+)\n", блок, re.M)
+        к = re.search(r"^    concurrency:\n      group: (.+)\n      cancel-in-progress: (\w+)\n", блок, re.MULTILINE)
         if к and "${{" in к.group(1):
             raise AssertionError(f"{ім_я}: група з виразом — модель її не обчислює: {к.group(1)}")
         jobs[ім_я] = (к.group(1).strip(), к.group(2) == "true") if к else None
-        у = re.search(r"^    if: (.+)$", блок, re.M)
+        у = re.search(r"^    if: (.+)$", блок, re.MULTILINE)
         умови[ім_я] = у.group(1).strip() if у else ""
     return (процесу.group(1).strip() if процесу else None), jobs, умови
 
@@ -550,7 +550,7 @@ def черга(події, група, тривалість):
 def інваріант(події, підсумок):
     """Завершення CI на PR, після якого жоден запуск від події PR не стартував (не обійшов PR) → [(час, run_id)]."""
     стартів_pr = [п[1] for rid, п in підсумок.items()
-                  if п[0] == "старт" and dict((р, п_) for _, р, п_ in події)[rid] == "pull_request"]
+                  if п[0] == "старт" and {р: п_ for _, р, п_ in події}[rid] == "pull_request"]
     return [(час, rid) for час, rid, подія in події
             if подія == "pull_request" and not any(с >= час for с in стартів_pr)]
 
@@ -723,17 +723,17 @@ class Злиття(unittest.TestCase):
     def test_злиття_squash_з_голови(self):
         api = ФальшивийAPI(self.pr, (200, {"merged": True, "sha": "c" * 40}, ""))
         голова = self.pr["head"]["sha"]
-        злито, перед, рядки = д.злити(api, [{"номер": 3584, "голова": голова}])
+        злито, перед, _ = д.злити(api, [{"номер": 3584, "голова": голова}])
         self.assertEqual(злито, [(3584, "c" * 40)])
         self.assertEqual(перед, "b" * 40)
-        put = [в for в in api.виклики if в[0] == "PUT"][0]
+        put = next(в for в in api.виклики if в[0] == "PUT")
         self.assertEqual(put[2]["sha"], голова)
         self.assertEqual(put[2]["merge_method"], "squash")
         self.assertTrue(put[2]["commit_title"].endswith("(#3584)"))
 
     def test_голова_змінилась_після_рішення(self):
         api = ФальшивийAPI(self.pr, (200, {"merged": True, "sha": "c" * 40}, ""))
-        злито, перед, рядки = д.злити(api, [{"номер": 3584, "голова": "0" * 40}])
+        злито, перед, _ = д.злити(api, [{"номер": 3584, "голова": "0" * 40}])
         self.assertEqual((злито, перед), ([], ""))
         self.assertFalse([в for в in api.виклики if в[0] == "PUT"])
 
@@ -765,7 +765,7 @@ class Самоперевірка(unittest.TestCase):
                     os.makedirs(os.path.dirname(ціль), exist_ok=True)
                     shutil.copy(os.path.join(КОРІНЬ, шлях), ціль)
                 р = subprocess.run([sys.executable, "-I", "джерела/прилади/документ_без_коду.py", "--самоперевірка"],
-                                   cwd=тека, capture_output=True, text=True, encoding="utf-8")
+                                   cwd=тека, capture_output=True, text=True, encoding="utf-8", check=False)
                 self.assertEqual(р.returncode, 0, f"перелік {перелік.split()}: {(р.stdout + р.stderr)[-600:]}")
 
 

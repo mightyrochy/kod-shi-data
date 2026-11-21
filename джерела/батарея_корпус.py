@@ -93,7 +93,8 @@ def з_коду(шлях="."):
     for f in os.listdir(шлях):
         if not f.endswith(".py") or _прилад(f):
             continue
-        s = open(os.path.join(шлях, f), encoding="utf-8").read()
+        with open(os.path.join(шлях, f), encoding="utf-8") as ф:
+            s = ф.read()
         # НОМЕРИ РЯДКІВ, ЗАЙНЯТИХ ДОКСТРІНГАМИ, А НЕ МНОЖИНА ID З НИХ.
         # Тут стояло `re.findall` + множина `у_док`, яка ЗБИРАЛАСЬ перед циклом,
         # а застосовувалась ПІСЛЯ нього через `setdefault` — тобто рядок
@@ -129,7 +130,9 @@ def рядки_правил(шлях="."):
         if not f.endswith(".py") or _прилад(f):
             continue
         повний = os.path.abspath(os.path.join(шлях, f))
-        for i, рядок in enumerate(open(повний, encoding="utf-8").read().splitlines(), 1):
+        with open(повний, encoding="utf-8") as ф:
+            рядки = ф.read().splitlines()
+        for i, рядок in enumerate(рядки, 1):
             гол = рядок.split("#")[0]
             for r in ІП.бази_в_тексті(гол):
                 out.setdefault(r, set()).add((повний, i))

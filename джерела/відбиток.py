@@ -81,7 +81,8 @@ class Дерево:
 
     def __init__(self, шлях):
         self.імя = os.path.basename(шлях)
-        self.текст = io.open(шлях, encoding="utf-8", errors="replace").read()
+        with open(шлях, encoding="utf-8", errors="replace") as файл:
+            self.текст = файл.read()
         self.рядки = self.текст.split("\n")
         self.дерево = ast.parse(self.текст)
         self.батько = {}
@@ -277,7 +278,8 @@ def _верхні_функції(імя_файла, дерева, корінь):
         ш = os.path.join(корінь or _ТУТ, імя_файла)
         if not os.path.exists(ш):
             return set(), None
-        тіло = ast.parse(io.open(ш, encoding="utf-8", errors="replace").read()).body
+        with open(ш, encoding="utf-8", errors="replace") as файл:
+            тіло = ast.parse(файл.read()).body
     return {в.name for в in тіло
             if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef))}, тіло
 
@@ -529,12 +531,12 @@ def _мд(дерева, функції, виклики, ребра, прав, т
     _у_коді = {k for k in прав if not k.startswith("__")} | {i for т in табл for i in т["ід"]}
     в = ["# ВІДБИТОК СИСТЕМИ: що в коді написано насправді", "",
          "Породжено `джерела/відбиток.py` з AST поточних файлів. Не переказ — витяг.",
-         "Склад береться з `склад.модулі_системи` — замикання імпортів від `bridge`, "
+         ("Склад береться з `склад.модулі_системи` — замикання імпортів від `bridge`, "
          "звірене з явним списком `status.МОДУЛІ_ПРОДУКТУ`. Тобто відбиток описує "
          "рівно те, що їде у вантажі, а не окремий перелік «що таке система». "
          "Сім приладів і довідників (`audit_contracts`, `gate_reach`, `pair_test`, "
          "`rule_genus`, `run_outfit`, `корпус`, `прилади`) поки в цьому числі: їх тягне "
-         "`status.py` — ребро розривається нарядом Н-V35-069.", "",
+         "`status.py` — ребро розривається нарядом Н-V35-069."), "",
          "| | |", "|---|---:|",
          "| модулів системи | %d |" % len(дерева),
          "| функцій верхнього рівня | %d |" % len(функції),
@@ -564,7 +566,7 @@ def _мд(дерева, функції, виклики, ребра, прав, т
         в.append("| %s | %s | %d |" % (a, b, n))
     вх = collections.Counter()
     вих = collections.Counter()
-    for (a, b), _ in ребра.items():
+    for a, b in ребра:
         вих[a] += 1; вх[b] += 1
     в += ["", "### Хто на кого спирається", "",
           "| модуль | кличе модулів | його кличуть |", "|---|---:|---:|"]
@@ -678,5 +680,6 @@ if __name__ == "__main__":
           " · точок входу рядком (не рахуються): %d" % (len(_нікому), len(_входи)))
     if "--md" in sys.argv:
         ф = sys.argv[sys.argv.index("--md") + 1]
-        io.open(ф, "w", encoding="utf-8").write(_мд(дерева, функції, виклики, ребра, прав, табл))
+        with open(ф, "w", encoding="utf-8") as файл:
+            файл.write(_мд(дерева, функції, виклики, ребра, прав, табл))
         print("записано: %s" % ф)

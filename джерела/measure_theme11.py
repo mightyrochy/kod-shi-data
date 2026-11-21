@@ -154,7 +154,8 @@ def прогін():
 
 def корпусні(шлях="тема-11_верхній-шар.md"):
     import re
-    txt = open(шлях, encoding="utf-8").read()
+    with open(шлях, encoding="utf-8") as ф:
+        txt = ф.read()
     усі = set(re.findall(r"\b(K-OUT-\d\d)\b", txt))
     # K-OUT-37 скасовано й злито в K-OUT-12: ID більше не емітується (частина XXI)
     return усі - {"K-OUT-37"}

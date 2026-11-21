@@ -142,11 +142,12 @@ if __name__ == "__main__":
             print(блок)
             continue
         шлях = os.path.join(_ТУТ, імя_ф)
-        стар = open(шлях, encoding="utf-8").read()
+        with open(шлях, encoding="utf-8") as ф:
+            стар = ф.read()
         і, к = стар.find(_ПОЧАТОК), стар.find(_КІНЕЦЬ)
         if і < 0 or к < 0:
             print("⛔ у %s нема меж породженого блоку — нічого не писав" % імя_ф)
             raise SystemExit(1)
-        open(шлях, "w", encoding="utf-8").write(
-            стар[:і] + блок + стар[к + len(_КІНЕЦЬ):])
+        with open(шлях, "w", encoding="utf-8") as ф:
+            ф.write(стар[:і] + блок + стар[к + len(_КІНЕЦЬ):])
         print("записано: %s" % шлях)

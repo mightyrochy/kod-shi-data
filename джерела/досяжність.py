@@ -163,7 +163,8 @@ def оголошені(корінь=None):
     for м in модулі(корінь):
         шлях = os.path.join(корінь, м + ".py")
         try:
-            дерево = ast.parse(io.open(шлях, encoding="utf-8").read(), filename=шлях)
+            with io.open(шлях, encoding="utf-8") as ф:
+                дерево = ast.parse(ф.read(), filename=шлях)
         except SyntaxError as e:
             print("  ⚠ %s не розбирається: %s" % (м, e))
             continue
@@ -223,7 +224,8 @@ def _дерево_файлів(корінь=None):
             try:
                 if os.path.getsize(ш) > МЕЖА_ФАЙЛА:
                     continue
-                рядки = io.open(ш, encoding="utf-8", errors="replace").read().splitlines()
+                with io.open(ш, encoding="utf-8", errors="replace") as ф:
+                    рядки = ф.read().splitlines()
             except OSError:
                 continue
             вих.append((ш, рід_файла(ш), рядки))
@@ -410,7 +412,8 @@ def main(argv=None):
         тека = os.path.dirname(os.path.abspath(а.md))
         if not os.path.isdir(тека):
             os.makedirs(тека)
-        io.open(а.md, "w", encoding="utf-8").write(markdown(рядки, невиконані, службове))
+        with io.open(а.md, "w", encoding="utf-8") as ф:
+            ф.write(markdown(рядки, невиконані, службове))
         print("записано: %s" % os.path.relpath(os.path.abspath(а.md), КОРІНЬ))
     # ── КОД ВИХОДУ: ЗЛАМАНИЙ ПРИЛАД, А НЕ ВИМІР ─────────────────────────────
     # Досяжність — ВИМІР, і порога в неї нема: «ніхто = 12» не гірше і не краще

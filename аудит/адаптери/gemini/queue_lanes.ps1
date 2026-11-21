@@ -196,12 +196,11 @@ using System.Runtime.InteropServices;
 namespace GeminiWrapper {
     public static class TreeJob {
         [StructLayout(LayoutKind.Sequential)]
-        struct BasicLimit { public long PerProcessTime; public long PerJobTime; public uint Flags; public UIntPtr MinWs; public UIntPtr MaxWs; public uint ActiveLimit; public UIntPtr Affinity; public uint Priority; public uint Scheduling; }
-        [StructLayout(LayoutKind.Sequential)]
-        struct ExtendedLimit { public BasicLimit Basic; public ulong R1, R2, R3, R4, R5, R6; public UIntPtr ProcessMem, JobMem, PeakProcessMem, PeakJobMem; }
+        struct BasicInfo { public IntPtr ExitStatus, Peb, Affinity, Priority, Id, Parent; }
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)] static extern IntPtr CreateJobObject(IntPtr attributes, string name);
-        [DllImport("kernel32.dll", SetLastError = true)] static extern bool SetInformationJobObject(IntPtr job, int infoClass, ref ExtendedLimit info, int size);
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
+        [DllImport("ntdll.dll")] static extern int NtQueryInformationProcess(IntPtr process, int infoClass, ref BasicInfo info, int size, out int returned);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool ReadProcessMemory(IntPtr process, IntPtr address, byte[] buffer, IntPtr size, out IntPtr read);
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool QueryInformationJobObject(IntPtr job, int infoClass, IntPtr info, int size, IntPtr returned);
         [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr OpenProcess(uint access, bool inherit, int id);
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool IsProcessInJob(IntPtr process, IntPtr job, out bool result);
@@ -223,15 +222,15 @@ namespace GeminiWrapper {
         // shared — копію дескриптора задачі вкладено в сам корінь. Ім'я об'єкта ядра живе, поки відкритий хоч один його
         // дескриптор; без копії його тримав би лише творець (процес наряду), і після його смерті задача з відірваними
         // нащадками жила б далі без імені — недосяжна жодному процесу. З копією вона досяжна, поки живий творець або корінь.
+        // Задача без обмежень, тож і без BREAKAWAY_OK: середовище MSYS (Git Bash — оболонка claude) саме ставить кожному
+        // нащадкові CREATE_BREAKAWAY_FROM_JOB, щойно задача процесу це дозволяє, і все запущене з bash жило б поза задачею.
         public static IntPtr Create(IntPtr process, int id, out bool shared) {
             shared = false;
             string name = Name(process, id);
             if (name == null) throw new Win32Exception();
             IntPtr job = CreateJobObject(IntPtr.Zero, name);
             if (job == IntPtr.Zero) throw new Win32Exception();
-            var info = new ExtendedLimit();
-            info.Basic.Flags = 0x800;  // BREAKAWAY_OK: явний вихід із задачі (CREATE_BREAKAWAY_FROM_JOB) не ламає старту нащадка
-            if (!SetInformationJobObject(job, 9, ref info, Marshal.SizeOf(typeof(ExtendedLimit))) || !AssignProcessToJobObject(job, process)) {
+            if (!AssignProcessToJobObject(job, process)) {
                 var e = new Win32Exception(); CloseHandle(job); throw e;
             }
             IntPtr copy;
@@ -264,6 +263,31 @@ namespace GeminiWrapper {
             if (p == IntPtr.Zero) return false;
             try { bool inJob; return IsProcessInJob(p, job, out inJob) && inJob && TerminateProcess(p, 1); }
             finally { CloseHandle(p); }
+        }
+
+        static byte[] Read(IntPtr process, IntPtr at, int n) {
+            var b = new byte[n]; IntPtr got;
+            return ReadProcessMemory(process, at, b, (IntPtr)n, out got) && got.ToInt64() == n ? b : null;
+        }
+
+        // Робоча тека процесу id з його PEB: ProcessParameters (PEB+0x20) → CurrentDirectory.DosPath (+0x38), розкладка
+        // x64. Тека — дескриптор у процесі, тож тримає її від видалення. Недоступний процес (інший користувач, захищений)
+        // чи 32-бітний читач — null.
+        public static string CurrentDirectory(int id) {
+            if (IntPtr.Size != 8) return null;
+            IntPtr p = OpenProcess(0x410, false, id);  // QUERY_INFORMATION | VM_READ
+            if (p == IntPtr.Zero) return null;
+            try {
+                var bi = new BasicInfo(); int got;
+                if (NtQueryInformationProcess(p, 0, ref bi, Marshal.SizeOf(typeof(BasicInfo)), out got) != 0 || bi.Peb == IntPtr.Zero) return null;
+                byte[] b = Read(p, IntPtr.Add(bi.Peb, 0x20), 8);
+                if (b == null) return null;
+                b = Read(p, IntPtr.Add(new IntPtr(BitConverter.ToInt64(b, 0)), 0x38), 16);  // Length, MaximumLength, Buffer
+                if (b == null || BitConverter.ToUInt16(b, 0) == 0) return null;
+                int len = BitConverter.ToUInt16(b, 0);
+                b = Read(p, new IntPtr(BitConverter.ToInt64(b, 8)), len);
+                return b == null ? null : System.Text.Encoding.Unicode.GetString(b);
+            } finally { CloseHandle(p); }
         }
 
         public static void Close(IntPtr job) { CloseHandle(job); }
@@ -353,12 +377,16 @@ function Stop-Tree($Proc) {
         } catch { Write-Log "задачі дерева ${id}: $($_.Exception.Message)" }
     }
     try {
+        $said = ''
         if (-not $Proc.HasExited) {
-            if ($script:OnWindows) { & taskkill.exe /PID $id /T /F *> $null }
+            # Вивід taskkill — текст, а не виняток: під Stop перенаправлений stderr рідної програми кидає на першому рядку
+            # й минає очікування нижче, а «could not be terminated» taskkill пише й про процес, що саме виходить сам.
+            # Не зупинено — лише процес, живий після очікування.
+            if ($script:OnWindows) { $said = (& { $ErrorActionPreference = 'Continue'; & taskkill.exe /PID $id /T /F 2>&1 } | ForEach-Object { [string]$_ }) -join ' ' }
             else { $Proc.Kill($true) }
         }
-        [void]$Proc.WaitForExit(15000)
-    } catch { Write-Log "зупинка процесу: $($_.Exception.Message)" }
+        if (-not $Proc.WaitForExit(15000)) { Write-Log "зупинка процесу ${id}: живий через 15 с — $(ConvertTo-NoteText $said)" }
+    } catch { Write-Log "зупинка процесу ${id}: $(ConvertTo-NoteText $_.Exception.Message)" }
     if ($script:TreeJobs.ContainsKey($id)) { $jobs[$id] = $script:TreeJobs[$id]; $script:TreeJobs.Remove($id) }
     foreach ($i in @($jobs.Keys)) { Stop-TreeJob $i $jobs[$i] }
 }
@@ -2017,14 +2045,33 @@ function Hold-TaskCopy([string]$Dir, [string]$Why) {
     $Dir
 }
 
+function Stop-CopyHolders([string]$Dir) {
+    <# Останній заслін прибирання копії: зупиняє процеси, чия робоча тека (PEB) — $Dir чи тека під ним, крім самого
+    планувальника й інструментів LM Studio; повертає «ім'я pid» зупинених.
+    Тека задачі належить одному прогонові, тож процес у ній — його лишок, що вийшов за задачу процесів (Start-Tree): без
+    заслону він тримав би копію, доки живий, а прибирання накопиченого падало б на ній щоразу. #>
+    if (-not $script:OnWindows) { return @() }
+    $root = [IO.Path]::GetFullPath($Dir).TrimEnd('\') + '\'
+    try { Add-TreeJobType } catch { Write-Log "копія задачі ${Dir}: тримачів не шукано — $(ConvertTo-NoteText $_.Exception.Message)"; return @() }
+    @(foreach ($g in @(Get-Process)) {
+            if ($g.Id -eq $PID -or $g.Id -le 4) { continue }
+            $cwd = [GeminiWrapper.TreeJob]::CurrentDirectory($g.Id)
+            if (-not $cwd -or -not ($cwd.TrimEnd('\') + '\').StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) { continue }
+            if (Test-GpuModelProcess $g.ProcessName ([string]$g.Path)) { continue }
+            try { $g.Kill(); [void]$g.WaitForExit(5000); "$($g.ProcessName) $($g.Id)" }
+            catch { Write-Log "копія задачі ${Dir}: $($g.ProcessName) $($g.Id) не зупинено — $(ConvertTo-NoteText $_.Exception.Message)" }
+        })
+}
+
 function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
     <# Тека задачі чи давня робоча копія слота — геть, коли голова не несе комітів поза доставленим (`rev-list --not`):
     віддаленими гілками (`--remotes`) і $Delivered — тим, що смуга записала поза клоном (бандл, стан позначки, свій простір
     віддалених посилань). Локальні гілки клону — не доставлене: гілку наряду переписує `checkout -B` наступної спроби.
     Несе — Hold-TaskCopy, повертає шлях теки; інакше ''.
     Прибирання не залежить від заборон у копії: тека, яку не можна перелічити (вимір дав недоступні теки), чи видалення
-    з UnauthorizedAccess — спершу Reset-TreeAcl, тоді ще раз; зайнятий іншим процесом файл — тимчасовий стан, його лишає
-    наступне прибирання. У журнал — звільнені байти (вимір до видалення, після скидання ACL — повний). #>
+    з UnauthorizedAccess — спершу Reset-TreeAcl, тоді ще раз; процес, чия робоча тека під копією, — Stop-CopyHolders, тоді
+    ще раз; інакше зайнятий іншим процесом файл — тимчасовий стан, його лишає наступне прибирання. У журнал — звільнені
+    байти (вимір до видалення, після скидання ACL — повний). #>
     $repo = $(if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { $Dir } else { Join-Path $Dir 'repo' })
     if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
         $n = 0
@@ -2045,7 +2092,11 @@ function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
                 $reset = Reset-TreeAcl $Dir
                 try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { $first = $_.Exception }
             }
-            if (Test-Path -LiteralPath $Dir) { Write-Log "копія задачі $Dir не прибрана: $($first.Message)" }
+            if ((Test-Path -LiteralPath $Dir) -and ($held = @(Stop-CopyHolders $Dir)).Count) {
+                Write-Log "копія задачі ${Dir}: процеси поза задачею наряду, що тримали її робочою текою, зупинено: $($held -join ', ')"
+                try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { $first = $_.Exception }
+            }
+            if (Test-Path -LiteralPath $Dir) { Write-Log "копія задачі $Dir не прибрана: $(ConvertTo-NoteText $first.Message)" }
         }
     }
     if ($existed -and -not (Test-Path -LiteralPath $Dir)) { Write-Log "копія задачі $Dir прибрана: звільнено $freed байт$(if ($reset) { ' (ACL скинуто)' })" }
