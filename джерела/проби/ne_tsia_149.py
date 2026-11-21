@@ -11,7 +11,9 @@ _К = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_К))
 import bridge as B, feed as Ф, pipeline as PL
 
-вх = dict(json.load(open(_К / "стенд_вх.json", encoding="utf-8")),
+with open(_К / "стенд_вх.json", encoding="utf-8") as файл:
+    стендовий_вхід = json.load(файл)
+вх = dict(стендовий_вхід,
           каталог=Ф.каталог_на_диску(), варіантів=1, гілка=0)
 без = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 пул = lambda r, сл: [x["id"] for x in ((r.get("кандидати") or {}).get(сл) or [])]

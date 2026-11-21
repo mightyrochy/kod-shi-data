@@ -5,7 +5,7 @@
 Повний перелік граней зберігається, зокрема ще не перенесених.
 """
 import argparse
-from functools import lru_cache
+from functools import lru_cache, cache
 import hashlib
 import importlib.metadata
 import inspect
@@ -66,7 +66,7 @@ def зробити_перетворення(бібліотека):
     від = множ(BRADFORD, БІЛІ["C"])
     до = множ(BRADFORD, БІЛІ["D65"])
 
-    @lru_cache(maxsize=None)
+    @cache
     def перетворити(H, V, C):
         """Дає Lab та θ/L*/C*; непридатна renotation зупиняє породження."""
         xyY = бібліотека.notation.munsell_colour_to_xyY(позначення(H, V, C))
@@ -162,7 +162,7 @@ def поділити(інтервал, вузли):
     """Розрізає інтервал у вузлах renotation до подальшого наближення."""
     низ, верх = інтервал
     краї = [низ] + [x for x in вузли if низ < x < верх] + [верх]
-    return list(zip(краї, краї[1:]))
+    return list(itertools.pairwise(краї))
 
 
 def походження(шляхи):

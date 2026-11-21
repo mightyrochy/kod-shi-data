@@ -7,7 +7,8 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bridge as B, pipeline as PL, міст_основи as MO, палітра_нейтраль as PN
 
-вх = json.load(open("стенд_вх.json", encoding="utf-8"))
+with open("стенд_вх.json", encoding="utf-8") as файл:
+    вх = json.load(файл)
 сц = dict(нагода="побачення", місце="ресторан_районний", година=19, темп_c=12)
 ДРАП = dict(метал="золото", білий="вершковий")
 ФРАЗИ = (("хочу, щоб на мене дивились — заявити про себе", "експресія"),

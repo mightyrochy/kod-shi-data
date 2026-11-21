@@ -4,7 +4,7 @@ H згортається, θ відсутній. Lab та залишкова C* 
 renotation/адаптацію; крива не є замкненою оболонкою сімей продукту.
 """
 import argparse
-from functools import lru_cache
+from functools import lru_cache, cache
 import importlib.util
 import inspect
 import json
@@ -32,7 +32,7 @@ def зробити_перетворення(бібліотека):
     """
     білий = бібліотека.XYZ_to_xy(ОСНОВА.БІЛІ["C"])
 
-    @lru_cache(maxsize=None)
+    @cache
     def перетворити(V):
         """Читає ASTM-нейтраль на всьому замкненому інтервалі V=0…10."""
         if not math.isfinite(V) or not 0 <= V <= 10:

@@ -5,7 +5,7 @@
 відображення, не нові кольорові поверхні або замкнена оболонка.
 """
 import argparse
-from functools import lru_cache
+from functools import lru_cache, cache
 import importlib.util
 import json
 import math
@@ -30,7 +30,7 @@ def зробити_перетворення(бібліотека):
     """
     нейтраль = НЕЙТРАЛЬ.зробити_перетворення(бібліотека)
 
-    @lru_cache(maxsize=None)
+    @cache
     def перетворити(H, V, C):
         """Відхиляє позаобласний вхід до читання нейтральної кривої."""
         if not all(math.isfinite(x) for x in (H, V, C)):
