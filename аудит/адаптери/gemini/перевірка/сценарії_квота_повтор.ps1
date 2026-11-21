@@ -19,6 +19,7 @@ function Fixture-Git([string]$At, [string[]]$Items) {
 try {
     $origin = Join-Path $tmp 'origin.git'; $seed = Join-Path $tmp 'seed'; $clone = Join-Path $tmp 'clone'
     [void](Fixture-Git $tmp @('init', '-q', '--bare', $origin))
+    [void](Fixture-Git $origin @('symbolic-ref', 'HEAD', 'refs/heads/main'))
     [void][IO.Directory]::CreateDirectory($seed)
     [void](Fixture-Git $seed @('init', '-q', '-b', 'main'))
     [IO.File]::WriteAllText((Join-Path $seed 'base.txt'), "base`n")
