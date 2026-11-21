@@ -92,11 +92,11 @@ async function головна() {
     const відп = {n, к, початок: new Date().toISOString()};
     try {
       if (к.дія === 'тап' || к.дія === 'друк' || к.дія === 'файл') {
-        const з = await знайти(к.мітка); if (!з) throw new Error('нема елемента: ' + к.мітка); відп.знайдено = з.мітка;
+        const з = к.css ? {лок: стор.locator(к.css).first(), мітка: 'css ' + к.css} : await знайти(к.мітка); if (!з) throw new Error('нема елемента: ' + к.мітка); відп.знайдено = з.мітка;
         if (к.дія === 'тап') await з.лок.click({timeout: 15000});
         if (к.дія === 'друк') await з.лок.fill(к.текст);
         if (к.дія === 'файл') { const тип = await з.лок.evaluate(x => x.tagName + ':' + (x.type || ''));
-          if (/INPUT:file/.test(тип)) await з.лок.setInputFiles(к.шляхи); else { const [fc] = await Promise.all([стор.waitForEvent('filechooser', {timeout: 8000}), з.лок.click()]); await fc.setFiles(к.шляхи); } }
+          відп.тип = тип; if (/INPUT:file/.test(тип)) { await з.лок.setInputFiles(к.шляхи); відп.файлів = await з.лок.evaluate(x => x.files.length).catch(e => String(e)); } else { const [fc] = await Promise.all([стор.waitForEvent('filechooser', {timeout: 8000}), з.лок.click()]); await fc.setFiles(к.шляхи); } }
       } else if (к.дія === 'гортай') { await стор.mouse.move(ш / 2, в / 2); await стор.mouse.wheel(0, к.dy || 600); }
       else if (к.дія === 'ключ') { await стор.keyboard.press(к.ключ); }
       else if (к.дія === 'js') { відп.js = await стор.evaluate(к.код); }

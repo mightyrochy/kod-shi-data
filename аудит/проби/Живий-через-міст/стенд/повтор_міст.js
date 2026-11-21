@@ -17,7 +17,7 @@ const СЛОВА_СЦЕНИ = process.env.SCENE_WORDS || null;
 const дії = [...fs.readFileSync(path.join(перший,'хід.md'),'utf8').matchAll(/### (\d+) ·[^\n]*\n([\s\S]*?)(?=\n### |$)/g)].map(m=>({крок:Number(m[1]),текст:(m[2].match(/^- дія: ([\s\S]*?)(?=\n\n|$)/m)||[])[1]})).filter(x=>x.текст);
 if(СЛОВА_СЦЕНИ){const р=дії.findIndex(x=>/^надрукувала в «поле для тексту: підказка: Напиши, як подрузі/.test(x.текст));if(р<0){console.error('нема кроку з нагодою');process.exit(3);}дії[р].текст=дії[р].текст.replace(/»: «[\s\S]*»$/,'»: «'+СЛОВА_СЦЕНИ.replace(/\$/g,'$$$$')+'»');}
 if(process.env.REPLAY_PLAN){console.log(JSON.stringify({ситуація,дій:дії.length,слова:дії.filter(x=>x.текст.startsWith('надрукувала в ')),новий:дії.filter(x=>x.текст==='натиснула «кнопка: Новий»')}));process.exit(0);}
-let браузер, стор, активні=0, останнійВиклик=0, крок=0, прохід=1, слів=0, пропущено=0, блокер=null;
+let викликів=0, браузер, стор, активні=0, останнійВиклик=0, крок=0, прохід=1, слів=0, пропущено=0, блокер=null;
 const summary={ситуація,початок:new Date().toISOString(),слова:[],розбіжності:[],руки:[]};
 function розбіжність(дія,причина,стан){
   const r={прохід,крок:дія.крок,дія:дія.текст,причина,екран:стан.текст,елементи:стан.елем};
@@ -79,8 +79,9 @@ async function знайти(мітка){
 }
 async function головна(){
   браузер=await chromium.launch({headless:true,proxy:process.env.HTTPS_PROXY?{server:process.env.HTTPS_PROXY,bypass:'localhost,127.0.0.1'}:undefined});
-  const ctx=await браузер.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,locale:'uk-UA',timezoneId:'Europe/Kyiv',ignoreHTTPSErrors:true,acceptDownloads:true,
-    userAgent:'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36'});
+  const [ШИР,ВИС]=(process.env.VIEWPORT||'390x844').split('x').map(Number),ТЕЛ=ШИР<600;
+  const ctx=await браузер.newContext({viewport:{width:ШИР,height:ВИС},deviceScaleFactor:1,isMobile:ТЕЛ,hasTouch:ТЕЛ,locale:'uk-UA',timezoneId:'Europe/Kyiv',ignoreHTTPSErrors:true,acceptDownloads:true,
+    userAgent:ТЕЛ?'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36':undefined});
   стор=await ctx.newPage();стор.setDefaultTimeout(15000);
   стор.on('console',m=>{if(['warning','error'].includes(m.type()))fs.appendFileSync(path.join(службове,'консоль.txt'),new Date().toISOString()+' '+m.text()+'\n');});
   стор.on('pageerror',e=>fs.appendFileSync(path.join(службове,'консоль.txt'),String(e)+'\n'));
@@ -89,11 +90,11 @@ async function головна(){
   стор.on('filechooser',()=>{});
   стор.on('download',async d=>{await d.saveAs(path.join(тека,d.suggestedFilename()));});
   const база='https://mightyrochy.github.io', МІСТ='https://lyusterko-mist.mighty-rochy.workers.dev/';
-  await стор.route(u=>u.origin===база,async r=>{
+  if(!process.env.PUBLISHED)await стор.route(u=>u.origin===база,async r=>{
     const ім=decodeURIComponent(new URL(r.request().url()).pathname).replace(/^\/kod-shi-data\//,'').replace(/^\//,'')||'index.html';const ф=path.join(process.env.STOR,ім);
     await r.fulfill({status:fs.existsSync(ф)?200:404,contentType:'text/html; charset=utf-8',body:fs.existsSync(ф)?fs.readFileSync(ф):'нема '+ім});
   });
-  await стор.route('https://cdn.jsdelivr.net/pyodide/**',async r=>{
+  if(!process.env.PUBLISHED)await стор.route('https://cdn.jsdelivr.net/pyodide/**',async r=>{
     const ім=new URL(r.request().url()).pathname.split('/').pop(),ф=path.join(process.env.PYODIDE,ім);
     await r.fulfill({status:fs.existsSync(ф)?200:404,contentType:ім.endsWith('.wasm')?'application/wasm':/\.m?js$/.test(ім)?'application/javascript':ім.endsWith('.json')?'application/json':'application/octet-stream',body:fs.existsSync(ф)?fs.readFileSync(ф):'нема '+ім});
   });
@@ -102,11 +103,13 @@ async function головна(){
   });
   await стор.route(u=>u.origin+'/'===МІСТ,async route=>{
     if(route.request().method()!=='POST')return route.fallback();
-    активні++;останнійВиклик=Date.now();const т0=Date.now();const тіло=route.request().postData()||'{}',початок=new Date().toISOString();
+    if(process.env.STELYA&&викликів>=Number(process.env.STELYA)){fs.appendFileSync(path.join(службове,'обміни.jsonl'),JSON.stringify({час:new Date().toISOString(),прохід,стеля:true})+'\n');return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:{type:'стеля',message:'стеля проходу: міст не кликано'}})});}
+    викликів++;активні++;останнійВиклик=Date.now();const т0=Date.now();const тіло=route.request().postData()||'{}',початок=new Date().toISOString();
     try{
       const r=await route.fetch(process.env.MIST_LOCAL?{url:process.env.MIST_LOCAL,timeout:960000}:{timeout:960000});const body=await r.text();const h=r.headers();
       const x={};for(const n in h)if(/^x-|^retry-after|^anthropic-ratelimit/.test(n))x[n]=h[n];
       fs.appendFileSync(path.join(службове,'обміни.jsonl'),JSON.stringify({час:початок,с:(Date.now()-т0)/1000,прохід,статус:r.status(),заголовки:x,запит:тіло,відповідь:body})+'\n');
+      if(h['x-runs-left']&&h['x-runs-left']!=='n/a')блокер='ЗУПИНКА: x-runs-left='+h['x-runs-left'];
       if(r.status()===429||r.status()===402)блокер='ЗАБЛОКОВАНО: '+r.status()+' від моста: '+body.slice(0,300);
       await route.fulfill({response:r,body});
     }catch(e){fs.appendFileSync(path.join(службове,'обміни.jsonl'),JSON.stringify({час:початок,с:(Date.now()-т0)/1000,прохід,запит:тіло,помилка:String(e)})+'\n');await route.fulfill({status:502,body:JSON.stringify({error:{message:String(e)}})}).catch(()=>{});}
@@ -126,6 +129,7 @@ async function головна(){
       try{
         if(ввід){await знайдено.лок.fill(ввід[2]);слів++;summary.слова.push({прохід,крок:дія.крок,текст:ввід[2],лягло:true});}
         else{
+          if(мітка==='кнопка: Новий'&&process.env.ONE_PASS){ляг(дія,true);break;}   // один прохід: до «Новий», без нього
           const тип=await знайдено.лок.evaluate(x=>x.tagName+':'+(x.type||''));
           if(!/INPUT:file/.test(тип))await знайдено.лок.click();
           if(мітка==='кнопка: Новий')прохід++;
@@ -143,6 +147,12 @@ async function головна(){
     await сон(700);await спокій();
   }
   await доЗавантажитиФото(стор);await сон(3000);await кадр('кінець записаного шляху');
+  if(process.env.ONE_PASS){   // хвіст одного проходу: «Усі образи» і файл вердиктів — той, що тестувальниця прикріплює до повідомлення
+    try{const у=await знайти('кнопка: Усі образи ›');if(у){await у.лок.click();await сон(1500);await кадр('один прохід: Усі образи',true);}
+      await стор.locator('#журнал summary').click();await сон(800);await кадр('один прохід: відкрито «Вердикти на цьому телефоні»',true);
+      await стор.locator('#ж-файл').click();await сон(4000);await кадр('один прохід: «Зберегти всі вердикти файлом»',true);
+    }catch(e){fs.appendFileSync(path.join(тека,'розбіжності.md'),'\n- хвіст одного проходу не виконався: '+String(e).split('\n')[0]+'\n');}
+  }
   summary.кінець=new Date().toISOString();summary.слів_лягло=слів;summary.слів_пропущено=пропущено;summary.проходів=прохід;summary.кроків_джерела=дії.length;summary.кроків_лягло=summary.кроки.filter(x=>x.лягло).length;
   fs.writeFileSync(path.join(тека,'підсумок.json'),JSON.stringify(summary,null,2));
   const unique=new Map();for(const r of summary.руки)unique.set(r.прохід+'|'+r.прогін,r);
