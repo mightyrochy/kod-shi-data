@@ -1,6 +1,5 @@
 """Виконує змінену перевірку замші з гейтів на її власному вході."""
 import ast
-import inspect
 import pathlib
 import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
@@ -15,8 +14,6 @@ def main():
     шлях = pathlib.Path(__file__).resolve().parent.parent / 'прилади/розділи_гейтів.py'
     модуль = ast.parse(шлях.read_text(encoding='utf-8')).body
     тіло = next(n.body for n in модуль if isinstance(n, ast.FunctionDef) and n.name == 'main')
-    # перехідний помічник гейтів `_сц` (#4550) — частина виразу гейта, поки він є в модулі
-    помічники = [n for n in модуль if isinstance(n, ast.FunctionDef) and n.name == '_сц']
     імена = {'_пара121', '_речі121', '_п5', '_п1'}
     вибрані = [n for n in тіло if isinstance(n, ast.Assign)
                and any(isinstance(t, ast.Name) and t.id in імена for t in n.targets)]
@@ -30,8 +27,8 @@ def main():
         print(назва, доказ)
         assert умова, доказ
     простір = dict(_A121=accessory, O=outfit, _СУД=суд_образу,
-                   _РЕЄСТР=реєстр_правил, тест=перевірити, _inspect_сц=inspect)
-    exec(compile(ast.Module(body=помічники + вибрані, type_ignores=[]), str(шлях), 'exec'), простір)
+                   _РЕЄСТР=реєстр_правил, тест=перевірити)
+    exec(compile(ast.Module(body=вибрані, type_ignores=[]), str(шлях), 'exec'), простір)
 
 
 if __name__ == '__main__':
