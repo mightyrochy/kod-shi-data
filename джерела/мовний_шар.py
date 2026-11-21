@@ -1630,7 +1630,7 @@ def _межі(речі, весь_слот=True):
         # для кольору, тож межа принта різала візерунчасте з УСІХ слотів (пул стенда 54 → 5). Читачі
         # слота (`пакет_моделі.жорстке_відсічення`, `міст_вхід.застосувати_паспорт`) від групи не
         # залежать — їм бракувало лише запису. Запис без слота й без типу — про весь образ.
-        for к, поле in (("принти", "pattern"), ("тканини", "fabric")):
+        for _, поле in (("принти", "pattern"), ("тканини", "fabric")):
             w = _ВМ.ключ(поле, р.get(поле))
             if w and р.get("slot") and not тип:
                 слоти[w] = _унія_слотів(слоти.get(w), _слоти_ядра(р["slot"]))
@@ -2442,7 +2442,8 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         перекладачка = not str(власне or "").strip()
         if перекладачка:
             текст = ""
-            відкинуто.append(dict(частина="text", чому="no_confirmation_text", зняте=""))
+            if not any(д.get("чому") == "recorded_on_card" for д in відкинуто):
+                відкинуто.append(dict(частина="text", чому="no_confirmation_text", зняте=""))
         # прочитане — дане: у `поради_дані` лягає кожна знана тема з показаного запрошення
         п["поради_дані"] = дані + [к for к in dict.fromkeys(_ВМ.ключ("advice_topic", т) for т in показані)
                                    if к and к not in дані]
@@ -3572,6 +3573,11 @@ _ПОЛЯ_EN = {
                     "event for the same look): one or two sentences in English for the stylist on what she "
                     "means; the stylist gets her own words too. Otherwise unknown",
 }
+# Опис нового поля стоїть у його записі паспорта («en»), а не другим рядком тут (`паспорт_поля`, шапка).
+for _в in _ВМ.ПОЛЯ_ПАСПОРТА.values():
+    if "en" in _в:
+        assert _в["поле"] not in _ПОЛЯ_EN, "опис поля %s — і тут, і в записі паспорта" % _в["поле"]
+        _ПОЛЯ_EN[_в["поле"]] = _в["en"]
 _РЕЧІ_EN = {"slot": "part of the look", "item_type": "item type", "fabric": "fabric", "pattern": "pattern",
             "color_class": "colour class", "color_name": "colour name", "zone": "body zone she keeps covered",
             "feature": "item feature", "length": "item length", "wear": "how she wears it"}
@@ -3994,9 +4000,9 @@ _ПРАВИЛО_ПЛИТОК = (
     # «invites her to tell nothing» поруч із «тему поради вона не бачить» MamayLM читала як
     # «поради не пропонуй» — запрошення в першому ході 3 з 12. Тему в `text` і так знімає суд
     # за `about` (`_текст_до_показу`), тож заборони в `text` досить «не питає».
-    "\"text\" is your reply to her: briefly what you understood and recorded from her new message, and "
-    "your answer when she asked something and \"need\" is \"none\"; when she asked nothing, nothing "
-    "more — no advice of your own. \"text\" asks her nothing and has no question marks.",
+    "\"text\" is your answer when she asked something and \"need\" is \"none\", else nothing — no advice of your "
+    "own. The case card shows what you recorded: \"text\" never reports it, only that something she told is NOT "
+    "recorded. \"text\" asks her nothing and has no question marks.",
     # «Розкажи про стиль…», «Я запропоную тобі прикраси та стиль…» ішли
     # повз суд запрошення через `text`: код бачив лише «?». Тепер кожне речення `text` несе коди того, про що
     # воно (`about`), і суд показує лише речення про записане цього ходу чи про її питання (`суд_частин`).
@@ -4023,7 +4029,7 @@ _ПРАВИЛО_ПЛИТОК = (
     "understood — what already is, never what will be: nothing that is not in \"update\" or the passport, "
     "no promise or forecast about the looks, the items, "
     "their colours or how her words will be taken into account; the looks are put together later. "
-    "A sentence about a recorded field restates it and adds nothing: no praise or judgement of it, no "
+    "A sentence about a field restates what she told and adds nothing: no praise or judgement of it, no "
     "\"because\", no consequence.",
     # Підтвердження й запрошення — окремими реченнями, тире — «—». МОВА-ХІД-ТОНШЕ: правило
     # знято — крапку між шматками й довге тире ставить код (`_бульбашка`), слів не читаючи (п.12).
@@ -5097,6 +5103,19 @@ def _речення_до_показу(частини, записано, *, ка�
             for і, x in enumerate(кандидати):
                 прийнято, причини = суд_підтвердження(dict(р, says=x), картка, записані=є, її_слова=її_слова) \
                     if і == 0 and not _ПИТАННЯ.search(x) else (False, [])
+                # ЗАПИСАНЕ КАЖЕ КАРТКА, А НЕ ПРОЗА СТИЛІСТКИ (наряд Картка-записане-її-слово, К5): речення, що каже поле
+                # записаним (`recorded`), переказує рядок картки, який жінка може звірити й виправити, — воно не
+                # показується; речення про «не записано» й про її питання лишаються
+                # Лише коли ВСЕ речення — про записане, що має рядок картки: поле-список речей (`ПОЛЯ_БЕЗ_РЯДКА_КАРТКИ`: бажання,
+                # вето, її речі) і незаписане поле в `about` рядка картки не мають, тож речення про них лишається.
+                на_картці = [к for к in (р.get("recorded") or ()) if к in КОДИ_ПОЛІВ and к not in _ПП.ПОЛЯ_БЕЗ_РЯДКА_КАРТКИ]
+                if прийнято and картка is not None and на_картці and all(
+                        к in на_картці for к in коди if к != ПРО_ЇЇ_ПИТАННЯ):
+                    запасний_хід = "рядок картки"           # що записано — каже картка, а не проза
+                    вердикти.append((x, False))
+                    відкинуто.append(dict(частина="text", чому="recorded_on_card", про=коди, зняте=x,
+                                          запасний_хід=запасний_хід))
+                    continue
                 вердикти.append((x, прийнято))
                 if not прийнято:
                     відкинуто.append(dict(причини[0], про=коди) if причини else dict(

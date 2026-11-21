@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Floor-length A-line dress with a fitted bodice, a softly gathered waist and a wide-strap neckline that leaves the shoulders open, in dusty emerald green #3F6B5C, heavy silk satin crepe, fully lined\\n\\nBlock-heel sandals with an ankle strap, 6 cm heel, in warm champagne gold #C9A97A, soft metallic leather\\n\\nSmall envelope clutch, in champagne gold #C9A97A, satin-finished leather\\n\\nDrop earrings, small and slim, in polished gold #D4AF6A, metal with a pearl-like bead\\n\\nFine bracelet, in polished gold #D4AF6A, metal\\n\\nThis is a formal social look: a long dress in a noble fabric with heeled shoes, right for the sister of the bride. The deep green echoes the grey-green of your eyes and sets off your golden hair and warm skin without competing with the bride, since it is neither white nor ivory. Bare shoulders are the only open zone, which keeps the dress cool for an August ceremony outdoors and polished through the restaurant evening. Block heels hold steadily on grass, and the gold accessories tie the whole look together.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Floor-length A-line dress\\\",\\\"details\\\":\\\"Floor-length A-line, fitted bodice, softly gathered waist, wide-strap neckline leaving shoulders open, heavy silk satin crepe, fully lined\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#3F6B5C\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Block-heel sandals\\\",\\\"details\\\":\\\"Ankle strap, 6 cm heel, soft metallic leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#C9A97A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Small envelope clutch\\\",\\\"details\\\":\\\"Satin-finished leather\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#C9A97A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Small and slim, metal with a pearl-like bead\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#D4AF6A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Fine bracelet\\\",\\\"details\\\":\\\"Polished metal\\\",\\\"slot\\\":\\\"bracelet\\\",\\\"color_hex\\\":\\\"#D4AF6A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2069,\"output_tokens\":348},\"stop_reason\":\"end_turn\"}"
+ }
+}

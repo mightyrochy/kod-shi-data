@@ -222,7 +222,7 @@ def прогін(шлях, вихід=None, макс=5000, режим_мови="
     зразок_назв = []
 
     # iterparse: фід на 200 МБ не влазить у пам'ять телефона й пісочниці цілком
-    for подія, ел in ET.iterparse(потік, events=("end",)):
+    for _, ел in ET.iterparse(потік, events=("end",)):
         тег = ел.tag.split("}")[-1]
         if тег == "category":
             кат[ел.get("id")] = ((ел.text or "").strip(), ел.get("parentId"))
