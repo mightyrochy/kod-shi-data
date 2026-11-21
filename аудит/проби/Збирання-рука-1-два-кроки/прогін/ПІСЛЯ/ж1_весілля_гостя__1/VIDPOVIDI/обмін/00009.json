@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Floor-length A-line gown, sleeveless with a softly structured V-neckline and a back-baring open zone kept modest, in dusty sage green (#9CAF9A), lightweight chiffon over a satin lining\\n\\nStrappy heeled sandals, 7 cm block heel, in champagne gold (#D9C3A0), matte leather\\n\\nClutch bag, small envelope shape, in warm ivory (#F2E8D5), satin\\n\\nDrop earrings, slim teardrop shape, in soft gold (#C8A96A), polished metal\\n\\nDelicate bracelet, thin chain, in soft gold (#C8A96A), polished metal\\n\\nThis outfit works because a floor-length chiffon gown suits the formal level of a close-family role at your sister's wedding, while the light fabric keeps you cool and comfortable through an outdoor August ceremony. Dusty sage is soft and flattering in daylight, and it stays clear of white, ivory and bold attention-grabbing shades so the bride remains the focus. The block heel is steady on grass and gravel and still looks dressed for the restaurant afterwards. The gold accessories add a quiet glow that carries you from the ceremony into the evening without needing a wrap or jacket in the warm weather.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Gown\\\",\\\"details\\\":\\\"Floor-length A-line, sleeveless with a softly structured V-neckline and a modest open back, lightweight chiffon over a satin lining\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#9CAF9A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Strappy heeled sandals\\\",\\\"details\\\":\\\"7 cm block heel, matte leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#D9C3A0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Clutch bag\\\",\\\"details\\\":\\\"Small envelope shape, satin\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#F2E8D5\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Slim teardrop shape, polished metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C8A96A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Bracelet\\\",\\\"details\\\":\\\"Delicate thin chain, polished metal\\\",\\\"slot\\\":\\\"bracelet\\\",\\\"color_hex\\\":\\\"#C8A96A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2093,\"output_tokens\":326},\"stop_reason\":\"end_turn\"}"
+ }
+}

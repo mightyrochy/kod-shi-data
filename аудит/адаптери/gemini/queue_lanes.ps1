@@ -2023,8 +2023,8 @@ function Get-TaskDirText([string]$TaskDir) {
 
 function Close-TaskCopy([string[]]$Delivered) {
     <# Після доставки: $RepoDir і TEMP/TMP — як до копії, зміни спільного конфігу клону нарядом — у журнал
-    (Write-CloneConfigChange), копія — геть (Remove-TaskCopy). Повертає шлях теки, що лишилась із недоставленими комітами,
-    або ''. #>
+    (Write-CloneConfigChange), копія — геть (Remove-TaskCopy; $Delivered — доставлене понад віддалені гілки). Повертає
+    шлях теки, що лишилась із недоставленими комітами, або ''. #>
     $c = $script:TaskCopy
     if ($null -eq $c) { return '' }
     $script:TaskCopy = $null
@@ -2046,22 +2046,40 @@ function Reset-TreeAcl([string]$Dir) {
     } catch { $false }
 }
 
+function Hold-TaskCopy([string]$Dir, [string]$Why) {
+    <# Тека задачі лишається для відновлення: голову копії відв'язано від гілки, `kept.txt` з причиною (Clear-TaskCopies
+    такі теки не чіпає), рядок журналу; повертає шлях теки. Копії нема — лише рядок журналу.
+
+    Відв'язка — `update-ref --no-deref HEAD`, а не `checkout --detach`: той бере замок індексу, а копію утримують саме тоді,
+    коли її git міг лишитися посеред роботи (записане не закомічено). Гілка наряду спільна для всіх копій клону: копія на
+    ній їде разом із `checkout -B` наступної спроби тієї самої позначки на старт, і коміти агента лишаються лише в reflog. #>
+    $repo = $(if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { $Dir } else { Join-Path $Dir 'repo' })
+    if (Test-Path -LiteralPath $Dir -PathType Container) {
+        if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
+            $head = Invoke-Git @('rev-parse', '-q', '--verify', 'HEAD^{commit}') -AllowFail -Dir $repo
+            $r = $(if ($head.Code -eq 0) { Invoke-Git @('update-ref', '--no-deref', '-m', 'обгортка: копію утримано', 'HEAD', $head.Out.Trim()) -AllowFail -Dir $repo } else { $head })
+            if ($r.Code -ne 0) { Write-Log "копія задачі ${Dir}: голову не відв'язано від гілки — код $($r.Code): $(ConvertTo-NoteText $r.Err)" }
+        }
+        try { [IO.File]::WriteAllText((Join-Path $Dir 'kept.txt'), "$Why`n", $script:Utf8) } catch { Write-Log "kept.txt копії ${Dir}: $($_.Exception.Message)" }
+    }
+    Write-Log "копія задачі $Dir лишається: $Why"
+    $Dir
+}
+
 function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
-    <# Тека задачі чи давня робоча копія слота — геть, коли голова не несе комітів поза $Delivered (`rev-list --not`).
-    Несе — тека лишається з `kept.txt`, гілку звільнено, повертає шлях теки; інакше ''.
+    <# Тека задачі чи давня робоча копія слота — геть, коли голова не несе комітів поза доставленим (`rev-list --not`):
+    віддаленими гілками (`--remotes`) і $Delivered — тим, що смуга записала поза клоном (бандл, стан позначки, свій простір
+    віддалених посилань). Локальні гілки клону — не доставлене: гілку наряду переписує `checkout -B` наступної спроби.
+    Несе — Hold-TaskCopy, повертає шлях теки; інакше ''.
     Прибирання не залежить від заборон у копії: тека, яку не можна перелічити (вимір дав недоступні теки), чи видалення
     з UnauthorizedAccess — спершу Reset-TreeAcl, тоді ще раз; зайнятий іншим процесом файл — тимчасовий стан, його лишає
     наступне прибирання. У журнал — звільнені байти (вимір до видалення, після скидання ACL — повний). #>
     $repo = $(if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { $Dir } else { Join-Path $Dir 'repo' })
     if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
         $n = 0
-        $r = Invoke-Git (@('rev-list', '--count', 'HEAD', '--not') + $Delivered) -AllowFail -Dir $repo
-        if ($r.Code -eq 0 -and [int]::TryParse($r.Out.Trim(), [ref]$n) -and $n -gt 0) {
-            [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail -Dir $repo)
-            [IO.File]::WriteAllText((Join-Path $Dir 'kept.txt'), "недоставлених комітів голови: $n`n", $script:Utf8)
-            Write-Log "копія задачі $Dir лишається: недоставлених комітів голови $n"
-            return $Dir
-        }
+        $r = Invoke-Git (@('rev-list', '--count', 'HEAD', '--not', '--remotes') + @($Delivered | Where-Object { $_ })) -AllowFail -Dir $repo
+        if ($r.Code -eq 0 -and [int]::TryParse($r.Out.Trim(), [ref]$n) -and $n -gt 0) { return (Hold-TaskCopy $Dir "недоставлених комітів голови: $n") }
+        if ($r.Code -ne 0) { Write-Log "копія задачі ${Dir}: недоставлене не звірено — код $($r.Code): $(ConvertTo-NoteText $r.Err)" }
     }
     $freed = 0L; $reset = $false; $existed = Test-Path -LiteralPath $Dir
     $m = Measure-DirBytes $Dir
@@ -2084,10 +2102,10 @@ function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
     ''
 }
 
-function Clear-TaskCopies([string]$Root, [string[]]$Delivered) {
+function Clear-TaskCopies([string]$Root, [scriptblock]$Delivered) {
     <# Накопичене під $Root: копії задач і давні робочі копії слотів, яких не тримає зайнятий слот (замок і `copy` у
-    `<слот>.json`) і без `kept.txt`, — геть за Remove-TaskCopy. Теки читаються до замків: нова копія з'являється вже
-    після запису `<слот>.json`. #>
+    `<слот>.json`) і без `kept.txt`, — геть за Remove-TaskCopy; доставлене копії дає `& $Delivered <ім'я теки>` (ім'я
+    теки задачі — id прогону). Теки читаються до замків: нова копія з'являється вже після запису `<слот>.json`. #>
     $dirs = @(Get-ChildItem -LiteralPath $Root -Directory -ErrorAction SilentlyContinue)
     $busy = @{}
     foreach ($l in @(Get-ChildItem -LiteralPath $script:SlotDir -Filter '*.lock' -File -ErrorAction SilentlyContinue)) {
@@ -2102,7 +2120,7 @@ function Clear-TaskCopies([string]$Root, [string[]]$Delivered) {
     foreach ($d in $dirs) {
         if ($busy.ContainsKey($d.Name) -or (Test-Path -LiteralPath (Join-Path $d.FullName 'kept.txt'))) { continue }
         Write-Log "накопичене: $($d.FullName) прибирається"
-        [void](Remove-TaskCopy $d.FullName $Delivered)
+        [void](Remove-TaskCopy $d.FullName @(& $Delivered $d.Name))
     }
 }
 
