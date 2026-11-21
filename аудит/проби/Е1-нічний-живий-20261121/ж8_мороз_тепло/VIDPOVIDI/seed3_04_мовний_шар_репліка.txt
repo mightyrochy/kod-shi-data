@@ -1,0 +1,34 @@
+── ПРОМПТ (3424 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш жінці репліку стилістки природною українською. Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки. До неї — напряму, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай); що сказала вона, стилістка каже їй у другій особі. Зміст береш лише з входу нижче: нічого не додаєш, не вирішуєш і не радиш від себе. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Вхід — «репліка стилістки»:
+- passport — відомі факти: про них не питай, підтверджуй лише recorded.
+- advice — порада коду; її додає показ, не пиши її в text.
+- code_data — дані коду; питай лише з required.
+- not_recorded — що з її слів цього ходу НЕ записано в сценарій: поля сценарію кодами: коротко й прямо скажи, що цього ти не записала, і що вона може написати це ще раз своїми словами; не кажи, що врахуєш, і не питай. Коди: formality — наскільки ошатний цей вихід.
+Пиши зміст кодів людськими словами.
+
+Відповідь — лише JSON-об'єкт з ключем text — перелік речень {about: [ключі входу], recorded: [коди about, які речення каже записаними], her_words: [], says: речення}.
+
+РЕПЛІКА:
+{"not_recorded": ["formality"], "passport": {"occasion": "everyday", "movement": "walk_a_lot", "weather_band": "frost", "intent": "comfort_first", "goal": "flatter", "part_of_day": "day", "open_zones": "one", "reserved_colour": "near_white", "quotes": {}, "sources": {"occasion": {"kind": "reading"}, "movement": {"kind": "reading"}, "weather_band": {"kind": "reading"}, "intent": {"kind": "reading"}, "goal": {"kind": "reading"}, "part_of_day": {"kind": "reading"}, "open_zones": {"kind": "reading"}, "reserved_colour": {"kind": "reading"}, "quotes": {"kind": "default"}}}, "advice": "Можеш розповісти, які прикраси візьмеш і у якому стилі хочеш образ.", "code_data": {"advice_topics": ["прикраси", "реєстр"], "not_recorded": ["invented · step=layer · field=weather_band · model_said=\"frost\" · quote=none · quote_in_her_words=no · code=kept_as_reading", "invented · step=layer · field=occasion · model_said=\"everyday\" · quote=none · quote_in_her_words=no · code=kept_as_reading", "invented · step=layer · field=movement · model_said=\"walk_a_lot\" · quote=none · quote_in_her_words=no · code=kept_as_reading", "invented · step=layer · field=intent · model_said=\"comfort_first\" · quote=none · quote_in_her_words=no · code=kept_as_reading", "invented · step=layer · field=goal · model_said=\"flatter\" · quote=none · quote_in_her_words=no · code=kept_as_reading", "not_read · step=layer · field=formality · model_said=\"casual\" · code=not_taken"], "required": []}}
+
+── ВІДПОВІДЬ (637 симв., 6.0 с, HTTP 200) ──
+```json
+{
+  "text": [
+    {
+      "about": ["passport", "code_data"],
+      "recorded": ["occasion", "movement", "weather_band", "intent", "goal", "part_of_day", "open_zones", "reserved_colour"],
+      "her_words": [],
+      "says": "Окей, я записала: це повсякденний образ для прогулянки в морозну погоду. Твоя мета — комфорт і підкреслити фігуру протягом дня. Ти хочеш відкриту одну зону й обрати щось біле або майже біле."
+    },
+    {
+      "about": ["code_data"],
+      "recorded": [],
+      "her_words": [],
+      "says": "Я не записала рівень ошатності, тому ти можеш мені про це розповісти ще раз своїми словами."
+    }
+  ]
+}
+```
