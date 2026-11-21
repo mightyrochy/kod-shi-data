@@ -3573,6 +3573,11 @@ _ПОЛЯ_EN = {
                     "event for the same look): one or two sentences in English for the stylist on what she "
                     "means; the stylist gets her own words too. Otherwise unknown",
 }
+# Опис нового поля стоїть у його записі паспорта («en»), а не другим рядком тут (`паспорт_поля`, шапка).
+for _в in _ВМ.ПОЛЯ_ПАСПОРТА.values():
+    if "en" in _в:
+        assert _в["поле"] not in _ПОЛЯ_EN, "опис поля %s — і тут, і в записі паспорта" % _в["поле"]
+        _ПОЛЯ_EN[_в["поле"]] = _в["en"]
 _РЕЧІ_EN = {"slot": "part of the look", "item_type": "item type", "fabric": "fabric", "pattern": "pattern",
             "color_class": "colour class", "color_name": "colour name", "zone": "body zone she keeps covered",
             "feature": "item feature", "length": "item length", "wear": "how she wears it"}
