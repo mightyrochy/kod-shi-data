@@ -41,7 +41,8 @@ import tempfile
 
 
 def git(тека, *а, ок=(0,)):
-    р = subprocess.run(['git', '-c', 'core.quotepath=off', *а], cwd=тека, capture_output=True, text=True, encoding='utf-8')
+    р = subprocess.run(['git', '-c', 'core.quotepath=off', *а], cwd=тека, capture_output=True, text=True, encoding='utf-8',
+                       check=False)
     if р.returncode not in ок:
         raise SystemExit(f'git {" ".join(а)}: {р.returncode}\n{р.stdout}\n{р.stderr}')
     return р
@@ -227,7 +228,7 @@ def поділ_і_історія():
     git(тека, 'add', '-A')
     git(тека, 'commit', '-qm', 'старий паспорт')
     р = subprocess.run([sys.executable, '-X', 'utf8', '-I', 'джерела/прилади/поділити_паспорти.py'], cwd=тека,
-                       capture_output=True, text=True, encoding='utf-8')
+                       capture_output=True, text=True, encoding='utf-8', check=False)
     шапка0, історія0 = читати(тека, шлях), читати(тека, 'аудит/корені/історія/Поділ-корінь.md')
     мірило('поділ: код і шапка без датованого кроку',
            (р.returncode, 'Зроблено крок 1' in шапка0, 'Зроблено крок 1' in історія0), (0, False, True), р.stdout + р.stderr)
@@ -235,7 +236,7 @@ def поділ_і_історія():
            ('У середині історії' in шапка0, 'Підблок нового рішення' in шапка0, 
             'Старе рішення' in історія0), (True, True, True))
     з = subprocess.run([sys.executable, '-X', 'utf8', '-I', 'джерела/прилади/поділити_паспорти.py', '--звірити',
-                        '--база', 'main'], cwd=тека, capture_output=True, text=True, encoding='utf-8')
+                        '--база', 'main'], cwd=тека, capture_output=True, text=True, encoding='utf-8', check=False)
     мірило('звірка: кожен рядок старого — в шапці чи історії, у порядку старого', з.returncode, 0, з.stdout + з.stderr)
     # крок: запис і заміна «Що лишилось» шапки
     писати(тека, 'аудит/корені/Поділ-корінь.d/claude/к.md',

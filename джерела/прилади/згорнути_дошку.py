@@ -267,8 +267,11 @@ def згорнути(лише_перевірити=False):
 if __name__ == '__main__':
     if not os.path.isdir(ТЕКА):
         print('аудит/дошка/ нема — нічого згортати')
-        помилки = (перевірити_дошку(open(ДОШКА, encoding='utf-8').read().split('\n'), паспорти())
-                   if '--лише-перевірити' in sys.argv else [])
+        if '--лише-перевірити' in sys.argv:
+            with open(ДОШКА, encoding='utf-8') as файл:
+                помилки = перевірити_дошку(файл.read().split('\n'), паспорти())
+        else:
+            помилки = []
         for п in помилки:
             print('ПОМИЛКА ' + п, file=sys.stderr)
         sys.exit(1 if помилки else 0)
