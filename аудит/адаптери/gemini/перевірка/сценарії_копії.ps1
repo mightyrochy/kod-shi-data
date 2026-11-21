@@ -301,6 +301,18 @@ try {
             } finally { $h.Dispose() }
             [void](Remove-TaskCopy $busy @())
             Check 'зайнятий файл звільнено: наступне прибирання знімає копію' (-not (Test-Path -LiteralPath $busy))
+            # Лишок наряду, що вийшов за задачу процесів, а робоча тека його — у копії: тримає її, доки живий.
+            $held = Join-Path $root 'run-held'; [void][IO.Directory]::CreateDirectory("$held/repo/sub")
+            $psi = New-Object Diagnostics.ProcessStartInfo ((Get-Process -Id $PID).Path), '-NoProfile -Command Start-Sleep -Seconds 600'
+            $psi.UseShellExecute = $false; $psi.CreateNoWindow = $true; $psi.WorkingDirectory = "$held\repo\sub"
+            $holder = [Diagnostics.Process]::Start($psi)
+            try {
+                Start-Sleep -Seconds 2
+                $script:Log.Clear()
+                $kept = Remove-TaskCopy $held @()
+                $line = @($script:Log | Where-Object { $_ -like "копія задачі ${held}: процеси поза задачею*" })
+                Check "робоча тека процесу $($holder.Id) у копії: його зупинено, копію прибрано — $($script:Log -join ' | ')" ($kept -eq '' -and -not (Test-Path -LiteralPath $held) -and $holder.HasExited -and $line.Count -eq 1 -and $line[0].EndsWith("зупинено: powershell $($holder.Id)"))
+            } finally { if (-not $holder.HasExited) { $holder.Kill() } }
         }
     }
 
