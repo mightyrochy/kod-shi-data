@@ -1435,7 +1435,7 @@ function Invoke-Task($M, $Job) {
         [void](New-TaskCopy $taskDir "$script:RemoteRoot/main" $taskText)
         Invoke-ClaudeTask $M $Job $exe $taskText $cont $runDir $statePath $taskDir $mergeMain
     } finally {
-        if (Close-TaskCopy @('--remotes', "--glob=$script:RemoteRoot/*")) { [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) COPY_KEPT") }
+        if (Close-TaskCopy @("--glob=$script:RemoteRoot/*")) { [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) COPY_KEPT") }
     }
 }
 
@@ -1912,7 +1912,7 @@ function Main {
                 $script:Limits = Get-Limits
                 # Накопичене — після першого успішного fetch (до нього origin/* застарілі): прохід, що впав на
                 # fetch, прибирання не знімає.
-                if ($clean) { Clear-TaskCopies (Join-Path $WorkDir 'w') @('--remotes', "--glob=$script:RemoteRoot/*"); $clean = $false }
+                if ($clean) { Clear-TaskCopies (Join-Path $WorkDir 'w') { @("--glob=$script:RemoteRoot/*") }; $clean = $false }
                 Clear-OrphanClaims (Join-Path $WorkDir 'runs')
                 Wait-PowerPause  # без світла нові позначки не стартують
                 $r = Start-Markers $script:Workers
