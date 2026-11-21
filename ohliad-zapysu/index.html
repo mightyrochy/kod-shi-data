@@ -22,6 +22,14 @@ button.вибрано{background:var(--акцент);border-color:var(--акце
 .фото img{max-width:100%;max-height:52vh;border-radius:6px}
 .варіанти button{display:block;width:100%;text-align:left;margin:6px 0}
 textarea{width:100%;height:90px;font:12px monospace}
+.повні main{max-width:1100px}.річ{background:#fff;border:1px solid var(--межа);border-radius:12px;padding:10px 12px;margin:12px 0}
+.річ .шапка{display:flex;gap:12px;align-items:flex-start}.річ .шапка img{width:120px;max-height:160px;object-fit:cover;border-radius:6px;background:#8a8a8a;cursor:zoom-in}
+.опис{display:grid;grid-template-columns:repeat(var(--н),1fr);gap:8px;margin:10px 0}
+.опис>div{border:1px solid var(--межа);border-radius:10px;padding:6px 8px}.опис h3{margin:0 0 4px;font-size:18px}
+.опис dl{margin:0}.опис dt{font-size:12px;color:var(--дрібний);margin-top:4px}.опис dd{margin:0}.опис dd.різниця{background:#fff0b3;border-radius:4px;padding:0 3px}
+.вибір{display:flex;flex-wrap:wrap;gap:6px}.річ textarea{height:54px;font:15px/1.3 inherit;margin-top:8px}
+@media(max-width:700px){.опис{grid-template-columns:1fr}}
+.збільшене{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9}.збільшене[hidden]{display:none}.збільшене img{max-width:96vw;max-height:96vh}
 </style>
 </head>
 <body>
@@ -73,6 +81,51 @@ function малювати() {
   const поле = document.createElement("textarea"); поле.readOnly = true; поле.placeholder = "Запасний шлях: сюди потрапить текст, якщо буфер недоступний";
   низ.append(копія, поле); екран.append(низ);
 }
+/* Вид «повні»: ?список=повні — 40 речей, три повні описи під літерами (повні.json), вибір + коментар; відповіді — окремо (localStorage …:повні). */
+function повні() {
+  document.body.className = "повні"; document.querySelector("h1").textContent = "Огляд: який опис речі точніший";
+  const ВИБОРИ = ["А", "Б", "В", "однаково", "жоден"], ПІДПИС = {"однаково": "однаково точні", "жоден": "жоден не годиться"};
+  let речі = [];
+  const нов = (т, к, т2) => Object.assign(document.createElement(т), {className: к || "", textContent: т2 || ""});
+  const лічба = нов("div", "панель верх"); екран.before(лічба);
+  const рах = () => { const н = речі.filter(р => (відповіді[р.ід] || {}).вибір).length; лічба.textContent = "позначено " + н + " із " + речі.length; };
+  const збер = (ід, з) => { const в = Object.assign({}, відповіді[ід], з); if (!в.вибір && !(в.коментар || "").trim()) delete відповіді[ід]; else відповіді[ід] = в; зберегти(); рах(); };
+  fetch("повні.json", {cache: "no-cache"}).then(в => в.json()).then(д => {
+    речі = д; екран.innerHTML = "";
+    екран.append(нов("p", "дрібно", "Дивись на фото й назву. Під літерами — три повні описи цієї речі; жовтим виділено, де вони розходяться. Обери точніший, за потреби напиши коментар. Наприкінці — «Скопіювати всі відповіді» й встав у чат."));
+    const вікно = нов("div", "збільшене"), більше = нов("img"); вікно.hidden = true; вікно.append(більше); вікно.onclick = () => { вікно.hidden = true; }; document.body.append(вікно);
+    for (const р of речі) {
+      const к = нов("section", "річ"), ш = нов("div", "шапка"), і = нов("img"); і.src = р.фото; і.alt = "фото речі"; і.loading = "lazy";
+      і.onclick = () => { більше.src = р.фото; вікно.hidden = false; };
+      ш.append(і, нов("p", "", р.назва)); к.append(ш);
+      const о = нов("div", "опис"); о.style.setProperty("--н", р.описи.length);
+      for (const а of р.описи) {
+        const с = нов("div"), dl = нов("dl"); с.append(нов("h3", "", а.л));
+        for (const [н, з] of а.поля) { dl.append(нов("dt", "", н), нов("dd", р.різні.includes(н) ? "різниця" : "", з)); }
+        с.append(dl); о.append(с);
+      }
+      к.append(о);
+      const в = нов("div", "вибір"), поки = () => { for (const б of в.children) б.className = (відповіді[р.ід] || {}).вибір === б.dataset.в ? "вибрано" : ""; };
+      for (const х of ВИБОРИ.filter(х => х.length > 1 || р.описи.some(а => а.л === х))) {
+        const б = нов("button", "", ПІДПИС[х] || х); б.dataset.в = х;
+        б.onclick = () => { збер(р.ід, {вибір: (відповіді[р.ід] || {}).вибір === х ? "" : х}); поки(); }; в.append(б);
+      }
+      const т = нов("textarea"); т.placeholder = "Коментар (необов'язково)"; т.value = (відповіді[р.ід] || {}).коментар || "";
+      т.oninput = () => збер(р.ід, {коментар: т.value});
+      к.append(в, т); поки(); екран.append(к);
+    }
+    const низ = нов("div", "панель"), поле = нов("textarea"), копія = нов("button", "", "Скопіювати всі відповіді");
+    поле.readOnly = true; поле.placeholder = "Запасний шлях: сюди потрапить текст, якщо буфер недоступний";
+    копія.onclick = async () => {
+      const в = {};
+      for (const [ід, з] of Object.entries(відповіді)) { const о = {вибір: з.вибір || ""}, к = (з.коментар || "").trim(); if (к) о.коментар = к; if (о.вибір || к) в[ід] = о; }
+      const т = JSON.stringify(в);
+      try { await navigator.clipboard.writeText(т); копія.textContent = "Скопійовано"; } catch (_) { поле.value = т; поле.select(); копія.textContent = "Виділено нижче — скопіюй"; }
+    };
+    низ.append(копія, поле); екран.append(низ); рах();
+  }).catch(() => { екран.textContent = "Не вдалося завантажити описи."; });
+}
+if (СПИСОК === "повні") повні(); else
 Promise.all([fetch("картки.json", {cache: "no-cache"}).then(в => в.json()),
   СПИСОК ? fetch(encodeURIComponent(СПИСОК) + ".json", {cache: "no-cache"}).then(в => в.json()) : null])
   .then(([д, с]) => { const н = new Set(с || []); картки = с ? д.filter(к => н.has(ключ(к))) : д; if (!картки.length) throw 0; ч = Math.max(0, картки.findIndex(к => !(ключ(к) in відповіді))); малювати(); })
