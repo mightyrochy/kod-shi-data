@@ -17,7 +17,6 @@
 import argparse
 import ast
 import collections
-import io
 import os
 import re
 import subprocess
@@ -25,7 +24,7 @@ import sys
 import warnings
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import приховані_b_стандарт as ст  # noqa: E402
+import приховані_b_стандарт as ст
 
 КОРІНЬ = ст.КОРІНЬ
 ОКРЕМО = "open-source-stylist/"
@@ -33,7 +32,7 @@ import приховані_b_стандарт as ст  # noqa: E402
 
 def _відстежувані(розширення):
     вихід = subprocess.run(["git", "-c", "core.quotepath=off", "ls-files"] + ["*" + р for р in розширення],
-                           cwd=КОРІНЬ, capture_output=True, text=True, timeout=60).stdout
+                           cwd=КОРІНЬ, capture_output=True, text=True, timeout=60, check=False).stdout
     return [р for р in вихід.splitlines() if р and р != "index.html"]
 
 
@@ -51,7 +50,7 @@ class СканПоза(ст.Скан):
     """Той самий інтерфейс, що `Скан` ядра (`ядро`, `файл`, `дерево`, `рядки`, `відн`), але ключ — відносний шлях
     файлу поза ядром; файли, що не розбираються, — окремим списком."""
 
-    def __init__(self):  # noqa: super не кличемо — ядро тут не потрібне
+    def __init__(self):  # ядро тут не потрібне, тому super не кличемо
         import status
         ядро = {"джерела/%s.py" % м for м in status.МОДУЛІ_ПРОДУКТУ}
         self.ядро, self.файл, self.дерево, self.рядки, self.зламані = [], {}, {}, {}, []
@@ -61,7 +60,8 @@ class СканПоза(ст.Скан):
             ф = os.path.join(КОРІНЬ, р)
             if not os.path.exists(ф):
                 continue
-            текст = io.open(ф, encoding="utf-8", errors="replace").read()
+            with open(ф, encoding="utf-8", errors="replace") as файл:
+                текст = файл.read()
             try:
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
@@ -89,9 +89,9 @@ def п6_поза(с):
 
 
 # ─────────────────────────────── JS і HTML ───────────────────────────────
-_ЛЕКСЕМА = re.compile(r"//[^\n]*|/\*.*?\*/|`(?:\\.|[^`\\])*`|'(?:\\.|[^'\\\n])*'|\"(?:\\.|[^\"\\\n])*\"", re.S)
+_ЛЕКСЕМА = re.compile(r"//[^\n]*|/\*.*?\*/|`(?:\\.|[^`\\])*`|'(?:\\.|[^'\\\n])*'|\"(?:\\.|[^\"\\\n])*\"", re.DOTALL)
 _ІДЕНТ = re.compile(r"[A-Za-zА-Яа-яІіЇїЄєҐґ_$][0-9A-Za-zА-Яа-яІіЇїЄєҐґ_$]*")
-_СКРИПТ = re.compile(r"<script\b[^>]*>(.*?)</script>", re.S | re.I)
+_СКРИПТ = re.compile(r"<script\b[^>]*>(.*?)</script>", re.DOTALL | re.IGNORECASE)
 
 
 def _js_файли():
@@ -101,7 +101,8 @@ def _js_файли():
         ф = os.path.join(КОРІНЬ, р)
         if not os.path.exists(ф) or "/node_modules/" in р:
             continue
-        текст = io.open(ф, encoding="utf-8", errors="replace").read()
+        with open(ф, encoding="utf-8", errors="replace") as файл:
+            текст = файл.read()
         if р.endswith(".html"):
             for м in _СКРИПТ.finditer(текст):
                 з.append((р, м.group(1), текст.count("\n", 0, м.start(1))))
@@ -117,7 +118,7 @@ def _без_рядків(код):
 
     def заміна(м):
         т = м.group(0)
-        if т.startswith("//") or т.startswith("/*"):
+        if т.startswith(("//", "/*")):
             коментарі.append((код.count("\n", 0, м.start()) + 1, т))
         return ('""' if т[0] in "'\"`" else "") + "\n" * т.count("\n")
     return _ЛЕКСЕМА.sub(заміна, код), коментарі
