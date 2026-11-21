@@ -130,7 +130,7 @@ def на_мету(слот, r=None, тіло=None, зони_мети=None):
         return False
     if not зони:
         return True
-    відкриті, _чому = _O.зони_речі(r, тіло)
+    відкриті, _ = _O.зони_речі(r, тіло)
     if відкриті is None:
         return None
     if зони & set(відкриті):
@@ -249,7 +249,7 @@ def _свідки(r, тіло=None):
         if г > ст:
             свідки.append(("loudness", dict(loudness=round(г), ceiling=round(ст)),
                            "гучність %.0f (C*%.0f × L*%.0f/50) над стелею %.0f" % (г, C, L, ст)))
-    зони, _чому = _O.зони_речі(r, тіло)
+    зони, _ = _O.зони_речі(r, тіло)
     if зони:
         свідки.append(("open_zone", dict(zones=sorted(_ВМ.код("zone", з) or _ВМ.UNKNOWN for з in зони)),
                        "відкриває %s" % ", ".join(sorted(зони))))
