@@ -57,13 +57,13 @@ import urllib.request
 if ТУТ not in sys.path:
     sys.path.insert(0, ТУТ)
 
-import внутрішня_мова as ВМ          # noqa: E402
-import каталог_розбір as КР          # noqa: E402
-import фід_каталог as ФК             # noqa: E402
-import фід_розбір as ФР              # noqa: E402
-import фід_слот as ФС                # noqa: E402
-import схема_відповіді as СВ         # noqa: E402
-from пакет_моделі import токенів as оцінка_токенів  # noqa: E402
+import внутрішня_мова as ВМ
+import каталог_розбір as КР
+import фід_каталог as ФК
+import фід_розбір as ФР
+import фід_слот as ФС
+import схема_відповіді as СВ
+from пакет_моделі import токенів as оцінка_токенів
 
 # Ключ ЗОВНІШНЬОГО контракту: його пише не наш код, а оболонка оператора на ноутбуці.
 # Декларація стоїть у модулі, а не в сканері (та сама конвенція, що в `каблук.ЗОВНІШНІ_ВХОДИ`):
@@ -156,7 +156,7 @@ def вибірка(офери, на_групу=НА_ГРУПУ, сід=СІД):
     for o in офери:
         try:
             слоти[o["id"]] = ФС.слот(o)
-        except Exception:                             # noqa: BLE001 — падіння слота теж вибірка
+        except Exception:
             слоти[o["id"]] = None
     for ім, _, підходить in ГРУПИ:
         пул = [o for o in офери if o["id"] not in взяті and підходить(o, слоти[o["id"]])]
@@ -243,7 +243,7 @@ def _вікно_рушія(ід_моделі):
         try:
             with urllib.request.urlopen(АДРЕСА.rsplit("/v1", 1)[0] + "/api/v0/models", timeout=15) as в:
                 моделі = json.load(в).get("data", [])
-        except Exception:                             # noqa: BLE001 — нема відповіді = вікна не знаємо
+        except Exception:
             return 0
         for м in моделі:
             if м.get("id") == ід_моделі and м.get("state") == "loaded":
@@ -312,7 +312,7 @@ def надіслати(тіло, годинник=None, стадія="річ"):
                                            headers={"Content-Type": "application/json"})
             with urllib.request.urlopen(запит, timeout=3600) as в:
                 відп = json.loads(в.read().decode("utf-8"))
-        except Exception as е:                        # noqa: BLE001 — спробу названо в годиннику, виняток іде вгору
+        except Exception as е:
             запис.update(т1=time.time(), обрив=_обрив(е), помилка="%s: %s" % (type(е).__name__, е))
             повтор = запис["обрив"] and not спроба and запис["т1"] - запис["т0"] <= ОБРИВ_ШВИДКИЙ_С
             if повтор:
@@ -377,7 +377,7 @@ def _спитати(повід, ід_моделі, схема=True, годинн
     for спроба in range(1 + ПОВТОРІВ_НА_НЕ_JSON):
         try:
             текст, с = модель(запит, ід_моделі, спроба or None, схема, годинник)
-        except Exception as е:                        # noqa: BLE001 — впалий виклик названий
+        except Exception as е:
             return перша or "", round(секунд, 1), "%s: %s" % (type(е).__name__, е), спроба
         секунд += с
         перша = текст if перша is None else перша
@@ -418,7 +418,7 @@ def _готова(шлях, повід):
         return None
     with open(шлях, encoding="utf-8") as ф:
         запит, _, відп = ф.read().partition("\n\n── ВІДПОВІДЬ\n")
-    відп = відп[:-1] if відп.endswith("\n") else відп
+    відп = відп.removesuffix("\n")
     return відп if запит == "── ЗАПИТ\n" + повід and відп.strip() else None
 
 
@@ -458,7 +458,7 @@ def прогін(ід_моделі, мова=КР.МОВА, куди=None, на_
         for і in ід:
             try:
                 слоти[і] = ФС.слот(за_ід[і])
-            except Exception:                         # noqa: BLE001 — падіння слота теж вибірка
+            except Exception:
                 слоти[і] = None
         пари = [("еталон_" + група_речі(за_ід[і], слоти[і]), за_ід[і]) for і in ід]
         решта = [o for o in офери if o["id"] not in set(ід)]

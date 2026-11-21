@@ -380,7 +380,7 @@ def _частками_гілок(гілки, квота, сід=0):
     _ціль = lambda рч: (min(int(r["_доза"]) for r in рч)
                         if all(isinstance(r, dict) and "_доза" in r for r in рч) else None)
     скільки = {г: min(len(рч), max(1, _ціль(рч) if _ціль(рч) is not None
-                                   else int(round(квота * _ДОЛІ_ГІЛОК.get(г, 0.0)))))
+                                   else round(квота * _ДОЛІ_ГІЛОК.get(г, 0.0))))
                for г, рч in гілки.items() if г != ГІЛКА_ЯДРО}
     _стеля = квота - (1 if гілки.get(ГІЛКА_ЯДРО) else 0)   # ядро не зникає зі слота цілком
     while sum(скільки.values()) > max(0, _стеля):

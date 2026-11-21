@@ -306,7 +306,7 @@ def маска_sam(шлях, слово, арр=None):
         if локальний:
             import subprocess
             прогін = subprocess.run([пітон, os.path.join(os.path.dirname(__file__), "жнива_sam.py"),
-                                     os.path.abspath(шлях), слово], capture_output=True, timeout=300)
+                                     os.path.abspath(шлях), слово], capture_output=True, timeout=300, check=False)
             if прогін.returncode:
                 причина = прогін.stderr.decode("utf-8", errors="replace").strip()
                 raise RuntimeError(причина.splitlines()[-1][-90:] if причина else

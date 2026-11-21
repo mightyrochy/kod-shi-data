@@ -9,7 +9,7 @@
 import os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import outfit, місце_речі as МР  # noqa: E402
+import outfit, місце_речі as МР
 
 збої = []
 

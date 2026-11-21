@@ -135,13 +135,13 @@ def аркуш(картинки, плитка=400):
 # Мініатюри тієї самої картинки (50×50 і 110×110) після заміни зливаються в
 # одну адресу — тому дублікати прибираються ДО завантаження.
 _ХОРОШОП = re.compile(r"/(\d+)x(\d+)(l\d+nn\d+)/")
-_WORDPRESS = re.compile(r"-(\d+)x(\d+)(\.(?:webp|jpe?g|png))$", re.I)
+_WORDPRESS = re.compile(r"-(\d+)x(\d+)(\.(?:webp|jpe?g|png))$", re.IGNORECASE)
 # OpenCart (`/image/cache/…-120x137.webp`) виглядає як WordPress, але без суфікса
 # віддає 404: кеш знає лише розміри, які вже нарізав. 25union.com.ua (369 речей)
 # кладе у фід поруч -120x137 і -999x999 того самого фото, а правило WordPress
 # зливало обидва в одну мертву адресу, і лишалась мініатюра 120×137 (виміряно:
 # -999x999 → 1600×2000, 95 КБ; без суфікса → 404; -1200x1600 → 404).
-_OPENCART = re.compile(r"(/image/cache/.+)-(\d+)x(\d+)(\.(?:webp|jpe?g|png))$", re.I)
+_OPENCART = re.compile(r"(/image/cache/.+)-(\d+)x(\d+)(\.(?:webp|jpe?g|png))$", re.IGNORECASE)
 
 
 def збільшити_url(url, коробка=(1200, 1600)):
@@ -257,15 +257,15 @@ def _сторінка(url, тайм=25):
 def адреси_зі_сторінки(url, html):
     """og:image → JSON-LD image → галерея Хорошопу (файли з назвою товару, не числом)."""
     адреси = re.findall(r'<meta[^>]+property="og:image"[^>]+content="([^"]+)"', html)
-    for блок in re.findall(r'<script[^>]+ld\+json[^>]*>(.*?)</script>', html, re.S):
+    for блок in re.findall(r'<script[^>]+ld\+json[^>]*>(.*?)</script>', html, re.DOTALL):
         for знач in re.findall(r'"image"\s*:\s*(\[[^\]]*\]|"[^"]*")', блок):
             адреси += re.findall(r'"([^"]+)"', знач)
     адреси += re.findall(r'["\'](/content/images/\d+/\d+x\d+l\d+\w\w\d+/[a-z0-9-]*[a-z][a-z0-9-]*-\d+\.(?:jpe?g|webp|png))',
-                         html, re.I)
+                         html, re.IGNORECASE)
     вих = []
     for а in адреси:
         а = urllib.parse.urljoin(url, а.replace("\\/", "/"))
-        if not re.search(r"logo|og-logo|favicon", а, re.I) and а not in вих:
+        if not re.search(r"logo|og-logo|favicon", а, re.IGNORECASE) and а not in вих:
             вих.append(а)
     return вих
 
