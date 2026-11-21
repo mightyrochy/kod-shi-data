@@ -6,7 +6,7 @@ import collections as C, hashlib, importlib, json, os, re, sys
 sys.path.insert(0, os.path.abspath(sys.argv[1]))
 ж = importlib.import_module("жниварка")
 ЧУЖЕ = re.compile(r"[а-яіїє][А-ЯІЇЄ][а-яіїє]{3,}|(?i:дивіться також|правила|таблиц|доставк|відгук|розмір)")
-СХОЖІ = re.compile(r"схожі товари|вам також|з цим товаром|ви переглядали|дивіться також", re.I)   # без «рекомендуємо»: це слово самого опису
+СХОЖІ = re.compile(r"схожі товари|вам також|з цим товаром|ви переглядали|дивіться також", re.IGNORECASE)   # без «рекомендуємо»: це слово самого опису
 відс = lambda с: [int(x) for x in re.findall(r"(\d{1,3})\s*%", с)]
 сума = lambda в: any(sum(в[:i]) == 100 for i in range(1, len(в) + 1))
 for крамниця, адреси in json.load(open(sys.argv[3], encoding="utf-8")).items():

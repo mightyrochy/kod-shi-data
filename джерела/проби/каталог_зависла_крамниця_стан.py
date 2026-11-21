@@ -3,7 +3,7 @@
 import csv, sys, tempfile
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "zhnyvarka"))
-import обхід  # noqa: E402
+import обхід
 
 with tempfile.TemporaryDirectory(prefix="обхід-стан-") as ж:
     шлях = Path(ж) / "обхід_стан.tsv"

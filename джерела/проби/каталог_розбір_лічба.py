@@ -2,21 +2,21 @@
 """Проба: на ЗБЕРЕЖЕНИХ відповідях прогону розбору каталогу друкує факт — валідний JSON, покриття кожного поля
 (і `features`), форму `features`, коди без цитати в тексті речі (`invented`, РЗ-К) і незгоду з кодом. Моделі не кличе.
 Запуск: python3 джерела/проби/каталог_розбір_лічба.py <тека від каталог_розбір_прогін.py>"""
-import collections, json, os, sys                                             # noqa: E401
+import collections, json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import каталог_розбір as КР, каталог_розбір_прогін as П, фід_каталог as ФК, фід_розбір as ФР  # noqa: E401,E402
-тека = sys.argv[1] if len(sys.argv) > 1 else sys.exit("треба тека прогону"); мірка = json.load(open(os.path.join(тека, "прогін.json"), encoding="utf-8"))  # noqa: E702
+import каталог_розбір as КР, каталог_розбір_прогін as П, фід_каталог as ФК, фід_розбір as ФР
+тека = sys.argv[1] if len(sys.argv) > 1 else sys.exit("треба тека прогону"); мірка = json.load(open(os.path.join(тека, "прогін.json"), encoding="utf-8"))
 офери = {o["id"]: o for o in ФР.читати_yml(ФК.каталог_на_диску(), показ=False)[0]}
 валідні, причини, покр, види, незгоди, збої_коду, ос = 0, [], dict.fromkeys(КР.покриття({}), 0), {}, [], {}, collections.Counter()
 for р in мірка["речі"]:
     дані, відп = П.розділити(open(os.path.join(тека, р["файл"]), encoding="utf-8").read())  # що модель бачила
     поля, пр = КР.з_відповіді(відп, дані)                                     # сторож цитат (РЗ-К)
     причини += [(р["файл"], т) for т in пр]
-    if not поля: continue                                                     # noqa: E701
-    валідні += 1; покр.update({ш: покр[ш] + є for ш, є in КР.покриття(поля).items()})  # noqa: E702
+    if not поля: continue
+    валідні += 1; покр.update({ш: покр[ш] + є for ш, є in КР.покриття(поля).items()})
     ос["+".join(т.split(" — ")[0][10:] for т in пр if т.startswith("features:"))
        or ("unknown" if поля[КР.ОСОБЛИВОСТІ] == КР.UNKNOWN else "прийнято")] += 1
-    код, збої = КР.що_каже_код(офери[р["id"]]); збої_коду.update(збої)  # noqa: E702
+    код, збої = КР.що_каже_код(офери[р["id"]]); збої_коду.update(збої)
     for вид, ш, к, м in КР.незгода(код, поля):
         види[(вид, ш)] = види.get((вид, ш), 0) + 1
         if вид == "незгода":

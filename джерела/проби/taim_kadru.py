@@ -19,7 +19,7 @@ import gzip, json, os, re, subprocess, sys, tempfile
          "--вихід", вих]
 п = subprocess.run(наказ, cwd=ТУТ, capture_output=True, text=True, encoding="utf-8", errors="replace")
 часи = [float(м) for м in re.findall(r"з кешу \d+, ([\d.]+) с", п.stdout)]
-повторів = len(re.findall(r"^повтор \[", п.stdout, re.M))
+повторів = len(re.findall(r"^повтор \[", п.stdout, re.MULTILINE))
 if not часи:
     print("проба не побачила жодної речі; код %d; хвіст: %s" % (п.returncode, (п.stdout + п.stderr)[-300:]))
     sys.exit(1)

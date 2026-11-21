@@ -3,7 +3,7 @@
 import csv, os, subprocess, sys, tempfile
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "zhnyvarka"))
-import обхід  # noqa: E402
+import обхід
 
 
 def перевірити(місце):
