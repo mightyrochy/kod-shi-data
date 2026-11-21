@@ -26,7 +26,7 @@ def main():
         raise AssertionError("процес не перервано")
     for межа in (1, 2, 3):
         with tempfile.TemporaryDirectory(prefix="обхід-sqlite-ddl-") as ж:
-            п = subprocess.run([sys.executable, __file__, ж, str(межа)], timeout=10)
+            п = subprocess.run([sys.executable, __file__, ж, str(межа)], timeout=10, check=False)
             база = Path(ж) / "hang.com" / "черга.sqlite3"
             assert п.returncode == 7 and база.is_file() and прочитати_чергу(база) is None
             with closing(sqlite3.connect(база)) as з:

@@ -47,7 +47,7 @@ with tempfile.TemporaryDirectory() as тека:
     корінь_репо = Path(__file__).resolve().parents[2]
     ще_не_згорнуто = {н for ф in (корінь_репо / 'аудит' / 'дошка').rglob('*.md')
                       for пара in re.findall(r'^(?:стан!? (\d+): \*\*ЧАСТКОВО|заміна!? \| (\d+) \|)',
-                                             ф.read_text(encoding='utf-8'), re.M) for н in пара if н}
+                                             ф.read_text(encoding='utf-8'), re.MULTILINE) for н in пара if н}
     for р in (корінь_репо / 'аудит' / 'БЕКЛОГ.md').read_text(encoding='utf-8').split('\n'):
         м = згортання.РЯДОК.match(р)
         if not м or int(м[1]) < ПЕРШИЙ_СУВОРИЙ_НОМЕР or м[1] in ще_не_згорнуто or not згортання.межі_стану(р):

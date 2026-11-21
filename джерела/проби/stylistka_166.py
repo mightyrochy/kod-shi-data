@@ -12,16 +12,17 @@
 Запуск: cd джерела && python3 проби/stylistka_166.py"""
 import os, re, sys
 ДЖЕРЕЛА = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ЧОЛОВІЧЕ = re.compile(r"стиліст(а|у|ові|ом)?\b", re.I)
+ЧОЛОВІЧЕ = re.compile(r"стиліст(а|у|ові|ом)?\b", re.IGNORECASE)
 _п = lambda m: "\n" * m.group(0).count("\n")
 
-т = open(os.path.join(ДЖЕРЕЛА, "показ.html"), encoding="utf-8").read()
+with open(os.path.join(ДЖЕРЕЛА, "показ.html"), encoding="utf-8") as ф:
+    т = ф.read()
 усього = len(ЧОЛОВІЧЕ.findall(т))
-т = re.sub(r"<!--.*?-->", _п, re.sub(r"/\*.*?\*/", _п, т, flags=re.S), flags=re.S)
+т = re.sub(r"<!--.*?-->", _п, re.sub(r"/\*.*?\*/", _п, т, flags=re.DOTALL), flags=re.DOTALL)
 у_коді = [(i, р.strip()[:100]) for i, р in enumerate(т.split("\n"), 1) if ЧОЛОВІЧЕ.search(р)]
 видимі = [п for п in у_коді if "ШІ_ДОВІДКА" not in п[1]]
 ДІЄСЛОВА = re.compile(r"\b(почув|зрозумів|обрав|вирішив|сказав|порадив|додав|запитав|"
-                      r"склав|знайшов|побачив|взяв|дібрав|переказав|уточнив)\b", re.I)
+                      r"склав|знайшов|побачив|взяв|дібрав|переказав|уточнив)\b", re.IGNORECASE)
 # Підмет «код» часто стоїть РЯДКОМ ВИЩЕ: довгий рядок показу склеєний із
 # кількох літералів («…що код знав…» + «що вирішив про кожну її відповідь…»).
 # Тому вікно — рядок і два перед ним; вужче давало хибну знахідку на звіті.

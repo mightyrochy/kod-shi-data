@@ -12,8 +12,10 @@ from реєстр_правил import C
 корінь_файлу = lambda ф: re.sub(r"[_-]?\d+$", "", re.sub(r"_[0-9a-f]{8}-[0-9a-f-]{20,}$", "",
                                                             ф.rsplit("/", 1)[-1].rsplit(".", 1)[0]))
 все, нейтр = [], []
-for кадри in json.load(gzip.open(pathlib.Path(__file__).resolve().parent.parent / "каталог_кадри.json.gz",
-                                 "rt", encoding="utf-8"))["записи"].values():
+with gzip.open(pathlib.Path(__file__).resolve().parent.parent / "каталог_кадри.json.gz",
+               "rt", encoding="utf-8") as ф:
+    записи = json.load(ф)["записи"]
+for кадри in записи.values():
     гр = {}
     for к in кадри:
         т = КР.точка_кольору(к)

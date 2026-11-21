@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "zhnyvarka"))
 from обхід import прочитати_стан
 ряди = list(прочитати_стан(sys.argv[1]).values())
-с = lambda к: sum(int(р[к]) for р in ряди)                                      # noqa: E731
+с = lambda к: sum(int(р[к]) for р in ряди)
 print("крамниць %d · адрес %d · готово %d · лишилось %d (%.0f %%)" % (len(ряди), с("адрес"), с("готово"), с("лишилось"),
       100 * с("лишилось") / max(с("адрес"), 1)))
 print("стани:", dict(collections.Counter(р["стан_код"] for р in ряди)))
