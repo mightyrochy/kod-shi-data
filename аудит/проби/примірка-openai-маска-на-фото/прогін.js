@@ -8,7 +8,7 @@ const {chromium} = require('playwright');
 const вих = path.resolve(process.argv[2] || '.'); fs.mkdirSync(вих, {recursive:true});
 const ФОТО = path.resolve(process.argv[3]); const PAID = process.env.PAID === '1';
 const МІСТ = 'https://lyusterko-mist.mighty-rochy.workers.dev/', база = 'https://mightyrochy.github.io';
-const РІЧ = path.resolve(__dirname, '../фото_сцен/ж-01851@onebyone.ua.jpg');
+const РІЧ = path.resolve(__dirname, '../фото_сцен/бежева_блузка.jpg');
 const обміни = []; let платних = 0;
 (async () => {
   const б = await chromium.launch({headless:true, proxy: process.env.HTTPS_PROXY ? {server:process.env.HTTPS_PROXY, bypass:'localhost,127.0.0.1'} : undefined});
