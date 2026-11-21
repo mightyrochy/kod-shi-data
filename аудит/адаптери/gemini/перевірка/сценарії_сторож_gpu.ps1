@@ -516,8 +516,16 @@ Scenario 'и закриття GPU-наряду із записаним' {
     Check "и ДО: збій коміту записаного — копію прибрано, сцени пропали, кінець STALL; ПІСЛЯ: $($rc.code), «$($rc.reason)»" ($c.Proc.HasExited -and $rc.code -ceq 'RECORD_FAILED' -and ([string]$rc.reason).StartsWith('STALL: копія ') -and ([string]$rc.reason).Contains($idC) -and ([string]$rc.reason).Contains('не закомічено (git add') -and $rc.bundle -ceq "$idC.bundle" -and [int]$rc.ahead -eq 1)
     Check 'и стан — DONE <id> RECORD_FAILED' (([IO.File]::ReadAllText((Get-StatePath (Get-MarkerKey $c.M)), $utf)).Trim() -ceq "DONE $idC RECORD_FAILED")
     if (-not $lp.HasExited) { $lp.Kill(); $lp.WaitForExit() }
-    Clear-TaskCopies "$RunsDir/w" @('--branches', '--remotes')
+    Clear-TaskCopies "$RunsDir/w" { param($Id) Get-RunDelivered $Id }
     Check 'и копія зі сценами лишилась з kept.txt і після прибирання накопиченого' ((Test-Path "$copyC/kept.txt") -and @(Get-ChildItem -LiteralPath "$($c.Repo)/аудит/проби/$slugC" -Recurse -Filter 'результат.json').Count -eq 3)
+    # Повтор тієї самої позначки (як Invoke-Task): нова копія, гілка наряду `checkout -B` на старт.
+    $agentC = (Invoke-Git @('rev-parse', 'HEAD') -Dir $c.Repo).Out.Trim()
+    $detachedC = (Invoke-Git @('symbolic-ref', '-q', 'HEAD') -AllowFail -Dir $c.Repo).Code -eq 1
+    $idC2 = '20261117-184659-0000000000c6'
+    [void](Invoke-Git @('worktree', 'add', '-q', '--detach', "$RunsDir/w/$idC2/repo", $base))
+    [void](Invoke-Git @('checkout', '-q', '-f', '--ignore-other-worktrees', '-B', "gemini/$slugC", $base) -Dir "$RunsDir/w/$idC2/repo")
+    Check "и ДО: повтор позначки відкочував утриману копію на старт; ПІСЛЯ: вона відв'язана й на коміті агента, сцени цілі" ($detachedC -and $agentC -cne $base -and (Invoke-Git @('rev-parse', 'HEAD') -Dir $c.Repo).Out.Trim() -ceq $agentC -and (Invoke-Git @('rev-parse', "gemini/$slugC")).Out.Trim() -ceq $base -and @(Get-ChildItem -LiteralPath "$($c.Repo)/аудит/проби/$slugC" -Recurse -Filter 'результат.json').Count -eq 3)
+    Check 'и копію повтору без нового прибрано, утриману — ні' ((Remove-TaskCopy "$RunsDir/w/$idC2" @($base)) -eq '' -and -not (Test-Path "$RunsDir/w/$idC2") -and (Test-Path "$copyC/kept.txt"))
     # Клон планувальника в житті — без робочого дерева (`git status` у ньому: «this operation must be run in a work tree»), робочі
     # дерева мають лише копії задач: так він і стає тут, коли гілки й бандли вже не залежать від дерева клону.
     [void](Invoke-Git @('config', 'core.bare', 'true'))
@@ -547,7 +555,7 @@ Scenario 'и закриття GPU-наряду із записаним' {
     $re = & $result $idE
     $copyE = "$RunsDir/w/$idE"
     Check "и2 ДО: збій бандла мовчки прибирав копію з комітами; ПІСЛЯ: $($re.code), «$($re.reason)»" ($e.Proc.HasExited -and $re.code -ceq 'RECORD_FAILED' -and $re.bundle -ceq '' -and ([string]$re.reason).StartsWith('STALL: копія ') -and ([string]$re.reason).Contains($idE) -and ([string]$re.reason).Contains('бандл не створено'))
-    Clear-TaskCopies "$RunsDir/w" @('--branches', '--remotes')
+    Clear-TaskCopies "$RunsDir/w" { param($Id) Get-RunDelivered $Id }
     Check 'и2 копія лишилась з kept.txt і після прибирання накопиченого, сцени цілі' ((Test-Path "$copyE/kept.txt") -and @(Get-ChildItem -LiteralPath "$($e.Repo)/аудит/проби/$slugE" -Recurse -Filter 'результат.json').Count -eq 3)
 
     Check 'и рядки STALL_PUBLISHED, CANCELLED_PUBLISHED і RECORD_FAILED_PUBLISHED — за шаблоном публікатора' (& {
