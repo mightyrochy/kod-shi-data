@@ -148,9 +148,10 @@ async function головна(){
   }
   await доЗавантажитиФото(стор);await сон(3000);await кадр('кінець записаного шляху');
   if(process.env.ONE_PASS){   // хвіст одного проходу: «Усі образи» і файл вердиктів — той, що тестувальниця прикріплює до повідомлення
-    try{const у=await знайти('кнопка: Усі образи ›');if(у){await у.лок.click();await сон(1500);await кадр('один прохід: Усі образи',true);}
-      await стор.locator('#журнал summary').click();await сон(800);await кадр('один прохід: відкрито «Вердикти на цьому телефоні»',true);
-      await стор.locator('#ж-файл').click();await сон(4000);await кадр('один прохід: «Зберегти всі вердикти файлом»',true);
+    try{const о=await знайти('кнопка: Образи');if(о){await о.лок.click();await сон(1500);await кадр('один прохід: Образи',true);}
+      const у=await знайти('кнопка: Усі образи ›');if(у){await у.лок.click();await сон(1500);await кадр('один прохід: Усі образи',true);}
+      await стор.locator('#журнал > summary').click();await сон(800);await кадр('один прохід: відкрито «Вердикти на цьому телефоні»',true);
+      await стор.locator('#ж-файл').first().click();await сон(4000);await кадр('один прохід: «Зберегти всі вердикти файлом»',true);
     }catch(e){fs.appendFileSync(path.join(тека,'розбіжності.md'),'\n- хвіст одного проходу не виконався: '+String(e).split('\n')[0]+'\n');}
   }
   summary.кінець=new Date().toISOString();summary.слів_лягло=слів;summary.слів_пропущено=пропущено;summary.проходів=прохід;summary.кроків_джерела=дії.length;summary.кроків_лягло=summary.кроки.filter(x=>x.лягло).length;
