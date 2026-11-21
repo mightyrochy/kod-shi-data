@@ -84,7 +84,8 @@ def main():
     ап.add_argument("--вихід", default=None)
     а = ап.parse_args()
     с1, с2 = старий_модуль(а.реф, "жнива_збагачення.py"), старий_модуль(а.реф, "жнива_v2.py")
-    дані = json.load(gzip.open(os.path.join(ТУТ, "каталог_збагачення.json.gz"), "rt", encoding="utf-8"))
+    with gzip.open(os.path.join(ТУТ, "каталог_збагачення.json.gz"), "rt", encoding="utf-8") as ф:
+        дані = json.load(ф)
     ряди = вибірка(дані)
     print("вибірка:", len(ряди), {с: sum(1 for р in ряди if р[2] == с) for с in
                                    ("анімалістичний", "горох", "квітковий", "однотонний")}, flush=True)
@@ -113,7 +114,8 @@ def main():
     with ThreadPoolExecutor(а.потоки) as пул:
         рез = list(пул.map(одна, ряди))
     if а.вихід:
-        json.dump(рез, open(а.вихід, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        with open(а.вихід, "w", encoding="utf-8") as ф:
+            json.dump(рез, ф, ensure_ascii=False, indent=1)
 
     print("\nполе «візерунок» = сім'я за описом старого запису (збіг / усі з відповіддю)")
     for правда in ("анімалістичний", "горох", "квітковий", "однотонний"):

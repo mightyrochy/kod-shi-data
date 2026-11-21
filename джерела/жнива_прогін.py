@@ -94,11 +94,17 @@ def _url_крамниць(offers):
 
 
 def повний(offers, а):
+    if а.лог:
+        with open(а.лог, "a", encoding="utf-8") as лог:
+            return _повний(offers, а, лог)
+    return _повний(offers, а, None)
+
+
+def _повний(offers, а, лог):
     """Усі офери каталогу → {id: запис} у `--вихід`, з продовженням після обриву."""
     вільно = shutil.disk_usage(tempfile.gettempdir()).free / 2 ** 30
     if вільно < 5:
         raise SystemExit("на диску %.1f ГБ — мало для кешу фото, треба ≥ 5" % вільно)
-    лог = open(а.лог, "a", encoding="utf-8") if а.лог else None
 
     def каж(текст):
         """Рядок у лог (або на екран) з часом."""

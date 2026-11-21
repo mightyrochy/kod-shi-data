@@ -108,7 +108,8 @@ def модулі_побудови(тека):
     while край:
         м = край.pop()
         треба.add(м)
-        дерево = _ast.parse(open(_os.path.join(тека, м + ".py"), encoding="utf-8").read())
+        with open(_os.path.join(тека, м + ".py"), encoding="utf-8") as ф:
+            дерево = _ast.parse(ф.read())
         for в in _ast.walk(дерево):
             if isinstance(в, _ast.Import):
                 край |= {а.name.split(".")[0] for а in в.names} & мод - треба
