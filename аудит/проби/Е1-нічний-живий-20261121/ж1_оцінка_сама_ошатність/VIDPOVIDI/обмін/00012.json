@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk-blend sheath dress, A-line silhouette with a modest neckline and subtle side ruching, deep emerald green (#043927), fluid draping fabric that catches light gracefully.\\nStructured wool-blend blazer, tailored fit with notched lapels and single-button closure, charcoal grey (#36454F), heavy felted wool for autumn warmth.\\nPointed-toe pumps, classic elongated shape with a moderate heel height, polished black leather (color #000000).\\nGold-tone minimalist pendant necklace, small circular disc design, 18k gold-filled metal (color #FFD700).\\n\\nThis outfit embodies the desire for a festive and \\\"grand\\\" look by combining the elegance of a noble evening fabric with the sophisticated authority of a tailored wool blazer. The rich emerald green palette immediately signals celebration, while the structured outer layer ensures appropriateness for an autumn formal event where warmth is needed. Accessory choices remain refined and understated, allowing the luxurious texture and deep color of the dress to serve as the primary focal point of the ensemble.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"sheath dress\\\",\\n      \\\"details\\\": \\\"A-line silhouette with a modest neckline and subtle side ruching, fluid draping fabric\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#043927\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"tailored fit with notched lapels and single-button closure, heavy felted wool\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pumps\\\",\\n      \\\"details\\\": \\\"Pointed-toe, classic elongated shape with a moderate heel height, polished leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pendant necklace\\\",\\n      \\\"details\\\": \\\"Gold-tone minimalist design, small circular disc shape, 18k gold-filled metal\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": \\\"#FFD700\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":584,\"output_tokens\":299},\"stop_reason\":\"end_turn\"}"
+ }
+}

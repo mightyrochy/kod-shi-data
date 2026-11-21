@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A structured blazer in a rich emerald green with a tailored fit and sharp shoulders, crafted from heavy wool crepe.\\nMatching high-waisted trousers with a straight leg cut, made from the same luxurious wool crepe fabric.\\nA classic silk blouse featuring a modest neckline, rendered in a soft ivory cream to brighten the ensemble.\\nElegant pointed-toe pumps finished in black leather with a 7-centimeter heel for height and poise.\\nDelicate gold drop earrings that catch the light without overpowering the sophisticated silhouette.\\nThe outfit works by blending structured tailoring with luxurious fabric choices to create a commanding yet refined look perfect for a formal autumn celebration. The deep emerald green contrasts beautifully with her skin tones while the neutral ivory blouse adds essential brightness, ensuring she feels both powerful and approachable. Completing the look with classic black pumps and subtle gold jewelry strikes the ideal balance between professional authority and festive elegance.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"blazer\\\", \\\"details\\\": \\\"structured tailored fit sharp shoulders heavy wool crepe fabric rich emerald green color\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#045238\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"trousers\\\", \\\"details\\\": \\\"high-waisted straight leg cut matching luxurious wool crepe fabric\\\", \\\"slot\\\": \\\"bottom\\\", \\\"color_hex\\\": \\\"#045238\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"blouse\\\", \\\"details\\\": \\\"classic silk modest neckline soft ivory cream color\\\", \\\"slot\\\": \\\"top\\\", \\\"color_hex\\\": \\\"#FFFFF0\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"pumps\\\", \\\"details\\\": \\\"pointed-toe 7-centimeter heel black leather\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"earrings\\\", \\\"details\\\": \\\"delicate drop style gold color\\\", \\\"slot\\\": \\\"jewelry\\\", \\\"color_hex\\\": \\\"#FFD700\\\", \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":541,\"output_tokens\":247},\"stop_reason\":\"end_turn\"}"
+ }
+}
