@@ -67,7 +67,7 @@ $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
 # Безпечна ознака останньої відмови Get-AutoReviewState (замок, бюджет, чекання, HTTP <код>, мережа, межа часу, відповідь).
 $script:ReviewApiCause = ''
-# План живого (Get-AutoLivePlan, автоживий й Е1-нічний-живий). Вимір 07.11: `pulls?state=all` — 33 сторінки по 100 PR,
+# План живого (Get-AutoLivePlan, автоживий; звіти давніх `Е1-нічний-живий-<дата>` план читає як дані). Вимір 07.11: `pulls?state=all` — 33 сторінки по 100 PR,
 # сторінка до 2,36 млн знаків (3273 PR); повне читання на спробу — 33 запити з 60/год без входу. Тепер сторінки по 50,
 # читання стоїть, щойно сторінка старіша за межу плану (Get-AutoPlanBoundary; запити — з бюджету review-api.json, як у
 # Get-AutoReviewState), а більше AutoPlanMaxPages сторінок на спробу — AUTO_PAGES, не мовчазне повторення.
@@ -196,12 +196,11 @@ using System.Runtime.InteropServices;
 namespace GeminiWrapper {
     public static class TreeJob {
         [StructLayout(LayoutKind.Sequential)]
-        struct BasicLimit { public long PerProcessTime; public long PerJobTime; public uint Flags; public UIntPtr MinWs; public UIntPtr MaxWs; public uint ActiveLimit; public UIntPtr Affinity; public uint Priority; public uint Scheduling; }
-        [StructLayout(LayoutKind.Sequential)]
-        struct ExtendedLimit { public BasicLimit Basic; public ulong R1, R2, R3, R4, R5, R6; public UIntPtr ProcessMem, JobMem, PeakProcessMem, PeakJobMem; }
+        struct BasicInfo { public IntPtr ExitStatus, Peb, Affinity, Priority, Id, Parent; }
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)] static extern IntPtr CreateJobObject(IntPtr attributes, string name);
-        [DllImport("kernel32.dll", SetLastError = true)] static extern bool SetInformationJobObject(IntPtr job, int infoClass, ref ExtendedLimit info, int size);
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
+        [DllImport("ntdll.dll")] static extern int NtQueryInformationProcess(IntPtr process, int infoClass, ref BasicInfo info, int size, out int returned);
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool ReadProcessMemory(IntPtr process, IntPtr address, byte[] buffer, IntPtr size, out IntPtr read);
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool QueryInformationJobObject(IntPtr job, int infoClass, IntPtr info, int size, IntPtr returned);
         [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr OpenProcess(uint access, bool inherit, int id);
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool IsProcessInJob(IntPtr process, IntPtr job, out bool result);
@@ -223,15 +222,15 @@ namespace GeminiWrapper {
         // shared — копію дескриптора задачі вкладено в сам корінь. Ім'я об'єкта ядра живе, поки відкритий хоч один його
         // дескриптор; без копії його тримав би лише творець (процес наряду), і після його смерті задача з відірваними
         // нащадками жила б далі без імені — недосяжна жодному процесу. З копією вона досяжна, поки живий творець або корінь.
+        // Задача без обмежень, тож і без BREAKAWAY_OK: середовище MSYS (Git Bash — оболонка claude) саме ставить кожному
+        // нащадкові CREATE_BREAKAWAY_FROM_JOB, щойно задача процесу це дозволяє, і все запущене з bash жило б поза задачею.
         public static IntPtr Create(IntPtr process, int id, out bool shared) {
             shared = false;
             string name = Name(process, id);
             if (name == null) throw new Win32Exception();
             IntPtr job = CreateJobObject(IntPtr.Zero, name);
             if (job == IntPtr.Zero) throw new Win32Exception();
-            var info = new ExtendedLimit();
-            info.Basic.Flags = 0x800;  // BREAKAWAY_OK: явний вихід із задачі (CREATE_BREAKAWAY_FROM_JOB) не ламає старту нащадка
-            if (!SetInformationJobObject(job, 9, ref info, Marshal.SizeOf(typeof(ExtendedLimit))) || !AssignProcessToJobObject(job, process)) {
+            if (!AssignProcessToJobObject(job, process)) {
                 var e = new Win32Exception(); CloseHandle(job); throw e;
             }
             IntPtr copy;
@@ -264,6 +263,31 @@ namespace GeminiWrapper {
             if (p == IntPtr.Zero) return false;
             try { bool inJob; return IsProcessInJob(p, job, out inJob) && inJob && TerminateProcess(p, 1); }
             finally { CloseHandle(p); }
+        }
+
+        static byte[] Read(IntPtr process, IntPtr at, int n) {
+            var b = new byte[n]; IntPtr got;
+            return ReadProcessMemory(process, at, b, (IntPtr)n, out got) && got.ToInt64() == n ? b : null;
+        }
+
+        // Робоча тека процесу id з його PEB: ProcessParameters (PEB+0x20) → CurrentDirectory.DosPath (+0x38), розкладка
+        // x64. Тека — дескриптор у процесі, тож тримає її від видалення. Недоступний процес (інший користувач, захищений)
+        // чи 32-бітний читач — null.
+        public static string CurrentDirectory(int id) {
+            if (IntPtr.Size != 8) return null;
+            IntPtr p = OpenProcess(0x410, false, id);  // QUERY_INFORMATION | VM_READ
+            if (p == IntPtr.Zero) return null;
+            try {
+                var bi = new BasicInfo(); int got;
+                if (NtQueryInformationProcess(p, 0, ref bi, Marshal.SizeOf(typeof(BasicInfo)), out got) != 0 || bi.Peb == IntPtr.Zero) return null;
+                byte[] b = Read(p, IntPtr.Add(bi.Peb, 0x20), 8);
+                if (b == null) return null;
+                b = Read(p, IntPtr.Add(new IntPtr(BitConverter.ToInt64(b, 0)), 0x38), 16);  // Length, MaximumLength, Buffer
+                if (b == null || BitConverter.ToUInt16(b, 0) == 0) return null;
+                int len = BitConverter.ToUInt16(b, 0);
+                b = Read(p, new IntPtr(BitConverter.ToInt64(b, 8)), len);
+                return b == null ? null : System.Text.Encoding.Unicode.GetString(b);
+            } finally { CloseHandle(p); }
         }
 
         public static void Close(IntPtr job) { CloseHandle(job); }
@@ -353,12 +377,16 @@ function Stop-Tree($Proc) {
         } catch { Write-Log "задачі дерева ${id}: $($_.Exception.Message)" }
     }
     try {
+        $said = ''
         if (-not $Proc.HasExited) {
-            if ($script:OnWindows) { & taskkill.exe /PID $id /T /F *> $null }
+            # Вивід taskkill — текст, а не виняток: під Stop перенаправлений stderr рідної програми кидає на першому рядку
+            # й минає очікування нижче, а «could not be terminated» taskkill пише й про процес, що саме виходить сам.
+            # Не зупинено — лише процес, живий після очікування.
+            if ($script:OnWindows) { $said = (& { $ErrorActionPreference = 'Continue'; & taskkill.exe /PID $id /T /F 2>&1 } | ForEach-Object { [string]$_ }) -join ' ' }
             else { $Proc.Kill($true) }
         }
-        [void]$Proc.WaitForExit(15000)
-    } catch { Write-Log "зупинка процесу: $($_.Exception.Message)" }
+        if (-not $Proc.WaitForExit(15000)) { Write-Log "зупинка процесу ${id}: живий через 15 с — $(ConvertTo-NoteText $said)" }
+    } catch { Write-Log "зупинка процесу ${id}: $(ConvertTo-NoteText $_.Exception.Message)" }
     if ($script:TreeJobs.ContainsKey($id)) { $jobs[$id] = $script:TreeJobs[$id]; $script:TreeJobs.Remove($id) }
     foreach ($i in @($jobs.Keys)) { Stop-TreeJob $i $jobs[$i] }
 }
@@ -657,63 +685,6 @@ function Get-TaskSource($M) {
     Get-AutoTaskPath $M.Slug
 }
 
-function Get-NightlyBuild([string]$Sha) {
-    <# Збірка, на якій стоїть нічний дозвіл: штамп build.txt його коміту; '' — штампа нема чи він хибний. Одне місце для
-    Get-NightlyMarker і для ланцюга, що переносить дозвіл (Move-NightlyMarker у wrapper_chain.ps1). #>
-    $build = (Invoke-Git @('cat-file','blob',"${Sha}:build.txt") -AllowFail).Out.Trim()
-    if ($build -cmatch '^[0-9a-f]{40}$') { $build } else { '' }
-}
-
-function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnly) {
-    <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. Дозвіл дати — найбільша спроба /N
-    з комітом на main: кінець /1 (CRASH від сну) його не з'їдає, а повтор — лише нова спроба /N від диспетчера. Дві спроби
-    водночас не йдуть: slug у всіх спроб один, його тримає Test-SlugBusy. -OpenOnly — лише вікно: $true, коли нічний
-    відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). Умова спроби —
-    `gpu` із пріоритетом `p<0-9>` у будь-якому порядку (`gpu-p8`, `p1-gpu`): пріоритет бере планувальник із самої позначки
-    (ConvertTo-Marker), тож диспетчер піднімає нічний над іншими GPU-позначками новою спробою `/N/gpu-p<цифра>`. #>
-    $utc = $Now.ToUniversalTime()
-    if ($utc.Hour -lt 2) { return }
-    if ($OpenOnly) { return $true }
-    $date = $utc.ToString('yyyyMMdd')
-    $head = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/'
-    $main = Get-RefSha "$script:RemoteRoot/main"
-    if ($main -cnotmatch '^[0-9a-f]{40}$') { return }
-    $tries = @(foreach ($name in ((Invoke-Git @('for-each-ref', '--format=%(refname)', $head)).Out -split "`n")) {
-        if ($name.Trim() -cmatch ('^' + [regex]::Escape($head) + '([1-9][0-9]{0,2})/(?:gpu-p[0-9]|p[0-9]-gpu)$')) { [pscustomobject]@{ N = [int]$Matches[1]; Ref = $name.Trim() } }
-    })
-    $n = 0; $ref = ''; $sha = ''
-    foreach ($t in @($tries | Sort-Object N -Descending)) {
-        $s = Get-RefSha $t.Ref
-        if ($s -cnotmatch '^[0-9a-f]{40}$') { continue }
-        if ((Invoke-Git @('merge-base', '--is-ancestor', $s, $main) -AllowFail).Code -eq 0) { $n = $t.N; $ref = $t.Ref; $sha = $s; break }
-        # Голова спроби не з main — лише зняття диспетчера («ЗНЯТО…» поверх дозволу з main). Його віддають тим самим читачем, що й
-        # звичайним позначкам: Cancel лишається в позначці, і Start-Markers закриває її спільним обробником скасування (стоп
-        # прогону, CANCELLED). Права на запуск це не дає: спроба без «ЗНЯТО» поза main лишається недозволеною.
-        $cut = @(Get-Markers $t.Ref | Where-Object { $_.Cancel })
-        if ($cut.Count -eq 1 -and (Invoke-Git @('merge-base', $s, $main) -AllowFail).Code -eq 0) { return $cut[0] }
-    }
-    if (-not $ref) { return }
-    $template = 'аудит/наряди/автоживий.md'
-    $build = Get-NightlyBuild $sha
-    if ($build -and (Invoke-Git @('for-each-ref','--format=%(refname)',($script:QueuePrefix + "автоживий-$build/"))).Out.Trim()) { return }
-    if ((Invoke-Git @('cat-file', '-e', "${sha}:$template") -AllowFail).Code -ne 0) { return }
-    $dir = Join-Path $RunsDir 'nightly'
-    [void](New-Item -ItemType Directory -Force -Path $dir)
-    # Стан — на спробу: /1 лишає `<дата>.json` (старий формат читається так само), /N>1 — `<дата>-<N>.json`; стан /1 нової спроби не блокує.
-    $file = Join-Path $dir ($date + $(if ($n -gt 1) { "-$n" } else { '' }) + '.json')
-    if (Test-Path -LiteralPath $file) {
-        $saved = [System.IO.File]::ReadAllText($file, $script:Utf8) | ConvertFrom-Json
-        if ($saved.date -cne $date -or $saved.sha -cnotmatch '^[0-9a-f]{40}$' -or
-            [string]$saved.time -cnotmatch '^[0-9]{10}$') { throw 'Хибний стан нічного прогону' }
-        if ($saved.sha -cne $sha) { return }
-    } else {
-        $stamp = ([DateTimeOffset]$utc).ToUnixTimeSeconds()
-        $saved = [pscustomobject]@{ date = $date; sha = $sha; time = $stamp }
-        Write-FileAtomic $file ($saved | ConvertTo-Json -Compress)
-    }
-    ConvertTo-Marker ($ref + "`t" + $saved.sha + "`t" + $saved.time)
-}
-
 # Ключ стану — від канонічної назви, а не від $M.Ref: Ref залежить від простору посилань рушія (Set-RemoteRoot), і ключі
 # позначок claude-run змінилися б разом із ним (13.11, #3527: давні виконані позначки стали новими). Назва — `gemini-queue/…`.
 function Get-MarkerKey($M) { "refs/remotes/origin/$($M.Name) $($M.Sha)" }
@@ -897,12 +868,12 @@ function Get-PlanFailReason([string]$Message) {
 }
 
 function Enter-PlanWait($M, [string]$Reason, [string]$Head = '') {
-    <# Збій побудови плану живого (Add-AutoTaskContext для автоживого й Е1-нічного). Бюджет запитів вичерпано (AUTO_BUDGET) — це не
+    <# Збій побудови плану живого (Add-AutoTaskContext для автоживого). Бюджет запитів вичерпано (AUTO_BUDGET) — це не
     вада, а чекання вікна: як REVIEW_API, без лічильника. Решта — окреме чекання PlanBackoff с з лічильником retakes
     (спільна межа MaxRetakes): повертає $false, коли межу вичерпано і чекання не записано, — викликач кінчає наряд
     кодом PLAN_FAILED, який будить диспетчера (не тихий REVIEW_API без кінця). #>
     # Автоперевірка PR (не план): її збій API лишається REVIEW_API — повтор у черзі під бюджетом, як і було.
-    if ($M.Slug -cnotmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Head $(if ($Reason -ceq 'AUTO_BUDGET') { 'бюджет' } else { Get-PlanFailReason $Reason }); return $true }
+    if ($M.Slug -cnotmatch '^автоживий-[0-9a-f]{40}$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Head $(if ($Reason -ceq 'AUTO_BUDGET') { 'бюджет' } else { Get-PlanFailReason $Reason }); return $true }
     $why = Get-PlanFailReason $Reason
     $n = Set-MarkerWait $M ((Get-ReviewTime) + $script:PlanBackoff) @{group='PLAN_WAIT';reason=$why;head=$Head;retake=$true}
     if ($null -eq $n) { Write-Log "позначка $($M.Name): план не збудовано (${why}: $(([regex]::Replace($Reason, '[\x00-\x1f\x7f]+', ' ')).Trim())) понад $($script:MaxRetakes) разів — PLAN_FAILED"; return $false }
@@ -1201,7 +1172,6 @@ function Get-MarkerKind([string]$Slug) {
     <# Вид позначки за назвою наряду — для лічби в стані. #>
     if ($Slug -cmatch '^автоперевірка-') { return 'автоперевірка' }
     if ($Slug -cmatch '^автоживий-') { return 'автоживий' }
-    if ($Slug -cmatch '^Е1-нічний-живий-') { return 'нічний живий' }
     if ($Slug -cmatch '^перевірка-') { return 'перевірка' }
     if ($Slug -cmatch '^pachka-') { return 'пачка' }
     if ($Slug -ceq 'ВИМКНИ-НОУТБУК') { return 'вимкнення' }
@@ -2066,14 +2036,33 @@ function Hold-TaskCopy([string]$Dir, [string]$Why) {
     $Dir
 }
 
+function Stop-CopyHolders([string]$Dir) {
+    <# Останній заслін прибирання копії: зупиняє процеси, чия робоча тека (PEB) — $Dir чи тека під ним, крім самого
+    планувальника й інструментів LM Studio; повертає «ім'я pid» зупинених.
+    Тека задачі належить одному прогонові, тож процес у ній — його лишок, що вийшов за задачу процесів (Start-Tree): без
+    заслону він тримав би копію, доки живий, а прибирання накопиченого падало б на ній щоразу. #>
+    if (-not $script:OnWindows) { return @() }
+    $root = [IO.Path]::GetFullPath($Dir).TrimEnd('\') + '\'
+    try { Add-TreeJobType } catch { Write-Log "копія задачі ${Dir}: тримачів не шукано — $(ConvertTo-NoteText $_.Exception.Message)"; return @() }
+    @(foreach ($g in @(Get-Process)) {
+            if ($g.Id -eq $PID -or $g.Id -le 4) { continue }
+            $cwd = [GeminiWrapper.TreeJob]::CurrentDirectory($g.Id)
+            if (-not $cwd -or -not ($cwd.TrimEnd('\') + '\').StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) { continue }
+            if (Test-GpuModelProcess $g.ProcessName ([string]$g.Path)) { continue }
+            try { $g.Kill(); [void]$g.WaitForExit(5000); "$($g.ProcessName) $($g.Id)" }
+            catch { Write-Log "копія задачі ${Dir}: $($g.ProcessName) $($g.Id) не зупинено — $(ConvertTo-NoteText $_.Exception.Message)" }
+        })
+}
+
 function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
     <# Тека задачі чи давня робоча копія слота — геть, коли голова не несе комітів поза доставленим (`rev-list --not`):
     віддаленими гілками (`--remotes`) і $Delivered — тим, що смуга записала поза клоном (бандл, стан позначки, свій простір
     віддалених посилань). Локальні гілки клону — не доставлене: гілку наряду переписує `checkout -B` наступної спроби.
     Несе — Hold-TaskCopy, повертає шлях теки; інакше ''.
     Прибирання не залежить від заборон у копії: тека, яку не можна перелічити (вимір дав недоступні теки), чи видалення
-    з UnauthorizedAccess — спершу Reset-TreeAcl, тоді ще раз; зайнятий іншим процесом файл — тимчасовий стан, його лишає
-    наступне прибирання. У журнал — звільнені байти (вимір до видалення, після скидання ACL — повний). #>
+    з UnauthorizedAccess — спершу Reset-TreeAcl, тоді ще раз; процес, чия робоча тека під копією, — Stop-CopyHolders, тоді
+    ще раз; інакше зайнятий іншим процесом файл — тимчасовий стан, його лишає наступне прибирання. У журнал — звільнені
+    байти (вимір до видалення, після скидання ACL — повний). #>
     $repo = $(if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { $Dir } else { Join-Path $Dir 'repo' })
     if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
         $n = 0
@@ -2094,7 +2083,11 @@ function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
                 $reset = Reset-TreeAcl $Dir
                 try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { $first = $_.Exception }
             }
-            if (Test-Path -LiteralPath $Dir) { Write-Log "копія задачі $Dir не прибрана: $($first.Message)" }
+            if ((Test-Path -LiteralPath $Dir) -and ($held = @(Stop-CopyHolders $Dir)).Count) {
+                Write-Log "копія задачі ${Dir}: процеси поза задачею наряду, що тримали її робочою текою, зупинено: $($held -join ', ')"
+                try { Remove-Item -LiteralPath $Dir -Recurse -Force -ErrorAction Stop } catch { $first = $_.Exception }
+            }
+            if (Test-Path -LiteralPath $Dir) { Write-Log "копія задачі $Dir не прибрана: $(ConvertTo-NoteText $first.Message)" }
         }
     }
     if ($existed -and -not (Test-Path -LiteralPath $Dir)) { Write-Log "копія задачі $Dir прибрана: звільнено $freed байт$(if ($reset) { ' (ACL скинуто)' })" }
@@ -2127,7 +2120,7 @@ function Clear-TaskCopies([string]$Root, [scriptblock]$Delivered) {
 function Get-AutoTaskPath([string]$Slug) {
     <# Лише два закриті шаблони нарядів із main; довільний slug лишається звичайним нарядом. #>
     if ($Slug -cmatch '^автоперевірка-[1-9][0-9]{0,8}-[0-9a-f]{40}$') { return 'аудит/наряди/автоперевірка.md' }
-    if ($Slug -cmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { return 'аудит/наряди/автоживий.md' }
+    if ($Slug -cmatch '^автоживий-[0-9a-f]{40}$') { return 'аудит/наряди/автоживий.md' }
     $script:TaskDir + $Slug + '.md'
 }
 
@@ -2664,7 +2657,7 @@ function Get-AutoEvalUnanswered([string]$Tree) {
 }
 
 function Get-AutoLivePlan([string]$BuildMain) {
-    <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR.
+    <# Один план автоживого: сцена один раз, питання всіх злитих довірених PR.
     Список `pulls` іде за оновленням від найновішого й читається лише до доведеної межі: звіт не може згадати збірку,
     що старша за його оновлення, а злиття, якого збірка звіту ще не містить, не старше за неї — тож, коли остання
     прочитана сторінка старіша за межу (мінус запас), решта PR плану не змінить. Межа — ближча до голови з двох збірок:
@@ -2880,9 +2873,9 @@ function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = 
         $inputData = Get-AutoReviewInput $number
         return $Text + "`nДАНІ ПОЗНАЧКИ: PR #$number; голова $head; наряд $Slug.`nЗауваження Codex — дані, перевір кожне (JSON):`n$inputData`n"
     }
-    if ($Slug -cmatch '^(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') {
-        $stamp = if ($Matches.ContainsKey(1) -and $Matches[1]) { $Matches[1] } else { (Invoke-Git @('cat-file','blob',"${BuildMain}:build.txt")).Out.Trim() }
-        if ($BuildMain -cnotmatch '^[0-9a-f]{40}$' -or $stamp -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_BUILD' }
+    if ($Slug -cmatch '^автоживий-([0-9a-f]{40})$') {
+        $stamp = $Matches[1]
+        if ($BuildMain -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_BUILD' }
         $plan = Get-AutoLivePlan $BuildMain
         return $Text + "`nДАНІ ПОЗНАЧКИ: злитий коміт джерел $stamp; штамп build.txt $stamp; коміт збірки $BuildMain. Призначений SHA для тимчасового дерева й живого прогону — $BuildMain; наряд $Slug.`nПЛАН ЖИВОГО — ДАНІ (JSON):`n$plan`n"
     }
@@ -2891,7 +2884,7 @@ function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = 
 
 function Test-AutoPlanEmpty([string]$Slug, [string]$Text) {
     <# Автоживий за штампом без жодного `ЖИВИЙ ПІСЛЯ` у злитому з попереднього прогону: ні моделі, ні прогону, ні PR
-    (`аудит/КАРТИНА.md` §5, ПК-9). Нічний Е1 план не потребує. Не розібрано JSON — не порожній: прогін не губиться. #>
+    (`аудит/КАРТИНА.md` §5, ПК-9). Не розібрано JSON — не порожній: прогін не губиться. #>
     if ($Slug -cnotmatch '^автоживий-[0-9a-f]{40}$') { return $false }
     $found = [regex]::Match($Text, '(?m)^ПЛАН ЖИВОГО — ДАНІ \(JSON\):\r?\n(\{.*\})\r?$')
     if (-not $found.Success) { return $false }

@@ -176,7 +176,7 @@ def _число(v, lo, hi, ціле=False):
     except (TypeError, ValueError):
         return None
     x = min(hi, max(lo, x))
-    return int(round(x)) if ціле else round(x, 2)
+    return round(x) if ціле else round(x, 2)
 
 
 import колір_річ as _КОЛІР

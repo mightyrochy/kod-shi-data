@@ -248,25 +248,25 @@ _БЕЗ_ГЕЙТІВ = {
         # він стояв лише цим реченням, qwen3.5-9b ішла вердиктом згори й вертала о1…о5 у 27/27 пар заміру
         # ГГ-1: що стояло в о6–о10, до неї не доходило (25 з 54 опор загинули саме так). Код порядку
         # не міняє і за зауваженнями не сортує — порядок вердикта лише названо таким, що нічого не каже.
-        "First choose the «outfits_wanted» outfits of «verdict» you keep. Write each once in «outfits», "
+        ("First choose the «outfits_wanted» outfits of «verdict» you keep. Write each once in «outfits», "
         "with its «id» before its improved items. Choose for «case» — "
         "her occasion, «intent», «goal», her own words — so that their "
         "ideas differ. Read every outfit of «verdict» before you choose: «verdict» comes in an order "
         "drawn by lot, and an outfit's place in it says nothing about her. Do not choose by how many remarks "
-        "an outfit has or how mild they are: an outfit that answers her better stays with its remarks.",
+        "an outfit has or how mild they are: an outfit that answers her better stays with its remarks."),
         "«outfits» is your ordered selection, each outfit improved; an outfit you did not choose is not written.",
         # СКЛАДАННЯ-ЧИТАННЯ: ремонт повертав образи по 1–2 речі (лише змінену сукню чи спідницю) —
         # повнота такі відкидає; у 27 відповідях живих 1510 А 10 образів зі складу 4–6 речей стали трьома
-        "An improved outfit is whole: «items» lists all its items, the ones you kept and the ones you put in; an "
-        "item leaves it only when you replace it or remove it for a finding.",
+        ("An improved outfit is whole: «items» lists all its items, the ones you kept and the ones you put in; an "
+         "item leaves it only when you replace it or remove it for a finding."),
         # СТЕЛЯ-РЕМОНТУ (аудит/ПРОДУКТ.md п.17): «fix it, or keep the item and say why in «done»»
         # модель читала як «запис на кожне зауваження»: у 47 записаних відповідях ремонту — 942 записи
         # «done», 56 % символів, і 8 із 8 обривів об стелю 4000 т. — такі; «fixed» стояв і над речами,
         # яких ремонт не міняв. Зауваження — інформація: міняти річ — лише з вагомою причиною її випадку.
         _РЯДОК_ЗАУВАЖЕННЯ,
-        "When «case» has «palette_scheme», she chose that scheme herself: keep its families on the large items "
+        ("When «case» has «palette_scheme», she chose that scheme herself: keep its families on the large items "
         "of the outfits that carry them, and do not repair her scheme away into neutrals; give a missing family "
-        "a large item from «showcase» where one fits her occasion.",
+        "a large item from «showcase» where one fits her occasion."),
         # РЕМОНТ-1: «and for a remark only when you changed an item for it» qwen3.5-9b читала як
         # запис на кожне зауваження — у 65 відповідях заміру ГГ-1 3 627 записів «done» над зауваженнями
         # проти 70 над гейтами, 54 % символів виводу, 36 обривів об стелю 4000 т. Що річ замінено, код
@@ -278,14 +278,14 @@ _БЕЗ_ГЕЙТІВ = {
         # — fixed — the finding…»), і qwen3.5-9b переписувала його в «action» цілим (А/08,
         # останні ремонти рук 1–2: 27 із 64 дій), тож «declined» з ід знахідки губився в тексті.
         _РЯДОК_ACTION,
-        "One item of each kind: an item of a kind the outfit already has replaces it; a missing kind is added "
-        "without removing other items. An outfit has a dress, a set, or a top and a bottom.",
+        ("One item of each kind: an item of a kind the outfit already has replaces it; a missing kind is added "
+         "without removing other items. An outfit has a dress, a set, or a top and a bottom."),
         _РЯДОК_РІЧ_ДВІЧІ,
         "Take items only from this verdict (any «your_outfit») or from «showcase».",
         _РЯДОК_ЛИШЕ_НОМЕР,
-        "When you break a condition deliberately, say so in «deliberate» of the outfit: the item, the «id» of "
+        ("When you break a condition deliberately, say so in «deliberate» of the outfit: the item, the «id» of "
         "the finding it answers, and why. The code weighs only the finding you name there; a move without "
-        "a finding's «id» weakens nothing.",
+        "a finding's «id» weakens nothing."),
         "«needed» — only for an item that is neither in the outfits nor in «showcase».",
         _РЯДОК_ОБРАЗ_ВІДПОВІДІ,
         # кінець відповіді — у `наприкінці` (`фрази_формату.наприкінці_en`): одне місце, а не правило й підсумок
@@ -829,7 +829,7 @@ def мова_рішення(мова, спроб=0):
     показ не вирішував за власника."""
     if not isinstance(мова, dict) or мова.get("можна_видавати") is not False:
         return None
-    пор, _н = мова_порушення(мова)
+    пор, _ = мова_порушення(мова)
     if not пор:
         return None
     правила = [п["правило"] for п in пор]
@@ -1736,7 +1736,7 @@ def сміливі_набору(записи, намір=None, мета=None, в
     if not сміливі and not невиміряні:
         return None
     вих = dict(образи=сміливі, лишити=min(len(сміливі) + len(невиміряні),
-                                          max(1, int(round(int(варіантів or 1) * СМІЛИВІСТЬ["частка"])))))
+                                          max(1, round(int(варіантів or 1) * СМІЛИВІСТЬ["частка"]))))
     if невиміряні:
         вих["не_виміряно"] = невиміряні
     return вих

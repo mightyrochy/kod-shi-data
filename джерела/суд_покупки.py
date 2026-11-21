@@ -125,7 +125,7 @@ def колір_речі(колір, слот, блиск=None, палітра=No
         блискуча = блиск is not None and блиск >= БЛИСК_ВИСТУПАЄ
         return [_ВМ.заява("colour_role_not_judged", missing="colour_measure")] + (
             [_ВМ.заява("draws_eye_enlarges", by=["shiny"])] if блискуча else [])
-    L0, L1, C0, _C1, _д = м
+    L0, L1, C0, _, _ = м
     нейтраль = роль == "так"
     гучний = (not нейтраль) and C0 >= _РП.C["hi_C"]
     заяви = []

@@ -6,8 +6,8 @@
 import html
 import re
 
-КОШИК = re.compile(r'кошик|корзин|купити|придбати|додати|в кошик|add to cart|buy|замовити', re.I)
-ЧУЖІ_КЛАСИ = re.compile(r'related|recommend|similar|also|upsell|cross-?sell|viewed|recent|carousel|swiper|footer|header|navbar|menu|popular|other|rekomen|vidpovid|reviews?-list|catalog-list|product-list|products-list|product-grid|collection', re.I)
+КОШИК = re.compile(r'кошик|корзин|купити|придбати|додати|в кошик|add to cart|buy|замовити', re.IGNORECASE)
+ЧУЖІ_КЛАСИ = re.compile(r'related|recommend|similar|also|upsell|cross-?sell|viewed|recent|carousel|swiper|footer|header|navbar|menu|popular|other|rekomen|vidpovid|reviews?-list|catalog-list|product-list|products-list|product-grid|collection', re.IGNORECASE)
 
 
 def норма(т):

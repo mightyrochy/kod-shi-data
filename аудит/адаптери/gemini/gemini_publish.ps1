@@ -161,7 +161,8 @@ function Invoke-Native([string]$Exe, [string[]]$Arguments, [string]$WorkDirector
         $w.Close()
     }
     if (-not $p.WaitForExit([int]($TimeoutMinutes * 60000))) {
-        if ($script:OnWindows) { & taskkill.exe /PID $p.Id /T /F *> $null } else { $p.Kill($true) }
+        # Під Stop stderr taskkill («could not be terminated» процесу, що саме виходить) кидав би замість межі часу.
+        if ($script:OnWindows) { & { $ErrorActionPreference = 'Continue'; & taskkill.exe /PID $p.Id /T /F *> $null } } else { $p.Kill($true) }
         [void]$p.WaitForExit(15000)
         return [pscustomobject]@{ Code = -1; Out = ''; Err = 'межа часу' }
     }
@@ -1099,10 +1100,10 @@ function Test-DispatcherAction([string]$Line) {
     if ($Line -cnotmatch '^GEMINI ОБГОРТКА: ГОТОВО ') { return $false }
     foreach ($result in @(Get-ChainTaskResults)) {
         if ($result.Kind -ceq 'ГОТОВО' -and ($Line -ceq $result.Line -or $Line.StartsWith($result.Line + ' ', [StringComparison]::Ordinal))) {
-            return $result.Slug -cmatch '^(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)'
+            return $result.Slug -cmatch '^(?:автоперевірка-|перевірка-|pachka-|автоживий-)'
         }
     }
-    if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:перевірка-|pachka-|Е1-нічний-живий-)') { return $true }
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:перевірка-|pachka-)') { return $true }
     $false
 }
 

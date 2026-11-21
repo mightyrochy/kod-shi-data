@@ -20,12 +20,10 @@ try {
             . (Join-Path $SourceDir 'claude_run.ps1') -WorkDir $case -RepoDir $case -OutboxDir "$case/lines" -LaneDir $shared -NoStatus
         # Тут вимірюється бюджет звірки голови; дані рецензії перевіряє окремий стенд.
         function Get-AutoReviewInput { '[]' }
-        function Get-NightlyMarker { }
         } else {
             . (Join-Path $SourceDir 'gemini_run.ps1') -RunsDir $case -RepoDir $case -OutDir "$case/out" -LaneDir $shared -EnableCodex
         # Тут вимірюється бюджет звірки голови; дані рецензії перевіряє окремий стенд.
         function Get-AutoReviewInput { '[]' }
-        function Get-NightlyMarker { }
             $script:Lanes = @($lane)
         }
         $script:StateDir = Join-Path $case 'state'; $script:SlotDir = Join-Path $case 'slots'

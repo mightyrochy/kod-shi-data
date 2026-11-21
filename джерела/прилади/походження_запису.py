@@ -11,7 +11,7 @@ import re
 ДОБУВАННЯ = frozenset(("select", "select_one", "find_all", "findtext", "findall", "finditer",
                        "itertext", "xpath", "cssselect", "get_text", "search", "match", "fullmatch"))
 ВХІД = re.compile(r"beautifulsoup|htmlparser|fromstring|json\.loads|\.json$|\.read$|\.read_text$|"
-                  r"\.parse$|urlopen|requests\.|httpx\.|поверхня_фото|виміряти_фото|_запит$", re.I)
+                  r"\.parse$|urlopen|requests\.|httpx\.|поверхня_фото|виміряти_фото|_запит$", re.IGNORECASE)
 СИРІ_ПОЛЯ = frozenset(("variants", "variations", "hasVariant", "offers", "@type", "productGroupID",
                        "inProductGroupWithID", "option1", "featured_image", "variant_ids"))
 ІД = frozenset(("id", "ід", "offer_id", "variant_id"))

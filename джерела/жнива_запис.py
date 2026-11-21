@@ -236,7 +236,11 @@ def злити(а):
     вантаж замість свіжого .gz (про цю пастку сказано в докстрінгу збирача).
     """
     import gzip
-    v2 = json.load(open(а.вихід, encoding="utf-8")) if os.path.exists(а.вихід) else {}
+    if os.path.exists(а.вихід):
+        with open(а.вихід, encoding="utf-8") as ф:
+            v2 = json.load(ф)
+    else:
+        v2 = {}
     v1 = dict(F.читати_збагачення(ТУТ))
     злите, замін, нових, слабких = dict(v1), 0, 0, 0
     for ід, з in v2.items():

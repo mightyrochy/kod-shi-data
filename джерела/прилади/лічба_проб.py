@@ -138,8 +138,8 @@ class Дерево_проби:
                             shutil.copyfile(запис, ціль)
             else:
                 запустити_python([sys.executable, '-c',
-                                'import чистка_каталогу; '
-                                'чистка_каталогу.забезпечити_чистим("каталог_повний.xml")'],
+                                  ('import чистка_каталогу; '
+                                   'чистка_каталогу.забезпечити_чистим("каталог_повний.xml")')],
                                cwd=self.джерела, check=True, capture_output=True,
                                env=self.середовище(), timeout=max(120, int(os.environ.get('STELYA', '120'))))
             print('дерево: підготовка разом %.1f с · каталог %.3f ГіБ'
@@ -339,7 +339,7 @@ def main():
     ниток = min(ниток, len(черга))
     print('коміт проб: ' + sha, flush=True)
     print('проб знайдено %d · у черзі %d · ниток %d · стеля %d с' % (len(усі), len(черга), ниток, стеля))
-    звіт_файл = open(os.environ['ZVIT'], 'w', encoding='utf-8') if os.environ.get('ZVIT') else None
+    звіт_файл = None
     звіти, збої = [], []
     # `as_completed`, а не `map`: `map` віддає наслідки В ПОРЯДКУ ЧЕРГИ, тож одна повільна
     # проба тримала б звіт і `ZVIT` за собою (виміряно 27.09: 14 рядків журналу за 12 хв на
@@ -357,6 +357,8 @@ def main():
 
     try:
         with contextlib.ExitStack() as стек:
+            if os.environ.get('ZVIT'):
+                звіт_файл = стек.enter_context(open(os.environ['ZVIT'], 'w', encoding='utf-8'))
             каталог = None
             for _ in range(ниток):
                 дерево = стек.enter_context(Дерево_проби(sha, каталог))
@@ -379,8 +381,6 @@ def main():
     except (OSError, RuntimeError, subprocess.SubprocessError) as е:
         збої.append('ПРОГІН НЕ ЗАВЕРШЕНО: ' + str(е))
     finally:
-        if звіт_файл:
-            звіт_файл.close()
         після = знімок_користувача()
         зміни = sorted(ш for ш in до.keys() | після.keys() if до.get(ш) != після.get(ш))
         if зміни:

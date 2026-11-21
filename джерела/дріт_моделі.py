@@ -307,7 +307,7 @@ def осі(зона, рч=None):
     з, р, вих = зона or {}, рч or {}, {}
     к = з.get("колір")
     if к and к.get("L"):
-        вих["L"] = [int(round(к["L"][0])), int(round(к["L"][1]))]
+        вих["L"] = [round(к["L"][0]), round(к["L"][1])]
         # кадр картки іншого кольору: світлота — межі слова крамниці й кадру разом
         # (`фід_кадр_колір.вікно_з_кадром`), а не лише слова
         вих["L_from"] = ("word_or_photo" if (р.get("кадр_кольору") or {}).get("стан") == "інший_колір"
@@ -316,7 +316,7 @@ def осі(зона, рч=None):
                          else ("photo" if к.get("розкид") is not None else "photo_point"))
     кр = з.get("край")
     if кр and кр.get("см"):
-        вих["hem_cm"] = [int(round(кр["см"][0])), int(round(кр["см"][1]))]
+        вих["hem_cm"] = [round(кр["см"][0]), round(кр["см"][1])]
         вих["hem_from"] = код_переліку(_ДЖЕРЕЛО_КРАЮ, кр.get("джерело"))
     ф = з.get("формальність")
     if ф and ф.get("інтервал"):
@@ -532,9 +532,9 @@ _СЛОВО_ПРИ_ВИМІРІ = {"color": "hex"}
 # один раз, коли хоч одна така ознака в переліку є (Річ-запис-речі п.7, дошка 15879: легенда казала «крамниця не
 # називає» й тоді, коли картка називала словами, яких код не читав)
 КЛЮЧІ_ВЗУТТЯ = ("heel_shape", "heel_cm", "sole", "wear_season", "lining")
-СТАНИ_ВЗУТТЯ = ("shoe unknown|not_read", "for heel_shape, heel_cm, sole, wear_season, lining: `unknown` or the key "
+СТАНИ_ВЗУТТЯ = ("shoe unknown|not_read", ("for heel_shape, heel_cm, sole, wear_season, lining: `unknown` or the key "
                 "absent from a shoe row — the shop's card does not name it; `not_read` — the card names it in words "
-                "not yet coded")
+                "not yet coded"))
 
 
 def легенда_ключів(перелік=None):
@@ -1355,9 +1355,8 @@ def _без_лічби(з):
 
 def _для_вибору(z):
     """Знахідка на дроті для вибору: без лічби чекліста в заявах (ВИБ-1); ваги не несе жодна знахідка."""
-    if isinstance(z, dict):
-        if z.get("statements"):
-            z["statements"] = _без_лічби(z["statements"])
+    if isinstance(z, dict) and z.get("statements"):
+        z["statements"] = _без_лічби(z["statements"])
     return z
 
 

@@ -117,7 +117,7 @@ Scenario 'в сесія GPU' {
     function Write-Log([string]$Text, [switch]$Required) { [void]$script:Logged.Add($Text) }
     function Test-LockFree { $true }
     $job = { param($id, $slug) [pscustomobject]@{ id = $id; name = "gemini-queue/$slug/cc-claude-sonnet-5-5-medium/1/gpu" } }
-    $a = & $job 'v-a' 'Е1-нічний-живий'; $b = & $job 'v-b' 'Б.1-серія-2'; $c = & $job 'v-c' 'автоживий'
+    $a = & $job 'v-a' 'Б.1-серія-1'; $b = & $job 'v-b' 'Б.1-серія-2'; $c = & $job 'v-c' 'автоживий'
     $session = Join-Path $LaneDir 'gpu-models.json'
     $leases = { @((Read-GpuSession).Leases | Where-Object { -not $_.done } | ForEach-Object { $_.run }) -join ',' }
 
@@ -125,7 +125,7 @@ Scenario 'в сесія GPU' {
     $whyA = Enter-GpuLease $a; $leaseA = $script:GpuLease
     $why = Get-GpuBusyReason
     $whyB = Enter-GpuLease $b
-    Check "в живий GPU-наряд без моделі на карті тримає другий: планувальник «$why», допуск A «$whyA», B «$whyB», оренди $(& $leases)" ($whyA -eq '' -and $why -match 'тримає живий GPU-наряд \(gemini-queue/Е1-нічний-живий/' -and $whyB -match 'тримає живий GPU-наряд' -and (& $leases) -ceq 'v-a' -and -not (Test-Path -LiteralPath (Get-GpuLeaseLockPath 'v-b')))
+    Check "в живий GPU-наряд без моделі на карті тримає другий: планувальник «$why», допуск A «$whyA», B «$whyB», оренди $(& $leases)" ($whyA -eq '' -and $why -match 'тримає живий GPU-наряд \(gemini-queue/Б.1-серія-1/' -and $whyB -match 'тримає живий GPU-наряд' -and (& $leases) -ceq 'v-a' -and -not (Test-Path -LiteralPath (Get-GpuLeaseLockPath 'v-b')))
     $line = "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО GPU: $($script:GpuHoldReason), позначок 1"
     Check "в причина «живий GPU-наряд» проходить транспорт диспетчерові: $line" (Test-HoldLine $line)
     [void]$script:Lms.Add([pscustomobject]@{ id = 'qwen3-vl-8b'; model = 'qwen3-vl-8b' })
@@ -140,7 +140,7 @@ Scenario 'в сесія GPU' {
 
     # Оренду тримає інший процес (наряд, що пережив перезапуск планувальника), призупинений, як у паузі без світла.
     $s0 = [pscustomobject]@{ Before = @($script:Lms); Leases = (New-Object System.Collections.ArrayList); Dirty = $false }
-    [void]$s0.Leases.Add([pscustomobject]@{ run = 'v-x'; marker = 'gemini-queue/Е1-нічний-живий/x/1/gpu-p8'; join = @('owner-id'); done = $false })
+    [void]$s0.Leases.Add([pscustomobject]@{ run = 'v-x'; marker = 'gemini-queue/Б.1-серія-1/x/1/gpu-p8'; join = @('owner-id'); done = $false })
     Save-GpuSession $s0
     $held = Join-Path $LaneDir 'held'
     $hold = Start-Process powershell.exe -WindowStyle Hidden -PassThru -ArgumentList @('-NoProfile', '-Command',
@@ -150,7 +150,7 @@ Scenario 'в сесія GPU' {
     Add-PowerType; $paused = Set-ProcessPause $hold.Id $true
     $whyB = Enter-GpuLease $b
     [void](Set-ProcessPause $hold.Id $false)
-    Check "в оренда іншого процесу, призупиненого ($paused), тримає карту: «$whyB»" ($paused -and $whyB -match 'тримає живий GPU-наряд \(gemini-queue/Е1-нічний-живий/x/')
+    Check "в оренда іншого процесу, призупиненого ($paused), тримає карту: «$whyB»" ($paused -and $whyB -match 'тримає живий GPU-наряд \(gemini-queue/Б.1-серія-1/x/')
     Stop-Process -Id $hold.Id -Force; $hold.WaitForExit()
     $whyB = Enter-GpuLease $b; $leaseB = $script:GpuLease
     Check "в процес наряду помер — мертва оренда не тримає: «$whyB», оренди $(& $leases)" ($whyB -eq '' -and (& $leases) -ceq 'v-b')
@@ -169,7 +169,7 @@ Scenario 'в сесія GPU' {
     $ok = Repair-GpuModels
     Check "в мертва остання оренда: прохід вивантажує лише модель сесії, модель власника лишається, запис прибрано: [$($script:Unloaded -join ',')]" ($ok -and ($script:Unloaded -join ',') -ceq 'qwen3-vl-8b' -and (@($script:Lms | ForEach-Object { $_.id }) -join ',') -ceq 'owner-id' -and -not (Test-Path -LiteralPath $session))
     $log = @($script:Logged | Where-Object { $_ -like 'GPU вивантаження:*' })
-    Check "в рядок вивантаження називає обидва наряди, які могли її завантажити: $($log -join ' | ')" ($log.Count -eq 1 -and $log[0] -match 'наряд=gemini-queue/Е1-нічний-живий/[^,;]+,gemini-queue/Б.1-серія-2/' -and $log[0] -match 'прогін=v-a,v-b')
+    Check "в рядок вивантаження називає обидва наряди, які могли її завантажити: $($log -join ' | ')" ($log.Count -eq 1 -and $log[0] -match 'наряд=gemini-queue/Б.1-серія-1/[^,;]+,gemini-queue/Б.1-серія-2/' -and $log[0] -match 'прогін=v-a,v-b')
 
     # Наряд A завантажив модель сам: його кінець вивантажує її.
     $script:Unloaded.Clear()
@@ -314,7 +314,6 @@ Scenario 'ж FORMAT' {
     # 31101 позначено старим станом INVALID_NAME (до рядка FORMAT) — рядок отримує так само раз.
     Write-FileAtomic (Get-StatePath (Get-MarkerKey $bad2)) 'INVALID_NAME'
     function Get-Markers { @($bad1, $bad2) }
-    function Get-NightlyMarker { @() }
     function Write-Log([string]$Text) { }
     [void](Start-Markers (New-Object System.Collections.ArrayList))
     [void](Start-Markers (New-Object System.Collections.ArrayList))

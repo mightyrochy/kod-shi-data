@@ -567,9 +567,8 @@ def траурне_відсічення(r, тр):
         метал_тут = метал_біля_обличчя(r)
         if метал_тут:
             return "mourning_metal_near_face_not_chosen"
-        if метал_тут is None:
-            if r.get("метал") and не_несе_металу_прикраси(r) is False:
-                невідоме = невідоме or "mourning_place_unknown:metal"
+        if метал_тут is None and r.get("метал") and не_несе_металу_прикраси(r) is False:
+            невідоме = невідоме or "mourning_place_unknown:metal"
     if невідоме:
         return невідоме
     return None

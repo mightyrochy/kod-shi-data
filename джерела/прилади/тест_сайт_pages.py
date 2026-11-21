@@ -9,7 +9,7 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import сайт_pages as с  # noqa: E402
+import сайт_pages as с
 
 помилки = []
 

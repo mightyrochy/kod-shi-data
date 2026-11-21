@@ -97,9 +97,8 @@ def мітка_розміру(т):
         if частки and all(ч in ПОРЯДОК_ЛІТЕР for ч in частки):
             return "/".join(частки)
         return None
-    if т.isdigit() and len(т) == 2:
-        if ДІАПАЗОН_РОЗМІРУ_ОДЯГУ[0] <= int(т) <= ДІАПАЗОН_РОЗМІРУ_ОДЯГУ[1]:
-            return т
+    if т.isdigit() and len(т) == 2 and ДІАПАЗОН_РОЗМІРУ_ОДЯГУ[0] <= int(т) <= ДІАПАЗОН_РОЗМІРУ_ОДЯГУ[1]:
+        return т
     return None
 
 

@@ -151,7 +151,7 @@ def ключ_моделі(o):
 
 РОЗМІР_У_НАЗВІ = re.compile(
     r"[,;(]?\s*(розмір|размер|size)\s*[:\-]?\s*[\w/\-–]+\)?\s*$|"
-    r"[,;\s]+(xxs|xs|s|m|l|xl|xxl|xxxl|\d{2}(?:-\d{2})?)\s*$", re.I)
+    r"[,;\s]+(xxs|xs|s|m|l|xl|xxl|xxxl|\d{2}(?:-\d{2})?)\s*$", re.IGNORECASE)
 
 def стем_назви(назва):
     """Стем назви для ключа моделі: без явного розміру на хвості, у нижньому регістрі,
@@ -208,7 +208,7 @@ def доступність(o):
 # доки нема живого українського фіду.
 ПОРІГ_ІНТЕРПРЕТОВНОСТІ = 0.5
 
-СМІТТЯ_НАЗВИ = re.compile(r"^\s*(?:!\[\s*image\s*\d*\s*:?\s*|картинка\s+|зображення\s+|фото\s+)+", re.I)
+СМІТТЯ_НАЗВИ = re.compile(r"^\s*(?:!\[\s*image\s*\d*\s*:?\s*|картинка\s+|зображення\s+|фото\s+)+", re.IGNORECASE)
 
 ЦІНА_СТЕЛЯ = 1_000_000.0   # грн; вище — склейка полів жниварки, не ціна
 
@@ -246,10 +246,10 @@ def чиста_назва(назва):
 # Річ без фото після чистки — чесна річ без фото: картка без картинки, опис за
 # назвою, приміряння її пропускає. Це краще за чужу сукню під назвою сережок.
 НЕ_ФОТО = re.compile(r"\.svg(?:$|\?)|/loader|lazy\.|placeholder|no[-_]?image|/cart\.|/stickers/|mainLoader",
-                      re.I)
+                      re.IGNORECASE)
 
 
-МІНІАТЮРА = re.compile(r"-(\d{2,3})x(\d{2,3})\.(?:webp|jpe?g|png)(?:$|\?)", re.I)
+МІНІАТЮРА = re.compile(r"-(\d{2,3})x(\d{2,3})\.(?:webp|jpe?g|png)(?:$|\?)", re.IGNORECASE)
 
 
 def фото_придатне(ф):
@@ -260,12 +260,10 @@ def фото_придатне(ф):
     вердикт 8). GIF Gemini не приймає взагалі. Мініатюра ≤ 120 px — свотч, не фото."""
     if not ф or ф.strip().lower().startswith("data:"):
         return False
-    if re.search(r"\.gif(?:$|\?)", ф, re.I):
+    if re.search(r"\.gif(?:$|\?)", ф, re.IGNORECASE):
         return False
     м = МІНІАТЮРА.search(ф)
-    if м and max(int(м.group(1)), int(м.group(2))) <= 120:
-        return False
-    return True
+    return not (м and max(int(м.group(1)), int(м.group(2))) <= 120)
 
 
 def фото_нормоване(ф):

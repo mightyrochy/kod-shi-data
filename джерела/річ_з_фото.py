@@ -405,7 +405,6 @@ def речі_з_json(сирі, фото=None, досі=None, словами=None
     тоді річ без фото приймається — ід «с1», колір — слово, виміру нема й це сказано у
     вердикті. Без шару їх нема (Ч-4: код її слів не читає)."""
     досі = [dict(р) for р in (досі or []) if isinstance(р, dict) and р.get("ід")]
-    за_ід = {р["ід"]: р for р in досі}
     # СЛОТИ, ПРО ЯКІ ВОНА КАЗАЛА САМА (Р-1): найсильніший свідок закріплення (`чи_її`) і
     # підстава назвати річ з фото «моя». «Відмова» — не назвала, а відмовилась.
     названі = {д["слот"] for д in (словами or []) if д.get("слот") and д.get("стан") != "відмова"}
@@ -578,14 +577,14 @@ def фото_речей():
             ),
             # Причини рядків — у шапці `оцінка_образу` (розділ 2, «ЧОМУ ЦІ РЯДКИ»): там вони виміряні.
             правила=(
-                "List every garment, pair of shoes, bag, accessory and piece of jewelry visible on her photos: one "
-                "object per item. A garment under an open jacket is its own item, and so is each pair of shoes.",
-                "Each photo is a separate picture: \"photo\" is the id from the label right before the image where the "
-                "item itself is drawn. An item seen on several photos is listed once, with the photo where it is seen best.",
-                "\"slot\" and \"kind\" follow the item's own shape, not where it lies on the photo: footwear has a sole and a "
+                ("List every garment, pair of shoes, bag, accessory and piece of jewelry visible on her photos: one "
+                 "object per item. A garment under an open jacket is its own item, and so is each pair of shoes."),
+                ("Each photo is a separate picture: \"photo\" is the id from the label right before the image where the "
+                 "item itself is drawn. An item seen on several photos is listed once, with the photo where it is seen best."),
+                ("\"slot\" and \"kind\" follow the item's own shape, not where it lies on the photo: footwear has a sole and a "
                 "toe, boots also a shaft rising from them; a top has a neckline, shoulders and sleeves or straps; "
                 "a jacket, blazer or coat worn open over another garment is \"outerwear\", the garment under it "
-                "\"top\"; trousers have two legs; a skirt hangs from the waist in one piece.",
+                "\"top\"; trousers have two legs; a skirt hangs from the waist in one piece."),
                 "A photo of shoes alone has no top or bottom: boot shafts are not trouser legs.",
                 "\"frame\" is the item's box on its photo in thousandths of width and height (0–1000), tight "
                 "around the item itself, without background, skin or other items; " + РАМКА_НА_ОКО + ".",
@@ -969,8 +968,8 @@ def _пляма_ядра(m, w, h, ядро):
     Кадр із полем (`пікселіРечіП`) може зачепити сусідню річ: найбільша пляма кадру бувала нею, а не
     річчю. Ядро — тисячні кадру {ліво, верх, право, низ}; без ядра чи без перетину — найбільша пляма."""
     try:
-        x0, x1 = int(w * ядро["ліво"] / 1000.0), int(round(w * ядро["право"] / 1000.0))
-        y0, y1 = int(h * ядро["верх"] / 1000.0), int(round(h * ядро["низ"] / 1000.0))
+        x0, x1 = int(w * ядро["ліво"] / 1000.0), round(w * ядро["право"] / 1000.0)
+        y0, y1 = int(h * ядро["верх"] / 1000.0), round(h * ядро["низ"] / 1000.0)
     except (KeyError, TypeError, ValueError):
         return _найбільша_пляма(m, w, h)
     мітка, всередині, n = [0] * (w * h), {}, 0
@@ -1007,8 +1006,8 @@ def _індекси_середини(w, h, ядро):
         y0, y1 = h * ядро["верх"] / 1000.0, h * ядро["низ"] / 1000.0
     except (KeyError, TypeError, ValueError):
         return []
-    return [y * w + x for y in range(int(y0 + (y1 - y0) / 4), int(round(y1 - (y1 - y0) / 4)))
-            for x in range(int(x0 + (x1 - x0) / 4), int(round(x1 - (x1 - x0) / 4)))]
+    return [y * w + x for y in range(int(y0 + (y1 - y0) / 4), round(y1 - (y1 - y0) / 4))
+            for x in range(int(x0 + (x1 - x0) / 4), round(x1 - (x1 - x0) / 4))]
 
 
 def _середина(rgb, w, h, ядро, m):
@@ -1208,7 +1207,7 @@ def поправка_тла(rgb, m, w, h, стеля=_ПОВ.ТИПОВА_СТЕ
     п = _множники_тла([_медіана([rgb[i][к] for i in рамка]) for к in range(3)], стеля)
     if not п:
         return rgb, None, None
-    return ([tuple(min(255, int(round(p[к] * п[к]))) for к in range(3)) for p in rgb],
+    return ([tuple(min(255, round(p[к] * п[к])) for к in range(3)) for p in rgb],
             round(sum(п) / 3.0, 3), п)
 
 
@@ -1281,7 +1280,7 @@ def виміряти_кроками(пікселі, слово_моделі=None
     # і гілка `_боки_як_ядро` взяла тло за річ: виміряно #8c96a0 тла замість #1d1c1c. Інші гілки (`_тло_за_краєм_фото`, `_рівні_краї`, без поля) свідка не
     # мають: на фото крамниць перемикання там лише шкодили, коли слово хибне (`проби/рамка_слово_свідок_4684.py`).
     if в.get("спір") and гілка == ГІЛКИ_ТЛА[1]:
-        m0, частка0, чому0, _г = yield from _маска_кроками(rgb, w, h, шкіра_lab, пікселі["ядро"], гілки=False)
+        m0, частка0, чому0, _ = yield from _маска_кроками(rgb, w, h, шкіра_lab, пікселі["ядро"], гілки=False)
         в0 = ((yield from _вимір_плями_кроками(rgb, w, h, m0, частка0, чому0, слово_моделі, рамка_виміру, шкіра_lab=шкіра_lab))
               if _у_ядрі(m0, w, h, пікселі["ядро"]) >= ПЛЯМА_В_ЯДРІ else {})
         if _КР.точка_кольору(в0) and not в0.get("спір"):
@@ -1382,7 +1381,7 @@ def виміряти_дотик(пікселі, слово_моделі=None, ш
         return dict(lab=None, маска=0.0, рамка_виміру=рамка, причина=ПРИЧИНА_ДОТИКУ_В_ТЛО, гілка=ГІЛКА_ДОТИКУ,
                     чому="дотик у тло кадру (колір країв фото %s)" % hx_тла, ненадійний=dict(hex=hx_тла))
     if множники:
-        rgb = [tuple(min(255, int(round(p[c] * множники[c]))) for c in range(3)) for p in rgb]
+        rgb = [tuple(min(255, round(p[c] * множники[c])) for c in range(3)) for p in rgb]
     lab = [cs.to_lab(p) for p in rgb]
     пів = max(1, int(min(w, h) * ДОТИК_ПАТЧ))
     патч = [lab[y * w + x] for y in range(max(0, ty - пів), min(h, ty + пів + 1))
@@ -1859,8 +1858,8 @@ def вердикт(річ, F, T, сцен=None, source=ДЖЕРЕЛО_ФОТО_�
             # вже став «краще інша» з іншої причини, не пом'якшується.
             знахідки.append(_РП.зн("K-WEA-01", "soft", "«%s»: %s у дощ псується без обробки" % (_назва(річ), мат),
                                 [річ.get("ід") or "річ"], "умова корпусу (тема-10:1605): мокра погода й %s" % мат,
-                                ремонт=["не в цю погоду БЕЗ обробки — просочити водовідштовхувальним "
-                                        "засобом; АБО ця річ — в суху погоду"]))
+                                ремонт=[("не в цю погоду БЕЗ обробки — просочити водовідштовхувальним "
+                                         "засобом; АБО ця річ — в суху погоду")]))
             рівень = "з умовою" if рівень == "личить" else рівень
             жінці.append(_ВМ.заява("material_in_rain", materials=[
                 _АП.матеріал_вологи_код(dict(матеріал=мат))]))
@@ -2270,9 +2269,8 @@ def картка(з):
     # Крій — канонічним словом (`silhouette.КРОЇ`: «flared»), і поруч тим самим українським
     # напрямом, яким його називає код (`силует_крої.НАПРЯМ_КРОЮ`), — щоб промпт картинки не
     # заводив ДРУГОЇ таблиці слів на те, для чого таблиця в проєкті вже є.
-    if з.get("крій"):
-        if _СК.НАПРЯМ_КРОЮ.get(з["крій"]):
-            риси["крій_словами"] = _СК.НАПРЯМ_КРОЮ[з["крій"]]
+    if з.get("крій") and _СК.НАПРЯМ_КРОЮ.get(з["крій"]):
+        риси["крій_словами"] = _СК.НАПРЯМ_КРОЮ[з["крій"]]
     # ЇЇ СЛОВО ПРО КОЛІР І КРАМНИЦЮ (15938): картка каже, звідки колір (слово, не вимір) і крамниця, коли вона їх назвала
     if риси.get("колір") and з.get("джерело_кольору") == "її слово":
         риси["джерело_кольору"] = "її слово"

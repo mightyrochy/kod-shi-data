@@ -72,7 +72,7 @@ def вага_полотна(р):
             continue
         збіг = [(k, v) for k, v in ТКАНИНА_ВАГА.items() if k in слово]
         if збіг:
-            k, v = max(збіг, key=lambda kv: len(kv[0]))   # найдовший корінь виграє
+            _, v = max(збіг, key=lambda kv: len(kv[0]))   # найдовший корінь виграє
             return слово, v, поле
     return None, None, None
 

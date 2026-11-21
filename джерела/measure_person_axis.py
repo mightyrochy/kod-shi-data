@@ -53,7 +53,7 @@ def main():
     ФІД = _Ф0.каталог_на_диску()   # каталог з диска
 
     # ── фід: тим самим читачем, що й живий шлях ──
-    offers, _діаг = F.читати_yml(ФІД)[:2]
+    offers, _ = F.читати_yml(ФІД)[:2]
     sku = []
     for o in offers:
         колір = (o.get("колір_назва") or o.get("назва") or "").strip()
@@ -89,10 +89,10 @@ def main():
         for схема in СХЕМИ:
             мн = {}; осі = {}
             for кого, гекси in ЛЮДИ.items():
-                Fp, з = рядки(гекси, схема, source)
+                _, з = рядки(гекси, схема, source)
                 тон_рядків = sum(1 for q in з if isinstance(q, dict) and q.get("h_from") is not None)
                 b_рядків = sum(1 for q in з if isinstance(q, dict) and q.get("b_min") is not None)
-                ok, за_сл = пройшло(з)
+                ok, _ = пройшло(з)
                 мн[кого] = ok
                 осі[кого] = (len(з), тон_рядків, b_рядків)
             n = len(одно)

@@ -259,16 +259,16 @@ try {
         Check '2 злитий під час прогону PR входить у наступний план' (2 -in @($plan.scenes.ж1_робота.pr))
         Check '2 попередній опублікований звіт, склад збірки й довіра обмежують план' (@($plan.scenes.ж1_робота).Count -eq 2 -and ($plan.scenes.ж1_робота.pr -join ',') -eq '2,3')
         $context = Add-AutoTaskContext 'Е1-нічний-живий-20261028' 'ніч' $head
-        Check '2 Е1 використовує той самий план' ($context.Contains('ПЛАН ЖИВОГО — ДАНІ') -and $context.Contains((Get-AutoLivePlan $head)))
+        Check '2 давня нічна позначка плану живого не дістає: окремого нічного прогону нема' ($context -ceq 'ніч')
         $report.head.ref = 'gemini/Е1-нічний-живий-20260102'
         $nightPlan = ConvertFrom-Json (Get-AutoLivePlan $head)
-        Check '2 нічний звіт теж задає перевірену збірку' (($nightPlan.scenes.ж1_робота.pr -join ',') -eq '2,3')
+        Check '2 звіт давнього нічного — дані: теж задає перевірену збірку' (($nightPlan.scenes.ж1_робота.pr -join ',') -eq '2,3')
         $report.body = 'Старий звіт без SHA'; $report.head.ref = "gemini/автоживий-$old"
         $stampPlan = ConvertFrom-Json (Get-AutoLivePlan $head)
         Check '2 штамп у назві автоживого без рядка межі не звужує плану: обірваний звіт не губить непрогнаного' (@($stampPlan.scenes.ж1_робота).Count -eq 3)
         $report.head.ref = 'gemini/Е1-нічний-живий-20260102'
         $unknownPlan = ConvertFrom-Json (Get-AutoLivePlan $head)
-        Check '2 нічний звіт без перевіреного SHA не губить питання' (@($unknownPlan.scenes.ж1_робота).Count -eq 3)
+        Check '2 звіт давнього нічного без перевіреного SHA не губить питання' (@($unknownPlan.scenes.ж1_робота).Count -eq 3)
         $report.body = "ПЕРЕВІРЕНО ЗБІРКУ: $future"
         $futurePlan = ConvertFrom-Json (Get-AutoLivePlan $head)
         Check '2 звіт майбутньої збірки не звужує поточний план' (@($futurePlan.scenes.ж1_робота).Count -eq 3)

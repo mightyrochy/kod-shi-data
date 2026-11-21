@@ -41,13 +41,13 @@ def _ядро():
 def _дерево(шлях):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        return ast.parse(io.open(шлях, encoding="utf-8").read())
+        return ast.parse(open(шлях, encoding="utf-8").read())
 
 
 def _коментарі(шлях):
     """[(рядок, текст)] коментарів `#` файлу."""
     з = []
-    with io.open(шлях, encoding="utf-8") as ф:
+    with open(шлях, encoding="utf-8") as ф:
         try:
             for т in tokenize.generate_tokens(ф.readline):
                 if т.type == tokenize.COMMENT:
@@ -92,7 +92,10 @@ class Скан:
         self.ядро = _ядро()
         self.файл = {м: os.path.join(ДЖ, м + ".py") for м in self.ядро}
         self.дерево = {м: _дерево(ф) for м, ф in self.файл.items()}
-        self.рядки = {м: io.open(ф, encoding="utf-8").read().splitlines() for м, ф in self.файл.items()}
+        self.рядки = {}
+        for м, ф in self.файл.items():
+            with open(ф, encoding="utf-8") as файл:
+                self.рядки[м] = файл.read().splitlines()
         self.верхні = {os.path.basename(ф)[:-3] for ф in glob.glob(os.path.join(ДЖ, "*.py"))}
         self.теки = {т: {os.path.basename(ф)[:-3] for ф in glob.glob(os.path.join(ДЖ, т, "*.py"))}
                      for т in ("прилади", "лабораторія", "проби")}
@@ -348,9 +351,7 @@ def п10(с):
                 ч = _число(в)
                 if ч is None or id(в) in службові or ч in _СЛУЖБОВІ_ЧИСЛА:
                     continue
-                if isinstance(в, ast.Constant) and в.col_offset >= 0:
-                    місця.append((с.відн(м, в.lineno), "голе число %r у %s()" % (ч, ф.name)))
-                elif isinstance(в, ast.UnaryOp):
+                if isinstance(в, ast.Constant) and в.col_offset >= 0 or isinstance(в, ast.UnaryOp):
                     місця.append((с.відн(м, в.lineno), "голе число %r у %s()" % (ч, ф.name)))
         for в in с.дерево[м].body:
             if isinstance(в, ast.Assign) and any(isinstance(ц, ast.Name) and _РЕЄСТР.match(ц.id) for ц in в.targets) \
@@ -506,7 +507,7 @@ def п19(с):
     місця = []
     try:
         автори = subprocess.run(["git", "log", "-200", "--no-merges", "--format=%h\t%an\t%s", "--", "index.html"], cwd=КОРІНЬ,
-                                capture_output=True, text=True, timeout=60).stdout.split("\n")
+                                capture_output=True, text=True, timeout=60, check=False).stdout.split("\n")
     except (OSError, subprocess.SubprocessError) as е:
         автори = []
         print("п.19: git log не вдався: %s" % е, file=sys.stderr)
@@ -517,9 +518,10 @@ def п19(с):
             місця.append(("index.html:1", "коміт %s (%s) не від збірки" % (поля[0], поля[1])))
     показ = os.path.join(ДЖ, "показ.html")
     if os.path.exists(показ):
-        for і, р in enumerate(io.open(показ, encoding="utf-8"), 1):
-            if re.search(r"ДОВІДНИК\s*=\s*[\[{]", р):
-                місця.append(("джерела/показ.html:%d" % і, "ДОВІДНИК літералом у показі"))
+        with open(показ, encoding="utf-8") as файл:
+            for і, р in enumerate(файл, 1):
+                if re.search(r"ДОВІДНИК\s*=\s*[\[{]", р):
+                    місця.append(("джерела/показ.html:%d" % і, "ДОВІДНИК літералом у показі"))
     return "виміряно", місця
 
 
@@ -556,7 +558,8 @@ def п21(с):
         except SyntaxError:
             місця.append((os.path.relpath(ф, КОРІНЬ) + ":1", "не розбирається"))
             continue
-        текст = io.open(ф, encoding="utf-8").read()
+        with open(ф, encoding="utf-8") as файл:
+            текст = файл.read()
         if "місць:" in текст or "unittest" in текст:
             continue  # лічильник кореня виходить кодом 0 за `аудит/КОД.md`, провал — це число, не код виходу
         має = any(isinstance(в, (ast.Raise, ast.Assert)) or isinstance(в, ast.Call) and
@@ -576,7 +579,11 @@ def п23(с):
     стандарт сам це каже, тож п.3–5 у CI ніхто не тримає."""
     місця = []
     yml = os.path.join(КОРІНЬ, ".github", "workflows", "zbirka.yml")
-    текст = io.open(yml, encoding="utf-8").read() if os.path.exists(yml) else ""
+    if os.path.exists(yml):
+        with open(yml, encoding="utf-8") as файл:
+            текст = файл.read()
+    else:
+        текст = ""
     for ім in ("досяжність", "audit_contracts"):
         if ім not in текст:
             місця.append((".github/workflows/zbirka.yml:1", "нема кроку %s" % ім))
@@ -593,11 +600,12 @@ def п24(с):
         if not os.path.exists(ф):
             continue
         for в in _дерево(ф).body:
-            if isinstance(в, ast.Assign) and any(isinstance(ц, ast.Name) and re.search("ПРИЛАД|ІНСТРУМЕНТ|НЕ_СИСТЕМА|TOOLS",
-                                                                                        ц.id) for ц in в.targets):
-                if isinstance(в.value, (ast.Tuple, ast.List, ast.Set, ast.Dict, ast.Call)):
-                    місця.append(("джерела/%s.py:%d" % (ім, в.lineno), "власний список приладів %s" %
-                                  ",".join(ц.id for ц in в.targets if isinstance(ц, ast.Name))))
+            if (isinstance(в, ast.Assign) and
+                    any(isinstance(ц, ast.Name) and re.search("ПРИЛАД|ІНСТРУМЕНТ|НЕ_СИСТЕМА|TOOLS", ц.id)
+                        for ц in в.targets) and
+                    isinstance(в.value, (ast.Tuple, ast.List, ast.Set, ast.Dict, ast.Call))):
+                місця.append(("джерела/%s.py:%d" % (ім, в.lineno), "власний список приладів %s" %
+                              ",".join(ц.id for ц in в.targets if isinstance(ц, ast.Name))))
     if len(місця) <= 1:
         return "виміряно", []
     return "виміряно", місця

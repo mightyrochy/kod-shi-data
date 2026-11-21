@@ -53,7 +53,6 @@ def у_пакеті():
             except Exception as _e:
                 import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
                 if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
-                pass
     return зн, стат
 
 
@@ -172,7 +171,6 @@ def прогін():
                         except Exception as _e:
                             import os as _os, traceback as _tb   # п.14: не мовчати (форма bridge)
                             if _os.environ.get("ЛЮСТЕРКО_ТРАСА"): _tb.print_exc()
-                            pass
                     except Exception as e:
                         збої.append(dict(виклик=ім, намір=намір,
                                          гілка=("—" if гілка is None else гілка),

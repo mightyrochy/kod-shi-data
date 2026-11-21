@@ -15,16 +15,21 @@ def main():
                             "вх.json", "стенд_вх.json") if і and os.path.exists(і)), None)
     if _ВХ is None:
         raise SystemExit("нема входу: покладіть стенд_вх.json поруч або дайте шлях аргументом")
-    вх = json.load(open(_ВХ, encoding="utf-8")); вх["сід"] = 4242
+    with open(_ВХ, encoding="utf-8") as файл:
+        вх = json.load(файл)
+    вх["сід"] = 4242
     вх.setdefault("каталог", __import__("feed").каталог_на_диску())
     print("вхід: %s · каталог: %s" % (_ВХ, os.path.basename(вх["каталог"])))
     t = time.time()
     r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
     print("запити: %.0f с · пул %d · стеля K=%s" % (time.time() - t, r["пул_речей"], (r.get("стеля") or {}).get("K")))
     к = r["кандидати"]; ном, _ = PL.номери_речей(к)
-    open("траса/0_рука1_промпт.txt", "w", encoding="utf-8").write(r["руки"]["1"])
-    open("траса/0_рука2_промпт.txt", "w", encoding="utf-8").write(r["руки"]["2"])
-    open("траса/0_рука3_промпт.txt", "w", encoding="utf-8").write(r["руки"]["3"])
+    with open("траса/0_рука1_промпт.txt", "w", encoding="utf-8") as файл:
+        файл.write(r["руки"]["1"])
+    with open("траса/0_рука2_промпт.txt", "w", encoding="utf-8") as файл:
+        файл.write(r["руки"]["2"])
+    with open("траса/0_рука3_промпт.txt", "w", encoding="utf-8") as файл:
+        файл.write(r["руки"]["3"])
     # правила брифа руки 1
     пр = r["правила_рук"]["B"]
     print("\nПРАВИЛА У БРИФІ РУКИ 1: %d рядків; з ID корпусу: %d" % (len(пр), sum(1 for p in пр if p.get("правило"))))
@@ -36,8 +41,8 @@ def main():
     def взяти(слот, умова=None, k=1):
         пул = [x for x in к.get(слот, []) if (умова is None or умова(x))]
         return rnd.sample(пул, min(k, len(пул)))
-    не_чоботи = lambda x: not re.search(r"чобот|черевик|угг|ботил", x["назва"], re.I)
-    чоботи = lambda x: re.search(r"чобот|угг", x["назва"], re.I)
+    не_чоботи = lambda x: not re.search(r"чобот|черевик|угг|ботил", x["назва"], re.IGNORECASE)
+    чоботи = lambda x: re.search(r"чобот|угг", x["назва"], re.IGNORECASE)
     образи = []
     for i in range(4):
         образи.append(("верх+низ %d" % (i + 1), взяти("верх") + взяти("низ") + взяти("взуття", не_чоботи) + взяти("сумка")))
@@ -48,7 +53,8 @@ def main():
     образи.append(("дефект: два взуття", взяти("верх") + взяти("низ") + взяти("взуття", не_чоботи, 2) + взяти("сумка")))
     образи.append(("дефект: сукня і низ", взяти("сукня") + взяти("низ") + взяти("взуття", не_чоботи)))
     текст1 = "".join("ПІДПИС: %s\nОБРАЗ: %s\n" % (п, ", ".join(тег(x["id"]) for x in речі)) for п, речі in образи)
-    open("траса/1_відповідь_моделі_склад.txt", "w", encoding="utf-8").write(текст1)
+    with open("траса/1_відповідь_моделі_склад.txt", "w", encoding="utf-8") as файл:
+        файл.write(текст1)
 
     t = time.time()
     в1 = json.loads(B.виклик("від_моделі", json.dumps(dict(вх, донор=False, текст_моделі=текст1), ensure_ascii=False)))
@@ -61,15 +67,18 @@ def main():
         for з in зн[:6]:
             print("       %-10s %.2f  %s" % (з.get("правило"), float(з.get("сила_нп") or 0), str(з.get("суть") or "")[:95]))
             лічба[з.get("правило")] += 1; сили[з.get("правило")].append(float(з.get("сила_нп") or 0))
-    open("траса/1_вердикт_коду.json", "w", encoding="utf-8").write(json.dumps(в1, ensure_ascii=False, indent=1, default=str))
-    open("траса/2_промпт_ремонту.txt", "w", encoding="utf-8").write(в1["промпт_ремонту"])
+    with open("траса/1_вердикт_коду.json", "w", encoding="utf-8") as файл:
+        файл.write(json.dumps(в1, ensure_ascii=False, indent=1, default=str))
+    with open("траса/2_промпт_ремонту.txt", "w", encoding="utf-8") as файл:
+        файл.write(в1["промпт_ремонту"])
     print("\nПРОМПТ РЕМОНТУ: %d символів; перші 2 200:\n" % len(в1["промпт_ремонту"]) + в1["промпт_ремонту"][:2200])
 
     # ІТЕРАЦІЯ 2: «модель» лишає 5 найкращих без дефектів
     добрі = [о for о in в1["образи"] if not (о.get("блокує") or [])][:5]
     текст2 = "".join("ПІДПИС: ремонт %d\nОБРАЗ: %s\n" % (i, ", ".join(тег(x) for x in о["ід"])) for i, о in enumerate(добрі, 1))
     в2 = json.loads(B.виклик("від_моделі", json.dumps(dict(вх, донор=False, текст_моделі=текст2), ensure_ascii=False)))
-    open("траса/3_промпт_вибору.txt", "w", encoding="utf-8").write(в2["промпт_лише_вибору"])
+    with open("траса/3_промпт_вибору.txt", "w", encoding="utf-8") as файл:
+        файл.write(в2["промпт_лише_вибору"])
     print("\nІТЕРАЦІЯ 2 → ПРОМПТ ВИБОРУ: %d символів; перші 1 800:\n" % len(в2["промпт_лише_вибору"]) + в2["промпт_лише_вибору"][:1800])
 
     # ІТЕРАЦІЯ 3: вибір
@@ -78,7 +87,8 @@ def main():
     в3 = json.loads(B.виклик("від_моделі", json.dumps(dict(вх, донор=False, текст_моделі=текст3), ensure_ascii=False)))
     print("\nІТЕРАЦІЯ 3 → вибір: перевірено=%s, речей=%d, блокує=%s" % (в3.get("перевірено"), len(в3.get("речі") or []), в3.get("блокує")))
     о = json.loads(B.виклик("опис", json.dumps(dict(вх, речі=[x["id"] for x in в3["речі"]], підпис="обраний", свідомі=[]), ensure_ascii=False)))
-    open("траса/4_промпт_опису.txt", "w", encoding="utf-8").write(о["промпт"])
+    with open("траса/4_промпт_опису.txt", "w", encoding="utf-8") as файл:
+        файл.write(о["промпт"])
     print("\nІТЕРАЦІЯ 4 → ПРОМПТ ОПИСУ: фото %d; текст:\n" % len(о.get("фото") or []) + о["промпт"][:1400])
 
     # АКТИВАЦІЯ ПРАВИЛ на 120 випадкових образах без дефектів
@@ -98,10 +108,11 @@ def main():
     print("  %-12s %6s %6s %6s %6s  %s" % ("правило", "образів", "мін", "медіана", "макс", "оцінка"))
     import statistics as st
     for пр_, n in всі.most_common():
-        v = сили_в[пр_]; оц = "СТАЛА — мертве за критерієм 3" if len(set(round(x, 3) for x in v)) == 1 and n >= N * 0.9 else ""
+        v = сили_в[пр_]; оц = "СТАЛА — мертве за критерієм 3" if len({round(x, 3) for x in v}) == 1 and n >= N * 0.9 else ""
         print("  %-12s %6d %6.2f %6.2f %6.2f  %s" % (пр_, n, min(v), st.median(v), max(v), оц))
-    json.dump(dict(правила_брифа=[p.get("правило") for p in пр], активація={k: dict(n=n, мін=min(сили_в[k]), макс=max(сили_в[k])) for k, n in всі.items()}),
-              open("траса/5_активація.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    with open("траса/5_активація.json", "w", encoding="utf-8") as файл:
+        json.dump(dict(правила_брифа=[p.get("правило") for p in пр], активація={k: dict(n=n, мін=min(сили_в[k]), макс=max(сили_в[k])) for k, n in всі.items()}),
+                  файл, ensure_ascii=False, indent=1)
     return 0
 
 

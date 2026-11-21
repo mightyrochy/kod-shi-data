@@ -426,7 +426,7 @@ def _рядок_решітки(р):
     return рядки[р]
 
 
-_ВІДРІЗОК = re.compile(rb"(.)\1*", re.S)
+_ВІДРІЗОК = re.compile(rb"(.)\1*", re.DOTALL)
 
 
 def _види_міток():
@@ -525,8 +525,8 @@ def _ваги(lab, похибка, ролі=False):
                     break
                 if сім is None:
                     continue
-                x0 = j0 if j0 > lo else lo
-                x1 = j1 if j1 < hi else hi
+                x0 = max(lo, j0)
+                x1 = min(hi, j1)
                 if сім == -1:
                     ваги[-1] += f * (префікс[x1 - bз + 1] - префікс[x0 - bз])
                     continue

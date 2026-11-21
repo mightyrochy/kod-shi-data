@@ -220,7 +220,7 @@ def вітрина_ремонту(образи, кандидати, скільк
     # Порядок не косметичний: вузол напруги — це «тут вузько», а блокер структури —
     # «цього образу не покажуть узагалі». Друге сильніше за перше, і коли на слоти
     # бракує бюджету, платити треба за те, без чого картки не буде.
-    _треба, _чому_образів = слоти_повноти(образи, кандидати)
+    _треба, _ = слоти_повноти(образи, кандидати)
     for слот in _треба:
         речі = _вільні(слот, _РЕЄСТР.C["вітрина_блокера"])
         if речі:
@@ -482,8 +482,8 @@ def промпт_вибору(образи, випадок=None, без_фото
     р = [режим[0]] + шапка_вибору(образи, випадок)
     р += [
         "",
-        "Обери ОДИН образ, за який ручаєшся перед нею: найкращий для цього випадку, "
-        "а не з найменшою кількістю зауважень.",
+        ("Обери ОДИН образ, за який ручаєшся перед нею: найкращий для цього випадку, "
+         "а не з найменшою кількістю зауважень."),
         "Далі опиши його для неї:",
     ]
     р += [режим[1]]
@@ -498,8 +498,8 @@ def промпт_вибору(образи, випадок=None, без_фото
         "3. Чому це працює — 3–4 речення.",
         "Останнім рядком — «ОБРАЗ: id, id, …».",
         "У самому описі НЕ пиши id речей і НЕ пиши hex-коди — лише людські слова.",
-        "Якщо в образі є щось нестандартне — як саме це носити, окремим рядком "
-        "«СВІДОМО: <що> — <чому>». Цей рядок жінка побачить як пораду.",
+        ("Якщо в образі є щось нестандартне — як саме це носити, окремим рядком "
+         "«СВІДОМО: <що> — <чому>». Цей рядок жінка побачить як пораду."),
     ]
     # хвіст формату: з фото — частина 2 (зображення на основі фото людини), далі
     # в обох режимах — «не називай чисел світлоти, типів фігури…, лише українською»
@@ -602,27 +602,27 @@ def промпт_вибору(образи, випадок=None, без_фото
         _ВИМ.поле("she_refuses", як="do not choose an outfit that breaks it while there is one that does not"),
     ),
     правила=(
-        "Choose ONE outfit — the one you vouch for before her: the one that best serves her intent as you "
+        ("Choose ONE outfit — the one you vouch for before her: the one that best serves her intent as you "
         "understood it from «case» (her occasion, «intent», «goal», her own words and «language_model_note») "
-        "and her «day».",
-        "Read each outfit first as an idea: what it says, which item carries it, how it meets her occasion and "
+        "and her «day»."),
+        ("Read each outfit first as an idea: what it says, which item carries it, how it meets her occasion and "
         "her day. When «case» names no intent, judge by the occasion, her day and the outfit's own idea — not "
-        "by which outfit is the quietest or the cleanest.",
-        "The code's remarks are information about each outfit, not a score: weigh what each one means for her; "
+        "by which outfit is the quietest or the cleanest."),
+        ("The code's remarks are information about each outfit, not a score: weigh what each one means for her; "
         "do not count them and do not choose by how few remarks an outfit has or how mild they are. A bolder "
-        "outfit that serves her better wins over a quieter one with fewer remarks.",
-        "A finding with «register» «gate» stops the outfit unless you accept it: if the outfit you choose has "
+        "outfit that serves her better wins over a quieter one with fewer remarks."),
+        ("A finding with «register» «gate» stops the outfit unless you accept it: if the outfit you choose has "
         "gates, accept each of them in «accept» with why it serves her here. That is your weighed decision and "
-        "not a reason to pass over the outfit.",
+        "not a reason to pass over the outfit."),
         # знахідки із заявами вибір несе лише в «remarks_by_code» (`дріт_моделі._ремарки_за_кодом`); «or the
         # outfit's «findings»» посилав модель до поля, якого при образі нема, — поруч із «do not invent ids»
-        "You may also keep a remark on purpose: in «accept», name its existing «id» from «remarks_by_code», "
+        ("You may also keep a remark on purpose: in «accept», name its existing «id» from «remarks_by_code», "
         "with a non-empty «why». Accept only findings of the chosen outfit; "
         "do not invent ids. Remarks need no acceptance unless you mean to declare that deliberate choice; "
-        "«your_declared» and the overall «why» do not accept findings by themselves.",
-        "When «case» has «palette_scheme», she chose that scheme herself: an outfit whose large items carry its "
+        "«your_declared» and the overall «why» do not accept findings by themselves."),
+        ("When «case» has «palette_scheme», she chose that scheme herself: an outfit whose large items carry its "
         "families answers her own choice. Pass over such an outfit only when her occasion or day clearly asks for "
-        "it; accepting a gate about her scheme needs a reason stronger than her own choice.",
+        "it; accepting a gate about her scheme needs a reason stronger than her own choice."),
         "Do not choose an outfit with blockers in «structure» while there is one without them.",
         "Do not rewrite the outfit: its only allowed change is «remove».",
     ),
@@ -704,7 +704,7 @@ def склад_вибору(о, словник, за_ном, прибрати=()
     ід = list(запис["ід"])
     прибрано, знехтувано = [], []
     for x in (прибрати or []):
-        з, _н, _ч = _розпізнати_речі(str(x), словник, за_ном)
+        з, _, _ = _розпізнати_речі(str(x), словник, за_ном)
         цілі = [і for і in з if і in ід]
         if not цілі:
             знехтувано.append(dict(річ=str(x), чому="такої речі в обраному образі немає"))
@@ -968,7 +968,7 @@ def _речі_гейтів(гейти, ід, словник, за_ном):
     цілі = []
     for z in гейти:
         for x in (z.get("гейт_речі", z.get("речі")) or []):
-            з, _н, _ч = _розпізнати_речі(str(x), словник, за_ном)
+            з, _, _ = _розпізнати_речі(str(x), словник, за_ном)
             з += [і for і in ід if str(x) in (str((словник.get(і) or {}).get("назва") or "\0"), і)]
             цілі += [і for і in з if і in ід and і not in цілі]
     return цілі
@@ -1094,7 +1094,7 @@ def _ремонт_гейтів(ід, частини, к, кандидати, с�
         return None, None, звіт
     if латка:
         for зміна, в in варіанти:
-            _ід, _дібр, _ні = латка(в)
+            _ід, _дібр, _ = латка(в)
             if _дібр:
                 в[:] = _ід
                 зміна["дібрані"] = _дібр
@@ -1518,10 +1518,10 @@ _ПОЛЯ_БЛОКЕРІВ = (
 )
 _ПОЛЕ_ВІДМОВ_ХОДУ = _ВИМ.поле("she_refuses", як="do not add an item that breaks it")
 _ПРАВИЛА_ХОДІВ = (
-    "A blocker with «options»: put in «add» the item of its «options» that suits this outfit best — one "
-    "item; for a missing top and bottom, a dress, or a top and a bottom.",
-    "A blocker with «items»: put in «keep» the one item that suits the outfit best; the code removes "
-    "the others.",
+    ("A blocker with «options»: put in «add» the item of its «options» that suits this outfit best — one "
+     "item; for a missing top and bottom, a dress, or a top and a bottom."),
+    ("A blocker with «items»: put in «keep» the one item that suits the outfit best; the code removes "
+     "the others."),
 )
 _ВИХІД_ХОДІВ = {
     "fixes[].blocker": "«id» of the blocker, as in «structure.blockers»",
@@ -1554,8 +1554,8 @@ _ВИХІД_ХОДІВ = {
         _ПОЛЕ_ВІДМОВ_ХОДУ,
     ),
     правила=(
-        "Choose ONE outfit — the one you would stand behind for her — and answer EVERY blocker of it with "
-        "«options» or «items»: one entry in «fixes» under the blocker's «id».",
+        ("Choose ONE outfit — the one you would stand behind for her — and answer EVERY blocker of it with "
+         "«options» or «items»: one entry in «fixes» under the blocker's «id»."),
         *_ПРАВИЛА_ХОДІВ,
         "Answer the blockers of that one outfit only.",
         РЯДОК_ЛИШЕ_НОМЕР,
@@ -1592,8 +1592,8 @@ _ВИХІД_ХОДІВ = {
         _ПОЛЕ_ВІДМОВ_ХОДУ,
     ),
     правила=(
-        "Answer EVERY blocker with «options» or «items», in every outfit of «verdict»: one entry in «fixes» "
-        "under the blocker's «id».",
+        ("Answer EVERY blocker with «options» or «items», in every outfit of «verdict»: one entry in «fixes» "
+         "under the blocker's «id»."),
         *_ПРАВИЛА_ХОДІВ,
         РЯДОК_ЛИШЕ_НОМЕР,
     ),
@@ -1801,7 +1801,7 @@ def вердикт_повноти(вердикт, спроба=1, всі=False, 
         return None
     вітрина = в.get("вітрина") or {}
     # Ремонтується переданий обраний образ; без ід — той самий ключ, що у повноти.
-    потрібні, _чому = слоти_повноти(образи, вітрина)
+    потрібні, _ = слоти_повноти(образи, вітрина)
     if not потрібні and not any("слот_двічі" in _коди_структури(о) for о in образи):
         return None
     # ОБРАЗ ТУТ — СКЛАД З ОПИСАМИ РЕЧЕЙ І СТРУКТУРА: знахідки, чекліст і вузол до питання
@@ -1995,7 +1995,7 @@ def _обрано_однозначно(об, вердикт, словник, з�
     if речі is not None:
         свій = set()
         for x in _список(речі):
-            з, _н, _ч = _розпізнати_речі(str(x), словник, за_ном, поле=True)
+            з, _, _ = _розпізнати_речі(str(x), словник, за_ном, поле=True)
             свій |= {і for і in з if і in словник}
         збіги = [о for о in образи if свій and set(склад_вибору(о, словник, за_ном)["ід"]) == свій]
         if len(збіги) == 1:

@@ -42,7 +42,7 @@ def git(*аргументи):
     ним же й читатись — інакше запуск із теки `джерела/` мовчки не знаходить
     файл (той самий клас поломки, що екрановані шляхи)."""
     п = subprocess.run(["git", "-c", "core.quotepath=false", *аргументи], cwd=_КОРІНЬ,
-                        capture_output=True, text=True, encoding="utf-8")
+                        capture_output=True, text=True, encoding="utf-8", check=False)
     if п.returncode != 0:
         raise RuntimeError("git %s: %s" % (" ".join(аргументи), п.stderr.strip()))
     return п.stdout
@@ -67,7 +67,7 @@ def спільний_предок(гілка):
     """Порожньо — спільного предка з `main` нема в ОТРИМАНІЙ історії: `git cherry`
     без нього ненадійний (малює «+» на все), і клас гілки визначає не він."""
     п = subprocess.run(["git", "-c", "core.quotepath=false", "merge-base", ГОЛОВНА, гілка],
-                        cwd=_КОРІНЬ, capture_output=True, text=True, encoding="utf-8")
+                        cwd=_КОРІНЬ, capture_output=True, text=True, encoding="utf-8", check=False)
     if п.returncode not in (0, 1):
         raise RuntimeError("git merge-base %s: %s" % (гілка, п.stderr.strip()))
     return п.stdout.strip() or None
@@ -77,7 +77,7 @@ def є_предком_main(гілка):
     """True — усі коміти гілки вже досяжні з `main` (`git merge-base --is-ancestor`);
     для такої гілки прилад мусить дати «без_вмісту» (cherry на ній завжди порожній)."""
     п = subprocess.run(["git", "-c", "core.quotepath=false", "merge-base", "--is-ancestor", гілка, ГОЛОВНА],
-                        cwd=_КОРІНЬ, capture_output=True, text=True, encoding="utf-8")
+                        cwd=_КОРІНЬ, capture_output=True, text=True, encoding="utf-8", check=False)
     if п.returncode not in (0, 1):
         raise RuntimeError("git merge-base --is-ancestor %s: %s" % (гілка, п.stderr.strip()))
     return п.returncode == 0
@@ -110,7 +110,7 @@ def дати_і_файли_комітів(коміти):
 
 def файли_що_відрізняються(гілка):
     """Повний список файлів, де ВМІСТ гілки і `main` зараз різний (не лише наявність)."""
-    return set(р for р in git("diff", "--name-only", ГОЛОВНА, гілка).splitlines() if р)
+    return {р for р in git("diff", "--name-only", ГОЛОВНА, гілка).splitlines() if р}
 
 
 def дата_main_на_шляху(шлях):
@@ -203,7 +203,8 @@ def main():
 
     сесії = None
     if нс.сесії:
-        сесії = json.load(open(нс.сесії, encoding="utf-8"))
+        with open(нс.сесії, encoding="utf-8") as файл:
+            сесії = json.load(файл)
     фільтр = [б.strip() for б in нс.гілки.split(",")] if нс.гілки else None
 
     мілкий = мілкий_клон()

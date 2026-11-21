@@ -270,7 +270,8 @@ def діф_змісту(а, б):
 
 
 def прочитати_зміст(шлях):
-    текст = open(шлях, encoding='utf-8').read()
+    with open(шлях, encoding='utf-8') as файл:
+        текст = файл.read()
     return json.loads(текст) if шлях.endswith('.json') else зміст(текст)
 
 
@@ -300,7 +301,9 @@ def main(арг):
         sys.exit(1 if діф(*а.діф, ліміт=а.ліміт) else 0)
     if not а.знімок:
         р.error('потрібен знімок або --діф А Б')
-    з = зміст(open(а.знімок, encoding='utf-8').read())
+    with open(а.знімок, encoding='utf-8') as файл:
+        з = зміст(файл.read())
     if а.json:
-        open(а.json, 'w', encoding='utf-8').write(json.dumps(з, ensure_ascii=False, sort_keys=True, separators=(',', ':')))
+        with open(а.json, 'w', encoding='utf-8') as файл:
+            файл.write(json.dumps(з, ensure_ascii=False, sort_keys=True, separators=(',', ':')))
     print(текстом(з))

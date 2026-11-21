@@ -37,7 +37,7 @@ import sys
 ТЕКА = Path(__file__).resolve().parent
 ВІДБИТКИ = ТЕКА / 'річ_запис_дані' / 'її_річ_відбитки.json'
 ПЕРЕКЛАД = ТЕКА / 'річ_запис_її_річ_переклад.cjs'
-_ЗАПИС = re.compile(r"── ПРОМПТ \(\d+ симв\.\) ──\n(.*)\n\n── ВІДПОВІДЬ \(([^\n]*)\) ──\n(.*)\n$", re.S)
+_ЗАПИС = re.compile(r"── ПРОМПТ \(\d+ симв\.\) ──\n(.*)\n\n── ВІДПОВІДЬ \(([^\n]*)\) ──\n(.*)\n$", re.DOTALL)
 _ВИДИ = (('_хід_розмови', 'розмова'), ('_хід_плиток', 'плитки'), ('_речі_з_фото_шар', 'фото'))
 _УРИВОК = re.compile(r'("quote"\s*:\s*)"((?:[^"\\]|\\.)*)"')
 _СЛОВО = re.compile(r'\w{2,}')
@@ -112,7 +112,7 @@ def обʼєкт(т):
     try:
         return json.loads(т)
     except ValueError:
-        м = re.search(r'\{.*\}', т, re.S)
+        м = re.search(r'\{.*\}', т, re.DOTALL)
         try:
             return json.loads(м.group(0)) if м else None
         except ValueError:
@@ -247,7 +247,7 @@ def переклад(корінь, джерела, картки):
         return []
     вих = subprocess.run(['node', str(ПЕРЕКЛАД)], cwd=корінь, capture_output=True, text=True, timeout=600,
                          input=json.dumps(dict(джерела=str(джерела), картки=картки),
-                                          ensure_ascii=False, default=str))
+                                          ensure_ascii=False, default=str), check=False)
     if вих.returncode:
         raise RuntimeError(f'переклад картки: код {вих.returncode}: {вих.stderr[-2000:]}')
     return json.loads(вих.stdout.strip().splitlines()[-1])
@@ -269,7 +269,7 @@ def один(шлях, вид, прочитане, модулі, джерела)
         print(f'{шлях}: запис лише в одному з прогонів за кожного збурення (існування — поза класом): '
               f'{", ".join(sorted(поодинокі))}', file=sys.stderr)
     вих, бачено = [], set()
-    for запис, шлях_поля, ключ, значення in поля.values():
+    for _, _, ключ, значення in поля.values():
         місце = слід.місце(ключ, значення)
         if not місце:
             raise AssertionError(f'{шлях}: «{значення}» ({ключ}) залежить від уривка, але кадру, що його записав, '

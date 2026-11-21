@@ -278,7 +278,8 @@ def main(argv=None):
     р.add_argument("--докладно", action="store_true")
     а = р.parse_args(argv)
 
-    вх_база = json.load(open(а.вхід, encoding="utf-8"))
+    with open(а.вхід, encoding="utf-8") as ф:
+        вх_база = json.load(ф)
     # ШЛЯХ ДО КАТАЛОГУ — ЧЕРЕЗ `feed.каталог_на_диску`, а не голим іменем: у git
     # лежить `каталог_brief.xml.gz` (261 КБ), розпакований файл у `.gitignore`.
     # `bridge._каталог_із` бере `d["каталог"]` як є і .gz не знає, тож на чистому
@@ -293,7 +294,8 @@ def main(argv=None):
     вх_база["кеш_кольорів"] = os.path.join(tempfile.gettempdir(),
                                            "кеш_живого_шляху.json")
     if not os.path.exists(вх_база["кеш_кольорів"]):
-        json.dump({}, open(вх_база["кеш_кольорів"], "w"))
+        with open(вх_база["кеш_кольорів"], "w") as ф:
+            json.dump({}, ф)
 
     print("=" * 78)
     print("ЖИВИЙ ШЛЯХ: паспорт → палітри → запити → від_моделі → опис → показ")

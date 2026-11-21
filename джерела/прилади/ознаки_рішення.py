@@ -534,10 +534,10 @@ def _чиста_функція(ф, глибина=0, чистий_виклик=N
             continue
         if isinstance(в, (ast.Global, ast.Nonlocal, ast.Try, ast.With, ast.Yield, ast.Raise)):
             return None
-        if isinstance(в, ast.Constant) and isinstance(в.value, str):
+        if isinstance(в, ast.Constant) and isinstance(в.value, str) \
+                and not (вузол.body and isinstance(вузол.body[0], ast.Expr) and вузол.body[0].value is в):
             # лише рядок-документація: перший вираз тіла
-            if not (вузол.body and isinstance(вузол.body[0], ast.Expr) and вузол.body[0].value is в):
-                return None
+            return None
         if isinstance(в, ast.Subscript) and isinstance(в.value, ast.Name) and isinstance(в.ctx, ast.Load) \
                 and (в.value.id in параметри or в.value.id in ф.локальні) and isinstance(в.slice, ast.Constant) \
                 and type(в.slice.value) is int:

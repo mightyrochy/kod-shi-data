@@ -8,7 +8,7 @@
 import json, os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import areas, похибка_вимірів_тіла as П  # noqa: E402
+import areas, похибка_вимірів_тіла as П
 
 збої = []
 
@@ -31,8 +31,7 @@ def main():
 const Екран = {дія() {}, слухати() {}, малювач() {}};
 const document = {querySelectorAll() { return []; }};
 """
-    код = "\n".join((оточення, профілі, форма,
-                     "console.log(JSON.stringify([ПОЛЯ_ОБХВАТІВ, ПОЛЯ_ПРОФІЛЮ]));"))
+    код = f"{оточення}\n{профілі}\n{форма}\nconsole.log(JSON.stringify([ПОЛЯ_ОБХВАТІВ, ПОЛЯ_ПРОФІЛЮ]));"
     пари, поля = json.loads(subprocess.check_output(
         ["node", "--input-type=commonjs", "-"], input=код, encoding="utf-8"))
     обхвати = П.РЕЄСТР["обхват"]
