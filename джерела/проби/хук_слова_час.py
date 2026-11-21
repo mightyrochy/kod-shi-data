@@ -12,9 +12,10 @@ import importlib.util, io, json, os, subprocess, sys, tempfile
 ]
 with tempfile.TemporaryDirectory() as д:
     т = os.path.join(д, "t.jsonl")
-    open(т, "w", encoding="utf-8").write("\n".join(json.dumps(р, ensure_ascii=False) for р in рядки))
+    with open(т, "w", encoding="utf-8") as файл:
+        файл.write("\n".join(json.dumps(р, ensure_ascii=False) for р in рядки))
     вивід = subprocess.run([sys.executable, "-X", "utf8", шлях], input=json.dumps({"source": "compact", "transcript_path": т}),
-                           capture_output=True, text=True, encoding="utf-8").stdout
+                           capture_output=True, text=True, encoding="utf-8", check=False).stdout
 print(вивід)
 доставка = sum(х in вивід for х in ("05:17 UTC", "05:25 UTC"))
 переказ = "інша роль шле" in вивід

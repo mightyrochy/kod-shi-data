@@ -12,7 +12,9 @@ import склад
 сторонні = {f[:-3]: d for d in (".", os.path.join("..", "zhnyvarka")) for f in os.listdir(d) if f.endswith(".py")}
 знайдено = []
 for м in sorted(пакет):
-    for в in ast.walk(ast.parse(open(м + ".py", encoding="utf-8").read())):
+    with open(м + ".py", encoding="utf-8") as файл:
+        модуль = ast.parse(файл.read())
+    for в in ast.walk(модуль):
         імена = ([а.name for а in в.names] if isinstance(в, ast.Import)
                  else [в.module] if isinstance(в, ast.ImportFrom) and в.level == 0 and в.module else [])
         for ім in (і.split(".")[0] for і in імена):

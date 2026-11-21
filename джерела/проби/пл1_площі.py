@@ -6,7 +6,8 @@ if len(sys.argv) < 2:   # прилад над звітом стенда, не п
     sys.exit(print("НЕ ВИМІРЯНО: потрібен звіт стенда РВ-6 аргументом (ZVIT_OUT рв6_стенда.txt)"))
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import bridge as B, composer as КМ, fit as ПС, outfit as O, pipeline as PL, colorspace as cs, gate_площі as G
-B.виклик("запити", json.dumps(dict(json.load(open("стенд_вх.json")), сценарій=G.СЦЕНАРІЇ["офіс·18°C"], випадок="пл1")))
+with open("стенд_вх.json") as файл:
+    B.виклик("запити", json.dumps(dict(json.load(файл), сценарій=G.СЦЕНАРІЇ["офіс·18°C"], випадок="пл1")))
 кат = {x["id"]: x for x in B.каталог_останнього_пакета()}
 T = ПС.тіло(168.0, dict(плечі=98., груди=92., талія=74., стегна=99.))
 F = cs.features(cs.hx("#deb295"), cs.hx("#f1dbaa"), cs.hx("#759087"))
@@ -18,7 +19,9 @@ def знахідки(o):
     elif isinstance(o, list):
         for x in o: yield from знахідки(x)
 ч, без_виміру, джерела, прав = collections.Counter(), collections.Counter(), collections.Counter(), collections.Counter()
-for в in json.load(open(sys.argv[1], encoding="utf-8"))["прогони"][0]["вердикти"]:
+with open(sys.argv[1], encoding="utf-8") as файл:
+    вердикти = json.load(файл)["прогони"][0]["вердикти"]
+for в in вердикти:
     if в["рука"] not in ("1", "2"): continue
     for к in в["етапи"]["виклики"]:
         for о in к.get("образи_кроку") or []:
