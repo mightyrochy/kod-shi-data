@@ -1,0 +1,30 @@
+── ПРОМПТ (2232 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Midi sheath dress in a flowing, drape-cut silhouette with a subtle V-neckline for comfort and ease of movement. Length ends at mid-calf to balance elegance with relaxation, crafted in soft crepe fabric in Deep Moss Green (#2D4639). Silk slip sandals with a moderate heel in the same Deep Moss Green (#2D4636) ensure stability while recovering health. A delicate gold pendant necklace adds a touch of sparkle without feeling overwhelming or restrictive. This outfit respects your wish to avoid forced style by prioritizing comfort and breathability, allowing you to feel grounded rather than dressed up for the occasion. The single-color column creates a streamlined, graceful line that flatters the body during recovery, while the autumnal green hue suits the upscale restaurant setting. It harmonizes perfectly with your partner's tuxedo through refined elegance rather than matching colors, honoring your request against tight stockings by keeping the silhouette natural and airy."}
+
+── ВІДПОВІДЬ (576 симв., 3.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Midi sheath dress",
+      "details": "flowing drape-cut silhouette with subtle V-neckline, mid-calf length in soft crepe fabric",
+      "slot": "dress",
+      "color_hex": "#2D4639",
+      "worn": true
+    },
+    {
+      "name": "Silk slip sandals",
+      "details": "moderate heel",
+      "slot": "shoes",
+      "color_hex": "#2D4636",
+      "worn": true
+    },
+    {
+      "name": "Gold pendant necklace",
+      "details": "delicate",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
