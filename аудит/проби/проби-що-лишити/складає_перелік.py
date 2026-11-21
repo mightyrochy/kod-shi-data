@@ -76,8 +76,9 @@ def токени(текст, дозволити_glob):
 def збіг(токен, шлях, glob):
     """Токен називає шлях: повний, без `джерела/`, хвіст за межею `/` чи голе ім_я."""
     if glob:
-        return any(fnmatch.fnmatchcase(в, токен) or fnmatch.fnmatchcase(в, "*/" + токен)
-                   for в in (шлях, шлях[len("джерела/"):]))
+        ре = re.compile("".join(".*" if ч == "**" else "[^/]*" if ч == "*" else "[^/]" if ч == "?" else re.escape(ч)
+                                for ч in re.split(r"(\*\*|\*|\?)", токен) if ч))  # `*` не перетинає `/`
+        return any(ре.fullmatch(в) for в in (шлях, шлях[len("джерела/"):]))
     return шлях == токен or шлях.endswith("/" + токен)
 
 
@@ -216,6 +217,7 @@ def головна():
     # (а) workflow і скрипти в .github/
     гх = [ш for ш in усі if ш.startswith(".github/") and ш.endswith((".yml", ".yaml", ".sh", ".py"))]
     def без_коментарів(текст):  # рядок `# …` чи хвіст ` # …` — не виклик
+        текст = re.sub(r"(?m)^\s*-\s*['\"][^'\"]*\*\*[^'\"]*['\"]\s*$", " ", текст)  # фільтр `paths:` — не виклик
         return re.sub(r"(?m)(^|\s)#.*$", " ", текст)
 
     for ш, дж in названі([(д, без_коментарів(читати(д))) for д in гх], обсяг, True).items():
