@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured wool-blend blazer with notched lapels and a relaxed fit in deep forest green (#1a3c34).\\nHigh-waisted pleated trousers in heavy cotton twill, mid-thigh length, charcoal gray (#2f3538), brushed fabric.\\nSilk-finish blouse with a subtle point collar and French seams, crisp white (#ffffff).\\n\\nLeather chukka boots with a low block heel, round toe, espresso brown (#4b3621).\\nA thin silk scarf with geometric lines in rust (#b75c09) and cream to add a warm accent.\\n\\nThis outfit works because the deep green blazer and charcoal trousers create a sophisticated, cohesive palette that grounds her fair skin tone while providing essential warmth against the frosty morning snow. The structured cut of the wool-blend jacket maintains a professional silhouette suitable for an office environment without feeling restrictive during a twenty-minute walk to work. A touch of rust in the scarf introduces an autumnal pop of color that balances the cool tones of the clothing and complements her dark hair and eyes, ensuring she looks polished yet comfortable in the cold weather.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"blazer\\\",\\\"details\\\":\\\"structured wool-blend with notched lapels and relaxed fit\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#1a3c34\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"trousers\\\",\\\"details\\\":\\\"high-waisted pleated heavy cotton twill mid-thigh length brushed fabric\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#2f3538\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"blouse\\\",\\\"details\\\":\\\"silk-finish with subtle point collar and French seams\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#ffffff\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"boots\\\",\\\"details\\\":\\\"leather chukka with low block heel round toe\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#4b3621\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"scarf\\\",\\\"details\\\":\\\"thin silk with geometric lines in rust and cream\\\",\\\"slot\\\":\\\"scarf\\\",\\\"color_hex\\\":\\\"#b75c09\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":591,\"output_tokens\":208},\"stop_reason\":\"end_turn\"}"
+ }
+}
