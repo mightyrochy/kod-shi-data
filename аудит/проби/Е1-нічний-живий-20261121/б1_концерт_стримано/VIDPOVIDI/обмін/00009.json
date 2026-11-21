@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"sources\": {\"wishes\": {\"kind\": \"reading\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"formality_branch\": {\"kind\": \"reading\"}, \"accent_place\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\"}, \"mood\": {\"kind\": \"reading\"}, \"unknown\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}}, \"event\": \"рок-концерт у клубі, п'ятниця ввечері, стоятиму в натовпі\", \"part_of_day\": \"evening\", \"wishes\": [\"хочу стримано й класично\"], \"mood\": [\"стримано\", \"класично\"], \"occasion\": \"theatre\", \"formality_branch\": \"social\", \"open_zones\": \"two\", \"accent_place\": \"clothing\", \"formality\": [\"smart\"], \"season\": \"autumn\", \"light\": \"artificial\"}, \"person\": {\"skin_hex\": [\"#e3c3a2\", \"#dcb995\", \"#e9ccae\"], \"hair_hex\": \"#1b1815\", \"eyes_hex\": \"#4a2f1f\", \"height_cm\": 154, \"girths_cm\": {\"shoulders\": 90, \"bust\": 84, \"waist\": 64, \"hips\": 88}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Charcoal wool-blend blazer, structured single-breasted cut with notch lapels, length ending at the hip, color #36454F.\\nIvory silk-cambric blouse, classic pointed collar and French cuffs, cropped slightly above the waistline, color #FFFFF0.\\nHigh-waisted pleated midi skirt in matte fabric, A-line silhouette falling to mid-calf, color #2C2C2C.\\nPointed-toe leather pumps with a moderate heel, sleek silhouette, color #1A1A1A.\\nMatte black clutch bag, rectangular structured shape, color #000000.\\nThin silver chain necklace and simple stud earrings to complete the look, metallic finish, color #E8E8E8.\\nThis outfit embodies a restrained and classic aesthetic perfectly suited for an evening at a rock concert where standing in a crowd is anticipated. The structured blazer and pleated skirt provide a timeless silhouette that balances the energetic atmosphere with a touch of sophisticated elegance. By sticking to a monochromatic palette of charcoal, ivory, and black, the ensemble maintains the requested understated vibe while ensuring visibility and comfort through movement-friendly cuts like the pleats.\"}],\"usage\":{\"input_tokens\":795,\"output_tokens\":254},\"stop_reason\":\"end_turn\"}"
+ }
+}
