@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Стенд смуг (М.9-Е): шість позначок на одному коміті — по дві Codex, agy і Claude Code, одна з них GPU, пріоритети
 # різні, одна agy (Gemini 4 Argon) — на нульовій квоті; /usage — у форматі живого agy 1.4.7. Підроблені CLI тримають
-# наряд FAKE_HOLD с і пишуть start/end у часову лінію — з неї міряємо, що йшло водночас.
+# наряд і пишуть start/end у часову лінію — з неї міряємо, що йшло водночас. Наряд, чий перетин міряється (А, В, Г),
+# тримається за подією, а не за сном: FAKE_QUORUM=N — до N стартів у лінії (fake_timeline.py); решта — FAKE_HOLD с.
 #   ДО:    LANES_MODE=do SRC=<тека зі старими gemini_run.ps1 і claude_run.ps1> — позначки без умов (старі скрипти умов не
 #          знають), проходи, як задачі планувальника: gemini-run і claude-run водночас, кожен по позначці за прохід.
 #   ПІСЛЯ: ці скрипти — планувальники gemini-run і claude-run водночас; прохід після «скидання» квоти без нової позначки;
@@ -21,7 +22,7 @@ setup() { W="${TMPDIR:-/tmp}/smuhy/$1"; rm -rf "$W"; mkdir -p "$W"/{fake,gr,gout
    printf '{"v":1,"claude_laptop":["д-claude"]}\n' > аудит/адаптери/gemini/смуги.json
    git add -A; git commit -q -m init; git push -q origin main 2>/dev/null)
   for c in clone-g clone-c; do git clone -q "$W/origin.git" "$W/$c" 2>/dev/null; git -C "$W/$c" config user.name g; git -C "$W/$c" config user.email g@x; done
-  export FAKE_STATE="$(wp "$W/fake")" FAKE_TIMELINE="$(wp "$W/timeline.txt")" FAKE_HOLD="$HOLD" FAKE_SCENARIO=commit_done \
+  export FAKE_STATE="$(wp "$W/fake")" FAKE_TIMELINE="$(wp "$W/timeline.txt")" FAKE_HOLD="$HOLD" FAKE_QUORUM=0 FAKE_SCENARIO=commit_done \
     FAKE_CC_SCENARIO=done FAKE_CC_RL=1 FAKE_USAGE=live FAKE_CC_LOG="$(wp "$W/cc.log")" FAKE_GH_DIR="$(wp "$W/gh")" FAKE_BOOT=b1 \
     FAKE_GEMINI_STATE= FAKE_CLAUDE_LOG="$(wp "$W/claude.log")" FAKE_ISOLATION=
   printf 'b1' > "$W/cr/boot.txt"; }
@@ -88,7 +89,7 @@ if [ "$MODE" = do ]; then
 fi
 
 echo "=== А: шість позначок на одному коміті — смуги водночас, до N у смузі, за пріоритетом; Argon на 0 % чекає скидання"
-setup a; export FAKE_ZERO_UNTIL=$(( $(date +%s) + 45 ))
+setup a; export FAKE_ZERO_UNTIL=$(( $(date +%s) + 45 )) FAKE_QUORUM=5  # п'ять нарядів стартують у першому проході: 2 + 1 + 2
 for m in "а-codex/$CX/1/p2" "б-codex/$CX/1/p1" "в-agy/$AG/1/p3" "г-agy-квота/$AQ/1/p0" "д-claude/$CC/1/p4" "е-claude-gpu/$CC/1/p1-gpu"; do mark "$m"; done
 T0=$(date +%s); gem & cr & wait; T1=$(date +%s)
 echo "  перший прохід планувальників: $((T1 - T0)) с; найбільше водночас: усього $(tl total), codex $(tl codex), agy $(tl agy), claude $(tl claude)"
@@ -111,6 +112,7 @@ pub; L=$(lines)
 NQ=$(echo "$L" | grep -c "ЗАБЛОКОВАНО gemini/г-agy-квота QUOTA0_GEMINI4ARGON_M")
 chk "Argon: рядок QUOTA0_GEMINI4ARGON_M<хв> диспетчерові — один (є: $NQ)" '[ "$NQ" = 1 ]'
 while [ "$(date +%s)" -le "$FAKE_ZERO_UNTIL" ]; do sleep 2; done
+FAKE_QUORUM=0
 gem; pub; L=$(lines)
 chk "після «скидання» Argon узято тією ж смугою без нової позначки → ГОТОВО" '[ "$(git -C "$W/origin.git" for-each-ref refs/heads/gemini-queue | grep -c agy-квота)" = 1 ] && echo "$L" | grep -q "ГОТОВО gemini/г-agy-квота "'
 N5=$(echo "$L" | grep -cE "ГОТОВО (gemini|claude)/(а-codex|б-codex|в-agy|д-claude|е-claude-gpu) ")
@@ -130,7 +132,7 @@ setup c; export FAKE_ZERO_UNTIL=0
 mark "n-codex-1/$CX/1"; mark "n-codex-2/$CX/1"; gem; A1=$(tl codex)
 (cd "$W/seed"; lanes 2 2 2 > аудит/адаптери/gemini/смуги.json
  git commit -q -am 'смуги 2'; git push -q origin main 2>/dev/null)
-: > "$W/timeline.txt"; mark "n-codex-3/$CX/1"; mark "n-codex-4/$CX/1"; gem; A2=$(tl codex)
+: > "$W/timeline.txt"; mark "n-codex-3/$CX/1"; mark "n-codex-4/$CX/1"; export FAKE_QUORUM=2; gem; A2=$(tl codex)
 (cd "$W/seed"; lanes 99 2 2 > аудит/адаптери/gemini/смуги.json; git commit -q -am 'смуги 99'; git push -q origin main 2>/dev/null)
 git -C "$W/clone-g" fetch -q origin main 2>/dev/null
 CE=$("$PW" -NoProfile -c ". '$(wp "$SRC/queue_lanes.ps1")'; \$RepoDir='$(wp "$W/clone-g")'; \$GitExe='git'; \$script:NoHooks='x'; function Write-Log {}; (Get-Limits).slots['codex']" 2>/dev/null | tr -d '\r')
@@ -140,7 +142,7 @@ chk "дані не перевищують стелі коду (99 → 64)" '[ "$
 
 echo "=== Г: смуги.json задає 6 і 8 слотів, усі наряди справді працюють водночас"
 for N in 6 8; do
-  setup "slots-$N"; export FAKE_ZERO_UNTIL=0; export FAKE_HOLD=30
+  setup "slots-$N"; export FAKE_ZERO_UNTIL=0 FAKE_QUORUM=$N; B0=$BAD
   (cd "$W/seed"; mkdir -p аудит/адаптери/gemini
    lanes "$N" 0 0 > аудит/адаптери/gemini/смуги.json
    for ((i=1; i<=N; i++)); do printf 'Т | наряд\n' > "аудит/наряди/n-codex-$i.md"; done
@@ -159,6 +161,8 @@ print(sum(json.loads(p.read_text(encoding='utf-8-sig')).get('code') == 'DONE'
 P
 )
   chk "worker опублікував $N результатів DONE (є: $DONE)" '[ "$DONE" = "$N" ]'
+  [ "$BAD" = "$B0" ] || { echo "  діагностика: стартів $(grep -c '^start ' "$W/timeline.txt"), кінців $(grep -c '^end ' "$W/timeline.txt"); wrapper.log:"
+    grep -E 'не запущено|збій|прохід:|нема вільного|слот ' "$W/gr/wrapper.log" | cut -c1-200 | head -20 | sed 's/^/    /'; }
 
 done
 
