@@ -78,8 +78,8 @@ import міст_помічниця as _МП  # запобіжник обіцян
                  "do not contradict it"),
     ),
     правила=(
-        "Answer exactly what she asked about her look: whether the item suits her and this "
-        "occasion, and what to wear it with.",
+        ("Answer exactly what she asked about her look: whether the item suits her and this "
+         "occasion, and what to wear it with."),
         # Без жодної її речі відповідь хвалила «цю куртку» й «Мінськ»,
         # «без пальта» — ні речі, ні міста, ні пальта в її словах і в `case` не було.
         "When she has shown or described no item, speak of no particular item.",

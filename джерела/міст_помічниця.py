@@ -87,16 +87,16 @@ import сценарій as _ПОГОДА  # смуга вітру за бало�
                  як="do not present them as her choice or build advice on them; if one matters, ask her"),
     ),
     правила=(
-        "Answer her question: what an element means and what it is for, how the code uses it, what "
-        "to do next, what is still missing to build outfits.",
+        ("Answer her question: what an element means and what it is for, how the code uses it, what "
+         "to do next, what is still missing to build outfits."),
         "One to four sentences, without headings or lists unless she asks for a list.",
         "If the answer is in neither \"app\" nor \"state\", say so in one sentence.",
         _ВИМ.БЕЗ_КАТАЛОГУ,
-        "You cannot change anything in the app: tell her what to tap or type, quoting its label "
-        "from \"app\".",
-        "Do not promise to remember or take into account anything she writes here, or to add it to "
-        "an outfit: it does not go into building. If she describes her own item or a wish for her "
-        "outfits, tell her to write it in the chat on the case screen.",
+        ("You cannot change anything in the app: tell her what to tap or type, quoting its label "
+         "from \"app\"."),
+        ("Do not promise to remember or take into account anything she writes here, or to add it to "
+         "an outfit: it does not go into building. If she describes her own item or a wish for her "
+         "outfits, tell her to write it in the chat on the case screen."),
         # мова відповіді — межа `для_неї` (договір людського виходу, `людський_вихід`, крок 3.6)
     ),
     вихід="APP_ANSWER",

@@ -31,14 +31,14 @@ _ОПИСИ_GOAL_EXTRA = {"вище": "a longer line, to look taller", "комф
                         "keep these zones quiet; the rest of the look follows goal"),
     "case.her_words": ("what she asked for in her own words", ""),
     "case.her_other_words": ("the rest of what she said, which no field of «case» carries", "it is part of her case"),
-    "case.language_model_note": ("the language model's note on her words about the event, when they are hard to "
-                                 "read without context",
+    "case.language_model_note": (("the language model's note on her words about the event, when they are hard to "
+                                  "read without context"),
                                  "it explains her words and does not replace them: where they differ, her words win"),
     "day": ("day with source", ""),
     "person": ("her coloring, palette and body", ""),
     "she_refuses": ("what she refused", ""),
-    "style_rules": ("what the code measured about her and this case, her own answers and wishes: each entry is "
-                    "{code, values, …}; codes are defined in \"statement_codes\"", ""),
+    "style_rules": (("what the code measured about her and this case, her own answers and wishes: each entry is "
+                     "{code, values, …}; codes are defined in \"statement_codes\""), ""),
     "outfits_wanted": ("how many outfits to return: exactly this many", ""),
     "item_keys": ("what the keys in «candidates» mean, and defaults for omitted values",
                   "read every item by these keys; restore every absent key that has an `absent =` default"),
