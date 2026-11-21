@@ -824,10 +824,11 @@ function Get-AutoReviewState([string]$Slug) {
     }
 }
 
-function Enter-ReviewWait($M, [string]$Head = '', [string]$Cause = $script:ReviewApiCause) {
+function Enter-ReviewWait($M, [hashtable]$Resume = @{}, [string]$Cause = $script:ReviewApiCause) {
     <# Повертає позначку після відмови REST чи вичерпання бюджету без збільшення retakes і кінцевого звіту. Ознака причини
-    (Get-AutoReviewState) іде в стан позначки (`reason`) і в рядок журналу, щоб позначка, що не стартує, мала пояснення. #>
-    [void](Set-MarkerWait $M ((Get-ReviewTime) + $script:ReviewApiBackoff) @{group='REVIEW_API';head=$Head;reason=$Cause})
+    (Get-AutoReviewState) іде в стан позначки (`reason`) і в рядок журналу, щоб позначка, що не стартує, мала пояснення.
+    $Resume — продовження попередньої спроби (Get-WaitResume), чекання його переносить. #>
+    [void](Set-MarkerWait $M ((Get-ReviewTime) + $script:ReviewApiBackoff) (@{group='REVIEW_API';reason=$Cause} + $Resume))
     Write-Log "позначка $($M.Name): REVIEW_API ($Cause); спроба збережена, повтор у черзі"
 }
 
@@ -839,15 +840,15 @@ function Get-PlanFailReason([string]$Message) {
     'PLAN_ERROR'
 }
 
-function Enter-PlanWait($M, [string]$Reason, [string]$Head = '') {
+function Enter-PlanWait($M, [string]$Reason, [hashtable]$Resume = @{}) {
     <# Збій побудови плану живого (Add-AutoTaskContext для автоживого). Бюджет запитів вичерпано (AUTO_BUDGET) — це не
     вада, а чекання вікна: як REVIEW_API, без лічильника. Решта — окреме чекання PlanBackoff с з лічильником retakes
     (спільна межа MaxRetakes): повертає $false, коли межу вичерпано і чекання не записано, — викликач кінчає наряд
     кодом PLAN_FAILED, який будить диспетчера (не тихий REVIEW_API без кінця). #>
     # Автоперевірка PR (не план): її збій API лишається REVIEW_API — повтор у черзі під бюджетом, як і було.
-    if ($M.Slug -cnotmatch '^автоживий-[0-9a-f]{40}$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Head $(if ($Reason -ceq 'AUTO_BUDGET') { 'бюджет' } else { Get-PlanFailReason $Reason }); return $true }
+    if ($M.Slug -cnotmatch '^автоживий-[0-9a-f]{40}$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Resume $(if ($Reason -ceq 'AUTO_BUDGET') { 'бюджет' } else { Get-PlanFailReason $Reason }); return $true }
     $why = Get-PlanFailReason $Reason
-    $n = Set-MarkerWait $M ((Get-ReviewTime) + $script:PlanBackoff) @{group='PLAN_WAIT';reason=$why;head=$Head;retake=$true}
+    $n = Set-MarkerWait $M ((Get-ReviewTime) + $script:PlanBackoff) (@{group='PLAN_WAIT';reason=$why;retake=$true} + $Resume)
     if ($null -eq $n) { Write-Log "позначка $($M.Name): план не збудовано (${why}: $(([regex]::Replace($Reason, '[\x00-\x1f\x7f]+', ' ')).Trim())) понад $($script:MaxRetakes) разів — PLAN_FAILED"; return $false }
     Write-Log "позначка $($M.Name): план не збудовано ($why); повтор $n із $($script:MaxRetakes) за $($script:PlanBackoff) с"
     $true
@@ -906,6 +907,14 @@ function Set-MarkerWait($M, [long]$Until, [hashtable]$Extra) {
     Write-FileAtomic $sp ('WAIT ' + ($j | ConvertTo-Json -Compress))
     Remove-Claim $sp
     $n
+}
+
+function Get-WaitResume($Wait) {
+    <# Продовження попередньої спроби з чекання позначки (об'єкт `WAIT {…}`, $null — нема): `head` — голова гілки, з якої
+    почне повтор, `base` — основа доставки, від якої рахують зроблене (main, опублікована гілка чи злиття main обгорткою:
+    те, що є поза клоном або не є роботою агента). Кожне чекання переносить обидва разом: повтор, що рахував від своєї
+    голови, не публікував коміти попередньої спроби, а чекання без голови починало з origin і губило їх. #>
+    @{ head = [string](Get-JsonProp $Wait 'head'); base = [string](Get-JsonProp $Wait 'base') }
 }
 
 function Clear-UnstartedClaim([string]$StatePath) {
@@ -978,10 +987,10 @@ function Step-FailedStart($M, [string]$StatePath, [string]$Reason = '') {
     $t = ''
     if (Test-Path -LiteralPath $StatePath) { try { $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8) } catch { $null = $_ } }
     if ($t.StartsWith('STARTED ') -or -not (Test-Path -LiteralPath (Get-ClaimPath $StatePath))) { return 'NONE' }
-    # Голова гілки попереднього чекання за квотою — для продовження — не губиться.
-    $head = ''
-    if ($t.StartsWith('WAIT {')) { try { $head = [string](Get-JsonProp ($t.Substring(5) | ConvertFrom-Json) 'head') } catch { $null = $_ } }
-    $n = Set-MarkerWait $M ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) @{ retake = $true; group = 'START'; head = $head; reason = (Get-StartFailReason $StatePath $Reason) }
+    # Продовження попереднього чекання за квотою (голова й основа доставки) не губиться.
+    $wait = $null
+    if ($t.StartsWith('WAIT {')) { try { $wait = $t.Substring(5) | ConvertFrom-Json } catch { $null = $_ } }
+    $n = Set-MarkerWait $M ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) (@{ retake = $true; group = 'START'; reason = (Get-StartFailReason $StatePath $Reason) } + (Get-WaitResume $wait))
     if ($null -eq $n) { return 'LIMIT' }
     Write-Log "позначка $($M.Name): відмова до запуску, повернено в чергу ($n із $script:MaxRetakes)"
     'RETRY'
