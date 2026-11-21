@@ -69,8 +69,8 @@ def звірити(шлях, джерела=ДЖЕРЕЛА):
     т = open(шлях, encoding="utf-8").read()
     м_відб, м_ван = _ВІДБ.search(т), _ВАНТАЖ.search(т)
     if not (м_відб and м_ван):
-        return None, None, None, ["нема `const ВІДБИТОК…` або `const МОДУЛІ…` — "
-                                  "це не збірка показу"]
+        return None, None, None, [("нема `const ВІДБИТОК…` або `const МОДУЛІ…` — "
+                                   "це не збірка показу")]
     у_файлі = м_відб.group(1)
     b64 = м_ван.group(1)
     if not b64 or b64 == "ЗАГЛУШКА" or "__" in b64:

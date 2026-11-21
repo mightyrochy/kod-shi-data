@@ -1,7 +1,7 @@
 ﻿#Requires -Version 5.1
 <# Стенд `codex_pause_until` у ланцюг.json (дошка 16804): тижневий залишок Codex малий, тож до скидання автоживий не йде на Codex
-і на Claude ноутбука, а бере agy; нічний Е1 і позначки диспетчера лишаються як були. Справжні функції ланцюга й публікатора на
-тимчасовому origin; підмінено лише API GitHub, готовність моделей і вікно нічного. #>
+і на Claude ноутбука, а бере agy; позначки диспетчера лишаються як були. Справжні функції ланцюга й публікатора на
+тимчасовому origin; підмінено лише API GitHub і готовність моделей. #>
 param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot))
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false)
@@ -22,7 +22,8 @@ try {
     $cfgPath = 'аудит/адаптери/gemini/ланцюг.json'
     <# Базовий конфіг — без codex_pause_until (значення з main стенд не наслідує); SetPause дописує своє. #>
     $baseCfg = [IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json'), $utf) -replace '(?m)^[ 	]*"codex_pause_until"[ 	]*:[^
-]*?
+]*
+?
 ', ''
     [IO.File]::WriteAllText("$seed/$cfgPath", $baseCfg, $utf)
     foreach ($task in @('автоперевірка','автоживий')) { [IO.File]::WriteAllText("$seed/аудит/наряди/$task.md", $task, $utf) }
@@ -45,7 +46,6 @@ try {
         [pscustomobject]@{sha=$sha;commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddMinutes(-1).ToString('o')}}}
     }
     function Test-LiveModels($Config) { $script:Ready }
-    function Test-NightlyOpen([datetime]$Utc) { $true }
     function Stamp([double]$Hours) { [datetimeoffset]::UtcNow.AddHours($Hours).ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") }
     function SetCodex([bool]$Blocked) {
         $v = if ($Blocked) { @{refused=(Stamp -1);reset=(Stamp 140)} } else { @{refused=(Stamp -200);reset=(Stamp -50)} }
@@ -85,18 +85,7 @@ try {
     SetCodex $false; SetClaude $false; SetAgy $false
     Invoke-WrapperChain
 
-    # Нічний Е1 під час паузи: дозвіл стоїть на codex, ланцюг його не переносить на agy (той самий Move-NightlyMarker, що й без паузи).
-    $night = 'Е1-нічний-живий-' + [datetimeoffset]::UtcNow.UtcDateTime.ToString('yyyyMMdd')
-    $permit = Get-RefSha 'refs/remotes/origin/main'
-    & git -C $seed push -q origin "${permit}:refs/heads/gemini-queue/$night/$codexModel/1/gpu-p8"
     SetPause $future; Tick
-    $nm = @(Markers $night)
-    Check 'пауза, нічний, codex з квотою: дозвіл лишається на codex' ($nm.Count -eq 1 -and $nm[0] -match "/$codexModel/1/gpu-p8$")
-    SetCodex $true; SetClaude $false; Tick
-    $nm = @(Markers $night)
-    Check 'пауза, нічний, codex 0 %: дозвіл іде за своїм порядком codex→claude, не на agy' ($nm.Count -eq 1 -and $nm[0] -match "/$claudeModel/1/gpu-p8$")
-    & git -C $seed push -q origin ":$($nm[0])"
-    SetCodex $false
 
     # Автоживий під час паузи: agy, навіть коли codex і claude вільні.
     $s1 = NewStamp '2'; Tick

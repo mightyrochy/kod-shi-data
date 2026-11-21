@@ -276,7 +276,6 @@ Scenario 'в3 gemini-run' {
     $m = [pscustomobject]@{ Valid = $true; Lane = 'agy'; Ref = 'gemini-queue/п/gemini-3.8-flash-high/1/gpu'; Name = 'gemini-queue/п/gemini-3.8-flash-high/1/gpu'
         Slug = 'п'; Model = 'gemini-3.8-flash-high'; Sha = 'a' * 40; Time = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); Gpu = $true; Prio = 5; Deadline = ''; N = '1'; Cond = 'gpu'; Seen = 0 }
     function Get-Markers { @($m) }
-    function Get-NightlyMarker { @() }
     function Get-OrderedMarkers($x) { @($x) }
     function Test-SlugBusy { $false }
     function Test-LockFree { $true }

@@ -67,7 +67,7 @@ $script:ReviewApiWindow = 3600
 $script:ReviewApiBackoff = 120
 # Безпечна ознака останньої відмови Get-AutoReviewState (замок, бюджет, чекання, HTTP <код>, мережа, межа часу, відповідь).
 $script:ReviewApiCause = ''
-# План живого (Get-AutoLivePlan, автоживий й Е1-нічний-живий). Вимір 07.11: `pulls?state=all` — 33 сторінки по 100 PR,
+# План живого (Get-AutoLivePlan, автоживий; звіти давніх `Е1-нічний-живий-<дата>` план читає як дані). Вимір 07.11: `pulls?state=all` — 33 сторінки по 100 PR,
 # сторінка до 2,36 млн знаків (3273 PR); повне читання на спробу — 33 запити з 60/год без входу. Тепер сторінки по 50,
 # читання стоїть, щойно сторінка старіша за межу плану (Get-AutoPlanBoundary; запити — з бюджету review-api.json, як у
 # Get-AutoReviewState), а більше AutoPlanMaxPages сторінок на спробу — AUTO_PAGES, не мовчазне повторення.
@@ -657,63 +657,6 @@ function Get-TaskSource($M) {
     Get-AutoTaskPath $M.Slug
 }
 
-function Get-NightlyBuild([string]$Sha) {
-    <# Збірка, на якій стоїть нічний дозвіл: штамп build.txt його коміту; '' — штампа нема чи він хибний. Одне місце для
-    Get-NightlyMarker і для ланцюга, що переносить дозвіл (Move-NightlyMarker у wrapper_chain.ps1). #>
-    $build = (Invoke-Git @('cat-file','blob',"${Sha}:build.txt") -AllowFail).Out.Trim()
-    if ($build -cmatch '^[0-9a-f]{40}$') { $build } else { '' }
-}
-
-function Get-NightlyMarker([datetime]$Now = [datetime]::UtcNow, [switch]$OpenOnly) {
-    <# Після 02:00 UTC читає лише датований дозвіл із GitHub; локальний стан не дає прав. Дозвіл дати — найбільша спроба /N
-    з комітом на main: кінець /1 (CRASH від сну) його не з'їдає, а повтор — лише нова спроба /N від диспетчера. Дві спроби
-    водночас не йдуть: slug у всіх спроб один, його тримає Test-SlugBusy. -OpenOnly — лише вікно: $true, коли нічний
-    відкрито (так ланцюг, що переносить дозвіл, не тримає другої години: Test-NightlyOpen у wrapper_chain.ps1). Умова спроби —
-    `gpu` із пріоритетом `p<0-9>` у будь-якому порядку (`gpu-p8`, `p1-gpu`): пріоритет бере планувальник із самої позначки
-    (ConvertTo-Marker), тож диспетчер піднімає нічний над іншими GPU-позначками новою спробою `/N/gpu-p<цифра>`. #>
-    $utc = $Now.ToUniversalTime()
-    if ($utc.Hour -lt 2) { return }
-    if ($OpenOnly) { return $true }
-    $date = $utc.ToString('yyyyMMdd')
-    $head = $script:QueuePrefix + 'Е1-нічний-живий-' + $date + '/gpt-6.1-sol-high/'
-    $main = Get-RefSha "$script:RemoteRoot/main"
-    if ($main -cnotmatch '^[0-9a-f]{40}$') { return }
-    $tries = @(foreach ($name in ((Invoke-Git @('for-each-ref', '--format=%(refname)', $head)).Out -split "`n")) {
-        if ($name.Trim() -cmatch ('^' + [regex]::Escape($head) + '([1-9][0-9]{0,2})/(?:gpu-p[0-9]|p[0-9]-gpu)$')) { [pscustomobject]@{ N = [int]$Matches[1]; Ref = $name.Trim() } }
-    })
-    $n = 0; $ref = ''; $sha = ''
-    foreach ($t in @($tries | Sort-Object N -Descending)) {
-        $s = Get-RefSha $t.Ref
-        if ($s -cnotmatch '^[0-9a-f]{40}$') { continue }
-        if ((Invoke-Git @('merge-base', '--is-ancestor', $s, $main) -AllowFail).Code -eq 0) { $n = $t.N; $ref = $t.Ref; $sha = $s; break }
-        # Голова спроби не з main — лише зняття диспетчера («ЗНЯТО…» поверх дозволу з main). Його віддають тим самим читачем, що й
-        # звичайним позначкам: Cancel лишається в позначці, і Start-Markers закриває її спільним обробником скасування (стоп
-        # прогону, CANCELLED). Права на запуск це не дає: спроба без «ЗНЯТО» поза main лишається недозволеною.
-        $cut = @(Get-Markers $t.Ref | Where-Object { $_.Cancel })
-        if ($cut.Count -eq 1 -and (Invoke-Git @('merge-base', $s, $main) -AllowFail).Code -eq 0) { return $cut[0] }
-    }
-    if (-not $ref) { return }
-    $template = 'аудит/наряди/автоживий.md'
-    $build = Get-NightlyBuild $sha
-    if ($build -and (Invoke-Git @('for-each-ref','--format=%(refname)',($script:QueuePrefix + "автоживий-$build/"))).Out.Trim()) { return }
-    if ((Invoke-Git @('cat-file', '-e', "${sha}:$template") -AllowFail).Code -ne 0) { return }
-    $dir = Join-Path $RunsDir 'nightly'
-    [void](New-Item -ItemType Directory -Force -Path $dir)
-    # Стан — на спробу: /1 лишає `<дата>.json` (старий формат читається так само), /N>1 — `<дата>-<N>.json`; стан /1 нової спроби не блокує.
-    $file = Join-Path $dir ($date + $(if ($n -gt 1) { "-$n" } else { '' }) + '.json')
-    if (Test-Path -LiteralPath $file) {
-        $saved = [System.IO.File]::ReadAllText($file, $script:Utf8) | ConvertFrom-Json
-        if ($saved.date -cne $date -or $saved.sha -cnotmatch '^[0-9a-f]{40}$' -or
-            [string]$saved.time -cnotmatch '^[0-9]{10}$') { throw 'Хибний стан нічного прогону' }
-        if ($saved.sha -cne $sha) { return }
-    } else {
-        $stamp = ([DateTimeOffset]$utc).ToUnixTimeSeconds()
-        $saved = [pscustomobject]@{ date = $date; sha = $sha; time = $stamp }
-        Write-FileAtomic $file ($saved | ConvertTo-Json -Compress)
-    }
-    ConvertTo-Marker ($ref + "`t" + $saved.sha + "`t" + $saved.time)
-}
-
 # Ключ стану — від канонічної назви, а не від $M.Ref: Ref залежить від простору посилань рушія (Set-RemoteRoot), і ключі
 # позначок claude-run змінилися б разом із ним (13.11, #3527: давні виконані позначки стали новими). Назва — `gemini-queue/…`.
 function Get-MarkerKey($M) { "refs/remotes/origin/$($M.Name) $($M.Sha)" }
@@ -897,12 +840,12 @@ function Get-PlanFailReason([string]$Message) {
 }
 
 function Enter-PlanWait($M, [string]$Reason, [string]$Head = '') {
-    <# Збій побудови плану живого (Add-AutoTaskContext для автоживого й Е1-нічного). Бюджет запитів вичерпано (AUTO_BUDGET) — це не
+    <# Збій побудови плану живого (Add-AutoTaskContext для автоживого). Бюджет запитів вичерпано (AUTO_BUDGET) — це не
     вада, а чекання вікна: як REVIEW_API, без лічильника. Решта — окреме чекання PlanBackoff с з лічильником retakes
     (спільна межа MaxRetakes): повертає $false, коли межу вичерпано і чекання не записано, — викликач кінчає наряд
     кодом PLAN_FAILED, який будить диспетчера (не тихий REVIEW_API без кінця). #>
     # Автоперевірка PR (не план): її збій API лишається REVIEW_API — повтор у черзі під бюджетом, як і було.
-    if ($M.Slug -cnotmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Head $(if ($Reason -ceq 'AUTO_BUDGET') { 'бюджет' } else { Get-PlanFailReason $Reason }); return $true }
+    if ($M.Slug -cnotmatch '^автоживий-[0-9a-f]{40}$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Head $(if ($Reason -ceq 'AUTO_BUDGET') { 'бюджет' } else { Get-PlanFailReason $Reason }); return $true }
     $why = Get-PlanFailReason $Reason
     $n = Set-MarkerWait $M ((Get-ReviewTime) + $script:PlanBackoff) @{group='PLAN_WAIT';reason=$why;head=$Head;retake=$true}
     if ($null -eq $n) { Write-Log "позначка $($M.Name): план не збудовано (${why}: $(([regex]::Replace($Reason, '[\x00-\x1f\x7f]+', ' ')).Trim())) понад $($script:MaxRetakes) разів — PLAN_FAILED"; return $false }
@@ -1201,7 +1144,6 @@ function Get-MarkerKind([string]$Slug) {
     <# Вид позначки за назвою наряду — для лічби в стані. #>
     if ($Slug -cmatch '^автоперевірка-') { return 'автоперевірка' }
     if ($Slug -cmatch '^автоживий-') { return 'автоживий' }
-    if ($Slug -cmatch '^Е1-нічний-живий-') { return 'нічний живий' }
     if ($Slug -cmatch '^перевірка-') { return 'перевірка' }
     if ($Slug -cmatch '^pachka-') { return 'пачка' }
     if ($Slug -ceq 'ВИМКНИ-НОУТБУК') { return 'вимкнення' }
@@ -2023,8 +1965,8 @@ function Get-TaskDirText([string]$TaskDir) {
 
 function Close-TaskCopy([string[]]$Delivered) {
     <# Після доставки: $RepoDir і TEMP/TMP — як до копії, зміни спільного конфігу клону нарядом — у журнал
-    (Write-CloneConfigChange), копія — геть (Remove-TaskCopy). Повертає шлях теки, що лишилась із недоставленими комітами,
-    або ''. #>
+    (Write-CloneConfigChange), копія — геть (Remove-TaskCopy; $Delivered — доставлене понад віддалені гілки). Повертає
+    шлях теки, що лишилась із недоставленими комітами, або ''. #>
     $c = $script:TaskCopy
     if ($null -eq $c) { return '' }
     $script:TaskCopy = $null
@@ -2046,22 +1988,40 @@ function Reset-TreeAcl([string]$Dir) {
     } catch { $false }
 }
 
+function Hold-TaskCopy([string]$Dir, [string]$Why) {
+    <# Тека задачі лишається для відновлення: голову копії відв'язано від гілки, `kept.txt` з причиною (Clear-TaskCopies
+    такі теки не чіпає), рядок журналу; повертає шлях теки. Копії нема — лише рядок журналу.
+
+    Відв'язка — `update-ref --no-deref HEAD`, а не `checkout --detach`: той бере замок індексу, а копію утримують саме тоді,
+    коли її git міг лишитися посеред роботи (записане не закомічено). Гілка наряду спільна для всіх копій клону: копія на
+    ній їде разом із `checkout -B` наступної спроби тієї самої позначки на старт, і коміти агента лишаються лише в reflog. #>
+    $repo = $(if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { $Dir } else { Join-Path $Dir 'repo' })
+    if (Test-Path -LiteralPath $Dir -PathType Container) {
+        if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
+            $head = Invoke-Git @('rev-parse', '-q', '--verify', 'HEAD^{commit}') -AllowFail -Dir $repo
+            $r = $(if ($head.Code -eq 0) { Invoke-Git @('update-ref', '--no-deref', '-m', 'обгортка: копію утримано', 'HEAD', $head.Out.Trim()) -AllowFail -Dir $repo } else { $head })
+            if ($r.Code -ne 0) { Write-Log "копія задачі ${Dir}: голову не відв'язано від гілки — код $($r.Code): $(ConvertTo-NoteText $r.Err)" }
+        }
+        try { [IO.File]::WriteAllText((Join-Path $Dir 'kept.txt'), "$Why`n", $script:Utf8) } catch { Write-Log "kept.txt копії ${Dir}: $($_.Exception.Message)" }
+    }
+    Write-Log "копія задачі $Dir лишається: $Why"
+    $Dir
+}
+
 function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
-    <# Тека задачі чи давня робоча копія слота — геть, коли голова не несе комітів поза $Delivered (`rev-list --not`).
-    Несе — тека лишається з `kept.txt`, гілку звільнено, повертає шлях теки; інакше ''.
+    <# Тека задачі чи давня робоча копія слота — геть, коли голова не несе комітів поза доставленим (`rev-list --not`):
+    віддаленими гілками (`--remotes`) і $Delivered — тим, що смуга записала поза клоном (бандл, стан позначки, свій простір
+    віддалених посилань). Локальні гілки клону — не доставлене: гілку наряду переписує `checkout -B` наступної спроби.
+    Несе — Hold-TaskCopy, повертає шлях теки; інакше ''.
     Прибирання не залежить від заборон у копії: тека, яку не можна перелічити (вимір дав недоступні теки), чи видалення
     з UnauthorizedAccess — спершу Reset-TreeAcl, тоді ще раз; зайнятий іншим процесом файл — тимчасовий стан, його лишає
     наступне прибирання. У журнал — звільнені байти (вимір до видалення, після скидання ACL — повний). #>
     $repo = $(if (Test-Path -LiteralPath (Join-Path $Dir '.git')) { $Dir } else { Join-Path $Dir 'repo' })
     if (Test-Path -LiteralPath (Join-Path $repo '.git')) {
         $n = 0
-        $r = Invoke-Git (@('rev-list', '--count', 'HEAD', '--not') + $Delivered) -AllowFail -Dir $repo
-        if ($r.Code -eq 0 -and [int]::TryParse($r.Out.Trim(), [ref]$n) -and $n -gt 0) {
-            [void](Invoke-Git @('checkout', '-q', '--detach') -AllowFail -Dir $repo)
-            [IO.File]::WriteAllText((Join-Path $Dir 'kept.txt'), "недоставлених комітів голови: $n`n", $script:Utf8)
-            Write-Log "копія задачі $Dir лишається: недоставлених комітів голови $n"
-            return $Dir
-        }
+        $r = Invoke-Git (@('rev-list', '--count', 'HEAD', '--not', '--remotes') + @($Delivered | Where-Object { $_ })) -AllowFail -Dir $repo
+        if ($r.Code -eq 0 -and [int]::TryParse($r.Out.Trim(), [ref]$n) -and $n -gt 0) { return (Hold-TaskCopy $Dir "недоставлених комітів голови: $n") }
+        if ($r.Code -ne 0) { Write-Log "копія задачі ${Dir}: недоставлене не звірено — код $($r.Code): $(ConvertTo-NoteText $r.Err)" }
     }
     $freed = 0L; $reset = $false; $existed = Test-Path -LiteralPath $Dir
     $m = Measure-DirBytes $Dir
@@ -2084,10 +2044,10 @@ function Remove-TaskCopy([string]$Dir, [string[]]$Delivered) {
     ''
 }
 
-function Clear-TaskCopies([string]$Root, [string[]]$Delivered) {
+function Clear-TaskCopies([string]$Root, [scriptblock]$Delivered) {
     <# Накопичене під $Root: копії задач і давні робочі копії слотів, яких не тримає зайнятий слот (замок і `copy` у
-    `<слот>.json`) і без `kept.txt`, — геть за Remove-TaskCopy. Теки читаються до замків: нова копія з'являється вже
-    після запису `<слот>.json`. #>
+    `<слот>.json`) і без `kept.txt`, — геть за Remove-TaskCopy; доставлене копії дає `& $Delivered <ім'я теки>` (ім'я
+    теки задачі — id прогону). Теки читаються до замків: нова копія з'являється вже після запису `<слот>.json`. #>
     $dirs = @(Get-ChildItem -LiteralPath $Root -Directory -ErrorAction SilentlyContinue)
     $busy = @{}
     foreach ($l in @(Get-ChildItem -LiteralPath $script:SlotDir -Filter '*.lock' -File -ErrorAction SilentlyContinue)) {
@@ -2102,14 +2062,14 @@ function Clear-TaskCopies([string]$Root, [string[]]$Delivered) {
     foreach ($d in $dirs) {
         if ($busy.ContainsKey($d.Name) -or (Test-Path -LiteralPath (Join-Path $d.FullName 'kept.txt'))) { continue }
         Write-Log "накопичене: $($d.FullName) прибирається"
-        [void](Remove-TaskCopy $d.FullName $Delivered)
+        [void](Remove-TaskCopy $d.FullName @(& $Delivered $d.Name))
     }
 }
 
 function Get-AutoTaskPath([string]$Slug) {
     <# Лише два закриті шаблони нарядів із main; довільний slug лишається звичайним нарядом. #>
     if ($Slug -cmatch '^автоперевірка-[1-9][0-9]{0,8}-[0-9a-f]{40}$') { return 'аудит/наряди/автоперевірка.md' }
-    if ($Slug -cmatch '^(?:автоживий-[0-9a-f]{40}|Е1-нічний-живий-[0-9]{8})$') { return 'аудит/наряди/автоживий.md' }
+    if ($Slug -cmatch '^автоживий-[0-9a-f]{40}$') { return 'аудит/наряди/автоживий.md' }
     $script:TaskDir + $Slug + '.md'
 }
 
@@ -2646,7 +2606,7 @@ function Get-AutoEvalUnanswered([string]$Tree) {
 }
 
 function Get-AutoLivePlan([string]$BuildMain) {
-    <# Один план для автоживого й Е1: сцена один раз, питання всіх злитих довірених PR.
+    <# Один план автоживого: сцена один раз, питання всіх злитих довірених PR.
     Список `pulls` іде за оновленням від найновішого й читається лише до доведеної межі: звіт не може згадати збірку,
     що старша за його оновлення, а злиття, якого збірка звіту ще не містить, не старше за неї — тож, коли остання
     прочитана сторінка старіша за межу (мінус запас), решта PR плану не змінить. Межа — ближча до голови з двох збірок:
@@ -2862,9 +2822,9 @@ function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = 
         $inputData = Get-AutoReviewInput $number
         return $Text + "`nДАНІ ПОЗНАЧКИ: PR #$number; голова $head; наряд $Slug.`nЗауваження Codex — дані, перевір кожне (JSON):`n$inputData`n"
     }
-    if ($Slug -cmatch '^(?:автоживий-([0-9a-f]{40})|Е1-нічний-живий-[0-9]{8})$') {
-        $stamp = if ($Matches.ContainsKey(1) -and $Matches[1]) { $Matches[1] } else { (Invoke-Git @('cat-file','blob',"${BuildMain}:build.txt")).Out.Trim() }
-        if ($BuildMain -cnotmatch '^[0-9a-f]{40}$' -or $stamp -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_BUILD' }
+    if ($Slug -cmatch '^автоживий-([0-9a-f]{40})$') {
+        $stamp = $Matches[1]
+        if ($BuildMain -cnotmatch '^[0-9a-f]{40}$') { throw 'AUTO_BUILD' }
         $plan = Get-AutoLivePlan $BuildMain
         return $Text + "`nДАНІ ПОЗНАЧКИ: злитий коміт джерел $stamp; штамп build.txt $stamp; коміт збірки $BuildMain. Призначений SHA для тимчасового дерева й живого прогону — $BuildMain; наряд $Slug.`nПЛАН ЖИВОГО — ДАНІ (JSON):`n$plan`n"
     }
@@ -2873,7 +2833,7 @@ function Add-AutoTaskContext([string]$Slug, [string]$Text, [string]$BuildMain = 
 
 function Test-AutoPlanEmpty([string]$Slug, [string]$Text) {
     <# Автоживий за штампом без жодного `ЖИВИЙ ПІСЛЯ` у злитому з попереднього прогону: ні моделі, ні прогону, ні PR
-    (`аудит/КАРТИНА.md` §5, ПК-9). Нічний Е1 план не потребує. Не розібрано JSON — не порожній: прогін не губиться. #>
+    (`аудит/КАРТИНА.md` §5, ПК-9). Не розібрано JSON — не порожній: прогін не губиться. #>
     if ($Slug -cnotmatch '^автоживий-[0-9a-f]{40}$') { return $false }
     $found = [regex]::Match($Text, '(?m)^ПЛАН ЖИВОГО — ДАНІ \(JSON\):\r?\n(\{.*\})\r?$')
     if (-not $found.Success) { return $false }

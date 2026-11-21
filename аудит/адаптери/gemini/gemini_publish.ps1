@@ -1099,10 +1099,10 @@ function Test-DispatcherAction([string]$Line) {
     if ($Line -cnotmatch '^GEMINI ОБГОРТКА: ГОТОВО ') { return $false }
     foreach ($result in @(Get-ChainTaskResults)) {
         if ($result.Kind -ceq 'ГОТОВО' -and ($Line -ceq $result.Line -or $Line.StartsWith($result.Line + ' ', [StringComparison]::Ordinal))) {
-            return $result.Slug -cmatch '^(?:автоперевірка-|перевірка-|pachka-|автоживий-|Е1-нічний-живий-)'
+            return $result.Slug -cmatch '^(?:автоперевірка-|перевірка-|pachka-|автоживий-)'
         }
     }
-    if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:перевірка-|pachka-|Е1-нічний-живий-)') { return $true }
+    if ($Line -cmatch '^GEMINI ОБГОРТКА: ГОТОВО (?:gemini|claude|codex)/(?:перевірка-|pachka-)') { return $true }
     $false
 }
 

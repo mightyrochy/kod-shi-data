@@ -1,5 +1,5 @@
 ﻿#Requires -Version 5.1
-<# Стенд наряду «обгортка-е1-план-gpu» (07.11, #1856): позначка `Е1-нічний-живий-*` p1 щопроходу йшла в REVIEW_API і WAIT 120 с,
+<# Стенд наряду «обгортка-е1-план-gpu» (07.11, #1856): позначка живого прогону з планом (тоді нічного Е1) p1 щопроходу йшла в REVIEW_API і WAIT 120 с,
 прогін не стартував, а решта GPU-позначок проходу стояла «її щойно взяв наряд цього проходу», хоч GPU була вільна.
 Корінь: `Get-AutoLivePlan` читав усі 33 сторінки `pulls` (по 100) без бюджету й без входу, збій ставав мовчазним REVIEW_API без межі,
 а прохід тримав GPU за процесом, який за секунди пішов у чекання. Справжні функції обгортки; підмінено лише мережу
@@ -184,7 +184,7 @@ try {
         Reset-Budget
     }
     Scenario '5 збій плану має свій код і будить диспетчера' {
-        $m = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/Е1-нічний-живий-20261107/cc-claude-sonnet-5-5-medium/1/gpu-p1`t$buildMain`t1")
+        $m = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/автоживий-$('1' * 40)/cc-claude-sonnet-5-5-medium/1/gpu-p1`t$buildMain`t1")
         $script:StateDir = Join-Path $tmp 'state-plan'; [void][IO.Directory]::CreateDirectory($script:StateDir)
         $sp = Get-StatePath (Get-MarkerKey $m)
         $script:Clock = 1000000
@@ -197,7 +197,7 @@ try {
         Check '5 останнє чекання записане з лічильником, часом +300 с і причиною' ($state.Kind -ceq 'WAIT' -and [int]$state.Wait.retakes -eq 5 -and [long]$state.Wait.until -eq 1000300 -and $state.Wait.reason -ceq 'AUTO_PAGES' -and $state.Wait.group -ceq 'PLAN_WAIT')
         Check '5 причина збою: код обгортки, статус HTTP або PLAN_ERROR — без тексту сервера' ((Get-PlanFailReason 'AUTO_PAGES') -ceq 'AUTO_PAGES' -and (Get-PlanFailReason 'The remote server returned an error: (403) rate limit exceeded.') -ceq 'HTTP_403' -and (Get-PlanFailReason 'Response status code does not indicate success: 429 (Too Many Requests).') -ceq 'HTTP_429' -and (Get-PlanFailReason 'щось інше') -ceq 'PLAN_ERROR')
         # AUTO_BUDGET — чекання вікна, а не вада: лічильник не росте, межі нема.
-        $n = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/Е1-нічний-живий-20261108/cc-claude-sonnet-5-5-medium/1/gpu-p1`t$buildMain`t1")
+        $n = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/автоживий-$('2' * 40)/cc-claude-sonnet-5-5-medium/1/gpu-p1`t$buildMain`t1")
         $budgetOk = $true
         for ($i = 1; $i -le 12; $i++) { $budgetOk = $budgetOk -and [bool](Enter-PlanWait $n 'AUTO_BUDGET') }
         Check '5 AUTO_BUDGET: двічі по шість разів чекання без PLAN_FAILED, retakes не росте' ($budgetOk -and (Get-Retakes (Get-StatePath (Get-MarkerKey $n))) -eq 0 -and $(Get-MarkerState $n).Wait.group -ceq 'REVIEW_API')
@@ -236,7 +236,7 @@ try {
             $m = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/$Slug/cc-claude-sonnet-5-5-medium/1/$Cond`t$buildMain`t1")
             $m
         }
-        $p1 = & $mk 'Е1-нічний-живий-20261107' 'gpu-p1'
+        $p1 = & $mk ('автоживий-' + ('3' * 40)) 'gpu-p1'
         $p2 = & $mk 'Річ-колір-вимір' 'gpu-p2'
         $cpu = & $mk 'Дошка-0' 'p0'
         $ordered = @($p1, $p2, $cpu)

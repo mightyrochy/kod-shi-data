@@ -250,7 +250,6 @@ try {
         $script:Limits=@{slots=@{codex=1;agy=0}}
         $script:Jobs=New-Object Collections.ArrayList
         function Get-Markers {$script:M}
-        function Get-NightlyMarker { }
         function Test-SlugBusy {$false}
         function Get-RefSha { $script:Head }
         function Invoke-Git {[pscustomobject]@{Code=0;Out='';Err=''}}

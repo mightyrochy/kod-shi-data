@@ -546,27 +546,27 @@ def схема():
 #    переносила з тексту крамниці (К-4/К-5: маркетинг 14→22 % рядків). Висота каблука — форма
 #    взуття, не обмір. Код ці слова НЕ судить (п.12, п.16) — їх тримає лише правило.
 _ПРАВИЛА = (
-    "Parse only the item named in \"name\". The description may also hold blocks about other "
-    "items, delivery or payment: ignore them.",
-    "\"quote\": the shortest words of this item's name, description or "
-    "params that state the value, copied letter for letter in the shop's language, "
-    "not translated or retold.",
-    "No words state this very feature: quote \"\" and value \"unknown\". Never infer a value from "
-    "what items of this type usually are, never put the most usual code of a list as a default.",
-    "The quote must state the chosen code itself, not a nearby one: how deep a neckline is does "
-    "not state its shape, one kind of collar does not state another, a style or model name does "
-    "not state a cut. Words that fit no code exactly: \"unknown\".",
+    ("Parse only the item named in \"name\". The description may also hold blocks about other "
+     "items, delivery or payment: ignore them."),
+    ("\"quote\": the shortest words of this item's name, description or "
+     "params that state the value, copied letter for letter in the shop's language, "
+     "not translated or retold."),
+    ("No words state this very feature: quote \"\" and value \"unknown\". Never infer a value from "
+     "what items of this type usually are, never put the most usual code of a list as a default."),
+    ("The quote must state the chosen code itself, not a nearby one: how deep a neckline is does "
+     "not state its shape, one kind of collar does not state another, a style or model name does "
+     "not state a cut. Words that fit no code exactly: \"unknown\"."),
     "A quote that only names the item type supports slot and item_type and nothing else.",
-    "\"item_type\": the quote must name this very type. A kind of dress, top or coat needs its own "
-    "word in the quote: length, colour, fabric and fit words do not name a kind, so a dress with no "
-    "kind named is dress_generic. The words name a type that has no code in the list: value \"not_applicable\" with that quote, never the "
-    "nearest code. The words name no type: \"unknown\".",
+    ("\"item_type\": the quote must name this very type. A kind of dress, top or coat needs its own "
+     "word in the quote: length, colour, fabric and fit words do not name a kind, so a dress with no "
+     "kind named is dress_generic. The words name a type that has no code in the list: value \"not_applicable\" with that quote, never the "
+     "nearest code. The words name no type: \"unknown\"."),
     "\"no\" and \"none\": the text says the feature is absent; they need a quote like any value.",
-    "A field with \"unit\" takes a number: \"value\" the number the text gives, \"unit\" its unit, "
-    "the quote holds that number in digits. A range or numbers per size: the first number.",
+    ("A field with \"unit\" takes a number: \"value\" the number the text gives, \"unit\" its unit, "
+     "the quote holds that number in digits. A range or numbers per size: the first number."),
     "\"set_parts\": only for an item sold as a set, one entry per part; otherwise [].",
-    "\"color_main\": the colour of this item, not of other colour variants on sale; other colours "
-    "the text names for this item go to \"color_extra\".",
+    ("\"color_main\": the colour of this item, not of other colour variants on sale; other colours "
+     "the text names for this item go to \"color_extra\"."),
     "\"metal_where\": the metal is the body of the item or only its hardware.",
     "\"features\": the nuances the codes do not carry, one fragment each: shade as the shop names "
     "it, texture and weave, fibre content and weight, fit, construction, fastenings, hardware, trim, "

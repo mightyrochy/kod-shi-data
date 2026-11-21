@@ -168,8 +168,8 @@ def її_речі(речі_паспорта, без_кадрів=False):
         _ЗП.Поле("remarks", "what is wrong in the previous answer"),
     ),
     правила=(
-        "Items one per line, garments first, then shoes and accessories: what it is, cut, length, color "
-        "with its hex code, fabric.",
+        ("Items one per line, garments first, then shoes and accessories: what it is, cut, length, color "
+         "with its hex code, fabric."),
         "An outer layer only when the weather needs it; in the warm or hot band there is none.",
         "Last, why this outfit works, in 3–4 sentences.",
     ),
@@ -355,8 +355,8 @@ def промпт_руки(рука, випадок, вимоги="", вибір=
                                                    "id in \"own\""),
     ),
     правила=(
-        "One object per item — garment, shoes, bag, accessory, jewelry — in the order of the "
-        "description, with its words and hex.",
+        ("One object per item — garment, shoes, bag, accessory, jewelry — in the order of the "
+         "description, with its words and hex."),
         # Опис може назвати слот непотрібним («no cardigan is needed»,
         # «tights are not needed»), тому модель передає рішення кодом `worn`,
         # щоб показ не малював згаданий слот річчю.
@@ -365,8 +365,8 @@ def промпт_руки(рука, випадок, вимоги="", вибір=
         # Рука може відповісти відмовою замість образу, а перелік — вигадати приклад і зробити відмову карткою.
         # Слів код не читає (п.12): чи опис — образ,
         # каже кодом `is_outfit` модель, що його читає; картка руки — лише на «yes».
-        "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a "
-        "refusal, a question or a note.",
+        ("\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a "
+         "refusal, a question or a note."),
     ),
     вихід="ITEM_LIST",
     мітка_задачі=True,  # руки 3–4 — як є (власник 16.10, рядок 6201)
