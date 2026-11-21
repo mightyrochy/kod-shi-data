@@ -3,13 +3,16 @@
    «складання», «вибір», «опис» заглушка віддає записаний текст проходу с5 через міст 20.11 (рядки 6, 12, 19
    `обміни.jsonl`, як `джерела/ядро/тести/обвязка.py`), а руці 2 на «вибір» — текст не за формою: її картка мусить
    стати збоєм, а решта три — лишитись. Знімок — після того, як збір скінчився; поруч — JSON зі станом карток.
-   Запуск: STOR=/tmp/стенд PYODIDE=/tmp/pyodide node аудит/проби/ядро-н1/знімок.js <тека виходу> */
+   Мірило (г) — той самий прохід, але кожен запит ядра йде справжній моделі через стенд моста за підпискою
+   (`аудит/проби/живий-як-людина-3/стенд/міст_claude.py`): MIST_PORT=<порт моста>.
+   Запуск: STOR=/tmp/стенд PYODIDE=/tmp/pyodide [MIST_PORT=8791] node аудит/проби/ядро-н1/знімок.js <тека виходу> */
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const КОРІНЬ = path.resolve(__dirname, '..', '..', '..');
 const СТОР = process.env.STOR || '/tmp/стенд', ТЕКА_PYODIDE = process.env.PYODIDE || '/tmp/pyodide';
 const ВИХІД = path.resolve(process.argv[2] || path.join(__dirname, 'знімки')); fs.mkdirSync(ВИХІД, {recursive: true});
 const БАЗА = 'http://127.0.0.1:8765';
+const МІСТ_ПОРТ = process.env.MIST_PORT || '';   /* задано — запити ядра йдуть стенду моста, а не заглушці */
 const ЗАПИС = path.join(КОРІНЬ, 'аудит/проби/Живий-через-міст/стенд/службове/с5_весілля_сестри/обміни.jsonl');
 const рядки = fs.readFileSync(ЗАПИС, 'utf8').split('\n').filter(р => р.trim());
 const текст = н => JSON.parse(JSON.parse(рядки[н]).відповідь).content.filter(б => б.type === 'text').map(б => б.text).join('');
@@ -29,7 +32,17 @@ const с = мс => new Promise(р => setTimeout(р, мс));
       const зміст = (тіло.messages || []).slice(-1)[0].content;
       const промпт = (Array.isArray(зміст) ? зміст.filter(б => б.type === 'text').map(б => б.text).join('') : зміст);
       let з = {}; try { з = JSON.parse(промпт); } catch (_) {}
-      запити.push({вид: з.вид, рука: з.рука, час: Date.now()});
+      const цей = {вид: з.вид, рука: з.рука, час: Date.now()}; запити.push(цей);
+      if (МІСТ_ПОРТ){
+        /* мірило (г): той самий запит — справжній моделі через стенд моста за підпискою (`міст_claude.py`) */
+        const т0 = Date.now();
+        const в = await fetch('http://127.0.0.1:' + МІСТ_ПОРТ + '/', {method: 'POST', body: route.request().postData(),
+          headers: {'content-type': 'application/json', 'x-prohid': encodeURIComponent('ядро-н1-с5')}, signal: AbortSignal.timeout(960000)});
+        const т = await в.text();
+        цей.с = (Date.now() - т0) / 1000; цей.статус = в.status;
+        const заг = {}; for (const к of ['x-model']) if (в.headers.get(к)) заг[к] = в.headers.get(к);
+        return route.fulfill({status: в.status, contentType: 'application/json', headers: заг, body: т});
+      }
       const відповідь = (з.рука === 2 && з.вид === 'вибір') ? 'не за формою: заглушка ламає руку 2' : (ЗАПИСАНЕ[з.вид] || '');
       return route.fulfill({status: 200, contentType: 'application/json', headers: {'x-model': 'заглушка-ядра'},
         body: JSON.stringify({content: [{type: 'text', text: відповідь}], stop_reason: 'end_turn',
@@ -62,7 +75,8 @@ const с = мс => new Promise(р => setTimeout(р, мс));
                                                         речей: (к.речі || []).length, неповний: к.неповний}))};
   });
   стан.секунд_від_натиску = (Date.now() - т0) / 1000;
-  стан.запити = запити.map(з => ({вид: з.вид, рука: з.рука}));
+  стан.запити = запити.map(з => ({вид: з.вид, рука: з.рука, с: з.с, статус: з.статус}));
+  стан.міст = МІСТ_ПОРТ ? 'стенд моста за підпискою, порт ' + МІСТ_ПОРТ : 'заглушка: записаний прохід с5';
   стан.помилки_консолі = консоль;
   await с(1500);
   await стор.screenshot({path: path.join(ВИХІД, 'твої-образи-ядро-с5-390x844.png'), animations: 'disabled'});
