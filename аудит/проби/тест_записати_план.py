@@ -94,8 +94,19 @@ class ПеревіркаПлану(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "довільна інструкція"):
                 сцена.змінні_режиму("ж1_робота_блуза_фото", режим, вхід)
 
+    def test_фото_сцени_з_теки_репозиторію(self):
+        """Ім'я фото без теки (як у питанні PR `FOTO_RECHI=bluza.jpg`) знаходиться в `фото_сцен/` репозиторію без
+        змінних середовища, і ця тека — раніше запасної: однойменне фото в `TEKA_FOTO_SCENY` її не підміняє."""
+        очікуване = str(сцена.ТЕКА_ФОТО_СЦЕН / "bluza.jpg")
+        with patch.dict("os.environ", {"TEKA_FOTO_SCENY": ""}):
+            self.assertEqual(сцена.файли_сцени("ж1_робота_блуза_фото", {"FOTO_RECHI": "bluza.jpg"})["FOTO_RECHI"], очікуване)
+        with tempfile.TemporaryDirectory() as тека:
+            (Path(тека) / "bluza.jpg").write_bytes(b"x")
+            with patch.dict("os.environ", {"TEKA_FOTO_SCENY": тека}):
+                self.assertEqual(сцена.файли_сцени("ж1_робота_блуза_фото", {"FOTO_RECHI": "bluza.jpg"})["FOTO_RECHI"], очікуване)
+
     def test_фото_сцени_з_теки_ноутбука(self):
-        """Файл, якого нема в репозиторії: відмова «нема файлу» до старту; є в теці `TEKA_FOTO_SCENY` — старт."""
+        """Файл, якого нема в репозиторії: відмова «нема файлу» до старту; є в запасній теці `TEKA_FOTO_SCENY` — старт."""
         змінні = lambda: {"FOTO_RECHI": "тест_лише_на_ноутбуці.jpg"}
         with patch.dict("os.environ", {"TEKA_FOTO_SCENY": ""}), self.assertRaisesRegex(ValueError, "нема файлу.*TEKA_FOTO_SCENY"):
             сцена.файли_сцени("ж1_робота_блуза_фото", змінні())
@@ -107,18 +118,18 @@ class ПеревіркаПлану(unittest.TestCase):
                 сцена.файли_сцени("ж1_робота_блуза_фото", {"FOTO_RECHI": "іншого_нема.jpg"})
 
     def test_реєстр_файли_є(self):
-        """Кожна файлова змінна реєстру веде до файлу в репозиторії; фото її речей, яких у репозиторії нема, — відомий
-        виняток (дошка 13576), а не мовчазний ENOENT."""
+        """Кожна файлова змінна реєстру веде до файлу в репозиторії, без запасної теки ноутбука `TEKA_FOTO_SCENY`."""
         нема = []
         for рядок in (сцена.КОРІНЬ / "аудит/проби/живі_сцени.txt").read_text(encoding="utf-8").splitlines():
             if рядок.startswith("#") or "|" not in рядок:
                 continue
             id_ = рядок.split("|")[0]
             try:
-                сцена.файли_сцени(id_, dict(о.partition("=")[::2] for о in рядок.split("|")[3].split() if "=" in о))
+                with patch.dict("os.environ", {"TEKA_FOTO_SCENY": ""}):
+                    сцена.файли_сцени(id_, dict(о.partition("=")[::2] for о in рядок.split("|")[3].split() if "=" in о))
             except ValueError as причина:
-                нема.append(id_)
-        self.assertEqual(нема, ["ж1_робота_блуза_фото", "ж3_свято_др_взуття_фото"])
+                нема.append(f"{id_}: {причина}")
+        self.assertEqual(нема, [])
 
     def test_реєстр_фото_у_тексті_має_змінну(self):
         """Клас дошки 14280: сцена, де текст жінки подає фото («Ось фото», «з фото»), має FOTO_RECHI у вході, і прилад

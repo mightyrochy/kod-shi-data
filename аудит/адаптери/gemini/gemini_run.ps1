@@ -778,14 +778,26 @@ function Get-RunCopyRepo([string]$Id) {
     if (Test-Path -LiteralPath (Join-Path $repo '.git')) { $repo } else { '' }
 }
 
-function Hold-RunCopy([string]$Id, [string]$Why) {
-    <# Копія задачі прогону лишається для відновлення: `kept.txt` з причиною (Clear-TaskCopies такі теки не чіпає) і рядок
-    журналу. Копії нема — лише рядок журналу. #>
-    $dir = Join-Path (Join-Path $RunsDir 'w') $Id
-    if (Test-Path -LiteralPath $dir -PathType Container) {
-        try { [IO.File]::WriteAllText((Join-Path $dir 'kept.txt'), "$Why`n", $script:Utf8) } catch { Write-Log "kept.txt копії ${dir}: $($_.Exception.Message)" }
+function Get-RunDelivered([string]$Id, [string[]]$Also = @()) {
+    <# Доставлене копії задачі прогону понад віддалені гілки (Remove-TaskCopy): те, що записано поза клоном, — голови бандла
+    прогону (`<OutDir>\<id>.bundle`, `bundle list-heads`) і старт прогону з його результату (`<OutDir>\<id>.json`); $Also —
+    те саме з пам'яті процесу наряду, поки результату нема (старт, голова чекання квоти в стані позначки).
+    Старт — уже доставлене: main чи опублікована гілка, злиття main обгорткою (без роботи агента) або голова чекання
+    квоти, яку попередня спроба записала в стан позначки і з якої продовжила ця. #>
+    $out = @($Also | Where-Object { $_ })
+    if (-not $Id) { return $out }
+    $res = Join-Path $OutDir ($Id + '.json')
+    if (Test-Path -LiteralPath $res -PathType Leaf) {
+        try { $out += @([string](Get-JsonProp ([IO.File]::ReadAllText($res, $script:Utf8) | ConvertFrom-Json) 'start') | Where-Object { $_ }) }
+        catch { Write-Log "доставлене ${Id}: результат не прочитано — $(ConvertTo-NoteText $_.Exception.Message)" }
     }
-    Write-Log "копія задачі $dir лишається: $Why"
+    $bundle = Join-Path $OutDir ($Id + '.bundle')
+    if (Test-Path -LiteralPath $bundle -PathType Leaf) {
+        $r = Invoke-Git @('bundle', 'list-heads', $bundle) -AllowFail
+        if ($r.Code -eq 0) { $out += @([regex]::Matches($r.Out, '(?m)^([0-9a-f]{40,64}) ') | ForEach-Object { $_.Groups[1].Value }) }
+        else { Write-Log "доставлене ${Id}: голови бандла не прочитано — код $($r.Code): $(ConvertTo-NoteText $r.Err)" }
+    }
+    $out
 }
 
 # Рядок звіту без Markdown-обрамлення (`**…**`, зворотні лапки): єдине правило приймання звіту й пошуку його
@@ -1444,7 +1456,7 @@ function Resume-Interrupted {
         $status.code = 'INTERRUPTED'
         Write-Log "прогін $($status.id) перервано — закриваю"
         Complete-Status $status $sf.FullName '' ([datetime]::MinValue)
-        if ($script:BundleError) { Hold-RunCopy ([string]$status.id) "бандл перерваного прогону не створено: $script:BundleError" }
+        if ($script:BundleError) { [void](Hold-TaskCopy (Join-Path (Join-Path $RunsDir 'w') ([string]$status.id)) "бандл перерваного прогону не створено: $script:BundleError") }
     }
 }
 
@@ -1572,9 +1584,11 @@ function Invoke-Task($M, $Job) {
             $waitCode = $(if ($copyFailed) { 'COPY_FAILED' } elseif ($status.code) { [string]$status.code } else { $waitCode })
             Write-RunCause $id $waitCode (Get-RunCause $waitCode)
         }
-        # Зроблене — у гілці gemini/<наряд> клону (і в бандлі): копія задачі геть, лишається лише з комітами поза гілками.
-        $kept = Close-TaskCopy @('--branches', '--remotes')
-        if ($kept) { Write-Log "наряд $($M.Name): копія $kept лишається — коміти поза гілками" }
+        # Зроблене — у бандлі (кінець) чи в стані чекання квоти: копія задачі геть, лишається з комітами поза доставленим.
+        $also = @($status.start)
+        if ($waiting -and $script:TaskCopy) { $ws = Get-MarkerState $M; if ($ws.Kind -eq 'WAIT') { $also += [string](Get-JsonProp $ws.Wait 'head') } }
+        $kept = Close-TaskCopy (Get-RunDelivered $id $also)
+        if ($kept) { Write-Log "наряд $($M.Name): копія $kept лишається — коміти поза доставленим" }
     }
 }
 
@@ -1707,8 +1721,8 @@ function Close-StoppedRun($Run, [string]$Code, [string]$Reason, [string]$MarkerS
     перерваний (Complete-Status): незакомічене в `аудит/проби/<наряд>/` копії — комітом обгортки (Save-RunRecord), гілка
     наряду — бандлом, і публікатор дає `<код>_PUBLISHED`. $MarkerSha і $StatePath — позначка й стан, які кінець закриває
     (ЗНЯТО — голова «ЗНЯТО…»: публікатор звіряє результат із позначкою на origin). Записане не закомічено — кінець
-    RECORD_FAILED (причина й шлях копії — у результаті), а копія лишається з `kept.txt` для відновлення (Clear-TaskCopies її
-    не чіпає). Так само, коли бандл не вдався чи факти гілки не прочитано (Complete-Status): зроблене тоді лише в гілці й
+    RECORD_FAILED (причина й шлях копії — у результаті), а копія лишається для відновлення (Hold-TaskCopy: відв'язана від
+    гілки, з `kept.txt`). Так само, коли бандл не вдався чи факти гілки не прочитано (Complete-Status): зроблене тоді лише в гілці й
     копії. Прогін без початку гілки — $false. #>
     $j = $Run.Json
     if (-not [string](Get-JsonProp $j 'start')) { return $false }
@@ -1735,7 +1749,7 @@ function Close-StoppedRun($Run, [string]$Code, [string]$Reason, [string]$MarkerS
     $hold = ''
     if ($rec.Error) { $hold = "записане ${Code} не закомічено: $($rec.Error)" }
     elseif ($script:BundleError) { $hold = "бандл ${Code} не створено: $script:BundleError" }
-    if ($hold) { Hold-RunCopy ([string]$Run.Id) $hold } else { [void](Remove-TaskCopy $copy @('--branches', '--remotes')) }
+    if ($hold) { [void](Hold-TaskCopy $copy $hold) } else { [void](Remove-TaskCopy $copy (Get-RunDelivered ([string]$Run.Id))) }
     $true
 }
 
@@ -2107,7 +2121,7 @@ function Main {
                         '+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*')
                 $script:Limits = Get-Limits
                 # Перервані й накопичене — після першого успішного fetch: прохід, що впав на fetch, їх не знімає.
-                if ($clean) { Resume-Interrupted; Clear-TaskCopies (Join-Path $RunsDir 'w') @('--branches', '--remotes'); $clean = $false }
+                if ($clean) { Resume-Interrupted; Clear-TaskCopies (Join-Path $RunsDir 'w') { param($Id) Get-RunDelivered $Id }; $clean = $false }
                 Import-SleepRetries
                 Clear-OrphanClaims $RunsDir
                 $script:Agy = Find-EngineExe $AgyExe
