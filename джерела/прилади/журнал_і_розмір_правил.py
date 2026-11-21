@@ -126,7 +126,7 @@ def понад_межу(корінь):
 
 def зібрати(корінь, база):
     р = subprocess.run(["git", "-C", корінь, "show", "%s:%s" % (база, ЖУРНАЛ)],
-                       capture_output=True, text=True, encoding="utf-8")
+                       capture_output=True, text=True, encoding="utf-8", check=False)
     старий = р.stdout if р.returncode == 0 else ""
     нових, пар_всього, вади = звірити_журнал(корінь, старий)
     міряних, великі = понад_межу(корінь)
@@ -153,7 +153,8 @@ def самоперевірка():
                     "- **2.3** → `a.md`, «розділ» — «потреба в тестах»\n",
         }.items():
             os.makedirs(os.path.dirname(os.path.join(т, шлях)), exist_ok=True)
-            open(os.path.join(т, шлях), "w", encoding="utf-8").write(зміст)
+            with open(os.path.join(т, шлях), "w", encoding="utf-8") as файл:
+                файл.write(зміст)
         старий = "- **1.1** старий «ц» → `a.md` — «нема такого»\n"
         нових, пар, вади = звірити_журнал(т, старий)
         assert (нових, пар) == (3, 3), (нових, пар)
@@ -176,7 +177,8 @@ def головна():
     звіт = зібрати(os.path.abspath(а.корінь), а.база)
     sys.stdout.write(звіт)
     if а.md:
-        open(а.md, "w", encoding="utf-8").write(звіт)
+        with open(а.md, "w", encoding="utf-8") as файл:
+            файл.write(звіт)
 
 
 if __name__ == "__main__":

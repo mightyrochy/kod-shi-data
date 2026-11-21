@@ -495,7 +495,11 @@ def main(argv=None):
         if п.коміт:
             зміни = зміни_коміту(п.коміт)
         else:
-            текст = sys.stdin.read() if п.файли == "-" else open(п.файли, encoding="utf-8").read()
+            if п.файли == "-":
+                текст = sys.stdin.read()
+            else:
+                with open(п.файли, encoding="utf-8") as файл:
+                    текст = файл.read()
             зміни = з_api(json.loads(текст)) if текст.lstrip().startswith("[") else з_name_status(текст)
         так, перший, чому = вердикт(зміни)
         print("документ" if так else f"ні: {перший} — {чому}")

@@ -28,7 +28,8 @@ import argparse, concurrent.futures, gzip, hashlib, json, os, shutil, subprocess
 
 
 def сцени(лише=None):
-    список = json.load(open(СЦЕНИ, encoding='utf-8'))['сцени']
+    with open(СЦЕНИ, encoding='utf-8') as файл:
+        список = json.load(файл)['сцени']
     if лише:
         невідомі = set(лише) - {с['ім'] for с in список}
         if невідомі:
@@ -48,10 +49,13 @@ def записати_сцену(сцена, арг):
     середовище.update(сцена['оточення'])
     t0 = time.time()
     п = subprocess.run(['node', СТЕНД, 'http://127.0.0.1:8765', арг.корінь, арг.pyodide, str(сцена['сід'])], env=середовище,
-                       cwd=КОРІНЬ_РЕПО, text=True, capture_output=True)
-    вхід = open(сирий, 'rb').read() if os.path.exists(сирий) else b''
+                       cwd=КОРІНЬ_РЕПО, text=True, capture_output=True, check=False)
     if os.path.exists(сирий):
+        with open(сирий, 'rb') as файл:
+            вхід = файл.read()
         os.remove(сирий)
+    else:
+        вхід = b''
     ціль = файл_входів(сцена)
     with gzip.GzipFile(ціль, 'wb', compresslevel=9, mtime=0) as ф:    # mtime=0: той самий вміст — той самий файл
         ф.write(вхід)
@@ -80,14 +84,17 @@ def запустити(середовище, сцена, арг, вихід, п�
     if підміна:
         команда += ['--портативна', підміна]
     if os.path.exists(вихід) and os.path.exists(вихід + '.час.json') and not арг.наново:
-        return вихід, json.load(open(вихід + '.час.json', encoding='utf-8'))    # знімок уже є: повторний запуск дописує лише нове
+        with open(вихід + '.час.json', encoding='utf-8') as файл:
+            return вихід, json.load(файл)    # знімок уже є: повторний запуск дописує лише нове
     t0 = time.perf_counter()
     п = запустити_python(команда, text=True, capture_output=True)
     if п.returncode:
         raise RuntimeError('%s %s: rc %d\n%s' % (середовище, сцена['ім'], п.returncode, (п.stdout + п.stderr)[-800:]))
-    час = json.load(open(вихід + '.час.json', encoding='utf-8'))
+    with open(вихід + '.час.json', encoding='utf-8') as файл:
+        час = json.load(файл)
     час['стіна_с'] = round(time.perf_counter() - t0, 1)
-    json.dump(час, open(вихід + '.час.json', 'w', encoding='utf-8'), ensure_ascii=False)
+    with open(вихід + '.час.json', 'w', encoding='utf-8') as файл:
+        json.dump(час, файл, ensure_ascii=False)
     return вихід, час
 
 
@@ -104,12 +111,14 @@ def прогнати_сцену(сцена, арг):
 
 
 def байти(шлях):
-    return open(шлях, 'rb').read()
+    with open(шлях, 'rb') as файл:
+        return файл.read()
 
 
 def розбіжні_виклики(шлях_а, шлях_б):
     """Номери й імена викликів, чий результат у двох знімках різний (порівняння рядків знімка)."""
-    ра, рб = [open(ш, encoding='utf-8').read().splitlines()[1:] for ш in (шлях_а, шлях_б)]
+    with open(шлях_а, encoding='utf-8') as файл_а, open(шлях_б, encoding='utf-8') as файл_б:
+        ра, рб = [файл.read().splitlines()[1:] for файл in (файл_а, файл_б)]
     різні = [(i, json.loads(а)['ім']) for i, (а, б) in enumerate(zip(ра, рб)) if а != б]
     return різні, len(ра) == len(рб)
 
@@ -148,8 +157,10 @@ def прогнати(арг):
             print('%-18s викликів %3d · Pyodide≡Pyodide %s · розбіжних %2d · змін змісту %2d · мс P/P/C %.0f/%.0f/%.0f' % (
                 ім, р['викликів'], 'так' if р['pyodide_тотожні'] else 'НІ', р['розбіжних'], змін, р['мс']['pyodide_а'],
                 р['мс']['pyodide_б'], р['мс']['cpython']), flush=True)
-    json.dump(результати, open(os.path.join(арг.вихід, 'підсумок.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
-    open(os.path.join(арг.вихід, 'підсумок.md'), 'w', encoding='utf-8').write(таблиця(результати, арг.j))
+    with open(os.path.join(арг.вихід, 'підсумок.json'), 'w', encoding='utf-8') as файл:
+        json.dump(результати, файл, ensure_ascii=False, indent=1)
+    with open(os.path.join(арг.вихід, 'підсумок.md'), 'w', encoding='utf-8') as файл:
+        файл.write(таблиця(результати, арг.j))
     print(таблиця(результати, арг.j))
 
 
