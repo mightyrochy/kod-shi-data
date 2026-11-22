@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Black wool-blend blazer, tailored fit with notch lapels and a single vent, charcoal gray (hex #36454F), heavy woven fabric.\\nHigh-waisted straight-leg trousers in dark denim, standard cut reaching the ankle, navy blue (hex #000080), rigid cotton twill fabric.\\nA crisp white button-down shirt with a point collar and chest pockets, regular fit ending at the hip, pure white (hex #FFFFFF), poplin fabric.\\nChunky black leather ankle boots, square toe with a 2cm stacked heel, matte black (hex #1C1C1C), smooth calfskin leather fabric.\\nA sleek structured clutch in glossy patent leather, rectangular shape with gold-tone hardware, jet black (hex #000000), synthetic polymer and metal fabric.\\n\\nThis outfit strikes the perfect balance between your desire for a restrained, classic look and the energetic atmosphere of a rock concert on an autumn evening. The dark denim trousers paired with a crisp white shirt and a tailored charcoal blazer provide a sharp, timeless silhouette that stands out confidently against a crowd without being overly flashy. Heavy fabrics like wool-blend and rigid cotton ensure you stay warm during the cool fall weather inside the venue, while the low stacked heel offers practical comfort for standing through the entire show. By avoiding bright patterns or excessive embellishments, this ensemble honors your request for simplicity and elegance, letting the classic cuts and deep colors speak for themselves.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"blazer\\\",\\n      \\\"details\\\": \\\"tailored fit with notch lapels and a single vent\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"trousers\\\",\\n      \\\"details\\\": \\\"high-waisted straight-leg with standard cut reaching the ankle\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#000080\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"shirt\\\",\\n      \\\"details\\\": \\\"crisp button-down with a point collar and chest pockets, regular fit ending at the hip\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#FFFFFF\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"boots\\\",\\n      \\\"details\\\": \\\"chunky ankle boots with square toe and a 2cm stacked heel\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#1C1C1C\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"clutch\\\",\\n      \\\"details\\\": \\\"sleek structured rectangular shape with gold-tone hardware\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":658,\"output_tokens\":340},\"stop_reason\":\"end_turn\"}"
+ }
+}

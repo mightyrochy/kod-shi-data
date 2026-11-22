@@ -1,0 +1,51 @@
+── ПРОМПТ (6546 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: two_piece_set · about it: text н=1
+2 — kind: blazer · about it: text н=2
+3 — kind: cardigan · about it: text н=3
+4 — kind: bag_generic · about it: text н=4
+5 — kind: ring · about it: text н=5
+6 — kind: loafers · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This grey two-piece set is the foundation of your outfit, chosen because its level fits perfectly with a full-day excursion through the old town. Its soft fabric and relaxed silhouette provide comfort without sacrificing style, letting you move freely while exploring.",
+"2": "The black pinstripe blazer adds a touch of sophistication to your look, balancing the casual nature of the set. Its structured lines give your silhouette definition without feeling heavy or formal.",
+"3": "I selected this brown-and-black cardigan not only for its stylish contrast but also because its wool blend is ideal for cold weather, offering warmth during long outdoor hours. The lace cuffs add a delicate detail that elevates the overall aesthetic.",
+"4": "This red bag with a gold chain strap introduces a pop of color to your outfit and offers practicality for carrying essentials during your walk. Its sleek design complements the neutral tones of your clothing while standing out subtly.",
+"5": "The silver ring with screw motifs adds a minimalist yet intriguing accent to your ensemble. It catches light softly, adding a touch of elegance without overpowering the rest of your look.",
+"6": "I chose these mint green loafers for their comfort and ease of movement, making them perfect for long days of walking. Their suede material and classic design blend seamlessly with your outfit’s neutral palette while adding a refreshing pop of color.",
+"7": "I chose this layered look to keep you warm and comfortable as you walk around the old town all day, while the grey two-piece set gives a clean, relaxed base. The black pinstripe blazer adds structure without being stiff, and the brown-and-black cardigan lets you easily adjust to changing temperatures or wind. I paired it with black loafers that are easy on your feet for long walks, a sleek black bag that holds your essentials, and a silver ring that catches light softly against your skin. The mix of textures and tones feels modern but grounded, perfect for an immersive city stroll.",
+"8": "Wear the cardigan open over the blazer to create depth and allow easy adjustment if you get cold or warm during the tour."
+}
+
+── ВІДПОВІДЬ (2299 симв., 17.2 с, HTTP 200) ──
+```json
+{
+  "1": "Цей сірий комплект з двох частин — основа твого образу, обрана тому що його рівень ідеально підходить для цілоденної прогулянки старовинним містом. Його м’яка тканина та вільний силует забезпечують комфорт без шкоди для стилю, дозволяючи тобі вільно пересуватися під час дослідження.",
+  "2": "Чорний блейзер у смужку додає твоєму образу нотку вишуканості, збалансовуючи невимушений характер комплекту. Його структуровані лінії надають твоїй фігурі чіткості без відчуття тяжкості чи офіційності.",
+  "3": "Я обрала цей коричнево-чорний кардиган не лише за його стильний контраст, але й тому що суміш вовни ідеальна для холодної погоди, пропонуючи тепло під час тривалих прогулянок на вулиці. Мереживні манжети додають делікатну деталь, яка підкреслює загальну естетику.",
+  "4": "Ця червона сумка з золотим ланцюжком вносить яскравий акцент у твій образ і пропонує практичність для носіння необхідних речей під час прогулянки. Її елегантний дизайн доповнює нейтральні тони твого одягу, при цьому виділяючись ледь помітно.",
+  "5": "Срібне кільце з гвинтовими мотивами додає мінімалістичний, але цікавий акцент твоєму ансамблю. Воно м’яко відбиває світло, додаючи нотку елегантності без перевантаження решти твого образу.",
+  "6": "Я обрала ці м’ятні лофери за їхній комфорт і легкість рухів, що робить їх ідеальними для тривалих днів прогулянок. Їхня замша та класичний дизайн бездоганно поєднуються з нейтральною палітрою твого образу, при цьому додаючи свіжий акцент кольору.",
+  "7": "Я обрала цей багатошаровий образ, щоб ти була в теплі й комфорті під час прогулянок старовинним містом цілий день, а сірий комплект з двох частин дає чисту та розслаблену основу. Чорний блейзер у смужку додає структуру без відчуття скутості, а коричнево-чорний кардиган дозволяє тобі легко адаптуватися до змін температури або вітру. Я поєднала його з чорними лоферами, які зручні для ніг під час тривалих прогулянок, елегантною чорною сумкою, що вміщує твої необхідні речі, і срібним кільцем, яке м’яко відбиває світло на шкірі. Поєднання текстур та тонів виглядає сучасно, але при цьому має міцну основу — ідеально для занурення в атмосферу міста.",
+  "8": "Одягни кардиган розстебнутим поверх блейзера, щоб створити глибину й дозволити легко регулювати температуру під час екскурсії."
+}
+```

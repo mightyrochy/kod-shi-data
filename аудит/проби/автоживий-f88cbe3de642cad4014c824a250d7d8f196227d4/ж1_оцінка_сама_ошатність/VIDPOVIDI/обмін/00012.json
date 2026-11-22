@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Velvet Blouse, relaxed fit cut, knee-length hem, deep emerald green with hex code #04392B, rich velvet fabric.\\nWide-Leg Trousers, straight-leg cut, ankle length, charcoal gray with hex code #36454F, heavy wool blend fabric.\\nStructured Blazer, tailored fit cut, hip-length hem, midnight blue with hex code #191970, textured tweed fabric.\\nPointed-Toe Pumps, sleek silhouette, mid-calf height, copper bronze with hex code #B87333, polished leather material.\\nPearl Drop Earrings, classic stud cut, hanging length of two inches, white pearl with hex code #FDFEFE, cultured pearl and gold-tone metal.\\nStructured Leather Clutch, boxy shape cut, wrist-length strap, black with hex code #000000, smooth calf leather fabric.\\n\\nThis ensemble channels a sophisticated autumn celebration vibe while strictly adhering to the formal dress code requested. The combination of rich velvet and heavy wool tweed provides the necessary warmth for the season without relying on an outer layer, ensuring comfort in cooler temperatures. Deep emerald and charcoal tones create an elegant, polished look that feels celebratory yet respectful of formal boundaries. The copper bronze shoes add a warm metallic accent that ties the cool fabric tones together seamlessly.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Velvet Blouse\\\",\\n      \\\"details\\\": \\\"relaxed fit cut, knee-length hem, deep emerald green velvet fabric\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#04392B\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Wide-Leg Trousers\\\",\\n      \\\"details\\\": \\\"straight-leg cut, ankle length, charcoal gray heavy wool blend fabric\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Structured Blazer\\\",\\n      \\\"details\\\": \\\"tailored fit cut, hip-length hem, midnight blue textured tweed fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#191970\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Pointed-Toe Pumps\\\",\\n      \\\"details\\\": \\\"sleek silhouette, mid-calf height, copper bronze polished leather material\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#B87333\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Pearl Drop Earrings\\\",\\n      \\\"details\\\": \\\"classic stud cut, hanging length of two inches, white pearl cultured pearl and gold-tone metal\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#FDFEFE\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Structured Leather Clutch\\\",\\n      \\\"details\\\": \\\"boxy shape cut, wrist-length strap, black smooth calf leather fabric\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":638,\"output_tokens\":436},\"stop_reason\":\"end_turn\"}"
+ }
+}

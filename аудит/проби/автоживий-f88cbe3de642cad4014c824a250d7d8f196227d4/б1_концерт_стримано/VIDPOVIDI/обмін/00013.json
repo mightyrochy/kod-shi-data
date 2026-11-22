@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Charcoal wool-blend blazer, tailored fit, knee-length cut, #1e2325 color, heavy textured fabric.\\nCream silk blouse, relaxed fit, hem falling at waistline, #e3c3a2 color, smooth fluid fabric.\\nHigh-waisted black wide-leg trousers, straight cut, ankle length, #0f0f0f color, soft stretch cotton fabric.\\nBlack leather ankle boots, pointed toe, mid-calf height, #0a0a0a color, genuine leather material.\\n\\nThis outfit perfectly balances the request for restraint and classic style while remaining suitable for standing in a crowded venue during an evening event. The dark neutral palette of charcoal and black creates a streamlined silhouette that looks polished without being overly flashy under artificial club lighting. The structured blazer adds a layer of sophistication appropriate for the smart dress code, while the silk blouse introduces a subtle touch of warmth and texture against the cooler autumn air.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"Blazer\\\",\\n\\\"details\\\": \\\"charcoal wool-blend tailored fit knee-length cut heavy textured fabric\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#1e2325\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Blouse\\\",\\n\\\"details\\\": \\\"cream silk relaxed fit hem falling at waistline smooth fluid fabric\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#e3c3a2\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Trousers\\\",\\n\\\"details\\\": \\\"high-waisted black wide-leg straight cut ankle length soft stretch cotton fabric\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#0f0f0f\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Boots\\\",\\n\\\"details\\\": \\\"black leather pointed toe mid-calf height genuine leather material\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#0a0a0a\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":549,\"output_tokens\":241},\"stop_reason\":\"end_turn\"}"
+ }
+}

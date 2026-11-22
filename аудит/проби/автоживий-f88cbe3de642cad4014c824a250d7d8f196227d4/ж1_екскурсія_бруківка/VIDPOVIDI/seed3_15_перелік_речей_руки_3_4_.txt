@@ -1,0 +1,37 @@
+── ПРОМПТ (2120 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined knit top in charcoal gray with a subtle ribbed texture and a crew neck, offering warmth without bulk.\nSlim-fit trousers in matching charcoal wool-blend that provide structure and ease for walking on uneven cobblestones.\nLeather ankle boots in dark brown with a low, sturdy heel to ensure comfort during nine hours of movement.\nA lightweight trench coat in olive green made from waxed cotton to shield against autumn chill while remaining breathable.\nThis outfit works because the knit and wool blend prioritize warmth for the cold weather without restricting mobility for an all-day walking tour. The earthy color palette of charcoal, brown, and olive harmonizes beautifully with the historic stone architecture of the old town. Practical ankle boots and a water-resistant trench coat ensure she stays comfortable and protected against sudden rain or wind."}
+
+── ВІДПОВІДЬ (967 симв., 4.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "refined knit top",
+      "details": "charcoal gray with a subtle ribbed texture and a crew neck offering warmth without bulk",
+      "slot": "top",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "slim-fit trousers",
+      "details": "matching charcoal wool-blend providing structure and ease for walking on uneven cobblestones",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "leather ankle boots",
+      "details": "dark brown with a low, sturdy heel ensuring comfort during nine hours of movement",
+      "slot": "shoes",
+      "color_hex": "#3B2F2F",
+      "worn": true
+    },
+    {
+      "name": "lightweight trench coat",
+      "details": "olive green made from waxed cotton to shield against autumn chill while remaining breathable",
+      "slot": "outerwear",
+      "color_hex": "#556B2F",
+      "worn": true
+    }
+  ]
+}

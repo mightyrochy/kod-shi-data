@@ -1,0 +1,55 @@
+── ПРОМПТ (6372 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: boots · about it: text н=1
+2 — kind: shirt · about it: text н=2
+3 — kind: necklace · about it: text н=3
+4 — kind: skirt · about it: text н=4
+5 — kind: backpack · about it: text н=5
+6 — kind: coat · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "These boots are perfect for your occasion, offering comfort and stability on cobblestones while staying true to your palette.",
+"2": "This shirt fits your occasion with a breathable fabric that works well under layers for a full day out.",
+"3": "The necklace adds a personal, artistic touch to your neckline without overpowering your look.",
+"4": "This skirt offers structure and style that complements your active day, and its fabric suits the cold weather you’ll face.",
+"5": "This backpack keeps you hands-free and organized, perfect for carrying essentials during your long walk through the old town.",
+"6": "This coat provides essential warmth for cold conditions and is layered naturally over your outfit to keep you comfortable all day.",
+"7": "For a full day of walking through the old town on foot, your outfit is built for movement and warmth. The brown suede boots give you grip and steadiness on uneven stone streets, while the cream wool coat shields you from the cold with a soft, quiet layer. Underneath, the crisp white shirt keeps you cool against layers, and the plaid skirt adds a touch of classic structure that balances the casual nature of your adventure. The multi-toned beaded necklace brings an artistic detail to your neckline without weighing you down, and the backpack carries all you need for a long excursion hands-free.",
+"8": "Leave the coat open or buttoned up depending on the wind, letting you regulate warmth as you wander.",
+"9": "Сорочка на запах — A milky wrap blouse adds a top piece to the outfit, creating necessary layers for warmth without looking bulky.",
+"10": "Масивне намисто в коричневому кольорі — The brown necklace stays as it provides subtle color contrast against the warm neutral palette.",
+"11": "Рюкзак жіночий, ATTICO, шкіра, колір темно-коричневий — I accept this remark about the bag because it serves as essential protection for you during long hours outside in cold weather, ensuring your essentials stay safe while we explore the city."
+}
+
+── ВІДПОВІДЬ (2053 симв., 15.5 с, HTTP 200) ──
+{
+"1": "Ці черевики ідеальні для твоєї нагоди, пропонуючи комфорт та стійкість на бруківці й залишаючись вірними твоїй палітрі.",
+"2": "Ця сорочка підходить до твоєї нагоди з дихаючою тканиною, яка добре працює під шарами для цілого дня на вулиці.",
+"3": "Намисто додає особистий, художній штрих твоїй лінії шиї без перевантаження образу.",
+"4": "Ця спідниця пропонує структуру та стиль, які доповнюють твій активний день, а її тканина підходить для холодної погоди, яку ти зустрінеш.",
+"5": "Цей рюкзак залишає руки вільними й організованими, ідеальний для перенесення необхідних речей під час твоєї довгої прогулянки старовинним містом.",
+"6": "Це пальто забезпечує важливе тепло у холодних умовах та природно одягається поверх твого образу, щоб ти почувалася комфортно цілий день.",
+"7": "Для цілого дня ходьби старовинним містом пішки, твій образ створений для руху й тепла. Коричневі замшеві черевики дають тобі зчеплення та стійкість на нерівних кам’яних вулицях, а кремове вовняне пальто захищає тебе від холоду м’яким і тихим шаром. Під ним біла сорочка зберігає прохолоду під шарами, а картата спідниця додає штрих класичної структури, що збалансовує невимушений характер твоєї пригоди. Багатобарвне намисто приносить художню деталь на твою лінію шиї без зайвої ваги, і рюкзак переносить усе необхідне для довгого походу вільними руками.",
+"8": "Залишай пальто розстебнутим або застебни його залежно від вітру, дозволяючи регулювати тепло під час блукання.",
+"9": "Сорочка на запах — Молочно-білий сорочка-халат додає верхній шар до образу, створюючи необхідні шари для тепла без вигляду громіздкості.",
+"10": "Масивне намисто в коричневому кольорі — Коричневе намисто залишається на місці, оскільки воно забезпечує тонкий колірний контраст з теплою нейтральною палітрою.",
+"11": "Рюкзак жіночий, ATTICO, шкіра, темно-коричневий колір — Я приймаю цей зауваження про сумку, тому що вона служить важливим захистом для тебе під час довгих годин на вулиці в холодну погоду, забезпечуючи безпеку твоїх необхідних речей, поки ми досліджуємо місто."
+}

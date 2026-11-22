@@ -1,0 +1,61 @@
+── ПРОМПТ (6968 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: dress_generic · about it: text н=1
+2 — kind: earrings · about it: text н=2
+3 — kind: scarf_generic · about it: text н=3
+4 — kind: dress_shoes · about it: text н=4
+5 — kind: brooch · about it: text н=5
+6 — kind: tote · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This black slip dress provides a clean, mono-object silhouette that feels effortless yet elevated, perfectly suited for your recovery journey while maintaining the formality expected of the evening.",
+"2": "Your silver earrings add a delicate sparkle near your face, balancing the depth of your black dress without competing with other accessories.",
+"3": "The red scarf introduces warmth and a pop of colour that complements your burgundy shoes, creating a cohesive look that feels intentional yet relaxed as you return to social life.",
+"4": "Your burgundy pumps ground the outfit in rich tones, adding a sense of steadiness and confidence to every step you take tonight.",
+"5": "This pearl brooch serves as a focal point near your neckline, bringing a touch of timeless elegance that aligns with the celebratory nature of the occasion.",
+"6": "The neutral tote bag keeps the ensemble practical and understated, ensuring you can carry essentials without disrupting the refined aesthetic.",
+"7": "I chose this black dress as your foundation for the evening, paired with your red scarf and burgundy shoes to ground the look in rich tones. Your silver earrings catch the light near your face, while the pearl brooch offers a touch of classic elegance at your neckline. The neutral tote keeps things practical yet refined. This outfit lives through your transition back to health, offering comfort without sacrificing the grace needed for this celebration.",
+"8": "Tuck the red scarf loosely around your neck to soften the dress's lines and bring warmth near your face.",
+"9": "Золотиста брошка із декором — Adding a golden brooch provides a focal point near the face that balances the cool tones of the black dress and silver ring.",
+"10": "Шопер Chestnut – ручна робота — Including a tote bag ensures the outfit is complete and functional for the event, adding a necessary layer of sophistication.",
+"11": "Sleep dress чорного кольору, Жіночі туфлі бордові шкіряні, Шопер Chestnut – ручна робота — I accept this finding because replacing the small silver ring with a golden brooch near your face creates a necessary focal point that prevents the outfit from looking monotonous, while maintaining the quiet luxury you desire for the evening.",
+"12": "Золотиста брошка із декором — The silver ring is too small to be a significant focal point; replacing it with a golden brooch adds more presence and color contrast.",
+"13": "Шопер Chestnut – ручна робота — Adding a tote bag is essential for the formal occasion, providing practicality and balance to the outfit's silhouette."
+}
+
+── ВІДПОВІДЬ (2548 симв., 19.8 с, HTTP 200) ──
+```json
+{
+  "1": "Ця чорна сукня-комбінація створює чистий силует, який здається без зусиль і водночас вишуканим, чудово підходить для твого шляху до одужання та відповідає урочистості вечора.",
+  "2": "Твої срібні сережки додають ніжний блиск біля обличчя, збалансовуючи глибину твоєї чорної сукні без зайвих аксесуарів.",
+  "3": "Червоний шарф вносить тепло та яскравий колір, який доповнює твої бордові туфлі, створюючи гармонійний образ, що здається продуманим і водночас розслабленим у твоєму поверненні до соціального життя.",
+  "4": "Твої бордові туфлі-човники підкреслюють вбрання насиченими тонами, додаючи відчуття стійкості та впевненості з кожним твоїм кроком сьогодні ввечері.",
+  "5": "Ця перлова брошка слугує акцентом біля лінії шиї, привносячи дотик позачасового шарму, який відповідає святковому характеру події.",
+  "6": "Нейтральна сумка-тоут робить ансамбль практичним і стриманим, забезпечуючи можливість носити необхідні речі без порушення вишуканого вигляду.",
+  "7": "Я обрала цю чорну сукню як основу твого вечірнього образу, доповнивши її червоним шарфом та бордовими туфлями для підкреслення насичених тонів. Твої срібні сережки ловлять світло біля обличчя, а перлова брошка пропонує дотик класичної елегантності на лінії шиї. Нейтральна сумка-тоут робить образ практичним і водночас вишуканим. Цей одяг супроводжуватиме тебе у твоєму поверненні до здоров’я, забезпечуючи комфорт без шкоди для грації, необхідної для цього святкування.",
+  "8": "Недбало обгорни червоний шарф навколо шиї, щоб пом’якшити лінії сукні та наблизити тепло до твого обличчя.",
+  "9": "Золота брошка з декором — Додавання золотої брошки створює акцент біля обличчя, який врівноважує холодні тони чорної сукні та срібного персня.",
+  "10": "Шопер Chestnut – ручна робота — Включення сумки-тоут завершує образ і робить його функціональним для події, додаючи необхідний шар витонченості.",
+  "11": "Сукня-комбінація чорного кольору, Жіночі туфлі бордові шкіряні, Шопер Chestnut – ручна робота — Я погоджуюся з цим рішенням, адже заміна маленького срібного персня на золоту брошку біля обличчя створює необхідний акцент, який запобігає монотонності образу, зберігаючи при цьому тиху розкіш, яку ти бажаєш для вечора.",
+  "12": "Золота брошка з декором — Срібний перстень занадто малий, щоб бути значним акцентом; його заміна на золоту брошку додає більше присутності та контрасту кольорів.",
+  "13": "Шопер Chestnut – ручна робота — Додавання сумки-тоут є необхідним для формальної події, забезпечуючи практичність і баланс силуету вбрання."
+}
+```

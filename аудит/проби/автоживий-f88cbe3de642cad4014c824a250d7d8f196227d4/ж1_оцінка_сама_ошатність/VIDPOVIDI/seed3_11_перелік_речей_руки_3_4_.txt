@@ -1,0 +1,44 @@
+── ПРОМПТ (2116 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Wool-blend blazer, tailored fit with peaked lapels, charcoal gray (#3E454B), heavy woven fabric.\nSilk blouse, relaxed collar, ivory (#FFFFF0), lightweight crinkle silk.\nHigh-waisted wool trousers, straight leg, slate blue (#2C3539), felted worsted wool.\nLeather pumps, classic pointed toe, deep emerald green (#046A38), smooth calfskin.\nGold-tone bangle bracelet, open cuff design, polished brass.\nThis outfit works because the rich texture of the wool blazer and trousers anchors the ensemble for autumn weather while meeting the formal dress code requirements. The ivory silk blouse provides a soft contrast to the deep charcoal and slate tones, creating an elegant and sophisticated look suitable for a celebration. Completing the look with emerald pumps adds a vibrant pop of color that complements her skin tone without overpowering the refined silhouette."}
+
+── ВІДПОВІДЬ (750 симв., 4.4 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "Wool-blend blazer",
+"details": "Tailored fit with peaked lapels, heavy woven fabric",
+"slot": "outerwear",
+"color_hex": "#3E454B",
+"worn": true
+},
+{
+"name": "Silk blouse",
+"details": "Relaxed collar, lightweight crinkle silk",
+"slot": "top",
+"color_hex": "#FFFFF0",
+"worn": true
+},
+{
+"name": "Wool trousers",
+"details": "High-waisted straight leg, felted worsted wool",
+"slot": "bottom",
+"color_hex": "#2C3539",
+"worn": true
+},
+{
+"name": "Leather pumps",
+"details": "Classic pointed toe, smooth calfskin",
+"slot": "shoes",
+"color_hex": "#046A38",
+"worn": true
+},
+{
+"name": "Gold-tone bangle bracelet",
+"details": "Open cuff design, polished brass",
+"slot": "bracelet",
+"color_hex": null,
+"worn": true
+}
+]
+}

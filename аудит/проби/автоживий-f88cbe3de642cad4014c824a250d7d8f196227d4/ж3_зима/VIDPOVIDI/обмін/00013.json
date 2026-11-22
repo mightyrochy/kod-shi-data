@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A structured wool blend blazer in charcoal gray with a relaxed shoulder cut and notch lapels.\\nHigh-waisted pleated trousers in matching charcoal heather with a straight, fluid leg that allows for comfortable walking.\\nA fine-gauge merino cashmere crewneck sweater in soft cream with a ribbed hem and cuffs to layer underneath the blazer.\\nClassic black leather loafers with a low block heel to provide stability on slippery, salted office floors.\\nMatte gold stud hoop earrings that catch the morning daylight without drawing excessive attention.\\nA structured tote bag made of water-resistant canvas in deep navy to hold work essentials while repelling snow.\\n\\nThis outfit perfectly balances the \\\"neat\\\" dress code required for the office while prioritizing warmth against the frost and snow. The heavy wool blazer and cashmere layering ensure she stays comfortable during her 20-minute walk to the building, while the block heel in a loafers offers the stability needed on icy, salted surfaces. By choosing dark tones that blend with the snowy environment, the focus remains on her professional presence without creating visual contrast with the wintry weather. The relaxed cuts and soft textures ensure the ensemble remains easy to move in throughout her morning commute and daily activities.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"Structured wool blend blazer\\\",\\n\\\"details\\\": \\\"relaxed shoulder cut with notch lapels, charcoal gray color\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#36454F\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"High-waisted pleated trousers\\\",\\n\\\"details\\\": \\\"straight fluid leg, matching charcoal heather color\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#384247\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Fine-gauge merino cashmere crewneck sweater\\\",\\n\\\"details\\\": \\\"ribbed hem and cuffs, soft cream color\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#FFFFF0\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Classic black leather loafers\\\",\\n\\\"details\\\": \\\"low block heel, designed for stability on slippery floors\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#000000\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Matte gold stud hoop earrings\\\",\\n\\\"details\\\": \\\"catch daylight without drawing excessive attention\\\",\\n\\\"slot\\\": \\\"earrings\\\",\\n\\\"color_hex\\\": \\\"#C6A87C\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"Structured tote bag\\\",\\n\\\"details\\\": \\\"water-resistant canvas in deep navy, holds work essentials\\\",\\n\\\"slot\\\": \\\"bag\\\",\\n\\\"color_hex\\\": \\\"#192334\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":607,\"output_tokens\":352},\"stop_reason\":\"end_turn\"}"
+ }
+}

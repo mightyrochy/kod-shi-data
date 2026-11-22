@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined knit top in charcoal gray with a subtle ribbed texture and a crew neck, offering warmth without bulk.\\nSlim-fit trousers in matching charcoal wool-blend that provide structure and ease for walking on uneven cobblestones.\\nLeather ankle boots in dark brown with a low, sturdy heel to ensure comfort during nine hours of movement.\\nA lightweight trench coat in olive green made from waxed cotton to shield against autumn chill while remaining breathable.\\nThis outfit works because the knit and wool blend prioritize warmth for the cold weather without restricting mobility for an all-day walking tour. The earthy color palette of charcoal, brown, and olive harmonizes beautifully with the historic stone architecture of the old town. Practical ankle boots and a water-resistant trench coat ensure she stays comfortable and protected against sudden rain or wind.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"refined knit top\\\",\\n      \\\"details\\\": \\\"charcoal gray with a subtle ribbed texture and a crew neck offering warmth without bulk\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"slim-fit trousers\\\",\\n      \\\"details\\\": \\\"matching charcoal wool-blend providing structure and ease for walking on uneven cobblestones\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"leather ankle boots\\\",\\n      \\\"details\\\": \\\"dark brown with a low, sturdy heel ensuring comfort during nine hours of movement\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#3B2F2F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"lightweight trench coat\\\",\\n      \\\"details\\\": \\\"olive green made from waxed cotton to shield against autumn chill while remaining breathable\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#556B2F\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":515,\"output_tokens\":300},\"stop_reason\":\"end_turn\"}"
+ }
+}
