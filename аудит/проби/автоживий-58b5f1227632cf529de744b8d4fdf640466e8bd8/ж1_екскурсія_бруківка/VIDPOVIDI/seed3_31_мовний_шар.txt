@@ -1,0 +1,60 @@
+── ПРОМПТ (7238 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: jacket · about it: text н=1
+2 — kind: shirt · about it: text н=2
+3 — kind: blazer · about it: text н=3
+4 — kind: belt · about it: text н=4
+5 — kind: ankle_boots · about it: text н=5
+6 — kind: skirt · about it: text н=6
+7 — kind: backpack · about it: text н=7
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This jacket is here because its level matches your occasion perfectly, offering reliable warmth and a classic silhouette that stands up to the cold weather you mentioned.",
+"2": "I kept this green plaid shirt in your outfit even though it leans toward a neater look; its vibrant color adds freshness to the otherwise neutral palette, and its relaxed fit makes long days of walking comfortable.",
+"3": "This grey blazer fits well with your body since it offers structure without bulk, balancing volume on top so your lower half remains light and unencumbered while you move through the city.",
+"4": "Even though a belt isn't strictly needed for metrics here, I included it because it gives you the option to define your waist whenever you want, adding a touch of intentionality to your outfit.",
+"5": "These ankle boots were chosen for their formality match with the occasion and because their dark tone belongs within your color palette, grounding the outfit while you walk all day.",
+"6": "This beige skirt fits your casual yet polished everyday style, offering comfort and fluidity for hours of walking without sacrificing elegance.",
+"7": "Your cream backpack complements the palette of your outfit while providing practical space to carry essentials throughout your excursion.",
+"8": "I chose this layered look to keep you warm against the cold weather while staying stylish for your entire day-long tour of the old town. The denim jacket provides a sturdy outer layer that fits your needs, and the grey blazer adds structure under it. The beige skirt is soft and comfortable for long periods of walking, while the green shirt brings a fresh contrast to the muted tones around you. Your cream backpack feels practical for carrying essentials, and the ankle boots give you stable support on uneven city streets.",
+"9": "Tuck the front of the green plaid shirt into the waistband of the beige skirt to define your waistline and add comfort during movement.",
+"10": "Базовий жакет з вовни ягнят темно-сірий — Replacing the velvet blazer with this woven straight cut version creates a proper top/bottom pairing and fits better over the sweater layer needed for warmth.",
+"11": "Пасок з пір’ям декольте тауп — This taupe belt adds the missing third piece to style the outfit, defining the waist under the long outerwear and preventing the look from being just a base.",
+"12": "Сорочка трансформер зелена клітинка, Базовий жакет з вовни ягнят темно-сірий, Черевики жіночі, ATTICO, шкіра, колір коричневий, Спідниця зі шлицею пісок, Рюкзак жіночий Welfare бежевий, Джинсовий бомбер з накладними кишенями Люсьєна — I accept that these pieces sit above the everyday occasion band because they elevate you for a full-day excursion in the historic center, turning a simple walk into an experience worthy of the old city's beauty."
+}
+
+── ВІДПОВІДЬ (2956 симв., 21.8 с, HTTP 200) ──
+```json
+{
+"1": "Цей жакет тут тому, що його рівень ідеально відповідає твоїй нагоді, пропонуючи надійне тепло та класичний силует, який витримує холодну погоду, яку ти згадала.",
+"2": "Я залишила цю зелену картату сорочку у твоєму образі, хоча вона схиляється до більш охайного вигляду; її яскравий колір додає свіжості нейтральній палітрі, а вільний крій робить довгі дні прогулянок комфортними.",
+"3": "Цей сірий блейзер добре сидить на твоїй фігурі, оскільки він дарує структуру без об’ємності, збалансовуючи верхню частину тіла так, щоб твоя нижня частина залишалася легкою та не сковувала рухи під час прогулянки містом.",
+"4": "Хоча пасок тут суворо не потрібен за показниками, я його додала, тому що він дає тобі можливість визначити свою талію тоді, коли ти захочеш, додаючи до твого образу нотку навмисності.",
+"5": "Ці черевики були обрані через їхню відповідність нагоді у плані формальності, а також тому, що їхній темний тон вписується у твою колірну палітру, заземлюючи образ під час цілоденної прогулянки.",
+"6": "Ця бежева спідниця відповідає твоєму повсякденному та водночас вишуканому стилю, пропонуючи комфорт і легкість для годин ходьби без втрати елегантності.",
+"7": "Твій кремовий рюкзак доповнює палітру твого образу, забезпечуючи практичне місце для перенесення необхідних речей під час твоєї екскурсії.",
+"8": "Я обрала цей багатошаровий образ, щоб ти була в теплі проти холодної погоди та залишалася стильною протягом усього дня-довгої прогулянки старовинним містом. Джинсовий жакет дарує тобі надійний зовнішній шар, який відповідає твоїм потребам, а сірий блейзер додає структури під ним. Бежева спідниця м’яка та зручна для тривалих періодів ходьби, а зелена сорочка привносить свіжий контраст у приглушені тони навколо тебе. Твій кремовий рюкзак здається практичним для перенесення необхідних речей, а черевики дарують тобі стійку підтримку на нерівних міських вулицях.",
+"9": "Заправ передню частину зеленої картатої сорочки у пояс бежевої спідниці, щоб визначити лінію талії та додати комфорту під час руху.",
+"10": "Базовий жакет з вовни ягнят темно-сірий — Замінивши оксамитовий блейзер на цю версію прямого крою, ми створили правильне поєднання верхньої та нижньої частини образу і він краще сидить поверх шару светра, необхідного для тепла.",
+"11": "Пасок з пір’ям декольте сіро-бежевий — Цей сіро-бежевий пасок додає відсутню третю деталь до стилю образу, визначаючи талію під довгою верхньою частиною і запобігаючи тому, щоб образ виглядав просто як основа.",
+"12": "Сорочка трансформер зелена клітинка, Базовий жакет з вовни ягнят темно-сірий, Черевики жіночі, ATTICO, шкіра, колір коричневий, Спідниця зі шлицею пісок, Рюкзак жіночий Welfare бежевий, Джинсовий бомбер з накладними кишенями Люсьєна — Я погоджуюсь, що ці речі знаходяться вище повсякденної смуги подій, тому що вони підносять тебе для цілоденної екскурсії історичним центром, перетворюючи просту прогулянку на подію, гідну краси старого міста."
+}
+```
