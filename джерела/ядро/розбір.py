@@ -23,6 +23,7 @@ class Опис:
     фото_не_те: tuple
     про_речі: tuple
     заміна: dict | None = None
+    кадри_оцінено: bool = False
 
 
 def схема(вид):
@@ -172,7 +173,7 @@ def _опис(дані, образ):
         raise _Невірне("wrong_photos", "item outside outfit")
     пояснення = {рядок["n"]: рядок["text"] for рядок in про_речі}
     return Опис(образ.ід, склад, дані["text"], tuple(дані.get("how_to_wear", ())),
-                фото_не_те, tuple((н, пояснення[н]) for н in склад), дані.get("swap"))
+                фото_не_те, tuple((н, пояснення[н]) for н in склад), дані.get("swap"), "wrong_photos" in дані)
 
 
 def прочитати(відп, вид, пул, спроба=1, образи=(), образ=None, дозволені=None, відкинуті=None):
