@@ -141,15 +141,6 @@ try {
     $a = Marker 110 1 'STARTED {}'
     Write-FileAtomic ($a.Path -replace '\.txt$', '.claim') 'активна'
     Check 'квота не переносить уже взяту перевірку в хмару' (-not (Test-CloudMove "автоперевірка-110-$head" ([datetimeoffset]::UtcNow)))
-    $b = Marker 110 2 '' 'gemini-4-argon-high'
-    Check 'перенесення між смугами не знімає вже взяту перевірку' (-not (Move-BlockedMarkers "автоперевірка-110-$head" 'gemini-4-argon-high' $head ([datetimeoffset]::UtcNow)))
-    $a = Marker 111 1 'DONE BLOCKED' 'gemini-4-argon-high' 'p2'
-    $b = Marker 111 2 '' 'gpt-6.1-terra-high'
-    $moved = Move-BlockedMarkers "автоперевірка-111-$head" 'gemini-4-argon-high' $head ([datetimeoffset]::UtcNow)
-    $refs = @(Refs 111)
-    Check 'перенесення /2 враховує стан і створює нову спробу постачальника' ($moved -and "refs/heads/gemini-queue/автоперевірка-111-$head/gemini-4-argon-high/2/p2" -cin $refs -and "refs/heads/$($b.Name)" -cnotin $refs)
-    $a = Marker 112 1 'DONE BLOCKED'
-    Check 'кінцевий стан сам не запускає перенесення' (-not (Move-BlockedMarkers "автоперевірка-112-$head" 'gemini-4-argon-high' $head ([datetimeoffset]::UtcNow)))
     # Виняток саме у функції з текстового блоку: без ScriptName, як у читачах стану ланцюга.
     $script:BlockedModels = @()
     $a = Marker 113 1
@@ -179,7 +170,6 @@ function Get-MarkerState($M, [string]$StateDir) {
     Check 'рядок винятку читача має тип і функцію першого кадру' (@($lines | Where-Object { $_ -clike 'GEMINI ОБГОРТКА: ЛАНЦЮГ CHAIN_FAILED UnauthorizedAccessException Get-MarkerState ШЛЯХ *' }).Count -eq 1)
     $log = [IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'),$utf)
     Check 'журнал містить позначку, причину й стек читача' ($log -cmatch 'стан gemini-queue/автоперевірка-113-' -and $log.Contains('/закритий/стан') -and $log.Contains('at Get-MarkerState, <No file>'))
-    Check 'невідомий стан не передається іншому постачальнику' (-not (Move-BlockedMarkers "автоперевірка-113-$head" 'gemini-4-argon-high' $head ([datetimeoffset]::UtcNow)))
     Check 'невідомий стан не передається у хмару' (-not (Test-CloudMove "автоперевірка-113-$head" ([datetimeoffset]::UtcNow)))
     Request-CloudReview 113 $head
     Check 'пряма хмарна передача також зберегла всю голову' (@(Refs 113).Count -eq 2 -and -not (Test-Path -LiteralPath (Get-SeenPath "cloud-review 113 $head")))
@@ -196,7 +186,6 @@ function Get-MarkerState($M, [string]$StateDir) {
         $script:Repo = "$seed/.git"; $script:NoHooks = "$tmp/no-hooks"
         foreach ($dir in @($WorkDir,$OutboxDir,"$WorkDir/seen")) { [void][IO.Directory]::CreateDirectory($dir) }
         function Complete-EngineDrafts { }
-        function Get-ChainBuildStamp { '' }
         function Get-ChainBranchWork { '' }
         function Test-ModelQuota([string]$Model, $Now) { $Model -ceq 'gpt-6.1-terra-high' }
         function Get-ChainPulls { $script:TransferPull }
@@ -227,15 +216,8 @@ function Get-MarkerState($M, [string]$StateDir) {
         Invoke-WrapperChain
         $refs = @(Refs $n)
         Check 'позначка диспетчера на квоті: ланцюг не переносить її на іншу модель і не віддає хмарі' ($refs.Count -eq 1 -and $refs[0] -ceq $old -and @(CloudLines $n).Count -eq 0)
-        # Узяту роботу передавати не треба; це завершене рішення, на відміну від UNKNOWN.
-        foreach ($target in @('gemini-4-argon-high','claude-cloud')) {
-            $script:TransferTarget = $target; $script:TransferKind = 'TAKEN'
-            $script:TransferSlug = "автоперевірка-204-$head"
-            & git -C $seed push -q origin "${head}:refs/heads/gemini-queue/$script:TransferSlug/gpt-6.1-terra-high/1/p2"
-            $result = if ($target -ceq 'claude-cloud') { Test-CloudMove $script:TransferSlug ([datetimeoffset]::UtcNow) }
-                      else { Move-BlockedMarkers $script:TransferSlug $target $head ([datetimeoffset]::UtcNow) }
-            Check "$target — узята робота повертає рішення не потрібна" ($null -ne $result -and $result -ceq $false)
-        }
+        $script:TransferKind = 'TAKEN'
+        Check 'узята робота не потребує передачі в хмару' (-not (Test-CloudMove $script:TransferSlug ([datetimeoffset]::UtcNow)))
     }
 } catch { Check "виняток: $($_.Exception.Message) $($_.ScriptStackTrace)" $false }
 finally {

@@ -1,5 +1,5 @@
 ﻿#Requires -Version 5.1
-param([string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [ValidateSet('ДО','ПІСЛЯ')][string]$Phase = 'ПІСЛЯ')
+param([Alias('WrapperRoot')][string]$SourceDir = (Split-Path -Parent $PSScriptRoot), [ValidateSet('ДО','ПІСЛЯ')][string]$Phase = 'ПІСЛЯ')
 $ErrorActionPreference = 'Stop'
 $utf = New-Object Text.UTF8Encoding($false)
 $tmp = Join-Path ([IO.Path]::GetTempPath()) ('chain-build-' + [guid]::NewGuid().ToString('N'))
@@ -27,10 +27,10 @@ try {
     $script:Repo = $bare; $script:NoHooks = Join-Path $tmp 'no-hooks'
     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
     $head = Get-RefSha 'refs/remotes/origin/main'
-    $script:Pulls = @(); $script:Files = @{}; $script:Requests = @(); $script:FailPage = ''; $script:Ready = $true
+    $script:Pulls = @(); $script:Files = @{}; $script:Requests = @(); $script:FailPage = ''
     function Get-ChainPulls { $script:Pulls }
     function Complete-EngineDrafts { }
-    function Test-LiveModels($Config) { $script:Ready }
+    function Test-LiveModels { $true }
     function Invoke-ChainApi([string]$Path) {
         <# Відповіді саме REST files: відмова другої сторінки не приховує неповний список. #>
         $script:Requests += $Path
@@ -49,28 +49,14 @@ try {
         <# Реальні Git refs відокремленого origin, а не лічильник викликів функції. #>
         @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/ | Where-Object { $_ -match $Pattern })
     }
-    function Finish-Lane([string]$Stamp) {
-        <# Смуга, що скінчила позначку, пише її стан (DONE) до рядка кінця, а ref знімає пізніше: жива позначка штампу
-        (перенесення між рушіями) кінця не дає (`Get-LiveCompletion`). #>
-        foreach ($ref in @(Markers "автоживий-$Stamp/")) {
-            $name = $ref.Substring('refs/heads/'.Length)
-            $sha = (& git -C $remote rev-parse $ref).Trim()
-            $cc = ($name -split '/')[2] -cmatch '^cc-'
-            $dir = $(if ($cc) { "$tmp/claude-run/state" } else { Join-Path $OutDir 'marker-state' })
-            [void][IO.Directory]::CreateDirectory($dir)
-            if (-not $cc) { Write-FileAtomic (Join-Path $dir 'ready') '1' }
-            Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "refs/remotes/origin/$name $sha") + '.txt')) 'DONE стенд DONE'
-        }
-    }
-    function Merge([string]$Path, [string]$Text) {
+    function Merge([string]$Path, [string]$Text, [string]$Subject = 'злиття') {
         <# Створює наступний main і отримує його справжнім fetch. #>
         [IO.File]::WriteAllText((Join-Path $seed $Path), $Text, $utf)
-        & git -C $seed add -A; & git -C $seed commit -q -m 'злиття'; & git -C $seed push -q origin main
+        & git -C $seed add -A; & git -C $seed commit -q -m $Subject; & git -C $seed push -q origin main
         [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
         Get-RefSha 'refs/remotes/origin/main'
     }
     Invoke-WrapperChain
-    $after = $Phase -eq 'ПІСЛЯ'; $skip = if ($after) { 0 } else { 1 }
     # Позначки автоперевірок ставить диспетчер: за будь-якого складу файлів PR ланцюг їх не ставить і список файлів не читає.
     $paths = @('аудит/наряди/крок.md','джерела/a.py','.github/workflows/a.yml','аудит/адаптери/gemini/a.ps1','аудит/проби/a.py','каталог/a.json','a.py')
     $n = 1
@@ -81,52 +67,42 @@ try {
     Check "PR коду й документів, [НЕ ЗЛИВАТИ], дві сторінки файлів, збій сторінки: позначок автоперевірки=$(@(Markers 'автоперевірка-').Count)" (@(Markers 'автоперевірка-').Count -eq 0)
     Check 'список файлів PR ланцюг не читає' (@($script:Requests | Where-Object { $_ -match '/files\?' }).Count -eq 0)
     $script:FailPage = ''
+    $product = Merge 'джерела/a.py' '2'
+    $merged = Pull 21
+    $merged | Add-Member -NotePropertyName body -NotePropertyValue 'ЖИВИЙ ПІСЛЯ: с1_весілля — Чи проходить мірило?'
+    $merged | Add-Member -NotePropertyName merged_at -NotePropertyValue ([datetimeoffset]::UtcNow.ToString('o'))
+    $merged | Add-Member -NotePropertyName merge_commit_sha -NotePropertyValue $product
     $script:Pulls = @()
-    $product = Merge 'джерела/a.py' '2'; Invoke-WrapperChain
-    Check "злиття без збірки: автоживих=$(@(Markers 'автоживий-').Count)" (@(Markers 'автоживий-').Count -eq $skip)
-    $built = Merge 'build.txt' $product; Invoke-WrapperChain
-    $expected = if ($after) { 1 } else { 2 }
-    Check "злиття → збірка: автоживих=$(@(Markers 'автоживий-').Count)" (@(Markers 'автоживий-').Count -eq $expected)
-    if ($after) {
-        $ref = @(Markers "автоживий-$product/")[0]
-        Check 'ключ — штамп джерел, ref — перший коміт готової збірки' ((& git -C $remote rev-parse $ref).Trim() -ceq $built)
+    Invoke-WrapperChain
+    Check 'черга перед збіркою порожня' (@(Markers '.*').Count -eq 0)
+    $built = Merge 'build.txt' $product "збірка: $product"
+    # API відкритих PR не повертає вже злитий PR, навіть якщо він має рядок ЖИВИЙ ПІСЛЯ.
+    function Invoke-ChainApi([string]$Path) {
+        if ($Path -match 'pulls[?].*state=(all|closed)') { $merged }
     }
-    # Новий процес: тільки збережений стан і refs, без пам'яті поточного процесу.
-    $child = Join-Path $tmp 'restart.ps1'
-    $childText = @"
-`$ErrorActionPreference = 'Stop'
-. '$((Join-Path $SourceDir 'gemini_publish.ps1').Replace("'","''"))' -WorkDir '$($WorkDir.Replace("'","''"))' -OutDir '$($OutDir.Replace("'","''"))' -OutboxDir '$($OutboxDir.Replace("'","''"))'
-`$GeminiRunsDir = '$($GeminiRunsDir.Replace("'","''"))'
-`$script:Repo = '$($bare.Replace("'","''"))'
-`$script:NoHooks = '$($script:NoHooks.Replace("'","''"))'
-function Get-ChainPulls { @() }
-function Complete-EngineDrafts { }
-function Test-LiveModels { `$true }
-Invoke-WrapperChain
-"@
-    [IO.File]::WriteAllText($child, $childText, (New-Object Text.UTF8Encoding($true)))
-    & (Get-Process -Id $PID).Path -NoProfile -ExecutionPolicy Bypass -File $child
-    Check 'перезапуск процесу не дублює штамп' ($LASTEXITCODE -eq 0 -and @(Markers 'автоживий-').Count -eq $expected)
-    if ($after) {
-        $script:Ready = $false
-        $second = Merge 'джерела/a.py' '3'; Invoke-WrapperChain
-        $secondBuild = Merge 'build.txt' $second
-        $third = Merge 'джерела/a.py' '4'
-        $thirdBuild = Merge 'build.txt' $third
-        $later = Merge 'опис.md' 'після збірки'; Invoke-WrapperChain
-        $state = ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $WorkDir 'chain.json')))
-        Check 'два штампи згорнуто до останнього, поки попередній активний' ($state.live_pending.Count -eq 1 -and $state.live_pending[0].stamp -ceq $third)
-        $script:Ready = $true; Invoke-WrapperChain
-        Check 'активний прогін не породжує наступної позначки' (@(Markers 'автоживий-').Count -eq 1)
-        [void][IO.Directory]::CreateDirectory((Join-Path $WorkDir 'state'))
-        Finish-Lane $product
-        Write-FileAtomic (Join-Path $WorkDir 'state/report.json') ((@{slug="автоживий-$product";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$product $built"}) | ConvertTo-Json)
+    Invoke-WrapperChain
+    $expected = if ($Phase -eq 'ДО') { 1 } else { 0 }
+    $liveCount = @(Markers '/автоживий-').Count
+    Check "злито PR із ЖИВИЙ ПІСЛЯ, нова збірка: позначок автоживий-* — $liveCount" ($liveCount -eq $expected)
+    if ($Phase -eq 'ПІСЛЯ') {
+        # Старі резервації лишилися на диску після оновлення обгортки.
+        $state = Join-Path $WorkDir 'chain.json'
+        foreach ($published in @($false, $true)) {
+            Write-FileAtomic $state ((@{main=$built;reviewed=@{};reviews=@();
+                live_stamps=@($product);live_active=@{stamp=$product;main=$built;published=$published};live_pending=@()}) | ConvertTo-Json -Depth 5)
+            Invoke-WrapperChain
+            Check "старий стан (published=$published) не створює позначок" (@(Markers '/автоживий-').Count -eq 0)
+        }
+        # Окремий актор стенда ставить позначку на локальний origin, як диспетчер.
+        $slug = "автоживий-$product"
+        $queue = "gemini-queue/$slug/gpt-6.1-sol-high/1/p2-gpu"
+        $ref = "refs/heads/$queue"
+        & git -C $seed push -q origin "${built}:$ref"
+        if ($LASTEXITCODE -ne 0) { throw 'стенд не записав вхідну позначку диспетчера' }
+        $next = Merge 'джерела/a.py' '3'
+        [void](Merge 'build.txt' $next "збірка: $next")
         Invoke-WrapperChain
-        Check 'після звіту лише останній штамп має позначку на коміті своєї збірки' (@(Markers 'автоживий-').Count -eq 2 -and @(Markers "автоживий-$second/").Count -eq 0 -and (& git -C $remote rev-parse @(Markers "автоживий-$third/")[0]).Trim() -ceq $thirdBuild)
-        $back = Merge 'build.txt' $product; Invoke-WrapperChain
-        Check 'повтор старого штампу не ставить нового прогону' (@(Markers 'автоживий-').Count -eq 2)
-        $bad = Merge 'build.txt' 'пошкоджено'; Invoke-WrapperChain
-        Check 'пошкоджений штамп не створює позначки' (@(Markers 'автоживий-').Count -eq 2)
+        Check 'нова збірка зберігає єдину позначку диспетчера на її SHA' (@(Markers '/автоживий-').Count -eq 1 -and (& git -C $remote rev-parse $ref).Trim() -ceq $built)
         # Консоль задачі планувальника розірвана (10.11 23:04: «No process is on the other end of the pipe»): сетер
         # Console.InputEncoding кидає, але запуск процесу й stdin без BOM не залежать від нього — прохід не рветься.
         $keyFile = Join-Path $tmp 'key.txt'; [IO.File]::WriteAllText($keyFile, 'ключ', $utf)
@@ -137,13 +113,44 @@ Invoke-WrapperChain
         function Set-ConsoleInputEncoding($Encoding) { throw 'No process is on the other end of the pipe.' }
         $viaPublish = Invoke-Native 'git' @('hash-object', '--stdin') $tmp 1 'ключ'
         Check 'Invoke-Native публікації: сетер кодування кидає — процес запущено, stdin доставлено' ($viaPublish.Code -eq 0 -and $viaPublish.Out.Trim() -cin @($keyHash, $keyHashBom))
-        . (Join-Path $SourceDir 'queue_lanes.ps1')
+        . (Join-Path $SourceDir 'gemini_run.ps1') -RepoDir $seed -RunsDir "$tmp/runs" -OutDir "$tmp/gem-out" -LaneDir "$tmp/lanes" -EnableCodex
+        $script:StateDir = "$tmp/state"; $script:SlotDir = "$tmp/slots"
+        $script:Limits = @{slots=@{codex=1;agy=1}}
+        foreach ($dir in @($RunsDir,$OutDir,$LaneDir,$script:StateDir,$script:SlotDir)) { [void][IO.Directory]::CreateDirectory($dir) }
         function Set-ConsoleInputEncoding($Encoding) { throw 'No process is on the other end of the pipe.' }
         $viaLanes = Invoke-Native 'git' @('hash-object', '--stdin') $tmp 1 'ключ'
         Check 'Invoke-Native черги: сетер кодування кидає — процес запущено, stdin доставлено' ($viaLanes.Code -eq 0 -and $viaLanes.Out.Trim() -cin @($keyHash, $keyHashBom))
         function Get-AutoLivePlan { '{}' }
-        $context = Add-AutoTaskContext "автоживий-$product" 'Наряд' $built
-        Check 'наряд призначає дерево збірки й окремо називає штамп джерел' ($context.Contains("коміт збірки $built") -and $context.Contains("штамп build.txt $product"))
+        [void](Invoke-Git @('fetch','-q','origin',"${ref}:refs/remotes/origin/$queue"))
+        $marker = @(Get-Markers)
+        Check 'смуга читає дійсну GPU-позначку диспетчера з точною збіркою' ($marker.Count -eq 1 -and $marker[0].Valid -and $marker[0].Gpu -and $marker[0].Sha -ceq $built)
+        $context = Add-AutoTaskContext $marker[0].Slug 'Наряд' $marker[0].Sha
+        Check 'наряд призначає дерево збірки й окремо називає штамп джерел' ((Get-TaskSource $marker[0]) -ceq 'аудит/наряди/автоживий.md' -and $context.Contains("коміт збірки $built") -and $context.Contains("штамп build.txt $product"))
+        function Repair-GpuModels { }
+        function Remove-OrphanWaits { }
+        function Stop-GpuStalledRuns { }
+        function Get-GpuBusyReason { '' }
+        function Test-SlugBusy { $false }
+        function Select-Engine {
+            [pscustomobject]@{Engine=@{Name='codex';Model='стенд';Effort='high'};Model=$marker[0].Model;Quota=@{Blocked=$false;Known=$false;Left=0;Group=''}}
+        }
+        function Get-FreeSlot { 'codex-1' }
+        $script:StartedJob = $null
+        function Start-Worker($Job, [string]$Dir) {
+            $script:StartedJob = $Job
+            [pscustomobject]@{Slug=$Job.slug;Proc=@{HasExited=$true}}
+        }
+        $workers = New-Object Collections.ArrayList
+        $started = Start-Markers $workers
+        Check 'смуга взяла позначку диспетчера й передала її точний SHA процесу' ($started -eq 1 -and (Get-MarkerState $marker[0]).Kind -ceq 'TAKEN' -and $script:StartedJob.sha -ceq $built -and $script:StartedJob.slug -ceq $slug)
+
+        & git -C $seed checkout -q --detach $built
+        & git -C $seed commit -q --allow-empty -m 'ЗНЯТО: рішення диспетчера'
+        & git -C $seed push -q origin "HEAD:$ref"
+        if ($LASTEXITCODE -ne 0) { throw 'стенд не записав ЗНЯТО' }
+        [void](Invoke-Git @('fetch','-q','origin',"${ref}:refs/remotes/origin/$queue"))
+        $cancelled = @(Get-Markers)[0]
+        Check 'голова ЗНЯТО розпізнається для позначки автоживого' ($cancelled.Slug -ceq $slug -and (Test-MarkerCancelled $cancelled) -and $cancelled.Reason -ceq 'рішення диспетчера')
     }
 } catch { "✗ виняток стенда: $($_.Exception.Message) $($_.ScriptStackTrace)"; $failures++ }
 finally {
