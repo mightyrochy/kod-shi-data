@@ -10,7 +10,7 @@
   const tone = v => typeof v === 'string' && /^#[\da-f]{3}([\da-f]{3})?$/i.test(v) ? v : '';
   const sheet = node('mirror-sheet'), work=node('mirror-work');
   let following=true, lastTurn=null, drawerOpen=false;
-  let contextWords='', originator=null, extra='', pageMode='', headerKey='', headingTitle='', headingControls='', scheduled=false, other=false;
+  let contextWords='', originator=null, extra='', pageMode='', headerKey='', scheduled=false, other=false;
   const titles={'сценарій':'Образ','профіль':'Мій профіль','старт':'Мій профіль','оцінка':'Оцінити вбрання','сценарії':'Мої нагоди','образи':'Образ','бібліотека':'Мої образи','палітра':'Барви','очікування':'Збираю образи'};
   const actions=new Map();
   function move(item, parent){if(item&&parent&&item.parentNode!==parent)parent.append(item);}
@@ -59,10 +59,7 @@
     pair.render(режимЕкрана(),extra);if(changed){setDrawer(false);work.scrollTop=0;work.focus({preventScroll:true});}
   }
   function setHeading(title,controls){
-    headingTitle=title;headingControls=controls;
-    const signature=M.get()+title+controls;
-    if(headerKey===signature)return;
-    headerKey=signature;
+    const signature=title+controls;if(headerKey===signature)return;headerKey=signature;
     node('mirror-heading').innerHTML='<h1>'+escape(title)+'</h1><div class="studio-heading-actions">'+controls+'</div>';
   }
   function renderPerson(){
@@ -81,7 +78,7 @@
     const icon=Hand.mark(hand).replace(/style="fill:var\(--tlo\)"/g,'fill="'+(hand==='klyny'?'#e6e0d0':'#faf6ea')+'"');
     document.documentElement.style.setProperty('--speaker-mark','url("data:image/svg+xml,'+encodeURIComponent(icon)+'")');
     const meta=document.querySelector('meta[name=theme-color]');if(meta)meta.content=hand==='klyny'?'#e6e0d0':'#faf6ea';
-    setHeading(headingTitle,headingControls);renderPerson();
+    renderPerson();
   }
   function showThemes(){
     const choices=Object.entries(M.labels).map(([id,name])=>'<button type="button" data-swatch="'+id+'" data-ux="hand" data-value="'+id+'" aria-pressed="'+(id===M.get())+'"><span class="studio-swatch" aria-hidden="true">'+Hand.art(id,'welcome')+'</span><span class="studio-swatch-name">'+name+(id===M.get()?ik('так',17):'')+'</span></button>').join('');
@@ -270,7 +267,7 @@
     const shelf=document.createElement('div');shelf.id='mirror-saved-manual';node('біб-список').before(shelf);
     node('mirror-home').addEventListener('click',goFace);
     node('mirror-style').addEventListener('click',showThemes);node('mirror-person').addEventListener('click',()=>route('профіль'));
-    node('чат-поле').setAttribute('aria-label','Повідомлення стилістці');node('чат-поле').placeholder='Напиши стилістці…';
+    node('чат-поле').setAttribute('aria-label','Повідомлення стилістці');node('чат-поле').placeholder='Напиши…';
     node('чат-слати').innerHTML=ik('далі');node('чат-слати').setAttribute('aria-label','Надіслати');
     if(window.ResizeObserver){
       const size=new ResizeObserver(()=>decorateChoices());size.observe(node('mirror-choices'));size.observe(node('аркуш'));size.observe(node('pair-scene'));size.observe(node('пал-картка'));
