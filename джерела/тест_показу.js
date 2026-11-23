@@ -6212,7 +6212,10 @@ function поверненняЗаглушка(w){
     тест("перелік «Що я бачу на фото»: рядок на річ (місце сталим написом), кнопка активна, картки ще нема",
          !!$("оц-так") && !$("оц-так").disabled && !$("оц-речі").hidden
          && $("оц-речі").querySelectorAll(".оц-річ").length === СУД.речі.length && !$("оц-картка")
-         && $("оц-речі").closest(".studio-assessment")?.contains($("оц-фото"))
+         && d.querySelectorAll("#оц-фото").length === 1
+         && (d.documentElement.classList.contains("mirror-review-spread")
+             ? $("mirror-review-source").contains($("оц-фото")) && $("е-оцінка").contains($("оц-речі"))
+             : $("оц-речі").closest(".studio-assessment")?.contains($("оц-фото")))
          && $("е-оцінка").contains($("оц-результат"))
          && /Що я бачу на фото/.test($("оц-речі").textContent), $("оц-речі").textContent);
     $("оц-так").click();
