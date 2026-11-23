@@ -65,7 +65,7 @@ try {
         . ([scriptblock]::Create($fn.Extent.Text))
 
         # --- (2) збій плану автоживого ---
-        $live1 = 'автоживий-' + ('1' * 40)
+        $live1 = 'автоживий-' + ('1' * 40); $live2 = 'автоживий-' + ('2' * 40)
         $m = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/$live1/$model/1/gpu-p1`t$head`t$script:Clock")
         if ($lane -eq 'claude') { $m = Add-ClaudeFields $m }
         $sp = Get-StatePath (Get-MarkerKey $m)
@@ -86,6 +86,16 @@ try {
         Check "$lane (2): шоста спроба кінчається кодом PLAN_FAILED, а не ще одним REVIEW_API" ($kinds[5] -ne 'WAIT' -and $planDone)
         Check "$lane (2): до моделі збій плану не доходить" ($script:Models -eq 0)
         Check "$lane (2): жоден рядок диспетчерові не називає збій плану REVIEW_API" (@($script:Lines | Where-Object { $_ -match 'REVIEW_API' }).Count -eq 0)
+
+        # Вичерпаний бюджет запитів — чекання вікна: ні лічильника, ні PLAN_FAILED.
+        $script:PlanError = 'AUTO_BUDGET'; $script:Final = ''
+        $m2 = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/$live2/$model/1/gpu-p1`t$head`t$script:Clock")
+        if ($lane -eq 'claude') { $m2 = Add-ClaudeFields $m2 }
+        $sp2 = Get-StatePath (Get-MarkerKey $m2)
+        $id2 = '20261107-160100-abcdefabcdef'; $dir2 = Join-Path $WorkDir "runs/$id2"; [void][IO.Directory]::CreateDirectory($dir2)
+        $job2 = @{id = $id2; dir = $dir2; slot = 'стенд-1'; head = ''; sel = $job.sel}
+        for ($try = 1; $try -le 10; $try++) { [void](New-Claim $m2 $id2); $null = Invoke-Task $m2 $job2; $script:Clock += 121 }
+        Check "$lane (2): AUTO_BUDGET десять разів — WAIT, retakes=0, без PLAN_FAILED" ((Get-MarkerState $m2).Kind -ceq 'WAIT' -and (Get-Retakes $sp2) -eq 0 -and $script:Final -cne 'PLAN_FAILED' -and @($script:Lines | Where-Object { $_ -match $live2 }).Count -eq 0)
 
         # --- (3) GPU решти позначок проходу ---
         $script:Markers = @()

@@ -97,22 +97,23 @@ try {
         if ($skip -ge $script:Served.Count) { return @() }
         , @($script:Served | Select-Object -Skip $skip -First $per)
     }
+    function Reset-Budget { Remove-Item -LiteralPath (Join-Path $LaneDir 'review-api.json') -Force -ErrorAction SilentlyContinue }
     function Reset-Counters { $script:RestCalls = 0; $script:AutoApiCalls = 0; $script:RestFail = '' }
 
     Scenario '1 план: ДО (усі сторінки по 100) і ПІСЛЯ (до межі)' {
         $script:Served = New-PullSet 20 $true 250
         Check '1 набір як на ноутбуці: 3273 PR' ($script:Served.Count -eq 3273)
         # ДО: усе читання, як було (per_page=100, без ранньої зупинки, без бюджету-межі).
-        $keep = @($script:AutoPlanPerPage, $script:AutoPlanMaxPages, $script:AutoPlanMarginHours)
+        $keep = @($script:AutoPlanPerPage, $script:AutoPlanMaxPages, $script:AutoPlanMarginHours, $script:ReviewApiLimit)
         try {
-            $script:AutoPlanPerPage = 100; $script:AutoPlanMaxPages = 100; $script:AutoPlanMarginHours = 1000000
-            Reset-Counters
+            $script:AutoPlanPerPage = 100; $script:AutoPlanMaxPages = 100; $script:AutoPlanMarginHours = 1000000; $script:ReviewApiLimit = 100000
+            Reset-Budget; Reset-Counters
             $before = Get-AutoLivePlan $buildMain
             $callsBefore = $script:RestCalls
-        } finally { $script:AutoPlanPerPage, $script:AutoPlanMaxPages, $script:AutoPlanMarginHours = $keep }
+        } finally { $script:AutoPlanPerPage, $script:AutoPlanMaxPages, $script:AutoPlanMarginHours, $script:ReviewApiLimit = $keep }
         Check "1 ДО: $callsBefore запити на спробу, а без входу GitHub дає 60 на годину" ($callsBefore -eq 33)
         # ПІСЛЯ: налаштування за замовчуванням.
-        Reset-Counters
+        Reset-Budget; Reset-Counters
         $after = Get-AutoLivePlan $buildMain
         $callsAfter = $script:RestCalls
         "ПІСЛЯ: запитів на спробу = $callsAfter (ДО = $callsBefore)"
@@ -131,13 +132,13 @@ try {
     Scenario '2 склад плану не залежить від місця звіту й від кількох звітів' {
         foreach ($build in @(5, 20, 33, 39)) {
             $script:Served = New-PullSet $build $true 120
-            $keep = @($script:AutoPlanPerPage, $script:AutoPlanMaxPages, $script:AutoPlanMarginHours)
+            $keep = @($script:AutoPlanPerPage, $script:AutoPlanMaxPages, $script:AutoPlanMarginHours, $script:ReviewApiLimit)
             try {
-                $script:AutoPlanPerPage = 100; $script:AutoPlanMaxPages = 100; $script:AutoPlanMarginHours = 1000000
-                Reset-Counters
+                $script:AutoPlanPerPage = 100; $script:AutoPlanMaxPages = 100; $script:AutoPlanMarginHours = 1000000; $script:ReviewApiLimit = 100000
+                Reset-Budget; Reset-Counters
                 $full = Get-AutoLivePlan $buildMain
-            } finally { $script:AutoPlanPerPage, $script:AutoPlanMaxPages, $script:AutoPlanMarginHours = $keep }
-            Reset-Counters
+            } finally { $script:AutoPlanPerPage, $script:AutoPlanMaxPages, $script:AutoPlanMarginHours, $script:ReviewApiLimit = $keep }
+            Reset-Budget; Reset-Counters
             $short = Get-AutoLivePlan $buildMain
             Check "2 звіт збірки $build : плани однакові, запитів $($script:RestCalls) замість 33" ($short -ceq $full -and $script:RestCalls -lt 33 -and ((ConvertFrom-Json $short).since_sha -ceq $commits[$build]))
         }
@@ -145,24 +146,42 @@ try {
         $set = New-PullSet 15 $true 120
         $newer = Fake-Pull 6001 ('claude/автоживий-' + $commits[30]) ($dates[30].AddHours(2).ToString('yyyy-MM-ddTHH:mm:ssZ')) '' '' ("Звіт`nПЕРЕВІРЕНО ЗБІРКУ: " + $commits[30])
         $script:Served = @(@($set) + @($newer) | Sort-Object @{Expression = { $_.updated_at }; Descending = $true }, @{Expression = { $_.number }})
-        Reset-Counters
+        Reset-Budget; Reset-Counters
         $two = ConvertFrom-Json (Get-AutoLivePlan $buildMain)
         Check '2 два звіти: межа — збірка новішого' ($two.since_sha -ceq $commits[30] -and @($two.scenes.PSObject.Properties | ForEach-Object { @($_.Value) }).Count -eq 10)
     }
     Scenario '3 нема звіту: AUTO_PAGES, а не вічне повторення' {
         $script:Served = New-PullSet 20 $false 250
-        Reset-Counters
+        Reset-Budget; Reset-Counters
         $message = ''
         try { $null = Get-AutoLivePlan $buildMain } catch { $message = $_.Exception.Message }
         Check "3 без звіту читання стає на межі сторінок і каже AUTO_PAGES (запитів $($script:RestCalls))" ($message -ceq 'AUTO_PAGES' -and $script:RestCalls -eq $script:AutoPlanMaxPages)
+        Check '3 одна марна спроба лишає в бюджеті запас для інших читачів' ($script:AutoPlanMaxPages -lt $script:ReviewApiLimit)
     }
-    Scenario '4 збій читання плану' {
+    Scenario '4 бюджет без входу' {
         $script:Served = New-PullSet 20 $true 250
+        # 29 запитів уже витрачено за годину: далі пускаємо один, план без другої сторінки не збудується.
         Reset-Counters
+        $now = Get-ReviewTime
+        $calls = @(1..29 | ForEach-Object { $now - 60 })
+        Write-FileAtomic (Join-Path $LaneDir 'review-api.json') ([ordered]@{calls = $calls; until = 0} | ConvertTo-Json -Compress)
+        $message = ''
+        try { $null = Get-AutoLivePlan $buildMain } catch { $message = $_.Exception.Message }
+        $saved = ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $LaneDir 'review-api.json'), $utf))
+        Check '4 бюджет вичерпано: AUTO_BUDGET, у мережу пішов лише дозволений запит' ($message -ceq 'AUTO_BUDGET' -and $script:RestCalls -eq 1 -and @($saved.calls).Count -eq 30)
+        Check '4 перевірка PR бачить те саме вичерпання' ((Get-AutoReviewState ('автоперевірка-9-' + ('a' * 40))) -ceq 'REVIEW_API')
+        # Збій мережі: спільна пауза, наступна спроба не йде в мережу.
+        Reset-Budget; Reset-Counters
         $script:RestFail = 'HTTP 403'; $script:RestFailAt = 2
         $message = ''
         try { $null = Get-AutoLivePlan $buildMain } catch { $message = $_.Exception.Message }
-        Check '4 друга сторінка: HTTP 403 збережено й плану нема' ($message -ceq 'HTTP 403' -and $script:RestCalls -eq 2)
+        Check '4 збій 403 на другій сторінці: помилка мережі збережена, не AUTO_BUDGET' ($message -ceq 'HTTP 403' -and $script:RestCalls -eq 2)
+        $before = $script:RestCalls
+        $script:RestFail = ''
+        $message = ''
+        try { $null = Get-AutoLivePlan $buildMain } catch { $message = $_.Exception.Message }
+        Check '4 після збою діє спільна пауза: у мережу не йдемо' ($message -ceq 'AUTO_BUDGET' -and $script:RestCalls -eq $before)
+        Reset-Budget
     }
     Scenario '5 збій плану має свій код і будить диспетчера' {
         $m = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/автоживий-$('1' * 40)/cc-claude-sonnet-5-5-medium/1/gpu-p1`t$buildMain`t1")
@@ -177,6 +196,11 @@ try {
         $state = Get-MarkerState $m
         Check '5 останнє чекання записане з лічильником, часом +300 с, причиною й продовженням (head, base)' ($state.Kind -ceq 'WAIT' -and [int]$state.Wait.retakes -eq 5 -and [long]$state.Wait.until -eq 1000300 -and $state.Wait.reason -ceq 'AUTO_PAGES' -and $state.Wait.group -ceq 'PLAN_WAIT' -and $state.Wait.head -ceq ('c' * 40) -and $state.Wait.base -ceq ('d' * 40))
         Check '5 причина збою: код обгортки, статус HTTP або PLAN_ERROR — без тексту сервера' ((Get-PlanFailReason 'AUTO_PAGES') -ceq 'AUTO_PAGES' -and (Get-PlanFailReason 'The remote server returned an error: (403) rate limit exceeded.') -ceq 'HTTP_403' -and (Get-PlanFailReason 'Response status code does not indicate success: 429 (Too Many Requests).') -ceq 'HTTP_429' -and (Get-PlanFailReason 'щось інше') -ceq 'PLAN_ERROR')
+        # AUTO_BUDGET — чекання вікна, а не вада: лічильник не росте, межі нема.
+        $n = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/автоживий-$('2' * 40)/cc-claude-sonnet-5-5-medium/1/gpu-p1`t$buildMain`t1")
+        $budgetOk = $true
+        for ($i = 1; $i -le 12; $i++) { $budgetOk = $budgetOk -and [bool](Enter-PlanWait $n 'AUTO_BUDGET') }
+        Check '5 AUTO_BUDGET: двічі по шість разів чекання без PLAN_FAILED, retakes не росте' ($budgetOk -and (Get-Retakes (Get-StatePath (Get-MarkerKey $n))) -eq 0 -and $(Get-MarkerState $n).Wait.group -ceq 'REVIEW_API')
         # Автоперевірка PR лишається при REVIEW_API без межі, як і була.
         $r = ConvertTo-Marker ("refs/remotes/origin/gemini-queue/автоперевірка-41-$('a' * 40)/gpt-6.1-sol-high/1`t$buildMain`t1")
         $reviewOk = $true

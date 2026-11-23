@@ -85,24 +85,46 @@ try {
     $liveCount = @(Markers '/автоживий-').Count
     Check "злито PR із ЖИВИЙ ПІСЛЯ, нова збірка: позначок автоживий-* — $liveCount" ($liveCount -eq $expected)
     if ($Phase -eq 'ПІСЛЯ') {
-        # Старі резервації лишилися на диску після оновлення обгортки.
         $state = Join-Path $WorkDir 'chain.json'
-        foreach ($published in @($false, $true)) {
+        function Save-OldLiveState([bool]$Published) {
+            <# Збережений стан публікатора до вимкнення самопостановки. #>
             Write-FileAtomic $state ((@{main=$built;reviewed=@{};reviews=@();
-                live_stamps=@($product);live_active=@{stamp=$product;main=$built;published=$published};live_pending=@()}) | ConvertTo-Json -Depth 5)
-            Invoke-WrapperChain
-            Check "старий стан (published=$published) не створює позначок" (@(Markers '/автоживий-').Count -eq 0)
+                live_stamps=@($product);live_active=@{stamp=$product;main=$built;published=$Published};live_pending=@()}) | ConvertTo-Json -Depth 5)
         }
-        # Окремий актор стенда ставить позначку на локальний origin, як диспетчер.
+        Save-OldLiveState $false
+        Invoke-WrapperChain
+        Check 'старий неопублікований резерв залишає чергу порожньою' (@(Markers '/автоживий-').Count -eq 0)
+        # Позначку ставить окремий актор стенда лише в тимчасовий origin.
         $slug = "автоживий-$product"
-        $queue = "gemini-queue/$slug/gpt-6.1-sol-high/1/p2-gpu"
+        $model = 'gpt-6.1-sol-high'
+        $queue = "gemini-queue/$slug/$model/1/p2-gpu"
         $ref = "refs/heads/$queue"
         & git -C $seed push -q origin "${built}:$ref"
         if ($LASTEXITCODE -ne 0) { throw 'стенд не записав вхідну позначку диспетчера' }
+        # Старий ланцюг переносив опубліковану позначку, коли Codex на квоті, а Claude доступний.
+        [void][IO.Directory]::CreateDirectory("$OutDir/marker-state")
+        Write-FileAtomic "$OutDir/marker-state/ready" '1'
+        $now = [datetimeoffset]::UtcNow
+        $quota = @{codex=@{refused=$now.AddMinutes(-1).UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss'Z'");
+            reset=$now.AddHours(2).UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss'Z'")}}
+        Write-FileAtomic "$OutDir/heartbeat.json" ($quota | ConvertTo-Json -Depth 3)
+        $available = 'cc-claude-sonnet-5-5-medium'
+        Check 'перед проходом позначка нова, Codex на квоті й інший рушій доступний' (
+            (Get-ChainMarkerState $queue $built $model).Kind -ceq 'NEW' -and (Test-ModelQuota $model $now) -and
+            -not (Test-ModelQuota $available $now))
+        Save-OldLiveState $true
+        Invoke-WrapperChain
+        $refs = @(Markers '/автоживий-')
+        Check 'старий опублікований стан за умов перенесення зберігає єдину позначку й її SHA' (
+            $refs.Count -eq 1 -and $refs[0] -ceq $ref -and (& git -C $remote rev-parse $ref).Trim() -ceq $built)
+        # Перевіряємо й старий стан на момент появи наступної збірки.
+        Save-OldLiveState $true
         $next = Merge 'джерела/a.py' '3'
         [void](Merge 'build.txt' $next "збірка: $next")
         Invoke-WrapperChain
-        Check 'нова збірка зберігає єдину позначку диспетчера на її SHA' (@(Markers '/автоживий-').Count -eq 1 -and (& git -C $remote rev-parse $ref).Trim() -ceq $built)
+        $refs = @(Markers '/автоживий-')
+        Check 'нова збірка зберігає єдину позначку диспетчера на її SHA' (
+            $refs.Count -eq 1 -and $refs[0] -ceq $ref -and (& git -C $remote rev-parse $ref).Trim() -ceq $built)
         # Консоль задачі планувальника розірвана (10.11 23:04: «No process is on the other end of the pipe»): сетер
         # Console.InputEncoding кидає, але запуск процесу й stdin без BOM не залежать від нього — прохід не рветься.
         $keyFile = Join-Path $tmp 'key.txt'; [IO.File]::WriteAllText($keyFile, 'ключ', $utf)

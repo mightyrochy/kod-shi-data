@@ -225,11 +225,13 @@ try {
     # Позначка Claude на ноутбуці в автоперевірці не потрібна: зникає, а кількість знятих — рядок у зведенні.
     PushMk "автоперевірка-44-$h2" 'cc-claude-sonnet-5-5-medium' $h2
     Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
-    $before = @(SlugMarkers "автоперевірка-44-$h2")
+    $ccPrefix = "refs/heads/gemini-queue/автоперевірка-44-$h2/"
+    $before = @(Markers | Where-Object { $_.StartsWith($ccPrefix, [StringComparison]::Ordinal) })
     $script:Pulls = @((Pull 41 'claude/живий' $h2), (Pull 44 'codex/старий-вибір' $h2)); Invoke-WrapperChain
-    $now44 = @(SlugMarkers "автоперевірка-44-$h2")
+    $now44 = @(Markers | Where-Object { $_.StartsWith($ccPrefix, [StringComparison]::Ordinal) })
     Check 'позначку cc- знято' ($before.Count -eq 1 -and $before[0] -match '/cc-' -and $now44.Count -eq 0 -and ([IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)).Contains('знято — Claude на ноутбуці не перевіряє'))
-    Check 'зняття позначок — рядок у зведенні' (@(OutLines | Where-Object { $_ -ceq 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1' }).Count -eq 1)
+    $summary = 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1'
+    Check 'зняття позначок — один дійсний рядок у зведенні' (@(OutLines | Where-Object { $_ -ceq $summary }).Count -eq 1 -and (Test-OutboxLine $summary) -ceq '')
     Check 'рядок зняття не будить диспетчера, рядок хмарного Claude будить' (-not (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1') -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #44 $h2") -and (Test-OutboxLine "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #44 $h2") -eq '' -and -not (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-44-$h2 CLAUDE_NOT_LAPTOP") -and (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/наряд CLAUDE_NOT_LAPTOP'))
     "  мірило: позначок cc- автоперевірки ДО 1 → ПІСЛЯ $(@(Markers | Where-Object { $_ -match 'автоперевірка-.*/cc-' }).Count)"
     $base = Get-RefSha 'refs/remotes/origin/main'

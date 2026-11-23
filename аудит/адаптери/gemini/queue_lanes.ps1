@@ -773,6 +773,24 @@ function Get-ReviewApiCause($Err) {
     "запит $($ex.GetType().Name)"
 }
 
+function Use-AutoApiBudget {
+    <# Один запит публічного REST зі спільного бюджету (ті самі файл, замок і межа, що в Get-AutoReviewState): запит
+    резервується до мережі, тож збій і перезапуск не обнуляють витраченого. $false — замка нема, бюджет пошкоджений, діє
+    спільна пауза чи вичерпано межу: викликач у мережу не йде. #>
+    $lock = $null
+    try {
+        $lock = Open-ReviewApiLock
+        if ($null -eq $lock) { return $false }
+        $path = Join-Path $LaneDir 'review-api.json'
+        $now = Get-ReviewTime
+        $saved = Read-AutoApiBudget $path $now
+        if ($null -eq $saved -or $now -lt $saved.Until -or $saved.Calls.Count -ge $script:ReviewApiLimit) { return $false }
+        Write-FileAtomic $path ([ordered]@{calls=@($saved.Calls) + @($now);until=$saved.Until} | ConvertTo-Json -Compress)
+        $true
+    } catch { $false }
+    finally { if ($null -ne $lock) { $lock.Dispose() } }
+}
+
 function Set-AutoApiPause {
     <# Мережева відмова публічного запиту ставить спільну паузу ReviewApiBackoff с, як у Get-AutoReviewState. #>
     $lock = $null
@@ -848,9 +866,12 @@ function Get-PlanFailReason([string]$Message) {
 }
 
 function Enter-PlanWait($M, [string]$Reason, [hashtable]$Resume = @{}) {
-    <# Збій плану живого відкладає позначку на PlanBackoff с і збільшує retakes; після вичерпання MaxRetakes
-    повертає $false для PLAN_FAILED. Збій API автоперевірки зберігає спробу під REVIEW_API. #>
-    if ($M.Slug -cnotmatch '^автоживий-[0-9a-f]{40}$') { Enter-ReviewWait $M $Resume (Get-PlanFailReason $Reason); return $true }
+    <# Збій побудови плану живого (Add-AutoTaskContext для автоживого). Бюджет запитів вичерпано (AUTO_BUDGET) — це не
+    вада, а чекання вікна: як REVIEW_API, без лічильника. Решта — окреме чекання PlanBackoff с з лічильником retakes
+    (спільна межа MaxRetakes): повертає $false, коли межу вичерпано і чекання не записано, — викликач кінчає наряд
+    кодом PLAN_FAILED, який будить диспетчера (не тихий REVIEW_API без кінця). #>
+    # Автоперевірка PR (не план): її збій API лишається REVIEW_API — повтор у черзі під бюджетом, як і було.
+    if ($M.Slug -cnotmatch '^автоживий-[0-9a-f]{40}$' -or $Reason -ceq 'AUTO_BUDGET') { Enter-ReviewWait $M $Resume $(if ($Reason -ceq 'AUTO_BUDGET') { 'бюджет' } else { Get-PlanFailReason $Reason }); return $true }
     $why = Get-PlanFailReason $Reason
     $n = Set-MarkerWait $M ((Get-ReviewTime) + $script:PlanBackoff) (@{group='PLAN_WAIT';reason=$why;retake=$true} + $Resume)
     if ($null -eq $n) { Write-Log "позначка $($M.Name): план не збудовано (${why}: $(([regex]::Replace($Reason, '[\x00-\x1f\x7f]+', ' ')).Trim())) понад $($script:MaxRetakes) разів — PLAN_FAILED"; return $false }
@@ -2109,13 +2130,21 @@ function Get-AutoTaskPath([string]$Slug) {
     $script:TaskDir + $Slug + '.md'
 }
 
-function Get-AutoPublicItems([string]$Path, [int]$PerPage = 100, [int]$MaxPages = 100, [scriptblock]$StopAfterPage = $null) {
-    <# Пагінує публічний GET і лічить спроби в AutoApiCalls. StopAfterPage отримує елементи поточної сторінки
-    й повертає $true, коли читання можна закінчити. #>
+function Get-AutoPublicItems([string]$Path, [int]$PerPage = 100, [int]$MaxPages = 100, [scriptblock]$StopAfterPage = $null, [switch]$Budgeted) {
+    <# Пагінує публічний GET; збій не стає порожнім успішним входом. StopAfterPage отримує елементи щойно прочитаної
+    сторінки й повертає $true, коли далі читати не треба (порядок сторінок і доказ зупинки — на викликачі). Budgeted —
+    кожен запит бере один із спільного бюджету review-api.json (нема — AUTO_BUDGET, у мережу не йдемо). Усі спроби
+    запиту лічить $script:AutoApiCalls. #>
     for ($page = 1; $page -le $MaxPages; $page++) {
+        if ($Budgeted -and -not (Use-AutoApiBudget)) { throw 'AUTO_BUDGET' }
         $script:AutoApiCalls++
         $separator = if ($Path.Contains('?')) { '&' } else { '?' }
-        $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=$PerPage&page=$page") -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+        try {
+            $data = Invoke-RestMethod -Uri ("https://api.github.com/repos/mightyrochy/kod-shi-data/$Path" + $separator + "per_page=$PerPage&page=$page") -Method Get -TimeoutSec 20 -MaximumRedirection 0 -Headers @{Accept='application/vnd.github+json'; 'User-Agent'='kod-shi-wrapper'}
+        } catch {
+            if ($Budgeted) { Set-AutoApiPause }
+            throw
+        }
         $items = @($data)
         foreach ($item in $items) { $item }
         if ($items.Count -lt $PerPage) { return }
@@ -2675,7 +2704,7 @@ function Get-AutoLivePlan([string]$BuildMain) {
         if ($null -eq $lastUpdate -or $null -eq $lastUpdate.Value) { return $false }
         (ConvertTo-AutoTime $lastUpdate.Value) -lt $planScan.Dates[$bound].AddHours(-$script:AutoPlanMarginHours)
     }
-    $read = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' -PerPage $script:AutoPlanPerPage -MaxPages $script:AutoPlanMaxPages -StopAfterPage $planStop)
+    $read = @(Get-AutoPublicItems 'pulls?state=all&sort=updated&direction=desc' -PerPage $script:AutoPlanPerPage -MaxPages $script:AutoPlanMaxPages -StopAfterPage $planStop -Budgeted)
     $readNumbers = @{}
     foreach ($one in $read) { $readNumbers[[string]$one.number] = $true }
     $pulls = @($read | Where-Object { Test-AutoTrustedPull $_ })
