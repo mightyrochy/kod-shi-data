@@ -35,6 +35,13 @@ SLOTS = {
 }
 MATERIAL = ("матеріал_родина","склад_основа","матеріал","склад","~склад","~матеріал","матеріал верху","матеріал_верху")
 
+# Параметри надходять із XML жниварки, а не створюються модулями рушія.
+# У повному каталозі 23.11.2026: свотч — 619 записів, наявність — 28 012.
+ЗОВНІШНІ_ВХОДИ = {
+    "свотч_hex": "param XML: магазинний свотч #rrggbb; запасний після виміряного колір_hex_фото",
+    "наявність": "param XML: значення нема виключає товар; інакше зберігається тристановий available парсера",
+}
+
 
 def text(value):
     if isinstance(value, (list, tuple)):
@@ -117,7 +124,7 @@ def prepare(offer, native, blocked):
     native_hue=text(native.get("колір_назва") or offer.get("колір_назва"))
     hue="" if native_hue.lower() in COLOR_NO_INFO else native_hue
     swatch=""
-    for value in (native.get("колір_hex_фото"),params.get("свотч_hex"),params.get("колір_hex")):
+    for value in (native.get("колір_hex_фото"),params.get("свотч_hex")):
         if isinstance(value,str) and COLORS.fullmatch(value.strip()):
             swatch=value.strip().lower()
             break
