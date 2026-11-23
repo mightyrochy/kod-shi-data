@@ -1,9 +1,10 @@
 """Ч4. Будує дротові запити зі Ситуації, пулу й перевірених складів."""
+from collections import Counter
 from itertools import zip_longest
 import json
 from pathlib import Path
 
-from . import знання, розбір
+from . import задуми, знання, розбір
 from .поняття import Запит, Збій, НЕВІДОМО, НЕ_ПЕВНИЙ
 from .пул import ДОБІР, СЛОТИ
 
@@ -123,13 +124,18 @@ def _заяви(вирок):
 def _образ(образ, вирок):
     """Подає модельному запиту склад і заяви того самого образу."""
     return {"id": образ.номер, "items": вирок.склад, "caption": образ.підпис_en,
-            "day": образ.день_en, "findings": _заяви(вирок)}
+            "day": образ.день_en, "findings": _заяви(вирок),
+            "checklist": вирок.чекліст,
+            "your_declared": [{"item": х["річ"], "finding": х["заява"], "why": х["чому_en"]}
+                              for х in образ.свідомі]}
 
 
-def _під_вікно(тіло, рядки, групи, закріплені, ліміт, фото):
+def _під_вікно(тіло, поле_пулу, рядки, групи, закріплені, ліміт, фото, блоки_пулу):
     """Міряє весь текст і фото із запасом відповіді, зрізає лише додаткових кандидатів."""
     def текст(кандидати):
-        тіло["pool"]["rows"] = [рядки[н] for н in кандидати]
+        номери = tuple(кандидати)
+        тіло[поле_пулу]["rows"] = [рядки[н] for н in номери]
+        тіло.update(блоки_пулу(номери))
         return json.dumps(тіло, ensure_ascii=False, separators=(",", ":"))
 
     if ліміт == НЕВІДОМО:
@@ -173,30 +179,80 @@ def запит(вид, пул, ситуація, профіль, *, образи
         рядки[н] = [рядок[поле] for поле in _КОЛОНКИ]
     фото = tuple({"n": н, "url": пул.записи[н].фото[0], "токени": 2_000} for н in склад if пул.записи[н].фото
                  ) if вид == "опис" and not без_фото else ()
+    поле_пулу = "candidates" if вид in ("ремонт", "вибір") else "pool"
+    тіло_людини = {ключ: профіль[ключ] for ключ in ("зріст", "висоти", "обхвати") if профіль.get(ключ)}
     тіло = {
-        "version": "1", "task": _ЗАДАЧІ[вид] + _ЗАДАЧІ["спільне"],
+        "version": "1", "task": {"role": _ЗАДАЧІ[вид]["role"], "rules": _ЗАДАЧІ[вид]["rules"] + _ЗАДАЧІ["спільне"]},
         "version_of_day": ситуація.версія, "case": _випадок(ситуація), "day": _день(ситуація),
         "person": {"palette": _поле(ситуація.виведено["палітра_дня"]),
-                   "body": {ключ: профіль[ключ] for ключ in ("зріст", "висоти", "обхвати") if профіль.get(ключ)}},
-        "pool": {"cols": _КОЛОНКИ, "rows": []}, "required_kinds": пул.обовʼязкові,
+                   "body": тіло_людини},
+        поле_пулу: {"cols": _КОЛОНКИ, "rows": []}, "required_kinds": пул.обовʼязкові,
         "kind_limits": пул.межі_слотів, "kinds_missing": [СЛОТИ[р["слот"]] for р in пул.нема_в_каталозі],
-        "style_rules": _стани(ситуація, [пул.записи[н] for н in (склад or номери)], профіль),
         "answer_schema": розбір.схема(вид),
     }
+    if вид != "складання":
+        тіло["style_rules"] = _стани(ситуація, [пул.записи[н] for н in склад], профіль)
     if вид in ("складання", "ремонт"):
         тіло["outfits_wanted"] = ДОБІР["скласти" if вид == "складання" else "після_ремонту"]
     if образи:
         тіло["verdict"] = [_образ(о, вироки[о.ід]) for о in образи]
+    if вид in ("складання", "ремонт", "вибір"):
+        тіло["selection_policy"] = {"priority": ["her occasion, day and intent", "distinct outfit idea"],
+                                    "findings_are_scores": False}
+        ключі = "pool_keys" if вид == "складання" else "item_keys"
+        тіло[ключі] = {"n": "exact item number", "reason": "why this item is here, if known",
+                       "sources": "provenance of known item features"}
+    if вид in ("ремонт", "вибір"):
+        тіло["set"] = {"offered_outfits": [о.номер for о in образи]}
+    if вид == "ремонт" and образи:
+        недоступні = {}
+        for група, пункти in знання.ЧЕКЛІСТИ.items():
+            пропуски = [п for п in пункти if all(
+                вироки[о.ід].чекліст.get(f"{група}.{п}", {}).get("стан") == "немає_входу" for о in образи)]
+            if пропуски:
+                недоступні[група] = пропуски
+        тіло["not_run_everywhere"] = недоступні
+    if вид == "вибір":
+        за_кодом = {}
+        for образ in тіло.get("verdict", ()):
+            for заява in образ["findings"]:
+                за_кодом.setdefault(заява["code"], []).append({"outfit": образ["id"], "id": заява["id"]})
+        тіло["remarks_by_code"] = за_кодом
     if вид == "опис":
+        тіло["body"] = тіло["person"].pop("body")
+        з_фото = {ф["n"] for ф in фото}
+        тіло["outfit"] = {"id": образи[0].номер, "items": [
+            {"n": н, "kind": СЛОТИ[пул.записи[н].слот], "has_photo": н in з_фото} for н in склад]}
+        тіло["reasons"] = [{"n": н, **причини[н]} for н in склад if причини[н]]
         тіло["photos"] = [ф["n"] for ф in фото]
-        тіло["swap_candidates"] = заміни
+    тіло["knowledge_legend"] = {
+        "unknown": "The value is missing. Make no claim about it.",
+        "uncertain": "Only the supplied interval or bounds are known.",
+        "missing_input": "The rule could not be applied with the available inputs.",
+    }
+
+    def блоки_пулу(видимі):
+        """Повертає блоки, істинні для речей після обрізання пакета."""
+        речі = [пул.записи[н] for н in видимі]
+        результат = {}
+        if вид == "складання":
+            правила = _стани(ситуація, речі, профіль)
+            полюси, відсутні = задуми.доступні(речі, тіло["outfits_wanted"])
+            результат.update(poles=полюси, poles_unavailable=відсутні, style_rules=правила,
+                             occasion_rules=[п["id"] for п in правила if п["id"] in ("K-KOH-07", "K-KOH-08")],
+                             kind_notes={СЛОТИ[слот]: кількість for слот, кількість in Counter(р.слот for р in речі).items()})
+        elif вид == "ремонт":
+            результат["showcase"] = [н for н in видимі if н not in склад]
+        elif вид == "опис":
+            результат["swap_candidates"] = [н for н in видимі if н not in склад] if заміни else []
+        return результат
     if збій:
-        тіло["retry"] = {"field": збій.поле, "reason": збій.що}
+        тіло["format_error" if вид == "опис" else "retry"] = {"field": збій.поле, "reason": збій.що}
     налаштування = модель or {}
     відповідь = налаштування.get("вихід") or 4_000
     вікно = налаштування.get("вікно")
     бюджет = max(0, вікно - відповідь) if вікно is not None else пул.бюджет
-    текст, надіслано = _під_вікно(тіло, рядки, групи, set(склад), бюджет, фото)
+    текст, надіслано = _під_вікно(тіло, поле_пулу, рядки, групи, set(склад), бюджет, фото, блоки_пулу)
     if бюджет != НЕВІДОМО and len(текст.encode()) + sum(ф["токени"] for ф in фото) > бюджет:
         return Збій("вікно_моделі", "запит", "window", "Required fields and response reserve exceed the window",
                     спроба=спроба)
