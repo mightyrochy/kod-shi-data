@@ -9,10 +9,9 @@
   const money = amount => new Intl.NumberFormat('uk-UA',{maximumFractionDigits:2}).format(amount)+' ₴';
   const tone = v => typeof v === 'string' && /^#[\da-f]{3}([\da-f]{3})?$/i.test(v) ? v : '';
   const sheet = node('mirror-sheet'), work=node('mirror-work');
-  let reviewPhoto=null, reviewColumns=null, following=true, lastTurn=null;
-  let originator=null, side='talk', extra='', pageMode='', headerKey='', scheduled=false, lastPhase='', other=false;
+  let following=true, lastTurn=null, drawerOpen=false;
+  let contextWords='', originator=null, extra='', pageMode='', headerKey='', scheduled=false, other=false;
   const titles={'сценарій':'Образ','профіль':'Мій профіль','старт':'Мій профіль','оцінка':'Оцінити вбрання','сценарії':'Мої нагоди','образи':'Образ','бібліотека':'Мої образи','палітра':'Барви','очікування':'Збираю образи'};
-  const tools=[['assess','Оцінити вбрання','камера'],['anchor','Під мою річ','вішак'],['buy','Брати чи ні?','сумка'],['catalog','Знайти річ','пошук']];
   const actions=new Map();
   function move(item, parent){if(item&&parent&&item.parentNode!==parent)parent.append(item);}
   function activeProfile(){return АКТИВНИЙ;}
@@ -25,52 +24,48 @@
   sheet.addEventListener('close',()=>{if(sheet.open)return;if(originator?.isConnected)originator.focus({preventScroll:true});originator=null;});
   sheet.addEventListener('click',ev=>{if(ev.target===sheet){const r=sheet.getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)close();}});
   function say(text){node('mirror-chat-status').textContent=text;}
-  function setSide(next, scroll=false) {
-    const changed=side!==next;
-    side=next;
-    document.documentElement.dataset.view=side;
-    if(changed&&scroll) {
-      const panel=side==='talk'?node('mirror-letter'):work;
-      panel.scrollTop=0;
-      if(mobile.matches)window.scrollTo(0,0);
-      if(side!=='talk')work.focus({preventScroll:true});
-    }
-    navState();
+  function setDrawer(open,focus=false){
+    drawerOpen=!!open;const expanded=!mobile.matches||drawerOpen;
+    document.documentElement.dataset.drawer=expanded?'open':'closed';
+    node('pair-handle').setAttribute('aria-expanded',String(expanded));
+    node('pair-curtain').hidden=!(mobile.matches&&drawerOpen);
+    work.inert=mobile.matches&&drawerOpen;document.querySelector('.pair-mast').inert=work.inert;
+    if(focus)node('чат-поле').focus({preventScroll:true});
   }
-  mobile.addEventListener('change',()=>{schedule();requestAnimationFrame(decorateChoices);});
+  function keyboardSpace(){
+    const view=window.visualViewport,root=document.documentElement;
+    if(view&&mobile.matches&&view.scale===1)root.style.setProperty('--pair-height',Math.round(view.height)+'px');
+    else root.style.removeProperty('--pair-height');
+  }
+  window.visualViewport?.addEventListener('resize',keyboardSpace);
+  mobile.addEventListener('change',()=>{keyboardSpace();setDrawer(false);schedule();});
   function available(){return !!Екран.стан.запущено;}
-  function closeExtras(){if(extra){extra='';node('mirror-extras').replaceChildren();node('mirror-extras').hidden=true;delete document.documentElement.dataset.extra;headerKey='';}}
+  function closeExtras(){if(extra){extra='';offerContext();node('mirror-extras').replaceChildren();node('mirror-extras').hidden=true;delete document.documentElement.dataset.extra;headerKey='';}}
   function route(mode,focus=true){
     if(!available())return;
     if(режимЕкрана()==='очікування'&&зрізЗбиранняП().зайнято){say('Триває збирання образу.');return;}
-    close();closeExtras();if(Екран.стан.аркуш)закритиАркуш();режим(mode);sync();setSide(mode==='бібліотека'?'library':'face',focus);if(focus)work.scrollTop=0;
+    close();closeExtras();if(Екран.стан.аркуш)закритиАркуш();режим(mode);setDrawer(false);sync();if(focus){work.scrollTop=0;work.focus({preventScroll:true});}
   }
-  function showExtra(key, title, content,controls=''){
+  function offerContext(label='',words=''){
+    contextWords=words;const host=node('pair-chat-context'),b=host.querySelector('button');
+    host.hidden=!words;if(words)b.textContent=label;
+  }
+  function showExtra(key, title, content,controls='',context=null){
     if(!available())return;
     if(Екран.стан.аркуш)закритиАркуш();close();
-    const changed=extra!==key;extra=key;document.documentElement.dataset.extra=key;
+    const changed=extra!==key;extra=key;offerContext(context?.[0],context?.[1]);document.documentElement.dataset.extra=key;
     const el=node('mirror-extras');el.hidden=false;el.innerHTML=content;
     headerKey='';setHeading(title,controls||button('face','До образу','назад'));
-    node('mirror-native').hidden=true;setSide(key==='saved'||(key==='wardrobe'&&side==='library')?'library':'face',changed);if(changed)work.scrollTop=0;
+    pair.render(режимЕкрана(),extra);if(changed){setDrawer(false);work.scrollTop=0;work.focus({preventScroll:true});}
   }
   function setHeading(title,controls){
     const signature=title+controls;if(headerKey===signature)return;headerKey=signature;
     node('mirror-heading').innerHTML='<h1>'+escape(title)+'</h1><div class="studio-heading-actions">'+controls+'</div>';
   }
-  function navState(){
-    const skip=document.querySelector('.studio-skip');
-    skip.href=side==='talk'?'#mirror-occasions':'#mirror-work';
-    skip.textContent=side==='talk'?'До розмови':'До основного вмісту';
-    document.querySelectorAll('.studio-nav [data-ux]').forEach(b=>{
-      if(b.dataset.ux===side)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');
-    });
-  }
   function renderPerson(){
     const b=node('mirror-person'),photo=node('ф-портрет')?.querySelector('img')?.getAttribute('src')||'';
-    const initial=node('пф-ініціали')?.textContent.trim().replace('·','')||'';
-    if(b._hand===M.get()&&b._photo===photo&&b._initial===initial)return;
-    b._hand=M.get();b._photo=photo;b._initial=initial;
-    b.innerHTML=Hand.mark(M.get(),44,photo)+(photo?'':'<span>'+(initial?escape(initial):ik('людина',17))+'</span>');
+    if(b._hand===M.get()&&b._photo===photo)return;b._hand=M.get();b._photo=photo;
+    b.innerHTML=Hand.mark(M.get(),28,photo)+'<span>Мій профіль</span>';b.title='Мій профіль';
   }
   function themeButtons(){
     const hand=M.get();
@@ -92,25 +87,11 @@
   function hasCase(){return !!(єВипадокП()||ЧАТ_П.length||ПАСПОРТ_П||(Екран.стан.сценарій||{}).рукою);}
   function makeHome(){
     node('mirror-choices').innerHTML=occasions.map(([id,label])=>'<button type="button" data-ux="occasion" data-value="'+id+'" aria-pressed="false"><span>'+label+'</span></button>').join('');
-    const face=document.createElement('div');face.id='mirror-face-pair';face.className='studio-face-pair';
-    node('е-випадок').prepend(face);
-    const toolshelf=document.createElement('div');toolshelf.id='mirror-case-tools';toolshelf.className='studio-case-tools';
-    toolshelf.innerHTML='<div class="studio-tools">'+[...tools,['compose','Зібрати вручну','люстерко'],['closet','Мої речі','збірка']].map(([key,name,icon])=>button(key,name,icon,'','studio-tool')).join('')+'</div>';
-    node('е-випадок').append(toolshelf);
-  }
-  function facePair(empty){
-    const el=node('mirror-face-pair');
-    el.hidden=!empty;if(!empty)return;
-    const photo=node('ф-зріст')?.querySelector('img')?.getAttribute('src')||'';
-    if(el._hand===M.get()&&el._photo===photo)return;
-    el._hand=M.get();el._photo=photo;
-    const own=photo?'<img class="studio-body-photo" src="'+escape(photo)+'" alt="Твоє фото">':'<span class="studio-photo-window">'+ik('камера',33)+'</span>';
-    el.innerHTML='<button type="button" data-ux="body-photo">'+own+'<span>'+(photo?'Моє фото':'Додати моє фото')+'</span></button><button type="button" data-ux="compose"><span class="studio-first-seal">'+M.seal([],false,71)+'</span><span>Зібрати образ</span></button>';
   }
   function setupAssessment(){
     const area=node('е-оцінка'),photo=node('оц-фото').closest('.оц-поле'),question=node('оц-питання').closest('.оц-поле');
-    const columns=document.createElement('div');columns.className='studio-assessment';photo.before(columns);columns.append(photo,question);reviewPhoto=photo;reviewColumns=columns;
-    const results=node('оц-речі');question.after(results);results.classList.add('studio-assessed-items');
+    const columns=document.createElement('div');columns.className='studio-assessment';photo.before(columns);columns.append(photo);const right=document.createElement('section');right.className='pair-review-read';right.innerHTML='<h3>Речі на фото</h3><div class="pair-read-empty">Після оцінки тут з’являться розпізнані речі.</div>';columns.append(right);columns.after(question);
+    const results=node('оц-речі');right.append(results);results.classList.add('studio-assessed-items');
     const label=photo.querySelector('.поле-назва');if(label)label.textContent='Твоє фото';
     const head=question.querySelector('label');if(head)head.textContent='Що оцінити?';
     const mic=document.createElement('button'),voiceHint=document.createElement('small');
@@ -119,16 +100,6 @@
     привʼязатиГолос({кнопка:mic,поле:node('оц-питання'),нота:voiceHint});
     const weather=node('оц-нагода').closest('.оц-поле'),details=document.createElement('details');details.className='studio-weather';details.innerHTML='<summary>Нагода й погода</summary>';weather.before(details);details.append(weather);weather.querySelector('.поле-назва')?.remove();
     if(!area.querySelector('#mirror-review-list')){const list=document.createElement('div');list.id='mirror-review-list';area.append(list);}
-  }
-  function progress(){
-    const state=зрізЗбиранняП(),phase=state.готово&&state.успіх?5:Math.max(1,Math.min(4,Number(state.етап||0)+1));
-    const failed=!!(state.готово&&!state.успіх),key=M.get()+'/'+phase+'/'+failed;
-    if(lastPhase!==key){node('mirror-making').innerHTML=failed?M.error():M.waiting(phase);lastPhase=key;}
-  }
-  function colorPair(){
-    const el=node('mirror-my-colors');if(!el)return;
-    const colors=[['шкіра','Шкіра'],['волосся','Волосся'],['очі','Очі']].map(([k,t])=>[tone(КОЛІР[k]),t]);
-    el.innerHTML='<div class="studio-tone-title">Твої барви</div><div class="studio-tone-list">'+colors.map(([c,t])=>'<button type="button" data-ux="my-colors">'+(c?M.petal(c,23):'<i></i>')+escape(t)+'</button>').join('')+'</div>';
   }
   function decorateChoices(){
     const selectedKey=полеВипадкуП('сц-нагода');
@@ -162,113 +133,48 @@
     }
     return (items||[]).map(t=>tone(t.колір_hex)||tone(t.hex)||tone(t.color)||tone(t.колір)||tone(t.барва?.hex)||tone(t.основний_колір?.hex)||indexedColors.get(t.id)).filter(Boolean);
   }
-  function lookSides(){
-    const host=node('mirror-look-sides');if(!host)return;
-    const pack=typeof П!=='undefined'?П:null,cards=pack?.картки||[],cur=cards[Екран.стан.образ?.поз||0];if(!cur){host.hidden=true;return;}
-    const garments=cur.речі||cur.предмети||[];const colors=gatherColors(garments);
-    const face=node('ф-зріст')?.querySelector('img')?.getAttribute('src');
-    const frame=кадрПоказуП(cur);
-    const safeImage=url=>typeof url==='string'&&/^(https?:|data:image\/|blob:)/i.test(url);
-    const pictures=garments.filter(x=>safeImage(x.фото)&&!cur.фото_не_ті?.includes(x.id)).slice(0,4);
-    host.hidden=!(face||frame||pictures.length||colors.length);if(host.hidden)return;
-    const back=host.dataset.side==='back';
-    const view=frame&&safeImage(frame)
-      ? '<img src="'+escape(frame)+'" alt="Приміряний образ">'
-      : '<span class="studio-real-collage">'+pictures.map(it=>'<img src="'+escape(it.фото)+'" alt="'+escape(it.назва||'Річ')+'">').join('')+'</span>';
-    host.innerHTML=back?'<div class="studio-print">'+M.seal(colors,false,90)+'<div><b>'+escape(node('обр-випадок')?.textContent||'Мій образ')+'</b><ul>'+garments.map(it=>it.назва?'<li>'+escape(it.назва)+'</li>':'').join('')+'</ul></div></div>':
-    '<div class="studio-look-pair"><div><b>Моє фото</b>'+(face?'<img src="'+escape(face)+'" alt="Твоє фото">':button('body-photo','Додати фото','камера'))+'</div><div><b>'+(frame?'Приміряння':'Комплект')+'</b>'+(pictures.length||frame?view:M.seal(colors,false,86))+'</div></div>';
-    host.insertAdjacentHTML('beforeend',button('turn-look',back?'До образу':'Зворот','оберт'));
-  }
   function nativeSeals(){
     if(typeof БІБЛІОТЕКА_П==='undefined')return;
     БІБЛІОТЕКА_П.плитки.forEach((entry,i)=>{
       const tile=node('біб-образ-'+i);
       if(!tile)return;
-      const colors=gatherColors(entry.картка?.речі),key=M.get()+colors.join();
+      tile.hidden=!pair.blindShelf()&&['2','3','4'].includes(String(entry.картка?.рука));
+      const colors=gatherColors(entry.картка?.речі),worn=!!window.Rack?.nativeWorn(entry.ід),key=M.get()+colors.join()+worn;
       if(tile.dataset.sealHand===key)return;
-      const pattern=M.seal(colors,!!entry.вердикт?.вдягала,38);
+      const pattern=M.seal(colors,worn,38);
       tile.querySelector('.studio-native-seal')?.remove();
       if(pattern){const seal=document.createElement('span');seal.className='studio-native-seal';seal.innerHTML=pattern;tile.append(seal);}
-      tile.dataset.sealHand=key;
+      tile.dataset.sealHand=key;tile.classList.toggle('pair-worn-card',worn);
     });
   }
   function sync(){
     scheduled=false;
     const mode=режимЕкрана()||'сценарій';document.documentElement.dataset.room=mode;
-    if(pageMode&&pageMode!==mode){closeExtras();setSide(mode==='сценарій'?'talk':mode==='бібліотека'?'library':'face');node('mirror-chat-status').textContent='';}
+    if(pageMode&&pageMode!==mode){closeExtras();setDrawer(false);say('');work.scrollTop=0;}
     pageMode=mode;
-    move(node('сц-увага'),node('сц-увага-місце'));move(node('сц-картка'),node('сц-картка-місце'));
+    const feedback=node('pair-feedback'),inCase=mode==='сценарій',review=mode==='оцінка'&&!extra;
+    for(const id of ['сц-увага','зб-питання','зб-статус'])move(node(id),feedback);
     if(!Екран.стан.аркуш||Екран.стан.аркуш.вузол!==node('ф-блок'))move(node('ф-блок'),node('ф-блок-місце'));
     move(node('чат-стрічка'),node('mirror-thread'));move(node('чат-ввід'),node('mirror-input'));move(node('чат-голос'),node('mirror-input'));move(node('чат-стан'),node('mirror-input'));
     move(node('сц-швидкі'),node('mirror-suggestions'));move(node('ніг-дії'),node('mirror-step-actions'));
-    const inReview=mode==='оцінка'&&!extra, inCase=mode==='сценарій';
-    const spreadReview=inReview&&!mobile.matches;
-    const source=node('mirror-review-source');source.hidden=!spreadReview;
-    if(reviewPhoto&&reviewColumns){
-      if(spreadReview)move(reviewPhoto,source);
-      else if(reviewPhoto.parentElement!==reviewColumns)reviewColumns.prepend(reviewPhoto);
-    }
-    document.documentElement.classList.toggle('mirror-review-spread',spreadReview);
-    const prompt=node('mirror-occasions').querySelector('h1');
-    const topic=inCase?'Куди збираємось?':inReview?'Твоє фото':mode==='профіль'?'Питання про профіль?':'Питання до стилістки?';
-    if(prompt.lastChild.textContent!==topic)prompt.lastChild.textContent=topic;
-    node('mirror-choices').hidden=!inCase;updateSend(inCase);placeNoteEdits();
-    node('чат-поле').placeholder='Напиши стилістці…';
-    node('mirror-input').hidden=inReview;node('чат-ввід').hidden=inReview;
-    syncVoice();
-    const empty=!hasCase();
-    facePair(empty);
-    node('mirror-native').hidden=!!extra;
-    document.documentElement.classList.toggle('mirror-empty-case',empty);
-    if(!extra){
-      let title=titles[mode]||'Люстерко',controls='';
-      if(mode==='сценарій'){title='Образ';if(!empty){const name=node('сц-назва')?.textContent.trim(),value=полеВипадкуП('сц-нагода');title=name&&!['Нагода','Новий сценарій'].includes(name)?name:ДОВІДНИК.нагоди.find(x=>x.ключ===value)?.підпис||'Моя нагода';}controls=button('cases','Мої нагоди','зберегти');}
-      else if(mode==='бібліотека'){controls=button('closet','Мої речі','вішак');}
-      else if(mode==='профіль'){controls=button('access','Доступ','', '', 'studio-text');}
-      else if(mode!=='очікування'){controls=button('face','До образу','назад');}
-      setHeading(title,controls);
-    }
-    if(mode==='очікування')progress();if(mode==='палітра')colorPair();if(mode==='образи')lookSides();
-    if(mode==='бібліотека'){nativeSeals();if(window.Rack)Rack.library();}
+    updateSend(inCase);placeNoteEdits();node('чат-ввід').hidden=false;
+    node('pair-review-chat').hidden=!review;
+    if(!inCase&&!extra)setHeading(titles[mode]||'Люстерко',mode==='бібліотека'?button('closet','Мої речі','вішак'):mode==='профіль'?button('access','Доступ'):button('face','До люстерка','назад'));
+    pair.render(mode,extra);
+    feedback.hidden=!!extra||!inCase||document.documentElement.dataset.pairPage!=='understood';
+    if(mode==='бібліотека'&&!extra){nativeSeals();node('mirror-saved-manual').hidden=pair.blindShelf();if(!pair.blindShelf())window.Rack?.library();}
     const last=ЧАТ_П.at(-1);
-    if(last!==lastTurn&&last&&(side==='talk'||!mobile.matches)&&!inReview&&following){
+    if(last!==lastTurn&&last&&following&&(!mobile.matches||drawerOpen)){
       requestAnimationFrame(()=>{const letter=node('mirror-letter');letter.scrollTop=letter.scrollHeight;});
     }
-    lastTurn=last;
-    decorateChoices();renderPerson();navState();
+    lastTurn=last;decorateChoices();renderPerson();
   }
   function schedule(){if(!scheduled){scheduled=true;queueMicrotask(sync);}}
-  function goTalk(scroll=true){
-    if(!available())return;
-    if(режимЕкрана()!=='сценарій'){
-      if(режимЕкрана()==='очікування'&&зрізЗбиранняП().зайнято)return;
-      route('сценарій',false);
-    }
-    setSide('talk',scroll);requestAnimationFrame(decorateChoices);
-  }
-  function goFace(){
-    const hasLook=typeof П!=='undefined'&&П?.картки?.length;
-    route(hasLook?'образи':'сценарій');
-  }
-  function syncVoice(){
-    const native=node('чат-мікрофон'),control=node('mirror-speak'),listening=native.getAttribute('aria-pressed')==='true';
-    control.setAttribute('aria-pressed',String(listening));control.disabled=native.disabled;
-    control.querySelector('span').textContent=listening?'Зупинити':'Сказати';
-  }
+  function goTalk(focus=false){if(available())setDrawer(true,focus);}
+  function goFace(){pair.stage('mirror');}
   function editWords(voice=false){
-    if(!available())return;
-    const review=режимЕкрана()==='оцінка'&&!extra;
-    const field=node(review?'оц-питання':'чат-поле');
-    if(voice){
-      const mic=review?node('mirror-review-mic'):node('чат-мікрофон');
-      if(mic&&!mic.hidden&&!mic.disabled&&mic.style.display!=='none'){
-        mic.click();
-        const status=node('mirror-speak');status.setAttribute('aria-pressed',String(mic.getAttribute('aria-pressed')==='true'));
-        return;
-      }
-      say('Голосовий ввід недоступний у цьому браузері.');
-    }
-    field.focus({preventScroll:true});field.scrollIntoView?.({block:'nearest'});
+    if(!available())return;setDrawer(true,!voice);
+    if(voice){const mic=node('чат-мікрофон');if(!mic.disabled)mic.click();}
   }
   function chooseOccasion(k){
     if(!available())return;
@@ -276,12 +182,12 @@
     if(режимЕкрана()!=='сценарій')return;
     other=k==='';
     прапорСценарію('рукою',true);Екран.відЖінки('нагода-обрати',k);показатиРозмову();sync();
-    if(other)editWords();
+    pair.afterOccasion(k);
   }
   function startWords(words,withPhoto=false){
-    goTalk(false);const field=node('чат-поле');
-    field.value=words;field.dispatchEvent(new Event('input',{bubbles:true}));
-    if(withPhoto)node('чат-фото-вхід').click();else editWords();
+    close();goTalk(false);const field=node('чат-поле');
+    const draft=field.value.trim();if(!draft||!draft.includes(words))field.value=draft?draft+'\n'+words:words;field.dispatchEvent(new Event('input',{bubbles:true}));
+    if(withPhoto)node('чат-фото-вхід').click();else field.focus({preventScroll:true});
   }
   function access(context=''){
     const host=location.hostname;
@@ -300,11 +206,11 @@
     return location.hostname!=='mightyrochy.github.io'&&!(МІСТ_П.адреса&&МІСТ_П.адреса!==ТИПОВИЙ_МІСТ_П);
   }
   function updateSend(inCase){
-    const send=node('чат-слати'),local=inCase&&localNotes();
+    const send=node('чат-слати'),local=localNotes();
     if(send._local===local)return;
     send._local=local;send.classList.toggle('studio-note-action',local);
     send.setAttribute('aria-label',local?'Зберегти в нагоді':'Надіслати');send.title=send.getAttribute('aria-label');
-    send.innerHTML=local?ik('зберегти',16)+'<span>Зберегти</span>':ik('далі');
+    send.innerHTML=local?ik('зберегти',20):ik('далі');
   }
   function placeNoteEdits(){
     const entries=node('чат-стрічка').children;
@@ -342,7 +248,7 @@
     if(b.id==='оц-оцінити'&&!node('оц-фото')?.querySelector('img'))return;
     if((b.id==='зб-зібрати'||b.id==='зб-пуск')&&чогоБракує().length)return;
     ev.preventDefault();ev.stopImmediatePropagation();
-    if(b.id==='чат-слати'&&режимЕкрана()==='сценарій'&&localNotes())saveNote();else access(b.id);
+    if(b.id==='чат-слати'&&localNotes())saveNote();else access(b.id);
   }
   function personalColors(){route('профіль',false);відкритиАркушПрофілю('кол-блок');}
   function start(){
@@ -354,36 +260,44 @@
     node('сц-назва-поле').placeholder='Назва нагоди';
     node('сц-зберегти').textContent='Зберегти нагоду';
     const making=document.createElement('div');making.id='mirror-making';node('ткання').before(making);
-    const colors=document.createElement('div');colors.id='mirror-my-colors';node('пал-картка').prepend(colors);
+    const colors=document.createElement('div');colors.id='mirror-my-colors';node('пал-картка').before(colors);
     const looks=document.createElement('div');looks.id='mirror-look-sides';node('картки').before(looks);
     move(node('журнал'),node('е-огляд'));
     const shelf=document.createElement('div');shelf.id='mirror-saved-manual';node('біб-список').before(shelf);
-    node('mirror-home').addEventListener('click',()=>goTalk());
+    node('mirror-home').addEventListener('click',goFace);
     node('mirror-style').addEventListener('click',showThemes);node('mirror-person').addEventListener('click',()=>route('профіль'));
     node('чат-поле').setAttribute('aria-label','Повідомлення стилістці');node('чат-поле').placeholder='Напиши стилістці…';
     node('чат-слати').innerHTML=ik('далі');node('чат-слати').setAttribute('aria-label','Надіслати');
     if(window.ResizeObserver){
       const size=new ResizeObserver(()=>decorateChoices());size.observe(node('mirror-choices'));size.observe(node('аркуш'));
     }
-    const mic=node('чат-мікрофон');
-    new MutationObserver(syncVoice).observe(mic,{attributes:true,attributeFilter:['aria-pressed','disabled']});
-    const letter=node('mirror-letter');
+    const handle=node('pair-handle'),letter=node('mirror-letter');
+    handle.addEventListener('click',()=>{if(mobile.matches)setDrawer(!drawerOpen);});
+    node('pair-curtain').addEventListener('click',()=>setDrawer(false));
+    let y=null,lastSwipe=0;
+    handle.addEventListener('touchstart',ev=>{y=ev.touches[0].clientY;},{passive:true});
+    handle.addEventListener('touchend',ev=>{if(y===null)return;const delta=ev.changedTouches[0].clientY-y;y=null;
+      if(Math.abs(delta)>25){lastSwipe=Date.now();setDrawer(delta<0);}},{passive:true});
+    handle.addEventListener('click',ev=>{if(Date.now()-lastSwipe<400)ev.stopImmediatePropagation();},true);
     letter.addEventListener('scroll',()=>{following=letter.scrollHeight-letter.scrollTop-letter.clientHeight<75;},{passive:true});
-    let flip;looks.addEventListener('touchstart',e=>flip=e.touches[0],{passive:true});looks.addEventListener('touchend',e=>{if(!flip)return;const p=e.changedTouches[0];if(Math.abs(p.clientX-flip.clientX)>65&&Math.abs(p.clientY-flip.clientY)<40)actions.get('turn-look')();flip=null;},{passive:true});
+    for(const id of ['ф-зріст','ф-портрет'])if(node(id))new MutationObserver(schedule).observe(node(id),{subtree:true,childList:true,attributes:true,attributeFilter:['src']});
+    document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&drawerOpen&&!sheet.open&&!Екран.стан.аркуш){setDrawer(false);handle.focus({preventScroll:true});}});
     document.addEventListener('click',protectModel,true);
     document.addEventListener('submit',finishNote);
     document.addEventListener('keydown',e=>{if(e.target.id==='чат-поле'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&node('чат-поле').value.trim()){const b=node('чат-слати');if(!b.disabled){e.preventDefault();e.stopImmediatePropagation();b.click();}}},true);
     document.addEventListener('click',e=>{const b=e.target.closest('[data-ux]');if(b&&!b.disabled&&actions.has(b.dataset.ux)){actions.get(b.dataset.ux)(b.dataset.value||'',b);}});
     document.addEventListener('submit',e=>{if(e.target.matches('[data-form="access"]')){e.preventDefault();const token=new FormData(e.target).get('token').trim();if(!token)return;try{localStorage.setItem('міст:токен',token);}catch{}МІСТ_П.токен=token;close();say('Код збережено.');}});
-    window.addEventListener(M.changeEvent,()=>{themeButtons();lastPhase='';schedule();window.Rack?.repaintArtwork();});
-    themeButtons();sync();setSide(!available()||режимЕкрана()==='сценарій'?'talk':'face');
-    Екран.малювач('дзеркало-робота',['режим','вхід','крок','запущено','панель','розмова','випадок','сценарій','профілі','поля','аркуш','збирання','образ','образи','палітра','фото','бібліотека','кошик'],schedule);
+    window.addEventListener(M.changeEvent,()=>{themeButtons();schedule();window.Rack?.repaintArtwork();});
+    themeButtons();keyboardSpace();setDrawer(false);sync();
+    Екран.малювач('дзеркало-робота',['режим','вхід','крок','запущено','панель','розмова','випадок','сценарій','профілі','поля','аркуш','збирання','образ','образи','палітра','фото','бібліотека','кошик','заміна','картка','статус_збирання','стан_палітри','оцінка'],schedule);
   }
-  const handlers={talk:()=>goTalk(),speak:()=>editWords(true),write:()=>editWords(),face:goFace,cases:()=>route('сценарії'),assess:()=>route('оцінка'),library:()=>route('бібліотека'),profile:()=>route('профіль'),access,'edit-note':editNote,'save-note':saveNote,hand:k=>{M.set(k);close();},'close-sheet':close,occasion:chooseOccasion,
-    'my-colors':personalColors,
-    'body-photo':()=>{route('профіль',false);відкритиАркушПрофілю('ф-блок');},'turn-look':()=>{const el=node('mirror-look-sides');el.dataset.side=el.dataset.side==='back'?'front':'back';lookSides();},
-    'take-photo':()=>startWords('Збери образ під мою річ.',true)};
-  for(const [k,v] of Object.entries(handlers))actions.set(k,v);
-  window.MirrorRoom={ik,escape,button,money,tone,dialog,close,route,showExtra,startWords,say,currentExtra:()=>extra,activeProfile,available,register:(k,fn)=>actions.set(k,fn),refresh:schedule};
+  const handlers={talk:()=>goTalk(),speak:()=>editWords(true),write:()=>editWords(),face:goFace,cases:()=>route('сценарії'),assess:()=>route('оцінка'),library:()=>pair.dailyShelf(),profile:()=>route('профіль'),access,'edit-note':editNote,'save-note':saveNote,hand:k=>{M.set(k);close();},'close-sheet':close,occasion:chooseOccasion,
+    'context-question':()=>{if(contextWords)startWords(contextWords);},'my-colors':personalColors, collapse:()=>{setDrawer(false);node('pair-handle').focus({preventScroll:true});},
+    'ask-review':()=>{setDrawer(false);node('оц-питання').focus();},
+    'body-photo':()=>pair.handlers['pair-photo'](),'take-photo':()=>startWords('Збери образ під мою річ.',true)};
+  const pair=window.createMirrorPair({node,ik,escape,button,money,tone,dialog,close,route,showExtra,
+    available,hasCase,heading:setHeading,refresh:schedule,closeDrawer:()=>setDrawer(false),openDrawer:focus=>setDrawer(true,focus)});
+  for(const [k,v] of Object.entries({...handlers,...pair.handlers}))actions.set(k,v);
+  window.MirrorRoom={pair,ik,escape,button,money,tone,dialog,close,route,showExtra,startWords,say,currentExtra:()=>extra,activeProfile,available,register:(k,fn)=>actions.set(k,fn),refresh:schedule};
   start();
 })();

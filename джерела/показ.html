@@ -23,7 +23,7 @@
 <html lang="uk" class="mirror-ready">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#F4F0E8">
 <script>/* тема з пам'яті телефона — до першого малювання, щоб не блимало */
 (function(){try{var т=localStorage.getItem('люстерко-тема');if(т)document.documentElement.dataset.тема=т}catch(e){}})();</script>
@@ -34,46 +34,43 @@
 
 </head>
 <body>
-<div id="mirror-studio" class="studio">
- <a class="studio-skip" href="#mirror-occasions">До розмови</a>
- <header class="studio-mast">
-  <div class="studio-mast-inner">
-   <button type="button" id="mirror-home" class="studio-brand" aria-label="Люстерко, до розмови">Люстерко</button>
-   <button type="button" id="mirror-person" class="studio-person" aria-label="Мій профіль"></button>
-   <button type="button" id="mirror-style" class="studio-style" aria-haspopup="dialog"></button>
-  </div>
+<div id="mirror-studio" class="studio pair-app">
+ <a class="studio-skip" href="#mirror-work">До люстерка</a>
+ <header class="pair-mast">
+  <button type="button" id="mirror-home" class="studio-brand" aria-label="На головне люстерко">Люстерко</button>
+  <button type="button" id="mirror-style" class="pair-style" aria-haspopup="dialog"></button>
+  <button type="button" class="pair-my" data-ux="library">Мої</button>
  </header>
- <div id="mirror-body" class="studio-desk">
-  <section id="mirror-conversation" class="studio-talk" aria-label="Розмова">
-   <div class="studio-talk-scroll" id="mirror-letter">
-    <div id="mirror-occasions" tabindex="-1">
-     <h1 class="studio-prompt"><span id="mirror-prompt-mark" aria-hidden="true"></span>Куди збираємось?</h1>
-     <div class="studio-choices" id="mirror-choices" role="group" aria-label="Нагода"></div>
-    </div>
-    <div id="mirror-review-source" hidden></div>
-    <div id="mirror-thread" class="studio-thread"></div>
-    <div id="mirror-suggestions"></div>
-    <div id="mirror-input"></div>
-    <div id="mirror-chat-status" role="status"></div>
+ <main id="mirror-work" class="studio-work" tabindex="-1">
+  <div class="studio-main-in">
+   <nav class="pair-topline" aria-label="Люстерко">
+    <button type="button" id="mirror-person" class="pair-person" aria-label="Мій профіль"></button>
+    <button type="button" class="pair-center-home" data-ux="face">Люстерко</button>
+    <button type="button" class="pair-directory" data-ux="features">Можливості</button>
+   </nav>
+   <div id="mirror-heading" class="studio-heading"></div>
+   <div id="pair-scene"></div>
+   <div id="mirror-occasions" tabindex="-1" hidden>
+    <h2 class="studio-prompt"><span id="mirror-prompt-mark" aria-hidden="true"></span>Куди збираємось?</h2>
+    <div class="studio-choices" id="mirror-choices" role="group" aria-label="Нагода"></div>
+    <div id="pair-case-next" class="pair-actions"></div>
    </div>
-   <div class="studio-reply">
-    <button type="button" data-ux="speak" id="mirror-speak" aria-pressed="false"><i aria-hidden="true"></i><span>Сказати</span></button>
-    <button type="button" data-ux="write">Написати</button>
-   </div>
-  </section>
-  <main id="mirror-work" class="studio-work" tabindex="-1">
-   <div class="studio-main-in">
-    <div id="mirror-heading" class="studio-heading"></div>
-    <div id="mirror-extras" hidden></div>
-    <div id="mirror-native"></div>
-   </div>
-  </main>
- </div>
- <nav class="studio-nav" aria-label="Розділи Люстерка">
-  <button type="button" data-ux="talk">Розмова</button>
-  <button type="button" data-ux="face">Образ</button>
-  <button type="button" data-ux="library">Мої образи</button>
- </nav>
+   <div id="pair-feedback" hidden></div>
+   <div id="mirror-extras" hidden></div><div id="mirror-native"></div>
+  </div>
+ </main>
+ <button id="pair-curtain" type="button" aria-label="Згорнути розмову" tabindex="-1" hidden></button>
+ <aside id="mirror-conversation" class="pair-drawer" aria-label="Розмова з Люстерком">
+  <button type="button" id="pair-handle" aria-controls="mirror-letter" aria-expanded="false"><i aria-hidden="true"></i><span id="pair-latest">Куди збираєшся?</span></button>
+  <div id="mirror-letter" class="studio-talk-scroll">
+   <div class="pair-chat-head"><strong>Розмова</strong><button type="button" data-ux="collapse" aria-label="Згорнути розмову">×</button></div>
+   <div class="pair-chat-tools"><button type="button" data-ux="pair-occasion">Нагода</button><button type="button" data-ux="assess">Оцінити вбрання</button><button type="button" data-ux="features">Усі дії</button></div>
+   <div id="pair-chat-context" hidden><button type="button" data-ux="context-question"></button></div>
+   <div id="mirror-thread" class="studio-thread"></div><div id="mirror-suggestions"></div>
+  </div>
+  <div id="mirror-input"></div><div id="mirror-chat-status" role="status"></div>
+  <div id="pair-review-chat" hidden><button type="button" data-ux="ask-review">Моє питання про вбрання</button></div>
+ </aside>
 </div>
 <dialog id="mirror-sheet" class="studio-sheet" aria-labelledby="mirror-sheet-title">
  <div class="studio-sheet-head"><h2 id="mirror-sheet-title"></h2><button type="button" data-ux="close-sheet" aria-label="Закрити">×</button></div>
@@ -818,6 +815,7 @@
 <script src="показ/дзеркало/arts.js"></script>
 <script src="показ/дзеркало/material.js"></script>
 <script src="показ/дзеркало/catalog-index.js"></script>
+<script src="показ/дзеркало/pair.js"></script>
 <script src="показ/дзеркало/room.js"></script>
 <script src="показ/дзеркало/rack.js"></script>
 </body>

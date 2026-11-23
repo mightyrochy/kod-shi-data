@@ -227,8 +227,8 @@ const НАПИСИ_РОЗМОВИ = {
   const арк = $('ші-аркуш');
   арк.hidden = оц || !(розгорнуто && !дім);
   if (!арк.hidden){ const стр = $('ші-стрічка'); стр.scrollTop = стр.scrollHeight; }
-  $('чат-ввід').hidden = оц;
-  $('чат-фото').hidden = !дім;
+  $('чат-ввід').hidden = false;
+  $('чат-фото').hidden = false;
   текстЖінціП($('чат-поле'), 'Напиши стилістці…', undefined, undefined, 'placeholder');
 });
 
