@@ -615,7 +615,7 @@ function рядкиЗаписаногоП(пас){
   const бракує = чогоБракує().filter(б=>/кольори|обхвати/.test(б));
   е.innerHTML = '';
   if (!бракує.length){ е.hidden = true; return; }
-  е.appendChild(елЖінціП('span', null, 'Твої кольори й мірки допоможуть підібрати образи, що тобі пасують. У профілі ще потрібні ' + бракує.join(' і ') + '.', 'case_missing_failed'));
+  е.appendChild(елЖінціП('span', null, 'Для добору додай ' + бракує.join(' і ') + '.', 'case_missing_failed'));
   const б = ел('button', 'текст', 'До профілю'); б.type = 'button';
   б.onclick = ()=>Екран.відЖінки('увага-до-профілю', бракує[0].indexOf('кольори') >= 0 ? 'кол-блок' : 'мір-блок');
   е.appendChild(б); е.hidden = false;
