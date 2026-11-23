@@ -342,6 +342,7 @@ jobs:
           cp index.html "${RUNNER_TEMP}/стенд/index.html"
           NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js \
             http://127.0.0.1:8765 "${RUNNER_TEMP}/стенд" "${RUNNER_TEMP}/pyodide" 3 2>&1 | tee стенд.log
+          NODE_PATH=джерела/node_modules node аудит/проби/пара_чернетка.js "${RUNNER_TEMP}/стенд/index.html"
 
       - name: нове ядро шляху образу (тести Н1; Т34 — у Pyodide з кешу стенда)
         # Ядро-Н1-каркас: `unittest discover` кириличних імен файлів не бачить — модулі названо явно.

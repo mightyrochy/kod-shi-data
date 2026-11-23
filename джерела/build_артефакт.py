@@ -1317,6 +1317,17 @@ def зібрати_показ(джерело, вихід, збірка=None, п�
         if пл not in шаблон:
             raise SystemExit("у показі нема плейсхолдера %s" % пл)
     сирі_zip, імена = _зібрати_zip_показу(джерело, повний, каталог)
+    пошук = ""
+    if повний:
+        with tempfile.TemporaryDirectory(prefix="liusterko-search-") as тимч:
+            архів = os.path.join(тимч, "engine.zip")
+            індекс = os.path.join(тимч, "catalog.json.gz")
+            with open(архів, "wb") as ф:
+                ф.write(сирі_zip)
+            subprocess.run([sys.executable, os.path.join(джерело, "індекс_пошуку.py"), архів, індекс], check=True)
+            with open(індекс, "rb") as ф:
+                пошук = base64.b64encode(ф.read()).decode("ascii")
+    шаблон = шаблон.replace("__ПОШУК_РЕЧЕЙ__", пошук)
     b64 = base64.b64encode(сирі_zip).decode("ascii")
     # Штамп називає checkout, із якого зібрано вантаж. Копія без Git
     # лишається придатною для локальної збірки, але не для публікації як SHA.
