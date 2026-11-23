@@ -20,10 +20,10 @@
   пакет образів у ньому не читається (рішення 11824). Службові дані
   (збірка, каталог, токени, діагноз) видно лише під #службове=1.
 -->
-<html lang="uk">
+<html lang="uk" class="mirror-ready">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#F4F0E8">
 <script>/* тема з пам'яті телефона — до першого малювання, щоб не блимало */
 (function(){try{var т=localStorage.getItem('люстерко-тема');if(т)document.documentElement.dataset.тема=т}catch(e){}})();</script>
@@ -34,6 +34,72 @@
 
 </head>
 <body>
+<div id="mirror-studio" class="studio pair-app">
+ <a class="studio-skip" href="#mirror-work">До люстерка</a>
+ <header class="pair-mast">
+  <div class="pair-brand-block">
+   <button type="button" id="mirror-home" class="studio-brand" aria-label="На головне люстерко">Люстерко</button>
+   <button type="button" id="mirror-style" class="pair-style" aria-haspopup="dialog"></button>
+  </div>
+  <div id="mirror-header-art" class="pair-header-art" aria-hidden="true"></div>
+  <button type="button" class="pair-my" data-ux="library">Мої</button>
+ </header>
+ <main id="mirror-work" class="studio-work" tabindex="-1">
+  <div class="studio-main-in">
+   <nav class="pair-topline" aria-label="Люстерко">
+    <button type="button" id="mirror-person" class="pair-person" aria-label="Мій профіль"></button>
+    <button type="button" class="pair-center-home" data-ux="face">Люстерко</button>
+    <button type="button" class="pair-directory" data-ux="features">Можливості</button>
+   </nav>
+   <div id="mirror-heading" class="studio-heading"></div>
+   <div id="pair-scene"></div>
+   <div id="mirror-occasions" tabindex="-1" hidden>
+    <h2 class="studio-prompt"><span id="mirror-prompt-mark" aria-hidden="true"></span>Куди збираємось?</h2>
+    <div class="studio-choices" id="mirror-choices" role="group" aria-label="Нагода"></div>
+    <div id="pair-case-next" class="pair-actions"></div>
+   </div>
+   <div id="pair-feedback" hidden></div>
+   <div id="mirror-extras" hidden></div><div id="mirror-native"></div>
+  </div>
+ </main>
+ <button id="pair-curtain" type="button" aria-label="Згорнути розмову" tabindex="-1" hidden></button>
+ <aside id="mirror-conversation" class="pair-drawer" aria-label="Розмова з Люстерком">
+  <button type="button" id="pair-handle" aria-controls="mirror-letter" aria-expanded="false"><i aria-hidden="true"></i><span id="pair-latest">Куди збираєшся?</span></button>
+  <div id="mirror-letter" class="studio-talk-scroll">
+   <div class="pair-chat-head"><strong>Розмова</strong><button type="button" data-ux="collapse" aria-label="Згорнути розмову">×</button></div>
+   <div class="pair-chat-tools"><button type="button" data-ux="pair-occasion">Нагода</button><button type="button" data-ux="assess">Оцінити вбрання</button><button type="button" data-ux="features">Усі дії</button></div>
+   <div id="pair-chat-context" hidden><button type="button" data-ux="context-question"></button></div>
+   <div id="mirror-thread" class="studio-thread"></div><div id="mirror-suggestions"></div>
+  </div>
+  <div id="mirror-input"></div><div id="mirror-chat-status" role="status"></div>
+  <div id="pair-review-chat" hidden><button type="button" data-ux="ask-review">Моє питання про вбрання</button></div>
+ </aside>
+</div>
+<dialog id="mirror-sheet" class="studio-sheet" aria-labelledby="mirror-sheet-title">
+ <div class="studio-sheet-head"><h2 id="mirror-sheet-title"></h2><button type="button" data-ux="close-sheet" aria-label="Закрити">×</button></div>
+ <div id="mirror-sheet-content"></div>
+</dialog>
+<svg aria-hidden="true" width="0" height="0" class="studio-icons" xmlns="http://www.w3.org/2000/svg"><defs>
+ <symbol id="мі-розмова" viewBox="0 0 24 24"><path d="M3.5 4.5h17v12h-10L5 21v-4.5H3.5zM7.5 9h9m-9 3h5"/></symbol>
+ <symbol id="мі-люстерко" viewBox="0 0 24 24"><ellipse cx="12" cy="9" rx="6.8" ry="7.6"/><path d="M12 16.6V22m-2.9 0h5.8M8.4 8.6c.1-2.3 1.4-3.7 3.4-4"/></symbol>
+ <symbol id="мі-збірка" viewBox="0 0 24 24"><path d="M3 5.5h6.3L12 7l2.6-1.5H21v14h-6.4L12 21l-2.7-1.5H3zM12 7v14"/></symbol>
+ <symbol id="мі-камера" viewBox="0 0 24 24"><path d="M2.5 7.5h4l2-3h6.8l2 3h4.2V20h-19z"/><circle cx="12" cy="13" r="3.6"/></symbol>
+ <symbol id="мі-сумка" viewBox="0 0 24 24"><path d="M4.2 8h15.6l1.1 13H3.1zM8.2 9V6a3.8 3.8 0 0 1 7.6 0v3"/></symbol>
+ <symbol id="мі-вішак" viewBox="0 0 24 24"><path d="M9 6a3 3 0 1 1 5.3 1.9L12 10v1.5l8.3 5.4c1 .7.8 2.1-.6 2.1H4.3c-1.4 0-1.6-1.4-.6-2.1l8.3-5.4"/></symbol>
+ <symbol id="мі-пошук" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.8"/><path d="m15.8 15.8 5 5"/></symbol>
+ <symbol id="мі-міра" viewBox="0 0 24 24"><path d="m3 16 13-13 5 5L8 21zM13.6 5.5l2 2m-5 1 1.5 1.5m-4.4 1.4 2 2"/></symbol>
+ <symbol id="мі-назад" viewBox="0 0 24 24"><path d="m14.5 4.5-7 7.5 7 7.5"/></symbol>
+ <symbol id="мі-рух" viewBox="0 0 24 24"><path d="M8.5 5.5 15 12l-6.5 6.5"/></symbol>
+ <symbol id="мі-далі" viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6"/></symbol>
+ <symbol id="мі-людина" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20v-2a7 7 0 0 1 14 0v2"/></symbol>
+ <symbol id="мі-голос" viewBox="0 0 24 24"><rect x="8.7" y="2" width="6.6" height="12.5" rx="3.3"/><path d="M5.5 10v1.5a6.5 6.5 0 0 0 13 0V10M12 18v4m-3 0h6"/></symbol>
+ <symbol id="мі-барви" viewBox="0 0 24 24"><circle cx="8.3" cy="10.2" r="5.5"/><circle cx="15.5" cy="13.8" r="5.5"/></symbol>
+ <symbol id="мі-зберегти" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4.3L6 21z"/></symbol>
+ <symbol id="мі-оберт" viewBox="0 0 24 24"><path d="M4 10a8 7 0 1 1 .8 6.3M3.7 5.7V10h4.5"/></symbol>
+ <symbol id="мі-плюс" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
+ <symbol id="мі-так" viewBox="0 0 24 24"><path d="m3 12 5.5 5.6L21 5.8"/></symbol>
+</defs></svg>
+
 <div id="нова-версія" role="status" hidden><span>Є новіша версія Люстерка.</span> <button type="button" id="нова-версія-кн">Оновити</button></div>
 
 <svg style="display:none" aria-hidden="true">
@@ -748,5 +814,12 @@
 <script src="показ/екран/службове.js"></script>
 <script src="показ/екран/збій.js"></script>
 <script src="показ/старт.js"></script>
+<script src="показ/дзеркало/пакет.js"></script>
+<script src="показ/дзеркало/arts.js"></script>
+<script src="показ/дзеркало/material.js"></script>
+<script src="показ/дзеркало/catalog-index.js"></script>
+<script src="показ/дзеркало/pair.js"></script>
+<script src="показ/дзеркало/room.js"></script>
+<script src="показ/дзеркало/rack.js"></script>
 </body>
 </html>
