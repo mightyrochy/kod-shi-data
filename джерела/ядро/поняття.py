@@ -247,6 +247,7 @@ class Запит(_Поняття):
     фото: tuple = ()
     номери: tuple = ()
     знято: int = 0
+    розмір: dict = field(default_factory=dict)
 
     def __post_init__(self):
         _версія("Запит", self.версія_ситуації)
