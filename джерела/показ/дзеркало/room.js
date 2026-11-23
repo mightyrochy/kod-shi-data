@@ -267,7 +267,7 @@
     const shelf=document.createElement('div');shelf.id='mirror-saved-manual';node('біб-список').before(shelf);
     node('mirror-home').addEventListener('click',goFace);
     node('mirror-style').addEventListener('click',showThemes);node('mirror-person').addEventListener('click',()=>route('профіль'));
-    node('чат-поле').setAttribute('aria-label','Повідомлення стилістці');node('чат-поле').placeholder='Напиши…';
+    node('чат-поле').setAttribute('aria-label','Повідомлення стилістці');
     node('чат-слати').innerHTML=ik('далі');node('чат-слати').setAttribute('aria-label','Надіслати');
     if(window.ResizeObserver){
       const size=new ResizeObserver(()=>decorateChoices());size.observe(node('mirror-choices'));size.observe(node('аркуш'));size.observe(node('pair-scene'));size.observe(node('пал-картка'));
