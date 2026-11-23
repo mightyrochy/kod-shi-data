@@ -5498,7 +5498,13 @@ function підсумокМоделі(){
      ОДИН рядок, горизонтальної прокрутки нема, питання осей ДРІБНІШЕ за питання поля. */
   const булоВікно = стор.viewportSize();
   await стор.setViewportSize({ width: 390, height: 844 });
-  /* перемальовка вікна browser viewport (дії ядра нема) */ await с(200);
+  /* Міряємо після кінця анімації переходу: перспектива під час розгортання
+     дає різні координати верху кнопок одного рядка. Нескінченні орнаменти не чекаємо. */
+  await стор.evaluate(async () => {
+    await new Promise(р => requestAnimationFrame(р));
+    await Promise.all(document.getAnimations().filter(а => Number.isFinite(а.effect.getComputedTiming().endTime))
+      .map(а => а.finished.catch(() => {})));
+  });
   const кв2 = await стор.evaluate(() => {
     const ряди = [...document.querySelectorAll('#к-0 .вердикт .ряд-осі')].map(р => ({
       рядків: new Set([...р.children].map(ч => Math.round(ч.getBoundingClientRect().top))).size,

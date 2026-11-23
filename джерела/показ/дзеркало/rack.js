@@ -254,7 +254,7 @@
     }
     await change(d=>{
       const record=d.saved.find(v=>v.id===id);
-      if(record)d.outfit={name:record.name,id:record.id,editSide:0,side:0,sets:[record.things,[]]};
+      if(record)d.outfit={name:record.name,id:record.id,editSide:0,side:0,sets:[record.things.map(thing=>({...thing})),[]]};
     });
     await compose();
   }
