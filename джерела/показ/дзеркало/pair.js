@@ -27,21 +27,18 @@ window.createMirrorPair = function(R) {
   function swatches(colors){
     return '<div class="pair-swatches">'+colors.map(([c,name])=>'<div><i'+(c?' style="background:'+c+'"':'')+'></i><span>'+e(name)+'</span></div>').join('')+'</div>';
   }
-  const crowns=new Map(), seenGarments=new Map();
+  const homeArt=new Map(), seenGarments=new Map();
   let reverseKey='',failureEvent='',testingShelf=false,openingBlind=false;
   const cardKey=(pack,pos)=>ключЗаписуОбразуП(pack)+'#'+pos;
   const measurements=()=>[['мр-зріст','Зріст'],['мр-талія','Талія']].filter(([id])=>Number(node(id)?.value)>0).map(([id,name])=>'<small>'+name+' · '+e(node(id).value)+' см</small>').join('');
-  function materialBand(){
-    if(!crowns.has(M.get()))crowns.set(M.get(),[Hand.cover(M.get()),Hand.cover(M.get())].join(''));
-    return '<div class="pair-crown" aria-hidden="true">'+crowns.get(M.get())+'</div>';
-  }
   function home(){
     const colors=family(),known=colors.some(([hex])=>hex);
+    if(!homeArt.has(M.get()))homeArt.set(M.get(),Hand.art(M.get(),'welcome'));
     const hasResult=typeof П!=='undefined'&&П?.картки?.some(c=>c&&!c.збій&&String(c.рука)==='1');
     const introduced=known||!!bodyPhoto();
-    const reflection=introduced?'<button type="button" class="pair-image pair-color-read" data-ux="my-colors">'+swatches(colors)+measurements()+'</button>':'<div class="pair-image pair-glass"><span class="pair-glint" aria-hidden="true"></span><span>Тут буде<br>твій образ</span></div>';
+    const reflection=introduced?'<button type="button" class="pair-image pair-color-read" data-ux="my-colors">'+swatches(colors)+measurements()+'</button>':'<div class="pair-image pair-glass"><span class="pair-home-art" aria-hidden="true">'+homeArt.get(M.get())+'</span></div>';
     const sides=relation(label('Ти',person()),'',label(introduced?'Барви й мірки':'Люстерко',reflection),'pair-hand-frame');
-    return sides.replace('</section></div>','</section>'+materialBand()+'</div>')+'<div class="pair-captions">'+action('my-colors',known?'Виправити барви':introduced?'Додати барви':'Мої барви')+(hasResult?action('pair-result','Готовий образ'):action('compose','Зібрати вручну'))+'</div>'+
+    return sides+'<div class="pair-captions">'+action('my-colors',known?'Виправити барви':introduced?'Додати барви':'Мої барви')+(hasResult?action('pair-result','Готовий образ'):action('compose','Зібрати вручну'))+'</div>'+
       '<div class="pair-start-actions">'+action(R.hasCase()?'pair-summary':'pair-occasion',R.hasCase()?'Моя нагода':'Зібрати образ','',true)+action('assess','Оцінити вбрання')+'</div>'+
       '<div class="pair-shortcuts">'+b('anchor','Під мою річ','вішак')+b('buy','Купити чи ні?','сумка')+b('catalog','Знайти річ','пошук')+b('closet','Мої речі','збірка')+'</div>'+
       '<div class="pair-future-link">'+action('pair-plans','У планах')+'</div>';
@@ -80,7 +77,7 @@ window.createMirrorPair = function(R) {
     const nativeFacts=structuredFacts();
     const selected=occasionLabel();
     let content='<div class="pair-column-titles"><span>Ти сказала</span><span>Люстерко зрозуміло</span></div>';
-    if(selected&&!nativeFacts.length)content+=row('<strong>'+e(selected)+'</strong>','=',action('pair-edit','Нагода · '+selected,'нагода'),'key');
+    if(selected&&!nativeFacts.length)content+=row('<strong>'+e(selected)+'</strong>','=',b('pair-edit',selected,'','нагода','studio-text pair-confirmed'),'key');
     if(nativeFacts.length)content+=nativeFacts.join('');
     if(utterances.length&&!nativeFacts.length){
       const note=utterances.at(-1);
@@ -95,7 +92,7 @@ window.createMirrorPair = function(R) {
     const intent=[['приховати','Тихо'],['лестити','Звично'],['експресія','Помітно']].map(([key,name])=>'<button type="button" data-ux="pair-goal" data-value="'+key+'" aria-pressed="'+(полеВипадкуП('сц-мета')===key)+'">'+name+'</button>').join('');
     const status=зрізЗбиранняП().статус?.код,failed=['збій','збій_каталогу'].includes(status);
     const retry=failed?relation('Моя нагода','×','<strong>Образ не зібрано</strong>'+action('pair-build','Повторити'),'pair-failure'):'';
-    return retry+content+'<div class="pair-intent" role="group" aria-label="Бажана увага">'+intent+'</div><details class="pair-conditions"><summary>Уточнити умови</summary><div>'+more+'</div>'+action('pair-future','Прогноз погоди · у планах','weather')+'</details>'+
+    return retry+'<div class="pair-understanding">'+content+'</div><div class="pair-intent" role="group" aria-label="Бажана увага">'+intent+'</div><details class="pair-conditions"><summary>Уточнити умови</summary><div>'+more+'</div>'+action('pair-future','Прогноз погоди · у планах','weather')+'</details>'+
       '<div class="pair-links">'+action('pair-palette','Барви образу')+action('pair-save-case','Зберегти нагоду')+'</div>'+
       '<div class="pair-actions">'+action('pair-build','Так, збирай','',true)+action('compose','Зібрати вручну')+'</div>';
   }
@@ -206,8 +203,8 @@ window.createMirrorPair = function(R) {
     document.documentElement.dataset.pairPage=extra||(inCase?page:mode);
     choices.hidden=!inCase||page!=='occasion';host.hidden=!inCase;
     if(inCase){
-      const title=page==='understood'?'Чи так я зрозуміла?':page==='occasion'?'Нагода':'';
-      node('mirror-heading').hidden=!title||page==='occasion';
+      const title=page==='understood'?'Моя нагода':page==='occasion'?'Куди збираємось?':'';
+      node('mirror-heading').hidden=!title;
       if(title)R.heading(title,action('pair-home','До люстерка'));
       place(host,page==='mirror'?home():page==='understood'?understood():'');
       if(page==='occasion')place(node('pair-case-next'),action('pair-summary','До умов нагоди','',true)+action('write','Сказати своїми словами'));

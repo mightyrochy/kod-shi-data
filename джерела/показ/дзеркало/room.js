@@ -10,7 +10,7 @@
   const tone = v => typeof v === 'string' && /^#[\da-f]{3}([\da-f]{3})?$/i.test(v) ? v : '';
   const sheet = node('mirror-sheet'), work=node('mirror-work');
   let following=true, lastTurn=null, drawerOpen=false;
-  let contextWords='', originator=null, extra='', pageMode='', headerKey='', scheduled=false, other=false;
+  let contextWords='', originator=null, extra='', pageMode='', headerKey='', headingTitle='', headingControls='', scheduled=false, other=false;
   const titles={'сценарій':'Образ','профіль':'Мій профіль','старт':'Мій профіль','оцінка':'Оцінити вбрання','сценарії':'Мої нагоди','образи':'Образ','бібліотека':'Мої образи','палітра':'Барви','очікування':'Збираю образи'};
   const actions=new Map();
   function move(item, parent){if(item&&parent&&item.parentNode!==parent)parent.append(item);}
@@ -59,7 +59,10 @@
     pair.render(режимЕкрана(),extra);if(changed){setDrawer(false);work.scrollTop=0;work.focus({preventScroll:true});}
   }
   function setHeading(title,controls){
-    const signature=title+controls;if(headerKey===signature)return;headerKey=signature;
+    headingTitle=title;headingControls=controls;
+    const signature=M.get()+title+controls;
+    if(headerKey===signature)return;
+    headerKey=signature;
     node('mirror-heading').innerHTML='<h1>'+escape(title)+'</h1><div class="studio-heading-actions">'+controls+'</div>';
   }
   function renderPerson(){
@@ -71,13 +74,14 @@
     const hand=M.get();
     document.documentElement.dataset.hand=hand;
     node('mirror-home').innerHTML=M.mast();
-    node('mirror-style').innerHTML='<span class="studio-binding">'+Hand.cover(hand)+'</span><span class="studio-hand-name">'+escape(M.label())+'<i aria-hidden="true"></i></span>';
+    node('mirror-header-art').innerHTML=Hand.cover(hand);
+    node('mirror-style').innerHTML='<span class="studio-hand-name">'+escape(M.label())+'<i aria-hidden="true"></i></span>';
     node('mirror-style').setAttribute('aria-label','Оформлення · '+M.label());
     node('mirror-prompt-mark').innerHTML=Hand.mark(hand);
     const icon=Hand.mark(hand).replace(/style="fill:var\(--tlo\)"/g,'fill="'+(hand==='klyny'?'#e6e0d0':'#faf6ea')+'"');
     document.documentElement.style.setProperty('--speaker-mark','url("data:image/svg+xml,'+encodeURIComponent(icon)+'")');
     const meta=document.querySelector('meta[name=theme-color]');if(meta)meta.content=hand==='klyny'?'#e6e0d0':'#faf6ea';
-    renderPerson();
+    setHeading(headingTitle,headingControls);renderPerson();
   }
   function showThemes(){
     const choices=Object.entries(M.labels).map(([id,name])=>'<button type="button" data-swatch="'+id+'" data-ux="hand" data-value="'+id+'" aria-pressed="'+(id===M.get())+'"><span class="studio-swatch" aria-hidden="true">'+Hand.art(id,'welcome')+'</span><span class="studio-swatch-name">'+name+(id===M.get()?ik('так',17):'')+'</span></button>').join('');
@@ -105,13 +109,13 @@
     const selectedKey=полеВипадкуП('сц-нагода');
     if(selectedKey)other=false;
     const own=node('mirror-choices').querySelectorAll('button');
-    const options=[...own,...document.querySelectorAll('#аркуш .плитка,#пал-картка button[aria-pressed]')];
+    const options=[...own,...document.querySelectorAll('#аркуш .плитка,#пал-картка button[aria-pressed],.pair-intent button,.pair-fact .pair-confirmed')];
     for(const option of options){
       let selected;
       if(option.dataset.ux==='occasion'){
         selected=option.dataset.value?selectedKey===option.dataset.value:other;
         option.setAttribute('aria-pressed',String(selected));
-      } else selected=option.classList.contains('вибр')||option.getAttribute('aria-pressed')==='true';
+      } else selected=option.classList.contains('pair-confirmed')||option.classList.contains('вибр')||option.getAttribute('aria-pressed')==='true';
       const mark=option.querySelector(':scope > .plama');
       if(!selected){mark?.remove();delete option.dataset.paint;continue;}
       const w=option.offsetWidth,h=option.offsetHeight;
@@ -269,7 +273,7 @@
     node('чат-поле').setAttribute('aria-label','Повідомлення стилістці');node('чат-поле').placeholder='Напиши стилістці…';
     node('чат-слати').innerHTML=ik('далі');node('чат-слати').setAttribute('aria-label','Надіслати');
     if(window.ResizeObserver){
-      const size=new ResizeObserver(()=>decorateChoices());size.observe(node('mirror-choices'));size.observe(node('аркуш'));
+      const size=new ResizeObserver(()=>decorateChoices());size.observe(node('mirror-choices'));size.observe(node('аркуш'));size.observe(node('pair-scene'));size.observe(node('пал-картка'));
     }
     const handle=node('pair-handle'),letter=node('mirror-letter');
     handle.addEventListener('click',()=>{if(mobile.matches)setDrawer(!drawerOpen);});
