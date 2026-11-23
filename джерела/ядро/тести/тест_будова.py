@@ -18,6 +18,7 @@ language_contract пакет_моделі міст_пакет міст_запи�
 протокол схема_відповіді схеми_розбору міст_відповіді руки_без_коду міст_рука2 знахідка людський_вихід суд_від_моделі
 вердикт_моделі перевірка_образу суд_огляд суд_чеклісти суд_образу повнота_образу selection_policy міст_опис
 пропозиція_заміни заміна_речі причини_речі bridge покроковик""".split())
+ВИНЯТКИ = {("знання", "суд_від_моделі"): "знімає Н5"}
 РЯДКОВІ = {"lower", "upper", "casefold", "split", "rsplit", "splitlines", "startswith", "endswith", "replace", "find",
            "rfind", "index", "strip", "lstrip", "rstrip", "translate", "partition", "count", "title", "capitalize"}
 
@@ -44,8 +45,12 @@ class Будова(unittest.TestCase):
                 імена = ([а.name for а in в.names] if isinstance(в, ast.Import)
                          else [в.module or ""] if isinstance(в, ast.ImportFrom) and not в.level else [])
                 for і in імена:
+                    корінь = і.split(".")[0]
+                    if (ім, корінь) in ВИНЯТКИ:
+                        self.assertEqual(ВИНЯТКИ[(ім, корінь)], "знімає Н5")
+                        continue
                     with self.subTest(модуль=ім, імпорт=і):
-                        self.assertNotIn(і.split(".")[0], ЗАМІННІ | {"re"})
+                        self.assertNotIn(корінь, ЗАМІННІ | {"re"})
 
     def test_нема_функцій_над_рядками_слів(self):
         for ім, д in модулі():

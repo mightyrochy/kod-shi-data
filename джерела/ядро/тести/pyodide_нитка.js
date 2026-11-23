@@ -28,11 +28,8 @@ function тека(пд, відносна){
   const вихід = пд.runPython(`
 import json, sys
 sys.path.insert(0, "/джерела")
-from ядро import протокол
 from ядро.тести import обвязка as о
-в, журнал = о.прогнати(протокол, о.вхід_с5(), о.записаний(о.тексти_с5()))
-json.dumps({"картки": в["картки"], "запити": [{к: з[к] for к in з if к != "сесія"} for з in журнал["запити"]]},
-           ensure_ascii=False)
+json.dumps(о.нитка_транспорту(), ensure_ascii=False)
 `);
   console.log(вихід);
 })().catch(е => { console.error(е); process.exit(1); });
