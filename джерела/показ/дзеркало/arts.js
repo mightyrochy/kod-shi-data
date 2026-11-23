@@ -497,5 +497,31 @@
   }
   // Every drawing carries its own local masks and filters, so simultaneous theme previews work independently.
   function resources() { return ''; }
-  window.Hand=Object.freeze({art,seal,petal,patch,voice,wordmark,resources,materials});
+  // A material sample in the header; outfit photos and the owner's portrait are separate.
+  function cover(theme) {
+    const name=kind(theme);
+    if(name!=='kahlia'){
+      const svg=pictureTemplate(name,'cover').replaceAll('UNIQUE_HAND_STAMP',nextId());
+      return svgType(svg,'material-cover',name).replace('role="img"','aria-hidden="true"');
+    }
+    const flower=kahlia.znak({px:64,id:nextId(),barvy:['#248456','#faf4dd','#e8b32a','#248456','#faf4dd','#e8b32a'],vinets:'#e8b32a',rysky:true}).replace('<svg ','<svg x="44" y="8" ');
+    const leaf='<path d="M0 0Q6-14 25-14Q21-3 0 0Z" fill="#298658" stroke="#4b2a1b" stroke-width="1.2"/><path d="M2-1L21-12" fill="none" stroke="#4b2a1b" stroke-width=".85"/>';
+    const leaves=[[4,54,-16],[26,46,172],[34,45,-25],[107,41,158],[110,41,-35],[133,31,162]];
+    return '<svg class="hand-material-cover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 152 80" aria-hidden="true"><path d="M2 55Q24 41 43 45T75 41Q109 48 149 24" fill="none" stroke="#4b2a1b" stroke-width="1.6"/>'+leaves.map(([x,y,a])=>'<g transform="translate('+x+' '+y+') rotate('+a+')">'+leaf+'</g>').join('')+flower+'</svg>';
+  }
+  function mark(theme, size=30, portrait='') {
+    const name=kind(theme);
+    return sources[name].znak({px:size,id:nextId(),sklo:1,portret:imageAddress(portrait),vinets:materials[name].pigment,rysky:false});
+  }
+  function impression(theme,w,h,seed=2) {
+    const name=kind(theme),hand=sources[name];
+    let svg=hand.plama(w,h,'zhov',seed);
+    if(name==='kahlia'){
+      const id=nextId()+'-glaze';
+      const defs=hand.spilni().match(/<defs>[\s\S]*?<\/defs>/)[0].replace('id="fpS"','id="'+id+'"');
+      svg=svg.replace('url(#fpS)','url(#'+id+')').replace(/(<svg[^>]*>)/,'$1'+defs);
+    }
+    return svg;
+  }
+  window.Hand=Object.freeze({art,seal,petal,patch,voice,wordmark,resources,materials,cover,mark,impression});
 })();

@@ -31,7 +31,7 @@ window.MirrorMaterial = (() => {
       read("liusterko-studio-v2", "theme") ||
       read("liusterko-interface-v1", "theme") ||
       read("люстерко-тема") ||
-      "vytynanka";
+      "kahlia";
   }
 
   let active = previousSelection();

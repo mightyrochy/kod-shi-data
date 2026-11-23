@@ -35,22 +35,32 @@
 </head>
 <body>
 <div id="mirror-studio" class="studio">
- <a class="studio-skip" href="#mirror-work">До основного вмісту</a>
+ <a class="studio-skip" href="#mirror-occasions">До розмови</a>
  <header class="studio-mast">
   <div class="studio-mast-inner">
-   <button id="mirror-home" class="studio-brand" aria-label="Люстерко, до нагоди">Люстерко</button>
-   <div id="mirror-hands" class="studio-hands" aria-label="Оформлення"></div>
-   <button id="mirror-style" class="studio-style" aria-haspopup="dialog"></button>
-   <button id="mirror-person" class="studio-person" aria-label="Мій профіль"></button>
+   <button type="button" id="mirror-home" class="studio-brand" aria-label="Люстерко, до розмови">Люстерко</button>
+   <button type="button" id="mirror-person" class="studio-person" aria-label="Мій профіль"></button>
+   <button type="button" id="mirror-style" class="studio-style" aria-haspopup="dialog"></button>
   </div>
  </header>
  <div id="mirror-body" class="studio-desk">
-  <aside id="mirror-conversation" class="studio-talk" aria-label="Розмова зі стилісткою">
-   <div class="studio-talk-head"><b>Розмова</b><button class="studio-bare" type="button" data-ux="cases">Мої нагоди</button></div>
-   <div id="mirror-thread" class="studio-thread"></div>
-   <button class="studio-grip" id="mirror-grip" type="button" aria-expanded="false" aria-controls="mirror-thread"><i></i><span>Розмова</span></button>
-   <div id="mirror-suggestions"></div><div id="mirror-input"></div><div id="mirror-chat-status" role="status"></div>
-  </aside>
+  <section id="mirror-conversation" class="studio-talk" aria-label="Розмова">
+   <div class="studio-talk-scroll" id="mirror-letter">
+    <div id="mirror-occasions" tabindex="-1">
+     <h1 class="studio-prompt"><span id="mirror-prompt-mark" aria-hidden="true"></span>Куди збираємось?</h1>
+     <div class="studio-choices" id="mirror-choices" role="group" aria-label="Нагода"></div>
+    </div>
+    <div id="mirror-review-source" hidden></div>
+    <div id="mirror-thread" class="studio-thread"></div>
+    <div id="mirror-suggestions"></div>
+    <div id="mirror-input"></div>
+    <div id="mirror-chat-status" role="status"></div>
+   </div>
+   <div class="studio-reply">
+    <button type="button" data-ux="speak" id="mirror-speak" aria-pressed="false"><i aria-hidden="true"></i><span>Сказати</span></button>
+    <button type="button" data-ux="write">Написати</button>
+   </div>
+  </section>
   <main id="mirror-work" class="studio-work" tabindex="-1">
    <div class="studio-main-in">
     <div id="mirror-heading" class="studio-heading"></div>
@@ -59,11 +69,10 @@
    </div>
   </main>
  </div>
- <button id="mirror-curtain" class="studio-curtain" type="button" data-ux="collapse" aria-label="Згорнути розмову" tabindex="-1"></button>
  <nav class="studio-nav" aria-label="Розділи Люстерка">
-  <button type="button" data-ux="talk"><svg class="мі-ік" aria-hidden="true"><use href="#мі-розмова"/></svg><span>Розмова</span></button>
-  <button type="button" data-ux="face"><svg class="мі-ік" aria-hidden="true"><use href="#мі-люстерко"/></svg><span>Образ</span></button>
-  <button type="button" data-ux="library"><svg class="мі-ік" aria-hidden="true"><use href="#мі-збірка"/></svg><span>Мої образи</span></button>
+  <button type="button" data-ux="talk">Розмова</button>
+  <button type="button" data-ux="face">Образ</button>
+  <button type="button" data-ux="library">Мої образи</button>
  </nav>
 </div>
 <dialog id="mirror-sheet" class="studio-sheet" aria-labelledby="mirror-sheet-title">

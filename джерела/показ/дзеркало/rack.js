@@ -157,7 +157,7 @@
       if(own&&typeof left.price==='number')note='Взяти свою — 0 ₴. Купити нову — '+cash(left)+'.';
       else if(typeof left.price==='number'&&typeof right.price==='number'){const diff=left.price-right.price;note=diff>0?'Перша дорожча на '+R.money(diff)+'.':diff<0?'Перша дешевша на '+R.money(-diff)+'.':'Ціна однакова.';}
     }
-    const intro='<div class="rack-pair">'+compareHalf(left,'left')+compareHalf(right,'right',own)+'</div>';
+    const intro='<div class="rack-pair"'+(left&&right?' data-relation="чи"':'')+'>'+compareHalf(left,'left')+compareHalf(right,'right',own)+'</div>';
     let info='';
     if(left&&right)info='<div class="rack-summary">'+(note?'<b>'+e(note)+'</b>':'')+(left.slotLabel&&right.slotLabel?'<span>'+e(left.slotLabel+' · '+right.slotLabel)+'</span>':'')+'</div>';
     if(left)info+=toolsLine([b('rack-decide',decision==='Беру'?'У гардеробі':'Беру','так','Беру','studio-primary'),b('rack-decide',decision==='Відкласти'?'Відкладено':'Відкласти','зберегти','Відкласти'),b('rack-advice','Спитати стилістку','розмова')]);
@@ -171,7 +171,7 @@
   }
   async function compose(){
     picker='';replace=null;const d=await load(),outfit=d.outfit;
-    const grid='<div class="rack-pair rack-sets">'+outfit.sets.map((list,i)=>composePart(list,i,d)).join('')+'</div>';
+    const grid='<div class="rack-pair rack-sets"'+(outfit.sets.every(items=>items.length)?' data-relation="чи"':'')+'>'+outfit.sets.map((list,i)=>composePart(list,i,d)).join('')+'</div>';
     const acts=outfit.sets.some(x=>x.length)?toolsLine([b('rack-save-outfit','Зберегти образ','зберегти','','studio-primary')]):'';
     R.showExtra('compose',outfit.name||'Мій комплект',grid+acts,b('library','Мої образи','збірка'));
   }
@@ -198,14 +198,16 @@
     const p=R.activeProfile(),el=$('mirror-saved-manual');if(!p||!el)return;
     load(p).then(d=>{
       if(p!==R.activeProfile()||!el.isConnected)return;
-      const signature=JSON.stringify([p,M.get(),d.saved.map(r=>[r.id,r.name,r.worn,r.things.map(t=>[t.id,t.color]),receipt(r.things,d)])]);
+      const nativeCount=БІБЛІОТЕКА_П.плитки.length,emptyShelf=БІБЛІОТЕКА_П.стан==='порожньо'&&!nativeCount&&!d.saved.length;
+      const signature=JSON.stringify([p,M.get(),nativeCount,emptyShelf,d.saved.map(r=>[r.id,r.name,r.worn,r.things.map(t=>[t.id,t.color]),receipt(r.things,d)])]);
       if(el.dataset.revision!==signature){
-        const cards=d.saved.map(v=>'<button type="button" class="rack-saved-card" data-ux="rack-saved" data-value="'+e(v.id)+'">'+M.seal(v.things.map(t=>t.color),v.worn,57)+'<span><b>'+e(v.name)+'</b><small>'+e(v.worn?'Вдягала':receipt(v.things,d))+'</small></span></button>');
-        el.innerHTML=toolsLine([b('compose','Зібрати вручну','плюс','','studio-primary')])+(cards.length?'<div class="rack-saved">'+cards.join('')+'</div>':'');
+        const cards=d.saved.map(v=>'<button type="button" class="rack-saved-card" data-ux="rack-saved" data-value="'+e(v.id)+'">'+M.seal(v.things.map(t=>t.color),v.worn,77)+'<span><b>'+e(v.name)+'</b><small>'+e(v.worn?'Вдягала':receipt(v.things,d))+'</small></span></button>');
+        const start=emptyShelf?'<button type="button" class="rack-first-look" data-ux="compose"><span class="rack-first-print" aria-hidden="true">'+Hand.art(M.get(),'welcome')+'</span><span>Зібрати перший образ '+ik('рух',18)+'</span></button>':toolsLine([b('compose','Зібрати вручну','плюс','','studio-primary')]);
+        el.innerHTML=start+(cards.length?'<div class="rack-saved">'+cards.join('')+'</div>':'');
         el.dataset.revision=signature;
       }
       const empty=$('біб-стан');
-      if(empty)empty.hidden=БІБЛІОТЕКА_П.стан==='порожньо'&&d.saved.length>0;
+      if(empty)empty.hidden=БІБЛІОТЕКА_П.стан==='порожньо'&&(emptyShelf||d.saved.length>0);
     }).catch(()=>{el.textContent='Пам’ять браузера недоступна.';});
   }
   async function editSaved(id,confirmed=false){
