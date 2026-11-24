@@ -7,7 +7,7 @@ from unittest import TestCase
 from unittest.mock import patch
 import json
 
-from ядро import картка, знання, пул, протокол, річ, розбір, суд, запит
+from ядро import картка, знання, пул, протокол, річ, розбір, руки, суд, запит
 from ядро.поняття import Етап, НазванаРіч, Ситуація, Збій, Факт, НЕВІДОМО, НЕ_ПЕВНИЙ
 from ядро.тести import обвязка
 
@@ -120,6 +120,48 @@ class ПалітраУШтатномуЗапуску(TestCase):
         self.assertEqual(рядок["palette_branch"], "unknown")
         self.assertEqual(рядок["L"], 42)
         self.assertIn("break", тіло["poles_unavailable"])
+
+
+class МежаНаВходіПоказу(TestCase):
+    def _вхід(self):
+        return обвязка.вхід_с5(розмова="ліміт-показу", каталог=_складений_каталог(),
+                               паспорт={"бажання": ["A" * 80_000]},
+                               профіль={"в": "ВХІД-V1", "джерело": "показ"}, модель={"вихід": 4_000})
+
+    def test_перевищення_до_транспорту_одна_спроба(self):
+        with patch.object(запит, "запит", wraps=запит.запит) as побудова:
+            в = обвязка.почати(протокол, self._вхід())
+        побудова.assert_called_once()
+        self.assertEqual(побудова.call_args.kwargs["спроба"], 1)
+        self.assertTrue(в["кінець"])
+        self.assertEqual((в["запити"], в["картки"]), ([], []))
+        збій = в["збій"]
+        self.assertEqual((збій["вид"], збій["спроба"]), ("вікно_моделі", 1))
+        дані = збій["дані"]
+        self.assertEqual(дані["stage"], "складання")
+        self.assertEqual(дані["limit_source"], "legacy_assembly_offline_max")
+        self.assertEqual(дані["limit_tokens"], 25_334)
+        self.assertIsNone(дані["context_tokens"])
+        self.assertEqual(дані["photo_count"], 0)
+        self.assertEqual(дані["response_reserved_tokens"], 4_000)
+        self.assertEqual(дані["mandatory_total_tokens_estimate"], дані["json_tokens_estimate"] + 4_000)
+        self.assertGreater(дані["mandatory_total_tokens_estimate"], дані["limit_tokens"])
+
+    def test_перевищення_однієї_руки_не_губить_успішну(self):
+        дійсна_рука = руки.рука
+
+        def змішана(номер, ситуація, *решта):
+            if номер == 2:
+                return картка.Картка(рука=номер, версія_ситуації=ситуація.версія, образ="образ", вирок="вирок")
+            return (yield from дійсна_рука(номер, ситуація, *решта))
+
+        with patch.object(руки, "рука", side_effect=змішана):
+            в = обвязка.почати(протокол, self._вхід())
+        self.assertIsNone(в.get("збій"))
+        self.assertEqual(len(в["картки"]), 4)
+        за_рукою = {к["рука"]: к for к in в["картки"]}
+        self.assertIsNone(за_рукою[2]["збій"])
+        self.assertEqual(за_рукою[1]["збій"]["вид"], "вікно_моделі")
 
 
 class ЗаписІПул(TestCase):
@@ -320,20 +362,29 @@ class ДоговірН2(TestCase):
         self.assertIn("description_written_without_photos", {р["код"] for р in к.невідоме})
 
     def test_запит_влазить_у_вікно(self):
-        """Т38. Явне вікно ріже весь запит, брак вікна й велике вікно лишають пул."""
-        п = пул.зібрати(self.день, 1, 37, [_запис(f"{слот}-{і}", слот) for слот in пул.СЛОТИ for і in range(30)])
+        """Т38. Мале й резервне вікно ріжуть повний запит; велике зберігає 1020 рядків."""
+        п = пул.зібрати(self.день, 1, 37, [_запис(f"{слот}-{і}", слот) for слот in пул.СЛОТИ for і in range(60)])
         мале, велике = 12_000, 120_000
         повний = запит.запит("складання", п, self.день, {}, модель={"вихід": 4_000})
         широкий = запит.запит("складання", п, self.день, {}, модель={"вікно": велике, "вихід": 4_000})
         короткий = запит.запит("складання", п, self.день, {}, модель={"вікно": мале, "вихід": 4_000})
         self.assertIsNone(повний.розмір["context_tokens"])
-        self.assertEqual(повний.номери, широкий.номери)
-        self.assertEqual(len(повний.номери), 30 * len(пул.СЛОТИ))
+        self.assertEqual(повний.розмір["limit_source"], "legacy_assembly_offline_max")
+        self.assertGreater(повний.знято, 0)
+        self.assertEqual(len(широкий.номери), 60 * len(пул.СЛОТИ))
+        self.assertGreater(len(повний.номери), len(короткий.номери))
+        self.assertLessEqual(повний.розмір["json_tokens_estimate"] + 4_000, повний.розмір["limit_tokens"])
         self.assertGreater(короткий.знято, 0)
         self.assertLessEqual(короткий.розмір["json_tokens_estimate"] + 4_000, мале)
         текст = короткий.модель["messages"][0]["content"]
         self.assertGreater(len(текст.encode("utf-8")), мале - 4_000)
         self.assertIn("answer_schema", json.loads(текст))
+
+    def test_малий_пул_цілком_вміщається_у_виміряну_межу(self):
+        з = запит.запит("складання", self.пул, self.день, {}, модель={"вихід": 4_000})
+        self.assertEqual(len(з.номери), len(self.пул.речі))
+        self.assertEqual(з.знято, 0)
+        self.assertEqual(з.розмір["limit_tokens"], 25_334)
 
     def test_запас_відповіді_й_фото_рахуються_окремо(self):
         """Два наявні кадри й запас відповіді не влазять у явно задане мале вікно."""

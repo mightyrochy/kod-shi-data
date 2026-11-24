@@ -330,6 +330,7 @@ class Збій(_Поняття):
     сирий: str = None
     спроба: int = 1
     секунди: object = None
+    дані: dict | None = None
 
     def __post_init__(self):
         if not self.вид or not self.частина:

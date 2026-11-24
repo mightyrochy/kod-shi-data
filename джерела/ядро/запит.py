@@ -11,6 +11,8 @@ from .пул import ДОБІР, СЛОТИ
 НАРЯД = None
 with Path(__file__).with_name("дані").joinpath("запити.json").open(encoding="utf-8") as _файл:
     _ЗАДАЧІ = json.load(_файл)
+with Path(__file__).with_name("дані").joinpath("вікно.json").open(encoding="utf-8") as _файл:
+    _МЕЖІ = json.load(_файл)
 
 _ПОЛЯ_ДНЯ = {
     "подія": "occasion", "роль": "role", "місяць": "month", "день_тижня": "weekday",
@@ -146,8 +148,12 @@ def _під_вікно(тіло, поле_пулу, рядки, групи, за
         return json.dumps(тіло, ensure_ascii=False, separators=(",", ":"))
 
     всі = tuple(рядки)
+    обовʼязкові = tuple(н for н in всі if н in закріплені)
+    мінімум = текст(обовʼязкові)
+    if оцінити(мінімум) > ліміт:
+        return мінімум, обовʼязкові
     повний = текст(всі)
-    if ліміт is None or оцінити(повний) <= ліміт:
+    if оцінити(повний) <= ліміт:
         return повний, всі
     решта = [н for ряд in zip_longest(*групи.values()) for н in ряд if н is not None and н not in закріплені]
     низ, верх = 0, len(решта)
@@ -275,21 +281,24 @@ def запит(вид, пул, ситуація, профіль, *, образи
     оцінити = знання.палітрові_знання().оцінити_текст_ядра
     фото_токени = sum(ф["токени"] for ф in фото)
     підписи = оцінити("\n".join("Catalogue photo for item " + ф["n"] for ф in фото))
-    ліміт = вікно - відповідь - фото_токени - підписи if вікно is not None else None
+    джерело = "model_context" if вікно is not None else "legacy_assembly_offline_max"
+    межа = вікно if вікно is not None else _МЕЖІ[джерело]["limit_tokens"]
+    ліміт = межа - відповідь - фото_токени - підписи
     закріплені = set(склад)
     for слот, група in групи.items():
         if повний_пул and СЛОТИ[слот] in пул.обовʼязкові and закріплені.isdisjoint(група):
             закріплені.add(група[0])
     текст, надіслано = _під_вікно(тіло, поле_пулу, рядки, групи, закріплені, ліміт, оцінити, блоки_пулу)
     оцінка = оцінити(текст)
-    if ліміт is not None and оцінка > ліміт:
-        return Збій("вікно_моделі", "запит", "window",
-                    f"Required request ≈{оцінка} JSON + {підписи} labels + {фото_токени} image + "
-                    f"{відповідь} output tokens exceed {вікно}", спроба=спроба)
     розмір = {"method": "offline_qwen_weighted_1.1", "context_tokens": вікно,
+              "limit_source": джерело, "limit_tokens": межа,
               "json_utf8_bytes": len(текст.encode("utf-8")), "json_tokens_estimate": оцінка,
               "photo_label_tokens_estimate": підписи, "photo_count": len(фото),
               "photo_tokens_estimate": фото_токени, "response_reserved_tokens": відповідь}
+    if оцінка > ліміт:
+        дані = dict(розмір, stage=вид, mandatory_total_tokens_estimate=оцінка + підписи + фото_токени + відповідь)
+        return Збій("вікно_моделі", "запит", "window",
+                    "Required request exceeds the estimated limit", спроба=спроба, дані=дані)
     мітка = образи[0].ід if вид == "опис" else "рука"
     return Запит(ключ=f"р{пул.рука}-{вид}-{мітка}-{int(заміни)}-{спроба}", рука=пул.рука, вид=вид, версія_ситуації=ситуація.версія,
                  сід=пул.сід, модель={"max_tokens": відповідь, "messages": [{"role": "user", "content": текст}]},
