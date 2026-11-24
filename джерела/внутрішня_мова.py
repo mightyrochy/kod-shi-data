@@ -1200,7 +1200,9 @@ def _опис_keep_by():
     "buy_first": "of the items she is choosing between, this one — or these, when several came out equal at the "
                  "top — is advised first (values: reasons — statement codes that set it apart from the others; "
                  "avoids — risks the corpus names that the others carry and it does not; then — the others in "
-                 "order)",
+                 "order). If reasons is empty, give only the stated order and say why it came out that way was "
+                 "not established; do not infer why from facts in individual verdicts. If avoids is absent, "
+                 "do not claim a risk was avoided",
     "buy_order_tie": "these items she is choosing between came out equal in the code's judgement: the choice "
                      "between them is hers",
     "colour_role_not_judged": "whether the item's colour is a neutral base or an accent was not judged (values: "
