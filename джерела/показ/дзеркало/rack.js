@@ -151,8 +151,9 @@
     }finally{URL.revokeObjectURL(ref);}
   }
   async function addToSet(id,ctx=scope()){
+    if(!ctx.profile)return;
     const {side,id:draft}= (await load(ctx.profile)).outfit;
-    const p=await lookup(id,ctx.profile);if(!p||!current(ctx))return;
+    const p=await lookup(id,ctx.profile);if(!p)return;
     await change(d=>{if(d.outfit.id!==draft||d.outfit.side!==side)return;const list=d.outfit.sets[side];if(!list.some(x=>x.id===id))list.push(slim(p));},ctx.profile);
     if(current(ctx)){R.close();await compose(ctx);}
   }
@@ -264,15 +265,24 @@
       if(empty)empty.hidden=БІБЛІОТЕКА_П.стан==='порожньо'&&(emptyShelf||d.saved.length>0);
     }).catch(()=>{el.textContent='Пам’ять браузера недоступна.';});
   }
-  async function editSaved(id,confirmed=false){
-    const ctx=scope(),state=await load(ctx.profile);if(!current(ctx))return;
-    if(!confirmed&&state.outfit.sets.some(list=>list.length)){
-      R.dialog('Замінити чернетку комплекту?',toolsLine([b('rack-confirm-edit','Замінити','',id,'studio-primary'),b('close-sheet','Залишити чернетку')]));
-      return;
+  let editConfirmation=null;
+  async function editSaved(id,ctx,confirmed=false){
+    if(!ctx.profile)return;
+    if(!confirmed){
+      const state=await load(ctx.profile);
+      if(state.outfit.sets.some(list=>list.length)){
+        if(!current(ctx))return;
+        const token=makeId();
+        editConfirmation={id,ctx,token};
+        R.dialog('Замінити чернетку комплекту?',toolsLine([b('rack-confirm-edit','Замінити','',token,'studio-primary'),b('close-sheet','Залишити чернетку')]));
+        return;
+      }
     }
     await change(d=>{
       const record=d.saved.find(v=>v.id===id);
-      if(record)d.outfit={name:record.name,id:record.id,editSide:0,side:0,sets:[record.things.map(thing=>({...thing})),[]]};
+      if(!record)return;
+      if(!confirmed&&d.outfit.sets.some(list=>list.length))throw Error('Чернетка змінилася. Відкрий редагування ще раз.');
+      d.outfit={name:record.name,id:record.id,editSide:0,side:0,sets:[record.things.map(thing=>({...thing})),[]]};
     },ctx.profile);
     if(current(ctx))await compose(ctx);
   }
@@ -291,7 +301,8 @@
     'rack-left':()=>searchPage('left'),'rack-right':compareOptions,'rack-compare-own':()=>closet('right'),'rack-compare-store':()=>searchPage('right'),
     'rack-decide':async v=>{const ctx=scope();await change(d=>{d.compare.decision=v;const p=d.compare.left;if(p&&v==='Беру'&&!d.closet.some(x=>x.id===p.id))d.closet.unshift(p);},ctx.profile);if(current(ctx))await buy(ctx);},
     'rack-advice':async()=>{const ctx=scope(),{left,right}= (await load(ctx.profile)).compare;if(current(ctx)&&left)R.startWords('Чи варто купити «'+left.name+'»'+(typeof left.price==='number'?' за '+cash(left):'')+(right?', якщо маю на вибір «'+right.name+'»':'')+'?');},
-    'rack-own':async id=>{const ctx=scope(),use=picker,p=await lookup(id,ctx.profile);if(!p||!current(ctx))return;
+    'rack-own':async id=>{const ctx=scope(),use=picker;if(!ctx.profile)return;
+      const p=await lookup(id,ctx.profile);if(!p)return;
       await change(d=>{if(!d.closet.some(q=>q.id===id))d.closet.unshift(slim(p));},ctx.profile);
       if(!current(ctx))return;R.close();if(ctx.screen==='wardrobe')await closet(use,ctx);else R.say('Річ у гардеробі.');},
     'rack-remove-own':id=>R.dialog('Прибрати річ із гардероба?',toolsLine([b('rack-delete-own','Прибрати','',id,'studio-primary'),b('close-sheet','Залишити')])),
@@ -305,9 +316,12 @@
     'rack-own-instead':async v=>{const ctx=scope(),i=v.indexOf('|');await setPicker(Number(v.slice(0,i)),v.slice(i+1),ctx);if(current(ctx))return closet('set',ctx);},
     'rack-replace':v=>{const j=v.indexOf('|');return setPicker(Number(v.slice(0,j)),v.slice(j+1));},
     'rack-drop':async v=>{const ctx=scope(),j=v.indexOf('|'),side=Number(v.slice(0,j)),id=v.slice(j+1);await change(d=>{d.outfit.sets[side]=d.outfit.sets[side].filter(p=>p.id!==id);},ctx.profile);if(current(ctx))await compose(ctx);},
-    'rack-save-outfit':saveForm,'rack-saved':saved,
+    'rack-save-outfit':saveForm,'rack-saved':id=>saved(id),
     'rack-worn':async id=>{const ctx=scope();await change(d=>{const r=d.saved.find(v=>v.id===id);if(r)r.worn=!r.worn;},ctx.profile);if(current(ctx))await saved(id,ctx);},
-    'rack-edit-saved':id=>editSaved(id),'rack-confirm-edit':id=>editSaved(id,true)
+    'rack-edit-saved':id=>{editConfirmation=null;return editSaved(id,scope());},
+    'rack-confirm-edit':token=>{const pending=editConfirmation;
+      if(!pending||pending.token!==token||!current(pending.ctx))return;
+      editConfirmation=null;return editSaved(pending.id,pending.ctx,true);}
   };
   Object.entries(registrations).forEach(([name,fn])=>set(name,fn));
   document.addEventListener('submit',ev=>{
