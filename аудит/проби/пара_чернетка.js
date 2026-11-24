@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict'), fs = require('node:fs');
 /* Без браузера: уповільнені читання й транзакції на вигаданих профілях.
    Запуск: node аудит/проби/пара_чернетка.js --profile-unit
-   Той самий делегат кліку, що в продукті, у JSDOM без мережі:
+   Той самий делегат кліку й дві вкладки зі спільним сховищем у JSDOM без мережі:
    NODE_PATH=джерела/node_modules node аудит/проби/пара_чернетка.js --profile-dom */
 function стендПрофілів(момент, {наявнаЧернетка = false} = {}) {
   const vm = require('node:vm'), path = require('node:path');
@@ -167,6 +167,19 @@ async function межаПрофілю() {
   assert.deepEqual(паралельнаЧернетка.записано, [], 'не замінює чернетку, що виникла після першого читання');
   assert.deepEqual(паралельнаЧернетка.стани.A.outfit.sets[0], [{id: 'нова-річ'}]);
   assert.deepEqual(паралельнаЧернетка.екран, ['Не вдалося зберегти']);
+
+  const післяПеремикання = стендПрофілів('читання транзакції', {наявнаЧернетка: true});
+  await післяПеремикання.натиснути('rack-edit-saved', 'saved');
+  післяПеремикання.стани.A.outfit.sets[0] = [];
+  const застарілаЗгода = післяПеремикання.натиснути('rack-confirm-edit', післяПеремикання.підтвердження());
+  await наступнийТакт();
+  assert.equal(typeof післяПеремикання.черга.get, 'function');
+  післяПеремикання.стати('B'); післяПеремикання.черга.get();
+  await застарілаЗгода;
+  assert.deepEqual(післяПеремикання.записано, []);
+  assert.deepEqual((await післяПеремикання.перечитати('A')).outfit.sets, [[], []]);
+  assert.deepEqual(await післяПеремикання.перечитати('B'), післяПеремикання.початковий.B);
+  assert.deepEqual(післяПеремикання.екран, ['Замінити чернетку комплекту?'], 'Б не отримує повідомлення про конфлікт А');
   console.log('Пара: підтвердження належить початковому профілю, нова чернетка захищена.');
 }
 
@@ -197,6 +210,7 @@ async function клікЗБібліотеки() {
       beforeParse(w) {
         w.indexedDB = сховище; w.IDBKeyRange = IDBKeyRange;
         w.fetch = async адреса => { запити.push(адреса); throw Error('Мережі у пробі немає.'); };
+        w.XMLHttpRequest.prototype.send = () => { запити.push('XHR'); throw Error('Мережі у пробі немає.'); };
         w.scrollTo = () => {};
         w.HTMLElement.prototype.scrollIntoView = () => {};
         w.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
@@ -207,6 +221,13 @@ async function клікЗБібліотеки() {
     return w;
   };
   const ключ = профіль => 'дзеркало:речі:1:' + профіль;
+  const кнопка = (w, селектор) => чекати(() => w.document.querySelector(селектор), 'немає ' + селектор);
+  const натиснути = async (w, селектор) => (await кнопка(w, селектор)).click();
+  const редагуватиЗбережене = async (w, id) => {
+    w.MirrorRoom.route('бібліотека');
+    await натиснути(w, '.rack-saved-card[data-value="' + id + '"] span');
+    await натиснути(w, '[data-ux="rack-edit-saved"][data-value="' + id + '"]');
+  };
   const дані = профіль => ({version: 1, closet: [], compare: {}, outfit: {name: '', id: '', side: 0, sets: [[], []]},
     saved: [{id: 'saved', name: 'Комплект ' + профіль, things: [{id: 'piece', name: 'Річ ' + профіль, slot: 'top'}]}]});
   try {
@@ -218,14 +239,13 @@ async function клікЗБібліотеки() {
 
     const w = await відкрити(), {document: d} = w;
     assert.equal(w.MirrorRoom.activeProfile(), 'A');
-    const натиснути = async селектор => (await чекати(() => d.querySelector(селектор), 'немає ' + селектор)).click();
     w.MirrorRoom.route('бібліотека');
-    await натиснути('.rack-saved-card[data-value="saved"] span');
+    await натиснути(w, '.rack-saved-card[data-value="saved"] span');
     const редагувати = await чекати(() => d.querySelector('[data-ux="rack-edit-saved"][data-value="saved"]'), 'клік не відкрив збережений образ');
     assert.equal(w.MirrorRoom.currentExtra(), 'saved');
     assert.equal(d.querySelector('#mirror-heading h1').textContent, 'Комплект A');
     редагувати.click();
-    await натиснути('[data-ux="rack-save-outfit"]');
+    await натиснути(w, '[data-ux="rack-save-outfit"]');
     const форма = await чекати(() => d.querySelector('#rack-save-form'), 'немає форми явного збереження');
     const доЗапису = await w.читатиКв(ключ('A'));
     assert.deepEqual(доЗапису.saved, дані('A').saved);
@@ -241,9 +261,56 @@ async function клікЗБібліотеки() {
     assert.equal(збережено.saved[0].name, 'Оновлений комплект А');
     assert.equal(збережено.outfit.id, '');
     assert.deepEqual(await після.читатиКв(ключ('B')), дані('B'));
+    console.log('Пара: клік у бібліотеці, явне збереження та повторне відкриття сховища у JSDOM пройшли.');
+
+    const річ = id => ({id, name: 'Річ ' + id, slot: 'top'});
+    const синтетика = дані('A');
+    синтетика.saved.push({id: 'інший', name: 'Інший образ', things: [річ('one'), річ('two')]});
+    синтетика.outfit = {id: 'чернетка', name: 'Початкова чернетка', side: 0, sets: [[річ('one'), річ('two')], []]};
+    const підтвердити = '#mirror-sheet[open] [data-ux="rack-confirm-edit"]';
+    for (const зміна of ['інша чернетка', 'та сама чернетка', 'порожня чернетка']) {
+      await початкове.писатиКв(ключ('A'), синтетика);
+      const перша = await відкрити(), друга = await відкрити();
+      await редагуватиЗбережене(перша, 'saved');
+      const стараЗгода = await кнопка(перша, підтвердити);
+
+      const новийІд = зміна === 'інша чернетка' ? 'інший' : 'чернетка';
+      if (зміна === 'інша чернетка') {
+        await редагуватиЗбережене(друга, 'інший');
+        await натиснути(друга, підтвердити);
+      } else {
+        друга.MirrorRoom.route('бібліотека');
+        await натиснути(друга, '#mirror-saved-manual [data-ux="compose"]');
+      }
+      const видалити = async (id, решта) => {
+        await натиснути(друга, '[data-ux="rack-edit"][data-value="0|' + id + '"]');
+        await натиснути(друга, '#mirror-sheet[open] [data-ux="rack-drop"][data-value="0|' + id + '"]');
+        await чекати(async () => (await друга.читатиКв(ключ('A'))).outfit.sets[0].length === решта, 'чернетка не змінилася');
+      };
+      await видалити('two', 1);
+      if (зміна === 'порожня чернетка') await видалити('one', 0);
+      const змінена = await друга.читатиКв(ключ('A'));
+      assert.equal(змінена.outfit.id, новийІд);
+      assert.equal(стараЗгода.closest('dialog').open, true);
+      стараЗгода.click();
+      const повідомлення = () => перша.document.querySelector('#mirror-sheet-title').textContent;
+      await чекати(() => повідомлення() === 'Не вдалося зберегти' || перша.MirrorRoom.currentExtra() === 'compose', 'стара згода не завершилася');
+      assert.equal(перша.MirrorRoom.currentExtra(), 'saved', зміна + ' не повинна бути перезаписана');
+      assert.match(перша.document.querySelector('#mirror-sheet-content').textContent, /Чернетка змінилася.*підтвердити заміну/);
+      const відновлена = await відкрити();
+      assert.deepEqual(await відновлена.читатиКв(ключ('A')), змінена, зміна + ' переживає повторне відкриття');
+      assert.deepEqual(await відновлена.читатиКв(ключ('B')), дані('B'));
+
+      await редагуватиЗбережене(перша, 'saved');
+      if (зміна !== 'порожня чернетка') await натиснути(перша, підтвердити);
+      await чекати(() => перша.MirrorRoom.currentExtra() === 'compose', 'нова спроба не перейшла до редагування');
+      const нова = await перша.читатиКв(ключ('A'));
+      assert.equal(нова.outfit.id, 'saved');
+      assert.deepEqual(нова.saved, синтетика.saved);
+    }
     assert.deepEqual(помилки, []);
     assert.deepEqual(запити, []);
-    console.log('Пара: клік у бібліотеці, явне збереження та повторне відкриття сховища у JSDOM пройшли.');
+    console.log('Пара: дві вкладки — 3/3 застарілих згод відхилено, нове редагування працює.');
   } finally {
     for (const w of вікна) w.close();
   }

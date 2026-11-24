@@ -266,14 +266,17 @@
     }).catch(()=>{el.textContent='Пам’ять браузера недоступна.';});
   }
   let editConfirmation=null;
-  async function editSaved(id,ctx,confirmed=false){
+  async function editSaved(id,ctx,expectedDraft){
     if(!ctx.profile)return;
-    if(!confirmed){
-      const state=await load(ctx.profile);
-      if(state.outfit.sets.some(list=>list.length)){
+    if(expectedDraft===undefined){
+      // Інша вкладка може змінити чернетку після того, як load() заповнив кеш.
+      const state=await читатиКв(key(ctx.profile));
+      const outfit=state?.version===1?state.outfit:blank().outfit;
+      expectedDraft=JSON.stringify(outfit);
+      if(outfit.sets.some(list=>list.length)){
         if(!current(ctx))return;
         const token=makeId();
-        editConfirmation={id,ctx,token};
+        editConfirmation={id,ctx,token,expectedDraft};
         R.dialog('Замінити чернетку комплекту?',toolsLine([b('rack-confirm-edit','Замінити','',token,'studio-primary'),b('close-sheet','Залишити чернетку')]));
         return;
       }
@@ -281,7 +284,7 @@
     await change(d=>{
       const record=d.saved.find(v=>v.id===id);
       if(!record)return;
-      if(!confirmed&&d.outfit.sets.some(list=>list.length))throw Error('Чернетка змінилася. Відкрий редагування ще раз.');
+      if(JSON.stringify(d.outfit)!==expectedDraft)throw Error('Чернетка змінилася. Відкрий редагування ще раз, щоб підтвердити заміну.');
       d.outfit={name:record.name,id:record.id,editSide:0,side:0,sets:[record.things.map(thing=>({...thing})),[]]};
     },ctx.profile);
     if(current(ctx))await compose(ctx);
@@ -321,7 +324,7 @@
     'rack-edit-saved':id=>{editConfirmation=null;return editSaved(id,scope());},
     'rack-confirm-edit':token=>{const pending=editConfirmation;
       if(!pending||pending.token!==token||!current(pending.ctx))return;
-      editConfirmation=null;return editSaved(pending.id,pending.ctx,true);}
+      editConfirmation=null;return editSaved(pending.id,pending.ctx,pending.expectedDraft);}
   };
   Object.entries(registrations).forEach(([name,fn])=>set(name,fn));
   document.addEventListener('submit',ev=>{
