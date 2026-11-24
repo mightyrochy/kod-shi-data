@@ -704,11 +704,19 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     # стояло `code_lines` — готові рядки, які складав `річ_з_фото._рядок_жінці`.
     "item_verdicts": _список({"type": "object", "additionalProperties": False,
                               "properties": {"item": dict(_ВІЛЬНИЙ, description="назва її речі"),
+                                             "item_id": {"type": "string", "description": "точний ід варіанта каталогу"},
+                                             "catalogue_position": {"type": "integer", "minimum": 1,
+                                                                    "description": "видиме місце в переліку товарів"},
                                              "slot": _перелік("slot", "слот її речі з фото"),
                                              "item_type": _перелік("item_type", "вид її речі з фото"),
                                              "verdict": {"$ref": "#/$defs/screen_message"}},
                               "required": ["verdict"]},
-                             "вердикт про кожну річ: заяви кодами"),
+                             "вердикт про кожну річ: заяви кодами. Для варіантів каталогу зв’язуй "
+                             "buy_first і buy_order_tie через item_ids, а values.then — у заданому порядку, "
+                             "лише з item_id відповідного вердикту. Причини buy_first належать названим там "
+                             "варіантам, не іншим. Брак доказу називай обмеженням, а не ознакою, що річ личить. Однакові назви й порядок рядків не визначають зв’язку. "
+                             "Коли назви однакові, після зв’язування за ід відрізняй товари за catalogue_position у видимому переліку. "
+                             "За нічиєї не називай одного переможця. Внутрішні ід жінці не показуй"),
     # ДОДАНЕ ДО СЦЕНАРІЮ — КОДАМИ (М-1, аудит/ПРОДУКТ.md п.12): доти показ писав це фразою
     # («Додала до сценарію: «…» — твоя річ, вона стане в кожен образ.»)
     "added": {"description": "що додано до сценарію з її слів, сказаних поза екраном сценарію: "
@@ -1199,10 +1207,11 @@ def _опис_keep_by():
                                  "is choosing between, not put into her outfits",
     "buy_first": "of the items she is choosing between, this one — or these, when several came out equal at the "
                  "top — is advised first (values: reasons — statement codes that set it apart from the others; "
-                 "avoids — risks the corpus names that the others carry and it does not; then — the others in "
-                 "order)",
-    "buy_order_tie": "these items she is choosing between came out equal in the code's judgement: the choice "
-                     "between them is hers",
+                 "avoids — risks the corpus names that the others carry and it does not; then — the other item IDs in "
+                 "order). For catalogue variants match the statement's item_ids and then IDs to catalogue item_id; reasons "
+                 "and avoids support only the preferred IDs in this statement",
+    "buy_order_tie": "the items in this statement's item_ids came out equal in the code's judgement; for catalogue variants match them "
+                     "to the respective catalogue item_id; none of these tied items is a sole winner",
     "colour_role_not_judged": "whether the item's colour is a neutral base or an accent was not judged (values: "
                               "missing — colour_measure: neither a measurement nor a shop colour word places it "
                               "on one side; a photo of the item in daylight lets it be judged)",

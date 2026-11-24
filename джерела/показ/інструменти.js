@@ -83,8 +83,8 @@ async function інструментомП(виклик, запис){
               варіанти: варіанти.map(в => ({id: в.ід, назва: в.назва || '', урл: в.url || '', ціна: в.ціна,
                                              фото: (в.фото || [])[0] || ''})),
               catalogue_search: Object.assign({result: р.повідомлення},
-                варіанти.length ? {variants: варіанти.map(в => Object.assign(
-                  {verdict: (в.вердикт || {}).повідомлення, slot: в.slot, item_type: в.item_type},
+                варіанти.length ? {variants: варіанти.map((в, н) => Object.assign(
+                  {item_id: в.ід, catalogue_position: н + 1, verdict: (в.вердикт || {}).повідомлення, slot: в.slot, item_type: в.item_type},
                   в.назва ? {item: {free_text: в.назва, lang: 'uk'}} : {}))} : {})};
     }
     /* ПАЛІТРА — ті самі входи, що чипи екрана «Палітра» (`палітра.js`): порахувати, коли ще нема (той самий розрахунок,
