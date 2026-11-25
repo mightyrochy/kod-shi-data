@@ -1276,8 +1276,13 @@ function поверненняЗаглушка(w){
     const ходу0 = () => промпти.find(п => /her_new_message/.test(п));
     w._міст = async (ім, д) => ім === "мова" ? моваПітона(д) : {помилка: "не цей ендпойнт: " + ім};
     /* Черга — відповіді ходу розмови; фоновий хід плиток і переклад не забирають наступний виклик інструмента. */
-    w._модель = async п => { промпти.push(п); return (/her_new_message/.test(п) && відповіді.shift())
-      || '{"update": {}, "need": "none", "text": "Добре."}'; };
+    w._модель = async п => {
+      промпти.push(п);
+      if (/\nРЕПЛІКА:\n.*"required": \["occasion"\]/.test(п))
+        return JSON.stringify({text: [{about: ["required"], says: "Куди ти збираєшся?"}]});
+      return (/her_new_message/.test(п) && відповіді.shift())
+        || '{"update": {}, "need": "none", "text": "Добре."}';
+    };
     w.eval("містП = (...а) => window._міст(...а); модельМовиП = (...а) => window._модель(...а);");
     const хід = (args, текст) => JSON.stringify({update: {}, need: "none", text: текст || [],
                                                  tool: {name: "save_scenario", args}});
