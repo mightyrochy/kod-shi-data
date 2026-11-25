@@ -352,7 +352,18 @@ def _спільне_ремонту(тіло):
             заява["repair_ref"] = адреса
 
 
-def _під_вікно(тіло, поле_пулу, рядки, групи, закріплені, ліміт, оцінити, блоки_пулу):
+def _розмір_повідомлень(текст, фото):
+    """JSON.stringify(messages).length для оболонки показу, у кодових одиницях UTF-16."""
+    блоки = []
+    for ф in фото:
+        блоки.append({"type": "text", "text": "Catalogue photo for item " + ф["n"] + ":"})
+        блоки.append({"type": "image", "source": {"type": "url", "url": ф["url"]}})
+    блоки.append({"type": "text", "text": текст})
+    дріт = json.dumps([{"role": "user", "content": блоки}], ensure_ascii=False, separators=(",", ":"))
+    return len(дріт.encode("utf-16-le")) // 2
+
+
+def _під_вікно(тіло, поле_пулу, рядки, групи, закріплені, перевищено, блоки_пулу):
     """Міряє весь текст і фото із запасом відповіді, зрізає лише додаткових кандидатів."""
     def текст(кандидати):
         номери = tuple(кандидати)
@@ -363,23 +374,25 @@ def _під_вікно(тіло, поле_пулу, рядки, групи, за
     всі = tuple(рядки)
     обовʼязкові = tuple(н for н in всі if н in закріплені)
     мінімум = текст(обовʼязкові)
-    if оцінити(мінімум) > ліміт:
-        return мінімум, обовʼязкові
+    брак = перевищено(мінімум)
+    if брак:
+        return мінімум, обовʼязкові, брак
     повний = текст(всі)
-    if оцінити(повний) <= ліміт:
-        return повний, всі
+    брак = перевищено(повний)
+    if not брак:
+        return повний, всі, ()
     решта = [н for ряд in zip_longest(*групи.values()) for н in ряд if н is not None and н not in закріплені]
     низ, верх = 0, len(решта)
     while низ < верх:
         середина = (низ + верх + 1) // 2
         вибір = закріплені | set(решта[:середина])
-        if оцінити(текст(н for н in всі if н in вибір)) <= ліміт:
+        if not перевищено(текст(н for н in всі if н in вибір)):
             низ = середина
         else:
             верх = середина - 1
     вибір = закріплені | set(решта[:низ])
     номери = tuple(н for н in всі if н in вибір)
-    return текст(номери), номери
+    return текст(номери), номери, брак
 
 
 def запит(вид, пул, ситуація, профіль, *, образи=(), вироки=None, спроба=1, збій=None,
@@ -543,6 +556,9 @@ def запит(вид, пул, ситуація, профіль, *, образи
     відповідь = налаштування.get("вихід") or 4_000
     надбавка = налаштування.get("надбавка_каналу", 0)
     вікно = налаштування.get("вікно")
+    транспорт = налаштування.get("межа_повідомлень")
+    if транспорт is not None and (type(транспорт) is not int or транспорт < 1):
+        return Збій("межа_транспорту", "запит", "messages", "Expected a positive integer UTF-16 limit", спроба=спроба)
     if (type(відповідь) is not int or відповідь < 1
             or type(надбавка) is not int or надбавка < 0
             or вікно is not None and (type(вікно) is not int or вікно < 1)):
@@ -559,19 +575,34 @@ def запит(вид, пул, ситуація, профіль, *, образи
     for слот, група in групи.items():
         if повний_пул and СЛОТИ[слот] in пул.обовʼязкові and закріплені.isdisjoint(група):
             закріплені.add(група[0])
-    текст, надіслано = _під_вікно(тіло, поле_пулу, рядки, групи, закріплені, ліміт, оцінити, блоки_пулу)
+    def перевищено(текст):
+        межі = []
+        if оцінити(текст) > ліміт:
+            межі.append("token_estimate")
+        if транспорт is not None and _розмір_повідомлень(текст, фото) > транспорт:
+            межі.append("transport_utf16")
+        return tuple(межі)
+
+    текст, надіслано, брак = _під_вікно(тіло, поле_пулу, рядки, групи, закріплені, перевищено, блоки_пулу)
     оцінка = оцінити(текст)
+    симв = _розмір_повідомлень(текст, фото)
     розмір = {"method": "offline_qwen_weighted_1.1", "context_tokens": вікно,
               "limit_source": джерело, "limit_tokens": межа,
               "json_utf8_bytes": len(текст.encode("utf-8")), "json_tokens_estimate": оцінка,
               "photo_label_tokens_estimate": підписи, "photo_count": len(фото),
               "photo_tokens_estimate": фото_токени, "page_max_tokens": відповідь,
               "output_channel": налаштування.get("канал", "unspecified"),
-              "channel_output_overhead_tokens": надбавка, "response_reserved_tokens": резерв_виходу}
-    if оцінка > ліміт:
-        дані = dict(розмір, stage=вид, mandatory_total_tokens_estimate=оцінка + підписи + фото_токени + резерв_виходу)
-        return Збій("вікно_моделі", "запит", "window",
-                    "Required request exceeds the estimated limit", спроба=спроба, дані=дані)
+              "channel_output_overhead_tokens": надбавка, "response_reserved_tokens": резерв_виходу,
+              "messages_utf16_units": симв, "transport_limit_utf16_units": транспорт,
+              "transport_limit_source": "page_messages_json_utf16" if транспорт is not None else None}
+    if оцінка > ліміт or (транспорт is not None and симв > транспорт):
+        дані = dict(розмір, stage=вид, exceeded_limits=брак,
+                    mandatory_total_tokens_estimate=оцінка + підписи + фото_токени + резерв_виходу)
+        вид_збою, поле = ("вікно_моделі", "window") if оцінка > ліміт else ("межа_транспорту", "messages")
+        return Збій(вид_збою, "запит", поле, "Required request exceeds the input limit",
+                    спроба=спроба, дані=дані)
+    if брак:
+        розмір["trimmed_by"] = брак
     мітка = образи[0].ід if вид == "опис" else "рука"
     return Запит(ключ=f"р{пул.рука}-{вид}-{мітка}-{int(заміни)}-{спроба}", рука=пул.рука, вид=вид, версія_ситуації=ситуація.версія,
                  сід=пул.сід, модель={"max_tokens": відповідь, "messages": [{"role": "user", "content": текст}]},
