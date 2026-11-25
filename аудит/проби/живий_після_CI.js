@@ -37,8 +37,12 @@ async function перевірити(тека, подія) {
 
 if (require.main === module) {
   (async () => {
-    const подія = process.env.GITHUB_EVENT_PATH
+    let подія = process.env.GITHUB_EVENT_PATH
       ? JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')) : null;
+    // Виклик збірки після злиття самозлиття (`workflow_call` від `workflow_run`): подія — не push, коміт злиття
+    // передано явно (`ZLYTTIA_SHA`); погодження беруть із злитого PR цього коміту так само, як для push у main.
+    if (/^[0-9a-f]{40}$/.test(process.env.ZLYTTIA_SHA || '') && подія?.workflow_run && !подія.pull_request)
+      подія = {ref: 'refs/heads/main', after: process.env.ZLYTTIA_SHA, repository: подія.repository};
     await перевірити(process.argv[2], подія);
     console.log('✔ приймання та погодження живого прогону узгоджені');
   })().catch(помилка => { console.error(помилка.message); process.exitCode = 1; });

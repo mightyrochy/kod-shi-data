@@ -7,7 +7,8 @@ base_ref=${BASE_REF:-refs/heads/main}
 if [[ "$base_ref" =~ ^0+$ ]]; then
   base_ref=refs/heads/main
 fi
-head_sha=${GITHUB_SHA:-$(git rev-parse HEAD)}
+# HEAD_SHA — виклик самозлиття (`workflow_call` від `workflow_run`): GITHUB_SHA там — main до злиття.
+head_sha=${HEAD_SHA:-${GITHUB_SHA:-$(git rev-parse HEAD)}}
 
 # Checkout не лишає токена в .git/config; заголовок діє лише в цьому процесі.
 if [ -n "${GITHUB_TOKEN:-}" ]; then

@@ -8,12 +8,22 @@
 # Злиття токеном CI не будить `push` у `main` (документація GitHub: події `GITHUB_TOKEN` не створюють нових запусків,
 # крім `workflow_dispatch` і `repository_dispatch`; вимір — PR цього кроку), тож робочі процеси `main` після злиття
 # крок викликає сам (`workflow_call`) з `main` до злиття (`pered`) і комітом злиття (`pislia`).
+#
+# Мітка «злити» (наряд CI-самозлиття-мітка-злити; `аудит/ДИСПЕТЧЕР.md`, «Злиття»; не auto-merge GitHub): PR, що не
+# документ, зливається тим самим кроком, коли на ньому мітка «злити» від `mightyrochy`, поставлена не раніше за появу
+# голови (нова голова після мітки — мітку знято), а перевірки голови зелені. Рішення — той самий прилад з `main`
+# (`рішення_мітка`). Мітку ловить `pull_request_target` типу `labeled` (запускається з `main`, код гілки PR крок не
+# бере й не виконує — checkout без `ref` дає `main`): мітку часто ставлять на вже зелену голову, і завершення CI нового
+# рішення не дасть. Злиття токеном CI `push` не будить, тож після злиття (документа чи коду) крок сам викликає
+# `zbirka.yml`; після коду — з `kod: true`: повний шлях збірки й публікації на коміті злиття (`pislia`).
 name: самозлиття документа
 
 on:
   workflow_run:
     workflows: [збірка показу, рядок ЖИВИЙ ПІСЛЯ у тілі PR, стенди обгортки]
     types: [completed]
+  pull_request_target:
+    types: [labeled]
 
 permissions: {}
 
@@ -31,10 +41,11 @@ permissions: {}
 jobs:
   rishennia:
     name: рішення
-    if: github.event.workflow_run.event == 'pull_request'
+    if: github.event.workflow_run.event == 'pull_request' || (github.event_name == 'pull_request_target' && github.event.label.name == 'злити')
     permissions:
       contents: read
       pull-requests: read
+      issues: read
       actions: read
       checks: read
       statuses: read
@@ -74,6 +85,7 @@ jobs:
     timeout-minutes: 10
     outputs:
       zlyto: ${{ steps.zlyttia.outputs.zlyto }}
+      kod: ${{ steps.zlyttia.outputs.zlyto_kod }}
       pered: ${{ steps.zlyttia.outputs.pered }}
       pislia: ${{ steps.zlyttia.outputs.pislia }}
     steps:
@@ -107,3 +119,4 @@ jobs:
     with:
       pered: ${{ needs.zlyttia.outputs.pered }}
       pislia: ${{ needs.zlyttia.outputs.pislia }}
+      kod: ${{ needs.zlyttia.outputs.kod == 'true' }}
