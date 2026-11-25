@@ -1,5 +1,5 @@
 --- "\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\321\200\320\2626_\321\201\321\202\320\265\320\275\320\264.js"	2026-11-25 12:34:51.881947656 +0000
-+++ "\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\321\200\320\2626_\320\2752.js"	2026-11-25 13:57:15.225124414 +0000
++++ "\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\321\200\320\2626_\320\2752.js"	2026-11-25 14:11:58.694204021 +0000
 @@ -526,7 +526,7 @@
       за довгим синхронним розрахунком каталогу й дала хибний таймаут. */
    const показ = стор.показПідЧасМоста;
@@ -114,7 +114,36 @@
      /* РЯДОК 5985: модель складання — та, що на ноутбуці; без цього `МОДЕЛЬ_П` = типова gemini і стеля складання
         міряється гілкою Gemini (3400), а не локальною (2800, рядок 5240) */
      + (МОДЕЛЬ_ЖИВА && !КЛОД_ШВОМ ? '&модель=' + encodeURIComponent(МОДЕЛЬ_ЖИВА) : '')
-@@ -4418,7 +4461,7 @@
+@@ -4381,6 +4424,28 @@
+       return р;
+     };
+   });
++  if (process.env.N2_STOR_DUMP) {  /* Н2-приймання OFF: знімок сховища перед «Зібрати» — початковий стан фікстури */
++    const сх = await стор.evaluate(async () => {
++      const бази = (indexedDB.databases ? await indexedDB.databases() : []);
++      const idb = [];
++      for (const {name, version} of бази) {
++        const d = await new Promise((р, в) => { const з = indexedDB.open(name); з.onsuccess = () => р(з.result); з.onerror = () => в(з.error); });
++        const сховища = [];
++        for (const ім of [...d.objectStoreNames]) {
++          const t = d.transaction(ім, 'readonly').objectStore(ім);
++          const ключі = await new Promise(р => { const r = t.getAllKeys(); r.onsuccess = () => р(r.result); });
++          const t2 = d.transaction(ім, 'readonly').objectStore(ім);
++          const значення = await new Promise(р => { const r = t2.getAll(); r.onsuccess = () => р(r.result); });
++          сховища.push({ім, keyPath: t.keyPath, autoIncrement: t.autoIncrement, записи: ключі.map((к, і) => [к, значення[і]])});
++        }
++        idb.push({name, version: d.version, сховища}); d.close();
++      }
++      return {localStorage: {...localStorage}, sessionStorage: {...sessionStorage}, indexedDB: idb, адреса: location.href};
++    });
++    fs.writeFileSync(process.env.N2_STOR_DUMP, JSON.stringify(сх, null, 1) + '\n');
++    console.log('N2 СХОВИЩЕ ЗАПИСАНО: ' + process.env.N2_STOR_DUMP + ' · ключів ' + Object.keys(сх.localStorage).length);
++    await браузер.close(); process.exit(0);
++  }
+   const тЗапити = Date.now();
+   /* `noWaitAfter`: дотик ПОЧИНАЄ збирання в самій сторінці, а не навігацію. Без
+      нього Playwright після вдалого кліку чекає «scheduled navigations» і зрідка
+@@ -4418,7 +4483,7 @@
       очікування кінчаються на `ВИРАЗ_ЗБОЮ`, а звірка нижче називає ✗. */
    try {
      await чекатиСтан(стор, 'рука 1 зібрана чи збій', "(typeof ЗБ !== 'undefined' && ЗБ && Array.isArray(ЗБ.картки)"
@@ -123,7 +152,7 @@
      рука1За = (await стор.evaluate(ВИРАЗ_ЗБОЮ))
        ? 'збирання впало — далі не чекаємо'
        : ((Date.now() - тЗапити) / 1000).toFixed(1) + ' с';
-@@ -4432,6 +4475,56 @@
+@@ -4432,6 +4497,56 @@
        + ' підпис нижче — те, що СПРАВДІ прийняла сторінка');
    if (намірУПаспорті !== НАМІР_СТЕНДА)
      console.log('   ⚠ просили намір «' + НАМІР_СТЕНДА + '», паспорт узяв «' + намірУПаспорті + '»');
