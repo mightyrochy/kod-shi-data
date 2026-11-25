@@ -1,0 +1,40 @@
+const ЕФОРТ = process.env.ZHYVA_EFFORT || 'low';
+const КЛОД = process.env.ZHYVA || 'sonnet';
+const БІН = '/opt/node22/bin/claude';
+const БАЗА = 'http://127.0.0.1:8765';
+const СИСТЕМНИЙ = 'You are the model behind a mobile styling app. The user message is the '
+  + 'application prompt, verbatim. Do exactly what it asks and output only the answer it asks for: '
+  + 'raw JSON with no code fence when it asks for JSON, plain prose when it asks for prose. '
+  + 'No preamble, no commentary, no tools, no questions back.';
+const ПРАПОРЦІ = ['-p', '--model', КЛОД, '--effort', ЕФОРТ, '--tools', '', '--strict-mcp-config',
+  '--no-session-persistence', '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose',
+  '--system-prompt', СИСТЕМНИЙ];
+fs.mkdirSync(path.join(ВИХІД, 'обміни'), {recursive: true});
+const ТЕКА_CLI = fs.mkdtempSync('/tmp/r3w/zhyva-');
+const вхід = JSON.parse(fs.readFileSync(ВХІД, 'utf8'));
+const журнал = [];
+let номер = 0, уПольоті = 0;
+const пиши = (ім, д) => fs.writeFileSync(path.join(ВИХІД, ім), typeof д === 'string' ? д : JSON.stringify(д, null, 1));
+
+function клод(тіло){
+  const блоки = [];
+  const пов = тіло.messages || [];
+  for (const м of пов){
+    if (пов.length > 1) блоки.push({type: 'text', text: '[' + (м.role === 'assistant' ? 'assistant' : 'user') + ']'});
+    if (!Array.isArray(м.content)){ блоки.push({type: 'text', text: String(м.content == null ? '' : м.content)}); continue; }
+    for (const б of м.content){
+      if (б.type === 'image') блоки.push(б); else блоки.push({type: 'text', text: б.text || ''});
+    }
+  }
+  const рядок = JSON.stringify({type: 'user', message: {role: 'user', content: блоки}}) + '\n';
+  return new Promise(рез => {
+    const д = cp.spawn(БІН, ПРАПОРЦІ, {cwd: ТЕКА_CLI, stdio: ['pipe', 'pipe', 'pipe'],
+      env: Object.assign({}, process.env, {CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'})});
+    let в = '', п = '';
+    const т = setTimeout(() => { try { д.kill('SIGKILL'); } catch (_) {} }, 300000);
+    д.stdout.on('data', x => в += x); д.stderr.on('data', x => п += x);
+    д.on('close', код => { clearTimeout(т); рез({код, в, п}); });
+    д.stdin.end(рядок, 'utf8');
+  });
+}
+
