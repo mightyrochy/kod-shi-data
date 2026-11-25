@@ -107,6 +107,29 @@ class ДоведенаПеревага(unittest.TestCase):
         self.assertEqual([з["code"] for з in в["заяви"]], ["buy_order_not_established"])
 
 
+class ДоведенеЛишеСпільне(unittest.TestCase):
+    """`proven` — аспект, доведений проти КОЖНОЇ з решти (перевірка #4725)."""
+
+    def test_різні_аспекти_над_різними_речами_порада_не_стоїть(self):
+        # A личить; B лише з ризиком (провалів 0); C лише з провалом: спільного доведеного аспекту нема
+        в = суд.вибір({"A": вердикт(), "B": вердикт(ризик=("midi_proportion_decided_by_shoes",)),
+                       "C": вердикт(провал=("п",))})
+        self.assertEqual(в["порядок"][0], "A")
+        self.assertEqual([з["code"] for з in в["заяви"]], ["buy_order_not_established"])
+
+    def test_рівень_і_провал_над_різними_речами(self):
+        # A личить; B «з умовою» без провалів; C з провалом: рівня над C нема, провалу над B нема
+        в = суд.вибір({"A": вердикт(), "B": вердикт(рівень="з умовою"), "C": вердикт(провал=("п",))})
+        self.assertEqual(в["порядок"][0], "A")
+        self.assertEqual([з["code"] for з in в["заяви"]], ["buy_order_not_established"])
+
+    def test_спільний_аспект_лишається(self):
+        # провал є в обох решти — спільний failed_checks; named_risks лише над однією — не називається
+        в = суд.вибір({"A": вердикт(), "B": вердикт(провал=("п",), ризик=("r",)), "C": вердикт(провал=("п",))})
+        self.assertEqual(в["порядок"][0], "A")
+        self.assertEqual(значення(в, "buy_first")["proven"], ["failed_checks"])
+
+
 class Нічия(unittest.TestCase):
     def test_справжня_нічия_суджених(self):
         перші = {"first": вердикт(), "also": вердикт()}
