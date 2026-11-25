@@ -541,17 +541,20 @@ def запит(вид, пул, ситуація, профіль, *, образи
         тіло["format_error" if вид == "опис" else "retry"] = {"field": збій.поле, "reason": збій.що}
     налаштування = модель or {}
     відповідь = налаштування.get("вихід") or 4_000
+    надбавка = налаштування.get("надбавка_каналу", 0)
     вікно = налаштування.get("вікно")
     if (type(відповідь) is not int or відповідь < 1
+            or type(надбавка) is not int or надбавка < 0
             or вікно is not None and (type(вікно) is not int or вікно < 1)):
-        return Збій("вікно_моделі", "запит", "window", "Expected positive integer token counts", спроба=спроба)
+        return Збій("вікно_моделі", "запит", "window", "Expected a positive integer window and output, and a nonnegative channel overhead", спроба=спроба)
 
     оцінити = знання.палітрові_знання().оцінити_текст_ядра
     фото_токени = sum(ф["токени"] for ф in фото)
     підписи = оцінити("\n".join("Catalogue photo for item " + ф["n"] for ф in фото))
     джерело = "model_context" if вікно is not None else "legacy_assembly_offline_max"
     межа = вікно if вікно is not None else _МЕЖІ[джерело]["limit_tokens"]
-    ліміт = межа - відповідь - фото_токени - підписи
+    резерв_виходу = відповідь + надбавка
+    ліміт = межа - резерв_виходу - фото_токени - підписи
     закріплені = set(склад)
     for слот, група in групи.items():
         if повний_пул and СЛОТИ[слот] in пул.обовʼязкові and закріплені.isdisjoint(група):
@@ -562,9 +565,11 @@ def запит(вид, пул, ситуація, профіль, *, образи
               "limit_source": джерело, "limit_tokens": межа,
               "json_utf8_bytes": len(текст.encode("utf-8")), "json_tokens_estimate": оцінка,
               "photo_label_tokens_estimate": підписи, "photo_count": len(фото),
-              "photo_tokens_estimate": фото_токени, "response_reserved_tokens": відповідь}
+              "photo_tokens_estimate": фото_токени, "page_max_tokens": відповідь,
+              "output_channel": налаштування.get("канал", "unspecified"),
+              "channel_output_overhead_tokens": надбавка, "response_reserved_tokens": резерв_виходу}
     if оцінка > ліміт:
-        дані = dict(розмір, stage=вид, mandatory_total_tokens_estimate=оцінка + підписи + фото_токени + відповідь)
+        дані = dict(розмір, stage=вид, mandatory_total_tokens_estimate=оцінка + підписи + фото_токени + резерв_виходу)
         return Збій("вікно_моделі", "запит", "window",
                     "Required request exceeds the estimated limit", спроба=спроба, дані=дані)
     мітка = образи[0].ід if вид == "опис" else "рука"

@@ -33,6 +33,10 @@ def _екранувати(текст):
 def скласти(джерело="worker_джерело.js", проба="проба.html", вихід="worker.js"):
     with open(os.path.join(ТУТ, джерело), encoding="utf-8") as ф:
         код = ф.read()
+    мітка_резерву = "__ЗАПАС_ДУМОК_CLAUDE__"
+    if мітка_резерву in код:
+        with open(os.path.join(ТУТ, "резерв_каналу.json"), encoding="utf-8") as ф:
+            код = код.replace(мітка_резерву, json.dumps(json.load(ф)["claude-"]))
     with open(os.path.join(ТУТ, проба), encoding="utf-8") as ф:
         стор = ф.read()
     мітка = "const ПРОБА = `"

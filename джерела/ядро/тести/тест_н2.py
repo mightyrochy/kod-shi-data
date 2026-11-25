@@ -225,6 +225,35 @@ class МежаНаВходіПоказу(TestCase):
         self.assertEqual(дані["mandatory_total_tokens_estimate"], дані["json_tokens_estimate"] + 4_000)
         self.assertGreater(дані["mandatory_total_tokens_estimate"], дані["limit_tokens"])
 
+    def test_повний_резерв_каналу_на_точній_межі_без_фото(self):
+        каталог = [_запис("dress", "сукня"), _запис("boots", "взуття")]
+        модель = {"вихід": 4_000, "канал": "worker", "надбавка_каналу": 12_000}
+        for довжина, текст_токенів in ((19_087, 9_334), (19_088, 9_335)):
+            with self.subTest(оцінка=текст_токенів):
+                вхід = обвязка.вхід_с5(розмова=f"межа-каналу-{довжина}", каталог=каталог, модель=модель,
+                                       паспорт={"бажання": ["A" * довжина]},
+                                       профіль={"в": "ВХІД-V1", "джерело": "показ"})
+                with patch.object(запит, "запит", wraps=запит.запит) as будувати:
+                    в = обвязка.почати(протокол, вхід)
+                будувати.assert_called_once()
+                self.assertEqual(будувати.call_args.kwargs["спроба"], 1)
+                if текст_токенів == 9_334:
+                    з, = в["запити"]
+                    self.assertEqual(з["модель"]["max_tokens"], 4_000)
+                    дані = з["розмір"]
+                else:
+                    self.assertTrue(в["кінець"])
+                    self.assertEqual((в["запити"], в["картки"]), ([], []))
+                    self.assertEqual(в["збій"]["вид"], "вікно_моделі")
+                    дані = в["збій"]["дані"]
+                    self.assertEqual(дані["mandatory_total_tokens_estimate"], 25_335)
+                self.assertEqual([дані[к] for к in ("page_max_tokens", "channel_output_overhead_tokens",
+                                                   "response_reserved_tokens", "limit_tokens", "json_tokens_estimate")],
+                                 [4_000, 12_000, 16_000, 25_334, текст_токенів])
+                self.assertEqual([дані[к] for к in ("photo_count", "photo_tokens_estimate",
+                                                   "photo_label_tokens_estimate")], [0, 0, 0])
+                self.assertEqual(дані["output_channel"], "worker")
+
     def test_перевищення_однієї_руки_не_губить_успішну(self):
         дійсна_рука = руки.рука
 
@@ -918,6 +947,29 @@ class ДоговірН2(TestCase):
         self.assertEqual(з_фото.розмір["photo_count"], 2)
         self.assertEqual(з_фото.розмір["photo_tokens_estimate"], 4_000)
         self.assertGreater(з_фото.розмір["photo_label_tokens_estimate"], 0)
+
+    def test_надбавка_каналу_входить_у_відбір_і_оцінку_кадрів(self):
+        каталог = [_запис(f"{слот}-{і}", слот) for слот in ("сукня", "взуття") for і in range(150)]
+        п = пул.зібрати(self.день, 1, 37, каталог)
+        модель = {"вихід": 4_000, "канал": "worker", "надбавка_каналу": 12_000}
+        звичайний = запит.запит("складання", п, self.день, {})
+        з_надбавкою = запит.запит("складання", п, self.день, {}, модель=модель)
+        self.assertLess(len(з_надбавкою.номери), len(звичайний.номери))
+        self.assertLessEqual(з_надбавкою.розмір["json_tokens_estimate"], 9_334)
+
+        параметри = dict(образи=(self.образ,), вироки=self.вироки)
+        з = запит.запит("опис", self.пул, self.день, {}, **параметри,
+                         модель={**модель, "вікно": 40_000, "вихід": 2_800})
+        дані = з.розмір
+        self.assertEqual(з.модель["max_tokens"], 2_800)
+        self.assertEqual(дані["response_reserved_tokens"], 14_800)
+        self.assertEqual((дані["photo_count"], дані["photo_tokens_estimate"]), (2, 4_000))
+        self.assertGreater(дані["photo_label_tokens_estimate"], 0)
+        використано = sum(дані[к] for к in ("json_tokens_estimate", "photo_label_tokens_estimate",
+                                          "photo_tokens_estimate", "response_reserved_tokens"))
+        збій = запит.запит("опис", self.пул, self.день, {}, **параметри,
+                            модель={**модель, "вікно": 15_000, "вихід": 2_800})
+        self.assertEqual(збій.дані["mandatory_total_tokens_estimate"], використано)
 
     def test_джерело_довжини_визначене_кодом(self):
         for джерело, очікуване in (("вимір: довжина виробу проти зросту", "код"),
