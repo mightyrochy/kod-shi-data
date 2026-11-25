@@ -924,6 +924,8 @@ class МіткаБезпека(unittest.TestCase):
         with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
             с = ф.read()
         self.assertIn("kod: ${{ needs.zlyttia.outputs.kod == 'true' }}", с)
+        self.assertIn("zlyti: ${{ needs.zlyttia.outputs.zlyti }}", с)
+        self.assertIn("STARI: ${{ needs.rishennia.outputs.stari }}", с)
         self.assertIn("if: needs.zlyttia.outputs.zlyto == 'true'", с)
         with open(os.path.join(КОРІНЬ, ".github/workflows/zbirka.yml"), encoding="utf-8") as ф:
             з = ф.read()
@@ -933,7 +935,8 @@ class МіткаБезпека(unittest.TestCase):
                          "кожен checkout збірки бере ref злитого коміту (порожній — типовий)")
         self.assertIn("inputs.pislia && (inputs.kod && 'kod' || 'dokument') || 'main'", з,
                       "повна збірка після коду — своя група: легкий виклик документа її не витісняє")
-        self.assertIn('ZLYTTIA_SHA="${{ inputs.pislia }}"', з, "погодження живого прогону під викликом")
+        self.assertIn("ZLYTTIA_ZLYTI: ${{ inputs.zlyti }}", з, "погодження живого прогону — за переліком злитих")
+        self.assertNotIn("ZLYTTIA_SHA", з)
         self.assertIn("node аудит/проби/перевірити_живий_після_злиття.js", з)
         бази = [р for р in з.splitlines() if "BASE_REF: ${{" in р]
         self.assertTrue(бази)
@@ -944,6 +947,90 @@ class МіткаБезпека(unittest.TestCase):
         api = ФальшивийAPI(Мітка.стан(Мітка(), None)["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
         злито, _, _ = д.злити(api, [{"номер": 3584, "голова": api.pr["head"]["sha"], "спосіб": "мітка"}])
         self.assertTrue(any(з[2] for з in злито))
+
+
+class Зняття(unittest.TestCase):
+    """Наряд «Погодження ЖИВИЙ ПІСЛЯ для кожного злитого PR»: мітка знімається після злиття й коли голова з'явилась
+    знову; слід — коментар у PR; вихід `zlyti` — усі PR запуску."""
+
+    ГОЛОВА_З, МІТКА_О = Мітка.ГОЛОВА_З, Мітка.МІТКА_О
+
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(ТУТ, "документ_без_коду_події.json"), encoding="utf-8") as ф:
+            cls.база = json.load(ф)
+
+    def стан(self, зміна=None):
+        return Мітка.стан(self, зміна)
+
+    def test_стара_мітка_у_старих(self):
+        п = self.стан(lambda п: [з.update(created_at="2026-11-25T10:30:00Z") for з in п["запуски"]])
+        старі = []
+        підсумок = д.обійти(ОбхідAPI(п), "", старі)
+        self.assertFalse(підсумок[0][2])
+        self.assertIn("правка опису", підсумок[0][3])
+        self.assertEqual(старі, [{"номер": 3584, "голова": п["pr"]["head"]["sha"]}])
+
+    def test_чинна_мітка_не_стара(self):
+        старі = []
+        д.обійти(ОбхідAPI(self.стан()), "", старі)
+        self.assertEqual(старі, [])
+
+    def test_мітка_чужого_автора_не_стара(self):
+        п = self.стан(lambda п: п["події"][0]["actor"].update(login="інший"))
+        старі = []
+        д.обійти(ОбхідAPI(п), "", старі)
+        self.assertEqual(старі, [])
+
+    def test_знімає_й_пише_коментар(self):
+        п = self.стан()
+        api = ФальшивийAPI(п["pr"], (200, {}, ""))
+        рядки = д.прибрати_старі(api, [{"номер": 3584, "голова": п["pr"]["head"]["sha"]}])
+        дії = [(м, ш) for м, ш, _ in api.виклики if м != "GET"]
+        self.assertEqual(дії[0][0], "DELETE")
+        self.assertTrue(дії[0][1].endswith("/issues/3584/labels/%D0%B7%D0%BB%D0%B8%D1%82%D0%B8"), дії)
+        self.assertEqual(len(рядки), 1)
+
+    def test_коментар_лишає_слід(self):
+        п = self.стан()
+
+        class З(ФальшивийAPI):
+            def запит(self, метод, шлях, тіло=None):
+                if метод in ("DELETE", "POST"):
+                    self.виклики.append((метод, шлях, тіло))
+                    return 200, {}, ""
+                return super().запит(метод, шлях, тіло)
+        api = З(п["pr"], (200, {}, ""))
+        д.прибрати_старі(api, [{"номер": 3584, "голова": п["pr"]["head"]["sha"]}])
+        коментар = next(в for в in api.виклики if в[0] == "POST")
+        self.assertTrue(коментар[1].endswith("/issues/3584/comments"))
+        self.assertIn("мітку «злити» знято", коментар[2]["body"])
+        self.assertIn("правка", коментар[2]["body"])
+
+    def test_голова_змінилась_мітку_не_чіпає(self):
+        п = self.стан()
+        api = ФальшивийAPI(п["pr"], (200, {}, ""))
+        рядки = д.прибрати_старі(api, [{"номер": 3584, "голова": "0" * 40}])
+        self.assertIn("змінився", рядки[0])
+        self.assertFalse([в for в in api.виклики if в[0] != "GET"])
+
+    def test_злиття_знімає_мітку(self):
+        п = self.стан()
+        api = ФальшивийAPI(п["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
+        д.злити(api, [{"номер": 3584, "голова": п["pr"]["head"]["sha"], "спосіб": "мітка"}])
+        self.assertTrue([в for в in api.виклики if в[0] == "DELETE" and "/issues/3584/labels/" in в[1]])
+
+    def test_голова_змінилась_до_злиття_знімає_мітку(self):
+        п = self.стан()
+        api = ФальшивийAPI(п["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
+        злито, _, рядки = д.злити(api, [{"номер": 3584, "голова": "0" * 40, "спосіб": "мітка"}])
+        self.assertEqual(злито, [])
+        self.assertTrue([в for в in api.виклики if в[0] == "DELETE"])
+
+    def test_документ_без_мітки_нічого_не_знімає(self):
+        api = ФальшивийAPI(self.база["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
+        д.злити(api, [{"номер": 3584, "голова": api.pr["head"]["sha"]}])
+        self.assertFalse([в for в in api.виклики if в[0] == "DELETE"])
 
 
 class ОбхідAPI:

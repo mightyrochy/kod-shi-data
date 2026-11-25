@@ -27,6 +27,11 @@ on:
       pislia:
         type: string
         required: true
+      # Усі PR, злиті цим запуском самозлиття: JSON [{"номер": N, "коміт": SHA}] — живий прогін звіряє погодження кожного.
+      zlyti:
+        type: string
+        required: false
+        default: ''
       # Злито код (за міткою «злити»): повний шлях збірки й публікації на `pislia`, а не легкий документний.
       kod:
         type: boolean
@@ -549,13 +554,15 @@ jobs:
           node аудит/проби/перевірити_живий_після_злиття.js
       - name: записані сцени через продукт
         env:
+          ZLYTTIA_ZLYTI: ${{ inputs.zlyti }}
+          ZLYTTIA_TOKEN: ${{ inputs.pislia && github.token || '' }}
           NODE_PATH: джерела/node_modules
           REPLAY_BASE_BUILD: ${{ runner.temp }}/main-pokaz
           REPLAY_BASE_ROOT: ${{ runner.temp }}/main-replay
         run: |
           node аудит/проби/приймання_записів.js "${RUNNER_TEMP}/pokaz" "${RUNNER_TEMP}/pyodide" \
             "${RUNNER_TEMP}/replay" ${{ matrix.chastyna }} 2
-          ZLYTTIA_SHA="${{ inputs.pislia }}" GITHUB_TOKEN="${{ (github.event_name == 'push' || inputs.pislia) && github.token || '' }}" node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/replay"
+          GITHUB_TOKEN="${{ github.event_name == 'push' && github.token || '' }}${ZLYTTIA_TOKEN}" node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/replay"
       - name: докази всіх сцен, зокрема невдалих
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
