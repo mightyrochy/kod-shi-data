@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Structured wool-blend blazer in deep forest green (#0e4d46), tailored with sharp lapels and single-breasted closure, mid-thigh length.\\nSilk-crepe sheath dress underneath in charcoal grey (#36454f), floor-length with a subtle A-line silhouette, high neckline.\\nStiletto pumps in polished black leather, pointed toe, 9 cm heel height.\\nDelicate gold pendant necklace featuring an emerald cut stone and a thin silk scarf tied loosely at the waist.\\n\\nThis ensemble balances the formal dress code of the upscale restaurant with her desire for autumnal elegance through rich, dark tones that harmonize with her warm skin undertones. The structured blazer adds a layer of sophistication appropriate for the event while allowing flexibility for open zones as she wishes to express herself. The mix of crisp wool and fluid silk creates an interesting texture contrast that draws attention to the clothing rather than just the body.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\": \\\"yes\\\", \\\"items\\\": [{\\\"name\\\": \\\"Blazer\\\", \\\"details\\\": \\\"Structured, sharp lapels, single-breasted closure, mid-thigh length, wool-blend fabric\\\", \\\"slot\\\": \\\"outerwear\\\", \\\"color_hex\\\": \\\"#0e4d46\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Dress\\\", \\\"details\\\": \\\"Sheath silhouette, A-line shape, floor-length, high neckline, silk-crepe fabric\\\", \\\"slot\\\": \\\"dress\\\", \\\"color_hex\\\": \\\"#36454f\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Pumps\\\", \\\"details\\\": \\\"Stiletto heel, pointed toe, 9 cm height, polished black leather\\\", \\\"slot\\\": \\\"shoes\\\", \\\"color_hex\\\": \\\"#000000\\\", \\\"worn\\\": true}, {\\\"name\\\": \\\"Necklace\\\", \\\"details\\\": \\\"Delicate gold pendant with emerald cut stone\\\", \\\"slot\\\": \\\"necklace\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}, {\\\"name\\\": \\\"Scarf\\\", \\\"details\\\": \\\"Thin silk, tied loosely at the waist\\\", \\\"slot\\\": \\\"scarf\\\", \\\"color_hex\\\": null, \\\"worn\\\": true}]}\"}],\"usage\":{\"input_tokens\":547,\"output_tokens\":258},\"stop_reason\":\"end_turn\"}"
+ }
+}

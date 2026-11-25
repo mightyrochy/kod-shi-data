@@ -1,0 +1,37 @@
+── ПРОМПТ (2510 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A silk-blend sheath dress in midnight navy with a subtle jacquard weave, knee-length cut with a flattering V-neckline, deep midnight blue (#0B1026), and smooth satin fabric.\nStrappy nude evening pumps with a 3-inch heel, classic stiletto shape, soft beige (#E5D6C2), and leather material.\nDelicate pearl drop earrings with 8mm round beads and sterling silver posts, standard drop length, iridescent white pearl (#FFFDF0), and polished metal.\nA tailored wool-blend blazer in charcoal grey, single-breasted cut with peaked lapels, dark anthracite (#2F3440), and structured fine-wale fabric to serve as the required outer layer against cool autumn air.\n\nThis outfit perfectly balances the \"formal\" dress code for an upscale restaurant celebration while respecting the request for two open zones through the V-neckline and sleeveless design of the sheath dress. The rich jacquard texture of the midnight navy gown exudes elegance suitable for autumn evenings, while the nude heels elongate the legs without distracting from the sophisticated silhouette. Adding the tailored charcoal blazer ensures appropriate coverage for the cooler seasonal weather without breaking the formal aesthetic, completing a look where every piece elevates the wearer's presence."}
+
+── ВІДПОВІДЬ (1021 симв., 4.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "sheath dress",
+      "details": "knee-length cut with a flattering V-neckline, subtle jacquard weave, deep midnight blue, smooth satin fabric",
+      "slot": "dress",
+      "color_hex": "#0B1026",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "strappy evening shape, 3-inch heel, classic stiletto form, soft beige, leather material",
+      "slot": "shoes",
+      "color_hex": "#E5D6C2",
+      "worn": true
+    },
+    {
+      "name": "drop earrings",
+      "details": "delicate pearl drop design, 8mm round beads, sterling silver posts, standard drop length, iridescent white pearl, polished metal",
+      "slot": "earrings",
+      "color_hex": "#FFFDF0",
+      "worn": true
+    },
+    {
+      "name": "blazer",
+      "details": "tailored wool-blend construction, single-breasted cut with peaked lapels, dark anthracite, structured fine-wale fabric",
+      "slot": "outerwear",
+      "color_hex": "#2F3440",
+      "worn": true
+    }
+  ]
+}

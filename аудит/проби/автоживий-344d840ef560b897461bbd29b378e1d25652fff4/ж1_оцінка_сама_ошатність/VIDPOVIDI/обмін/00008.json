@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"formality_reason\": \"her_words\", \"sources\": {\"formality_reason\": {\"kind\": \"default\"}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\"}, \"accent_place\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"default\"}}, \"occasion\": \"celebration\", \"place\": \"restaurant_upscale\", \"open_zones\": \"two\", \"accent_place\": \"clothing\", \"formality\": [\"formal\"], \"season\": \"autumn\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"A silk-blend sheath dress in midnight navy with a subtle jacquard weave, knee-length cut with a flattering V-neckline, deep midnight blue (#0B1026), and smooth satin fabric.\\nStrappy nude evening pumps with a 3-inch heel, classic stiletto shape, soft beige (#E5D6C2), and leather material.\\nDelicate pearl drop earrings with 8mm round beads and sterling silver posts, standard drop length, iridescent white pearl (#FFFDF0), and polished metal.\\nA tailored wool-blend blazer in charcoal grey, single-breasted cut with peaked lapels, dark anthracite (#2F3440), and structured fine-wale fabric to serve as the required outer layer against cool autumn air.\\n\\nThis outfit perfectly balances the \\\"formal\\\" dress code for an upscale restaurant celebration while respecting the request for two open zones through the V-neckline and sleeveless design of the sheath dress. The rich jacquard texture of the midnight navy gown exudes elegance suitable for autumn evenings, while the nude heels elongate the legs without distracting from the sophisticated silhouette. Adding the tailored charcoal blazer ensures appropriate coverage for the cooler seasonal weather without breaking the formal aesthetic, completing a look where every piece elevates the wearer's presence.\"}],\"usage\":{\"input_tokens\":582,\"output_tokens\":271},\"stop_reason\":\"end_turn\"}"
+ }
+}
