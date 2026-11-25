@@ -20,6 +20,7 @@ python3 -I джерела/прилади/тест_документ_без_код
 заважає; скасований чи червоний останній запуск — «не зливати».
 """
 import copy
+import datetime
 import json
 import os
 import re
@@ -500,7 +501,8 @@ def групи_з_yml(шлях=".github/workflows/samozlyttia.yml"):
         текст = ф.read()
     процесу = re.search(r"^concurrency:\n  group: (.+)\n", текст, re.MULTILINE)
     jobs, умови = {}, {}
-    for блок in re.split(r"\n(?=  [A-Za-z_-]+:\n)", текст.split("\njobs:\n", 1)[1]):
+    тіло = "\n".join(р for р in текст.split("\njobs:\n", 1)[1].splitlines() if not р.lstrip().startswith("#"))
+    for блок in re.split(r"\n(?=  [A-Za-z_-]+:\n)", тіло):
         ім_я = re.match(r"\s*([A-Za-z_-]+):", блок).group(1)
         к = re.search(r"^    concurrency:\n      group: (.+)\n      cancel-in-progress: (\w+)\n", блок, re.MULTILINE)
         if к and "${{" in к.group(1):
@@ -760,8 +762,13 @@ class Мітка(unittest.TestCase):
         п["файли"].append({"filename": "джерела/мовний_шар.py", "status": "modified"})
         п["pr"]["changed_files"] = 3
         п["pr"]["labels"] = [{"name": д.МІТКА}]
+        # Запуски CI GitHub створює із запізненням — ПІСЛЯ мітки (#4716, дошка 17101): мірилом вони не є.
         for з in п["запуски"]:
-            з["created_at"] = self.ГОЛОВА_З
+            з["created_at"] = "2026-11-25T10:05:02Z"
+        # job `мітка` (samozlyttia.yml) ставить на SHA голови статус у момент `labeled`
+        п["статуси"] = [{"context": д.КОНТЕКСТ_МІТКИ, "state": "success", "creator": {"login": д.БОТ},
+                         "created_at": "2026-11-25T10:05:03Z"}] + п["статуси"]
+        п["зараз"] = datetime.datetime(2026, 11, 25, 10, 6, tzinfo=datetime.timezone.utc)
         п["події"] = [{"id": 1, "event": "labeled", "created_at": self.МІТКА_О, "label": {"name": д.МІТКА},
                        "actor": {"login": д.АВТОР}}]
         if зміна:
@@ -772,7 +779,7 @@ class Мітка(unittest.TestCase):
         п = self.стан(зміна)
         # код без мітки — не документ
         self.assertFalse(д.рішення_pr(п["pr"], п["файли"], п["запуски"], п["check_runs"], п["статуси"])[0])
-        return д.рішення_мітка(п["pr"], п["події"], п["запуски"], п["check_runs"], п["статуси"])
+        return д.рішення_мітка(п["pr"], п["події"], п["запуски"], п["check_runs"], п["статуси"], зараз=п["зараз"])
 
     def злити(self, зміна=None):
         так, чому = self.рішення(зміна)
@@ -786,24 +793,77 @@ class Мітка(unittest.TestCase):
     def test_мітка_на_зеленій_голові_злити(self):
         self.злити()
 
-    def test_мітка_раніше_за_голову_знята(self):
-        # нова голова (її запуски пізніші за мітку) — мітку знято
-        self.не_зливати(lambda п: [з.update(created_at="2026-11-25T10:30:00Z") for з in п["запуски"]], "мітку знято")
+    def test_запуски_після_мітки_не_міра_появи_голови(self):
+        # #4716: мітка через 2 с після відкриття, запуски створено пізніше — мітка діє
+        п = self.стан()
+        self.assertTrue(all(з["created_at"] > self.МІТКА_О for з in п["запуски"]))
+        self.злити()
 
-    def test_force_push_назад_на_стару_голову_знімає_мітку(self):
-        # SHA голови той самий, але нова поява (новий запуск pull_request після мітки): мітка стара
+    def без_статуса(self, п, зараз):
+        # голова PR інша, ніж у момент мітки: статуса на ній нема (новий SHA)
+        п["статуси"] = [с for с in п["статуси"] if с.get("context") != д.КОНТЕКСТ_МІТКИ]
+        if зараз:
+            п["зараз"] = зараз
+
+    def test_новий_коміт_після_мітки_знімає_мітку(self):
+        self.не_зливати(lambda п: self.без_статуса(п, datetime.datetime(2026, 11, 25, 10, 30, tzinfo=datetime.timezone.utc)), "не зафіксована")
+
+    def test_коміт_до_мітки_запушений_після_не_діє(self):
+        # доробка #4718: коміт 12:00 (дата в минулому), мітка 12:05, пуш 12:10 — на новій голові статуса нема
         def з(п):
-            п["запуски"].append(dict(п["запуски"][0], id=999, created_at="2026-11-25T10:20:00Z"))
-        self.не_зливати(з, "останню появу голови")
+            п["події"][0]["created_at"] = "2026-11-25T12:05:00Z"
+            self.без_статуса(п, datetime.datetime(2026, 11, 25, 12, 30, tzinfo=datetime.timezone.utc))
+        self.не_зливати(з, "не зафіксована")
 
-    def test_force_push_після_мітки_подією(self):
+    def test_стара_мітка_стара_а_свіжа_ще_чекає(self):
+        п = self.стан(lambda п: self.без_статуса(п, datetime.datetime(2026, 11, 25, 10, 30, tzinfo=datetime.timezone.utc)))
+        self.assertTrue(д.мітка_стара(п["pr"], п["події"], п["статуси"], п["зараз"]))
+        п = self.стан(lambda п: self.без_статуса(п, datetime.datetime(2026, 11, 25, 10, 6, tzinfo=datetime.timezone.utc)))
+        self.assertFalse(д.мітка_стара(п["pr"], п["події"], п["статуси"], п["зараз"]))
+        self.assertIn("чекаю фіксації", д.мітка_діє(п["pr"], п["події"], п["статуси"], п["зараз"])[1])
+
+    def test_статус_від_попередньої_мітки_не_рахується(self):
+        # мітку зняли й поставили знову на тій самій голові: статус раніший за останню мітку
+        def з(п):
+            п["події"].append({"id": 7, "event": "labeled", "created_at": "2026-11-25T10:20:00Z",
+                               "label": {"name": д.МІТКА}, "actor": {"login": д.АВТОР}})
+            п["зараз"] = datetime.datetime(2026, 11, 25, 10, 21, tzinfo=datetime.timezone.utc)
+        self.не_зливати(з, "чекаю фіксації")
+
+    def test_статус_не_від_бота_не_рахується(self):
+        def з(п):
+            п["статуси"][0]["creator"] = {"login": "інший"}
+            п["зараз"] = datetime.datetime(2026, 11, 25, 10, 30, tzinfo=datetime.timezone.utc)
+        self.не_зливати(з, "не зафіксована")
+
+    def test_статус_не_success_не_рахується(self):
+        def з(п):
+            п["статуси"][0]["state"] = "failure"
+            п["зараз"] = datetime.datetime(2026, 11, 25, 10, 30, tzinfo=datetime.timezone.utc)
+        self.не_зливати(з, "не зафіксована")
+
+    def test_force_push_після_мітки_знімає_мітку(self):
         def з(п):
             п["події"].append({"id": 5, "event": "head_ref_force_pushed", "created_at": "2026-11-25T10:07:00Z"})
         self.не_зливати(з, "force-push")
 
-    def test_перезапуск_не_міняє_появи(self):
-        # created_at запуску при перезапуску той самий; мітка після появи — діє
-        self.злити(lambda п: п["запуски"][0].update(run_started_at="2026-11-25T10:30:00Z"))
+    def test_force_push_назад_на_старий_sha_після_мітки(self):
+        # голова — старий коміт (дата раніша за мітку), але повернули її force-push після мітки
+        def з(п):
+            п["події"].append({"id": 6, "event": "head_ref_force_pushed", "created_at": "2026-11-25T10:20:00Z"})
+        self.не_зливати(з, "force-push")
+
+    def test_force_push_до_мітки_не_заважає(self):
+        def з(п):
+            п["події"].append({"id": 0, "event": "head_ref_force_pushed", "created_at": "2026-11-25T10:01:00Z"})
+        self.злити(з)
+
+    def test_мітка_відразу_після_відкриття(self):
+        # мітка через 2 с після відкриття, запуски CI пізніше — діє (статус на голові після мітки)
+        def з(п):
+            п["події"][0]["created_at"] = "2026-11-25T10:00:02Z"
+            п["статуси"][0]["created_at"] = "2026-11-25T10:00:04Z"
+        self.злити(з)
 
     def test_мітка_від_іншого_автора(self):
         self.не_зливати(lambda п: п["події"][0]["actor"].update(login="інший"), "поставив інший")
@@ -824,12 +884,6 @@ class Мітка(unittest.TestCase):
 
     def test_мітка_без_події(self):
         self.не_зливати(lambda п: п.update(події=[]), "події її постановки нема")
-
-    def test_нема_часу_голови(self):
-        def з(п):
-            for з_ in п["запуски"]:
-                з_.pop("created_at")
-        self.не_зливати(з, "нема часу")
 
     def test_червоний_запуск(self):
         self.не_зливати(lambda п: п["запуски"][1].update(conclusion="failure"), "failure")
@@ -911,12 +965,49 @@ class МіткаБезпека(unittest.TestCase):
         код = "\n".join(р for р in текст.splitlines() if not р.lstrip().startswith("#"))
         self.assertRegex(код, r"(?m)^  pull_request_target:\n    types: \[labeled\]$")
         self.assertNotRegex(код, r"(?m)^\s+ref:", "checkout без ref — лише main, не гілка PR")
-        self.assertNotIn("pull_request.head", код)
+        мітка = код.split("  mitka:", 1)[1].split("  rishennia:", 1)[0]
+        решта = код.replace(мітка, "")
+        self.assertNotIn("pull_request.head", решта, "SHA зі сніпшота події — лише в job фіксації мітки")
+        self.assertIn("SHA: ${{ github.event.pull_request.head.sha }}", мітка)
+        self.assertNotIn("checkout", мітка, "job фіксації мітки коду не бере")
+        self.assertRegex(мітка, r"(?m)^      statuses: write$")
+        self.assertNotRegex(мітка, r"(?m)^      (contents|pull-requests|issues): ")
+        self.assertIn("github.event.sender.login == 'mightyrochy'", мітка, "статус — лише за міткою власника")
+        self.assertNotIn("${{", мітка.split("run: |", 1)[1], "значення PR — через env, не в тексті команди")
         self.assertNotIn("workflow_dispatch", код)
         self.assertNotIn("auto-merge", код.lower())
         рішення = код.split("  rishennia:", 1)[1].split("  zlyttia:", 1)[0]
         self.assertNotRegex(рішення, r"(?m)^      (contents|pull-requests|issues): write", "запис — лише в job злиття")
         self.assertIn("github.event.label.name == 'злити'", рішення)
+
+    def test_пропуск_предка_не_тягнеться_ланцюгом(self):
+        """Доробка #4718: пропущений job пропускає залежні, якщо вони без функції статусу (неявний `success()`).
+        `мітка` іде на кожній події, умова — на кроці, тож `рішення` → `злиття` → `збірка` не успадковують пропуск:
+        документ без мітки (подія `workflow_run`) зливається, мічена голова, чий CI закінчився після мітки, теж."""
+        _, jobs, умови = групи_з_yml()
+        self.assertEqual(умови["mitka"], "", "job `мітка` без умови: пропуск предка тягнувся б ланцюгом")
+        with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
+            код = "\n".join(р for р in ф.read().splitlines() if not р.lstrip().startswith("#"))
+        блок = код.split("  mitka:", 1)[1].split("  rishennia:", 1)[0]
+        self.assertRegex(блок, r"(?m)^        if: github.event_name == 'pull_request_target' && github.event.label.name == 'злити'"
+                               r" && github.event.sender.login == 'mightyrochy'$")
+        # модель: job запускається, коли всі його `needs` відпрацювали (success) і його `if` істинна
+        def йде(job, подія, мітка):
+            умова = умови[job]
+            if job == "mitka":
+                return True
+            if job == "rishennia":
+                return (подія == "workflow_run") or (подія == "pull_request_target" and мітка)
+            raise AssertionError(job)
+        for подія, мітка in (("workflow_run", False), ("workflow_run", True), ("pull_request_target", True)):
+            self.assertTrue(йде("mitka", подія, мітка))
+            self.assertTrue(йде("rishennia", подія, мітка), (подія, мітка))
+        self.assertNotIn("always()", код)
+        self.assertNotIn("cancelled()", код)
+        self.assertIn("needs: mitka", код)
+        # рядок умови `рішення` — на події workflow_run із pull_request (документ без мітки) і на labeled
+        self.assertIn("github.event.workflow_run.event == 'pull_request'", умови["rishennia"])
+        self.assertIn("github.event_name == 'pull_request_target' && github.event.label.name == 'злити'", умови["rishennia"])
 
     def test_збірка_після_злиття_коду(self):
         """Код, злитий токеном CI, `push` не будить: крок викликає `zbirka.yml` з `kod`, а той веде повний шлях на
@@ -964,11 +1055,11 @@ class Зняття(unittest.TestCase):
         return Мітка.стан(self, зміна)
 
     def test_стара_мітка_у_старих(self):
-        п = self.стан(lambda п: [з.update(created_at="2026-11-25T10:30:00Z") for з in п["запуски"]])
+        п = self.стан(lambda п: Мітка.без_статуса(self, п, None))
         старі = []
         підсумок = д.обійти(ОбхідAPI(п), "", старі)
         self.assertFalse(підсумок[0][2])
-        self.assertIn("правка опису", підсумок[0][3])
+        self.assertIn("не зафіксована", підсумок[0][3])
         self.assertEqual(старі, [{"номер": 3584, "голова": п["pr"]["head"]["sha"]}])
 
     def test_чинна_мітка_не_стара(self):
@@ -1005,7 +1096,7 @@ class Зняття(unittest.TestCase):
         коментар = next(в for в in api.виклики if в[0] == "POST")
         self.assertTrue(коментар[1].endswith("/issues/3584/comments"))
         self.assertIn("мітку «злити» знято", коментар[2]["body"])
-        self.assertIn("правка", коментар[2]["body"])
+        self.assertIn("постав мітку ще раз", коментар[2]["body"])
 
     def test_голова_змінилась_мітку_не_чіпає(self):
         п = self.стан()
