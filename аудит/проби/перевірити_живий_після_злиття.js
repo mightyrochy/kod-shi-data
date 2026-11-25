@@ -33,6 +33,11 @@ function запуск(тека, середовище) {
     fs.writeFileSync(path.join(тека, 'вихід/підсумок.json'), JSON.stringify([{стан: 'запис застарів'}]));
     const подія = path.join(тека, 'подія.json');
     fs.writeFileSync(подія, JSON.stringify({workflow_run: {event: 'pull_request'}, repository: {full_name: РЕПО}}));
+    const подіяМітки = path.join(тека, 'подія_мітки.json');
+    // `pull_request_target` (мітка «злити» на PR B): подія несе PR B, а злито A — погодження беруться зі злитих.
+    fs.writeFileSync(подіяМітки, JSON.stringify({action: 'labeled', pull_request: {number: 2, body: БЕЗ}, repository: {full_name: РЕПО}}));
+    const подіяМіткиЗРядком = path.join(тека, 'подія_мітки_з_рядком.json');
+    fs.writeFileSync(подіяМіткиЗРядком, JSON.stringify({action: 'labeled', pull_request: {number: 2, body: З_РЯДКОМ}, repository: {full_name: РЕПО}}));
     const середовище = list => ({GITHUB_EVENT_PATH: подія, ZLYTTIA_ZLYTI: JSON.stringify(list), GITHUB_TOKEN: 'x',
       GITHUB_API_URL: `http://127.0.0.1:${сервер.address().port}`});
     const лише = [{номер: 1, коміт: A}], обидва = [{номер: 1, коміт: A}, {номер: 2, коміт: B}];
@@ -44,9 +49,15 @@ function запуск(тека, середовище) {
     assert.equal(без_b.код, 1, 'B без рядка — відмова'); assert(без_b.err.includes('#2') && !без_b.err.includes('#1'), без_b.err);
     const без_a = await код(обидва, БЕЗ, З_РЯДКОМ);
     assert.equal(без_a.код, 1, 'A без рядка — відмова: останній злитий PR не прикриває перший'); assert(без_a.err.includes('#1'), без_a.err);
+    const міткаB = {GITHUB_EVENT_PATH: подіяМітки}, міткаBЗРядком = {GITHUB_EVENT_PATH: подіяМіткиЗРядком};
+    тіла[A] = З_РЯДКОМ; тіла[B] = БЕЗ;
+    assert.equal((await запуск(тека, {...середовище(лише), ...міткаB})).код, 0, 'мітка B (без рядка), злито A (з рядком) — 0, не 1');
+    тіла[A] = БЕЗ; тіла[B] = З_РЯДКОМ;
+    assert.equal((await запуск(тека, {...середовище(лише), ...міткаBЗРядком})).код, 1, 'мітка B (з рядком), злито A (без) — 1, не хибний пропуск');
+    assert.equal((await запуск(тека, {...середовище(обидва), ...міткаBЗРядком})).код, 1, 'мітка B з рядком, злито A без і B — перелік головніший за подію');
     assert.equal((await запуск(тека, {...середовище(обидва), ZLYTTIA_ZLYTI: ''})).код, 1, 'без переліку подія workflow_run не погоджує');
     assert.equal((await запуск(тека, {...середовище(обидва), ZLYTTIA_ZLYTI: '[{"номер":1,"коміт":"x"}]'})).код, 1, 'хибний перелік — відмова');
-    console.log('✔ погодження під викликом після злиття: лише A; A+B обидва; без рядка в B; без рядка в A; без переліку; хибний перелік');
+    console.log('✔ погодження під викликом після злиття: лише A; A+B обидва; мітка B ↔ злито A (обидва напрямки); без рядка в B; без рядка в A; без переліку; хибний перелік');
   } finally {
     сервер.close(); fs.rmSync(тека, {recursive: true, force: true});
   }

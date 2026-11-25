@@ -64,7 +64,9 @@ if (require.main === module) {
     // Виклик збірки після злиття самозлиття (`workflow_call` від `workflow_run`): події PR чи push тут нема, а
     // злито могло бути кілька PR; перелік злитих цим запуском ([{номер, коміт}]) — у `ZLYTTIA_ZLYTI`, і погодження
     // потрібне кожному (власник бачить рядок ЖИВИЙ ПІСЛЯ кожного злитого PR, а не лише останнього).
-    if (process.env.ZLYTTIA_ZLYTI && подія?.workflow_run && !подія.pull_request)
+    // Перелік заданий — він єдине джерело за будь-якої події виклику (`workflow_run`, `pull_request_target` з міткою):
+    // опис PR події — не погодження злитих, а мітка B не прикриває злите A.
+    if (process.env.ZLYTTIA_ZLYTI)
       подія = {злиті: перелікЗлитих(process.env.ZLYTTIA_ZLYTI), repository: подія.repository};
     await перевірити(process.argv[2], подія);
     console.log('✔ приймання та погодження живого прогону узгоджені');
