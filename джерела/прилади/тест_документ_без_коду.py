@@ -980,6 +980,35 @@ class МіткаБезпека(unittest.TestCase):
         self.assertNotRegex(рішення, r"(?m)^      (contents|pull-requests|issues): write", "запис — лише в job злиття")
         self.assertIn("github.event.label.name == 'злити'", рішення)
 
+    def test_пропуск_предка_не_тягнеться_ланцюгом(self):
+        """Доробка #4718: пропущений job пропускає залежні, якщо вони без функції статусу (неявний `success()`).
+        `мітка` іде на кожній події, умова — на кроці, тож `рішення` → `злиття` → `збірка` не успадковують пропуск:
+        документ без мітки (подія `workflow_run`) зливається, мічена голова, чий CI закінчився після мітки, теж."""
+        _, jobs, умови = групи_з_yml()
+        self.assertEqual(умови["mitka"], "", "job `мітка` без умови: пропуск предка тягнувся б ланцюгом")
+        with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
+            код = "\n".join(р for р in ф.read().splitlines() if not р.lstrip().startswith("#"))
+        блок = код.split("  mitka:", 1)[1].split("  rishennia:", 1)[0]
+        self.assertRegex(блок, r"(?m)^        if: github.event_name == 'pull_request_target' && github.event.label.name == 'злити'"
+                               r" && github.event.sender.login == 'mightyrochy'$")
+        # модель: job запускається, коли всі його `needs` відпрацювали (success) і його `if` істинна
+        def йде(job, подія, мітка):
+            умова = умови[job]
+            if job == "mitka":
+                return True
+            if job == "rishennia":
+                return (подія == "workflow_run") or (подія == "pull_request_target" and мітка)
+            raise AssertionError(job)
+        for подія, мітка in (("workflow_run", False), ("workflow_run", True), ("pull_request_target", True)):
+            self.assertTrue(йде("mitka", подія, мітка))
+            self.assertTrue(йде("rishennia", подія, мітка), (подія, мітка))
+        self.assertNotIn("always()", код)
+        self.assertNotIn("cancelled()", код)
+        self.assertIn("needs: mitka", код)
+        # рядок умови `рішення` — на події workflow_run із pull_request (документ без мітки) і на labeled
+        self.assertIn("github.event.workflow_run.event == 'pull_request'", умови["rishennia"])
+        self.assertIn("github.event_name == 'pull_request_target' && github.event.label.name == 'злити'", умови["rishennia"])
+
     def test_збірка_після_злиття_коду(self):
         """Код, злитий токеном CI, `push` не будить: крок викликає `zbirka.yml` з `kod`, а той веде повний шлях на
         `pislia` (checkout з ref, база й голова історії з входів)."""
