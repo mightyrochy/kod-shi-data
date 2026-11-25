@@ -154,6 +154,12 @@ class ПортретУШтатномуСуді(TestCase):
                 пакунок = тіло["pool"]
                 адреса = пакунок["cols"].index("n")
                 return _відповідь(outfits=[{"id": "o1", "items": [р[адреса] for р in пакунок["rows"]]}])
+            if дріт["вид"] == "ремонт":
+                вирок, = тіло["verdict"]
+                self.assertCountEqual([(з["rule"], з["code"], з["weight"]) for з in вирок["findings"]], [
+                    ("K-CRA-02", "focus_count_over_ceiling", .5), ("K-COL-05", "accent_orphan", .5),
+                ])
+                return _відповідь(outfits=[{"id": вирок["id"], "items": вирок["items"]}])
             if дріт["вид"] == "вибір":
                 return _відповідь(chosen="o1")
             self.assertEqual(дріт["вид"], "опис")
@@ -187,7 +193,7 @@ class ПортретУШтатномуСуді(TestCase):
                 if питання_про_волосся:
                     самі_поля = питання_про_волосся[0]["заяви"][0]["values"]["fields"]
                     self.assertEqual(самі_поля, ["C", "h"])
-                self.assertEqual([з["вид"] for з in обміни["запити"]], ["складання", "вибір", "опис"])
+                self.assertEqual([з["вид"] for з in обміни["запити"]], ["складання", "ремонт", "вибір", "опис"])
                 к, = [к for к in фінал["картки"] if к["рука"] == 1]
                 self.assertIsNone(к["збій"])
                 self.assertIsNone(к["збій_опису"])
