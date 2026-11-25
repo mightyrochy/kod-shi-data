@@ -1198,11 +1198,18 @@ def _опис_keep_by():
     "her_item_candidate_to_buy": "she is deciding whether to buy this item: it is compared with the others she "
                                  "is choosing between, not put into her outfits",
     "buy_first": "of the items she is choosing between, this one — or these, when several came out equal at the "
-                 "top — is advised first (values: reasons — statement codes that set it apart from the others; "
-                 "avoids — risks the corpus names that the others carry and it does not; then — the others in "
-                 "order)",
+                 "top — is advised first, and only on what the code proved (values: proven — the aspects in which "
+                 "every other item is worse on recorded facts: level, failed_checks, named_risks; reasons — always "
+                 "empty: the code does not trace which statement set the order; then — the others in order). Give "
+                 "the order and say only the proven aspects; do not infer why from facts in individual verdicts and "
+                 "do not claim a risk was avoided",
     "buy_order_tie": "these items she is choosing between came out equal in the code's judgement: the choice "
                      "between them is hers",
+    "buy_order_not_established": "these items she is choosing between are shown in the code's order, but the code "
+                                 "did not prove that any is better: an input of the judgement is missing for at "
+                                 "least one of them, so the order is not advice; say what is known about each item "
+                                 "from its own verdict and that the choice is hers (this is not a tie: a tie means "
+                                 "all were judged and came out equal)",
     "colour_role_not_judged": "whether the item's colour is a neutral base or an accent was not judged (values: "
                               "missing — colour_measure: neither a measurement nor a shop colour word places it "
                               "on one side; a photo of the item in daylight lets it be judged)",

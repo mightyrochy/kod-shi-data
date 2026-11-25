@@ -74,8 +74,11 @@ import міст_помічниця as _МП  # запобіжник обіцян
         _ВИМ.поле("case", без="The occasion is not known yet."),
         # ВИБІР МІЖ РЕЧАМИ, ЯКІ ВОНА ХОЧЕ КУПИТИ (наряд Функція-купити-річ; дошка 14719): порядок і причина першої —
         # код (`суд_покупки.вибір`), модель їх лише каже
-        _ЗП.Поле("choice", "which item to buy first and why — statement codes",
-                 "do not contradict it"),
+        _ЗП.Поле("choice", "which item to buy first and why, if the code proved it — statement codes",
+                 "do not contradict it. Say only what `proven` names; if reasons is empty, do not infer why from "
+                 "facts in individual verdicts and do not claim a risk was avoided. If the statement is "
+                 "buy_order_not_established, none is advised first: give the order as shown, say what each "
+                 "verdict established, and that the choice is hers"),
     ),
     правила=(
         ("Answer exactly what she asked about her look: whether the item suits her and this "
