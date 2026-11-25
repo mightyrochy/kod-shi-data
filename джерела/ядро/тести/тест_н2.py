@@ -267,7 +267,9 @@ class ПередачаСуду(TestCase):
             for рядок in передано:
                 заява = заяви[рядок["id"]]
                 self.assertEqual(рядок["weight"], заява.значення["вага"])
-                self.assertEqual(рядок["values"], заява.значення["факти"])
+                адреси = {р["ід"]: р["н"] for р in образ.речі}
+                адреси.update({н: н for н in адреси.values()})
+                self.assertEqual(рядок["values"], запит._номери_заяви(заява.значення["факти"], адреси))
                 self.assertEqual(tuple(рядок["items"]), заява.речі)
                 self.assertEqual(рядок.get("withheld", False), заява.значення.get("утримано", False))
 
@@ -312,6 +314,71 @@ class ПередачаСуду(TestCase):
                 if утримані:
                     self.assertEqual(утримані[0]["значення"]["error_cm"], 21.34)
                     self.assertEqual(set(утримані[0]["речі"]), {"coat", "dress"})
+                    for вид in ("ремонт", "вибір", "опис"):
+                        з = запит.запит(вид, кандидати, день, {}, образи=(образ,), вироки={образ.ід: вирок})
+                        дріт = json.loads(з.модель["messages"][0]["content"])
+                        заява = next(р for р in дріт["verdict"][0]["findings"] if р["id"] == утримані[0]["ід"])
+                        внутрішні = {р["item_id"] for р in заява["values"]["items"]}
+                        self.assertEqual(внутрішні, set(заява["items"]))
+                        таблиця = дріт["pool" if вид == "опис" else "candidates"]
+                        self.assertTrue(внутрішні <= {р[таблиця["cols"].index("n")] for р in таблиця["rows"]})
+
+    def test_перенумеровує_тільки_предметні_поля(self):
+        дані = {"label": "dress", "item": {"item_id": "dress", "title": "dress"},
+                "nested": [{"item_ids": ["dress", "#1·01", "outside"], "slot": "dress"}]}
+        self.assertEqual(запит._номери_заяви(дані, {"dress": "#1·01", "#1·01": "#1·01"}),
+                         {"label": "dress", "item": {"item_id": "#1·01", "title": "dress"},
+                          "nested": [{"item_ids": ["#1·01", "#1·01", "unknown"], "slot": "dress"}]})
+
+    def test_гілки_кольору_та_пункти_не_ділять_стан_за_порядком(self):
+        import суд_від_моделі as старий_суд
+
+        def образи(одяг, сумка, взуття=40, *, відомий_колір_взуття=True):
+            склад = [(і, слот, тип, 40) for і, слот, тип in одяг]
+            склад += [("shoes", "взуття", "лофери", взуття), ("bag", "сумка", "сумка", сумка)]
+            рядки = []
+            for і, слот, тип, світлота in склад:
+                lab, hex_ = (([55, 65, 40], "#e23234") if світлота == "red"
+                             else ([світлота, 0, 0], "#d4d4d4" if світлота == 85 else "#5e5e5e"))
+                колір = ({} if і == "shoes" and not відомий_колір_взуття else
+                         dict(колір_тип="вимір", колір_джерело="фото", lab=lab, hex=hex_))
+                рядки.append(_запис(і, слот, тип=тип, волокно="бавовна", **колір))
+            день = Ситуація(1, {}, {})
+            кандидати = пул.зібрати(день, 1, 37, рядки)
+            о, = розбір.прочитати(_збір(кандидати, *(р["id"] for р in рядки)), "складання", кандидати)
+            with patch.object(старий_суд, "перевірити_від_моделі",
+                              wraps=старий_суд.перевірити_від_моделі) as виклик:
+                в = суд.судити(о, день, кандидати, {})
+                виклик.assert_called_once()
+            self.assertNotIsInstance(в, Збій)
+            return день, кандидати, о, в
+
+        сукня = [("dress", "сукня", "сукня")]
+        пара = [("top", "верх", "сорочка"), ("bottom", "низ", "штани")]
+        звичайно = знання.ЧЕКЛІСТИ
+        переставлено = {група: dict(reversed(tuple(пункти.items())))
+                       for група, пункти in reversed(tuple(звичайно.items()))}
+        for описи in (звичайно, переставлено):
+            with patch.object(знання, "ЧЕКЛІСТИ", описи):
+                день, п, о, в = образи(сукня, "red")
+                знайдені, _ = self._читачі(день, п, о, в, "K-COL-05")
+                self.assertEqual([(з["код"], з["речі"]) for з in знайдені], [("accent_orphan", ("bag",))])
+                self.assertEqual(в.чекліст["excess.single_focus"], {"стан": "суджено", "результат": 1})
+                в = образи(сукня, 40)[-1]
+                self.assertFalse(any(з.код == "accent_orphan" for з in в.заяви))
+                в = образи(сукня, "red", відомий_колір_взуття=False)[-1]
+                self.assertFalse(any(з.код == "accent_orphan" for з in в.заяви))
+                день, п, о, в = образи(пара, 40)
+                знайдені, _ = self._читачі(день, п, о, в, "K-COL-01")
+                self.assertEqual([з["код"] for з in знайдені], ["one_lightness_level_reads_flat"])
+                self.assertEqual(set(знайдені[0]["речі"]), {"top", "bottom"})
+                в = образи(пара, 85)[-1]
+                self.assertEqual(в.чекліст["excess.lightness_steps"]["стан"], "немає_входу")
+                self.assertFalse(any(з.правило == "K-COL-01" for з in в.заяви))
+                в = образи(сукня, "red", "red")[-1]
+                self.assertEqual(в.чекліст["accessories.accent_surfaces_differ"],
+                                 {"стан": "немає_входу", "поле": "заявлена_колона"})
+                self.assertFalse(any(з.правило == "K-ACC-10" for з in в.заяви))
 
     def test_чекліст_не_підмінює_входи_наявністю_опису_правила(self):
         день, кандидати, образ, вирок = self._склад()
@@ -331,7 +398,7 @@ class ПередачаСуду(TestCase):
             for пункт in група.values():
                 self.assertTrue(пункт["джерело"])
                 self.assertTrue(пункт["поля"])
-                self.assertTrue(set(пункт["правила"]) <= правила.keys())
+                self.assertTrue(set(пункт["правила"]) <= правила.keys() | знання.ПРАВИЛА.keys())
 
 
 class МежіЧитачаТаБрифа(TestCase):
