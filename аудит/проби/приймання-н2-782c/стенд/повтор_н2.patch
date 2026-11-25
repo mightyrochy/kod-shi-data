@@ -1,0 +1,39 @@
+--- "\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\320\226\320\270\320\262\320\270\320\271-\321\207\320\265\321\200\320\265\320\267-\320\274\321\226\321\201\321\202/\321\201\321\202\320\265\320\275\320\264/\320\277\320\276\320\262\321\202\320\276\321\200_\320\274\321\226\321\201\321\202.js"	2026-11-25 12:34:33.709946576 +0000
++++ "\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\320\226\320\270\320\262\320\270\320\271-\321\207\320\265\321\200\320\265\320\267-\320\274\321\226\321\201\321\202/\321\201\321\202\320\265\320\275\320\264/\320\277\320\276\320\262\321\202\320\276\321\200_\320\2752.js"	2026-11-25 13:13:50.935866895 +0000
+@@ -78,7 +78,7 @@
+   return null;
+ }
+ async function головна(){
+-  браузер=await chromium.launch({headless:true,proxy:process.env.HTTPS_PROXY?{server:process.env.HTTPS_PROXY,bypass:'localhost,127.0.0.1'}:undefined});
++  браузер=await chromium.launch({headless:true});  /* Н2-приймання: без проксі — сторінка мережі не має */
+   const [ШИР,ВИС]=(process.env.VIEWPORT||'390x844').split('x').map(Number),ТЕЛ=ШИР<600;
+   const ctx=await браузер.newContext({viewport:{width:ШИР,height:ВИС},deviceScaleFactor:1,isMobile:ТЕЛ,hasTouch:ТЕЛ,locale:'uk-UA',timezoneId:'Europe/Kyiv',ignoreHTTPSErrors:true,acceptDownloads:true,
+     userAgent:ТЕЛ?'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36':undefined});
+@@ -98,11 +98,16 @@
+     const ім=new URL(r.request().url()).pathname.split('/').pop(),ф=path.join(process.env.PYODIDE,ім);
+     await r.fulfill({status:fs.existsSync(ф)?200:404,contentType:ім.endsWith('.wasm')?'application/wasm':/\.m?js$/.test(ім)?'application/javascript':ім.endsWith('.json')?'application/json':'application/octet-stream',body:fs.existsSync(ф)?fs.readFileSync(ф):'нема '+ім});
+   });
++  /* Н2-приймання: зовнішній транспорт сторінки закрито — картинки дістають синтетичний сірий PNG, решта — abort; кожен запит у журналі */
++  const СИНТ_PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVR4nGNoaGhgYGBgYGBgAAAEBAIBAZ3nAwAAAABJRU5ErkJggg==','base64');
+   await стор.route(u=>u.origin!==база && u.origin+'/'!==МІСТ && !/cdn\.jsdelivr\.net\/pyodide/.test(u.href),async r=>{
+-    try{await r.fulfill({response:await r.fetch({timeout:15000})});}catch(_){await r.abort().catch(()=>{});}
++    const т=r.request().resourceType();fs.appendFileSync(path.join(службове,'зовнішнє_закрито.txt'),new Date().toISOString()+' '+т+' '+r.request().url().slice(0,300)+'\n');
++    if(т==='image')return r.fulfill({status:200,contentType:'image/png',body:СИНТ_PNG}).catch(()=>{});
++    await r.abort().catch(()=>{});
+   });
++  стор.on('request',з=>fs.appendFileSync(path.join(службове,'мережа.log'),new Date().toISOString()+' '+з.method()+' '+з.resourceType()+' '+з.url().slice(0,200)+'\n'));
+   await стор.route(u=>u.origin+'/'===МІСТ,async route=>{
+-    if(route.request().method()!=='POST')return route.fallback();
++    if(route.request().method()!=='POST'){fs.appendFileSync(path.join(службове,'зовнішнє_закрито.txt'),new Date().toISOString()+' міст-не-POST '+route.request().method()+' '+route.request().url().slice(0,300)+'\n');return route.abort().catch(()=>{});}
+     if(process.env.STELYA&&викликів>=Number(process.env.STELYA)){fs.appendFileSync(path.join(службове,'обміни.jsonl'),JSON.stringify({час:new Date().toISOString(),прохід,стеля:true})+'\n');return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:{type:'стеля',message:'стеля проходу: міст не кликано'}})});}
+     викликів++;активні++;останнійВиклик=Date.now();const т0=Date.now();const тіло=route.request().postData()||'{}',початок=new Date().toISOString();
+     try{
+@@ -115,7 +120,7 @@
+     }catch(e){fs.appendFileSync(path.join(службове,'обміни.jsonl'),JSON.stringify({час:початок,с:(Date.now()-т0)/1000,прохід,запит:тіло,помилка:String(e)})+'\n');await route.fulfill({status:502,body:JSON.stringify({error:{message:String(e)}})}).catch(()=>{});}
+     finally{активні--;останнійВиклик=Date.now();}
+   });
+-  await стор.goto(база+'/kod-shi-data/index.html#міст='+МІСТ+'&т=tok-stub',{waitUntil:'load',timeout:180000});
++  await стор.goto(база+'/kod-shi-data/index.html#міст='+МІСТ+'&т=tok-stub'+(process.env.YADRO?'&ядро='+process.env.YADRO:'')+(process.env.VIKNO_N2?'&вікно='+process.env.VIKNO_N2:''),{waitUntil:'load',timeout:180000});
+   await сон(8000);await спокій();
+   запис('хід.md',`# Повтор ${ситуація}: записані слова й дії; жінка — скрипт`);
+   summary.кроки=[];
