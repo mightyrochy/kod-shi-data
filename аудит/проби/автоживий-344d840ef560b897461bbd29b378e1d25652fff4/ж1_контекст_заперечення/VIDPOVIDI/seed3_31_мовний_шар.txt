@@ -1,0 +1,55 @@
+── ПРОМПТ (7170 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: two_piece_set · about it: text н=1
+2 — kind: sneakers · about it: text н=2
+3 — kind: cardigan · about it: text н=3
+4 — kind: clutch · about it: text н=4
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The set brings a polished foundation to your evening, its simple top and flowing skirt creating a balanced column that flatters your shape without requiring effort—perfect for when you're healing and want to feel put-together effortlessly.",
+"2": "I kept the sneakers despite their sporty look because they honor your request for comfort during this recovery season; worn with confidence, they signal that you are embracing joy again on your own terms.",
+"3": "The cardigan adds a gentle layer of warmth and softness to your ensemble, its length elongating your figure while allowing movement—ideal for a long evening where you can lean into ease.",
+"4": "This clutch provides an elegant anchor to your outfit, its structured form bringing sophistication without weight; carried in hand or on the shoulder, it completes your look with quiet confidence.",
+"5": "I chose this two-piece set, these sneakers, your cardigan and the clutch because you asked for a look that isn't a deliberate style clash, yet still fits the formality of an upscale restaurant evening. The set's clean lines ground your recovery journey without demanding perfection, while the sneakers keep comfort central to your day. The long cardigan softens the silhouette, and the clutch offers elegant structure—balancing warmth with grace.",
+"6": "Layer the cardigan open over the two-piece set for a relaxed, confident drape that honors your figure without adding bulk.",
+"7": "Wear the sneakers with confidence as part of an elevated evening ensemble; their understated design complements the occasion while respecting your goal.",
+"8": "Подовжений кардиган із високими розрізами Elong бежевий — The black set alone reads as formal 'smart' and risks being too severe for a benevolent evening where I am recovering; adding this camel cardigan introduces a 'classic' neutral warmth that softens the formality, respects my palette's neutrals, and anchors the outfit in comfort.",
+"9": "Кросівки горіхові з натурального спилку-замші — The set comes without footwear; these brown suede loafers match the shoe slot perfectly. Their 'everyday' register balances the suit's formality, they are comfortable for my recovery, and their low heel suits the midi length.",
+"10": "Кросівки горіхові з натурального спилку-замші, Клатч жіночий, ATTICO, шкіра, колір темно-коричневий — The formal spread of everyday shoes against the suit is not a mistake but a deliberate choice to honor your recovery; these loafers bring essential comfort and 'home' warmth into a 'smart' occasion, making the outfit safe and wearable for you right now.",
+"11": "Кросівки горіхові з натурального спилку-замші — This outfit lacks footwear; these brown suede loafers are essential. Their low heel and soft texture match the 'romantic' register of the skirt, providing comfort for my recovery while balancing the midi length."
+}
+
+── ВІДПОВІДЬ (2861 симв., 18.3 с, HTTP 200) ──
+```json
+{
+"1": "Цей комплект дає твоїй вечірці вишукану основу: простий верх і струмлива спідниця створюють збалансовану колону, яка підкреслює твою фігуру без зусиль — ідеально для того моменту, коли ти одужуєш і хочеш почуватися зібраною легко.",
+"2": "Я залишила ці кросівки, незважаючи на їхній спортивний вигляд, бо вони відповідають твоєму проханню про комфорт у цей період відновлення; вдягнені з упевненістю, вони сигналізують про те, що ти приймаєш радість знову на своїх умовах.",
+"3": "Цей кардиган додає ніжний шар тепла та м’якості до твого образу: його довжина подовжує фігуру, дозволяючи при цьому рухатися — ідеально для довгого вечора, коли ти можеш розслабитися.",
+"4": "Ця клатч дає твоєму вбранню елегантну завершеність: її структурована форма додає вишуканості без ваги; тримай у руці або на плечі — вона доповнить твій образ тихою впевненістю.",
+"5": "Я обрала цей комплект, ці кросівки, твій кардиган і клатч тому, що ти попросила про образ, який не є навмисним стилістичним конфліктом, але все ще відповідає формальності вечора у вишуканому ресторані. Чисті лінії комплекту заземлюють твою подорож до одужання без вимоги досконалості, а кросівки тримають комфорт у центрі твого дня. Довгий кардиган пом’якшує силует, а клатч пропонує елегантну структуру — балансуючи тепло з грацією.",
+"6": "Одягни кардиган розстебнутим поверх комплекту для невимушеного та впевненого драпірування, яке підкреслює твою фігуру без додавання об’єму.",
+"7": "Вдягни кросівки з упевненістю як частину вишуканого вечірнього образу: їхній стриманий дизайн доповнює нагоду, поважаючи при цьому твою мету.",
+"8": "Подовжений кардиган Elong бежевого кольору — Чорний комплект сам по собі здається формальним і ризикує бути надто суворим для доброго вечора, коли я одужую; додавання цього кемелового кардигану вводить нейтральне «класичне» тепло, яке пом’якшує офіційність, поважає нейтральні кольори моєї палітри та заземлює образ у комфорті.",
+"9": "Кросівки горіхового кольору з натуральної замші — У комплекту немає взуття; ці коричневі замшеві лофери ідеально підходять для слота для взуття. Їхній повсякденний стиль балансує формальність костюму, вони зручні для мого відновлення, а їхній низький каблук відповідає довжині міді.",
+"10": "Кросівки горіхового кольору з натуральної замші, Жіноча клатч ATTICO, шкіра, темно-коричневий колір — Поєднання повсякденного взуття та костюму не є помилкою, а навмисним вибором для поваги до твого відновлення; ці лофери приносять необхідний комфорт і «домашнє» тепло на офіційну подію, роблячи образ безпечним і зручним для тебе зараз.",
+"11": "Кросівки горіхового кольору з натуральної замші — Цей образ не має взуття; ці коричневі замшеві лофери необхідні. Їхній низький каблук і м’яка текстура відповідають «романтичному» стилю спідниці, забезпечуючи комфорт для мого відновлення та балансуючи довжину міді."
+}
+```

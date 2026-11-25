@@ -1,0 +1,69 @@
+── ПРОМПТ (8094 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: belt · about it: text н=1
+2 — kind: beret · about it: text н=2
+3 — kind: jeans · about it: text н=3
+4 — kind: ballet_flats · about it: text н=4
+5 — kind: belt_bag · about it: text н=5
+6 — kind: bodysuit · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This belt completes your waistline with understated sophistication. Its metallic buckle adds a hint of shine without overpowering your ensemble, while its neutral tone ties together the softer hues of your bodysuit and shoes.",
+"2": "The beret adds a touch of personality to your look. It’s a soft accessory that frames your face warmly and complements the neutral tones of your outfit, making it feel both polished and personal.",
+"3": "These jeans belong here because they carry an everyday feel that fits your occasion without overdressing you. Their neutral shade matches your palette, and their straight cut supports your waistline gently, offering comfort as you move through the evening.",
+"4": "Ballet flats were chosen for their steadiness and ease—they let you walk gracefully across the restaurant floor without adding height or formality that could clash with your companion’s tuxedo.",
+"5": "Your belt bag is included because it offers practicality alongside style. Its bold red color adds a subtle pop against the muted tones of your outfit, keeping you grounded yet visually interesting during the evening.",
+"6": "This bodysuit is here because you asked for a column of one color that respects your recovery and avoids intentional style disruption. Its soft tone blends with the summer evening, and its clean line offers quiet elegance at an upscale event.",
+"7": "You have chosen a soft and thoughtful look for your evening at the charity gala. The nude bodysuit with its simple text offers a quiet dignity that respects your recovery while avoiding any forced style clash with your partner’s tuxedo. The dark jeans ground the outfit in understated elegance, and the ballet flats ensure you can move freely through the restaurant without sacrificing comfort. The matching beige beret and belt add subtle warmth to your ensemble, tying your color story together gently against the summer evening light.",
+"8": "Tuck the bodysuit slightly at the waist to define your natural silhouette without constriction.",
+"9": "Lean into the soft lines of the outfit—let your posture be relaxed yet confident, allowing the beret to rest lightly on your head.",
+"10": "Берет класичний з кашеміром бежевий — Added beige cashmere beret to add texture and headwear detail, softening the look and providing warmth for recovery.",
+"11": "Прямі джинси синього кольору зі шкіряним жакроном — Added navy jeans as an alternative bottom component to ensure versatility and comfort for recovery.",
+"12": "Балетки з натуральної шкіри, коричневі — Swapped black mules for brown ballet flats to introduce softness, warmth, and a romantic touch suitable for recovery.",
+"13": "Балетки з натуральної шкіри, коричневі — Swapped graphite trousers for brown ballet flats to introduce soft leather texture, ensure weather resistance against autumn chill, and align with the romantic/romantic style requested.",
+"14": "Прямі джинси синього кольору зі шкіряним жакроном — Added navy jeans as an alternative bottom to offer structure and comfort, allowing the outfit to transition from formal event to recovery-friendly wear without losing style.",
+"15": "Балетки з натуральної шкіри, коричневі — Swapped brown ballet flats for loafers to increase formality and ensure the footwear withstands restaurant flooring and autumn weather better.",
+"16": "Прямі джинси синього кольору зі шкіряним жакроном — Added navy jeans to ensure the outfit meets the minimum item count and provides a robust layer for recovery, though kept as optional versatility.",
+"17": "Балетки з натуральної шкіри, коричневі — Swapped brown ballet flats for loafers to elevate the formality level to match a restaurant charity event and improve weather resistance."
+}
+
+── ВІДПОВІДЬ (3868 симв., 23.8 с, HTTP 200) ──
+```json
+{
+  "1": "Цей пояс завершує твою лінію талії зі стриманою витонченістю. Його металева пряжка додає ледь помітний блиск, не перевантажуючи образ, а його нейтральний тон гармонійно поєднує м’які відтінки твоєї сукні-комбінації та взуття.",
+  "2": "Берет додає твоїй зовнішності нотку індивідуальності. Це ніжний аксесуар, який тепло обрамлює твоє обличчя і доповнює нейтральні тони твого одягу, роблячи його одночасно елегантним та особистим.",
+  "3": "Ці джинси тут тому, що вони мають повсякденний вигляд, який підходить для твоєї події без надмірної урочистості. Їх нейтральний відтінок відповідає твоїй палітрі кольорів, а їх прямий крій ніжно підтримує твою талію, забезпечуючи комфорт у русі протягом вечора.",
+  "4": "Балетки обрані за їх стійкість і легкість — вони дозволяють тобі граційно пересуватися по ресторанній підлозі без зайвої висоти чи формальності, яка могла б не гармоніювати з фраком твого супутника.",
+  "5": "Твоя сумка на поясі включена тому, що вона пропонує практичність разом зі стилем. Її яскравий червоний колір додає ледь помітну родзинку до приглушених тонів твого одягу, зберігаючи тебе впевненою та візуально цікавою протягом вечора.",
+  "6": "Ця сукня-комбінація тут тому, що ти попросила образ одного кольору, який поважає твоє відновлення і уникає навмисного стилістичного дисонансу. Її м’який тон гармоніює з літнім вечором, а її чиста лінія пропонує спокійну елегантність на вишуканому заході.",
+  "7": "Ти обрала ніжний і продуманий образ для твого вечора в благодійній галереї. Нюд-сукня-комбінація з простим вирізом надає тиху гідність, яка поважає твоє відновлення, уникаючи будь-якого нав’язаного стилістичного конфлікту з фраком твого партнера. Темні джинси підкреслюють образ стриманою елегантністю, а балетки забезпечують тобі свободу пересування рестораном без шкоди для комфорту. Відповідний бежевий берет і пояс додають ледь помітне тепло до твого ансамблю, ніжно поєднуючи кольорову гаму на фоні літнього вечірнього світла.",
+  "8": "Злегка заправ сукню-комбінацію в талію, щоб підкреслити природний силует без стиснення.",
+  "9": "Відчуй м’які лінії образу — дозволь своїй поставі бути розслабленою, але впевненою, даючи берету легко лежати на голові.",
+  "10": "Берет класичний з кашеміром бежевий — Додала бежевий кашеміровий берет для текстури та деталі головного убору, пом’якшуючи образ і забезпечуючи тепло під час відновлення.",
+  "11": "Прямі джинси синього кольору зі шкіряним жакроном — Додала темно-сині джинси як альтернативну деталь низу для забезпечення універсальності та комфорту під час відновлення.",
+  "12": "Балетки з натуральної шкіри, коричневі — Замінила чорні мюлі на коричневі балетки, щоб додати ніжності, тепла і романтичного акценту, який підходить для відновлення.",
+  "13": "Балетки з натуральної шкіри, коричневі — Замінила графітові штани на коричневі балетки, щоб ввести м’яку текстуру шкіри, забезпечити стійкість до осінньої прохолоди і відповідати романтичному стилю.",
+  "14": "Прямі джинси синього кольору зі шкіряним жакроном — Додала темно-сині джинси як альтернативну деталь низу, щоб забезпечити структуру та комфорт, дозволяючи образу перейти від формальної події до одягу для відновлення без втрати стилю.",
+  "15": "Балетки з натуральної шкіри, коричневі — Замінила коричневі балетки на лофери, щоб підвищити рівень формальності і забезпечити кращу стійкість взуття до підлоги ресторану та осінньої погоди.",
+  "16": "Прямі джинси синього кольору зі шкіряним жакроном — Додала темно-сині джинси, щоб переконатися, що образ відповідає мінімальній кількості предметів і забезпечує надійний шар для відновлення, хоча й залишила як додаткову універсальність.",
+  "17": "Балетки з натуральної шкіри, коричневі — Замінила коричневі балетки на лофери, щоб підвищити рівень формальності до рівня ресторанної благодійної події і покращити стійкість до погодних умов."
+}
+```
