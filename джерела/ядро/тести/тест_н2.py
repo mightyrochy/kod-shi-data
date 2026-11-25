@@ -1,5 +1,6 @@
 """Договори Ч2–Ч7. Дані каталогу читаються без моделі, відповіді тестів підставлені."""
 from collections import Counter
+from dataclasses import replace
 from pathlib import Path
 from shutil import copyfile
 from tempfile import TemporaryDirectory
@@ -8,6 +9,7 @@ from unittest.mock import patch
 import json
 
 from ядро import картка, знання, пул, протокол, річ, розбір, руки, суд, запит
+from ядро.перекладач_паспорта import з_входу, підготувати_портрет_і_палітру
 from ядро.поняття import Етап, НазванаРіч, Ситуація, Збій, Факт, НЕВІДОМО, НЕ_ПЕВНИЙ
 from ядро.тести import обвязка
 
@@ -349,6 +351,100 @@ class ДоговірН2(TestCase):
         self.assertEqual(день["stages"][1]["place"], "restaurant")
         self.assertEqual(день["weekday"]["value"], "saturday")
         self.assertEqual(день["walk_min"]["value"], 20)
+
+    def test_ч4_джерельні_ролі_та_нейтральна_основа(self):
+        колір = {"шкіра": ["#dbab95"], "волосся": ["#473227"], "очі": "#625448"}
+        основа = {"база": "графіт", "база_назва": "графіт", "база_hex": "#4b4b4b", "база_тип": "нейтраль"}
+
+        def дріт(вибір, риси=колір):
+            вхід = {"профіль": {"колір": риси, "палітра": {
+                "схема": "нейтрали+акцент", "вибір_кольору": вибір}}}
+            риси, план = підготувати_портрет_і_палітру(вхід)
+            self.assertFalse(any(в.get("обрана_основа") for в in план["вікна"]))
+            день = з_входу(вхід, план_палітри=план, риси_портрета=риси)
+            з = запит.запит("складання", self.пул, день, {})
+            return json.loads(з.модель["messages"][0]["content"])["person"]["palette"]["value"]
+
+        повна = дріт(dict(основа, база_стилістки=True))
+        self.assertEqual({к: повна["slot_roles"][к] for к in ("shoes", "bag")},
+                         {"shoes": "accent", "bag": "accent"})
+        self.assertEqual(повна["kind_colours"]["shoes"]["area"], [5, 15])
+        self.assertEqual(повна["kind_colours"]["shoes"]["shares_role_with"], ["bag"])
+        self.assertEqual(повна["colour_kinds"], ["shoes", "bag", "belt", "headwear", "scarf", "jewelry"])
+        self.assertEqual(повна["base"], {"colour": "graphite #4b4b4b", "chosen_by": "stylist"})
+        self.assertEqual(дріт(основа)["base"], {"colour": "graphite #4b4b4b", "chosen_by": "unknown"})
+        self.assertNotIn("base", дріт(None))
+        self.assertEqual(дріт(основа, {}), {"base": {"colour": "graphite #4b4b4b", "chosen_by": "unknown"}})
+
+    def test_ч4_комір_і_незалежні_опції_шарфа(self):
+        шарф_з_коміром = None
+        for ознака in ("ревер", None, "без_коміра"):
+            with self.subTest(ознака=ознака):
+                верхні = {"комір": ознака} if ознака else {}
+                каталог = [*_складений_каталог(),
+                           _запис("coat", "верхній_шар", тип="пальто", ознаки_зі_слів={"верхні": верхні}),
+                           _запис("scarf", "шарф", тип="шарф_без_уточнення")]
+                self.пул = пул.зібрати(self.день, 1, 37, каталог)
+                self.образ, = розбір.прочитати(
+                    _збір(self.пул, "dress", "boots", "coat", "scarf"), "складання", self.пул)
+                coat, scarf = (_облік(self.пул)[к] for к in ("coat", "scarf"))
+                факт = self.пул.записи[coat].поля["комір"]
+                self.assertEqual((факт.значення, факт.джерело),
+                                 (ознака or НЕВІДОМО, "крамниця" if ознака else None))
+                with patch.object(знання, "заяви", return_value=()):
+                    self.вироки = {self.образ.ід: суд.судити(self.образ, self.день, self.пул, {})}
+                варіанти = {x["item"]: [з["code"] for з in x["statements"]]
+                            for x in self._дріт("опис")["ways_to_wear"]}
+                self.assertIn("scarf_size_unknown", варіанти[scarf])
+                if ознака == "ревер":
+                    self.assertEqual(варіанти[coat], ["raise_collar_free_state", "raise_collar"])
+                    шарф_з_коміром = варіанти[scarf]
+                else:
+                    self.assertNotIn(coat, варіанти)
+                    self.assertEqual(варіанти[scarf], шарф_з_коміром)
+        готовий = річ.читати(_запис("coat", "верхній_шар", комір="без_коміра"))
+        self.assertEqual(готовий.поля["комір"].з_чого, ("комір",))
+
+    def test_ч4_збіг_вироку_і_стиснення_ремонту(self):
+        о = replace(self.образ, ід="o2", номер="o2")
+        адреса = self.адреси["dress"]
+        знахідка = ("K-KOH-08", "near_white_at_guest_wedding", {}, (адреса,), ["Same repair"], "гейт")
+        with patch.object(знання, "заяви", return_value=[знахідка]):
+            вироки = {і.ід: суд.судити(і, self.день, self.пул, {}) for і in (self.образ, о)}
+        з = запит.запит("ремонт", self.пул, self.день, {}, образи=(self.образ, о), вироки=вироки)
+        дріт = json.loads(з.модель["messages"][0]["content"])
+        self.assertTrue(дріт["task"]["statement_codes"]["near_white_at_guest_wedding"])
+        self.assertEqual(list(дріт["fixes"].values()), [["Same repair"]])
+        for образ in дріт["verdict"]:
+            запис, = образ["findings"]
+            self.assertEqual(дріт["fixes"][запис["repair_ref"]], ["Same repair"])
+            self.assertEqual(запис["items"], [адреса])
+            self.assertEqual({**дріт["set"]["shared_checklist"], **образ["checklist"]},
+                             вироки[образ["id"]].чекліст)
+        вироки[о.ід] = replace(вироки[о.ід], склад=())
+        збій = запит.запит("ремонт", self.пул, self.день, {}, образи=(о,), вироки=вироки)
+        self.assertEqual((збій.вид, збій.поле), ("схема", "verdict"))
+
+    def test_ч4_профіль_і_відсів_до_черги(self):
+        профіль = знання.профіль_суду({"мірки": {"зріст": 168, "обхвати": {
+            "плечі": 95, "груди": 91, "талія": 72, "стегна": 98}}})
+        день = з_входу({"паспорт": {"намір": "conventional"}})
+        з = запит.запит("складання", self.пул, день, профіль)
+        дріт = json.loads(з.модель["messages"][0]["content"])
+        тіло = дріт["person"]["body"]
+        self.assertEqual(тіло["height_cm"], 168)
+        вузол = next(р for р in тіло["statements"] if р["code"] == "body_knot")
+        for код in {"body_knot", *вузол["values"]["shared"], *вузол["values"]["own"]}:
+            self.assertTrue(дріт["task"]["statement_codes"][код])
+        звіт = []
+        обмін = руки._обмін("ремонт", self.пул, self.день, {}, {"вікно": 1_000}, звіт,
+                            образи=(self.образ,), вироки=self.вироки)
+        with self.assertRaises(StopIteration) as кінець:
+            next(обмін)
+        збій, номери, фото = кінець.exception.value
+        self.assertEqual((номери, фото), ((), {}))
+        self.assertEqual((збій.вид, збій.дані["stage"]), ("вікно_моделі", "ремонт"))
+        self.assertEqual(збій.дані["limit_tokens"], 1_000)
 
     def test_річ_поза_пулом_збій_з_полем(self):
         """Т21. Невідома адреса не губиться з розібраного складу."""
