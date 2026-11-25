@@ -1,0 +1,64 @@
+── ПРОМПТ (7661 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: cocktail_dress · about it: text н=1
+2 — kind: belt · about it: text н=2
+3 — kind: pumps · about it: text н=3
+4 — kind: coat · about it: text н=4
+5 — kind: bag_generic · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This satin slip dress is exactly what you asked for to wear on this occasion; its gentle drape and lace details offer the soft elegance ideal for a social celebration.",
+"2": "The wide silk belt cinches your waist to create a polished, structured line that elevates the slip dress from loungewear-ready to dinner-appropriate sophistication.",
+"3": "These purple pumps bring height and a sleek finish that match the dress's refined tone without overpowering it, perfect for an evening out.",
+"4": "The camel coat provides necessary warmth as you enter or leave the venue, while its raised collar adds a vertical element that sharpens your overall silhouette near the face.",
+"5": "This yellow crossbody bag serves as a cheerful accent to your neutral palette; its compact size lets you carry essentials hands-free while adding a bright, playful touch to your ensemble.",
+"6": "You asked for the cocktail dress because you want to wear it for your restaurant dinner. This satin slip dress brings an elegant, soft elegance that fits a social gathering perfectly, while the wide silk belt defines your waistline and gives your silhouette a clean, sophisticated line. The deep purple pumps match this refined feel without competing with the dress, and the camel coat provides warmth as you arrive or step outside, its raised collar adding a neat vertical touch near your face. The yellow crossbody bag offers a pop of cheerful color that brightens your ensemble against the darker tones of the evening.",
+"7": "Wear the coat open over the dress to layer effortlessly for warmth and style.",
+"8": "Carry the crossbody bag across your torso so you can keep both hands free while enjoying dinner.",
+"9": "Пасок Базовий бежевий — I kept this beige belt as the 'anchor' mentioned in your notes, using its earthy tone to ground the warm chocolate fabric while avoiding a full neutral wash.",
+"10": "Туфлі-човники жіночі — I replaced the heavy yellow shoes with burgundy pumps to fix the formality level and accent role, ensuring the outfit meets the 'smart' target of the occasion.",
+"11": "Жіноче вовняне пальто кемел з англійським коміром, двобортне Stella Polare — I added a long white coat as an outer layer; this provides the missing volume and structure required for the maxi silhouette, keeping the look stylish yet appropriate for a restaurant setting.",
+"12": "Жіноча сумка Welfare жовта — The asymmetry interest source from the yellow bag is a deliberate choice to break the symmetry of the solid chocolate dress, adding a modern touch appropriate for an evening dinner.",
+"13": "Коктейльна сукня у білизняному стилі, Туфлі-човники жіночі, Жіноче вовняне пальто кемел з англійським коміром, двобортне Stella Polare — Merging the smart level of the coat and shoes with the formal target of the occasion is the right posture; it ensures you look polished enough for the restaurant setting without overdoing it.",
+"14": "Туфлі-човники жіночі — I added burgundy stiletto pumps to complete the outfit; they bridge the gap between the navy suit and red accents, ensuring the silhouette stands tall under artificial light.",
+"15": "Туфлі-човники жіночі — I added these burgundy pumps immediately; they are essential to avoid the 'outfit_without_shoes' blocker and ensure the red color remains vibrant under artificial light."
+}
+
+── ВІДПОВІДЬ (3335 симв., 22.0 с, HTTP 200) ──
+```json
+{
+  "1": "Ця атласна сукня-комбінація саме те, що ти просила для цієї нагоди; її ніжний спад і мереживні деталі дарують м’яку елегантність, яка ідеальна для соціального святкування.",
+  "2": "Широкий шовковий пасок підкреслює твою талію, створюючи витончений силует, який перетворює сукню-комбінацію з домашнього одягу на елегантний образ для вечері.",
+  "3": "Ці фіолетові туфлі-човники додають висоти й стильний акцент, що гармоніює з вишуканим тоном сукні без перевантаження образу — ідеально підійдуть для вечора.",
+  "4": "Кемеловий тренч забезпечує необхідне тепло при вході чи виході з закладу, а його комір-стійка додає вертикальний елемент, який робить твій силует більш струнким біля обличчя.",
+  "5": "Ця жовта сумка через плече слугуватиме яскравим акцентом до твоєї нейтральної палітри; її компактний розмір дозволяє носити необхідні речі, не займаючи рук, і додає образу світлий та грайливий штрих.",
+  "6": "Ти попросила коктейльну сукню для вечері в ресторані. Ця атласна сукня-комбінація дарує елегантну й ніжну вишуканість, яка чудово підходить для соціального заходу, а широкий шовковий пасок окреслює твою талію і надає силуету чистий та солідний вигляд. Глибокі фіолетові туфлі-човники гармонійно доповнюють цей вишуканий образ без зайвої конкуренції з сукнею, а кемеловий тренч забезпечує тепло при твоєму прибутті чи на вулиці, його комір-стійка додає акуратний вертикальний акцент біля обличчя. Жовта сумка через плече пропонує яскравий колір, який освіжає твій образ у поєднанні з темнішими тонами вечора.",
+  "7": "Одягни тренч розстебнутим поверх сукні для легкого багатошаровості й стилю.",
+  "8": "Носи сумку через плече так, щоб ти могла тримати обидві руки вільними під час вечері.",
+  "9": "Пасок Базовий бежевий — Я залишила цей бежевий пасок як «якор», згаданий у твоїх нотатках, використовуючи його землистий тон для гармонії з теплим шоколадним кольором тканини і уникаючи повного нейтрального ефекту.",
+  "10": "Туфлі-човники жіночі — Я замінила жовті туфлі на бордові чоботи, щоб відрегулювати рівень формальності та роль акценту, забезпечивши відповідність образу «розумному» стилю цієї події.",
+  "11": "Жіноче вовняне пальто кемел з англійським коміром, двобортне Stella Polare — Я додала довге біле пальто як верхній шар; це забезпечує відсутню об’ємність і структуру для максі-силуету, зберігаючи образ стильним та доречним у ресторані.",
+  "12": "Жіноча сумка Welfare жовта — Асиметрія інтересу походить від жовтої сумки; це свідомий вибір, щоб порушити симетричність суцільної шоколадної сукні і додати сучасний штрих, який підійде для вечірньої вечері.",
+  "13": "Коктейльна сукня у білизняному стилі, Туфлі-човники жіночі, Жіноче вовняне пальто кемел з англійським коміром, двобортне Stella Polare — Поєднання формального рівня пальта й туфель із цільовою метою події є правильним рішенням; це гарантує, що ти виглядаєш достатньо охайно для ресторану без надмірностей.",
+  "14": "Туфлі-човники жіночі — Я додала бордові шпильки на підборах, щоб завершити образ; вони з’єднують темно-синій костюм і червоні акценти, забезпечуючи стрункий силует у штучному світлі.",
+  "15": "Туфлі-човники жіночі — Я одразу додала ці бордові туфлі; вони необхідні для того, щоб уникнути блокування «образ без взуття» і забезпечити збереження яскравості червоного кольору під штучним світлом."
+}
+```
