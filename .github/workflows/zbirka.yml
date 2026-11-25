@@ -37,9 +37,10 @@ permissions:
   contents: read
 
 # Виклик самозлиття — своя черга: у черзі `main` новий запуск витіснив би очікувану збірку push, а легкий шлях виклику
-# не збирає її джерел.
+# не збирає її джерел. Повний виклик після коду (`kod`) — своя група: легкий виклик документа не витісняє повну збірку
+# (черга групи тримає один запуск і одного очікуваного; очікуваний новіший бере вже весь main злитого).
 concurrency:
-  group: збірка-показу-${{ github.event_name == 'pull_request' && github.ref || inputs.pislia && 'dokument' || 'main' }}
+  group: збірка-показу-${{ github.event_name == 'pull_request' && github.ref || inputs.pislia && (inputs.kod && 'kod' || 'dokument') || 'main' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -545,6 +546,7 @@ jobs:
         run: |
           node аудит/проби/перевірити_храповик.js
           node аудит/проби/перевірити_нову_базу.js
+          node аудит/проби/перевірити_живий_після_злиття.js
       - name: записані сцени через продукт
         env:
           NODE_PATH: джерела/node_modules
@@ -553,7 +555,7 @@ jobs:
         run: |
           node аудит/проби/приймання_записів.js "${RUNNER_TEMP}/pokaz" "${RUNNER_TEMP}/pyodide" \
             "${RUNNER_TEMP}/replay" ${{ matrix.chastyna }} 2
-          GITHUB_TOKEN="${{ github.event_name == 'push' && github.token || '' }}" node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/replay"
+          ZLYTTIA_SHA="${{ inputs.pislia }}" GITHUB_TOKEN="${{ (github.event_name == 'push' || inputs.pislia) && github.token || '' }}" node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/replay"
       - name: докази всіх сцен, зокрема невдалих
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

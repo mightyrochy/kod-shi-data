@@ -931,6 +931,10 @@ class МіткаБезпека(unittest.TestCase):
         self.assertIn('[ -n "${PISLIA}" ] && [ "${KOD}" = true ]', з)
         self.assertEqual(з.count("uses: actions/checkout@"), з.count("ref: ${{ inputs.pislia }}"),
                          "кожен checkout збірки бере ref злитого коміту (порожній — типовий)")
+        self.assertIn("inputs.pislia && (inputs.kod && 'kod' || 'dokument') || 'main'", з,
+                      "повна збірка після коду — своя група: легкий виклик документа її не витісняє")
+        self.assertIn('ZLYTTIA_SHA="${{ inputs.pislia }}"', з, "погодження живого прогону під викликом")
+        self.assertIn("node аудит/проби/перевірити_живий_після_злиття.js", з)
         бази = [р for р in з.splitlines() if "BASE_REF: ${{" in р]
         self.assertTrue(бази)
         self.assertTrue(all(р.endswith("github.event.before || inputs.pered }}") for р in бази), бази)
