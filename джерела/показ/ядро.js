@@ -57,6 +57,23 @@ function карткаЯдраНаЕкранП(кя, сід){
 }
 
 /* Відповідь моделі ядру: текст — або збій модулем `збій_моделі.js` (вид і секунди), а не тиша й не виняток. */
+function локальнаМежаЯдраП(e, з){
+  const вікно = e?.вікно, вміщення = e?.вміщення;
+  if (!вікно && !вміщення) return null;
+  const стеля = з.модель?.max_tokens ?? МАКС_ТОКЕНІВ_П;
+  const дані = {...з.розмір, stage: з.вид, photo_count: (з.фото || []).length,
+    page_max_tokens: стеля, response_reserved_tokens: з.розмір?.response_reserved_tokens ?? стеля};
+  if (вікно) {
+    return {вид: 'вікно_моделі', частина: 'запит', поле: 'window', дані: {...дані,
+      limit_source: 'page_model_context', limit_tokens: вікно.вікно,
+      local_input_tokens_estimate: вікно.оцінка_т, local_guard_reserved_tokens: вікно.стеля_виводу,
+      local_total_tokens_estimate: вікно.оцінка_т + вікно.стеля_виводу, window_report: вікно}};
+  }
+  return {вид: 'межа_транспорту', частина: 'запит', поле: 'messages', дані: {...дані,
+    transport_limit_source: 'page_messages_json_utf16', transport_limit_utf16_units: вміщення.межа,
+    messages_utf16_units: вміщення.стало, transport_report: вміщення}};
+}
+
 async function відповідьМоделіЯдруП(з){
   const т0 = Date.now();
   try{
@@ -75,6 +92,8 @@ async function відповідьМоделіЯдруП(з){
     }
     return {текст: блокиВТекст(відповідь), фото: фото.map(ф => ф.n)};
   }catch(e){
+    const локальний = локальнаМежаЯдраП(e, з);
+    if (локальний) return {збій: {...локальний, що: e.message}};
     const зб = збійМоделіЗВинятку(e);
     return {збій: {вид: (зб && зб.вид) || 'інше', секунди: Math.round((Date.now() - т0) / 1000),
                    що: String((зб && зб.message) || зб).slice(0, 300)}};
