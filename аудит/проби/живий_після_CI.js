@@ -25,11 +25,33 @@ async function погодженняПушу(подія) {
   }
 }
 
+function перелікЗлитих(текст) {
+  let список;
+  try { список = JSON.parse(текст); } catch { список = null; }
+  if (!Array.isArray(список) || !список.length || !список.every(з => Number.isInteger(з?.номер) &&
+      /^[0-9a-f]{40}$/.test(з?.коміт || '')))
+    throw new Error('Перелік злитих PR запуску не розібрано: ' + текст);
+  return список;
+}
+
+async function погодженняЗлитих(подія) {
+  const без = [];
+  for (const {номер, коміт} of подія.злиті)
+    if (!await погодженняПушу({ref: 'refs/heads/main', after: коміт, repository: подія.repository})) без.push('#' + номер);
+  return без;
+}
+
 async function перевірити(тека, подія) {
   const підсумок = JSON.parse(fs.readFileSync(path.join(тека, 'підсумок.json'), 'utf8'));
   if (підсумок.some(р => р.стан === 'регрес')) throw new Error('Приймання виявило регрес');
   // «Застарів у main» уже доведено порівнювачем: погодження потрібне лише для зміни голови.
   if (!підсумок.some(р => р.стан === 'запис застарів')) return;
+  if (подія?.злиті) {
+    const без = await погодженняЗлитих(подія);
+    if (без.length)
+      throw new Error('Запис застарів: нема рядка ЖИВИЙ ПІСЛЯ: <сцена> — <питання> у злитих PR ' + без.join(', '));
+    return;
+  }
   const єПогодження = подія?.pull_request ? погоджено(подія.pull_request.body) : await погодженняПушу(подія);
   if (!єПогодження)
     throw new Error('Запис застарів: потрібний рядок ЖИВИЙ ПІСЛЯ: <сцена> — <питання> в описі PR або погодження для голови push');
@@ -39,10 +61,13 @@ if (require.main === module) {
   (async () => {
     let подія = process.env.GITHUB_EVENT_PATH
       ? JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')) : null;
-    // Виклик збірки після злиття самозлиття (`workflow_call` від `workflow_run`): подія — не push, коміт злиття
-    // передано явно (`ZLYTTIA_SHA`); погодження беруть із злитого PR цього коміту так само, як для push у main.
-    if (/^[0-9a-f]{40}$/.test(process.env.ZLYTTIA_SHA || '') && подія?.workflow_run && !подія.pull_request)
-      подія = {ref: 'refs/heads/main', after: process.env.ZLYTTIA_SHA, repository: подія.repository};
+    // Виклик збірки після злиття самозлиття (`workflow_call` від `workflow_run`): події PR чи push тут нема, а
+    // злито могло бути кілька PR; перелік злитих цим запуском ([{номер, коміт}]) — у `ZLYTTIA_ZLYTI`, і погодження
+    // потрібне кожному (власник бачить рядок ЖИВИЙ ПІСЛЯ кожного злитого PR, а не лише останнього).
+    // Перелік заданий — він єдине джерело за будь-якої події виклику (`workflow_run`, `pull_request_target` з міткою):
+    // опис PR події — не погодження злитих, а мітка B не прикриває злите A.
+    if (process.env.ZLYTTIA_ZLYTI)
+      подія = {злиті: перелікЗлитих(process.env.ZLYTTIA_ZLYTI), repository: подія.repository};
     await перевірити(process.argv[2], подія);
     console.log('✔ приймання та погодження живого прогону узгоджені');
   })().catch(помилка => { console.error(помилка.message); process.exitCode = 1; });
