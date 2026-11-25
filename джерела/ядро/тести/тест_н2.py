@@ -339,8 +339,8 @@ class ПередачаСуду(TestCase):
     def test_гілки_кольору_та_пункти_не_ділять_стан_за_порядком(self):
         import суд_від_моделі as старий_суд
 
-        def образи(одяг, сумка, взуття=40, *, відомий_колір_взуття=True):
-            склад = [(і, слот, тип, 40) for і, слот, тип in одяг]
+        def образи(одяг, сумка, взуття=40, *, світлота_низу=40, відомий_колір_взуття=True):
+            склад = [(і, слот, тип, світлота_низу if слот == "низ" else 40) for і, слот, тип in одяг]
             склад += [("shoes", "взуття", "лофери", взуття), ("bag", "сумка", "сумка", сумка)]
             рядки = []
             for і, слот, тип, світлота in склад:
@@ -364,24 +364,37 @@ class ПередачаСуду(TestCase):
         звичайно = знання.ЧЕКЛІСТИ
         переставлено = {група: dict(reversed(tuple(пункти.items())))
                        for група, пункти in reversed(tuple(звичайно.items()))}
-        for описи in (звичайно, переставлено):
-            with patch.object(знання, "ЧЕКЛІСТИ", описи):
+        правила = знання.ПРАВИЛА
+        for описи, порядок in ((звичайно, правила), (переставлено, dict(reversed(tuple(правила.items()))))):
+            with patch.object(знання, "ЧЕКЛІСТИ", описи), patch.object(знання, "ПРАВИЛА", порядок):
                 день, п, о, в = образи(сукня, "red")
                 знайдені, _ = self._читачі(день, п, о, в, "K-COL-05")
                 self.assertEqual([(з["код"], з["речі"]) for з in знайдені], [("accent_orphan", ("bag",))])
                 self.assertEqual(в.чекліст["excess.single_focus"], {"стан": "суджено", "результат": 1})
+                self.assertEqual(в.чекліст["excess.accent_echo"], {"стан": "суджено", "результат": 1})
                 в = образи(сукня, 40)[-1]
                 self.assertFalse(any(з.код == "accent_orphan" for з in в.заяви))
                 в = образи(сукня, "red", відомий_колір_взуття=False)[-1]
+                self.assertEqual(в.чекліст["excess.accent_echo"],
+                                 {"стан": "немає_входу", "поле": "колір (shoes)"})
                 self.assertFalse(any(з.код == "accent_orphan" for з in в.заяви))
                 день, п, о, в = образи(пара, 40)
                 знайдені, _ = self._читачі(день, п, о, в, "K-COL-01")
                 self.assertEqual([з["код"] for з in знайдені], ["one_lightness_level_reads_flat"])
                 self.assertEqual(set(знайдені[0]["речі"]), {"top", "bottom"})
-                в = образи(пара, 85)[-1]
-                self.assertEqual(в.чекліст["excess.lightness_steps"]["стан"], "немає_входу")
+                self.assertEqual(в.чекліст["excess.lightness_steps"], {"стан": "суджено", "результат": 1})
+                в = образи(пара, 40, світлота_низу=85)[-1]
+                self.assertEqual(в.чекліст["excess.lightness_steps"], {"стан": "суджено", "результат": 0})
                 self.assertFalse(any(з.правило == "K-COL-01" for з in в.заяви))
-                в = образи(сукня, "red", "red")[-1]
+                в = образи(пара, 85)[-1]
+                self.assertEqual(в.чекліст["excess.lightness_steps"],
+                                 {"стан": "немає_входу", "поле": "джерело_площі"})
+                self.assertFalse(any(з.правило == "K-COL-01" for з in в.заяви))
+                день, п, о, в = образи(сукня, "red", "red")
+                знайдені, _ = self._читачі(день, п, о, в, "K-COL-05")
+                self.assertEqual([(з["код"], set(з["речі"])) for з in знайдені],
+                                 [("accent_echoed", {"shoes", "bag"})])
+                self.assertEqual(в.чекліст["excess.accent_echo"], {"стан": "суджено", "результат": 1})
                 self.assertEqual(в.чекліст["accessories.accent_surfaces_differ"],
                                  {"стан": "немає_входу", "поле": "заявлена_колона"})
                 self.assertFalse(any(з.правило == "K-ACC-10" for з in в.заяви))
