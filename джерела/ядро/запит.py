@@ -12,8 +12,6 @@ from .пул import ДОБІР, СЛОТИ
 НАРЯД = None
 with Path(__file__).with_name("дані").joinpath("запити.json").open(encoding="utf-8") as _файл:
     _ЗАДАЧІ = json.load(_файл)
-with Path(__file__).with_name("дані").joinpath("вікно.json").open(encoding="utf-8") as _файл:
-    _МЕЖІ = json.load(_файл)
 
 _ПОЛЯ_ДНЯ = {
     "подія": "occasion", "роль": "role", "місяць": "month", "день_тижня": "weekday",
@@ -567,17 +565,21 @@ def запит(вид, пул, ситуація, профіль, *, образи
     оцінити = знання.палітрові_знання().оцінити_текст_ядра
     фото_токени = sum(ф["токени"] for ф in фото)
     підписи = оцінити("\n".join("Catalogue photo for item " + ф["n"] for ф in фото))
-    джерело = "model_context" if вікно is not None else "legacy_assembly_offline_max"
-    межа = вікно if вікно is not None else _МЕЖІ[джерело]["limit_tokens"]
+    # Вікно — лише з налаштування рушія, з яким іде виклик (паспорт Е2-вікно, «Клас місць», пп.1–2). Без нього вікна
+    # не вигадуємо: стала 25 334 з офлайн-оцінки старого складання (у ній уже сидів резерв відповіді 2 800, і ядро
+    # віднімало зверху ще стелю й надбавку каналу) різала запит будь-якого каналу (приймання Н2 на 7f5e9d88; рішення
+    # менеджера 25.11). Тоді міряється лише межа транспорту, а `limit_source` у розмірі каже, що вікна рушій не дав.
+    джерело = "model_context" if вікно is not None else "no_engine_window"
+    межа = вікно
     резерв_виходу = відповідь + надбавка
-    ліміт = межа - резерв_виходу - фото_токени - підписи
+    ліміт = None if межа is None else межа - резерв_виходу - фото_токени - підписи
     закріплені = set(склад)
     for слот, група in групи.items():
         if повний_пул and СЛОТИ[слот] in пул.обовʼязкові and закріплені.isdisjoint(група):
             закріплені.add(група[0])
     def перевищено(текст):
         межі = []
-        if оцінити(текст) > ліміт:
+        if ліміт is not None and оцінити(текст) > ліміт:
             межі.append("token_estimate")
         if транспорт is not None and _розмір_повідомлень(текст, фото) > транспорт:
             межі.append("transport_utf16")
@@ -595,10 +597,11 @@ def запит(вид, пул, ситуація, профіль, *, образи
               "channel_output_overhead_tokens": надбавка, "response_reserved_tokens": резерв_виходу,
               "messages_utf16_units": симв, "transport_limit_utf16_units": транспорт,
               "transport_limit_source": "page_messages_json_utf16" if транспорт is not None else None}
-    if оцінка > ліміт or (транспорт is not None and симв > транспорт):
+    понад_вікно = ліміт is not None and оцінка > ліміт
+    if понад_вікно or (транспорт is not None and симв > транспорт):
         дані = dict(розмір, stage=вид, exceeded_limits=брак,
                     mandatory_total_tokens_estimate=оцінка + підписи + фото_токени + резерв_виходу)
-        вид_збою, поле = ("вікно_моделі", "window") if оцінка > ліміт else ("межа_транспорту", "messages")
+        вид_збою, поле = ("вікно_моделі", "window") if понад_вікно else ("межа_транспорту", "messages")
         return Збій(вид_збою, "запит", поле, "Required request exceeds the input limit",
                     спроба=спроба, дані=дані)
     if брак:
