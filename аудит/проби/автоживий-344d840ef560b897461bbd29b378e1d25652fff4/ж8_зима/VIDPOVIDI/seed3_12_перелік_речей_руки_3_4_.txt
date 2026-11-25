@@ -1,0 +1,44 @@
+── ПРОМПТ (2266 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A structured wool-blend blazer, tailored fit with a defined waistline, charcoal grey (#2F3538), heavy felt fabric.\nHigh-rise wide-leg trousers in dark wash denim, straight cut from hip to ankle, #1a1c20, sturdy cotton twill.\nA crisp poplin button-down shirt, classic collar and button front, cream white (#FAFBF9), smooth cotton.\nLoafers with a slight platform heel, rounded toe design, #756D63, polished leather with shearling-lined interior for frost protection.\nThin silk scarf, rectangular shape, burnt orange (#C0481B), lightweight chiffon to add warmth without bulk.\n\nThis outfit works perfectly for a snowy autumn morning at the office by balancing professional polish with essential warmth. The wool blazer and insulated loafers shield against the frost and road salt while maintaining a neat business appearance suitable for walking to work. The cream shirt adds a soft contrast to the dark charcoal and navy tones, drawing attention to her warm skin and eye color without overwhelming the silhouette."}
+
+── ВІДПОВІДЬ (994 симв., 4.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "structured wool-blend with tailored fit and defined waistline",
+      "slot": "outerwear",
+      "color_hex": "#2F3538",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "high-rise wide-leg straight cut from hip to ankle",
+      "slot": "bottom",
+      "color_hex": "#1a1c20",
+      "worn": true
+    },
+    {
+      "name": "shirt",
+      "details": "crisp poplin button-down with classic collar and button front",
+      "slot": "top",
+      "color_hex": "#FAFBF9",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "slight platform heel, rounded toe, polished leather with shearling-lined interior",
+      "slot": "shoes",
+      "color_hex": "#756D63",
+      "worn": true
+    },
+    {
+      "name": "scarf",
+      "details": "thin silk rectangular shape lightweight chiffon",
+      "slot": "scarf",
+      "color_hex": "#C0481B",
+      "worn": true
+    }
+  ]
+}

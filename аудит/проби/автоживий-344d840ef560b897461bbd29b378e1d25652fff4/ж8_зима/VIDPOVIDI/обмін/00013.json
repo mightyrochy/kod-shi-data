@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined merino wool knit in a charcoal heather tone with subtle tonal ribbing, knee-length tunic cut.\\nTailored wide-leg trousers in matching dark wool crepe, mid-calf length with a clean flat front.\\nPointed-toe leather loafers in black nubuck.\\nMinimalist gold-tone stud earrings and a slim silver watch on a leather strap.\\n\\nThis outfit respects the \\\"frost\\\" weather band by using warm, thick wools that provide insulation without bulk, suitable for a frosty autumn morning commute. The color palette of charcoal and black ensures a polished, professional appearance appropriate for an office environment during daylight hours. Soft textures like the ribbed knit add comfort and visual interest while maintaining the requested \\\"neat\\\" formality level without requiring an outer layer that might feel too heavy or restrictive for walking in snow.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"merino wool knit tunic\\\",\\n\\\"details\\\": \\\"charcoal heather tone with subtle tonal ribbing, knee-length, refined knit\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#364045\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"wide-leg trousers\\\",\\n\\\"details\\\": \\\"dark wool crepe, tailored flat front, mid-calf length\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#2b2b2b\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"leather loafers\\\",\\n\\\"details\\\": \\\"pointed-toe, black nubuck\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#000000\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"stud earrings\\\",\\n\\\"details\\\": \\\"minimalist gold-tone\\\",\\n\\\"slot\\\": \\\"earrings\\\",\\n\\\"color_hex\\\": \\\"#FFD700\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"watch\\\",\\n\\\"details\\\": \\\"slim silver face on a leather strap\\\",\\n\\\"slot\\\": \\\"watch\\\",\\n\\\"color_hex\\\": \\\"#C0C0C0\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":526,\"output_tokens\":287},\"stop_reason\":\"end_turn\"}"
+ }
+}
