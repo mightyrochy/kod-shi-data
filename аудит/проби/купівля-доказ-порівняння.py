@@ -82,18 +82,18 @@ class ДоведенаПеревага(unittest.TestCase):
             self.assertEqual(в["порядок"], ["first", "other"])
             self.assertEqual(коди(в), [("buy_first", ["first"])])
             self.assertEqual(значення(в, "buy_first"),
-                             {"reasons": [], "proven": ["failed_checks"], "then": ["other"]})
+                             {"reasons": [], "proven_over": {"other": ["failed_checks"]}, "then": ["other"]})
             self.assertEqual(вхід, до)
         self.assertEqual(перша["повідомлення"]["statements"], [опора])  # окремий факт лишився у вердикті
 
     def test_лише_названий_ризик(self):
         в = суд.вибір({"a": вердикт(), "b": вердикт(ризик=("midi_proportion_decided_by_shoes",))})
-        self.assertEqual(значення(в, "buy_first")["proven"], ["named_risks"])
+        self.assertEqual(значення(в, "buy_first")["proven_over"], {"b": ["named_risks"]})
 
     def test_рівні_суджених_речей(self):
         в = суд.вибір({"a": вердикт(рівень="личить"), "b": вердикт(рівень="з умовою")})
         self.assertEqual(в["порядок"], ["a", "b"])
-        self.assertEqual(значення(в, "buy_first")["proven"], ["level"])
+        self.assertEqual(значення(в, "buy_first")["proven_over"], {"b": ["level"]})
 
     def test_рівень_невідомо_не_доводить(self):
         в = суд.вибір({"a": вердикт(рівень="личить"), "b": вердикт(рівень="невідомо")})
@@ -107,27 +107,50 @@ class ДоведенаПеревага(unittest.TestCase):
         self.assertEqual([з["code"] for з in в["заяви"]], ["buy_order_not_established"])
 
 
-class ДоведенеЛишеСпільне(unittest.TestCase):
-    """`proven` — аспект, доведений проти КОЖНОЇ з решти (перевірка #4725)."""
+class ПершістьПопарна(unittest.TestCase):
+    """`proven_over` — аспекти окремо проти кожної з решти (перевірка #4725, рішення менеджера)."""
 
-    def test_різні_аспекти_над_різними_речами_порада_не_стоїть(self):
-        # A личить; B лише з ризиком (провалів 0); C лише з провалом: спільного доведеного аспекту нема
+    def test_ризик_над_одною_провал_над_іншою(self):
         в = суд.вибір({"A": вердикт(), "B": вердикт(ризик=("midi_proportion_decided_by_shoes",)),
                        "C": вердикт(провал=("п",))})
-        self.assertEqual(в["порядок"][0], "A")
-        self.assertEqual([з["code"] for з in в["заяви"]], ["buy_order_not_established"])
+        self.assertEqual(в["порядок"], ["A", "B", "C"])
+        self.assertEqual(коди(в), [("buy_first", ["A"])])
+        self.assertEqual(значення(в, "buy_first"),
+                         {"reasons": [], "proven_over": {"B": ["named_risks"], "C": ["failed_checks"]}, "then": ["B", "C"]})
 
-    def test_рівень_і_провал_над_різними_речами(self):
-        # A личить; B «з умовою» без провалів; C з провалом: рівня над C нема, провалу над B нема
+    def test_рівень_над_одною_провал_над_іншою(self):
         в = суд.вибір({"A": вердикт(), "B": вердикт(рівень="з умовою"), "C": вердикт(провал=("п",))})
         self.assertEqual(в["порядок"][0], "A")
-        self.assertEqual([з["code"] for з in в["заяви"]], ["buy_order_not_established"])
+        self.assertEqual(значення(в, "buy_first")["proven_over"], {"B": ["level"], "C": ["failed_checks"]})
 
-    def test_спільний_аспект_лишається(self):
-        # провал є в обох решти — спільний failed_checks; named_risks лише над однією — не називається
-        в = суд.вибір({"A": вердикт(), "B": вердикт(провал=("п",), ризик=("r",)), "C": вердикт(провал=("п",))})
-        self.assertEqual(в["порядок"][0], "A")
-        self.assertEqual(значення(в, "buy_first")["proven"], ["failed_checks"])
+    def test_недоведена_над_однією_з_решти_порада_не_стоїть(self):
+        в = суд.вибір({"A": вердикт(), "B": вердикт(провал=("п",)), "C": вердикт(без_входу=("край",))})
+        self.assertEqual([з["code"] for з in в["заяви"]], ["buy_order_not_established"])
+        self.assertEqual(в["заяви"][0]["values"], {"why": "input_missing"})
+
+
+class ПричинаНеДоведено(unittest.TestCase):
+    def test_повністю_суджені_ніколи_не_стверджують_брак_входу(self):
+        рівні = ("личить", "з умовою", "невідомо", "краще інша")
+        речі = [вердикт(рівень=р, провал=("п",) * ф, ризик=("r",) * н) for р in рівні for ф in (0, 1) for н in (0, 1)]
+        перевірено = 0
+        for i, a in enumerate(речі):
+            for b in речі[i:]:
+                for вхід in ({"a": a, "b": b}, {"a": a, "b": b, "c": вердикт(рівень="невідомо")}):
+                    for з in суд.вибір(вхід)["заяви"]:
+                        if з["code"] == "buy_order_not_established":
+                            перевірено += 1
+                            self.assertEqual(з["values"], {"why": "no_item_proved_better"}, (a, b))
+        self.assertTrue(перевірено)
+
+    def test_брак_входу_називає_брак_входу(self):
+        в = суд.вибір({"a": вердикт(без_входу=("край",)), "b": вердикт()})
+        self.assertEqual(в["заяви"][0]["values"], {"why": "input_missing"})
+
+    def test_невідомий_рівень_суджених_речей_не_брак_входу(self):
+        в = суд.вибір({"a": вердикт(рівень="личить"), "b": вердикт(рівень="невідомо")})
+        self.assertEqual([з["code"] for з in в["заяви"]], ["buy_order_not_established"])
+        self.assertEqual(в["заяви"][0]["values"], {"why": "no_item_proved_better"})
 
 
 class Нічия(unittest.TestCase):
@@ -148,7 +171,7 @@ class Нічия(unittest.TestCase):
         self.assertEqual(в["порядок"], ["first", "also", "then"])
         self.assertEqual(коди(в), [("buy_first", ["first", "also"]), ("buy_order_tie", ["first", "also"])])
         self.assertEqual(значення(в, "buy_first"),
-                         {"reasons": [], "proven": ["named_risks"], "then": ["then"]})
+                         {"reasons": [], "proven_over": {"then": ["named_risks"]}, "then": ["then"]})
 
     def test_часткова_нічия_без_входу_нагорі_не_дає_поради(self):
         в = суд.вибір({"first": вердикт(без_входу=("край",)), "also": вердикт(без_входу=("край",)),
@@ -182,7 +205,7 @@ class КаталоговийВхід(unittest.TestCase):
         в = self.відповідь({"sparse": вердикт(), "known": вердикт(провал=("п",))})
         self.assertEqual([в_["ід"] for в_ in в["варіанти"]], ["sparse", "known"])
         self.assertEqual([з["code"] for з in в["choice"]], ["buy_first"])
-        self.assertEqual(в["choice"][0]["values"]["proven"], ["failed_checks"])
+        self.assertEqual(в["choice"][0]["values"]["proven_over"], {"known": ["failed_checks"]})
 
 
 class ФотоВхід(unittest.TestCase):
@@ -216,7 +239,7 @@ class ФотоВхід(unittest.TestCase):
     def test_доведене_з_порадою(self):
         з = self.choice(self.промпт({"a": вердикт(), "b": вердикт(провал=("п",))}))
         self.assertEqual([x["code"] for x in з], ["buy_first"])
-        self.assertEqual(з[0]["values"]["proven"], ["failed_checks"])
+        self.assertEqual(з[0]["values"]["proven_over"], {"b": ["failed_checks"]})
 
 
 if __name__ == "__main__":
