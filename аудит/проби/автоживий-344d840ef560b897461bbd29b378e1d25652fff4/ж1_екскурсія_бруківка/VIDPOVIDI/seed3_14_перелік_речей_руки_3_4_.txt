@@ -1,0 +1,37 @@
+── ПРОМПТ (2582 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Midi tunic dress in heather grey, relaxed A-line cut hitting mid-calf, color #aeb0b1, soft jersey cotton with a subtle ribbed texture.\nOversized wool-blend cardigan in deep forest green, boxy drop-shoulder silhouette reaching the hips, color #2f4f4f, chunky knit fabric for warmth against the cold autumn air.\nWool-blend ankle boots with a low block heel, straight shaft rising just above the arch, color #3e2723, durable suede material to withstand nine hours of walking on cobblestones.\nLeather crossbody bag in tan, structured rectangular shape with a short strap, color #c19a6b, full-grain leather to hold essentials securely while moving through the old town.\n\nThis outfit works perfectly for a nine-hour city tour because the oversized cardigan provides essential warmth during cold autumn days without restricting arm movement needed for navigating cobblestone streets. The relaxed midi dress and comfortable block-heel boots offer the necessary support and stride length required for walking for hours, while the neutral grey tone pairs effortlessly with the forest green layer to keep the look polished yet practical. Every piece is selected from the 'neat' dress code band but prioritizes durability and comfort over rigid structure, ensuring she remains stylish without sacrificing mobility during an active day out."}
+
+── ВІДПОВІДЬ (926 симв., 4.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Midi tunic dress",
+      "details": "relaxed A-line cut hitting mid-calf, soft jersey cotton with a subtle ribbed texture",
+      "slot": "dress",
+      "color_hex": "#aeb0b1",
+      "worn": true
+    },
+    {
+      "name": "Oversized wool-blend cardigan",
+      "details": "boxy drop-shoulder silhouette reaching the hips, chunky knit fabric",
+      "slot": "outerwear",
+      "color_hex": "#2f4f4f",
+      "worn": true
+    },
+    {
+      "name": "Wool-blend ankle boots",
+      "details": "low block heel, straight shaft rising just above the arch, durable suede material",
+      "slot": "shoes",
+      "color_hex": "#3e2723",
+      "worn": true
+    },
+    {
+      "name": "Leather crossbody bag",
+      "details": "structured rectangular shape with a short strap, full-grain leather",
+      "slot": "bag",
+      "color_hex": "#c19a6b",
+      "worn": true
+    }
+  ]
+}
