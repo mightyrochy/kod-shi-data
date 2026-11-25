@@ -218,8 +218,16 @@ def _стани(ситуація, речі, профіль):
 
 def _заяви(вирок):
     """Кодує факти тільки з вироку цього складу."""
-    return [{"id": з.ід, "code": з.код, "values": з.значення["факти"], "items": з.речі,
-             "rule": з.правило, "register": з.значення["регістр"], "repair": з.значення["ремонт"]} for з in вирок.заяви]
+    заяви = []
+    for з in вирок.заяви:
+        д = з.значення
+        запис = {"id": з.ід, "code": з.код, "values": д["факти"], "items": з.речі,
+                 "rule": з.правило, "register": д["регістр"], "repair": д["ремонт"]}
+        for поле, ключ in (("вага", "weight"), ("утримано", "withheld"), ("впевненість", "confidence")):
+            if д.get(поле) is not None:
+                запис[ключ] = д[поле]
+        заяви.append(запис)
+    return заяви
 
 
 def _образ(образ, вирок, *, опис):
@@ -441,7 +449,8 @@ def запит(вид, пул, ситуація, профіль, *, образи
         за_кодом = {}
         for образ in тіло.get("verdict", ()):
             for заява in образ["findings"]:
-                за_кодом.setdefault(заява["code"], []).append({"outfit": образ["id"], "id": заява["id"]})
+                if not заява.get("withheld"):
+                    за_кодом.setdefault(заява["code"], []).append({"outfit": образ["id"], "id": заява["id"]})
         тіло["remarks_by_code"] = за_кодом
     if вид == "опис":
         тіло["body"] = тіло["person"].pop("body")
@@ -473,6 +482,8 @@ def запит(вид, пул, ситуація, профіль, *, образи
         "uncertain": "Only the supplied interval or bounds are known.",
         "missing_input": "The rule could not be applied with the available inputs.",
     }
+    if any(з["findings"] and any(р.get("withheld") for р in з["findings"]) for з in тіло.get("verdict", ())):
+        тіло["knowledge_legend"]["withheld"] = "Judgment withheld. Keep the uncertainty. It is neither a finding to fix nor evidence of a pass."
 
     if вид == "опис":
         тіло["knowledge_legend"]["sources"] = "Repeated values are in the row."
