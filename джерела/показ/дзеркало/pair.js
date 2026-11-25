@@ -140,8 +140,11 @@ window.createMirrorPair = function(R) {
       place(target,testing?'':'<p>Продуктового образу ще немає.</p>'+action('pair-summary','До нагоди')+(ready.length?action('pair-test','Сліпий перегляд'):''));return;
     }
     const {c,i}=record,same=position===i,fitted=photoURL(кадрПоказуП(c)),pieces=c.речі||[],key=cardKey(pack,i);
-    const pics=pieces.filter(t=>photoURL(t.фото)&&!c.фото_не_ті?.includes(t.id));
-    const lead=fitted?image(fitted,'Приміряний образ'):pics[0]?image(pics[0].фото,pics[0].назва||'Річ із комплекту'):'<span>Комплект</span>';
+    const кадрРечі=p=>кадриРечі(p,відхиленняКадруРечі(c,p)).find(photoURL);
+    const pics=pieces.map(p=>({назва:p.назва,фото:кадрРечі(p)})).filter(p=>p.фото);
+    const безКадру=pieces.some(p=>відхиленняКадруРечі(c,p))
+      ? '<i class="арка" role="img" aria-label="Фото комплекту немає"></i>' : '<span>Комплект</span>';
+    const lead=fitted?image(fitted,'Приміряний образ'):pics[0]?image(pics[0].фото,pics[0].назва||'Річ із комплекту'):безКадру;
     const picture='<div class="pair-image">'+lead+'</div>';
     document.documentElement.dataset.pairLooks=testing?'blind':same?'one':'preview';
     const colors=pieces.map(x=>tone(x.hex)).filter(Boolean),worn=!!window.Rack?.nativeWorn(key);
@@ -157,17 +160,17 @@ window.createMirrorPair = function(R) {
     const stampButton=action('pair-reverse',reverseKey===key?'До образу':'Зворот',String(i));
     let recent='';
     const cacheKey=АКТИВНИЙ+'/'+key+'/',saved=seenGarments;
-    pieces.forEach(p=>saved.set(cacheKey+p.id,{...p}));
+    pieces.forEach(p=>saved.set(cacheKey+p.id,{...p,фото:кадрРечі(p),фото_усі:[]}));
     const swap=(c.етапи?.заміни||[]).filter(x=>x.нова).at(-1);
     if(swap){
       const old=saved.get(cacheKey+swap.ід),next=pieces.find(p=>p.id===swap.нова);
       if(old===undefined&&String(swap.ід).includes('@')){
         saved.set(cacheKey+swap.ід,null);
-        MirrorIndex.get(swap.ід).then(p=>{if(p){saved.set(cacheKey+swap.ід,{назва:p.name,фото:p.image,ціна:p.price});R.refresh();}}).catch(()=>{});
+        MirrorIndex.get(swap.ід).then(p=>{if(p){saved.set(cacheKey+swap.ід,{id:swap.ід,назва:p.name,фото:p.image,ціна:p.price});R.refresh();}}).catch(()=>{});
       }
       if(next&&old)recent=relation(label('Була',itemPreview(old)),'→',label('Тепер',itemPreview(next)),'pair-replacement');
     }
-    function itemPreview(p){return (photoURL(p.фото)?image(p.фото,p.назва||'Річ','pair-swap-photo'):'')+'<strong>'+e(p.назва||'Річ')+'</strong>'+(typeof p.ціна==='number'?'<small>'+e(money(p.ціна))+'</small>':'');}
+    function itemPreview(p){return image(кадрРечі(p),p.назва||'Річ','pair-swap-photo')+'<strong>'+e(p.назва||'Річ')+'</strong>'+(typeof p.ціна==='number'?'<small>'+e(money(p.ціна))+'</small>':'');}
     const itemRows=!testing&&same?pieces.map((p,j)=>{
       const shop=/^https?:\/\//i.test(p.урл||'')?'<a class="studio-link" href="'+e(p.урл)+'" target="_blank" rel="noopener noreferrer">До крамниці</a>':'';
       const replace=node('замін-'+i+'-'+j);
