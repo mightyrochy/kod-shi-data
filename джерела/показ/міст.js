@@ -24,6 +24,12 @@ const ТИПОВА_МОДЕЛЬ_П = "claude-sonnet-5-5";
      типовий порт `wrangler dev` для `worker.js`): http, порт 8787, корінь.
    Решта localhost — тим самим діалогом згоди, що й чужі адреси. */
 const ПОРТ_ЛОКАЛЬНОГО_ВОРКЕРА_П = '8787';
+function адресаВоркераП(у){
+  if (у.href.replace(/\/$/, '') === new URL(ТИПОВИЙ_МІСТ_П).href.replace(/\/$/, '')) return true;
+  return (у.hostname === 'localhost' || у.hostname === '127.0.0.1') &&
+    у.protocol === 'http:' && у.port === ПОРТ_ЛОКАЛЬНОГО_ВОРКЕРА_П && !у.search && !у.hash &&
+    decodeURIComponent(у.pathname).replace(/\/$/, '') === '';
+}
 function автоматичноДозволенаАдресаМостаП(адреса){
   try{
     const у = new URL(String(адреса || '').trim());
@@ -31,10 +37,10 @@ function автоматичноДозволенаАдресаМостаП(адр
     if (у.hostname === 'localhost' || у.hostname === '127.0.0.1'){
       if (у.search || у.hash) return false;
       const шлях = decodeURIComponent(у.pathname).replace(/\/$/, '');
-      if (у.protocol === 'http:' && у.port === ПОРТ_ЛОКАЛЬНОГО_ВОРКЕРА_П) return шлях === '';
+      if (у.protocol === 'http:' && у.port === ПОРТ_ЛОКАЛЬНОГО_ВОРКЕРА_П) return адресаВоркераП(у);
       return у.origin === location.origin && шлях === '/міст';
     }
-    return у.href.replace(/\/$/, '') === new URL(ТИПОВИЙ_МІСТ_П).href.replace(/\/$/, '');
+    return адресаВоркераП(у);
   }catch(_){ return false; }
 }
 let непідтвердженийМістП = null;
@@ -239,6 +245,13 @@ function обчислитиМістП(){
   return {адреса: а, токен: т};
 }
 const МІСТ_П = обчислитиМістП();
+function резервВиходуКаналуП(модель, адреса){
+  if (!адреса) return {канал: 'direct_anthropic', надбавка_каналу: 0};
+  if (!автоматичноДозволенаАдресаМостаП(адреса) || !адресаВоркераП(new URL(адреса.trim())))
+    return {канал: 'unconfirmed_bridge', надбавка_каналу: 0};
+  const запис = Object.entries(__РЕЗЕРВ_КАНАЛУ__).find(([префікс]) => модель.startsWith(префікс));
+  return {канал: 'worker', надбавка_каналу: запис?.[1] ?? 0};
+}
 async function підтвердитиАдресуМостаП(){
   const к = непідтвердженийМістП;
   if (!к) return;
