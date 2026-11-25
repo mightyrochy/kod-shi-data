@@ -1,0 +1,217 @@
+--- "\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\321\200\320\2626_\321\201\321\202\320\265\320\275\320\264.js"	2026-11-25 12:34:51.881947656 +0000
++++ "\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\321\200\320\2626_\320\2752.js"	2026-11-25 15:53:56.161558255 +0000
+@@ -526,7 +526,7 @@
+      за довгим синхронним розрахунком каталогу й дала хибний таймаут. */
+   const показ = стор.показПідЧасМоста;
+   await чекатиСтан(показ, 'збирання стартувало чи питання нагоди (' + де + ')',
+-    "(" + ВИРАЗ_ПИТАННЯ_НАГОДИ + ") || (typeof ЗБ !== 'undefined' && !!ЗБ && !ЗБ.готово && Екран.стан.режим === 'очікування')", null, 60000);
++    "(" + ВИРАЗ_ПИТАННЯ_НАГОДИ + ") || (typeof ЗБ !== 'undefined' && !!ЗБ && !ЗБ.готово && Екран.стан.режим === 'очікування') || (process.env.MIST_WORKER ? ((typeof ЗБ !== 'undefined' && !!ЗБ && ЗБ.готово) || (typeof ЗБИРАННЯ_ЗАЙНЯТО_П !== 'undefined' && ЗБИРАННЯ_ЗАЙНЯТО_П === true)) : false)".replace('process.env.MIST_WORKER ?', '' + (process.env.MIST_WORKER ? 'true' : 'false') + ' ?'), null, 60000);  /* Н2-приймання: ядро збирає швидше за опитування */
+   if (!(await показ.evaluate(ВИРАЗ_ПИТАННЯ_НАГОДИ))) return true;
+   const паспорт = await показ.evaluate(() => typeof ПАСПОРТ_П !== 'undefined' ? ПАСПОРТ_П : null);
+   console.log('\n✗ збирання не стартувало: питання нагоди (' + де + ') · паспорт: ' + JSON.stringify(паспорт).slice(0, 400));
+@@ -1371,7 +1371,7 @@
+         {cwd: КЛОД_ТЕКА, stdio: ['pipe', 'pipe', 'pipe'],
+          /* дрібний трафік CLI (заголовки розмови, підсумки) теж витрачає ліміт
+             підписки, а вимір це не додає — тож вимкнено */
+-         env: Object.assign({}, process.env, {CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'})});
++         env: Object.assign({}, process.env, process.env.N2_CLI_PROXY ? {HTTPS_PROXY: process.env.N2_CLI_PROXY, https_proxy: process.env.N2_CLI_PROXY, HTTP_PROXY: process.env.N2_CLI_PROXY, http_proxy: process.env.N2_CLI_PROXY} : {}, {CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'})});
+     } catch (e) { return рез({код: -1, вивід: '', помилки: String(e)}); }
+     let вивід = '', помилки = '', убито = false;
+     const таймер = setTimeout(() => { убито = true; try { дитя.kill('SIGKILL'); } catch (_) {} },
+@@ -1431,6 +1431,12 @@
+   ЖУРНАЛ_МОДЕЛІ.push({тип, статус, с: +с_.toFixed(1), вхід, вихід, стоп, думка: 0,
+                       симв: текст.length, видимих_т_оцінка: видимихОцінка, фото_не_дійшло: фотоНеДійшло, помилка,
+                       ...(понадСтелю ? {понад_стелю_продукту: тіло.max_tokens} : {})});
++  if (process.env.N2_DUMP) fs.appendFileSync(process.env.N2_DUMP, JSON.stringify({час: new Date(почато).toISOString(), с: +с_.toFixed(1), тип, статус,
++    модель_cli: КЛОД, стеля_сторінки: тіло.max_tokens || null, модель_тіла: тіло.model || null,
++    фото: блоки.filter(б => б.type === 'image').length, фото_не_дійшло: фотоНеДійшло,
++    usage: (підсумок || {}).usage || null, modelUsage: (підсумок || {}).modelUsage || null, stop_reason: (підсумок || {}).stop_reason || null,
++    num_turns: (підсумок || {}).num_turns || null, помилка,
++    запит: блоки.map(б => б.type === 'text' ? б.text : '[image ' + ((б.source || {}).media_type || '') + ']').join('\n'), відповідь: текст}) + '\n');
+   return {статус, текст, думка: '', вхід, вихід, стоп, помилка, с: с_, дропи: фотоНеДійшло};
+ }
+ /* ── ПРИМІРЯННЯ ЧЕРЕЗ ComfyUI (доповнення власника 24.09.2026) ───────────────
+@@ -1999,6 +2005,40 @@
+     return {тип: 'мовний шар', текст: JSON.stringify(вих)};
+   }
+   const об = розібратиПромпт(текст);
++  /* Н2-приймання: підставні відповіді ядра руки 1 (складання, ремонт, вибір, опис) за схемою `ядро/дані/відповіді.json`;
++     логіка — та сама, що в офлайн-пробі менеджера Codex (н2-15647-8b21/run.py): перша річ кожного потрібного роду пулу,
++     ремонт — той самий склад, вибір — перший запропонований образ, опис — по реченню на річ. Готової Картки не підставляє. */
++  const об_ = об || (/^Catalogue photo for item /.test(текст) && текст.indexOf('{') >= 0 ? розібратиПромпт(текст.slice(текст.indexOf('{'))) : null);  /* опис із підписами кадрів ядра */
++  if (об_ && об_.task && /^You are the Lyusterko stylist\./.test(об_.task.role || '')){ const об = об_;
++    const роль = об.task.role;
++    if (/Build outfits/.test(роль) || (/Improve the outfits/.test(роль) && !global.Н2_СКЛАДАННЯ)){
++      const п = об.pool || {}, cols = п.cols || [];
++      const рядки = (п.rows || []).map(r => Object.fromEntries(cols.map((c, i) => [c, r[i]])));
++      const за = {}; for (const р of рядки) (за[р.kind] = за[р.kind] || []).push(р);
++      const види = (за.top && за.bottom) ? ['top', 'bottom'] : за.dress ? ['dress'] : ['set'];
++      for (const в of (об.required_kinds || [])) if (!види.includes(в)) види.push(в);
++      const items = [];
++      for (const в of види){
++        let к = за[в] || []; if (!к.length) continue;
++        if (в === 'shoes'){ const з = к.filter(р => р.heel !== true && /черевик|чобот|ботильйон|уггі/.test(String(р.type))); if (з.length) к = з; }
++        items.push(String(к[0].n));
++      }
++      global.Н2_СКЛАДАННЯ = JSON.stringify({version: '1', outfits: [{id: 'o1', items}]});
++      return {тип: 'ядро: складання (підставне)', текст: global.Н2_СКЛАДАННЯ};
++    }
++    if (/Improve the outfits/.test(роль)) return {тип: 'ядро: ремонт (підставне — той самий склад)', текст: global.Н2_СКЛАДАННЯ};
++    if (/Choose one of the offered/.test(роль)){
++      let ід = null; const пошук = в => { if (!в || typeof в !== 'object' || ід) return; if (Array.isArray(в)) { for (const х of в) пошук(х); return; }
++        if (Array.isArray(в.outfits) && в.outfits[0] && в.outfits[0].id) { ід = String(в.outfits[0].id); return; } for (const к in в) пошук(в[к]); };
++      пошук(об);
++      return {тип: 'ядро: вибір (підставне)', текст: JSON.stringify({version: '1', chosen: ід || 'o1'})};
++    }
++    if (/Explain the chosen outfit/.test(роль)){
++      const речі = ((об.outfit || {}).items || []);
++      return {тип: 'ядро: опис (підставне)', текст: JSON.stringify({version: '1', text: 'A closed-shoe outfit for a cold workday.',
++        about_items: речі.map(р => ({n: String(р.n), text: 'An item in this outfit.'})), wrong_photos: []})};
++    }
++  }
+   /* PAL_DOTYK (рядок 5911): що бачила стилістка палітри (`occasion`, `day`) і що бачили руки (`case`, `day`) */
+   if (process.env.PAL_DOTYK && об && об.task && відповідьЗадачі(об) === 'PALETTE_CHOICE')
+     ПРОМПТИ_5911.push({хто: 'палітра', випадок: об.occasion, день: об.day});
+@@ -2518,6 +2558,7 @@
+     };
+   });
+   const консоль = [];
++  if (process.env.MEREZHA_LOG) стор.on('request', з => fs.appendFileSync(process.env.MEREZHA_LOG, new Date().toISOString() + ' ' + з.method() + ' ' + з.resourceType() + ' ' + з.url().slice(0, 300) + '\n'));  /* Н2-приймання: журнал усіх запитів сторінки */
+   стор.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') консоль.push(m.type() + ': ' + m.text().slice(0, 300)); });
+   стор.on('pageerror', e => консоль.push('pageerror: ' + String(e).slice(0, 300)));
+   /* ── ЧОМУ ФОТО НЕ ПРИЙШЛО: ЛИСТИ МЕРЕЖІ ПРО КАРТИНКИ (FOTO=1) ──────────────
+@@ -2534,7 +2575,7 @@
+       if (з.resourceType() === 'image' && !з.url().startsWith(БАЗА))
+         фотоПодії.push('IMGRESP ' + в.status() + ' ' + з.url()); });
+   }
+-  const цеМіст = u => decodeURIComponent(u.pathname).endsWith('/міст');
++  const цеМіст = u => (process.env.MIST_WORKER ? u.origin === 'http://127.0.0.1:8787' : decodeURIComponent(u.pathname).endsWith('/міст'));  /* Н2-приймання: штатний канал worker (резерв 12 000) */
+   await стор.route(u => u.origin === new URL(БАЗА).origin && !цеМіст(u), async route => {
+     const ім = decodeURIComponent(new URL(route.request().url()).pathname).replace(/^\//, '') || 'index.html';
+     const ф_ = path.join(КОРІНЬ, ім);
+@@ -2556,6 +2597,7 @@
+      як є (через той самий проксі, що вже заданий у `chromium.launch`), а без
+      неї — та сама `abort()`, що й доти, з тим самим друком. */
+   await стор.route(u => !(u.origin === new URL(БАЗА).origin) && !/cdn\.jsdelivr\.net\/pyodide/.test(u.href), async route => {
++    if (process.env.N2_SYNTH && route.request().resourceType() === 'image') { зовнішнє.push(route.request().url().slice(0, 80)); if (process.env.MEREZHA_LOG) fs.appendFileSync(process.env.MEREZHA_LOG, 'СИНТЕТИЧНЕ ФОТО ' + route.request().url() + '\n'); return route.fulfill({status: 200, contentType: 'image/png', body: fs.readFileSync(process.env.N2_SYNTH)}); }
+     зовнішнє.push(route.request().url().slice(0, 80)); if (зовнішнє.length <= 8) console.log('   ' + (ФОТО_КРАМНИЦЬ ? '→ у мережу (FOTO=1): ' : '⊘ зовнішній запит: ') + route.request().url().slice(0, 100));
+     /* ── ТАЙМАУТ НА КАДР, ЩОБ ПРИЛАД НЕ ЗАВИСАВ НА КРАМНИЦІ (Ф-143, 27.09.2026) ──
+        `route.continue()` віддає запит мережному шарові браузера й повертається
+@@ -2905,6 +2947,7 @@
+     /* `разом` у тому самому рядку (наряд Л-2): прогін, що впаде пізніше, однаково
+        лишає розмір КОЖНОГО запиту — таблиця нижче до кінця може й не дожити. */
+     console.log('   ↔ модель #' + н + ' ' + в.тип + ' (' + текст.length + ' симв., разом ' + разом + (фото ? ', фото ' + фото : '') + (дроп ? ', крамниці не віддали ' + дроп : '') + ')');
++    if (process.env.N2_DUMP) fs.appendFileSync(process.env.N2_DUMP, JSON.stringify({н, тип: в.тип, текст, фото, разом, відповідь: в.текст || null}) + '\n');  /* Н2-приймання: кожен запит і відповідь заглушки */
+     if (в.тип === 'НЕВІДОМИЙ ПРОМПТ') console.log('     · початок і ключі: ' + JSON.stringify(текст.slice(0, 160)) + ' · ' + (() => { try { return Object.keys(JSON.parse(текст)).join(','); } catch (_) { return 'не JSON'; } })());
+     if (в.блоки){
+       const зат = String(process.env.IMG_DELAY || '0').split(',');
+@@ -2937,7 +2980,7 @@
+   };
+   const ВІКНО_СТЕНДУ = await вікноРушія(МОДЕЛЬ_ЖИВА && !КЛОД_ШВОМ ? МОДЕЛЬ_ЖИВА : null, 'MODEL_CTX');
+   const ВІКНО_МОВИ_СТЕНДУ = await вікноРушія(МОДЕЛЬ_МОВИ_СТЕНДУ, 'MODEL_MOVA_CTX');
+-  await стор.goto(БАЗА + '/index.html#міст=' + БАЗА + '/міст&т=tok-rv6'
++  await стор.goto(БАЗА + '/index.html#міст=' + (process.env.MIST_WORKER ? 'http://127.0.0.1:8787' : БАЗА + '/міст') + '&т=tok-rv6' + (process.env.YADRO ? '&ядро=' + process.env.YADRO : '') + (process.env.VIKNO_N2 ? '&вікно=' + process.env.VIKNO_N2 : '')
+     /* РЯДОК 5985: модель складання — та, що на ноутбуці; без цього `МОДЕЛЬ_П` = типова gemini і стеля складання
+        міряється гілкою Gemini (3400), а не локальною (2800, рядок 5240) */
+     + (МОДЕЛЬ_ЖИВА && !КЛОД_ШВОМ ? '&модель=' + encodeURIComponent(МОДЕЛЬ_ЖИВА) : '')
+@@ -4381,6 +4424,34 @@
+       return р;
+     };
+   });
++  if (process.env.N2_VHID) {  /* Н2-приймання 7f5: фактичний браузерний ВХІД-V1 перед «Зібрати» (той, що піде в ядро) */
++    const вх = await стор.evaluate(() => ({час: new Date().toISOString(), адреса: location.href, ядро: typeof ЯДРО_П === 'undefined' ? null : ЯДРО_П,
++      збірка: ЗБІРКА_ПОКАЗУ, відбиток: ВІДБИТОК_ПОКАЗУ, вхід: зібратиВхід()}));
++    fs.writeFileSync(process.env.N2_VHID, JSON.stringify(вх, null, 1) + '\n');
++    console.log('N2 ВХІД-V1 ЗАПИСАНО: ' + process.env.N2_VHID);
++  }
++  if (process.env.N2_STOR_DUMP) {  /* Н2-приймання OFF: знімок сховища перед «Зібрати» — початковий стан фікстури */
++    const сх = await стор.evaluate(async () => {
++      const бази = (indexedDB.databases ? await indexedDB.databases() : []);
++      const idb = [];
++      for (const {name, version} of бази) {
++        const d = await new Promise((р, в) => { const з = indexedDB.open(name); з.onsuccess = () => р(з.result); з.onerror = () => в(з.error); });
++        const сховища = [];
++        for (const ім of [...d.objectStoreNames]) {
++          const t = d.transaction(ім, 'readonly').objectStore(ім);
++          const ключі = await new Promise(р => { const r = t.getAllKeys(); r.onsuccess = () => р(r.result); });
++          const t2 = d.transaction(ім, 'readonly').objectStore(ім);
++          const значення = await new Promise(р => { const r = t2.getAll(); r.onsuccess = () => р(r.result); });
++          сховища.push({ім, keyPath: t.keyPath, autoIncrement: t.autoIncrement, записи: ключі.map((к, і) => [к, значення[і]])});
++        }
++        idb.push({name, version: d.version, сховища}); d.close();
++      }
++      return {localStorage: {...localStorage}, sessionStorage: {...sessionStorage}, indexedDB: idb, адреса: location.href};
++    });
++    fs.writeFileSync(process.env.N2_STOR_DUMP, JSON.stringify(сх, null, 1) + '\n');
++    console.log('N2 СХОВИЩЕ ЗАПИСАНО: ' + process.env.N2_STOR_DUMP + ' · ключів ' + Object.keys(сх.localStorage).length);
++    await браузер.close(); process.exit(0);
++  }
+   const тЗапити = Date.now();
+   /* `noWaitAfter`: дотик ПОЧИНАЄ збирання в самій сторінці, а не навігацію. Без
+      нього Playwright після вдалого кліку чекає «scheduled navigations» і зрідка
+@@ -4418,7 +4489,7 @@
+      очікування кінчаються на `ВИРАЗ_ЗБОЮ`, а звірка нижче називає ✗. */
+   try {
+     await чекатиСтан(стор, 'рука 1 зібрана чи збій', "(typeof ЗБ !== 'undefined' && ЗБ && Array.isArray(ЗБ.картки)"
+-        + " && ЗБ.картки.some(к => к && к.рука === '1')) || " + ВИРАЗ_ЗБОЮ, null, 900000);
++        + " && ЗБ.картки.some(к => к && String(к.рука) === '1')) || " + ВИРАЗ_ЗБОЮ, null, 900000);
+     рука1За = (await стор.evaluate(ВИРАЗ_ЗБОЮ))
+       ? 'збирання впало — далі не чекаємо'
+       : ((Date.now() - тЗапити) / 1000).toFixed(1) + ' с';
+@@ -4432,6 +4503,56 @@
+       + ' підпис нижче — те, що СПРАВДІ прийняла сторінка');
+   if (намірУПаспорті !== НАМІР_СТЕНДА)
+     console.log('   ⚠ просили намір «' + НАМІР_СТЕНДА + '», паспорт узяв «' + намірУПаспорті + '»');
++  if (process.env.MIST_WORKER && process.env.N2_STAN) {
++    if (process.env.N2_OFF) {
++      try { await чекатиСтан(стор, 'OFF: збирання завершено', ВИРАЗ_ЗАВЕРШЕНО + ' || ' + ВИРАЗ_ЗБОЮ, null, 900000); }
++      catch (e) { console.log('   N2 OFF: не дочекався завершення: ' + String(e).slice(0, 200)); }
++      await стор.waitForTimeout(3000);
++      const off = await стор.evaluate(() => ({картки: (ЗБ.картки || []).map(x => x && ({рука: x.рука, збій: x.збій, речі: (x.речі || []).map(р => р.id),
++        опис: x.опис, як_носити: x.як_носити, питання: x.питання})), текст_карток: (document.getElementById('картки') || {}).innerText || null,
++        діагноз: ЗБ.діагноз, успіх: ЗБ.успіх}));
++      fs.writeFileSync(process.env.N2_STAN.replace(/\.json$/, '_off.json'), JSON.stringify(off, null, 1));
++      if (ЗАПИСАНИЙ_ОБМІН) { try { console.log('   N2 OFF ВІДТВОРЕННЯ: ' + JSON.stringify(ЗАПИСАНИЙ_ОБМІН.завершити())); }
++        catch (e) { console.log('   N2 OFF ВІДТВОРЕННЯ НЕПОВНЕ: ' + String(e.message || e).slice(0, 1500)); } }
++    }
++    await стор.setViewportSize({width: 390, height: 844});
++    const стан = await стор.evaluate(() => {
++      const т = s => { const e = document.querySelector(s); return e ? e.innerText : null; };
++      const к = (typeof ЗБ !== 'undefined' && ЗБ && ЗБ.картки) || [];
++      const тіло = document.body.innerText;
++      return {час: new Date().toISOString(), готово: ЗБ.готово, успіх: ЗБ.успіх, статус: т('#зб-статус'),
++        діагноз: ЗБ.діагноз, ядро: ЗБ.ядро, карток_dom: document.querySelectorAll('#картки .картка').length,
++        картки: к.map(x => x && ({рука: x.рука, збій: x.збій, речі: x.речі, опис: x.опис, опис_без_фото: x.опис_без_фото,
++          питання: x.питання, невідоме: x.невідоме, свідомі: x.свідомі, ядро: x.ядро})),
++        П_ядро: (typeof П !== 'undefined' && П && П.ядро) || null,
++        текст_карток: т('#картки'), текст_тіла: тіло,
++        бита_в_dom: document.documentElement.outerHTML.includes('ж-08708'),
++        bad_record_в_dom: document.documentElement.outerHTML.includes('bad_record'),
++        без_фото_в_тексті: /без фото|фото речей не|не бачила фото|photos/i.test(тіло)};
++    });
++    fs.writeFileSync(process.env.N2_STAN, JSON.stringify(стан, null, 1));
++    const кдир = process.env.ZNIMKY || '.';
++    await стор.screenshot({path: кдир + '/n2_ekran_390x844.png'});
++    const назва1 = (((стан.картки.find(x => x && String(x.рука) === '1') || {}).речі || [])[0] || {}).назва || '';
++    await стор.mouse.move(195, 500);
++    for (let i = 0; i < 6; i++) {
++      await стор.screenshot({path: кдир + '/n2_obraz_390x844_' + i + '.png'});
++      await стор.mouse.wheel(0, 650); await стор.waitForTimeout(600);
++    }
++    const відкрито = await стор.evaluate(() => { const a = [...document.querySelectorAll('a,button')].find(e => /Відкрити цей образ/.test(e.innerText)); if (a) { a.click(); return true; } return false; });
++    console.log('   N2: «Відкрити цей образ» — ' + відкрито);
++    await стор.waitForTimeout(1500);
++    const позиція = await стор.evaluate(н => [...document.querySelectorAll('#картки .картка')].findIndex(e => e.innerText.includes(н)), назва1);
++    await стор.evaluate(() => window.scrollTo(0, 0));
++    await стор.mouse.move(195, 500);
++    for (let i = 0; i < 10; i++) {
++      await стор.screenshot({path: кдир + '/n2_vidkryto_390x844_' + i + '.png'});
++      await стор.mouse.wheel(0, 650); await стор.waitForTimeout(600);
++    }
++    console.log('   N2: картка руки 1 — позиція в DOM ' + позиція + ' (' + назва1 + ')');
++    console.log('   N2: стан записано · карток ' + стан.картки.length + ' · готово ' + стан.готово + ' · успіх ' + стан.успіх);
++    await браузер.close(); process.exit(0);
++  }
+   console.log('   рука 1: картка за ' + рука1За + ' (від запити) · намір паспорта ' + намірУПаспорті);
+   await чекатиСтан(стор, 'збирання завершено й чотири картки чи збій', ВИРАЗ_ЗАВЕРШЕНО + ' || '
+       + ВИРАЗ_ЗБОЮ, null, 900000);
