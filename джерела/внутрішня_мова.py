@@ -852,6 +852,11 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "card_description_without_photos": "рядок під поясненням «Чому цей образ», коли фото речей образу до "
                                        "стилістки не дійшли і пояснення написано без них: чесно сказати, "
                                        "що воно з даних про речі, а не з того, як речі виглядають на фото",
+    # приймання Н2 на 7f5e9d88, знахідка 2: фото зняв сам застосунок — причина інша, ніж «не дійшли»
+    "card_description_photos_left_out": "рядок під поясненням «Чому цей образ», коли застосунок сам не надіслав "
+                                        "стилістці фото речей і пояснення написано без них: назвати саме ту "
+                                        "причину, що в коді, і чесно сказати, що пояснення з даних про речі, а "
+                                        "не з того, як речі виглядають на фото",
 }
 
 # ЗАЯВИ: код → ЩО САМЕ сказано. Це ВИЗНАЧЕННЯ для моделі, не готова фраза. Числа й назви
@@ -1965,6 +1970,18 @@ def _опис_keep_by():
                                           "its items: they did not reach the stylist, so the text rests on the "
                                           "data about the items (names, colours, materials), not on how the "
                                           "items look in the pictures",
+    "description_photos_left_out": "the explanation of this outfit was written without the photos of its "
+                                   "items: the app itself did not send them to the stylist, so the text rests on "
+                                   "the data about the items (names, colours, materials), not on how the items "
+                                   "look in the pictures. The photos did not get lost on the way; say the reason "
+                                   "the code gives (values: reason — size_limit: with the photos the request "
+                                   "would exceed the size the app allows for one request; "
+                                   "retry_after_format_error: the first answer with the photos did not pass the "
+                                   "app's format check and the app asked again without them; "
+                                   "retry_after_model_error: the first request with the photos failed and the "
+                                   "app asked again without them; after_failed_swap: a replacement of an item "
+                                   "from the photos did not work out and the app asked for the explanation again "
+                                   "without the photos)",
     "items_prices_links_are_true": "the items, the prices and the links on this card are true, so the outfit "
                                    "can be judged without the explanation",
     "name_occasion_or_place": "she chooses an occasion or a place on the scenario screen, or says in words "

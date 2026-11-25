@@ -844,16 +844,19 @@ class ДоговірН2(TestCase):
                     {"факти": {}, "ремонт": ["Same repair"], "регістр": "гейт"})
         with patch.object(знання, "заяви", return_value=[знахідка]):
             вироки = {і.ід: суд.судити(і, self.день, self.пул, {}) for і in (self.образ, о)}
-        з = запит.запит("ремонт", self.пул, self.день, {}, образи=(self.образ, о), вироки=вироки)
-        дріт = json.loads(з.модель["messages"][0]["content"])
-        self.assertTrue(дріт["task"]["statement_codes"]["near_white_at_guest_wedding"])
-        self.assertEqual(list(дріт["fixes"].values()), [["Same repair"]])
-        for образ in дріт["verdict"]:
-            запис, = образ["findings"]
-            self.assertEqual(дріт["fixes"][запис["repair_ref"]], ["Same repair"])
-            self.assertEqual(запис["items"], [адреса])
-            self.assertEqual({**дріт["set"]["shared_checklist"], **образ["checklist"]},
-                             вироки[образ["id"]].чекліст)
+        # Вибір везе ті самі вироки, тож стискається так само (приймання Н2 на 7f5e9d88, знахідка 1).
+        for вид in ("ремонт", "вибір"):
+            with self.subTest(вид=вид):
+                з = запит.запит(вид, self.пул, self.день, {}, образи=(self.образ, о), вироки=вироки)
+                дріт = json.loads(з.модель["messages"][0]["content"])
+                self.assertTrue(дріт["task"]["statement_codes"]["near_white_at_guest_wedding"])
+                self.assertEqual(list(дріт["fixes"].values()), [["Same repair"]])
+                for образ in дріт["verdict"]:
+                    запис, = образ["findings"]
+                    self.assertEqual(дріт["fixes"][запис["repair_ref"]], ["Same repair"])
+                    self.assertEqual(запис["items"], [адреса])
+                    self.assertEqual({**дріт["set"]["shared_checklist"], **образ["checklist"]},
+                                     вироки[образ["id"]].чекліст)
         вироки[о.ід] = replace(вироки[о.ід], склад=())
         збій = запит.запит("ремонт", self.пул, self.день, {}, образи=(о,), вироки=вироки)
         self.assertEqual((збій.вид, збій.поле), ("схема", "verdict"))
@@ -874,8 +877,8 @@ class ДоговірН2(TestCase):
                             образи=(self.образ,), вироки=self.вироки)
         with self.assertRaises(StopIteration) as кінець:
             next(обмін)
-        збій, номери, фото = кінець.exception.value
-        self.assertEqual((номери, фото), ((), {}))
+        збій, номери, фото, без_фото = кінець.exception.value
+        self.assertEqual((номери, фото, без_фото), ((), {}, None))
         self.assertEqual((збій.вид, збій.дані["stage"]), ("вікно_моделі", "ремонт"))
         self.assertEqual(збій.дані["limit_tokens"], 1_000)
         self.assertEqual([р["збій"]["спроба"] for р in звіт], [1])
@@ -957,9 +960,23 @@ class ДоговірН2(TestCase):
     def test_картка_без_внутрішніх_заяв_жінці(self):
         """Т31. Невідомі факти мають власне поле."""
         опис = розбір.прочитати(_опис(self.образ), "опис", self.пул, образ=self.образ)
-        к = картка.зібрати(self.образ, self.вирок, опис, self.пул, ())
+        к = картка.зібрати(self.образ, self.вирок, опис, self.пул, (), без_фото="not_delivered")
         self.assertEqual(к.опис_en, опис.текст)
         self.assertIn("description_written_without_photos", {р["код"] for р in к.невідоме})
+
+    def test_картка_каже_справжню_причину_опису_без_фото(self):
+        """Знахідка 2 приймання на 7f5e9d88: фото, зняті ядром, не називаються «не дійшли»."""
+        опис = розбір.прочитати(_опис(self.образ), "опис", self.пул, образ=self.образ)
+        for причина in картка.ПРИЧИНИ_БЕЗ_ФОТО:
+            with self.subTest(причина=причина):
+                к = картка.зібрати(self.образ, self.вирок, опис, self.пул, (), без_фото=причина)
+                рядки = [р for р in к.невідоме if р["код"].startswith("description_")]
+                self.assertEqual(рядки, [{"код": "description_written_without_photos"}] if причина == "not_delivered"
+                                 else [{"код": "description_photos_left_out", "причина": причина}])
+        к = картка.зібрати(self.образ, self.вирок, опис, self.пул, ())
+        self.assertFalse([р for р in к.невідоме if р["код"].startswith("description_")])
+        with self.assertRaises(ValueError):
+            картка.зібрати(self.образ, self.вирок, опис, self.пул, (), без_фото="lost")
 
     def test_запит_влазить_у_вікно(self):
         """Т38. Мале й резервне вікно ріжуть повний запит; велике зберігає 1020 рядків."""
@@ -997,9 +1014,10 @@ class ДоговірН2(TestCase):
         self.assertFalse(другий.фото)
         with self.assertRaises(StopIteration) as кінець:
             обмін.send(_опис(self.образ))
-        опис, _, фото = кінець.exception.value
+        опис, _, фото, без_фото = кінець.exception.value
         self.assertNotIsInstance(опис, Збій)
         self.assertFalse(фото)
+        self.assertEqual(без_фото, "size_limit")
         self.assertEqual([з["збій"]["спроба"] for з in звіт if "збій" in з], [1])
 
     def test_мережева_помилка_лишається_помилкою_моделі(self):
