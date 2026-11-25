@@ -14,8 +14,8 @@
 # голови (нова голова після мітки — мітку знято), а перевірки голови зелені. Рішення — той самий прилад з `main`
 # (`рішення_мітка`). Мітку ловить `pull_request_target` типу `labeled` (запускається з `main`, код гілки PR крок не
 # бере й не виконує — checkout без `ref` дає `main`): мітку часто ставлять на вже зелену голову, і завершення CI нового
-# рішення не дасть. Повну збірку `main` після коду, злитого токеном CI, `push` не запускає — крок її не викликає
-# (збірка викликається лише після злиття документа).
+# рішення не дасть. Злиття токеном CI `push` не будить, тож після злиття (документа чи коду) крок сам викликає
+# `zbirka.yml`; після коду — з `kod: true`: повний шлях збірки й публікації на коміті злиття (`pislia`).
 name: самозлиття документа
 
 on:
@@ -85,6 +85,7 @@ jobs:
     timeout-minutes: 10
     outputs:
       zlyto: ${{ steps.zlyttia.outputs.zlyto }}
+      kod: ${{ steps.zlyttia.outputs.zlyto_kod }}
       pered: ${{ steps.zlyttia.outputs.pered }}
       pislia: ${{ steps.zlyttia.outputs.pislia }}
     steps:
@@ -118,3 +119,4 @@ jobs:
     with:
       pered: ${{ needs.zlyttia.outputs.pered }}
       pislia: ${{ needs.zlyttia.outputs.pislia }}
+      kod: ${{ needs.zlyttia.outputs.kod == 'true' }}

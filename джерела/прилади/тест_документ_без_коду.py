@@ -790,10 +790,20 @@ class Мітка(unittest.TestCase):
         # нова голова (її запуски пізніші за мітку) — мітку знято
         self.не_зливати(lambda п: [з.update(created_at="2026-11-25T10:30:00Z") for з in п["запуски"]], "мітку знято")
 
-    def test_найраніший_запуск_голови_міра_її_появи(self):
+    def test_force_push_назад_на_стару_голову_знімає_мітку(self):
+        # SHA голови той самий, але нова поява (новий запуск pull_request після мітки): мітка стара
         def з(п):
-            п["запуски"][0]["created_at"] = "2026-11-25T10:06:00Z"  # перезапуск пізніше за мітку — голова та сама
-        self.злити(з)
+            п["запуски"].append(dict(п["запуски"][0], id=999, created_at="2026-11-25T10:20:00Z"))
+        self.не_зливати(з, "останню появу голови")
+
+    def test_force_push_після_мітки_подією(self):
+        def з(п):
+            п["події"].append({"id": 5, "event": "head_ref_force_pushed", "created_at": "2026-11-25T10:07:00Z"})
+        self.не_зливати(з, "force-push")
+
+    def test_перезапуск_не_міняє_появи(self):
+        # created_at запуску при перезапуску той самий; мітка після появи — діє
+        self.злити(lambda п: п["запуски"][0].update(run_started_at="2026-11-25T10:30:00Z"))
 
     def test_мітка_від_іншого_автора(self):
         self.не_зливати(lambda п: п["події"][0]["actor"].update(login="інший"), "поставив інший")
@@ -907,6 +917,29 @@ class МіткаБезпека(unittest.TestCase):
         рішення = код.split("  rishennia:", 1)[1].split("  zlyttia:", 1)[0]
         self.assertNotRegex(рішення, r"(?m)^      (contents|pull-requests|issues): write", "запис — лише в job злиття")
         self.assertIn("github.event.label.name == 'злити'", рішення)
+
+    def test_збірка_після_злиття_коду(self):
+        """Код, злитий токеном CI, `push` не будить: крок викликає `zbirka.yml` з `kod`, а той веде повний шлях на
+        `pislia` (checkout з ref, база й голова історії з входів)."""
+        with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
+            с = ф.read()
+        self.assertIn("kod: ${{ needs.zlyttia.outputs.kod == 'true' }}", с)
+        self.assertIn("if: needs.zlyttia.outputs.zlyto == 'true'", с)
+        with open(os.path.join(КОРІНЬ, ".github/workflows/zbirka.yml"), encoding="utf-8") as ф:
+            з = ф.read()
+        self.assertRegex(з, r"(?m)^      kod:\n        type: boolean")
+        self.assertIn('[ -n "${PISLIA}" ] && [ "${KOD}" = true ]', з)
+        self.assertEqual(з.count("uses: actions/checkout@"), з.count("ref: ${{ inputs.pislia }}"),
+                         "кожен checkout збірки бере ref злитого коміту (порожній — типовий)")
+        бази = [р for р in з.splitlines() if "BASE_REF: ${{" in р]
+        self.assertTrue(бази)
+        self.assertTrue(all(р.endswith("github.event.before || inputs.pered }}") for р in бази), бази)
+        self.assertEqual(з.count("HEAD_SHA: ${{ inputs.pislia }}"), з.count("checkout-history.sh"))
+
+    def test_вихід_злиття_код_і_документ(self):
+        api = ФальшивийAPI(Мітка.стан(Мітка(), None)["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
+        злито, _, _ = д.злити(api, [{"номер": 3584, "голова": api.pr["head"]["sha"], "спосіб": "мітка"}])
+        self.assertTrue(any(з[2] for з in злито))
 
 
 class ОбхідAPI:
