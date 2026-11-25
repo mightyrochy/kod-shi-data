@@ -1,0 +1,44 @@
+── ПРОМПТ (2659 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A black tailored blazer, notched lapel with sharp shoulders and a single-button front, cropped to hit at the hip, woven from worsted wool in #000000.\nHigh-waisted straight-leg trousers, cut from dark denim for structure without stiffness, length ending just above the ankle seam, dyed indigo black in #051418.\nA white button-down shirt with a classic pointed collar and French cuffs, slightly relaxed fit to allow comfortable arm movement while standing in a crowd, made of crisp cotton poplin in #FFFFFF.\n\nBlack leather loafers, round toe with a subtle metal strap detail on the vamp, constructed from smooth calfskin in #1C1B18.\nA slender gold link-chain bracelet, thin profile to maintain elegance without overpowering the classic silhouette, crafted from polished 18k gold vermeil in #FFD700.\n\nThis outfit embodies her request for restrained and classic style by combining a timeless blazer and trousers with a crisp white shirt, creating a look that feels elevated yet comfortable enough for standing in a crowd. The dark color palette of black and indigo ensures the attire remains sophisticated within an energetic rock concert environment, while the natural materials like cotton wool provide breathability during autumn evenings. By choosing loafers instead of heels, the ensemble prioritizes mobility and ease without sacrificing the sharp, intentional lines she desires for a smart occasion."}
+
+── ВІДПОВІДЬ (1101 симв., 4.6 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "black tailored blazer",
+"details": "notched lapel with sharp shoulders and a single-button front, cropped to hit at the hip, woven from worsted wool",
+"slot": "outerwear",
+"color_hex": "#000000",
+"worn": true
+},
+{
+"name": "high-waisted straight-leg trousers",
+"details": "cut from dark denim for structure without stiffness, length ending just above the ankle seam",
+"slot": "bottom",
+"color_hex": "#051418",
+"worn": true
+},
+{
+"name": "white button-down shirt",
+"details": "classic pointed collar and French cuffs, slightly relaxed fit, made of crisp cotton poplin",
+"slot": "top",
+"color_hex": "#FFFFFF",
+"worn": true
+},
+{
+"name": "black leather loafers",
+"details": "round toe with a subtle metal strap detail on the vamp, constructed from smooth calfskin",
+"slot": "shoes",
+"color_hex": "#1C1B18",
+"worn": true
+},
+{
+"name": "slender gold link-chain bracelet",
+"details": "thin profile to maintain elegance without overpowering the classic silhouette, crafted from polished 18k gold vermeil",
+"slot": "bracelet",
+"color_hex": "#FFD700",
+"worn": true
+}
+]
+}

@@ -1,0 +1,55 @@
+── ПРОМПТ (6304 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: coat · about it: text н=1
+2 — kind: blouse · about it: text н=2
+3 — kind: ring · about it: text н=3
+4 — kind: mules · about it: text н=4
+5 — kind: skirt · about it: text н=5
+6 — kind: tote · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The coat provides reliable warmth and a structured, classic shape that fits your request for restraint while still looking polished in the evening crowd.",
+"2": "This blouse adds a gentle contrast to the heavier outer layer with its soft drape and subtle color, keeping the upper part of your outfit light and elegant.",
+"3": "The ring offers a small, refined accent that fits your classic register without drawing too much attention, perfect for a night out where you want to stay understated.",
+"4": "Your mules bring practical comfort with their secure heel and slip-on design, allowing you to walk confidently through the venue without worrying about laces or straps catching on anything.",
+"5": "The skirt sets a long, graceful line that flatters your figure and complements the coat’s length, creating a cohesive silhouette ideal for standing in a crowd.",
+"6": "This tote is spacious enough to carry essentials comfortably while maintaining a clean, minimal look that aligns with your classic aesthetic.",
+"7": "I chose this look to honor your wish for something restrained and classic, even at a rock concert. The coat anchors you with warmth and a quiet silhouette, while the blouse brings softness to your upper body and the skirt defines a long, elegant line that moves well in a crowd. The mules give steady support for walking through venues, and the tote carries everything without fuss. A simple ring adds a touch of personality without overwhelming the look.",
+"8": "Keep the coat open to let the blouse peek through for softness, or button it if you want more warmth in the club crowd.",
+"9": "Tuck the blouse neatly into the skirt to define your waist and keep the silhouette clean as you stand with friends.",
+"10": "Стильне однотонне жіноче пальто з англійським коміром маренго Stella Polare — I chose this relaxed wool coat to soften the formal silhouette you asked for, ensuring comfort while standing in the crowd."
+}
+
+── ВІДПОВІДЬ (2012 симв., 13.1 с, HTTP 200) ──
+```json
+{
+  "1": "Цей тренч забезпечує надійний захист від холоду та має чітку, класичну форму, яка відповідає твоєму запиту про стриманість, але при цьому виглядає елегантно у вечірньому натовпі.",
+  "2": "Ця блузка додає ніжний контраст до важчого верхнього шару завдяки своїй м’якій драпіровці та ледь помітному кольору, зберігаючи твій образ легким і витонченим.",
+  "3": "Це кільце пропонує невеликий, вишуканий акцент, який підходить до твоєї класичної естетики без надмірної уваги, чудово для вечора, коли ти хочеш залишатися непомітною.",
+  "4": "Твої мюлі дарують практичний комфорт завдяки надійному каблуку та зручній конструкції з відкритою п’ятою, дозволяючи тобі впевнено пересуватися по закладу без турбот про шнурки чи ремінці.",
+  "5": "Ця спідниця створює довгу, граційну лінію, яка підкреслює твою фігуру та доповнює довжину тренчу, формуючи гармонійний силует ідеальний для перебування у натовпі.",
+  "6": "Ця сумка-тоут досить містка, щоб зручно носити з собою необхідні речі, зберігаючи при цьому чистий, мінімалістичний вигляд, який відповідає твоїй класичній естетиці.",
+  "7": "Я обрала цей образ, щоб вшанувати твоє бажання про щось стримане та класичне навіть на рок-концерті. Тренч дарує тобі тепло та тихий силует, а блузка додає м’якості твоїй верхній частині тіла, і спідниця визначає довгу, елегантну лінію, яка добре рухається у натовпі. Мюлі забезпечують стійку підтримку для ходьби по закладах, а сумка-тоут вміщує все без зайвого клопоту. Просте кільце додає нотку індивідуальності, не перевантажуючи образ.",
+  "8": "Залиш тренч розстібнутим, щоб блузка злегка проглядала для м’якості, або застебни його, якщо тобі потрібніше тепло у натовпі клубу.",
+  "9": "Акуратно заправ блузку в спідницю, щоб підкреслити талію і зберегти силует чистим, коли ти стоїш з друзями.",
+  "10": "Я обрала цей розслаблений вовняний тренч Stella Polare з англійським коміром маренго, щоб пом’якшити формальний силует, який ти попросила, забезпечуючи комфорт під час перебування у натовпі."
+}
+```
