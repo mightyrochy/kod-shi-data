@@ -410,7 +410,7 @@ class Н4(unittest.TestCase):
                                          модель={"вікно": 200_000}, її_речі=її)
                 текст = з.модель["messages"][0]["content"]
                 дані = json.loads(текст)
-                with patch.object(Р, "головний_колір", lambda _в: дані.get("main_color")):
+                with patch.object(Р, "головний_колір", lambda _в, колір=дані.get("main_color"): колір):
                     чинний = Р.промпт_руки(str(рука), дані["case"], "", None, речі, дані.get("person"),
                                            без_кадрів=True)
                 self.assertEqual(текст, чинний)
