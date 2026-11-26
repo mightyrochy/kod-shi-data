@@ -153,7 +153,8 @@ def prepare(offer, native, blocked):
 
 
 def order_rows(rows):
-    # Початкова полиця показує різні категорії і крамниці. Порівнянні кадри та ціни — першими.
+    """Задає стійкий порядок для однакових оцінок пошукових збігів."""
+    # Порожню полицю браузер перемішує окремо для кожного відкриття.
     buckets=collections.defaultdict(lambda:collections.defaultdict(collections.deque))
     rows.sort(key=lambda r:(r[12] is False,not r[9], r[5] is None, r[4], r[0]))
     for row in rows:
