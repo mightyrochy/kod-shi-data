@@ -166,8 +166,6 @@ def _слоти(*коди):
 КОДИ_СЛОТІВ_БЕЗ_МЕТАЛУ_ПРИКРАС = ("top", "bottom", "dress", "set", "outerwear", "shoes", "bag", "socks", "tights",
                                   "swimwear", "underwear")
 КОДИ_ГРУП_КАТАЛОГУ = ("top", "bottom", "dress", "outerwear", "shoes", "bag")
-# Публічна полиця чергує крамниці в порядку власних категорій, де coat, jewels і hat — групи пошуку.
-ПОРЯДОК_КАТЕГОРІЙ_ПОШУКУ = ("dress", "top", "bottom", "coat", "shoes", "bag", "jewels", "scarf", "set", "belt", "hat")
 # Каталожні групи ставлять кольє останнім.
 ПОРЯДОК_ГРУПИ_ПРИКРАС_КАТАЛОГУ = _слоти("jewelry", "earrings", "necklace", "bracelet", "ring", "brooch",
                                         "collar_necklace")
