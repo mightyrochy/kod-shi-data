@@ -6,6 +6,12 @@ import json
 from ядро import мітки
 from ядро.поняття import НЕВІДОМО
 
+# Ключі визначення міток (`ядро/дані/мітки_речі.json`) — дані, не поля запису: пише їх файл визначення, а не код.
+ЗОВНІШНІ_ВХОДИ = {
+    "кілька": "мітка визначення: відповідь — кілька кодів (сезон тканини)",
+    "не_для": "мітка визначення: слоти чи група, де мітки нема",
+}
+
 СИСТЕМНИЙ = ("You write the record of one clothing or accessory item from a Ukrainian online shop for a styling app. "
              "The user message holds the shop's own words, maybe a size table, and photos of the item. "
              "Answer with raw JSON only, no code fence, no commentary.")
