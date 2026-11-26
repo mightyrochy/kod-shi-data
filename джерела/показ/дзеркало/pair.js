@@ -203,9 +203,11 @@ window.createMirrorPair = function(R) {
       const replace=node('замін-'+i+'-'+j);
       return '<details class="pair-item-details"><summary>'+e(p.назва||'Річ')+'</summary>'+itemPreview(p)+shop+'<div class="pair-inline">'+(replace?action('pair-native-replace','Не ця · замінити',i+'|'+j):'')+action('pair-own-piece','Маю свою',i+'|'+j)+'</div></details>';
     }).join(''):'';
-    const signature=[key,testing,same,M.get(),worn,reverseKey,recent,itemRows,lead,photos,bodyPhoto(),entry?.дата,group?.нагода].join('·');
+    const дія=!testing&&!same?рядокДіїВиборуКарткиП(c):null;
+    const signature=[key,testing,same,M.get(),worn,reverseKey,recent,itemRows,lead,photos,bodyPhoto(),entry?.дата,group?.нагода,дія].join('·');
     if(target._renderKey===signature)return;target._renderKey=signature;
     place(target,spread+stampButton+recent+(photos?'<div class="pair-piece-shelf">'+photos+'</div>':'')+itemRows+
+      (дія?'<p class="не-вийшло">'+e(дія)+'</p>':'')+
       (!testing&&!same?action('pair-open-product','Відкрити цей образ',String(i),true):'')+
       (testing?action('pair-result','До мого образу'):''));
   }

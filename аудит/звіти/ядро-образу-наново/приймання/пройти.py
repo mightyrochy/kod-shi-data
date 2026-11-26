@@ -90,7 +90,7 @@ def main():
         файл_плану = вихід / "план.json"
         файл_плану.write_text(json.dumps(план, ensure_ascii=False, indent=2), encoding="utf-8")
         env = dict(os.environ, **план["вхід"], N6_PLAN=str(файл_плану), ZNIMKY=str(вихід / "знімки"),
-                   VIDPOVIDI=str(вихід / "відповіді"), OTSINKA="0", ODNOCHASNO="1")
+                   VIDPOVIDI=str(вихід / "відповіді"), OTSINKA="0", ODNOCHASNO="1", SHYRYNA="390")
         print(f"{шлях}, прохід {план['прохід']}, {план['номер']} ({план['ід']})", flush=True)
         with (вихід / "лог.txt").open("w", encoding="utf-8") as лог:
             вих = subprocess.run(
