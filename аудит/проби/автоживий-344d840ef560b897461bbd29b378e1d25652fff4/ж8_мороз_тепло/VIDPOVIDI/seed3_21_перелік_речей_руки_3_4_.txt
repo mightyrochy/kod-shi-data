@@ -1,0 +1,37 @@
+── ПРОМПТ (2332 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Oversized wool-blend coat in charcoal gray (#36454F), relaxed boxy cut, hip-length hem, soft brushed fabric for warmth.\nDark indigo rigid denim jeans, straight-leg cut, mid-thigh length, deep navy color (#191A1D), heavy weight twill to block the chill.\nChunky white leather sneakers with thick rubber soles, classic rounded toe, padded collar, smooth grain leather.\nA simple black silk scarf (#000000) tied loosely around the neck to catch stray wind while maintaining comfort.\n\nThis outfit works because it strictly adheres to your wish for warmth during deep frost, utilizing a heavyweight wool coat and thick denim layers that provide serious insulation without feeling like bulky sportswear. The relaxed silhouette of the oversized coat and straight-leg jeans allows you to move freely and comfortably while strolling with friends in the autumn park. By choosing dark neutrals and classic materials, the look remains grounded and practical for a casual day out, perfectly balancing your need for coziness with a neat, everyday aesthetic that doesn't look overly dressed up."}
+
+── ВІДПОВІДЬ (905 симв., 3.7 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "wool-blend coat",
+      "details": "oversized relaxed boxy cut hip-length hem soft brushed fabric for warmth",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "denim jeans",
+      "details": "straight-leg cut mid-thigh length heavy weight twill to block the chill",
+      "slot": "bottom",
+      "color_hex": "#191A1D",
+      "worn": true
+    },
+    {
+      "name": "leather sneakers",
+      "details": "chunky white thick rubber soles classic rounded toe padded collar smooth grain leather",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "silk scarf",
+      "details": "simple black tied loosely around the neck to catch stray wind while maintaining comfort",
+      "slot": "scarf",
+      "color_hex": "#000000",
+      "worn": true
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+── ПРОМПТ (2169 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A refined silk-blend blouse in a soft sand hue (#e0cda5), featuring a relaxed wrap cut that falls to the hip with a flowing drape neckline and wide three-quarter sleeves. Paired with tailored linen trousers in a muted olive green (#8b9476), structured at the ankle with a straight leg that offers a comfortable yet polished silhouette for creative environments. Footed by low-heeled almond pumps in a warm cognac leather (#a67c52) to ground the look without compromising comfort during long work hours. Finished with delicate gold bar studs and a structured woven tote bag, this ensemble embodies the neat dress code while honoring her wish for reading-focused attire that avoids restrictive fits. The neutral earth tones harmonize beautifully with her skin's warm undertones (#deb295) and hair shade (#e5cd99), creating an effortless, approachable professional aesthetic perfect for an autumn day in a creative office."}
+
+── ВІДПОВІДЬ (993 симв., 4.6 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "refined silk-blend relaxed wrap cut falling to the hip with flowing drape neckline and wide three-quarter sleeves",
+      "slot": "top",
+      "color_hex": "#e0cda5",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "tailored linen structured at the ankle with a straight leg offering a comfortable yet polished silhouette",
+      "slot": "bottom",
+      "color_hex": "#8b9476",
+      "worn": true
+    },
+    {
+      "name": "pumps",
+      "details": "low-heeled almond shape made of warm cognac leather",
+      "slot": "shoes",
+      "color_hex": "#a67c52",
+      "worn": true
+    },
+    {
+      "name": "jewelry",
+      "details": "delicate gold bar studs",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "bag",
+      "details": "structured woven tote",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

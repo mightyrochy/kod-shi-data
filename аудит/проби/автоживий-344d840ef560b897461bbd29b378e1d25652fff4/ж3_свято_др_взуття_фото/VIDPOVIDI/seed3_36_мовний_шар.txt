@@ -1,0 +1,58 @@
+── ПРОМПТ (6834 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — about it: text н=1
+2 — kind: dress_generic · about it: text н=2
+3 — kind: trench_coat · about it: text н=3
+4 — kind: earrings · about it: text н=4
+5 — kind: bag_generic · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Your own white sandals with black soles are chosen because they honor your wish to wear personal shoes and provide grip and steadiness for dancing.",
+"2": "The olive dress sets the occasion by offering a neat, structured silhouette that fits perfectly within party formality.",
+"3": "This trench coat brings warmth and coverage for an evening out, while its belt ties let you adjust the line to your waist.",
+"4": "The red heart earrings add a cheerful pop of color inside your palette, perfect for celebrating with friends.",
+"5": "The round wooden handle bag offers a unique texture and shape that balances the dress's clean tailoring without adding bulk.",
+"6": "I chose this olive dress as the perfect centerpiece for a birthday party: its clean lines and wrap detail define your waist without constriction. The trench coat brings warmth and structure to keep you comfortable while you dance, and I selected your own white sandals with black soles to satisfy your wish for personal footwear; their block heel gives you steadiness on any floor, and the low profile keeps the look relaxed yet ready for celebration. A touch of red from these earrings adds a playful sparkle that fits the festive mood, and the round wooden handle bag offers an organic counterpoint to the dress's crisp tailoring.",
+"7": "Wear the trench coat open over the dress so the belt can tie at the front or back, depending on which line you prefer across your torso.",
+"8": "Let the dress hem fall naturally to show just a hint of your ankles for balance, and step into your sandals without any socks.",
+"9": "Бавовняна сукня з асиметричним низом Ленокс — The olive bodysuit is retained as the core 'dress' item (formal bottom + top), accepting the formality gap but solving it with the coat layer.",
+"10": "Жіночий тонкий плащ реглан з поясом та підкладкою, casual стиль Evona — Added a beige trench coat to fix 'no_top_bottom_or_dress' by providing necessary coverage and formal structure over the casual bodysuit.",
+"11": "Сережки Heartline red — Swapped the pink necklace for coral earrings to move the accent to the face (fixing 'accent_role_lost'), ensuring high chroma near the skin.",
+"12": "Екосумка лляна з дерев'яною ручкою — I accept the finding that the mustard bag feels disconnected from the core neutrals scheme because it acts as a deliberate, joyful pop of color for this birthday celebration; its unique hue adds the festive energy your day needs, proving its worth despite the structural warning."
+}
+
+── ВІДПОВІДЬ (2584 симв., 16.4 с, HTTP 200) ──
+```json
+{
+  "1": "Твої білі сандалії з чорними підошвами обрано тому, що вони вшановують твоє бажання носити особисте взуття та забезпечують стійкість для танців.",
+  "2": "Оливкова сукня задає тон події, пропонуючи елегантний силует, який ідеально підходить до вечірнього дрес-коду.",
+  "3": "Цей тренч приносить тепло та захист для прогулянки ввечері, а його пояс дозволяє тобі відрегулювати лінію по твоїй талії.",
+  "4": "Червоні сережки у формі серця додають веселий акцент кольору до твоєї палітри, ідеальні для святкування з друзями.",
+  "5": "Сумка з круглою дерев’яною ручкою пропонує цікаву текстуру та форму, яка врівноважує чистий крій сукні без зайвого об’єму.",
+  "6": "Я обрала цю оливкову сукню як ідеальний центр образу для дня народження: її чіткі лінії та драпіровка підкреслюють твою талію, не сковуючи рухів. Тренч приносить тепло та структуру, щоб ти почувалася комфортно, танцюючи, а я обрала твої білі сандалії з чорними підошвами, щоб задовольнити твоє бажання носити особисте взуття; їхній стійкий каблук дарує тобі рівновагу на будь-якій поверхні, а низький профіль зберігає образ невимушеним та готовим до святкування. Нотка червоного від цих сережок додає грайливого блиску, який відповідає святковому настрою, а сумка з круглою дерев’яною ручкою пропонує органічний контраст до чіткого крою сукні.",
+  "7": "Одягни тренч розстебнутим поверх сукні так, щоб пояс зав’язався спереду або ззаду, залежно від того, яку лінію ти хочеш підкреслити на своєму тілі.",
+  "8": "Дозволь подолу сукні природно падати до щиколоток, щоб створити баланс, і одягни сандалії без шкарпеток.",
+  "9": "Бавовняна асиметрична спідниця Ленокс — Оливковий боді залишається основним елементом «сукні» (формальний низ + верх), приймаючи розрив у формальності, але вирішуючи його шаром тренчу.",
+  "10": "Жіночий тонкий плащ-реглан з поясом та підкладкою, casual стиль Evona — Додала бежевий тренч, щоб виправити «немає верху чи низу або сукні», забезпечивши необхідний захист і формальну структуру поверх повсякденного боді.",
+  "11": "Сережки Heartline червоні — Замінила рожеву підвіску на коралові сережки, щоб перенести акцент на обличчя (виправила «роль акценту втрачена»), забезпечивши високу насиченість кольору біля шкіри.",
+  "12": "Екосумка лляна з дерев’яною ручкою — Я приймаю висновок, що гірчична сумка здається відірваною від основної нейтральної схеми, оскільки вона діє як навмисний, радісний акцент кольору для цього дня народження; її унікальний колір додає святкової енергії, якої потребує твій день, доводячи свою цінність попри структурне попередження."
+}
+```
