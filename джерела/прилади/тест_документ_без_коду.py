@@ -405,7 +405,7 @@ class Рішення(unittest.TestCase):
 
     @staticmethod
     def свій_крок(п):
-        п["check_runs"].append({"name": "рішення", "status": "in_progress", "conclusion": None,
+        п["check_runs"].append({"name": "стороння перевірка", "status": "in_progress", "conclusion": None,
                                 "details_url": "https://github.com/mightyrochy/kod-shi-data/actions/runs/777/job/1"})
 
     def test_власний_незавершений_крок_не_заважає(self):
@@ -1173,6 +1173,41 @@ class Самоперевірка(unittest.TestCase):
                 р = subprocess.run([sys.executable, "-I", "джерела/прилади/документ_без_коду.py", "--самоперевірка"],
                                    cwd=тека, capture_output=True, text=True, encoding="utf-8", check=False)
                 self.assertEqual(р.returncode, 0, f"перелік {перелік.split()}: {(р.stdout + р.stderr)[-600:]}")
+
+
+class СкасованеЗлиття(unittest.TestCase):
+    """Наряд CI-самозлиття-скасоване-злиття: скасований job «злиття» запуску самозлиття (подія не `pull_request`) —
+    не CI голови; той самий check run запуску процесу `pull_request` — рахується."""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(ТУТ, "документ_без_коду_скасований.json"), encoding="utf-8") as ф:
+            cls.голови = json.load(ф)
+
+    def перевірки(self, номер, зміна):
+        г = copy.deepcopy(self.голови[номер])
+        зміна(г)
+        return д.перевірки_голови(г["голова"], г["запуски"], г["check_runs"], г["статуси"])
+
+    def з_злиттям(self, ід):
+        def з(г):
+            г["check_runs"].append({"id": 1, "name": "злиття", "status": "completed", "conclusion": "cancelled",
+                                    "details_url": f"https://github.com/mightyrochy/kod-shi-data/actions/runs/{ід}/job/9"})
+        return з
+
+    def test_скасоване_злиття_самозлиття_не_заважає(self):
+        так, чому = self.перевірки("3564", self.з_злиттям(45775095836))
+        self.assertTrue(так, чому)
+
+    def test_скасований_check_run_запуску_pull_request_заважає(self):
+        так, чому = self.перевірки("3564", self.з_злиттям(43342649116))
+        self.assertFalse(так, чому)
+        self.assertIn("«злиття»: cancelled", чому)
+
+    def test_імена_job_збігаються_з_процесом(self):
+        with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
+            імена = set(re.findall(r"^    name: (.+)$", ф.read(), re.M))
+        self.assertEqual(імена, set(д.JOB_САМОЗЛИТТЯ))
 
 
 if __name__ == "__main__":
