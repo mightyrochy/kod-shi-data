@@ -1,0 +1,30 @@
+── ПРОМПТ (2076 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A silk slip dress, midi length, in a soft champagne hex #E8D5C4, woven from pure mulberry silk to catch the evening light.\nStrappy sandals, ankle height, in a neutral tan hex #D2B48C, crafted from smooth leather with a modest heel for standing on grass.\nA delicate gold necklace featuring pearl drops, color #FFD700, to serve as the focal point for her jewelry accent.\n\nThis outfit transitions gracefully from the outdoor ceremony in August heat to the restaurant dinner without requiring a heavy jacket or layers that would cause overheating. The champagne silk provides an elegant, formal silhouette suitable for a wedding guest while remaining breathable for summer weather. The gold pearl necklace honors her specific wish to highlight jewellery, adding a touch of noble refinement that matches the evening atmosphere."}
+
+── ВІДПОВІДЬ (614 симв., 3.1 с, HTTP 200) ──
+{
+"is_outfit": "yes",
+"items": [
+{
+"name": "silk slip dress",
+"details": "midi length woven from pure mulberry silk with soft champagne hue to catch light",
+"slot": "dress",
+"color_hex": "#E8D5C4",
+"worn": true
+},
+{
+"name": "strappy sandals",
+"details": "ankle height crafted from smooth leather with a modest heel for standing on grass",
+"slot": "shoes",
+"color_hex": "#D2B48C",
+"worn": true
+},
+{
+"name": "gold necklace featuring pearl drops",
+"details": "delicate gold design serving as focal point for jewelry accent to highlight jewellery",
+"slot": "collar_necklace",
+"color_hex": "#FFD700",
+"worn": true
+}
+]
+}

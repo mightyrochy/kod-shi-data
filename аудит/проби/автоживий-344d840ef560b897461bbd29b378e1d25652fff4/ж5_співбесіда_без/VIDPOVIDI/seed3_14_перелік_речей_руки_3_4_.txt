@@ -1,0 +1,58 @@
+── ПРОМПТ (2433 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Light grey tailored blazer with a notched lapel, structured shoulder, cropped length at the hip, soft heather grey wool blend.\nCream silk-blend blouse, relaxed fit, rounded neckline, long sleeves with button cuffs, ivory color (#FFFFF0), lightweight crepe.\nNavy blue wide-leg trousers, high waist, straight leg cut that flares slightly at the ankle, deep navy hex code (#000080), crisp cotton poplin.\nDark tan leather loafers, almond toe, flat sole with a slight stack heel, smooth calfskin leather.\nSimple gold bar necklace, small pearl stud earrings, structured beige tote bag with silver hardware.\nThis outfit works because it strikes the perfect balance between professional authority and approachable warmth for an analytical role. The tailored blazer signals competence while the cream blouse softens the look to avoid appearing too rigid or cold. Navy trousers provide a grounded, trustworthy foundation that aligns with banking traditions without being overly severe. The light grey tone of the blazer is neutral enough to complement any office decor while avoiding her refusal of black, ensuring she feels confident and prepared for the interview at ten in the morning."}
+
+── ВІДПОВІДЬ (1406 симв., 5.8 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blazer",
+      "details": "tailored cut with notched lapel, structured shoulder, cropped length at the hip, soft heather grey wool blend fabric",
+      "slot": "outerwear",
+      "color_hex": "#D3D3D3",
+      "worn": true
+    },
+    {
+      "name": "blouse",
+      "details": "relaxed fit, rounded neckline, long sleeves with button cuffs, lightweight crepe fabric",
+      "slot": "top",
+      "color_hex": "#FFFFF0",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "wide-leg cut, high waist, straight leg that flares slightly at the ankle, crisp cotton poplin fabric",
+      "slot": "bottom",
+      "color_hex": "#000080",
+      "worn": true
+    },
+    {
+      "name": "loafers",
+      "details": "almond toe, flat sole with a slight stack heel, smooth calfskin leather",
+      "slot": "shoes",
+      "color_hex": "#8B7355",
+      "worn": true
+    },
+    {
+      "name": "necklace",
+      "details": "simple gold bar design",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "small pearl studs",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "tote bag",
+      "details": "structured shape with silver hardware",
+      "slot": "bag",
+      "color_hex": "#D2B48C",
+      "worn": true
+    }
+  ]
+}

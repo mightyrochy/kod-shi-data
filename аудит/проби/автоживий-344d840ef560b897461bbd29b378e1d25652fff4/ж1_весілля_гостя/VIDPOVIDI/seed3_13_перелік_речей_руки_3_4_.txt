@@ -1,0 +1,37 @@
+── ПРОМПТ (2099 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Sheer silk chiffon midi dress with an empire waist, floor-length skirt in a soft champagne hue (#F7E7CE), lightweight fluid fabric designed for airflow.\nDelicate gold baroque pearl drop earrings and a matching pendant necklace to highlight the requested jewelry accent.\nStrappy nude satin sandals with a moderate heel for comfort during the ceremony and dinner.\nThis ensemble perfectly balances the formal dress code of a wedding while respecting the August weather with breathable, airy fabrics suitable for an outdoor garden setting at 4 PM. The champagne color offers a warm, sophisticated complement to summer greens and artificial evening lighting, transitioning seamlessly from the park to the restaurant. The delicate gold jewelry provides the necessary focal point without feeling heavy or out of place in a celebratory summer atmosphere."}
+
+── ВІДПОВІДЬ (793 симв., 3.3 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Sheer silk chiffon midi dress with an empire waist and floor-length skirt",
+      "details": "Lightweight fluid fabric designed for airflow, soft champagne hue (#F7E7CE)",
+      "slot": "dress",
+      "color_hex": "#F7E7CE",
+      "worn": true
+    },
+    {
+      "name": "Delicate gold baroque pearl drop earrings",
+      "details": "",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Matching pendant necklace",
+      "details": "",
+      "slot": "necklace",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "Strappy nude satin sandals",
+      "details": "Moderate heel for comfort",
+      "slot": "shoes",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}

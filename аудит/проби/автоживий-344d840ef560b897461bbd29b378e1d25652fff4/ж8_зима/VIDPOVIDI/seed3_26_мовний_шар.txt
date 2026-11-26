@@ -1,0 +1,75 @@
+── ПРОМПТ (8047 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: suit · about it: text н=1
+2 — kind: brooch · about it: text н=2
+3 — kind: belt · about it: text н=3
+4 — kind: boots · about it: text н=4
+5 — kind: coat · about it: text н=5
+6 — kind: crossbody_bag · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The tailored suit set provides the perfect foundation for your professional environment, offering both comfort and confidence.",
+"2": "This brooch brings a subtle spark that reflects your personal style while staying within your preferred color palette.",
+"3": "The soft belt cinches at your natural waist to create a graceful line that balances the volume of the coat and suit.",
+"4": "These boots are built for movement, ensuring you can walk comfortably through your day while remaining stylish.",
+"5": "This wool coat stands as a reliable shield against the cold, keeping you comfortable and warm in any weather.",
+"6": "The crossbody bag keeps your essentials secure and accessible, allowing you to stay hands-free as you move around the office or during commute.",
+"7": "This black suit set brings the structure and polish your work day needs. The brooch adds a touch of elegance without adding clutter. The belt defines your waist to give you a streamlined look under the coat. These boots provide comfort for your long walks, while the wool coat keeps you warm through the colder months. Finally, this crossbody bag lets you keep your hands free.",
+"8": "Leave the collar of the coat open to maintain an airy feel that still looks professional.",
+"9": "Чоботи осінні бордові з натурального спилку-замші — The burgundy knee boots replace the missing footwear, answering the 'outfit_without_shoes' finding by providing a warm, water-resistant base that withstands salted frost.",
+"10": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — The black wool coat replaces the missing outer layer, answering 'weather_needs_outerwear' with a warm, fitted piece that fits over the suit for frost conditions.",
+"11": "Чоботи осінні бордові з натурального спилку-замші — The boots also resolve 'too_few_items' by adding a necessary fourth piece to meet the minimum count.",
+"12": "Брошка-троянда з органзи чорна — The black brooch is a neutral that anchors the face, allowing the red accent to pop against the dark suit.",
+"13": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — The black wool coat replaces the missing outer layer, answering 'weather_needs_outerwear' with a warm layer that fits over the sweater.",
+"14": "Чоботи осінні бордові з натурального спилку-замші — The burgundy ankle boots replace the missing shoes, answering 'outfit_without_shoes' and providing necessary warmth for frost.",
+"15": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — The black wool coat replaces the missing outer layer, answering 'weather_needs_outerwear' with a warm, fitted piece that fits over the cardigan.",
+"16": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — The coat also resolves 'too_few_items' by bringing the total count to five items.",
+"17": "Чоботи осінні бордові з натурального спилку-замші — The burgundy ankle boots replace the missing shoes, answering 'outfit_without_shoes' and providing water resistance for salted roads.",
+"18": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — The black wool coat replaces the missing outer layer, answering 'weather_needs_outerwear' with a warm piece that fits over the jeans.",
+"19": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — The coat also helps resolve 'too_few_items' by adding a necessary fourth piece.",
+"20": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — The black wool coat replaces the missing outer layer, answering 'weather_needs_outerwear' with a warm piece that fits over the vest."
+}
+
+── ВІДПОВІДЬ (3747 симв., 23.7 с, HTTP 200) ──
+```json
+{
+"1": "Стильний костюмний комплект стане чудовою основою для твого професійного середовища, даруючи комфорт і впевненість.",
+"2": "Ця брошка додає ледь помітного блиску, який відображає твій особистий стиль, залишаючись у межах твоєї обраної колірної гами.",
+"3": "М'який ремінь підкреслює талію, створюючи витончену лінію, яка збалансовує об’єм пальта й костюма.",
+"4": "Ці черевики створені для руху, забезпечуючи комфортну ходьбу протягом дня, залишаючись при цьому стильними.",
+"5": "Це вовняне пальто надійно захищає від холоду, зігріваючи тебе в будь-яку погоду.",
+"6": "Сумка через плече зберігає твої необхідні речі під рукою, дозволяючи тобі залишатися вільною у русі по офісу чи дорогою на роботу.",
+"7": "Цей чорний костюмний комплект дарує структурованість і елегантність, яких потребує твій робочий день. Брошка додає нотку вишуканості без зайвого клопоту. Ремінь підкреслює талію, створюючи стрункий силует під пальтам. Ці черевики забезпечують комфорт для довгих прогулянок, а вовняне пальто зігріває тебе в холодні місяці. Нарешті, сумка через плече дозволяє тримати руки вільними.",
+"8": "Залиш комір пальта розстебнутим, щоб зберегти легкий і повітряний вигляд, який все ще виглядатиме професійно.",
+"9": "Бордові осінні черевики з натуральної спилку-замші — ці бордові ботильйони замінюють відсутнє взуття, відповідаючи на знахідку 'outfit_without_shoes', забезпечуючи теплу та водостійку основу, яка витримує підсолений мороз.",
+"10": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — чорне вовняне пальто замінює відсутній верхній шар, відповідаючи на 'weather_needs_outerwear' теплою та приталеною річчю, яка одягається поверх костюма для морозних умов.",
+"11": "Бордові осінні черевики з натуральної спилку-замші — ці ботильйони також вирішують 'too_few_items', додаючи четвертий необхідний елемент, щоб досягти мінімальної кількості.",
+"12": "Чорна брошка-троянда з органзи — чорна брошка є нейтральним акцентом, який підкреслює обличчя, дозволяючи червоному кольору виділитися на тлі темного костюма.",
+"13": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — чорне вовняне пальто замінює відсутній верхній шар, відповідаючи на 'weather_needs_outerwear' теплим шаром, який одягається поверх светра.",
+"14": "Бордові осінні черевики з натуральної спилку-замші — ці ботильйони замінюють відсутнє взуття, відповідаючи на 'outfit_without_shoes' і забезпечуючи необхідне тепло для морозів.",
+"15": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — чорне вовняне пальто замінює відсутній верхній шар, відповідаючи на 'weather_needs_outerwear' теплим і приталеним елементом, який одягається поверх кардигана.",
+"16": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — це пальто також вирішує 'too_few_items', додаючи п'ятий елемент до загальної кількості.",
+"17": "Бордові осінні черевики з натуральної спилку-замші — ці ботильйони замінюють відсутнє взуття, відповідаючи на 'outfit_without_shoes' і забезпечуючи водостійкість для підсолених доріг.",
+"18": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — чорне вовняне пальто замінює відсутній верхній шар, відповідаючи на 'weather_needs_outerwear' теплим елементом, який одягається поверх штанів.",
+"19": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — це пальто також допомагає вирішити 'too_few_items', додаючи четвертий необхідний елемент.",
+"20": "Жіноче вовняне пальто оверсайз з англійським коміром, двобортне Stella Polare — чорне вовняне пальто замінює відсутній верхній шар, відповідаючи на 'weather_needs_outerwear' теплим елементом, який одягається поверх жилету."
+}
+```

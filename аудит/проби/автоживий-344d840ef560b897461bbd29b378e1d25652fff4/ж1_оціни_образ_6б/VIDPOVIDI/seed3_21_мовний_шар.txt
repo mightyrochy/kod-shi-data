@@ -1,0 +1,46 @@
+── ПРОМПТ (5537 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+4 — назва в тексті н=5
+5 — назва в тексті н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+[colour: код] у тексті — колір речі кодом: напиши на його місці українську назву цього кольору, узгоджену з реченням. Коли та сама річ у тексті вже має колір своїм словом, лиши її слово, а другої назви кольору не додавай. Коди: beige — бежевий; brown — коричневий; yellow — жовтий.
+
+ТЕКСТИ:
+{
+"1": "A refined silk-blend blouse in a soft sand hue, featuring a relaxed wrap cut that falls to the hip with a flowing drape neckline and wide three-quarter sleeves. Paired with tailored linen trousers in a muted olive green, structured at the ankle with a straight leg that offers a comfortable yet polished silhouette for creative environments. Footed by low-heeled almond pumps in a warm cognac leather [colour: brown] to ground the look without compromising comfort during long work hours. Finished with delicate gold bar studs and a structured woven tote bag, this ensemble embodies the neat dress code while honoring her wish for reading-focused attire that avoids restrictive fits. The neutral earth tones harmonize beautifully with her skin's warm undertones [colour: beige] and hair shade [colour: yellow], creating an effortless, approachable professional aesthetic perfect for an autumn day in a creative office.",
+"2": "blouse",
+"3": "trousers",
+"4": "pumps",
+"5": "jewelry",
+"6": "bag"
+}
+
+── ВІДПОВІДЬ (1094 симв., 21.9 с, HTTP 200) ──
+{
+"1": "Вишуканий шовковий блузон у м’якому пісочному відтінку, з вільним драпірованим кроєм, що спадає до стегон. Має розріз-запах і широкий виріз на спині та три чверті рукавів. У поєднанні зі штанами з льону вільного крою приглушеного оливкового кольору, які мають прямий крій від щиколотки й забезпечують комфортний, але елегантний силует для творчого середовища. Доповнено низько підборами туфлями-човниками з теплої шкіри коньячного кольору [colour: brown], щоб завершити образ без шкоди для зручності протягом тривалих робочих годин. Завершує ансамбль делікатна золота сережка-шпилька та структурована сумка на плечі, сплетена з товстої мотузки. Цей комплект втілює охайний дрес-код і водночас поважає її бажання носити одяг для читання, який не обмежує рухів. Нейтральні землисті відтінки гармонійно підкреслюють теплий тон твоєї шкіри [colour: beige] та колір волосся [colour: yellow], створюючи невимушений і привітний професійний вигляд, який чудово пасуватиме до осіннього дня в креативному офісі.",
+"2": "блузон",
+"3": "штани",
+"4": "туфлі-човники",
+"5": "прикраси",
+"6": "сумка"
+}
