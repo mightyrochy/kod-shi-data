@@ -1399,10 +1399,12 @@ _СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
              "passed affirms the topic, failed means the criterion was not met, held means the result is inconclusive, "
              "no_input means the needed information is missing, not_applicable means the criterion does not apply. "
              "A finding with checklist references in its because field must be cited together with one of those references. "
-             "Only discuss checklist topics relevant to her question or your advice. "
+             "Discuss topics relevant to her question or advice, and acknowledge uncertainty as requested below. "
              "Put uncertainty (held or no_input) under unknown; leave not_applicable out. "
              "Do not quote the names of states, fact numbers, or rule codes in says."),
     наприкінці="\n".join((
+        "Acknowledge each checklist fact with state held under unknown. You can group closely related facts "
+        "in one sentence provided about names each fact and its state.",
         "\"answer\": answer her question first and directly, in one to three sentences; "
         "without a question, give your view of the outfit as a whole.",
         "\"verdict\": your overall view of whether she should wear the outfit as it is.",
@@ -1801,6 +1803,14 @@ def _знахідка_для_тексту(запис, клітинки):
     return запис
 
 
+def _клітинки_оцінки(суд_):
+    """Пункти остаточного суду з додатковою клітинкою контрасту біля обличчя."""
+    чекліст = (суд_.get("суд") or {}).get("checklist") or {}
+    клітинки = {_ВМ.код_пункту(п.get("пункт")): п for п in суд_.get("пункти") or []}
+    клітинки.update((п["код"], п) for бік in чекліст.values() for п in бік.get("пункти", []) if п.get("код"))
+    return клітинки
+
+
 def _факти_оцінки(суд_, питання=None):
     """Вхід тексту картки: клітинка несе результат суду, а виміри, з яких він виведений, лишаються в суді."""
     дані = дані_оцінки(суд_, питання)
@@ -1823,13 +1833,10 @@ def _факти_оцінки(суд_, питання=None):
             межа.факт(стан, dict(field=поле, value=дані[поле]))
     межа.факт(_МТ.ВІДОМЕ, dict(field="outfit", value=дані["outfit"]))
     перевірка = дані["check"]
-    чекліст = (суд_.get("суд") or {}).get("checklist") or {}
     описи = (*_СЧ.ЧЕКЛІСТ_НАДЛИШКУ, *_СЧ.ЧЕКЛІСТ_ПРІСНОСТІ, *_СЧ.ЧЕКЛІСТ_ПАЛІТРИ, *_СЧ.ЧЕКЛІСТ_АКСЕСУАРІВ)
     правила_точки = {_ВМ.код_пункту(ід): правила for ід, _, правила, _ in описи}
-    клітинки = {_ВМ.код_пункту(п.get("пункт")): п for п in суд_.get("пункти") or []}
-    клітинки.update((п["код"], п) for бік in чекліст.values() for п in бік.get("пункти", []) if п.get("код"))
     посилання, правила = [], {}
-    for код, клітинка in клітинки.items():
+    for код, клітинка in _клітинки_оцінки(суд_).items():
         стан = _СТАНИ_КЛІТИНОК.get(клітинка.get("стан"))
         if not стан or not код:
             continue
@@ -2163,8 +2170,8 @@ def прийняти_оцінку(відповідь, суд_):
     return сторож_оцінки_об(об, суд_, причина=причина, нотатки=нотатки)
 
 
-def _прийняти_речення_оцінки(межа, речення, де, сторож):
-    """Судить опори речень спільною межею й віддає текст без службових полів."""
+def _прийняти_речення_оцінки(межа, речення, де, сторож, висловлені=None):
+    """Судить опори речень і за потреби повертає номери прийнятих фактів через `висловлені`."""
     if речення is None:
         return ""
     частина = "unknown" if де == "unknown" else "text"
@@ -2178,6 +2185,8 @@ def _прийняти_речення_оцінки(межа, речення, де
             сторож.append(dict(де=де, чому="unchecked_in_main_text", про=непридатні, зняте=р["says"]))
         else:
             слова.append(р["says"])
+            if висловлені is not None:
+                висловлені.update(р["about"])
     return " ".join(слова)
 
 
@@ -2198,7 +2207,10 @@ def прийняти_текст_оцінки(відповідь, суд_):
         іди.setdefault(номер, ід)
     сторож = []
     відповідь = _прийняти_речення_оцінки(межа, об.get("answer"), "answer", сторож)
-    невідоме = _прийняти_речення_оцінки(межа, об.get("unknown"), "unknown", сторож)
+    висловлені = set()
+    невідоме = _прийняти_речення_оцінки(межа, об.get("unknown"), "unknown", сторож, висловлені)
+    пропущені = {н: ф["point"] for н, ф in межа.факти.items()
+                if ф["state"] == "held" and ф.get("point") and н not in висловлені}
     картка = dict(answer=відповідь, verdict=об.get("verdict"))
     for поле in ("works", "change"):
         картка[поле] = []
@@ -2209,13 +2221,23 @@ def прийняти_текст_оцінки(відповідь, суд_):
             картка[поле].append(dict(пункт, text=текст, id=іди.get(пункт.get("id"), ""),
                                       items=[іди.get(н, н) for н in пункт["items"]]))
     р = сторож_оцінки_об(картка, суд_, нотатки=нотатки)
-    if невідоме:
-        р["картка"]["не_знаю"].insert(0, dict(текст=невідоме))
+    рядки = [dict(текст=невідоме)] if невідоме else []
+    if пропущені:
+        клітинки = _клітинки_оцінки(суд_)
+        ознаки = dict.fromkeys(клітинки[код].get("вхід") or "цей образ" for код in пропущені.values())
+        рядки.extend(dict(текст=f"Не можу зробити певного висновку за ознакою «{ознака}».", готовий_текст=True)
+                     for ознака in ознаки)
+    if рядки:
+        р["картка"]["не_знаю"][:0] = рядки
         if not р["картка"]["відповідь"]:
             р["картка"]["відповідь"] = "Відкрий «Чого я не знаю», щоб побачити, що я не змогла перевірити."
             р["причина"] = None
     р["сторож"].extend(сторож)
     повтор = []
+    if пропущені:
+        р["сторож"].append(dict(де="unknown", чому="held_facts_not_told", про=list(пропущені)))
+        повтор.append("In unknown, acknowledge the inconclusive checklist facts with their exact state held: "
+                      + ", ".join(пропущені) + ".")
     if сторож:
         повтор.append("Check each rejected sentence's fact numbers and states against facts. "
                       "Put uncertainty under unknown. Reasons: " + _причина_повтору_оцінки(сторож))

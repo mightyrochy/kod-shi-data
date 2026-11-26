@@ -1141,6 +1141,9 @@ const ОЦІНКА_УК = {
   'Contrast near your face matches your own contrast.': 'Контраст біля обличчя такий самий, як твій власний.',
   'These colors are from your palette.': 'Ці кольори — з твоєї палітри.',
   'These pieces work together.': 'Ці речі пасують одна до одної.',
+  'The hems of your coat and dress are clearly apart.': 'Подоли пальта й сукні мають виразний відступ.',
+  'I cannot establish how the two hems line up.': 'Не можу достовірно визначити відступ між подолами пальта й сукні.',
+  'I cannot give a definite conclusion for these parts of the outfit.': 'Щодо цих ознак образу певного висновку не маю.',
   'Every color here is yours.': 'Усі кольори тут — твої.',
   'Your burgundy pair from the photo continues the skirt down to the feet.': 'Твоя бордова пара з фото продовжує спідницю до самих ступнів.',
   'Where you are going: without it I did not judge formality.': 'Куди ти йдеш: без цього ошатність я не судила.',
@@ -2062,8 +2065,18 @@ function відповісти(текст) {
       : (об.unknown || []).filter(н => н.input === 'occasion' || н.input === 'temperature')
         .map(н => ({text: т(н.input === 'occasion' ? 'Where you are going: without it I did not judge formality.'
                                                    : 'The weather: without it I did not judge warmth.')}));
+    let основна = речення('Yes, these colors go together; one change would make the outfit calmer.', склад, (зміна || {}).id);
+    if (нумерована){
+      const краї = process.env.OTSINKA_KRAI && факт(ф => ф.point === 'layer_hems_apart');
+      if (факти[краї]?.state === 'passed')
+        основна = речення('The hems of your coat and dress are clearly apart.', краї);
+      if (факти[краї]?.state === 'held')
+        невідоме.push(...речення('I cannot establish how the two hems line up.', краї));
+      const утримані = Object.keys(факти).filter(н => н !== краї && факти[н].state === 'held');
+      if (утримані.length) невідоме.push(...речення('I cannot give a definite conclusion for these parts of the outfit.', ...утримані));
+    }
     return {тип: 'ОЦІНКА: відповідь', текст: JSON.stringify({
-      answer: речення('Yes, these colors go together; one change would make the outfit calmer.', склад, (зміна || {}).id),
+      answer: основна,
       verdict: зміна ? 'wear_with_change' : 'wear_as_is', works,
       /* рядок 6459: «items» зміни мусять нести річ, яку вона міняє (`replace`) — без цілі сторож знімає зміну */
       change: зміна ? [{id: зміна.id, items: зміна.replace || [],
@@ -3305,6 +3318,61 @@ function підсумокМоделі(){
     await стор.click('#сцн-новий');
     ф('0б: після сцени лишився початковий профіль і новий порожній сценарій',
       await стор.evaluate(ід => АКТИВНИЙ === ід && !СЦ.ід && !ПАСПОРТ_П && Екран.стан.режим === 'сценарій', до.ід));
+  }
+
+  /* Записані мінімальні входи #4676, рядок 17102. Суд міряє їх як звичайно; до сцени переліку
+     кадри вже перетворено на виміри речей. Далі йде звичайний ланцюг картки від суду. */
+  if (process.env.OTSINKA_KRAI){
+    const стани = {passed: {довжина: 60, стан: 'пройдено'}, held: {довжина: 70, стан: 'утримано'}};
+    const очік = стани[process.env.OTSINKA_KRAI];
+    if (!очік || process.env.DO !== 'otsinka') throw new Error('Для OTSINKA_KRAI потрібні passed або held і DO=otsinka');
+    await стор.setViewportSize({width: 390, height: 844});
+    const результат = await стор.evaluate(async ({довжина, питання}) => {
+      const річ = (ід, вид, слот, hex, lab, маска, см) => ({
+        ід, вид, слот, в_образі: true, принт: 'однотонний', вимір: {lab, hex}, маска,
+        ...(см == null ? {} : {довжина: 'коліно', довжина_см: см})
+      });
+      const речі = [
+        річ('ф1', 'dress_generic', 'сукня', '#375647', [33.821448832449576, -15.212734114393832, 5.127440152712081], 0.45, 100),
+        річ('ф2', 'coat', 'верхній_шар', '#6a594e', [39.17154094139468, 5.049145355384754, 8.946811996615834], 0.50, довжина),
+        річ('ф3', 'loafers', 'взуття', '#403831', [24.12925780001332, 2.1401189949584176, 5.659559807326719], 0.15)
+      ];
+      const вхід = {зріст: 168, обхвати: {плечі: 98, груди: 92, талія: 74, стегна: 99},
+        шкіра: ['#edc4ad'], волосся: ['#66412f'], очі: '#6f7858', сценарій_оцінки: {місяць: 11}};
+      const міст = містП;
+      містП = (ім, дані) => міст(ім, ім === 'оцінка' && дані.крок === 'суд' ? {...дані, крамниця: false} : дані);
+      try {
+        ОЦ = новаОцінкаП();
+        ОЦ.питання = питання;
+        ОЦ.етапи = {почато: new Date().toISOString(), питання, сценарій_екрана: {}, фото: [],
+          виклики: [], мова_шару: [], з_розмови: false};
+        ОЦ.перелік = {речі, hex: {}, довідник: {слоти: [], кольори: []}, мініатюри: {}, назви: {},
+          так: true, показано_о: Date.now(), звіт: {показано: речі.length, дії: [], дотиків: 0},
+          готовий: true, лічильник: 0, для_слів: [], імена: Promise.resolve(),
+          контекст: {база: вхід, пікселі: {}, пікселі_фото: {}, питання: {free_text: питання, lang: 'uk'}, сценарій: {}}};
+        режим('оцінка'); показатиОцінку();
+        await ланцюгПерелікуП();
+      } finally {
+        містП = міст;
+      }
+      const суд = ОЦ.етапи.суд || {};
+      const клітинка = (суд.суд?.checklist?.надлишок?.пункти || []).find(п => п.код === 'layer_hems_apart');
+      const промпт = ОЦ.етапи.виклики.find(в => в.крок === 'оцінка')?.запит.текст || '{}';
+      const факт = Object.entries(JSON.parse(промпт).facts || {}).find(([, ф]) => ф.point === 'layer_hems_apart');
+      return {стан: клітинка?.стан, номер: факт?.[0], стан_запиту: факт?.[1].state,
+        сирі_числа: /"(gap_cm|error_cm)"\s*:/.test(промпт), помилка: ОЦ.етапи.помилка,
+        картка: !!document.getElementById('оц-картка')};
+    }, {довжина: очік.довжина, питання: process.env.CHAT_TEXT || 'Чи пасують довжини в цьому образі?'});
+    ф('17102: точний стан клітинки, факт у запиті й видима картка',
+      результат.стан === очік.стан && результат.стан_запиту === process.env.OTSINKA_KRAI
+      && !!результат.номер && !результат.сирі_числа && результат.картка, результат);
+    await знімок('otsinka_17102_' + process.env.OTSINKA_KRAI, '#оц-картка');
+    await знімок('otsinka_17102_vikno_' + process.env.OTSINKA_KRAI, null, true);
+    await зібратиТекст('картка 17102', '#оц-картка');
+    if (результат.картка) await розгорнутиНеЗнаюОцінки('17102_' + process.env.OTSINKA_KRAI);
+    console.log('   17102: ' + JSON.stringify(результат));
+    await браузер.close();
+    кінецьПрогону('DO=otsinka: 17102 ' + process.env.OTSINKA_KRAI, провалів ? 1 : 0);
   }
 
   /* DO=otsinka (наряд ОЦІНКА-1000) — лише сцена 6 (+6б): після знайомства одразу екран «Оцінити». Живій
