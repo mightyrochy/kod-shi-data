@@ -10,15 +10,14 @@ ROOT,KEY,CSV,OUT=sys.argv[1:5]; v.ROOT=ROOT
 def ts(s): return datetime.datetime.fromisoformat(s.replace('Z','+00:00'))
 rows=list(csv.DictReader(open(CSV)))
 v.NAMES.update({r['id']:r['назва'] for r in rows})
-# ціни: МНК за Opus-рядками
-import numpy as np
-A=[];b=[]
+# ціни: співвідношення 5 : 0,5 : 6,25 : 25 $/Мтокенів (вхід : читання кешу : запис кешу : вивід) × один множник, підібраний за Opus-рядками списку
+# (рядки без ДИСПЕТЧЕРА-31 дають cost/розрахунок = 0,56–0,61; повний МНК за чотирма цінами вироджений — від'ємні ціни)
+base=dict(input=5.0,cache_read=0.5,cache_write=6.25,output=25.0); xs=[];cs=[]
 for r in rows:
-    if r['usage'] and 'opus' in r['модель']:
-        u=json.loads(r['usage']); A.append([u['input_tokens'],u['cache_read_tokens'],u['cache_write_tokens'],u['output_tokens']]); b.append(float(r['cost_usd']))
-A=np.array(A,float); b=np.array(b); sol,*_=np.linalg.lstsq(A/1e6,b,rcond=None)
-price=dict(zip(['input','cache_read','cache_write','output'],[float(x) for x in sol]))
-resid=float(np.max(np.abs(A@sol/1e6-b)/b)) if len(b) else 0
+    if r['usage'] and 'opus' in r['модель'] and 'ДИСПЕТЧЕР-31' not in r['назва']:
+        u=json.loads(r['usage']); xs.append((u['input_tokens']*base['input']+u['cache_read_tokens']*base['cache_read']+u['cache_write_tokens']*base['cache_write']+u['output_tokens']*base['output'])/1e6); cs.append(float(r['cost_usd']))
+scale=sum(x*c for x,c in zip(xs,cs))/sum(x*x for x in xs); resid=max(abs(scale*x-c)/c for x,c in zip(xs,cs))
+price={k:scale*v for k,v in base.items()}
 reqs,order,prompts,tools,res,others=v.parse(KEY)
 R=[reqs[m] for m in order]; main=[r for r in R if r['parent'] is None]
 cutoff=sys.argv[5] if len(sys.argv)>5 else None
