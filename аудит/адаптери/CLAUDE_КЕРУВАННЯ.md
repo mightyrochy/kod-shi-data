@@ -28,13 +28,18 @@
   `list_*` — фільтри й `limit` ≤ 10, `list_events` — `kinds`; не тягти весь список у контекст. Свої сесії на такті
   диспетчер бере `list_sessions(children=true)` сторінками, доки сторінка не вийде вся з архіву: рядок не в архіві —
   сесія працює (`status_bucket` — working) або скінчила й чекає дії чи архіву (менеджер 15.11 за словом власника 15.11).
+  `children=true` показує лише створені ним самим: дочірніх попередника новий диспетчер бере з «Що йде» й
+  `list_sessions` без `children` за назвою наряду.
 - Недоставлені листи: `list_triggers(recurring=false, include_completed=true, limit=6)`, звірити `last_run`; лист —
   `CLAUDE.md`, «Лист».
 - Нагляд PR — такт пульсу; `subscribe_pr_activity` закрито в `.claude/settings.json` — підписки дали 44 % пробуджень
   диспетчера (власник 29.10). Останній коментар — `get_comments(perPage=1, page=<кількість>)`. Архів/повернення —
-  `archive_session` / `unarchive_session`.
+  `archive_session` / `unarchive_session`: повернену для доробки сесію будить лист, контейнер у неї новий —
+  незапушеного в ній нема.
 - Голова PR: `git fetch origin pull/N/head`; відмовлено — `pull_request_read(method="get_status")`.
-  Чернетка перед дозволеним злиттям — `update_pull_request(draft=false)`, інакше 405; злиття — з `expectedHeadSha`.
+  Перед міткою — `update_pull_request(draft=false)`: чернеток CI не зливає. Мітка —
+  `issue_write(method="update", issue_number=<N>, labels=[<чинні мітки PR>, "злити"])`: виклик замінює весь перелік
+  міток. Ручне злиття (винятки «Злиття» договору диспетчера) — з `expectedHeadSha`, чернетка дає 405.
   Застарілий прогін — `cancel_workflow_run`. Стан доступу, наприклад 403 пушу, — з фактичної відповіді GitHub.
 - Злиття диспетчера: спільні файли двох голів — `git merge-tree --write-tree --name-only <голова> <інша голова>`;
   злиття `main` не змінило власного диффу PR, коли на перевіреній і новій голові H однаковий
