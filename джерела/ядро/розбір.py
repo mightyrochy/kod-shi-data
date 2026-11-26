@@ -269,7 +269,7 @@ def перелік(відп, рука, версія, спроба=1, повто�
         речі.append({"н": f"о{len(речі) + 1}", "назва": р["name"], "деталі": р.get("details"),
                      "слот": _СЛОТИ_БЕЗ_КОДУ[р["slot"]],
                      "hex": hx if isinstance(hx, str) and len(hx) == 7 and hx[0] == "#" and set(hx[1:]) <= _HEX
-                     else None})
+                     else None, **({"її": р["own"]} if isinstance(р.get("own"), str) and р["own"] else {})})
     if not речі:
         return Збій("схема", "розбір", "items", "no worn item in the list", відп.get("текст"), спроба)
     return Образ(ід=f"р{рука}-без_коду-{повтор}", номер=f"р{рука}", рука=рука, джерело="модель_без_коду",
