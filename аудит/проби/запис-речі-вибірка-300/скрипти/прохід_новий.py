@@ -2,7 +2,7 @@
 """Прохід нового виду запису (наряд `Запис-речі-новий-вид`) над 300 речами вибірки через `claude -p` за підпискою.
 Промпт — `запис_речі.промпт` з одного визначення міток (`джерела/ядро/дані/мітки_речі.json`); слова крамниці, таблиця
 мірок і фото — ті самі, що в пробі 21.11 (`вхід.поля_крамниці`, /tmp/запис300/модель від `фото.py`).
-Запуск з кореня: python3 .../прохід_новий.py <модель> <журнал.jsonl> [паралельно] [скільки]"""
+Запуск з кореня: python3 .../прохід_новий.py <модель> <журнал.jsonl> [паралельно] [скільки] [слоти через кому]"""
 import base64, glob, gzip, json, os, subprocess, sys, tempfile, threading
 from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, "джерела")
@@ -10,7 +10,9 @@ from вхід import поля_крамниці, P
 import запис_речі
 МОДЕЛЬ, ЖУРНАЛ = sys.argv[1:3]; ПАР = int(sys.argv[3]) if len(sys.argv) > 3 else 6; МАКС = int(sys.argv[4]) if len(sys.argv) > 4 else 10**9
 БІН = "/opt/node22/bin/claude"; ТЕКА_Ф = "/tmp/запис300/модель"
-ВИБ = json.load(open("аудит/проби/запис-речі-вибірка-300/дані/вибірка.json", encoding="utf-8"))[:МАКС]
+СЛОТИ = set(sys.argv[5].split(",")) if len(sys.argv) > 5 else None
+ВИБ = [в for в in json.load(open("аудит/проби/запис-речі-вибірка-300/дані/вибірка.json", encoding="utf-8"))[:МАКС]
+       if СЛОТИ is None or в["слот"] in СЛОТИ]
 R = {}
 for л in gzip.open("каталог_записи_v1.jsonl.gz", "rt", encoding="utf-8"):
     р = json.loads(л)

@@ -147,9 +147,14 @@ def main():
     for назва, файл in (("Sonnet новий", "sonnet_новий"), ("Haiku новий", "haiku_новий"), ("Sonnet", "sonnet"),
                         ("Haiku", "haiku")):
         журнали[назва] = {}
-        for л in open(Д + файл + ".jsonl", encoding="utf-8"):
-            з = json.loads(л)
-            журнали[назва].setdefault(з["ід"], з)
+        # Взуття й верхній шар — з повторного проходу (`*_новий_2.jsonl`) за чинним визначенням водостійкості й
+        # утеплення: перший прохід вигадував «no» водостійкості без слів крамниці (перевірка очима 26.11).
+        for ф in (файл, файл + "_2") if назва.endswith("новий") else (файл,):
+            if os.path.exists(Д + ф + ".jsonl"):
+                for л in open(Д + ф + ".jsonl", encoding="utf-8"):
+                    з = json.loads(л)
+                    if з.get("статус") == "ok":
+                        журнали[назва][з["ід"]] = з
     каталог = {}
     for л in gzip.open("каталог_записи_v1.jsonl.gz", "rt", encoding="utf-8"):
         р = json.loads(л)
