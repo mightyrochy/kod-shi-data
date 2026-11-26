@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk slip dress with a draped neckline, midi length falling just below the knee, ivory in color (#fdfbf7), flowing jersey silk.\\nHeeled sandals with a slender stiletto and thin ankle strap, nude finish (#e6dcd3), glossy patent leather.\\nGold drop earrings with small pearls, 10 mm diameter, polished yellow gold plated brass.\\n\\nThis outfit works perfectly for an August wedding in a park setting as the light ivory silk dress offers elegant coverage suitable for late afternoon sun and evening restaurant dining. The nude heels elongate the legs while remaining comfortable enough to navigate grassy terrain before settling down for dinner. The touch of metallic gold jewelry adds a celebratory sparkle that matches the formal occasion without overpowering your natural features.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Silk slip dress\\\",\\n      \\\"details\\\": \\\"Draped neckline, midi length falling just below the knee, flowing jersey silk\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#fdfbf7\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Heeled sandals\\\",\\n      \\\"details\\\": \\\"Slender stiletto, thin ankle strap, glossy patent leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#e6dcd3\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Gold drop earrings\\\",\\n      \\\"details\\\": \\\"Small pearls 10 mm diameter, polished yellow gold plated brass\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":507,\"output_tokens\":215},\"stop_reason\":\"end_turn\"}"
+ }
+}
