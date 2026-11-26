@@ -404,5 +404,5 @@ class Картка(_Поняття):
 
     def __post_init__(self):
         _версія("Картка", self.версія_ситуації)
-        if self.збій is None and (self.образ is None or self.вирок is None):
-            raise ХибнеЗначення("Картка: без збою — лише з образу з вироком над ним")
+        if self.збій is None and (not self.речі or self.образ is None or self.образ != self.вирок):
+            raise ХибнеЗначення("Картка: без збою — лише непорожній склад з вироком його образу")

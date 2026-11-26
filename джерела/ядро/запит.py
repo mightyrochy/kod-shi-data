@@ -2,7 +2,7 @@
 from collections import Counter
 from itertools import zip_longest
 import json
-from math import isfinite
+from math import ceil, isfinite
 from pathlib import Path
 
 from . import задуми, знання, розбір
@@ -107,7 +107,7 @@ def _палітра(ситуація, вид):
     from face_features import джерело_виміру
     from palettes import для_пакета, палітра_практична
 
-    риси = план["F"]
+    риси = ситуація.риси_портрета
     палітра = палітра_практична(риси, source=джерело_виміру(риси), самозвіт=план["самозвіт"])
     практична = для_пакета(палітра)
     if вид == "опис":
@@ -428,7 +428,9 @@ def _вікно(модель, фото, спроба):
             or type(надбавка) is not int or надбавка < 0
             or вікно is not None and (type(вікно) is not int or вікно < 1)):
         return Збій("вікно_моделі", "запит", "window", "Expected a positive integer window and output, and a nonnegative channel overhead", спроба=спроба)
-    оцінити = знання.палітрові_знання().оцінити_текст_ядра
+    from міра_токенів import токенів
+    def оцінити(текст):
+        return ceil(1.1 * токенів(текст))
     фото_токени = sum(ф["токени"] for ф in фото)
     підписи = оцінити("\n".join("Catalogue photo for item " + ф["n"] for ф in фото))
     # Вікно — лише з налаштування рушія, з яким іде виклик (паспорт Е2-вікно, «Клас місць», пп.1–2). Без нього вікна

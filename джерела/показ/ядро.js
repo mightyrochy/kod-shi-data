@@ -115,6 +115,11 @@ function карткаЯдраНаЕкранП(кя, сід){
           {...повідомлення(з.код, з.значення), item_ids: речі}
         ]}});
     }
+    if (з.код === 'rule_input_missing') {
+      питання.push({на_розгортання: 1, правило: з.правило, повідомлення: {kind: 'card_unchecked', statements: [
+        повідомлення(з.код, {fields: [з.поле], rule: з.правило})
+      ]}});
+    }
     if (з.код !== 'item_property_unknown') continue;
     питання.push({на_розгортання: 1, повідомлення: {kind: 'card_unchecked', statements: [
       повідомлення('rule_input_missing', {fields: [з.поле], items: [з.річ]})
@@ -186,7 +191,9 @@ async function відповідьМоделіЯдруП(з){
       фото.map(ф => 'Catalogue photo for item ' + ф.n)
     );
     блоки.push({type: 'text', text: ((м.messages || [])[0] || {}).content || ''});
-    const відповідь = await модельП_блоки(блоки, undefined, [], заголовки, null, {}, null, null, м.max_tokens);
+    const повториТранспорту = з.вид !== 'вибір';  /* Ч6 замовляє один повтор вибору й фіксує його причину */
+    const відповідь = await модельП_блоки(блоки, undefined, [], заголовки, null, {}, null, null, м.max_tokens,
+                                         undefined, повториТранспорту);
     const кадри = заголовки.кадри;
     if (фото.length && (!кадри || кадри.дійшло !== фото.length)) {
       return {збій: {вид: 'кадри_не_дійшли', що: 'Photo delivery could not be established'}};
