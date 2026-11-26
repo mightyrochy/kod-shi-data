@@ -36,7 +36,7 @@ class Ш_Протокол(unittest.TestCase):
         self.assertEqual([len(вв["картки"]) for вв in журнал["відповіді"]].count(0), len(журнал["відповіді"]) - 1)
         self.assertEqual(len(кк[0].речі), 4)
         self.assertTrue(кк[0].опис_en)
-        self.assertEqual(в["заглушки"]["руки"], "Н3")
+        self.assertIsNone(в["заглушки"]["руки"])
         self.assertEqual({з["вид"] for з in журнал["запити"]}, {"складання", "вибір", "опис"})
 
     def test_зупинка_лише_зі_збоєм(self):
