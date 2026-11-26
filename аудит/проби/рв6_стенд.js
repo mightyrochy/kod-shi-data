@@ -1140,6 +1140,7 @@ const ОЦІНКА_УК = {
   'Yes, these colors go together; one change would make the outfit calmer.': 'Так, ці кольори поєднуються; одна зміна зробить образ спокійнішим.',
   'Contrast near your face matches your own contrast.': 'Контраст біля обличчя такий самий, як твій власний.',
   'These colors are from your palette.': 'Ці кольори — з твоєї палітри.',
+  'These pieces work together.': 'Ці речі пасують одна до одної.',
   'Every color here is yours.': 'Усі кольори тут — твої.',
   'Your burgundy pair from the photo continues the skirt down to the feet.': 'Твоя бордова пара з фото продовжує спідницю до самих ступнів.',
   'Where you are going: without it I did not judge formality.': 'Куди ти йдеш: без цього ошатність я не судила.',
@@ -2034,25 +2035,39 @@ function відповісти(текст) {
       : process.env.OTSINKA === 'bezfoto' ? ОЦІНКА_РЕЧІ.map(({photo, ...р}) => р) : ОЦІНКА_РЕЧІ})};
   if (об && об.task && відповідьЗадачі(об) === 'OUTFIT_REVIEW_V1') {
     const en = об.task.language !== 'Ukrainian', т = к => en ? к : (ОЦІНКА_УК[к] || к);
+    const факти = об.facts || {};
+    const нумерована = Array.isArray((об.answer_schema || {}).answer);
+    const факт = ловить => Object.keys(факти).find(н => ловить(факти[н]));
+    const речення = (рядок, ...номери) => нумерована
+      ? [{about: Object.fromEntries(номери.filter(н => факти[н]).map(н => [н, факти[н].state])), says: т(рядок)}]
+      : т(рядок);
+    const склад = факт(ф => ф.field === 'outfit');
+    const зміна = (об.changes || [])[0];
     if (допитОцінки(об))
-      return {тип: 'ОЦІНКА: допит', текст: JSON.stringify({answer: т('Yes: with the darker pair the outfit is calmer, because the leg line is no longer cut.')})};
+      return {тип: 'ОЦІНКА: допит', текст: JSON.stringify({
+        answer: речення('Yes: with the darker pair the outfit is calmer, because the leg line is no longer cut.',
+                         (зміна || {}).id || склад)})};
     const речі = об.items || [], образ = об.outfit || [];
     const у = речі.filter(р => образ.includes(р.id) && р.palette === 'in').map(р => р.id);
     const поза = речі.filter(р => образ.includes(р.id) && р.palette === 'out').map(р => р.id);
     const обличчя = речі.filter(р => образ.includes(р.id) && р.near_face).map(р => р.id);
-    const works = [{about: 'contrast', items: обличчя, text: т('Contrast near your face matches your own contrast.')}];
-    if (у.length) works.push({about: 'palette', items: у, text: т('These colors are from your palette.')});
-    if (поза.length) works.push({about: 'palette', items: поза, text: т('Every color here is yours.')});
-    /* зміни оцінки — лише її речі (`replacements[].with_own`, #3159): крамничної гілки в заглушці нема */
-    const зміна = (об.changes || [])[0];
-    const невідоме = (об.unknown || []).filter(н => н.input === 'occasion' || н.input === 'temperature')
-      .map(н => ({text: т(н.input === 'occasion' ? 'Where you are going: without it I did not judge formality.'
-                                                 : 'The weather: without it I did not judge warmth.')}));
+    const works = нумерована ? (об.supported || []).slice(0, 1).map(о => ({
+      ...о, text: речення('These pieces work together.', ...о.items)})) :
+      [{about: 'contrast', items: обличчя, text: т('Contrast near your face matches your own contrast.')}];
+    if (у.length) works.push({about: 'palette', items: у, text: речення('These colors are from your palette.', ...у)});
+    if (поза.length) works.push({about: 'palette', items: поза, text: речення('Every color here is yours.', ...поза)});
+    const погода = факт(ф => ф.point === 'weather_withstood' && ф.state === 'no_input');
+    const невідоме = нумерована
+      ? (погода ? речення('The weather: without it I did not judge warmth.', погода) : [])
+      : (об.unknown || []).filter(н => н.input === 'occasion' || н.input === 'temperature')
+        .map(н => ({text: т(н.input === 'occasion' ? 'Where you are going: without it I did not judge formality.'
+                                                   : 'The weather: without it I did not judge warmth.')}));
     return {тип: 'ОЦІНКА: відповідь', текст: JSON.stringify({
-      answer: т('Yes, these colors go together; one change would make the outfit calmer.'),
+      answer: речення('Yes, these colors go together; one change would make the outfit calmer.', склад, (зміна || {}).id),
       verdict: зміна ? 'wear_with_change' : 'wear_as_is', works,
       /* рядок 6459: «items» зміни мусять нести річ, яку вона міняє (`replace`) — без цілі сторож знімає зміну */
-      change: зміна ? [{id: зміна.id, items: зміна.replace || [], text: т('Your burgundy pair from the photo continues the skirt down to the feet.')}] : [],
+      change: зміна ? [{id: зміна.id, items: зміна.replace || [],
+        text: речення('Your burgundy pair from the photo continues the skirt down to the feet.', зміна.id)}] : [],
       unknown: невідоме})};
   }
   /* ЗАМІНА ОДНІЄЇ РЕЧІ (рядок 4945, `заміна_речі.py`): промпт складання з `replacement` і пулом лише слота заміни — один образ
