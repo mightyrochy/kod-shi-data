@@ -4576,25 +4576,28 @@ function підсумокМоделі(){
       await стор.screenshot({path: кдир + '/n2_vidkryto_390x844_' + i + '.png'});
       await стор.mouse.wheel(0, 650); await стор.waitForTimeout(600);
     }
-    /* Н3-мірило (в): те, що бачить тестувальниця, — «Сліпий перегляд» (`pair-test`, `pair.js` `blind`): усі картки
-       `#картки` поруч («Перший … Четвертий образ»); на екрані «Образ» видно лише образ руки 1, а «Усі образи» веде в
-       бібліотеку. Перший знімок 390×844 — верх `#картки`, далі кожна картка в полі зору й окремим знімком елемента */
+    /* Н3-мірило (в): те, що бачить тестувальниця. Екран «Образ» показує одну картку `#картки` за раз (`образи.js`,
+       малювач «образ»: решта `hidden`), а гортає їх пейджер «‹ N / 4 ›» (`#пж-назад`, `#пж-далі`). Стенд гортає так
+       само, як вона: до першої картки, далі по одній; на кожну — знімок 390×844 від верху сторінки й знімок картки цілої */
     try {
-      if (ПАРА) { await діяПари('pair-test').catch(е => console.log('   N3: «Сліпий перегляд» не натиснуто: ' + String(е).slice(0, 120)));
-        await стор.waitForTimeout(1500); }
-      const всі = await стор.evaluate(() => { const к = document.getElementById('картки');
-        if (!к || !к.offsetParent) return false; к.scrollIntoView({block: 'start'}); return true; });
-      await стор.waitForTimeout(800);
-      await стор.screenshot({path: кдир + '/n3_usi_390x844.png'});
-      const кк = await стор.$$('#картки .картка');
-      for (let i = 0; i < кк.length; i++) {
-        await кк[i].scrollIntoViewIfNeeded().catch(() => {});
+      const усіх = await стор.locator('#картки .картка').count();
+      /* до першої картки — та сама дія, що кнопка «‹» (`образ-попередній` → `показатиОбраз`); клік Playwright по «›» не
+         дочекався кнопки (30 с, прогін в3_с4 04:22), тож «›» — DOM-подією на кнопці, без перевірки «чи під пальцем» */
+      await стор.evaluate(() => показатиОбраз(0)); await стор.waitForTimeout(500);
+      for (let i = 0; i < усіх; i++) {
+        await стор.evaluate(() => window.scrollTo(0, 0)); await стор.waitForTimeout(500);
         await стор.screenshot({path: кдир + '/n3_kartka_' + i + '_390x844.png'});
-        await кк[i].screenshot({path: кдир + '/n3_kartka_' + i + '_tsila.png'}).catch(() => {});
+        if (i === 0) await стор.screenshot({path: кдир + '/n3_usi_390x844.png'});
+        const видима = стор.locator('#картки .картка:not([hidden])').first();
+        await видима.screenshot({path: кдир + '/n3_kartka_' + i + '_tsila.png'}).catch(() => {});
+        const пейджер = await стор.evaluate(() => ((document.querySelector('#пейджер .пж-н') || {}).textContent || ''));
+        console.log('   N3: картка ' + i + ' · пейджер «' + пейджер + '» · видимих карток '
+          + await стор.locator('#картки .картка:not([hidden])').count());
+        if (i + 1 < усіх) { await стор.evaluate(() => document.getElementById('пж-далі').click()); await стор.waitForTimeout(500); }
       }
-      console.log('   N3: «#картки» видно — ' + всі + ' · карток у DOM ' + кк.length);
+      console.log('   N3: карток у DOM ' + усіх);
       await стор.evaluate(() => window.scrollTo(0, 0));
-    } catch (е) { console.log('   N3: знімки списку не вдались: ' + String(е).slice(0, 200)); }
+    } catch (е) { console.log('   N3: знімки карток не вдались: ' + String(е).slice(0, 200)); }
     console.log('   N2: картка руки 1 — позиція в DOM ' + позиція + ' (' + назва1 + ')');
     console.log('   N2: стан записано · карток ' + стан.картки.length + ' · готово ' + стан.готово + ' · успіх ' + стан.успіх);
     await браузер.close(); process.exit(0);
