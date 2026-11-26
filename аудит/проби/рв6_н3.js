@@ -4559,22 +4559,6 @@ function підсумокМоделі(){
     стан.поява_карток = await стор.evaluate(() => window.Н3_ПОЯВА || null).catch(() => null);
     fs.writeFileSync(process.env.N2_STAN, JSON.stringify(стан, null, 1));
     const кдир = process.env.ZNIMKY || '.';
-    /* Н3-мірило (в): картки на тому самому екрані збору, де вони з'явились (без переходу в «Усі образи» — там
-       бібліотека, а `#картки` сховано): перший знімок 390×844 — верх `#картки`, далі кожна картка окремо */
-    try {
-      const всі = await стор.evaluate(() => { const к = document.getElementById('картки');
-        if (!к || !к.offsetParent) return false; к.scrollIntoView({block: 'start'}); return true; });
-      await стор.waitForTimeout(800);
-      await стор.screenshot({path: кдир + '/n3_usi_390x844.png'});
-      const кк = await стор.$$('#картки .картка');
-      for (let i = 0; i < кк.length; i++) {
-        await кк[i].scrollIntoViewIfNeeded().catch(() => {});
-        await стор.screenshot({path: кдир + '/n3_kartka_' + i + '_390x844.png'});
-        await кк[i].screenshot({path: кдир + '/n3_kartka_' + i + '_tsila.png'}).catch(() => {});
-      }
-      console.log('   N3: «#картки» видно — ' + всі + ' · карток у DOM ' + кк.length);
-      await стор.evaluate(() => window.scrollTo(0, 0));
-    } catch (е) { console.log('   N3: знімки списку не вдались: ' + String(е).slice(0, 200)); }
     await стор.screenshot({path: кдир + '/n2_ekran_390x844.png'});
     const назва1 = (((стан.картки.find(x => x && String(x.рука) === '1') || {}).речі || [])[0] || {}).назва || '';
     await стор.mouse.move(195, 500);
@@ -4592,6 +4576,23 @@ function підсумокМоделі(){
       await стор.screenshot({path: кдир + '/n2_vidkryto_390x844_' + i + '.png'});
       await стор.mouse.wheel(0, 650); await стор.waitForTimeout(600);
     }
+    /* Н3-мірило (в): після «Відкрити цей образ» — екран «Образ», під образом руки 1 список `#картки` («Перший …
+       Четвертий образ»; до відкриття він схований, а «Усі образи» веде в бібліотеку): перший знімок 390×844 — верх
+       `#картки`, далі кожна картка в полі зору й окремим знімком елемента */
+    try {
+      const всі = await стор.evaluate(() => { const к = document.getElementById('картки');
+        if (!к || !к.offsetParent) return false; к.scrollIntoView({block: 'start'}); return true; });
+      await стор.waitForTimeout(800);
+      await стор.screenshot({path: кдир + '/n3_usi_390x844.png'});
+      const кк = await стор.$$('#картки .картка');
+      for (let i = 0; i < кк.length; i++) {
+        await кк[i].scrollIntoViewIfNeeded().catch(() => {});
+        await стор.screenshot({path: кдир + '/n3_kartka_' + i + '_390x844.png'});
+        await кк[i].screenshot({path: кдир + '/n3_kartka_' + i + '_tsila.png'}).catch(() => {});
+      }
+      console.log('   N3: «#картки» видно — ' + всі + ' · карток у DOM ' + кк.length);
+      await стор.evaluate(() => window.scrollTo(0, 0));
+    } catch (е) { console.log('   N3: знімки списку не вдались: ' + String(е).slice(0, 200)); }
     console.log('   N2: картка руки 1 — позиція в DOM ' + позиція + ' (' + назва1 + ')');
     console.log('   N2: стан записано · карток ' + стан.картки.length + ' · готово ' + стан.готово + ' · успіх ' + стан.успіх);
     await браузер.close(); process.exit(0);
