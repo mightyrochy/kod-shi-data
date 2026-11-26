@@ -1,0 +1,68 @@
+── ПРОМПТ (7864 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: dress_generic · about it: text н=1
+2 — kind: bracelet · about it: text н=2
+3 — kind: belt · about it: text н=3
+4 — kind: bag_generic
+5 — kind: sneakers · about it: text н=4
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This dress anchors the outfit with its classic black silhouette, providing both elegance and comfort for standing in a crowd.",
+"2": "The soft pink bracelet adds a delicate touch of color that complements your palette without overpowering your look.",
+"3": "The red belt cinches at the waist to define your figure, adding structure and style to the ensemble.",
+"4": "These sneakers bring practical comfort while maintaining a sleek design that fits the classic vibe you requested for your night out.",
+"5": "I chose this look for your rock concert in the club, where you will stand in a crowd. Your black dress sets the cool, classic tone you want, and I added your pink bracelet to bring a soft pop of color to your palette. The red belt defines your waistline beautifully, while the dark sneakers keep it grounded. Even though they are casual, these shoes fit perfectly within the classic style you asked for, balancing comfort with elegance as you move through the venue.",
+"6": "Let the dress flow freely around your legs for comfort in the crowd.",
+"7": "Lean slightly against a wall or railing to emphasize the cinched waist created by the belt.",
+"8": "Пасок Базовий червоний — red leather belt adds a second point of accent on the body (waist) without echoing the bracelet too closely, creating a deliberate break in placement that defines the silhouette while keeping the color coordinated",
+"9": "Сумка Марсала абстракція — burgundy velvet bag provides the essential third piece to shift the outfit from 'dressed' to 'styled', preventing the mono-object silhouette and adding necessary capacity",
+"10": "Кросівки жіночі, RIEKER, екошкіра/текстиль, колір чорний — black sneakers anchor the height and allow safe movement in the crowd, addressing the need for a robust base that won't fail under the weight of standing",
+"11": "Кросівки жіночі, RIEKER, екошкіра/текстиль, колір чорний, Чорна сукня з тафти з об'ємним воланом — The sneakers' everyday register is a necessary safety valve for 'standing in the crowd,' preventing a formal slip-up that would cause fatigue or fear, so this gate actually serves your intent by prioritizing endurance and ease over strict dress-code rigidity.",
+"12": "Кросівки жіночі, RIEKER, екошкіра/текстиль, колір чорний — black sneakers anchor the height and allow movement in the crowd without adding loud shine that would break your calm mood; I chose these over pumps because you said 'stand in the crowd'",
+"13": "Сумка Марсала абстракція — burgundy velvet bag complements the coat and adds a third piece to shift from 'dressed' to 'styled', preventing the mono-object silhouette while keeping the color story tight",
+"14": "Кросівки жіночі, RIEKER, екошкіра/текстиль, колір чорний — black faux-leather sneakers ensure you can stand in the crowd safely and comfortably without risking a fall, essential for the 'movement' requirement of standing in a crowd",
+"15": "Пасок Базовий червоний — the red leather belt creates a deliberate break in the palette by repeating the accent color near the waist, tying the top and bottom together while defining the silhouette",
+"16": "Сумка Марсала абстракція — burgundy velvet bag acts as the third piece needed to move from a simple dressed state to a styled one, balancing the playful headwear with a classic accessory",
+"17": "Кросівки жіночі, RIEKER, екошкіра/текстиль, колір чорний — black faux-leather sneakers provide the necessary height for standing in a crowd and ensure safety without introducing loud shine that would break your calm mood"
+}
+
+── ВІДПОВІДЬ (3574 симв., 23.1 с, HTTP 200) ──
+```json
+{
+  "1": "Ця сукня задає тон образу своїм класичним чорним силуетом, забезпечуючи елегантність і комфорт для перебування у натовпі.",
+  "2": "Ніжний рожевий браслет додає делікатну нотку кольору, яка доповнює твою палітру без перевантаження образу.",
+  "3": "Червоний пояс підкреслює талію, визначаючи фігуру і надаючи структури та стилю всьому ансамблю.",
+  "4": "Ці кросівки забезпечують практичний комфорт, зберігаючи при цьому елегантний дизайн, який відповідає класичній атмосфері, яку ти попросила для свого вечора.",
+  "5": "Я обрала цей образ для твого рок-концерту в клубі, де ти будеш стояти у натовпі. Твоя чорна сукня задає прохолодний і класичний тон, який ти хочеш, а я додала твій рожевий браслет, щоб додати м’який колірний акцент до твоєї палітри. Червоний пояс чудово підкреслює лінію талії, а темні кросівки тримають образ у рівновазі. Хоча вони й повсякденні, ці черевички ідеально вписуються у класичний стиль, який ти попросила, поєднуючи комфорт з елегантністю під час пересування закладом.",
+  "6": "Дозволь сукні вільно спадати навколо твоїх ніг для зручності у натовпі.",
+  "7": "Злегка притулися до стіни або поручнів, щоб підкреслити талію, створену поясом.",
+  "8": "Пасок Базовий червоний — red leather belt додає другий акцент на тілі (талії), не повторюючи занадто близько браслет, створюючи навмисний розрив у розміщенні, який визначає силует і зберігає колірну гармонію",
+  "9": "Сумка Марсала абстракція — burgundy velvet bag надає третій необхідний елемент для переходу від «одягненої» до «стильної», запобігаючи моно-об’єктному силуету і додаючи потрібну місткість",
+  "10": "Кросівки жіночі, RIEKER, екошкіра/текстиль, колір чорний — black sneakers фіксують висоту і дозволяють безпечно рухатися у натовпі, задовольняючи потребу в міцній основі, яка не підведе під вагою стояння",
+  "11": "Кросівки жіночі, RIEKER, екошкіра/текстиль, колір чорний — Чорна сукня з тафти з об'ємним воланом. Кеди повсякденного стилю є необхідною запобіжною заслонкою для «стояння у натовпі», щоб не допустити формального промаху, який спричинив би втому або страх; таким чином, ці черевички насправді служать твоїй меті, пріоритезуючи витривалість і легкість замість жорсткої дотримання дрес-коду.",
+  "12": "Кросівки жіночі, RIEKER, екошкіра/текстиль, колір чорний — black sneakers фіксують висоту і дозволяють рухатися у натовпі без додавання гучного блиску, який би порушив твій спокійний настрій; я обрала їх замість туфель-човників, бо ти сказала «стояти у натовпі»",
+  "13": "Сумка Марсала абстракція — burgundy velvet bag доповнює пальта і додає третій елемент для переходу від просто одягненої до стильної, збалансовуючи грайливий головний убір класичним аксесуаром",
+  "14": "Кросівки жіночі, RIEKER, екошкіра/текстиль, колір чорний — black faux-leather sneakers забезпечують необхідну висоту для стояння у натовпі і гарантують безпеку без додавання гучного блиску, який би порушив твій спокійний настрій",
+  "15": "Пасок Базовий червоний — the red leather belt створює навмисний розрив у палітрі, повторюючи акцентний колір біля талії, поєднуючи верх і низ, водночас визначаючи силует",
+  "16": "Сумка Марсала абстракція — burgundy velvet bag діє як третій елемент, необхідний для переходу від просто одягненого стану до стильного, збалансовуючи грайливий головний убір класичним аксесуаром",
+  "17": "Кросівки жіночі, RIEKER, екошкіра/текстиль, колір чорний — black faux-leather sneakers забезпечують необхідну висоту для стояння у натовпі і гарантують безпеку без додавання гучного блиску, який би порушив твій спокійний настрій"
+}
+```

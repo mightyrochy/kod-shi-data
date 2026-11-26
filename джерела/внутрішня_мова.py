@@ -1218,9 +1218,14 @@ def _опис_keep_by():
                                  "did not prove that the first is better than each of the others, so the order "
                                  "is not advice (values: why — input_missing: an input of the judgement is missing "
                                  "for at least one of them; no_item_proved_better: every item was judged in full, "
-                                 "and none is proved better than each of the others). Say what is known about each "
-                                 "item from its own verdict and that the choice is hers, and give only the reason "
-                                 "named by why (this is not a tie: a tie means all were judged and came out equal)",
+                                 "and none is proved better than each of the others; missing — with input_missing: "
+                                 "which inputs are missing (input), for which items (items), and whose action gives "
+                                 "it (by — her: she can give it — say it, or give a portrait or her measurements; "
+                                 "record: the item's shop record does not know it, and nothing she does changes "
+                                 "that)). Say what is known about each item from its own verdict and that the choice "
+                                 "is hers, and give only the reason named by why and missing: what exactly is "
+                                 "missing and, where by is her, what she can do (this is not a tie: a tie means all "
+                                 "were judged and came out equal)",
     "colour_role_not_judged": "whether the item's colour is a neutral base or an accent was not judged (values: "
                               "missing — colour_measure: neither a measurement nor a shop colour word places it "
                               "on one side; a photo of the item in daylight lets it be judged)",
@@ -3953,6 +3958,12 @@ def визначення_заяв(коди):
 ))
 _ВИД_НЕПЕРЕВІРЕНОГО = "card_unchecked"
 
+# ЧОГО НЕ ДАСТЬ НІХТО, КРІМ ЇЇ ВІДПОВІДІ (доповнення менеджера 26.11 до наряду Шар-текстів-наново, (б); розклад
+# `аудит/звіти/не-знаю-2611/РОЗКЛАД.md`, група Г): заява, що річ не закріплена, бо бракує її слова — чия річ у кадрі
+# чи яке це місце. Межа текстів (`межа_текстів.Межа.питати_її`) дозволяє про таку заяву одне питання й каже її одним
+# реченням: шість «ти його не згадала, тож я не знаю, чи він твій» (по одній на річ у кадрі) ставали шістьма «не знаю».
+ЇЙ_ВІДПОВІСТИ = frozenset(("her_item_not_named_others_in_frame", "her_item_slot_unclear"))
+
 # РІЧ У ЗНАЧЕННІ ЗАЯВИ — КОДАМИ (Е2-вхід-опису-кодами): ключі, що за визначеннями `ЗАЯВИ` несуть річ, беруть
 # `річ_заяви` (item_id, kind, color), а не назву крамниці вільним текстом — назва везла вид і колір словами в промпт
 # опису й перекладача, і модель брала їх звідти. Одна точка для всіх виробників, як і словник кодів вище.
@@ -4134,17 +4145,15 @@ def схема():
             "review_items_fix": об(ВИПРАВЛЕННЯ_ПЕРЕЛІКУ, "її слова про те, що не так у переліку речей з фото"),
             "catalog_item": об(РІЧ_КАТАЛОГУ, "річ каталогу", required=["id", "name"]),
             "stylist_reply": об(РЕПЛІКА, "що стилістка каже їй цього ходу, внутрішньою мовою"),
-            # опора — полями на кожне речення (рішення 14177, корінь Е2-межі): `мовний_шар.суд_підтвердження`
-            # рядок — речення без полів: опори не має, тож проходить лише там, де судити нема чого
-            "reply_text": об({"text": {"description": "речення для неї її мовою", "oneOf": [
-                {"type": "array", "items": {
-                    "type": "object", "additionalProperties": False, "required": ["about", "says"], "properties": {
-                        "about": {"type": "array", "items": {"type": "string"}},
-                        "recorded": {"type": "array", "items": {"type": "string"}},
-                        "her_words": {"type": "array", "items": {"type": "string"}},
-                        "says": {"type": "string"}}}},
-                {"type": "string"}]}},
-                             "вихід перекладача репліки: речення з опорою", required=["text"]),
+            # речення з номерами фактів і станом (межа текстів, наряд Шар-текстів-наново): `межа_текстів.Межа.судити`
+            "reply_text": об({к: {"description": о, "type": "array", "items": {
+                "type": "object", "additionalProperties": False, "required": ["about", "says"], "properties": {
+                    "about": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"},
+                              "description": "номер факту (f1, f2…) → його стан (state), який речення стверджує"},
+                    "says": {"type": "string", "minLength": 1}}}}
+                for к, о in (("text", "речення для неї її мовою: що відомо і що з цим робити"),
+                             ("unknown", "чого стилістка не знає: показ ставить це за кнопкою"))},
+                             "вихід перекладача репліки: речення з номерами фактів і станом", required=["text"]),
             # М-5 (п.14): хід розмови — оновлення паспорта, хто відповідає, частини відповіді
             "conversation_turn": _форма_мовного_шару(визначення=False),
             # Ч-1 (п.12): рядки картки образу й екрана «Палітра» — видом і заявами, не фразою

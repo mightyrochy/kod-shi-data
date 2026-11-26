@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Tweed-blazer jacket, tailored fit, elbow length, warm charcoal #2F343A, wool blend; high-waisted straight-leg trousers, regular rise, full ankle, deep forest green #1C3D27, heavy cotton twill; knee-high lace-up boots, chunky sole, rounded toe, earth brown #5D4037, suede. This layered ensemble prioritizes warmth for a frosty autumn stroll through the park while maintaining a polished yet comfortable everyday look suitable for a casual walk with a friend. The structured textures of wool and heavy cotton provide essential insulation against the cold, ensuring she stays cozy without sacrificing style.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Tweed-blazer jacket\\\",\\\"details\\\":\\\"tailored fit, elbow length, warm charcoal, wool blend\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#2F343A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"High-waisted straight-leg trousers\\\",\\\"details\\\":\\\"regular rise, full ankle, deep forest green, heavy cotton twill\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#1C3D27\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Knee-high lace-up boots\\\",\\\"details\\\":\\\"chunky sole, rounded toe, earth brown, suede\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#5D4037\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":487,\"output_tokens\":146},\"stop_reason\":\"end_turn\"}"
+ }
+}

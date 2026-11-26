@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"гуляю з подругою парком біля дому\", \"place\": \"парком біля дому\"}, \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"wishes\": {\"kind\": \"reading\"}, \"refusals\": {\"kind\": \"reading\"}, \"reserved_colour\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"парком біля дому\"}, \"accent_place\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"гуляю з подругою парком біля дому\"}, \"mood\": {\"kind\": \"reading\"}, \"unknown\": {\"kind\": \"reading\"}, \"precipitation\": {\"kind\": \"reading\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"part_of_day\": {\"kind\": \"reading\"}, \"her_other_words\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\"}, \"weather_band\": {\"kind\": \"reading\"}, \"duration_h\": {\"kind\": \"reading\"}}, \"event\": \"гуляю з подругою парком біля дому\", \"duration_h\": 2, \"movement\": \"walk\", \"part_of_day\": \"day\", \"weather_band\": \"deep_frost\", \"wishes\": [\"тепло\"], \"mood\": [\"тепло\"], \"occasion\": \"walk\", \"place\": \"park\", \"her_other_words\": [\"хочу вдягтись тепло\"], \"accent_place\": \"none\", \"formality\": [\"everyday\"], \"season\": \"autumn\", \"light\": \"daylight\", \"activity\": \"stroll\"}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Oversized wool-blend coat in charcoal gray (#36454F), relaxed boxy cut, hip-length hem, soft brushed fabric for warmth.\\nDark indigo rigid denim jeans, straight-leg cut, mid-thigh length, deep navy color (#191A1D), heavy weight twill to block the chill.\\nChunky white leather sneakers with thick rubber soles, classic rounded toe, padded collar, smooth grain leather.\\nA simple black silk scarf (#000000) tied loosely around the neck to catch stray wind while maintaining comfort.\\n\\nThis outfit works because it strictly adheres to your wish for warmth during deep frost, utilizing a heavyweight wool coat and thick denim layers that provide serious insulation without feeling like bulky sportswear. The relaxed silhouette of the oversized coat and straight-leg jeans allows you to move freely and comfortably while strolling with friends in the autumn park. By choosing dark neutrals and classic materials, the look remains grounded and practical for a casual day out, perfectly balancing your need for coziness with a neat, everyday aesthetic that doesn't look overly dressed up.\"}],\"usage\":{\"input_tokens\":813,\"output_tokens\":230},\"stop_reason\":\"end_turn\"}"
+ }
+}

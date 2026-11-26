@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk slip dress, fluid bias cut, midi length, soft champagne color (#F5E6CA), pure silk.\\nBlock heels with a wide strap, moderate height, nude leather tone (#C0A080), smooth calfskin.\\nA lightweight linen-blend blazer, structured boxy cut, cropped to hip length, pale cream color (#FAF9F6), breathable woven fabric.\\nThis outfit respects your wish against a forced style shift by blending the elegance of a summer evening with comfortable, recovery-friendly fabrics that feel gentle on the skin. The champagne slip dress offers a sophisticated yet effortless look suitable for a restaurant setting, while the blazer provides an optional layer if needed without feeling heavy or restrictive. Pairing nude heels maintains a continuous line from leg to waist, honoring your preference against matching tights and ensuring you feel confident and supported as you celebrate with your partner in his smoking jacket.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Silk slip dress\\\",\\n      \\\"details\\\": \\\"fluid bias cut, midi length, soft champagne color (#F5E6CA), pure silk fabric\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#F5E6CA\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Block heels\\\",\\n      \\\"details\\\": \\\"wide strap, moderate height, nude leather tone (#C0A080), smooth calfskin fabric\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#C0A080\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Linen-blend blazer\\\",\\n      \\\"details\\\": \\\"structured boxy cut, cropped to hip length, pale cream color (#FAF9F6), breathable woven fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#FAF9F6\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":539,\"output_tokens\":247},\"stop_reason\":\"end_turn\"}"
+ }
+}
