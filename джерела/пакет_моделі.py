@@ -624,7 +624,7 @@ import внутрішня_мова as _ВМ_П
                  як="an outfit in which none of them carries colour does not keep the scheme: it reads as "
                     "bland, not calm"),
         # Пулу — лише порядок щаблів; одяг щабля нагоди в її гілці — у рядку рівня (`occasion_level`)
-        _ЗП.Поле("pool", "admitted catalog items: in stock, suited to the weather and "
+        _ЗП.Поле("pool", "admitted catalog items: suited to the weather and "
                          "the stated dress code, within her palette's lightness and her refusals; «formality» — "
                          "the item's step or steps from…to, the same steps as the occasion: " + _БР_Щ.ЩАБЛІ_ПОРЯДОК_EN + "; «L» — lightness 0 to "
                          "100; «hem_cm» — where the hem falls, cm above the floor; «fabric_bands» — weather bands "
