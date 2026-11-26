@@ -32,7 +32,7 @@ import palettes as _ПЛ_сх
 import суд_погода as _ПОГ_х
 import міст_основи as _МО_сх
 import аксесуари_носіння as _АН
-import аксесуари_погода as _АП
+import суд_погода as _АП
 import заміна_з_фото as _ЗФ
 import колір_річ as _КР_ТИП
 import пакет_моделі as _ПМ_в
