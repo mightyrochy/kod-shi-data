@@ -401,6 +401,7 @@ class Картка(_Поняття):
     свідомі: tuple = ()
     збій_опису: object = None
     збій: Збій = None
+    дія_для_вибору: dict | None = None
 
     def __post_init__(self):
         _версія("Картка", self.версія_ситуації)
