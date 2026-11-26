@@ -1,0 +1,51 @@
+── ПРОМПТ (6435 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: earrings · about it: text н=1
+2 — kind: ring · about it: text н=2
+3 — kind: coat · about it: text н=3
+4 — kind: dress_generic · about it: text н=4
+5 — kind: pumps · about it: text н=5
+6 — kind: crossbody_bag · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "These silver earrings add a subtle sparkle that catches the club lights without overpowering the music or your outfit's dramatic lines.",
+"2": "This simple ring adds an elegant touch that complements your evening plans and fits perfectly within your chosen color palette.",
+"3": "The dramatic drape of this heavy wool coat keeps you warm while standing in the crowd, maintaining its classic elegance as a perfect outer layer for your night out.",
+"4": "This black dress serves as the perfect anchor for your look, balancing the boldness of your red shoes and the drama of your coat with timeless simplicity.",
+"5": "Your red pumps provide a striking pop of color that draws attention downward, complementing your black dress and adding a touch of boldness to your evening ensemble.",
+"6": "This Gucci crossbody bag offers the perfect blend of style and practicality for an evening out, allowing you to keep your hands free while navigating the club scene in style.",
+"7": "You chose a classic black dress as your anchor, balanced by the dramatic drape of the heavy wool coat that keeps you warm while standing in the crowd. The silver earrings add just enough sparkle to catch the club lights without competing with the music's energy, and the simple ring adds a subtle touch of elegance that fits your evening plans perfectly. Your red pumps provide a bold pop of color that draws the eye down, complementing the Gucci crossbody bag which you can easily slide across your body for hands-free movement.",
+"8": "Wear the black dress tucked into your boots if you prefer, but the coat works beautifully draped over your shoulders to keep your upper body warm while standing in the crowd.",
+"9": "Сережки, Платинова каблучка з діамантами, Чорна глянцева сукня, Лакові човники з червоної шкіри на шпильці — I accept this shine budget finding because the four shiny surfaces (earrings, ring, dress, pumps) create the necessary high-glow focal point for an evening rock concert in a club, turning the crowd into a backdrop for you as the brightest figure."
+}
+
+── ВІДПОВІДЬ (1998 симв., 13.2 с, HTTP 200) ──
+{
+"1": "Ці срібні сережки додають ледь помітний блиск, який ловить світло дискотеки без того, щоб перебивати музику чи драматичні лінії твого образу.",
+"2": "Це просте кільце доповнює вечірні плани та ідеально вписується у вибрану тобою колірну гаму.",
+"3": "Драматичний спад цього важкого вовняного пальта зігріває тебе, коли ти стоїш у натовпі, зберігаючи свою класичну елегантність як ідеальну верхню частину для твого вечора.",
+"4": "Ця чорна сукня слугує чудовою основою для твого образу, збалансовуючи сміливість червоних туфель та драматизм пальта позачасовою простотою.",
+"5": "Твої червоні туфлі-човники додають яскравий колірний акцент, який привертає увагу донизу, доповнюючи чорну сукню і надаючи твоєму вечірньому ансамблю нотку сміливості.",
+"6": "Ця сумка Gucci на плече пропонує ідеальне поєднання стилю та практичності для вечора, дозволяючи тобі тримати руки вільними під час відвідування клубу зі смаком.",
+"7": "Ти обрала класичну чорну сукню як основу, збалансовану драматичним спадом важкого вовняного пальта, яке зігріває тебе, коли ти стоїш у натовпі. Срібні сережки додають достатньо блиску, щоб ловити світло дискотеки без того, щоб конкурувати з енергією музики, а просте кільце доповнює вечірні плани ледь помітною елегантністю. Твої червоні туфлі-човники додають сміливий колірний акцент, який привертає погляд донизу, доповнюючи сумку Gucci на плече, яку ти легко можеш перекинути через тіло для зручності.",
+"8": "Ти можеш заправити чорну сукню у чоботи, якщо тобі так більше подобається, але пальта чудово виглядає, коли його драпірують на твої плечі, щоб зігрівати верхню частину тіла під час перебування в натовпі.",
+"9": "Срібні сережки, Платинова каблучка з діамантами, Чорна глянцева сукня, Лакові човники з червоної шкіри на шпильці — Я приймаю цей бюджет блиску, бо чотири блискучі поверхні (сережки, кільце, сукня, туфлі) створюють необхідний яскравий акцент для вечірнього рок-концерту в клубі, перетворюючи натовп у фон для тебе як найяскравішої фігури."
+}

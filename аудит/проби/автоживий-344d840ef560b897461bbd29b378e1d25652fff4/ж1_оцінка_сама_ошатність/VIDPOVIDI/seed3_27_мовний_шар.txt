@@ -1,0 +1,60 @@
+── ПРОМПТ (7135 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: suit · about it: text н=1
+2 — kind: blouse · about it: text н=2
+3 — kind: belt · about it: text н=3
+4 — kind: beanie · about it: text н=4
+5 — kind: necklace · about it: text н=5
+6 — kind: dress_shoes · about it: text н=6
+7 — kind: crossbody_bag · about it: text н=7
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This navy suit is the foundation of your celebration look—sharp, structured, and perfectly aligned with your occasion level. Its clean lines offer the confidence you need while keeping you grounded.",
+"2": "The striped blouse brings softness and visual rhythm to your outfit. It’s a thoughtful contrast that prevents the suit from feeling too severe—just right for a memorable evening.",
+"3": "This burgundy belt is the quiet hero of your palette, echoing the deep tones in your bag and adding warmth to your overall look. It cinches gently at the waist without constriction—polished but never stiff.",
+"4": "This beanie is included as part of your chosen outfit, though it’s worth noting that for a formal celebration, you might opt to keep your hair styled or choose an alternative headwear if preferred.",
+"5": "The layered pearl necklace with black bow introduces elegance and subtle drama. It catches the light without shouting, adding texture and sophistication to your neckline.",
+"6": "Your nude pumps are selected for their ability to elongate your legs and keep visual focus on your silhouette rather than your footwear—ideal for dancing or standing throughout the evening.",
+"7": "This Gucci crossbody bag anchors your look with its iconic pattern and rich burgundy tone, echoing your belt while offering both style and practicality for carrying essentials.",
+"8": "You’ve gathered a celebration-ready ensemble that balances polish with personality. The navy suit gives you structure and confidence, while the striped blouse softens the look just enough to feel effortless rather than rigid. The burgundy belt ties in your Gucci bag’s rich tones, anchoring your silhouette without feeling heavy or loud. Your choice of nude pumps elongates your legs and keeps your focus on the outfit’s lines, not your shoes—the perfect companion for a night where you want to be seen but not overwhelmed.",
+"9": "Tuck your blouse slightly into the suit at the front to define your waist without losing comfort.",
+"10": "Пасок шкіряний (Hermes Kelly) Hermes — I kept this item because the code flagged 'belt_ties_not_buckles' as a fixable issue via deliberate move, and wearing it buttoned resolves the ease interval concern while maintaining formality.",
+"11": "Сумка через плече із вставками з канви — The crossbody bag is everyday but acts as the only necessary accessory for this formal set where no dedicated handbag exists; its casual texture balances the suit's formality without violating your occasion.",
+"12": "Пасок шкіряний (Hermes Kelly) Hermes — I added this belt to break the 'no_bag' blocker by using a belt as an accessory statement since a bag was not available in the verdict, and to add structure."
+}
+
+── ВІДПОВІДЬ (2791 симв., 17.4 с, HTTP 200) ──
+```json
+{
+"1": "Цей темно-синій костюм є основою твого святкового образу — чіткий, структурований і повністю відповідає рівню твоєї події. Його чисті лінії дарують тобі впевненість, водночас тримаючи тебе у тонусі.",
+"2": "Смугаста блузка додає м’якості та візуального ритму до твого образу. Це продуманий контраст, який не дозволяє костюму здаватися надто суворим — саме те для незабутнього вечора.",
+"3": "Цей бордовий пасок є тихим героєм твоєї палітри, відлунюючи глибокі тони у твоїй сумці та додаючи тепло до загального образу. Він ніжно підкреслює талію без відчуття стискання — вишуканий, але не жорсткий.",
+"4": "Ця шапка-біні включена як частина обраного тобою вбрання, хоча варто зазначити, що для формального святкування ти можеш віддати перевагу укладеному волоссю або вибрати інший головний убір за бажанням.",
+"5": "Намисто з перлами та чорною стрічкою додає елегантності й тонкої драматичності. Воно ловить світло, не кричачи про себе, і надає текстури та вишуканості твоїй зоні декольте.",
+"6": "Твої бежеві туфлі на підборах обрані за їхню здатність видовжувати ноги й тримати візуальний акцент на силуеті, а не на взутті — ідеально для танців або стояння протягом усього вечора.",
+"7": "Ця сумка Gucci через плече завершує твій образ своїм культовим малюнком та насиченим бордовим тоном, відлунюючи твій пасок, водночас пропонуючи стиль і практичність для носіння необхідних речей.",
+"8": "Ти зібрала вбрання, готове до святкування, яке поєднує вишуканість з індивідуальністю. Темно-синій костюм дарує тобі структуру та впевненість, а смугаста блузка пом’якшує образ достатньо, щоб він здавався без зусиль, а не жорстким. Бордовий пасок підкреслює насичені тони сумки Gucci, фіксуючи твій силует без відчуття тяжкості чи гучності. Твій вибір бежевих туфель на підборах видовжує ноги та тримає акцент на лініях вбрання, а не на твоєму взутті — ідеальний супутник для вечора, коли ти хочеш бути помітною, але не перевантаженою.",
+"9": "Злегка заправ блузку спереду у штани костюма, щоб підкреслити талію без втрати комфорту.",
+"10": "Шкіряний пасок (Hermes Kelly) Hermes — Я залишила цей предмет, оскільки код позначив 'belt_ties_not_buckles' як проблему, яку можна вирішити навмисним переміщенням. Носіння його застебнутим усуває стурбованість щодо інтервалу легкості, зберігаючи при цьому формальність.",
+"11": "Сумка через плече з вставками з канви — Сумка-кросбоді повсякденна, але слугує єдиним необхідним аксесуаром для цього формального комплекту, де немає спеціальної сумочки; її невимушена текстура балансує формальність костюма без порушення твоєї події.",
+"12": "Шкіряний пасок (Hermes Kelly) Hermes — Я додала цей пасок, щоб усунути блокування 'no_bag', використавши його як аксесуарну заяву, оскільки сумка була недоступна у вердикті, і додати структури."
+}
+```

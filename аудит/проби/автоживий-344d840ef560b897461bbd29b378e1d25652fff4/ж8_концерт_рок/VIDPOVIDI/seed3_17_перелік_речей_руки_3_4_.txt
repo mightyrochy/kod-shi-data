@@ -1,0 +1,44 @@
+── ПРОМПТ (2415 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "A tailored black blazer, sharp shoulders and fitted waist, matte black with a code of #000000, wool blend.\nHigh-waisted dark denim jeans, straight cut, length hitting just above the ankle, deep indigo with a hex code of #1a1c24, durable cotton twill.\nA white silk blouse, classic collar and relaxed fit, pure white with a hex code of #fdfdfd, soft woven silk.\nChunky black combat boots, platform sole for navigating crowds and standing long hours, black leather with a hex code of #111111.\nA thin silver chain necklace, delicate link design, polished silver metal with a hex code of #C0C0C0, minimal jewelry.\n\nThis outfit works because it balances the structured, slightly edgy vibe of a rock concert with the practical need to stand comfortably in a crowd for hours. The dark denim and combat boots ground the look in a cool, casual aesthetic suitable for an autumn night out, while the white silk blouse adds a touch of refined contrast that elevates the overall style beyond simple sportswear. The black blazer ties the colors together and offers easy warmth if the indoor venue gets chilly, ensuring she stays stylish and comfortable from start to finish."}
+
+── ВІДПОВІДЬ (933 симв., 4.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "white silk blouse",
+      "details": "classic collar and relaxed fit",
+      "slot": "top",
+      "color_hex": "#fdfdfd",
+      "worn": true
+    },
+    {
+      "name": "black blazer",
+      "details": "sharp shoulders, fitted waist, tailored cut",
+      "slot": "outerwear",
+      "color_hex": "#000000",
+      "worn": true
+    },
+    {
+      "name": "dark denim jeans",
+      "details": "high-waisted, straight cut, length hitting just above the ankle",
+      "slot": "bottom",
+      "color_hex": "#1a1c24",
+      "worn": true
+    },
+    {
+      "name": "black combat boots",
+      "details": "chunky, platform sole",
+      "slot": "shoes",
+      "color_hex": "#111111",
+      "worn": true
+    },
+    {
+      "name": "thin silver chain necklace",
+      "details": "delicate link design",
+      "slot": "necklace",
+      "color_hex": "#C0C0C0",
+      "worn": true
+    }
+  ]
+}
