@@ -704,6 +704,9 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     # стояло `code_lines` — готові рядки, які складав `річ_з_фото._рядок_жінці`.
     "item_verdicts": _список({"type": "object", "additionalProperties": False,
                               "properties": {"item": dict(_ВІЛЬНИЙ, description="назва її речі"),
+                                             "item_id": {"type": "string", "description": "точний ід варіанта каталогу"},
+                                             "catalogue_position": {"type": "integer", "minimum": 1,
+                                                                    "description": "видиме місце в переліку товарів"},
                                              "slot": _перелік("slot", "слот її речі з фото"),
                                              "item_type": _перелік("item_type", "вид її речі з фото"),
                                              "verdict": {"$ref": "#/$defs/screen_message"}},

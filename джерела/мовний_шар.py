@@ -2768,6 +2768,19 @@ def промпт_репліки(репліка):
     _зз = [з for в in (вх.get("item_verdicts") or [])
            for з in ((в.get("verdict") or {}).get("statements") or []) if isinstance(з, dict)]
     вжиті = {з.get("code") for з in _зз}
+    є_пошук = any(isinstance(в, dict) and isinstance(в.get("verdict"), dict)
+                  and в["verdict"].get("kind") == "catalogue_search" for в in (вх.get("item_verdicts") or []))
+    пошук_пояснити = [
+        "Для варіантів каталогу зв’язуй buy_first, buy_order_tie і buy_order_not_established через item_ids, "
+        "а values.then — у заданому порядку, лише з item_id відповідного вердикту. "
+        "Ключ values.proven_over — item_id варіанта, гіршого за першу в названих під ним аспектах: "
+        "ці аспекти кажи лише про нього, не про інші. "
+        "Брак доказу називай обмеженням, а не ознакою, що річ личить. "
+        "Однакові назви й порядок рядків не визначають зв’язку. "
+        "Коли назви однакові, після зв’язування за ід відрізняй товари так, як їх підписано на картці: "
+        "«Варіант <catalogue_position>». "
+        "За нічиєї не називай одного переможця. Внутрішні ід жінці не показуй."
+    ] if є_пошук else []
     заяви = (_коди_словником(_зз) + ["", РЯДОК_ЗАЯВ_АНГЛІЙСЬКОЮ, "", "ЗАЯВИ ВЕРДИКТІВ:"]
              + _заяви_словником(вжиті)) if вжиті else []
     поля = [
@@ -2804,7 +2817,7 @@ def промпт_репліки(репліка):
     return "\n".join([
         ПРОМПТ_РЕПЛІКИ, "",
         "Вхід — «репліка стилістки»:"] + [рядок for поле, рядок in поля if вх.get(поле)] + [
-        "Пиши зміст кодів людськими словами."] + заяви + [
+        "Пиши зміст кодів людськими словами."] + пошук_пояснити + заяви + [
         "", _ФФ.ВІДПОВІДЬ_ЛИШЕ_UK + " з ключем text — перелік речень {about: [ключі входу], recorded: [коди about, які речення "
         "каже записаними], her_words: [], says: речення}.", "",
         "РЕПЛІКА:", _json_.dumps(репліка or {}, ensure_ascii=False)])
@@ -2970,11 +2983,16 @@ def суд_речень_репліки(текст, репліка, записа�
     записано = р.get("recorded") if isinstance(р.get("recorded"), dict) else {}
     судити = bool(записано or set(вхід) - {"required", "not_recorded"})
     обовʼязкове = set(р.get("required") or ())
-    # числа заяв вердиктів (скільки знайдено в каталозі, скільки записів без коду, см) — опора речення з коду
-    числа_входу = {з["values"][к] for в in (р.get("item_verdicts") or ()) if isinstance(в, dict)
+    # числа заяв вердиктів (скільки знайдено в каталозі, скільки записів без коду, см) — опора речення з коду;
+    # видиме місце товару в переліку (`catalogue_position`, «Варіант 2» на картці) — теж: лише ним вона відрізняє
+    # однойменні товари, і без нього речення «Варіант 1 …» знімалось як число без опори (#4689)
+    вердикти_входу = [в for в in (р.get("item_verdicts") or ()) if isinstance(в, dict)]
+    числа_входу = {з["values"][к] for в in вердикти_входу
                    for з in ((в.get("verdict") or {}).get("statements") or ())
                    if isinstance(з, dict) and isinstance(з.get("values"), dict)
                    for к in з["values"] if isinstance(з["values"][к], int) and not isinstance(з["values"][к], bool)}
+    числа_входу |= {в["catalogue_position"] for в in вердикти_входу
+                    if isinstance(в.get("catalogue_position"), int) and not isinstance(в["catalogue_position"], bool)}
     вих = []
     for ч in частини:
         if за_схемою and (not isinstance(ч, dict) or not isinstance(ч.get("says"), str) or "about" not in ч or any(
