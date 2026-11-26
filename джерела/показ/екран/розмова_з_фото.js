@@ -422,7 +422,7 @@ function спитатиПроФото(){ return Екран.виконати('о�
   if (!в.open) return;
   const р = ОЦ.результат, к = р && р.картка;
   if (!к) return;
-  await невідомеОцінкиСловамиП(к, ОЦ.етапи);
+  await невідомеОцінкиСловамиП(к, ОЦ.етапи, р.мова);
   if (ОЦ.результат !== р || $('оц-невідоме') !== в) return;
   const з = в.querySelector('.задум'); з.innerHTML = '';
   (к.не_знаю || []).filter(п => п.текст).forEach(п => з.appendChild(елЖінціП('div', null, п.текст, 'evaluation_unknown_failed', своїЕкрануП())));

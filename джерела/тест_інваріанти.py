@@ -404,21 +404,57 @@ class Е3_ПолеБезПисача(unittest.TestCase):
                 else:
                     self.assertFalse(брак)
                     self.assertNotIn("бракує", клітинка)
+                if стан == "утримано":
+                    (знахідка,) = (з for з in суд["суд"]["findings"]
+                                   if з.get("правило") == "K-OUT-03" and з.get("сила") == стан)
+                    (факт,) = знахідка["заяви"]
+                    self.assertEqual(знахідка["сила_нп"], 0)
+                    self.assertEqual(факт["code"], "outer_edges_gap_measured")
+                    self.assertEqual((факт["values"]["gap_cm"], факт["values"]["error_cm"]), (30, 21.34))
                 for крок in ("оцінка_промпт", "допит_промпт"):
-                    відповідь = міст_оцінка.оцінка(dict(крок=крок, суд=суд, питання="Що з довжинами?"))
-                    тіло = json.loads(json.loads(відповідь)["промпт"])
-                    точки = тіло["check"]["points"]
-                    self.assertEqual(код in точки["passed"], стан == "пройдено")
-                    self.assertNotIn(код, точки["failed"])
-                    self.assertIn("interest_sources", точки["failed"])
+                    відповідь = виклик("оцінка", dict(крок=крок, суд=суд, питання="Що з довжинами?"))
+                    тіло = json.loads(відповідь["промпт"])
+                    точки = {тіло["facts"][н]["point"]: (н, тіло["facts"][н]["state"])
+                             for н in тіло["check"]["points"]}
+                    номер, стан_факту = точки[код]
+                    self.assertRegex(номер, r"^f[0-9]+$")
+                    self.assertEqual(стан_факту, {"пройдено": "passed", "утримано": "held", "без входу": "no_input",
+                                                 "не стосується": "not_applicable"}[стан])
+                    self.assertEqual(точки["interest_sources"][1], "failed")
+                    self.assertNotIn('"gap_cm"', відповідь["промпт"])
+                    self.assertNotIn('"error_cm"', відповідь["промпт"])
+                    self.assertNotIn('"length_cm"', відповідь["промпт"])
                     self.assertFalse(any("item_length_cm" in п.get("no_input", []) for п in тіло["unknown"]))
+                if стан in ("утримано", "пройдено"):
+                    відомий = next(н for н, ф in тіло["facts"].items() if ф.get("field") == "outfit")
+                    дійсне = "Оцінила речі на фото разом."
+                    хибне = "Подоли майже збігаються."
+                    невідоме = "Відступ між подолами не підтвердився."
+                    обр = виклик("оцінка", dict(крок="оцінка", суд=суд, відповідь_моделі=json.dumps({
+                        "answer": [{"about": {відомий: "known"}, "says": дійсне},
+                                   {"about": {номер: "failed"}, "says": хибне},
+                                   {"about": {"ф1": "item"}, "says": "Сукня мені подобається."}],
+                        "unknown": [{"about": {номер: стан_факту}, "says": невідоме}] if стан == "утримано" else [],
+                        "verdict": "wear_as_is",
+                    })))
+                    self.assertEqual(обр["картка"]["відповідь"], дійсне)
+                    self.assertIn("state_against_fact", обр["повтор"])
+                    self.assertIn("unknown_fact", обр["повтор"])
+                    self.assertNotIn("ф1", обр["повтор"])
+                    self.assertNotIn(хибне, json.dumps(обр["картка"], ensure_ascii=False))
                     if стан == "утримано":
-                        (утримання,) = (п for п in тіло["check"]["findings"]
-                                        if п.get("rule") == "K-OUT-03" and п.get("strength") == стан)
-                        (факт,) = утримання["statements"]
-                        self.assertEqual(утримання["sila_np"], 0)
-                        self.assertEqual(факт["code"], "outer_edges_gap_measured")
-                        self.assertEqual((факт["values"]["gap_cm"], факт["values"]["error_cm"]), (30, 21.34))
+                        self.assertEqual(обр["картка"]["не_знаю"][0]["текст"], невідоме)
+                        відповідь_без_країв = json.dumps({
+                            "answer": [{"about": {відомий: "known"}, "says": дійсне}],
+                            "verdict": "wear_as_is", "unknown": [],
+                        })
+                        без_країв = виклик("оцінка", dict(крок="оцінка", суд=суд, відповідь_моделі=відповідь_без_країв))
+                        пропущені = [п for п in без_країв["сторож"] if п["чому"] == "held_facts_not_told"]
+                        self.assertIn(номер, пропущені[0]["про"])
+                        self.assertIn(номер, без_країв["повтор"])
+                        запасний = [р["текст"] for р in без_країв["картка"]["не_знаю"] if р.get("готовий_текст")]
+                        self.assertTrue(any("довжина виробу" in р for р in запасний))
+                        self.assertEqual(без_країв["картка"]["відповідь"], дійсне)
 
     def test_пізнє_утримання_не_входить_до_перевірених(self):
         """Пізнє утримання знімає прохід, а справжній провал лишається в знаменнику."""
