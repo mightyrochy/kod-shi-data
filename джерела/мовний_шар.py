@@ -399,7 +399,7 @@ def _абзац_речей(розмітка, речі):
     в `розмітка`) — «about it: text н=M»; текст зміни, чия це нова річ (`заміна`), — «new item of text н=M» з
     `ПРАВИЛО_НОВОЇ_РЕЧІ`. Колір речі в перелік не йде: колір перекладачка бере з тексту. Без речей — ""."""
     н_ключа = {р["ключ"]: р["н"] for р in розмітка}
-    рядки, нові = [], False
+    рядки, нові, є_факти = [], False, False
     for р in речі if isinstance(речі, list) else []:
         if not isinstance(р, dict):
             continue
@@ -410,14 +410,20 @@ def _абзац_речей(розмітка, речі):
         поля = ([("назва в тексті н=%d" % н)] if н else []) \
             + (["kind: %s" % (певне.get("type") or певне["kind"])] if певне.get("type") or певне.get("kind") else []) \
             + (["about it: text н=%d" % про] if про else []) + (["new item of text н=%d" % заміна] if заміна else [])
+        відоме = р.get("відоме")
+        if isinstance(відоме, dict) and відоме:
+            поля.append("known catalogue facts: " + _json_.dumps(відоме, ensure_ascii=False))
+            є_факти = True
         if not поля:
             continue
         нові = нові or bool(заміна)
         рядки.append("%s — %s" % (р.get("н") or len(рядки) + 1, " · ".join(поля)))
     if not рядки:
         return ""
+    опора = (" Do not describe a known catalogue fact as missing. Treat sole material and traction as distinct facts."
+             if є_факти else "")
     return ("Речі образу — перелік речей картки (номер речі — як на картці):\n"
-            + "\n".join(рядки) + "\n" + ПРАВИЛО_РЕЧЕЙ + (ПРАВИЛО_НОВОЇ_РЕЧІ if нові else "") + "\n\n")
+            + "\n".join(рядки) + "\n" + ПРАВИЛО_РЕЧЕЙ + (ПРАВИЛО_НОВОЇ_РЕЧІ if нові else "") + опора + "\n\n")
 
 
 def промпт(розмітка, речі=None):
