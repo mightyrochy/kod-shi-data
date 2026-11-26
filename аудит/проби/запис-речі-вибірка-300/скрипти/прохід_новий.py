@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Прохід нового виду запису (наряд `Запис-речі-новий-вид`) над 300 речами вибірки через `claude -p` за підпискою.
-Промпт — `ядро.мітки.промпт` з одного визначення міток (`джерела/ядро/дані/мітки_речі.json`); слова крамниці, таблиця
+Промпт — `запис_речі.промпт` з одного визначення міток (`джерела/ядро/дані/мітки_речі.json`); слова крамниці, таблиця
 мірок і фото — ті самі, що в пробі 21.11 (`вхід.поля_крамниці`, /tmp/запис300/модель від `фото.py`).
 Запуск з кореня: python3 .../прохід_новий.py <модель> <журнал.jsonl> [паралельно] [скільки]"""
 import base64, glob, gzip, json, os, subprocess, sys, tempfile, threading
 from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, "джерела")
 from вхід import поля_крамниці, P
-from ядро import мітки
+import запис_речі
 МОДЕЛЬ, ЖУРНАЛ = sys.argv[1:3]; ПАР = int(sys.argv[3]) if len(sys.argv) > 3 else 6; МАКС = int(sys.argv[4]) if len(sys.argv) > 4 else 10**9
 БІН = "/opt/node22/bin/claude"; ТЕКА_Ф = "/tmp/запис300/модель"
 ВИБ = json.load(open("аудит/проби/запис-речі-вибірка-300/дані/вибірка.json", encoding="utf-8"))[:МАКС]
@@ -23,7 +23,7 @@ if os.path.exists(ЖУРНАЛ):
 def один(в):
     ід = в["ід"]; р = R[ід]; фото = sorted(glob.glob("%s/%s-[12].jpg" % (ТЕКА_Ф, ід)))
     таблиця = P(р, "таблиця_мірок")
-    системний, текст = мітки.промпт(поля_крамниці(р), len(фото), таблиця[:1400] if таблиця else None)
+    системний, текст = запис_речі.промпт(поля_крамниці(р), len(фото), таблиця[:1400] if таблиця else None)
     бл = [{"type": "text", "text": текст}]
     for ф in фото:
         бл.append({"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": base64.b64encode(open(ф, "rb").read()).decode()}})
