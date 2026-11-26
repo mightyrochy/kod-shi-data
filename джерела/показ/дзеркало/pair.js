@@ -47,7 +47,24 @@ window.createMirrorPair = function(R) {
     return '<div class="pair-fact '+css+'"><div>'+left+'</div><i aria-hidden="true">'+e(sign)+'</i><div>'+right+'</div></div>';
   }
   const fields=[['нагода','Нагода','сц-нагода'],['місце','Місце','сц-місце'],['дрес','Ошатність','сц-дрес'],['коли','Коли й погода',''],['макіяж','Макіяж','сц-макіяж'],['прикраси','Прикраси','сц-прикраси'],['мета','Мета','сц-мета']];
+  /* `#ядро=1`: «Люстерко зрозуміло» — з картки сценарію ядра (поля Ситуації, Т36), а не зі старого паспорта: її уривок
+     ліворуч, назва поля праворуч; число — з одиницею, тап — підписом плитки; «Не записано» — `сказала.без_поля` */
+  function coreFacts(card){
+    const rows=[];
+    for(const r of card.рядки||[]){
+      const name=НАЗВИ_ПОЛІВ_ЯДРА_П[r.поле];if(!name)continue;
+      const tile=r.джерело==='форма'?підписПлиткиЯдраП(r.поле):null;
+      const value=typeof r.значення==='number'?r.значення+(ОДИНИЦІ_ЯДРА_П[r.поле]||''):tile;
+      const left=r.уривок?'«'+e(r.уривок)+'»':tile?'Твій вибір':null;
+      if(!left)continue;
+      rows.push(row(left,'=','<small>'+e(name)+'</small>'+(value?'<strong>'+e(value)+'</strong>':'')));
+    }
+    for(const phrase of new Set(card.не_записано||[]))rows.push(row('«'+e(phrase)+'»','?',action('write','Уточнити словами')));
+    return rows;
+  }
   function structuredFacts(){
+    const core=typeof картаСценаріюЯдраП==='function'?картаСценаріюЯдраП():null;
+    if(core)return coreFacts(core);
     const passport=ПАСПОРТ_П;if(!passport)return [];
     const facts={...passport.картка_запиту};
     for(const [key,quote] of Object.entries(passport.цитати_полів||{})){
