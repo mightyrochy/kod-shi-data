@@ -109,15 +109,6 @@ function Test-ChainEndAnnounced($Pull) {
     $false
 }
 
-function Get-ChainBuildStamp([string]$Commit) {
-    <# Читає штамп з точного коміту; відсутня збірка чекає, пошкоджена не стає успіхом. #>
-    $exists = Invoke-Git @('ls-tree','--name-only',$Commit,'--','build.txt')
-    if (-not $exists.Out.Trim()) { return '' }
-    $stamp = (Invoke-Git @('cat-file','blob',"${Commit}:build.txt")).Out.Trim()
-    if ($stamp -cnotmatch $script:ShaPattern) { throw 'CHAIN_BUILD' }
-    $stamp
-}
-
 # Функції, які ланцюг бере з queue_lanes.ps1 через AST (Get-HeadLivePublication), читають $script:RemoteRoot, а його
 # задає лише верхній код queue_lanes.ps1, якого публікатор не вантажить.
 # Клон публікатора — origin, тож корінь той самий, що за замовчуванням у queue_lanes.ps1 (Set-RemoteRoot).
@@ -252,49 +243,13 @@ function Complete-EngineDrafts {
     }
 }
 
-function Test-LiveModels($Config) {
-    <# Читає каталог локального сервера без завантаження моделей; обом не треба одночасно стояти у VRAM. #>
-    $required = @($Config.models)
-    if ($required.Count -ne 2) { return $false }
-    foreach ($path in @('/api/v1/models','/api/v0/models','/v1/models')) {
-        try {
-            $r = Invoke-RestMethod -Uri ("http://127.0.0.1:1234" + $path) -Method Get -TimeoutSec 5
-            if ($path -eq '/api/v1/models') { $ids = @($r.models | ForEach-Object { [string]$_.key }) }
-            else { $ids = @($r.data | ForEach-Object { [string]$_.id }) }
-            foreach ($id in $required) { if ($id -notin $ids) { return $false } }
-            return $true
-        } catch {
-            # Лише відсутній endpoint дозволяє сумісний старий API. 401/403 не обходяться.
-            if ($_.Exception -isnot [Net.WebException] -or $null -eq $_.Exception.Response -or [int]$_.Exception.Response.StatusCode -ne 404) { return $false }
-        }
-    }
-    $false
-}
-
-function Set-QueueTracking([string]$Queue, [string]$Sha = '') {
-    <# Після успішного push у `gemini-queue/*` (`$Sha` — поставлена позначка, порожньо — знята) ставить локальне посилання
-    `refs/remotes/origin/…` у те саме, що тепер на origin. Клон `repo.git` — `init --bare` без `remote.origin.fetch`, і push
-    сам цих посилань не оновлює: без цього прийом станів того ж проходу (Receive-RunState, Remove-FinishedMarkers) бачив би
-    позначки, як їх залишив останній fetch, і відкидав би стан позначки, яку ланцюг поставив уже після нього. Збій тут не
-    скасовує вже виконаного push — наступний fetch --prune вирівняє посилання. #>
-    if ($Queue -cnotmatch '^gemini-queue/\S+$' -or $Queue.Contains('..') -or ($Sha -and $Sha -cnotmatch $script:ShaPattern)) { throw 'CHAIN_FORMAT' }
+function Set-QueueTracking([string]$Queue) {
+    <# Після зняття позначки видаляє її локальне посилання. Клон repo.git не має remote.origin.fetch;
+    якщо update-ref не вдався, наступний fetch --prune вирівняє посилання. #>
+    if ($Queue -cnotmatch '^gemini-queue/\S+$' -or $Queue.Contains('..')) { throw 'CHAIN_FORMAT' }
     $ref = "refs/remotes/origin/$Queue"
-    $r = $(if ($Sha) { Invoke-Git @('update-ref',$ref,$Sha) -AllowFail } else { Invoke-Git @('update-ref','-d',$ref) -AllowFail })
+    $r = Invoke-Git @('update-ref','-d',$ref) -AllowFail
     if ($r.Code -ne 0) { Write-WrapperLog "ланцюг: локальне посилання $Queue не оновлено ($(([string](Get-Prop $r 'Err')).Trim())) — вирівняє наступний fetch" }
-}
-
-function Add-ChainMarker([string]$Slug, [string]$Model, [string]$Main, [switch]$Gpu, [ValidateRange(1,999)][int]$Attempt = 1, [string]$Cond = '') {
-    <# Створює сталу позначку один раз; порівняння lease не дозволяє затерти чужу/вже взяту спробу. `$Cond` — умови наявної
-    позначки, що переноситься на іншу модель (строк і пріоритет лишаються); без нього — `p2` чи `p2-gpu`. #>
-    if ($Slug -cnotmatch $script:SlugPattern -or $Model -cnotmatch $script:ModelPattern -or $Main -cnotmatch $script:ShaPattern) { throw 'CHAIN_FORMAT' }
-    if ($Cond -and $Cond -cnotmatch '^(?:p[0-9]|d20[0-9]{10}|gpu)(?:-(?:p[0-9]|d20[0-9]{10}|gpu)){0,2}$') { throw 'CHAIN_FORMAT' }
-    $ref = "refs/heads/gemini-queue/$Slug/$Model/$Attempt" + $(if ($Cond) { "/$Cond" } elseif ($Gpu) { '/p2-gpu' } else { '/p2' })
-    $r = Get-ChainRemoteHeads $ref
-    if ($r.Out.Trim()) { return }
-    $r = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=${ref}:",'origin',"${Main}:$ref") -AllowFail
-    if ($r.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PUSH' $r) }
-    Set-QueueTracking ($ref -replace '^refs/heads/','') $Main
-    Write-WrapperLog "ланцюг: поставлено $ref на $Main"
 }
 
 function Read-QuotaJson([string]$Dir, [string]$Name) {
@@ -395,24 +350,6 @@ function Select-ReviewModel([string[]]$Candidates, [datetimeoffset]$Now) {
     $list[0]
 }
 
-function Get-PauseReaders {
-    <# Розбір `codex_pause_until` (Get-CodexPauseUntil) з довіреної копії queue_lanes.ps1: правило одне з gemini-run (Test-CodexPause),
-    ланцюг його не копіює; викликач підключає блок крапкою у своєму просторі. #>
-    $errors = $null
-    $ast = [Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'queue_lanes.ps1'), [ref]$null, [ref]$errors)
-    $functions = @($ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -ceq 'Get-CodexPauseUntil' }, $true))
-    if ($errors.Count -or $functions.Count -ne 1) { throw 'CHAIN_PAUSE_PARSER' }
-    [scriptblock]::Create($functions[0].Extent.Text)
-}
-
-function Get-LiveModels($Config, [datetimeoffset]$Now, $PauseUntil = $null) {
-    <# Кандидати рушія для автоживого за порядком `codex`, `claude`; доки `$Now` < `$PauseUntil` (codex_pause_until) — лише `agy`: смуга
-    gemini ставить GPU-позначку так само, як codex (замок GPU, оренда й план — одні), квоту agy читає Test-ModelQuota. Позначки
-    диспетчера з явною моделлю цього списку не беруть: лишаються на своїх моделях. #>
-    if ($null -ne $PauseUntil -and $Now -lt $PauseUntil) { return @([string]$Config.agy) }
-    @([string]$Config.codex, [string]$Config.claude)
-}
-
 function Get-ReviewModels($Pull, $Config, [datetimeoffset]$Now = [datetimeoffset]::UtcNow) {
     <# Один рецензент іншого постачальника, ніж автор, що не на квоті: робота GPT і Claude — agy, Gemini — Codex; запасний —
     Codex для Claude, хмарний Claude для GPT і Gemini (рядок диспетчерові, не claude -p на ноутбуці). Обидва для роботи
@@ -488,14 +425,10 @@ function Get-ChainTaskResults {
     }
 }
 
-function Get-ChainTaskCompletion([string]$Slug, [switch]$ReadyOnly, [switch]$Removed) {
-    <# Одне джерело кінця автоживого й автоперевірки; відсутність позначки рахується лише для опублікованого живого. #>
+function Get-ChainTaskCompletion([string]$Slug, [switch]$ReadyOnly) {
+    <# Час прийнятого результату за точною назвою позначки. #>
     foreach ($result in @(Get-ChainTaskResults)) {
         if ($result.Slug -ceq $Slug -and (-not $ReadyOnly -or $result.Kind -ceq 'ГОТОВО')) { return $result.Utc }
-    }
-    if ($Removed) {
-        $r = Get-ChainRemoteHeads "refs/heads/gemini-queue/$Slug/*"
-        if (-not $r.Out.Trim()) { return [datetime]::UtcNow.ToString('o') }
     }
     ''
 }
@@ -657,28 +590,6 @@ function Get-ChainMarkers([string]$Slug, $Heads = $null) {
     }
 }
 
-function Move-BlockedMarkers([string]$Slug, [string]$Model, [string]$Main, [datetimeoffset]$Now, [switch]$Gpu, [string]$Cond = '') {
-    <# Переносить NEW/WAIT із вичерпаною квотою: $true — виконано, $false — не потрібно, $null — відкладено.
-
-    UNKNOWN і квота цільової моделі потребують повтору; узята чи вже доступна робота передачі не потребує. #>
-    if (Test-ModelQuota $Model $Now) { return $null }
-    $all = @(Get-ChainMarkers $Slug)
-    if (@($all | Where-Object { $_.Kind -ceq 'UNKNOWN' }).Count) { return $null }
-    if (@($all | Where-Object { $_.Kind -ceq 'TAKEN' }).Count) { return $false }
-    $old = @($all | Where-Object { $_.Kind -cin @('NEW','WAIT') })
-    if (-not $old.Count -or @($old | Where-Object { $_.Model -ceq $Model -or -not (Test-ModelQuota $_.Model $Now) }).Count) { return $false }
-    $attempt = 1
-    foreach ($m in @($all | Where-Object { $_.Model -ceq $Model })) { $attempt = [Math]::Max($attempt, $m.Attempt + 1) }
-    Add-ChainMarker $Slug $Model $Main -Gpu:$Gpu -Attempt $attempt -Cond $Cond
-    foreach ($m in $old) {
-        $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',":refs/heads/$($m.Ref)") -AllowFail
-        if ($d.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PUSH' $d) }
-        Set-QueueTracking $m.Ref
-        Write-WrapperLog "ланцюг: $($m.Ref) знято — квота постачальника вичерпана, роботу бере $Model"
-    }
-    $true
-}
-
 function Test-CloudMove([string]$Slug, [datetimeoffset]$Now) {
     <# Визначає потребу передачі NEW/WAIT у хмару: $null — читання відкладене, $false — передача не потрібна. #>
     $all = @(Get-ChainMarkers $Slug)
@@ -726,71 +637,6 @@ function Test-ReviewedMerge($Pull, $Reviewed, [string]$Main) {
     if ((Invoke-Git @('merge-base','--is-ancestor',[string]$old.head,$head) -AllowFail).Code -ne 0) { return $false }
     if ((Invoke-Git @('rev-list','--first-parent','--no-merges',"$($old.head)..$head")).Out.Trim()) { return $false }
     (Get-ReviewDiff $head $Main) -ceq [string]$old.diff
-}
-
-function Test-ChainMarkerCancelled($Marker) {
-    <# Голова позначки — коміт «ЗНЯТО…» диспетчера (`ЧЕРГА.md`): смуга її не виконає, лише закриє CANCELLED.
-    Коміту нема локально й fetch не дав — не знята (жива): кінця не вигадуємо. #>
-    if ((Invoke-Git @('cat-file','-e',"$($Marker.Sha)^{commit}") -AllowFail).Code -ne 0) { [void](Invoke-Git @('fetch','-q','--no-tags','origin',$Marker.Sha) -AllowFail) }
-    $subject = Invoke-Git @('log','-1','--format=%s',$Marker.Sha) -AllowFail
-    $subject.Code -eq 0 -and ([string]$subject.Out).Trim() -cmatch '^ЗНЯТО'
-}
-
-function Get-LiveCompletion($Active) {
-    <# Кінець активного наряду — за позначкою, незалежно від рушія й назви гілки звіту: рядок кінця за назвою наряду чи
-    зняття всіх його позначок, і на origin нема живої позначки того самого штампу (NEW, WAIT, TAKEN чи UNKNOWN, не знятої
-    «ЗНЯТО»). Перенесення між рушіями чи смугами — нова позначка того самого штампу, а стара закінчується рядком
-    (CANCELLED після «ЗНЯТО», відмова смуги): 17.11 о 18:39Z диспетчер переніс `автоживий-04911e68` зі смуги claude на
-    `gpt-6.1-sol-high`, кінець старої позначки звільнив прогін, і о 18:43Z ланцюг поставив `автоживий-49b680c2`, хоч
-    прогін 04911e68 ішов — дві збірки в черзі на одну відеокарту. Тепер кінець — лише коли штамп не має роботи в черзі. #>
-    $published = Get-Prop $Active 'published'
-    if ($null -ne $published -and -not $published) { return '' }
-    $slug = "автоживий-" + [string]$Active.stamp
-    $done = Get-ChainTaskCompletion $slug
-    # Один ls-remote: усі позначки зняті — кінець (як `-Removed`), інакше кінець — лише рядок без живої позначки.
-    $heads = Get-ChainRemoteHeads "refs/heads/gemini-queue/$slug/*"
-    if (-not $heads.Out.Trim()) { return $(if ($done) { $done } else { [datetime]::UtcNow.ToString('o') }) }
-    if (-not $done) { return '' }
-    foreach ($marker in @(Get-ChainMarkers $slug $heads)) {
-        if ($marker.Kind -cin @('NEW','WAIT','TAKEN','UNKNOWN') -and -not (Test-ChainMarkerCancelled $marker)) { return '' }
-    }
-    $done
-}
-
-function Get-LatestLivePending($Pending) {
-    <# Єдина черга зберігає останню готову збірку; проміжні штампи лише журналює. #>
-    $items = @($Pending)
-    if (-not $items.Count) { return @() }
-    foreach ($job in @($items | Select-Object -SkipLast 1)) { Write-WrapperLog "ланцюг: пропущено проміжний штамп $($job.stamp)" }
-    @($items[-1])
-}
-
-function Stop-WaitingLive($Active, [string]$Stamp) {
-    <# Автоживий, що ще жде (жодна його позначка не взята), знімає штатним шляхом черги — комітом «ЗНЯТО: …» поверх кожної
-    його позначки NEW чи WAIT (смуга закриває її кінцем CANCELLED, як зняття диспетчера), щоб місце взяла свіжіша збірка
-    $Stamp: у черзі один автоживий, і він бере найсвіжішу збірку з усім злитим від останнього прогону, що дійшов кінця
-    (менеджер 20.11; прогони поспіль на сусідніх збірках повної відповіді не дали). Повертає $true — живих позначок
-    штампу не лишилось, можна ставити новий; $false — позначку взято чи стан не прочитано: прогін іде, новий чекає його
-    кінця. Позначку, яку смуга взяла між читанням стану й пушем, зупиняє Stop-CancelledRuns — той самий кінець, що від
-    зняття диспетчера. Резерв, ще не опублікований (push упав), не знімається: повтор публікує його цим самим проходом,
-    а позначку, прийняту до падіння, могло ще не бути в локальному трекінгу — новий поруч дав би два автоживі. #>
-    $published = Get-Prop $Active 'published'
-    if ($null -ne $published -and -not $published) { return $false }
-    $slug = "автоживий-" + [string]$Active.stamp
-    $live = @(Get-ChainMarkers $slug | Where-Object { $_.Kind -cin @('NEW','WAIT','TAKEN','UNKNOWN') -and -not (Test-ChainMarkerCancelled $_) })
-    if (@($live | Where-Object { $_.Kind -cin @('TAKEN','UNKNOWN') }).Count) { return $false }
-    foreach ($m in $live) {
-        $tree = (Invoke-Git @('rev-parse',"$($m.Sha)^{tree}")).Out.Trim()
-        $c = Invoke-Git @('-c','user.name=Обгортка Люстерка','-c','user.email=wrapper@users.noreply.github.com','-c','commit.gpgsign=false',
-            'commit-tree',$tree,'-p',$m.Sha,'-m',"ЗНЯТО: автоживий ще не стартував, чергу бере свіжіша збірка $Stamp") -AllowFail
-        if ($c.Code -ne 0) { throw (New-ChainFailure 'CHAIN_CANCEL' $c) }
-        $cut = $c.Out.Trim()
-        $d = Invoke-Git @('push','-q','--no-verify',"--force-with-lease=refs/heads/$($m.Ref):$($m.Sha)",'origin',"${cut}:refs/heads/$($m.Ref)") -AllowFail
-        if ($d.Code -ne 0) { throw (New-ChainFailure 'CHAIN_PUSH' $d) }
-        Set-QueueTracking $m.Ref $cut
-        Write-WrapperLog "ланцюг: $($m.Ref) знято комітом ЗНЯТО — не стартував, чергу бере свіжіша збірка $Stamp"
-    }
-    $true
 }
 
 function Test-RecentReviewHead($Pull, $Heads, [datetimeoffset]$Installed, [datetimeoffset]$Now, [int]$Hours) {
@@ -1015,20 +861,16 @@ function Get-ChainBranchWork([string]$Branch) {
 }
 
 function Invoke-WrapperChain {
-    <# PR коду -> незалежна перевірка; новий штамп збірки -> GPU-прогін на коміті збірки: у черзі один автоживий, наступний
-    стає після кінця попереднього (Get-LiveCompletion) на найсвіжішій збірці, а той, що ще жде, свіжіша збірка заміняє. #>
+    <# Доводить до кінця публікацію чернеток і знімає мертві позначки автоперевірки. #>
     if ($DryRun) { return }
     $main = Get-RefSha 'refs/remotes/origin/main'
     $r = Invoke-Git @('cat-file','blob',"${main}:аудит/адаптери/gemini/ланцюг.json") -AllowFail
     if ($r.Code -ne 0) { return }
     try {
         $config = ConvertFrom-Json $r.Out
-        # codex і agy — рецензенти PR; claude — лише автоживий (GPU ноутбука).
-        if ($config.v -ne 1 -or $config.codex -cnotmatch '^gpt-[a-z0-9.-]+$' -or $config.claude -cnotmatch '^cc-claude-[a-z0-9.-]+$' -or
+        if ($config.v -ne 1 -or $config.codex -cnotmatch '^gpt-[a-z0-9.-]+$' -or
             $config.PSObject.Properties['agy'] -eq $null -or $config.agy -isnot [string] -or $config.agy -cnotmatch '^gemini-[a-z0-9.-]+$') { throw 'CHAIN_CONFIG' }
-        foreach ($path in @('аудит/наряди/автоперевірка.md','аудит/наряди/автоживий.md')) {
-            if ((Invoke-Git @('cat-file','-e',"${main}:$path") -AllowFail).Code -ne 0) { throw 'CHAIN_TEMPLATE' }
-        }
+        if ((Invoke-Git @('cat-file','-e',"${main}:аудит/наряди/автоперевірка.md") -AllowFail).Code -ne 0) { throw 'CHAIN_TEMPLATE' }
         $hours = 24
         $hoursProp = $config.PSObject.Properties['review_hours']
         if ($null -ne $hoursProp) {
@@ -1037,35 +879,11 @@ function Invoke-WrapperChain {
             if ($hours -lt 1 -or $hours -gt 168) { throw 'CHAIN_CONFIG' }
         }
         $now = [datetimeoffset]::UtcNow; $installed = $now; $heads = @{}
-        . (Get-PauseReaders)
-        $pauseUntil = Get-CodexPauseUntil $config
-        $pauseActive = $null -ne $pauseUntil -and $now -lt $pauseUntil
-        if ($pauseActive) {
-            $pauseText = $pauseUntil.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", [Globalization.CultureInfo]::InvariantCulture)
-            # Один рядок на значення паузи, не на прохід (Test-Seen).
-            if (-not (Test-Seen "codex-pause $pauseText")) {
-                Write-WrapperLog "ланцюг: пауза Codex до $pauseText (codex_pause_until у ланцюг.json): автоживий — на agy $($config.agy), не на Codex і не на Claude ноутбука; позначки диспетчера — як були"
-            }
-        }
         $statePath = Join-Path $WorkDir 'chain.json'
-        $reviewed = @{}; $liveActive = $null; $liveSince = ''; $last = $main; $seen = @{}; $liveStamps = @{}; $livePending = @(); $hasLiveState = $false
+        $reviewed = @{}; $seen = @{}
         if (Test-Path -LiteralPath $statePath) {
             $state = ConvertFrom-Json ((Read-ChainStateText $statePath))
-            $last = [string]$state.main
             if ($null -ne $state.PSObject.Properties['reviewed']) { foreach ($entry in $state.reviewed.PSObject.Properties) { $reviewed[$entry.Name] = $entry.Value } }
-            if ($null -ne $state.PSObject.Properties['live_active']) { $liveActive = $state.live_active }
-            if ($null -ne $state.PSObject.Properties['live_since']) { $liveSince = [string]$state.live_since }
-            if ($null -ne $state.PSObject.Properties['live_stamps']) {
-                $hasLiveState = $true
-                foreach ($stamp in @($state.live_stamps)) {
-                    if ($stamp -isnot [string] -or $stamp -cnotmatch $script:ShaPattern) { throw 'CHAIN_STATE' }
-                    $liveStamps[$stamp] = $true
-                }
-                $livePending = @($state.live_pending)
-                foreach ($job in $livePending) {
-                    if ($job.stamp -cnotmatch $script:ShaPattern -or $job.main -cnotmatch $script:ShaPattern -or -not $liveStamps.ContainsKey([string]$job.stamp)) { throw 'CHAIN_STATE' }
-                }
-            }
             if ($null -ne $state.PSObject.Properties['installed_utc']) {
                 $installed = [datetimeoffset]::Parse([string]$state.installed_utc, [Globalization.CultureInfo]::InvariantCulture)
                 if ($installed -gt $now) { throw 'CHAIN_STATE' }
@@ -1075,47 +893,7 @@ function Invoke-WrapperChain {
             }
             foreach ($key in @($state.reviews)) { if ($key -is [string]) { $seen[$key] = $true } }
         }
-        if ($last -cnotmatch $script:ShaPattern -or (Invoke-Git @('merge-base','--is-ancestor',$last,$main) -AllowFail).Code -ne 0) { throw 'CHAIN_HISTORY' }
-        $build = Get-ChainBuildStamp $last
-        # Перший запуск або старий формат стану: поточна збірка — початкова межа, не історичний наряд.
-        if (-not $hasLiveState -and $build) { $liveStamps[$build] = $true }
-        if ($last -cne $main) {
-            $commits = (Invoke-Git @('rev-list','--first-parent','--reverse',"$last..$main")).Out
-            foreach ($commit in @($commits -split '\s+' | Where-Object { $_ })) {
-                $stamp = Get-ChainBuildStamp $commit
-                if ($stamp -and $stamp -cne $build -and -not $liveStamps.ContainsKey($stamp)) {
-                    $livePending += @{stamp=$stamp;main=$commit}
-                    $liveStamps[$stamp] = $true
-                }
-                $build = $stamp
-            }
-        }
-        $livePending = @(Get-LatestLivePending $livePending)
-        if ($null -ne $liveActive) {
-            $completed = Get-LiveCompletion $liveActive
-            if ($completed) { $liveSince = $completed; $liveActive = $null }
-        }
-        # Запис до мережі лишає ту саму роботу для повтору після падіння.
-        Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
-        if ($livePending.Count -and (Test-LiveModels $config)) {
-            # Автоживий, що ще жде, поступається свіжішій збірці (Stop-WaitingLive); той, що йде, — ні: новий чекає його кінця.
-            if ($null -ne $liveActive -and (Stop-WaitingLive $liveActive ([string]$livePending[0].stamp))) { $liveActive = $null }
-            if ($null -eq $liveActive) {
-                $job = $livePending[0]
-                $liveActive = [pscustomobject]@{stamp=$job.stamp;main=$job.main;published=$false}; $livePending = @()
-                # Резерв до push: падіння після прийнятого ref не перетворює його на пропущений штамп.
-                Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
-            }
-        }
-        if ($null -ne $liveActive -and $null -ne $liveActive.PSObject.Properties['published'] -and -not $liveActive.published) {
-            Add-ChainMarker "автоживий-$($liveActive.stamp)" (Select-ReviewModel (Get-LiveModels $config $now $pauseUntil) $now) ([string]$liveActive.main) -Gpu
-            $liveActive.published = $true
-            Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; live_active=$liveActive; live_since=$liveSince; live_stamps=@($liveStamps.Keys); live_pending=@($livePending); reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
-        }
-        elseif ($null -ne $liveActive -and $null -ne $liveActive.PSObject.Properties['published'] -and $liveActive.published) {
-            # Позначка, що чекає вичерпаної квоти, переходить до доступного рушія.
-            [void](Move-BlockedMarkers "автоживий-$($liveActive.stamp)" (Select-ReviewModel (Get-LiveModels $config $now $pauseUntil) $now) ([string]$liveActive.main) $now -Gpu)
-        }
+        Write-FileAtomic $statePath (([ordered]@{ main=$main; reviewed=$reviewed; reviews=@($seen.Keys); installed_utc=$installed.ToString('o'); heads=$heads }) | ConvertTo-Json -Compress -Depth 7)
         Complete-EngineDrafts
         $pulls = @(Get-ChainPulls)
         Remove-DeadReviewMarkers $pulls $seen $now

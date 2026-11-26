@@ -7,7 +7,8 @@
 import sys, os, json, gzip, asyncio
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import bridge, міст_пакет as МП, trace as СЛ, кеш_входу as КВ
-рядки = [json.loads(р) for р in gzip.open(os.path.join(ТУТ, '..', 'аудит', 'проби', 'знімок_входи_сід3.jsonl.gz'), 'rt', encoding='utf-8')]
+with gzip.open(os.path.join(ТУТ, '..', 'аудит', 'проби', 'знімок_входи_сід3.jsonl.gz'), 'rt', encoding='utf-8') as файл:
+    рядки = [json.loads(р) for р in файл]
 вх_з = json.dumps(next(json.loads(р['вхід']) for р in рядки if р['ім'] == 'запити'), ensure_ascii=False)
 кандидати = [json.loads(р['вхід']) for р in рядки if р['ім'] == 'оцінка' and р.get('async') and json.loads(р['вхід']).get('крок') == 'каталог']
 def скинути(): МП.КЕШ_ПАКЕТА.clear(); МП._СЛІД_ПАКЕТА.clear(); КВ.скинути()

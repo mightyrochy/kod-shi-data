@@ -14,101 +14,25 @@ try {
     . (Join-Path $SourceDir 'gemini_publish.ps1') -WorkDir "$tmp/pub" -OutDir "$tmp/gem-out" -OutboxDir "$tmp/out"
     $GeminiRunsDir = "$tmp/gemini-runs"
     foreach ($dir in @($WorkDir,"$WorkDir/state","$WorkDir/seen",$OutDir,$OutboxDir,"$tmp/claude-run/runs")) { [void][IO.Directory]::CreateDirectory($dir) }
-    $seed = "$tmp/seed"; $remote = "$tmp/origin.git"
-    & git init -q --bare $remote
-    & git init -q -b main $seed
-    & git -C $seed config user.name 'Стенд'
-    & git -C $seed config user.email 'stand@example.invalid'
-    & git -C $seed config core.autocrlf false
-    & git -C $seed remote add origin $remote
-    foreach ($dir in @('аудит/наряди','аудит/адаптери/gemini')) { [void][IO.Directory]::CreateDirectory("$seed/$dir") }
-    Copy-Item -LiteralPath "$SourceDir/ланцюг.json" -Destination "$seed/аудит/адаптери/gemini/ланцюг.json"
-    foreach ($task in @('автоживий','автоперевірка')) { [IO.File]::WriteAllText("$seed/аудит/наряди/$task.md",$task,$utf) }
-    & git -C $seed add -A
-    & git -C $seed commit -qm 'База'
-    & git -C $seed push -q origin main
-    $script:Repo = "$seed/.git"; $script:NoHooks = "$tmp/no-hooks"
-    function Build {
-        <# Нова збірка має власний штамп і проходить справжній fetch. #>
-        $stamp = (& git -C $seed rev-parse HEAD).Trim()
-        [IO.File]::WriteAllText("$seed/build.txt",$stamp,$utf)
-        & git -C $seed add -A
-        & git -C $seed commit -qm 'Збірка'
-        & git -C $seed push -q origin main
-        [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
-        $stamp
-    }
-    function Get-ChainPulls { @() }
-    function Complete-EngineDrafts { }
-    function Test-LiveModels { $true }
-    function Remove-DeadReviewMarkers { }
-    function Move-BlockedMarkers { $false }
-    function LiveMarkers { @(& git -C $remote for-each-ref '--format=%(refname)' refs/heads/gemini-queue/ | Where-Object { $_ -like '*/автоживий-*' }) }
-    function Finish-Lane([string]$Stamp) {
-        <# Смуга, що скінчила позначку, пише її стан (DONE) до рядка кінця, а ref знімає пізніше: кінець за назвою
-        позначки не чекає зняття, а жива позначка того самого штампу (перенесення) — чекає. #>
-        foreach ($ref in @(LiveMarkers | Where-Object { $_ -like "*/автоживий-$Stamp/*" })) {
-            $name = $ref.Substring('refs/heads/'.Length)
-            $sha = (& git -C $remote rev-parse $ref).Trim()
-            $dir = $(if (($name -split '/')[2] -cmatch '^cc-') { "$tmp/claude-run/state" } else { Join-Path $OutDir 'marker-state' })
-            [void][IO.Directory]::CreateDirectory($dir)
-            # Тека станів смуги Codex/agy, яку смуга вже ініціювала (без `ready` читач дає UNKNOWN).
-            if (($name -split '/')[2] -cnotmatch '^cc-') { Write-FileAtomic (Join-Path $dir 'ready') '1' }
-            Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "refs/remotes/origin/$name $sha") + '.txt')) 'DONE стенд DONE'
-            Remove-Item -LiteralPath (Join-Path $dir ((Get-Sha256Hex "refs/remotes/origin/$name $sha") + '.claim')) -ErrorAction SilentlyContinue
-        }
-    }
-    function Take-Lane([string]$Stamp) {
-        <# Смуга взяла позначку штампу (`.claim`, як Get-MarkerState): прогін іде, тож свіжіша збірка його не знімає
-        (Stop-WaitingLive) — новий автоживий чекає його кінця. #>
-        foreach ($ref in @(LiveMarkers | Where-Object { $_ -like "*/автоживий-$Stamp/*" })) {
-            $name = $ref.Substring('refs/heads/'.Length)
-            $sha = (& git -C $remote rev-parse $ref).Trim()
-            $dir = $(if (($name -split '/')[2] -cmatch '^cc-') { "$tmp/claude-run/state" } else { Join-Path $OutDir 'marker-state' })
-            [void][IO.Directory]::CreateDirectory($dir)
-            if (($name -split '/')[2] -cnotmatch '^cc-') { Write-FileAtomic (Join-Path $dir 'ready') '1' }
-            Write-FileAtomic (Join-Path $dir ((Get-Sha256Hex "refs/remotes/origin/$name $sha") + '.claim')) 'стенд'
-        }
-    }
-    [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
-    Invoke-WrapperChain
     foreach ($engine in @('claude','codex','agy')) {
-        $first = Build; Invoke-WrapperChain
-        Take-Lane $first
-        $middle = Build; Invoke-WrapperChain
-        $latest = Build; Invoke-WrapperChain
-        $count = @(LiveMarkers).Count
-        $active = [pscustomobject]@{stamp=$first;published=$true}
-        $branch = if ($engine -eq 'claude') { "claude/автоживий-$($first.Substring(0,8))" } elseif ($engine -eq 'codex') { "codex/автоживий-$first" } else { 'gemini/довільний-звіт' }
-        $head = (& git -C $seed rev-parse HEAD).Trim()
+        $stamp = if ($engine -ceq 'claude') { '1' * 40 } elseif ($engine -ceq 'codex') { '2' * 40 } else { '3' * 40 }
+        $slug = "автоживий-$stamp"
+        $branch = "$engine/короткий-звіт"
+        $head = 'b' * 40
         $report = "$WorkDir/state/$engine.json"
-        # Гілка активного штампу при чужій позначці не закінчує роботу.
-        Write-FileAtomic $report ((@{slug="автоживий-$latest";line="GEMINI ОБГОРТКА: ГОТОВО $branch $head"}) | ConvertTo-Json)
-        Check "$engine чужий штамп у позначці — не кінець" (-not (Get-LiveCompletion $active))
-        Invoke-WrapperChain
-        Check "$engine чужий штамп не відкриває наступного прогону" (@(LiveMarkers).Count -eq $count)
+        Write-FileAtomic $report ((@{slug="автоживий-$head";line="GEMINI ОБГОРТКА: ГОТОВО $branch $head"}) | ConvertTo-Json)
+        Check "$engine чужий штамп у позначці — не результат наряду" (-not (Get-ChainTaskCompletion $slug))
         Remove-Item -LiteralPath $report
-        Finish-Lane $first
-        if ($engine -eq 'claude') {
+        if ($engine -ceq 'claude') {
             $run = "$tmp/claude-run/runs/старий-формат"
             [void][IO.Directory]::CreateDirectory($run)
-            Write-FileAtomic "$run/result.json" ((@{marker="gemini-queue/автоживий-$first/cc-claude-test/1/p2-gpu";code='DONE';branch=$branch;head=$head;end=[datetime]::UtcNow.ToString('s')}) | ConvertTo-Json)
+            Write-FileAtomic "$run/result.json" ((@{marker="gemini-queue/$slug/cc-claude-test/1/p2-gpu";code='DONE';branch=$branch;head=$head}) | ConvertTo-Json)
         } else {
-            Write-FileAtomic $report ((@{slug="автоживий-$first";line="GEMINI ОБГОРТКА: ГОТОВО $branch $head";sent=$true;attempts=0}) | ConvertTo-Json)
+            Write-FileAtomic $report ((@{slug=$slug;line="GEMINI ОБГОРТКА: ГОТОВО $branch $head"}) | ConvertTo-Json)
         }
-        Check "$engine назва позначки визначає кінець" ([bool](Get-LiveCompletion $active))
-        Invoke-WrapperChain
-        $markers = @(LiveMarkers)
-        Check "$engine наступна позначка — лише останній штамп" ($markers.Count -eq $count + 1 -and @($markers | Where-Object { $_ -like "*/автоживий-$latest/*" }).Count -eq 1 -and @($markers | Where-Object { $_ -like "*/автоживий-$middle/*" }).Count -eq 0)
-        Invoke-WrapperChain
-        Check "$engine повтор проходу не дублює позначку" (@(LiveMarkers).Count -eq $markers.Count)
-        Finish-Lane $latest
-        Write-FileAtomic "$WorkDir/state/blocked-$engine.json" ((@{slug="автоживий-$latest";line='GEMINI ОБГОРТКА: ЗАБЛОКОВАНО codex/короткий BLOCKED'}) | ConvertTo-Json)
-        Check "$engine ЗАБЛОКОВАНО — кінець за позначкою" ([bool](Get-LiveCompletion ([pscustomobject]@{stamp=$latest;published=$true})))
-        Invoke-WrapperChain
+        Check "$engine результат зі скороченою гілкою знаходиться за позначкою" ([bool](Get-ChainTaskCompletion $slug))
     }
-    $removed = Build; Invoke-WrapperChain
-    foreach ($ref in @(LiveMarkers | Where-Object { $_ -like "*/автоживий-$removed/*" })) { & git -C $seed push -q origin ":$ref" }
+    $removed = '4' * 40
     $run = "$tmp/claude-run/runs/квота"
     [void][IO.Directory]::CreateDirectory($run)
     Write-FileAtomic "$run/result.json" ((@{marker="gemini-queue/автоживий-$removed/cc-claude-test/1/p2-gpu";code='QUOTA_WAIT'}) | ConvertTo-Json)
@@ -121,8 +45,6 @@ try {
     Write-FileAtomic "$WorkDir/state/quota.json" ((@{line="GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоживий-$removed QUOTA0_CLAUDE_M60"}) | ConvertTo-Json)
     Check 'прийнятий ЗАБЛОКОВАНО за позначкою очікування квоти — кінець' ([bool](Get-ChainTaskCompletion "автоживий-$removed"))
     Remove-Item -LiteralPath "$WorkDir/state/quota.json"
-    Check 'прибрана позначка — кінець' ([bool](Get-LiveCompletion ([pscustomobject]@{stamp=$removed;published=$true})))
-    Check 'неопублікований резерв без позначки — ще не кінець' (-not (Get-LiveCompletion ([pscustomobject]@{stamp=('f'*40);published=$false})))
     $reviewHead = 'a'*40
     Write-FileAtomic "$WorkDir/state/review.json" ((@{slug="автоперевірка-9-$reviewHead";line="GEMINI ОБГОРТКА: ГОТОВО codex/коротка-перевірка $reviewHead"}) | ConvertTo-Json)
     Check 'автоперевірка впізнає скорочену гілку за позначкою' (Test-ChainReviewDone '9' $reviewHead)
@@ -180,7 +102,7 @@ try {
     }
     $script:RemoteFailure = $false
     function Invoke-Git { [pscustomobject]@{Code=1;Out='';Err='стенд мережі'} }
-    try { [void](Get-LiveCompletion ([pscustomobject]@{stamp=('e'*40);published=$true})) } catch { $script:RemoteFailure = $_.Exception.Message -ceq 'CHAIN_REMOTE' }
+    try { [void](Get-ChainRemoteHeads 'refs/heads/gemini-queue/автоперевірка-*') } catch { $script:RemoteFailure = $_.Exception.Message -ceq 'CHAIN_REMOTE' }
     Check 'збій GitHub не видається за прибрану позначку' $script:RemoteFailure
     # Мережа після сну: ls-remote не питає в неї, доки ім'я вузла не розв'язується; збій при живій мережі лишає текст git у журналі.
     & {
@@ -193,15 +115,14 @@ try {
             if ($script:NetChecks -gt $script:NetUpAfter -and -not $script:LsErr) { return [pscustomobject]@{Code=0;Out='';Err=''} }
             [pscustomobject]@{Code=128;Out='';Err=$(if ($script:LsErr) { $script:LsErr } else { 'fatal: unable to access: Could not resolve host: github.com' })}
         }
-        $active = [pscustomobject]@{stamp=('e'*40);published=$true}
         $threw = ''
-        try { [void](Get-LiveCompletion $active) } catch { $threw = [string]$_.Exception.Message }
+        try { [void](Get-ChainRemoteHeads 'refs/heads/gemini-queue/автоперевірка-*') } catch { $threw = [string]$_.Exception.Message }
         "ДАНІ мережа-ще-нема: виняток='$threw' ls-remote=$($script:LsCalls) перевірок мережі=$($script:NetChecks)"
         Check 'мережа ще не встала: прохід чекає й ls-remote проходить без CHAIN_REMOTE' ($threw -ceq '' -and $script:LsCalls -eq 1 -and $script:NetChecks -eq 3)
         $script:NetChecks = 0; $script:LsCalls = 0; $script:NetUpAfter = -1; $script:LsErr = "remote: Repository not found.`nfatal: https://x-access-token:секрет@github.com/o/r.git"
         $log = "$WorkDir/publish.log"; $before = [IO.File]::ReadAllText($log, $utf).Length
         $threw = ''
-        try { [void](Get-LiveCompletion $active) } catch { $threw = [string]$_.Exception.Message }
+        try { [void](Get-ChainRemoteHeads 'refs/heads/gemini-queue/автоперевірка-*') } catch { $threw = [string]$_.Exception.Message }
         $added = [IO.File]::ReadAllText($log, $utf).Substring($before)
         "ДАНІ мережа-жива: виняток='$threw' ls-remote=$($script:LsCalls) журнал=[$($added.Trim())]"
         Check 'мережа жива, ls-remote падає: CHAIN_REMOTE без повторів, текст git у журналі' ($threw -ceq 'CHAIN_REMOTE' -and $script:LsCalls -eq 1 -and $added.Contains('Repository not found') -and $added.Contains('код 128'))

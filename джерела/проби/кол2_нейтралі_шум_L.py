@@ -17,8 +17,10 @@ from фід_кадр_колір import НЕ_СВІДКИ, узгоджений
 import колір_річ as _КОЛІР
 згода = lambda a, b: узгоджений(a["слово"], tuple(_КОЛІР.точка_кольору(b)), V.сім_я_слова(b["слово"]))
 усі, шум = [], []
-for кадри in json.load(gzip.open(pathlib.Path(__file__).resolve().parent.parent / "каталог_кадри.json.gz",
-                                 "rt", encoding="utf-8"))["записи"].values():
+with gzip.open(pathlib.Path(__file__).resolve().parent.parent / "каталог_кадри.json.gz",
+               "rt", encoding="utf-8") as ф:
+    записи = json.load(ф)["записи"]
+for кадри in записи.values():
     гр = {}
     for к in кадри:
         if _КОЛІР.точка_кольору(к) and к.get("клас") not in НЕ_СВІДКИ and к.get("слово") in V.ЛЕКСИКОН:

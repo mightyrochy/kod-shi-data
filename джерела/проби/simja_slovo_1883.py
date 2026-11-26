@@ -9,7 +9,8 @@
 import json, os, sys, tempfile
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import bridge as B, colorspace as cs, feed as Ф, verify as V
-з = json.load(open("проби/simja_slovo_1883.json", encoding="utf-8"))
+with open("проби/simja_slovo_1883.json", encoding="utf-8") as ф:
+    з = json.load(ф)
 вх = dict(з["колір"], драп_сирий=з["драп"], сценарій=з["сценарій"], паспорт=з["паспорт"],
           намір=з["паспорт"]["намір"], **з["мірки"])
 усі = [o for р in json.loads(B.палітри(вх))["основи"].values() if isinstance(р, list) for o in р]
@@ -19,7 +20,8 @@ import bridge as B, colorspace as cs, feed as Ф, verify as V
           вибір_кольору=dict(база=о["ключ"], база_hex=о["hex"], база_тип="колір", насиченість="середні",
                              схема="приглушена_комплементарна", схему_обрала_вона=True))
 if not os.path.exists(вх["кеш_кольорів"]):
-    json.dump({}, open(вх["кеш_кольорів"], "w"))
+    with open(вх["кеш_кольорів"], "w") as ф:
+        json.dump({}, ф)
 B.виклик("запити", json.dumps(dict(вх, пакети=1), ensure_ascii=False))
 from міст_пакет import КЕШ_ПАКЕТА as _КЕШ_ПАКЕТА, ОСТАННІЙ_ПАКЕТ as _ОСТАННІЙ_ПАКЕТ
 пак = _КЕШ_ПАКЕТА[_ОСТАННІЙ_ПАКЕТ[-1]]

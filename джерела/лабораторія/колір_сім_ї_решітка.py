@@ -28,7 +28,7 @@ import zlib
 if str(ДЖЕРЕЛА) not in sys.path:
     sys.path.insert(0, str(ДЖЕРЕЛА))
 
-from колір_простір_перетворення import from_xyz, to_rgb   # noqa: E402
+from колір_простір_перетворення import from_xyz, to_rgb
 
 МОДУЛЬ = ДЖЕРЕЛА / "колір_тон.py"
 ВИХІД = Path(__file__).with_suffix(".json")
@@ -226,7 +226,7 @@ def значення_V():
     """Рівні V вибірки: цілі вузли renotation, густіше в темній смузі, і верхня смуга до білого."""
     рівні = []
     for від, до, крок in РЕЄСТР["рівні_V"]["val"]:
-        рівні += [round(від + i * крок, 6) for i in range(int(round((до - від) / крок)) + 1)]
+        рівні += [round(від + i * крок, 6) for i in range(round((до - від) / крок) + 1)]
     return sorted(set(рівні))
 
 
@@ -242,7 +242,7 @@ def вибірка(кеш=None):
         for т in дані["точки"]:
             if т[2] > 0:
                 за_стовпцем.setdefault((float(т[0]), float(т[1])), []).append(tuple(float(x) for x in т))
-        for H, V, Cmax in дані["межа"]:
+        for H, V, _ in дані["межа"]:
             частина = за_стовпцем.get((float(H), float(V)), [])
             if len(частина) < 2 or abs(частина[1][2] - частина[0][2] - крок_C(float(V))) < 1e-9:
                 готові[(float(H), float(V))] = частина
@@ -285,8 +285,8 @@ def коробка():
     """Межі решітки (L, a, b) з цілими вузлами: L — уся шкала світлоти 0–100 (за її кінцями кольорів нема,
     модуль там ядра не лічить), a, b — гамут sRGB з полем."""
     поле = РЕЄСТР["поле_sRGB"]["val"]
-    return ((0, 100), (int(math.floor(-86.2 - поле)), int(math.ceil(98.3 + поле))),
-            (int(math.floor(-107.9 - поле)), int(math.ceil(94.5 + поле))))
+    return ((0, 100), (math.floor(-86.2 - поле), math.ceil(98.3 + поле)),
+            (math.floor(-107.9 - поле), math.ceil(94.5 + поле)))
 
 
 def у_полі_sRGB(L, a, b):
@@ -338,7 +338,7 @@ def тон_і_ворота(H, V, C, сім_я, сім_ї, клітинки, зн
     C_т = np.full(Hn.shape, np.inf)
     C_сірого = np.full(Hn.shape, np.inf)
     тон = np.full(Hn.shape, ахр, dtype=np.int16)
-    for Hmin, Hmax, Vmin, Vmax, Cmin, Cmax, номер, індекс in клітинки:
+    for Hmin, Hmax, Vmin, Vmax, Cmin, _, номер, індекс in клітинки:
         верх_V = (Vn <= Vmax) if Vmax >= 10 else (Vn < Vmax)
         м = (Hn >= Hmin) & (Hn < Hmax) & (Vn >= Vmin) & верх_V
         if 263 <= номер <= 267:

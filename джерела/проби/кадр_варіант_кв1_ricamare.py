@@ -8,7 +8,8 @@ sys.path[:0] = [str(КОРІНЬ / "джерела"), str(КОРІНЬ / "zhnyva
 import ricamare_сторінка as р, фід_власник_кадру as в
 
 ф = json.loads((КОРІНЬ / "zhnyvarka/фікстури/ricamare_3448.json").read_text(encoding="utf-8"))
-html = gzip.open(КОРІНЬ / "zhnyvarka/фікстури/ricamare_3448.html.gz", "rt", encoding="utf-8").read()
+with gzip.open(КОРІНЬ / "zhnyvarka/фікстури/ricamare_3448.html.gz", "rt", encoding="utf-8") as ф:
+    html = ф.read()
 
 
 def власник(h):
@@ -26,7 +27,7 @@ def доказ(з, вл, ід):
 
 з, вл, ід = власник(html)
 assert вл == "невідомо", "два кольори свотчів без зв'язку — невідомо"
-один = re.sub(r'<a\s+class="\s*modification__item\s+modification__item--preview\s+modification__item--stockout.*?</a>', "", html, count=1, flags=re.S)
+один = re.sub(r'<a\s+class="\s*modification__item\s+modification__item--preview\s+modification__item--stockout.*?</a>', "", html, count=1, flags=re.DOTALL)
 assert один != html
 з, вл, ід = власник(один)
 assert isinstance(вл, dict) and вл["джерело"] == "ricamare:сторінка", вл

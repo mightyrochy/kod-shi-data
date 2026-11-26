@@ -704,6 +704,9 @@ _КОДИ_З_ОПИСОМ = lambda описи: {"oneOf": [{"const": к, "descrip
     # стояло `code_lines` — готові рядки, які складав `річ_з_фото._рядок_жінці`.
     "item_verdicts": _список({"type": "object", "additionalProperties": False,
                               "properties": {"item": dict(_ВІЛЬНИЙ, description="назва її речі"),
+                                             "item_id": {"type": "string", "description": "точний ід варіанта каталогу"},
+                                             "catalogue_position": {"type": "integer", "minimum": 1,
+                                                                    "description": "видиме місце в переліку товарів"},
                                              "slot": _перелік("slot", "слот її речі з фото"),
                                              "item_type": _перелік("item_type", "вид її речі з фото"),
                                              "verdict": {"$ref": "#/$defs/screen_message"}},
@@ -852,6 +855,11 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "card_description_without_photos": "рядок під поясненням «Чому цей образ», коли фото речей образу до "
                                        "стилістки не дійшли і пояснення написано без них: чесно сказати, "
                                        "що воно з даних про речі, а не з того, як речі виглядають на фото",
+    # приймання Н2 на 7f5e9d88, знахідка 2: фото зняв сам застосунок — причина інша, ніж «не дійшли»
+    "card_description_photos_left_out": "рядок під поясненням «Чому цей образ», коли застосунок сам не надіслав "
+                                        "стилістці фото речей і пояснення написано без них: назвати саме ту "
+                                        "причину, що в коді, і чесно сказати, що пояснення з даних про речі, а "
+                                        "не з того, як речі виглядають на фото",
 }
 
 # ЗАЯВИ: код → ЩО САМЕ сказано. Це ВИЗНАЧЕННЯ для моделі, не готова фраза. Числа й назви
@@ -1198,11 +1206,21 @@ def _опис_keep_by():
     "her_item_candidate_to_buy": "she is deciding whether to buy this item: it is compared with the others she "
                                  "is choosing between, not put into her outfits",
     "buy_first": "of the items she is choosing between, this one — or these, when several came out equal at the "
-                 "top — is advised first (values: reasons — statement codes that set it apart from the others; "
-                 "avoids — risks the corpus names that the others carry and it does not; then — the others in "
-                 "order)",
+                 "top — is advised first, and only on what the code proved, pair by pair (values: proven_over — "
+                 "for each of the others, the aspects in which it is worse than this one on recorded facts: level, "
+                 "failed_checks, named_risks; the aspects differ from item to item, say each only about its own "
+                 "item; reasons — always empty: the code does not trace which statement set the order; then — the "
+                 "others in order). Do not infer why from facts in individual verdicts and do not claim a risk "
+                 "was avoided",
     "buy_order_tie": "these items she is choosing between came out equal in the code's judgement: the choice "
                      "between them is hers",
+    "buy_order_not_established": "these items she is choosing between are shown in the code's order, but the code "
+                                 "did not prove that the first is better than each of the others, so the order "
+                                 "is not advice (values: why — input_missing: an input of the judgement is missing "
+                                 "for at least one of them; no_item_proved_better: every item was judged in full, "
+                                 "and none is proved better than each of the others). Say what is known about each "
+                                 "item from its own verdict and that the choice is hers, and give only the reason "
+                                 "named by why (this is not a tie: a tie means all were judged and came out equal)",
     "colour_role_not_judged": "whether the item's colour is a neutral base or an accent was not judged (values: "
                               "missing — colour_measure: neither a measurement nor a shop colour word places it "
                               "on one side; a photo of the item in daylight lets it be judged)",
@@ -1965,6 +1983,18 @@ def _опис_keep_by():
                                           "its items: they did not reach the stylist, so the text rests on the "
                                           "data about the items (names, colours, materials), not on how the "
                                           "items look in the pictures",
+    "description_photos_left_out": "the explanation of this outfit was written without the photos of its "
+                                   "items: the app itself did not send them to the stylist, so the text rests on "
+                                   "the data about the items (names, colours, materials), not on how the items "
+                                   "look in the pictures. The photos did not get lost on the way; say the reason "
+                                   "the code gives (values: reason — size_limit: with the photos the request "
+                                   "would exceed the size the app allows for one request; "
+                                   "retry_after_format_error: the first answer with the photos did not pass the "
+                                   "app's format check and the app asked again without them; "
+                                   "retry_after_model_error: the first request with the photos failed and the "
+                                   "app asked again without them; after_failed_swap: a replacement of an item "
+                                   "from the photos did not work out and the app asked for the explanation again "
+                                   "without the photos)",
     "items_prices_links_are_true": "the items, the prices and the links on this card are true, so the outfit "
                                    "can be judged without the explanation",
     "name_occasion_or_place": "she chooses an occasion or a place on the scenario screen, or says in words "

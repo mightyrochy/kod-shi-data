@@ -14,7 +14,7 @@ sys.path.insert(0, str(_КОРІНЬ))
 import feed as Ф, пакет_моделі as ПМ, суд_образу as С
 
 _ОБМІР = re.compile(r"обхват|напівобхват|півобхват|обміри|заміри|ширина_плеч")  # довжина виробу, см — вже в фіді (Ф-9, 43722272)
-_ЧИСЛО = re.compile(r"^\D{0,3}\d{2,3}([.,]\d)?\s*(см)?$", re.I)
+_ЧИСЛО = re.compile(r"^\D{0,3}\d{2,3}([.,]\d)?\s*(см)?$", re.IGNORECASE)
 
 кат = Ф._прочитати_каталог(Ф.каталог_на_диску("каталог_повний.xml"), ліміт_фото=0)["каталог"]
 з_обміром = [c for c in кат if any(_ОБМІР.search(k) for k in c)]
@@ -24,7 +24,9 @@ assert not з_обміром, "поле, якого нема, не має пра
 
 # сирий XML: обміри Є, але приходять зішкребеною сторінкою (R-ONT-09), не фідом
 одяг, сире = 0, 0
-for o in ET.parse(gzip.open(_КОРІНЬ.parent / "каталог_повний.xml.gz")).getroot().iter("offer"):
+with gzip.open(_КОРІНЬ.parent / "каталог_повний.xml.gz") as файл:
+    пропозиції = ET.parse(файл).getroot().iter("offer")
+for o in пропозиції:
     п = {(x.get("name") or "").strip().lower(): (x.text or "").strip() for x in o.findall("param")}
     if п.get("слот") not in Ф.СЛОТИ_РОЗМІРУ_ОДЯГУ:
         continue

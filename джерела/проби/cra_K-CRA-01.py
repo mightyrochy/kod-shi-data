@@ -11,7 +11,9 @@ import sys, pathlib, json
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import bridge as B
 
-вх = json.load(open("стенд_вх.json", encoding="utf-8")); вх["гілка"] = 0
+with open("стенд_вх.json", encoding="utf-8") as файл:
+    вх = json.load(файл)
+вх["гілка"] = 0
 r = json.loads(B.виклик("запити", json.dumps(вх, ensure_ascii=False)))
 пул = r["пакети"]["1"]["пул"]
 взяті = set()

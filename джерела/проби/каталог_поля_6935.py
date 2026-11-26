@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """6935: друкує поля ДО/ПІСЛЯ та контролі цитат; це механіка контракту, не якість моделі."""
-import json, pathlib, subprocess, sys  # noqa: E401
+import json, pathlib, subprocess, sys
 Д = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Д))
-import каталог_розбір as КР, внутрішня_мова as ВМ  # noqa: E401,E402
+import каталог_розбір as КР, внутрішня_мова as ВМ
 
 
 def main():

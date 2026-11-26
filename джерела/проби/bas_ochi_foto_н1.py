@@ -8,7 +8,8 @@
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); os.chdir(sys.path[0])
 import bridge as B, colorspace as cs
-вх = json.load(open("стенд_вх.json", encoding="utf-8"))
+with open("стенд_вх.json", encoding="utf-8") as файл:
+    вх = json.load(файл)
 
 
 def ранг(очі, як_доти):

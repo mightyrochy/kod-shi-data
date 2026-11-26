@@ -15,11 +15,7 @@ try {
     & git -C $seed config user.name 'стенд'; & git -C $seed config user.email 'stend@example.invalid'
     & git -C $seed remote add origin $remote
     foreach ($dir in @('аудит/наряди','аудит/адаптери/gemini','джерела')) { [void][IO.Directory]::CreateDirectory((Join-Path $seed $dir)) }
-    <# Базовий конфіг стенду — без codex_pause_until: справжнє значення в main не має міняти порядок моделей у сценаріях. #>
-    [IO.File]::WriteAllText("$seed/аудит/адаптери/gemini/ланцюг.json", ([IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json'), $utf) -replace '(?m)^[ 	]*"codex_pause_until"[ 	]*:[^
-]*
-?
-', ''), $utf)
+    Copy-Item -LiteralPath (Join-Path $SourceDir 'ланцюг.json') -Destination "$seed/аудит/адаптери/gemini/ланцюг.json"
     foreach ($task in @('автоперевірка','автоживий')) { [IO.File]::WriteAllText("$seed/аудит/наряди/$task.md", $task, $utf) }
     [IO.File]::WriteAllText("$seed/джерела/a.py", '1', $utf)
     & git -C $seed add -A; & git -C $seed commit -q -m 'початкова'; & git -C $seed push -q origin main
@@ -32,16 +28,14 @@ try {
     $script:Repo = $bare; $script:NoHooks = Join-Path $tmpRoot 'no-hooks'
     [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
     $first = Get-RefSha 'refs/remotes/origin/main'
-    $script:RealModelsCheck = (Get-Command Test-LiveModels).ScriptBlock
     $script:OriginalGetPulls = (Get-Command Get-ChainPulls).ScriptBlock
-    $script:Pulls = @(); $script:Ready = $false
+    $script:Pulls = @()
     function Get-ChainPulls { $script:Pulls }
     function Invoke-ChainApi([string]$Path) {
         if ($Path -match '/files\?') { return [pscustomobject]@{filename='джерела/a.py'} }
         $sha = ($Path -split '/')[-1]
         [pscustomobject]@{sha=$sha;commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddMinutes(-1).ToString('o')}}}
     }
-    function Test-LiveModels($Config) { $script:Ready }
     function Pull([int]$Number, [string]$Branch, [string]$Sha, [string]$Owner = 'mightyrochy', [string]$Repository = 'mightyrochy/kod-shi-data') {
         <# Дані API; довільного тексту в позначки не передаємо. #>
         [pscustomobject]@{ created_at=[datetimeoffset]::UtcNow.ToString('o'); number=$Number;title='Код'; user=@{login=$Owner}; head=@{ref=$Branch;sha=$Sha;repo=@{full_name=$Repository}}; base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}} }
@@ -69,38 +63,16 @@ try {
         [void](Invoke-Git @('fetch','-q','origin','+refs/heads/main:refs/remotes/origin/main'))
         Get-RefSha 'refs/remotes/origin/main'
     }
-    $docs = Merge 'опис.md' 'документ'; Invoke-WrapperChain
-    Check 'документація не займає GPU' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 0)
-    $product = Merge 'джерела/a.py' '2'; Invoke-WrapperChain
-    Check 'злиття продукту без штампу чекає збірки' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 0)
-    $newer = Merge 'джерела/a.py' '3'; Invoke-WrapperChain
-    $built = Merge 'build.txt' $newer; Invoke-WrapperChain
-    $state = ConvertFrom-Json ([IO.File]::ReadAllText($file))
-    Check 'збірка збережена в очікуванні моделей' ($state.live_pending.Count -eq 1 -and $state.live_pending[0].stamp -ceq $newer -and $state.live_pending[0].main -ceq $built)
-    # Прохід публікатора: fetch з Main (клон без remote.origin.fetch, як repo.git) -> ланцюг ставить позначку -> стан цієї
-    # позначки приймається в тому ж проході, а не наступним fetch.
-    [void](Invoke-Git @('fetch','-q','--prune','--no-tags','origin','+refs/heads/main:refs/remotes/origin/main','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
-    $script:Ready = $true; Invoke-WrapperChain
-    Check 'кілька злиттів однієї збірки отримали одну GPU-позначку за штампом' (@(Markers | Where-Object { $_ -match "автоживий-$newer/.*/1/p2-gpu$" }).Count -eq 1)
-    $queue = (@(Markers | Where-Object { $_ -match "автоживий-$newer/" })[0]) -replace '^refs/heads/',''
-    $part = $queue -split '/'
-    Check 'позначка, поставлена ланцюгом, видна клону того ж проходу без fetch' ((Get-RefSha "refs/remotes/origin/$queue") -ceq $built)
-    $runId = '20261101-230000-0123456789ab'
-    Write-FileAtomic "$OutDir/$runId.json" ((@{v=1;id=$runId;code='BLOCKED';slug=$part[1];model=$part[2];n=$part[3];cond=$part[4];marker=$built}) | ConvertTo-Json -Compress)
-    Receive-RunState $runId
-    $runSlug = $(if (Test-Path -LiteralPath "$WorkDir/state/$runId.json") { [string](ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/state/$runId.json", $utf))).slug } else { '' })
-    "ДАНІ стан позначки ланцюга: slug=[$runSlug] черга=$queue"
-    Check 'стан прогону щойно поставленої позначки приймається в тому ж проході, а не як «не відповідає жодній позначці»' ($runSlug -ceq $part[1])
-    # Зняття так само відразу видне клону: знята позначка не лишається в посиланнях до наступного fetch.
-    Add-ChainMarker "автоперевірка-77-$newer" 'gpt-6.1-sol-high' $built
-    $review = (@(Markers | Where-Object { $_ -match "автоперевірка-77-$newer/" })[0]) -replace '^refs/heads/',''
-    Check 'поставлена позначка автоперевірки видна клону' ((Get-RefSha "refs/remotes/origin/$review") -ceq $built)
+    $newer = Merge 'джерела/a.py' '2'
+    $built = Merge 'build.txt' $newer
+    [void](Invoke-Git @('push','-q','origin',"${built}:refs/heads/gemini-queue/автоперевірка-77-$newer/gpt-6.1-sol-high/1/p1"))
+    [void](Invoke-Git @('fetch','-q','--prune','--no-tags','origin','+refs/heads/gemini-queue/*:refs/remotes/origin/gemini-queue/*'))
+    $review = "gemini-queue/автоперевірка-77-$newer/gpt-6.1-sol-high/1/p1"
+    Check 'позначка диспетчера видна після fetch' ((Get-RefSha "refs/remotes/origin/$review") -ceq $built)
     [void](Request-CloudReview '77' $newer)
     Check 'знята позначка зникає з клону того ж проходу' (@(Markers | Where-Object { $_ -match "автоперевірка-77-$newer/" }).Count -eq 0 -and -not (Get-RefSha "refs/remotes/origin/$review"))
     foreach ($leftover in @(Get-ChildItem -LiteralPath $OutboxDir -File | Where-Object { ([IO.File]::ReadAllText($_.FullName, $utf)) -match 'CLAUDE #77 ' })) { Remove-Item -LiteralPath $leftover.FullName -Force }
     Remove-Item -LiteralPath (Get-SeenPath "cloud-review 77 $newer") -Force
-    Invoke-WrapperChain
-    Check 'живий прогін не дублюється' (@(Markers | Where-Object { $_ -match 'автоживий-' }).Count -eq 1)
     $script:Pulls = @((Pull 12 'claude/наряд' $newer)); Invoke-WrapperChain
     Check 'нова голова PR не отримала автоперевірки: їх ставить диспетчер' (@(Markers | Where-Object { $_ -match "автоперевірка-12-$newer/" }).Count -eq 0)
     # Квоти: вибір рушія за файлами, які смуги вже ведуть (heartbeat.json — Codex, quota-claude.json — Claude).
@@ -115,14 +87,12 @@ try {
         $v = if ($Blocked) { @{read=(Stamp 0);status='rejected';windows=@();refused=(Stamp -1);reset=(Stamp 3)} } else { @{read=(Stamp 0);status='allowed';windows=@(@{w='5H';left=40;reset=(Stamp 2)});refused='';reset=''} }
         [IO.File]::WriteAllText("$claudeDir/quota-claude.json", ($v | ConvertTo-Json -Compress -Depth 4), $utf)
     }
-    function SlugMarkers([string]$Slug) { @(Markers | Where-Object { $_ -match [regex]::Escape("/$Slug/") }) }
     function SetAgy([bool]$Blocked) {
         $left = if ($Blocked) { 0 } else { 40 }
         [IO.File]::WriteAllText("$OutDir/pools.json", ((@{v=1;groups=@(@{g='GEMINIMODELS';n='gemini models';left=0;reset=90}, @{g='GEMINI4ARGON';n='gemini 4 argon';left=$left;reset=90})}) | ConvertTo-Json -Compress -Depth 4), $utf)
     }
     function OutLines { @(Get-ChildItem -LiteralPath $OutboxDir -File -ErrorAction SilentlyContinue | ForEach-Object { [IO.File]::ReadAllText($_.FullName, $utf).Trim() }) }
-    function CloudLines([string]$N) { @(OutLines | Where-Object { $_ -cmatch ('^GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #' + $N + ' [0-9a-f]{40}$') }) }
-    $script:Pulls = @(); $script:Ready = $true
+    $script:Pulls = @()
     # Квота не повертає ланцюгові постановку: за будь-яких квот нема ні позначки автоперевірки, ні рядка хмарному Claude.
     foreach ($q in @(@{Codex=$false;Agy=$false;Claude=$false}, @{Codex=$false;Agy=$true;Claude=$false}, @{Codex=$true;Agy=$false;Claude=$false}, @{Codex=$true;Agy=$true;Claude=$true})) {
         SetCodex $q.Codex; SetClaude $q.Claude; SetAgy $q.Agy
@@ -169,40 +139,6 @@ try {
     }
     SetCodex $false; SetAgy $false
     [void][IO.Directory]::CreateDirectory("$WorkDir/state")
-    # Автоживий: позначка, що чекає Codex на квоті, переходить до Claude без дубля; відновлення Codex її не повертає.
-    SetCodex $true; SetClaude $false; Invoke-WrapperChain
-    Check 'автоживий при Codex на квоті — одна позначка Claude' (@(SlugMarkers "автоживий-$newer").Count -eq 1 -and @(SlugMarkers "автоживий-$newer")[0] -match '/cc-claude-sonnet-5-5-medium/1/p2-gpu$')
-    SetCodex $false; Invoke-WrapperChain
-    Check 'відновлення Codex не дублює автоживий' (@(SlugMarkers "автоживий-$newer").Count -eq 1)
-    # Відмова Codex без часу скидання — квота лише тоді, коли останній вимір не показує залишку в кожному вікні (heartbeat.codex.limits);
-    # відмова з часом скидання — квота завжди, як було. Позначка автоживого після кожного перенесення повертається на codex.
-    $live = "автоживий-$newer"
-    function SetCodexRefused([string]$Reset, $Limits) {
-        $v = @{refused=(Stamp -0.5);reset=$Reset}
-        if ($null -ne $Limits) { $v.read = (Stamp -0.2); $v.limits = $Limits }
-        [IO.File]::WriteAllText("$OutDir/heartbeat.json", ((@{codex=$v}) | ConvertTo-Json -Compress -Depth 6), $utf)
-    }
-    function CodexLimits([int[]]$Left) { , @(@{id='codex';windows=@(foreach ($l in $Left) { @{m=300;used=(100-$l);left=$l;reset=(Stamp 1)} })}) }
-    function BackToCodex {
-        foreach ($m in @(SlugMarkers $live)) { & git -C $seed push -q origin ":$m" }
-        & git -C $seed push -q origin "${built}:refs/heads/gemini-queue/$live/gpt-6.1-sol-high/1/p2-gpu"
-    }
-    BackToCodex
-    SetClaude $false
-    SetCodexRefused '' (CodexLimits 72, 72); Invoke-WrapperChain
-    Check 'автоживий, відмова codex без часу скидання, вимір 72 і 72 % вільних: збій рушія, позначка лишається на codex' (@(SlugMarkers $live).Count -eq 1 -and @(SlugMarkers $live)[0] -match '/gpt-6\.1-sol-high/1/p2-gpu$')
-    $moved = @(
-        @{Why='відмова без часу скидання, виміру нема: квота, як було'; Reset=''; Limits=$null},
-        @{Why='відмова без часу скидання, одне вікно виміру на 0 %: квота'; Reset=''; Limits=(CodexLimits 72, 0)},
-        @{Why='відмова з часом скидання, вимір 72 % вільних: справжня квота'; Reset=(Stamp 140); Limits=(CodexLimits 72, 72)})
-    foreach ($c in $moved) {
-        SetCodexRefused $c.Reset $c.Limits; Invoke-WrapperChain
-        Check "автоживий, $($c.Why): позначка перейшла на Claude" (@(SlugMarkers $live).Count -eq 1 -and @(SlugMarkers $live)[0] -match '/cc-claude-sonnet-5-5-medium/1/p2-gpu$')
-        BackToCodex
-    }
-    SetCodex $true; SetClaude $true; Invoke-WrapperChain
-    Check 'автоживий, обидва на квоті: позначка чекає на codex, не переходить' (@(SlugMarkers $live).Count -eq 1 -and @(SlugMarkers $live)[0] -match '/gpt-6\.1-sol-high/1/p2-gpu$')
-    SetCodex $false; SetClaude $false
     # Збій не з кодом CHAIN_*: у рядку тип і рядок скрипту, без шляхів і тексту.
     Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
     [IO.File]::WriteAllText($file, 'не json /секрет/шлях', $utf)
@@ -289,11 +225,13 @@ try {
     # Позначка Claude на ноутбуці в автоперевірці не потрібна: зникає, а кількість знятих — рядок у зведенні.
     PushMk "автоперевірка-44-$h2" 'cc-claude-sonnet-5-5-medium' $h2
     Get-ChildItem -LiteralPath $OutboxDir -File | Remove-Item
-    $before = @(SlugMarkers "автоперевірка-44-$h2")
+    $ccPrefix = "refs/heads/gemini-queue/автоперевірка-44-$h2/"
+    $before = @(Markers | Where-Object { $_.StartsWith($ccPrefix, [StringComparison]::Ordinal) })
     $script:Pulls = @((Pull 41 'claude/живий' $h2), (Pull 44 'codex/старий-вибір' $h2)); Invoke-WrapperChain
-    $now44 = @(SlugMarkers "автоперевірка-44-$h2")
+    $now44 = @(Markers | Where-Object { $_.StartsWith($ccPrefix, [StringComparison]::Ordinal) })
     Check 'позначку cc- знято' ($before.Count -eq 1 -and $before[0] -match '/cc-' -and $now44.Count -eq 0 -and ([IO.File]::ReadAllText((Join-Path $WorkDir 'publish.log'), $utf)).Contains('знято — Claude на ноутбуці не перевіряє'))
-    Check 'зняття позначок — рядок у зведенні' (@(OutLines | Where-Object { $_ -ceq 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1' }).Count -eq 1)
+    $summary = 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1'
+    Check 'зняття позначок — один дійсний рядок у зведенні' (@(OutLines | Where-Object { $_ -ceq $summary }).Count -eq 1 -and (Test-OutboxLine $summary) -ceq '')
     Check 'рядок зняття не будить диспетчера, рядок хмарного Claude будить' (-not (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗНЯТО ПОЗНАЧОК ПЕРЕВІРКИ 1') -and (Test-DispatcherAction "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #44 $h2") -and (Test-OutboxLine "GEMINI ОБГОРТКА: ПОТРІБНА ПЕРЕВІРКА CLAUDE #44 $h2") -eq '' -and -not (Test-DispatcherAction "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/автоперевірка-44-$h2 CLAUDE_NOT_LAPTOP") -and (Test-DispatcherAction 'GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/наряд CLAUDE_NOT_LAPTOP'))
     "  мірило: позначок cc- автоперевірки ДО 1 → ПІСЛЯ $(@(Markers | Where-Object { $_ -match 'автоперевірка-.*/cc-' }).Count)"
     $base = Get-RefSha 'refs/remotes/origin/main'
@@ -319,14 +257,6 @@ try {
     $script:ApiPages = 0
     function Invoke-ChainApi([string]$Path) { $script:ApiPages++; if ($script:ApiPages -eq 1) { 1..100 } else { 101 } }
     Check 'відкриті PR читаються з усіх сторінок API' (@(& $script:OriginalGetPulls).Count -eq 101 -and $script:ApiPages -eq 2)
-    $script:ModelCatalog = @([pscustomobject]@{key='qwen/qwen3.5-9b';loaded_instances=@()}, [pscustomobject]@{key='mamaylm-gemma-3-12b-it-v2.0';loaded_instances=@()})
-    function Invoke-RestMethod { [pscustomobject]@{models=$script:ModelCatalog} }
-    $cfg = ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $SourceDir 'ланцюг.json')))
-    Check 'каталог незавантажених моделей допускає постановку без двох моделей у VRAM' ([bool](& $script:RealModelsCheck $cfg))
-    $script:ModelCatalog = @($script:ModelCatalog[0])
-    Check 'однієї доступної моделі недостатньо' (-not [bool](& $script:RealModelsCheck $cfg))
-    function Invoke-RestMethod { throw 'сервер недоступний' }
-    Check 'недоступний сервер лишає очікування' (-not [bool](& $script:RealModelsCheck $cfg))
     # Шаблони планувальників: повний SHA, ніякого вільного тексту з API.
     . (Join-Path $SourceDir 'queue_lanes.ps1')
     function Get-AutoLivePlan { '{}' }

@@ -593,10 +593,7 @@ function Get-CascadePlan([string]$Model, [string]$CodexModel = '') {
 $script:ChainConfigPath = 'аудит/адаптери/gemini/ланцюг.json'
 
 function Get-CodexPauseUntil($Config) {
-    <# Необов'язкове `codex_pause_until` у ланцюг.json (UTC, `2026-11-23T10:16:00Z`): до цього часу автоживий і каскад agy не беруть Codex
-    (квота Codex і Claude ноутбука під рішенням менеджера). Одне місце розбору: ланцюг (wrapper_chain.ps1, Get-PauseReaders) бере
-    цю функцію з довіреної копії, gemini-run — через Test-CodexPause. Нема поля чи `null` — $null; не за формою — виняток
-    CHAIN_CONFIG. PowerShell 7 сам перетворює дату з JSON на DateTime: приймається лише UTC (`Z`), місцевий час чи зсув — не за формою. #>
+    <# Читає необов'язковий час UTC `codex_pause_until` у ланцюг.json, до якого каскад agy не бере Codex. #>
     $prop = $Config.PSObject.Properties['codex_pause_until']
     if ($null -eq $prop -or $null -eq $prop.Value) { return $null }
     $v = $prop.Value
@@ -612,7 +609,7 @@ function Get-CodexPauseUntil($Config) {
 
 $script:CodexPauseLogged = @{}
 function Test-CodexPause([datetimeoffset]$Now = [datetimeoffset]::UtcNow) {
-    <# Пауза Codex діє: `codex_pause_until` з ланцюг.json на origin/main (тим самим читанням, що й ланцюг: джерело правди одне) ще
+    <# Пауза Codex діє: `codex_pause_until` з ланцюг.json на origin/main ще
     попереду. Файла нема — паузи нема. Файл чи поле кривий — діє (відмова за невідомого, не мовчазний каскад на Codex), рядок
     журналу раз на причину в процесі. Каскад agy (Get-Cascade в gemini_run.ps1) під паузою не додає Codex. #>
     $r = Invoke-Git @('cat-file', 'blob', "$script:RemoteRoot/main:$script:ChainConfigPath") -AllowFail

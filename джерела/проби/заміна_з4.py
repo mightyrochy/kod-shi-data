@@ -8,7 +8,7 @@ sys.path.insert(0, str(КОРІНЬ / "джерела"))
 import формальність as Ф, суд_чеклісти as СЧ, palettes as PAL
 
 def до_модуль(імя, шлях, основа):
-    r = subprocess.run(["git", "-C", str(КОРІНЬ), "show", f"0a57c69152:{шлях}"], capture_output=True, text=True, encoding="utf-8")
+    r = subprocess.run(["git", "-C", str(КОРІНЬ), "show", f"0a57c69152:{шлях}"], capture_output=True, text=True, encoding="utf-8", check=False)
     if r.returncode != 0: return None
     м = types.ModuleType(імя); м.__dict__.update(основа.__dict__); exec(compile(r.stdout, шлях, "exec"), м.__dict__); return м
 

@@ -9,7 +9,9 @@ import мова_спільне as С
 М, дамп = С.М, lambda x: json.dumps(x, ensure_ascii=False, sort_keys=True)
 промптів = паспортів = живих = 0
 розійшлись = []
-for р in json.load(open(os.path.join(С.ТУТ, "м5_розмови.json"), encoding="utf-8")):
+with open(os.path.join(С.ТУТ, "м5_розмови.json"), encoding="utf-8") as файл:
+    розмови = json.load(файл)
+for р in розмови:
     п, історія, її = {}, [], []
     for х in р["ходи"]:
         її.append(х["вона"])

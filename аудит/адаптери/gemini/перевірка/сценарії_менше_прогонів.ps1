@@ -84,24 +84,9 @@ try {
         function script:Complete-EngineDrafts { }
         function script:Test-ChainCodePull { $true }
         function script:Get-ChainPullRisk { -1 }
-        function script:Test-LiveModels { $true }
         function script:Add-ChainMarker($Slug,$Model,$Main,[switch]$Gpu) { $script:TestMarkers += $Slug }
         # Клон стенда без origin; зняття мертвих позначок на справжньому origin міряє сценарії_ланцюга.ps1.
         function script:Remove-DeadReviewMarkers { }
-        # Позначки стенд ставить підміною Add-ChainMarker: origin — їхній перелік, стан смуги — DONE, коли за назвою є
-        # рядок кінця (смуга пише стан до рядка). Кінець при живій позначці іншого рушія (перенесення) міряє
-        # сценарії_ланцюга_перенесення.ps1 на справжньому origin.
-        function script:Get-ChainRemoteHeads([string]$Pattern) {
-            $slug = $Pattern -replace '^refs/heads/gemini-queue/', '' -replace '/\*$', ''
-            $lines = @($script:TestMarkers | Where-Object { $_ -like $slug } | ForEach-Object { ('0' * 40) + "`trefs/heads/gemini-queue/$_/cc-claude-test/1/p2-gpu" })
-            [pscustomobject]@{Code = 0; Out = ($lines -join "`n"); Err = ''}
-        }
-        function script:Get-ChainMarkers([string]$Slug, $Heads = $null) {
-            foreach ($one in @($script:TestMarkers | Where-Object { $_ -like $Slug })) {
-                [pscustomobject]@{Slug = $one; Ref = "gemini-queue/$one/cc-claude-test/1/p2-gpu"; Sha = '0' * 40; Model = 'cc-claude-test'; Attempt = 1; Cond = 'p2-gpu'
-                    Kind = $(if (Get-ChainTaskCompletion $one) { 'DONE' } else { 'NEW' })}
-            }
-        }
         function script:Invoke-ChainApi([string]$Path) { [pscustomobject]@{sha=($Path -split '/')[-1];commit=@{committer=@{date=[datetimeoffset]::UtcNow.AddSeconds(-1).ToString('o')}}} }
         $pull = [pscustomobject]@{number=9;created_at=[datetimeoffset]::UtcNow.ToString('o');title='код';user=@{login='mightyrochy'};head=@{ref='claude/task';sha=$old;repo=@{full_name='mightyrochy/kod-shi-data'}};base=@{ref='main';repo=@{full_name='mightyrochy/kod-shi-data'}}}
         $script:TestPulls = @($pull)
@@ -116,43 +101,6 @@ try {
         & git -C $seed commit -qam 'реальна зміна'; $pull.head.sha = (& git -C $seed rev-parse HEAD).Trim()
         Invoke-WrapperChain
         Check '1б зміна коду: ланцюг позначок не ставить' (@($script:TestMarkers | Where-Object { $_ -like 'автоперевірка-*' }).Count -eq 0)
-    }
-    Scenario '2 останній штамп' {
-        $script:TestPulls = @()
-        foreach ($n in @(1,2,3)) {
-            $stamp = (& git -C $seed rev-parse HEAD).Trim()
-            [IO.File]::WriteAllText("$seed/build.txt",$stamp,$utf)
-            & git -C $seed add -A; & git -C $seed commit -q -m "збірка $n"
-            $head = (& git -C $seed rev-parse HEAD).Trim()
-            & git -C $seed update-ref refs/remotes/origin/main $head
-            Invoke-WrapperChain
-            if ($n -eq 1) { $firstStamp = $stamp }
-        }
-        Check '2 під час активного три штампи — одна позначка' (@($script:TestMarkers | Where-Object { $_ -like 'автоживий-*' }).Count -eq 1)
-        Check '2 пропущений проміжний штамп має журнал' ([IO.File]::ReadAllText("$WorkDir/publish.log").Contains('пропущено проміжний штамп'))
-        Write-FileAtomic "$WorkDir/state/live.json" ((@{slug="автоживий-$firstStamp";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$firstStamp $sha"}) | ConvertTo-Json)
-        Invoke-WrapperChain
-        $live = @($script:TestMarkers | Where-Object { $_ -like 'автоживий-*' })
-        Check '2 після звіту рівно наступна позначка останнього штампу' ($live.Count -eq 2 -and $live[-1] -ceq "автоживий-$stamp")
-        Write-FileAtomic "$WorkDir/state/live-next.json" ((@{slug="автоживий-$stamp";line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-$stamp $sha"}) | ConvertTo-Json)
-        $script:FailLive = $true
-        function script:Add-ChainMarker($Slug,$Model,$Main,[switch]$Gpu) {
-            if ($Slug -cnotin $script:TestMarkers) { $script:TestMarkers += $Slug }
-            if ($script:FailLive) { $script:FailLive = $false; throw 'CHAIN_PUSH' }
-        }
-        $reserved = (& git -C $seed rev-parse HEAD).Trim()
-        [IO.File]::WriteAllText("$seed/build.txt",$reserved,$utf)
-        & git -C $seed commit -qam 'резерв перед push'
-        & git -C $seed update-ref refs/remotes/origin/main ((& git -C $seed rev-parse HEAD).Trim())
-        Invoke-WrapperChain
-        $latest = (& git -C $seed rev-parse HEAD).Trim()
-        [IO.File]::WriteAllText("$seed/build.txt",$latest,$utf)
-        & git -C $seed commit -qam 'новий штамп під час повтору'
-        & git -C $seed update-ref refs/remotes/origin/main ((& git -C $seed rev-parse HEAD).Trim())
-        Invoke-WrapperChain
-        $state = ConvertFrom-Json ([IO.File]::ReadAllText("$WorkDir/chain.json"))
-        Check '2 падіння push не губить зарезервований штамп при новій збірці' ($state.live_active.stamp -ceq $reserved -and $state.live_active.published -and $state.live_pending[0].stamp -ceq $latest)
-
     }
     Scenario '3 доставка' {
         Write-FileAtomic "$WorkDir/state/auto-delivery.json" ((@{slug='автоживий-штамп';line="GEMINI ОБГОРТКА: ГОТОВО gemini/автоживий-штамп $sha"}) | ConvertTo-Json)

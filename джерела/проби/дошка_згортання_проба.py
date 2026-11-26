@@ -11,12 +11,14 @@ def пробіг(файли):
     з = tempfile.mkdtemp()
     for ш, т in [('аудит/БЕКЛОГ.md', ДОШКА)] + [('аудит/дошка/' + і, т) for і, т in файли.items()]:
         os.makedirs(os.path.dirname(os.path.join(з, ш)), exist_ok=True)
-        open(os.path.join(з, ш), 'w', encoding='utf-8').write(т)
+        with open(os.path.join(з, ш), 'w', encoding='utf-8') as ф:
+            ф.write(т)
     os.makedirs(os.path.join(з, 'джерела/прилади'))
     шлях = os.path.join(з, 'джерела/прилади/згорнути_дошку.py'); shutil.copy(ПРИЛАД, шлях)
     shutil.copy(os.path.join(os.path.dirname(ПРИЛАД), 'дошка_поля.py'), os.path.dirname(шлях))
-    п = subprocess.run([sys.executable, шлях], capture_output=True, text=True)
-    д = open(os.path.join(з, 'аудит/БЕКЛОГ.md'), encoding='utf-8').read()
+    п = subprocess.run([sys.executable, шлях], capture_output=True, text=True, check=False)
+    with open(os.path.join(з, 'аудит/БЕКЛОГ.md'), encoding='utf-8') as ф:
+        д = ф.read()
     ост = sorted(os.listdir(os.path.join(з, 'аудит/дошка'))) if os.path.isdir(os.path.join(з, 'аудит/дошка')) else []
     shutil.rmtree(з); return п.returncode, п.stderr.strip(), д, ост
 А = Р(10) + '\nстан 1: **ЗАКРИТО #101** · а\n' + Р(11) + '\n'

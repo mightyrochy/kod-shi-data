@@ -4,7 +4,7 @@
 Вихід лабораторний: похибка вибіркова, оболонки ще не зшиті.
 """
 import argparse
-from functools import lru_cache
+from functools import lru_cache, cache
 import importlib.util
 import itertools
 import json
@@ -46,7 +46,7 @@ def координати_джерела(вісь, стала, перша, дру
 
 def параметризувати(перетворити, вісь):
     """Адаптує координати H/V-грані до спільного двопараметричного методу."""
-    @lru_cache(maxsize=None)
+    @cache
     def поверхня(перша, друга, стала):
         """Обчислює координати через єдиний renotation/Bradford/Lab-метод."""
         return перетворити(*координати_джерела(вісь, стала, перша, друга))

@@ -35,8 +35,7 @@ def кінець(к, і, кома):          # межа виразу: `;`/зак
         elif c in ")]}":
             if д == 0: break
             д -= 1
-        elif c == ";" and д == 0 or (c == "," and д == 0 and кома): break
-        elif c == "\n" and д == 0 and not re.search(r"[+,?:&|(]\s*$", к[і:j]) and not re.match(r"\s*[+?:&|.]", к[j + 1:]): break
+        elif c == ";" and д == 0 or (c == "," and д == 0 and кома) or c == "\n" and д == 0 and not re.search(r"[+,?:&|(]\s*$", к[і:j]) and not re.match(r"\s*[+?:&|.]", к[j + 1:]): break
         j += 1
     return j
 def тіло(к, і):                  # кінець тіла функції: парна `}`
@@ -111,7 +110,7 @@ def вузол(арг, к, поз):               # аргумент append — 
     а = арг.lstrip(".").strip()
     if ВУЗЛОВІ_ПОЧАТКИ.match(а): return True
     if re.search(r"""['"`]|\+|String\(|\.join\(|\.text\b""", а): return False
-    if а.startswith("..."): а = а[3:]
+    а = а.removeprefix("...")
     ід = re.match(r"[\w$]+", а)
     if not ід: return True
     if re.match(r"[\w$]+\(", а): return bool(ВУЗЛОВІ_ПОЧАТКИ.match(а)) or а.startswith(("силуетКадру", "створити", "малювати"))
@@ -121,21 +120,26 @@ def вузол(арг, к, поз):               # аргумент append — 
 ПОЛЯ = {}
 _шлях = os.path.join(os.path.dirname(os.path.abspath(__file__)), "текст_жінці_поля.txt")
 if os.path.exists(_шлях):
-    for рядок in open(_шлях, encoding="utf8"):
-        if рядок.strip() and not рядок.startswith("#"):
-            ч = рядок.rstrip("\n").split("\t")
-            if len(ч) >= 3: ПОЛЯ[(ч[0], ч[1])] = ч[2]
+    with open(_шлях, encoding="utf8") as файл:
+        for рядок in файл:
+            if рядок.strip() and not рядок.startswith("#"):
+                ч = рядок.rstrip("\n").split("\t")
+                if len(ч) >= 3: ПОЛЯ[(ч[0], ч[1])] = ч[2]
 джерела = []                      # (ім'я, код, зсув рядків)
 for ф in sorted(os.listdir(os.path.join(ТУТ, "показ"))):
-    if ф.endswith(".js"): джерела.append((ф, open(os.path.join(ТУТ, "показ", ф), encoding="utf8").read(), 0))
+    if ф.endswith(".js"):
+        with open(os.path.join(ТУТ, "показ", ф), encoding="utf8") as файл:
+            код = файл.read()
+        джерела.append((ф, код, 0))
 _html = os.path.join(ТУТ, "показ.html")
 if os.path.exists(_html):
-    сирий = open(_html, encoding="utf8").read()
-    for м in re.finditer(r"<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>", сирий, re.S):
+    with open(_html, encoding="utf8") as файл:
+        сирий = файл.read()
+    for м in re.finditer(r"<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>", сирий, re.DOTALL):
         джерела.append(("показ.html", м.group(1), сирий.count("\n", 0, м.start(1))))
 обходи, сталі, поля_ок, поля_нові, вузли = [], [], [], [], 0
 for ім, к, зсув in джерела:
-    к = re.sub(r"/\*.*?\*/", lambda м: re.sub(r"[^\n]", " ", м.group(0)), к, flags=re.S)
+    к = re.sub(r"/\*.*?\*/", lambda м: re.sub(r"[^\n]", " ", м.group(0)), к, flags=re.DOTALL)
     к = re.sub(r"(?m)(?<![:'\"`\\])//.*$", lambda м: " " * len(м.group(0)), к)
     точка = [(м.start(), тіло(к, к.index("{", м.end()))) for м in re.finditer(r"(?m)^function (?:%s)\(" % ТОЧКА_АЛЬТ, к)]
     рядок = lambda м: к.count("\n", 0, м.start()) + 1 + зсув

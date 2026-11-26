@@ -8,12 +8,23 @@
 # Злиття токеном CI не будить `push` у `main` (документація GitHub: події `GITHUB_TOKEN` не створюють нових запусків,
 # крім `workflow_dispatch` і `repository_dispatch`; вимір — PR цього кроку), тож робочі процеси `main` після злиття
 # крок викликає сам (`workflow_call`) з `main` до злиття (`pered`) і комітом злиття (`pislia`).
+#
+# Мітка «злити» (наряд CI-самозлиття-мітка-злити; `аудит/ДИСПЕТЧЕР.md`, «Злиття»; не auto-merge GitHub): PR, що не
+# документ, зливається тим самим кроком, коли на ньому мітка «злити» від `mightyrochy`, зафіксована на ПОТОЧНІЙ голові
+# (job `мітка` ставить на SHA голови статус у момент `labeled`; будь-яка нова голова після мітки — мітку знято, дат
+# коміту й запусків CI не звіряємо), а перевірки голови зелені. Рішення — той самий прилад з `main`
+# (`рішення_мітка`). Мітку ловить `pull_request_target` типу `labeled` (запускається з `main`, код гілки PR крок не
+# бере й не виконує — checkout без `ref` дає `main`): мітку часто ставлять на вже зелену голову, і завершення CI нового
+# рішення не дасть. Злиття токеном CI `push` не будить, тож після злиття (документа чи коду) крок сам викликає
+# `zbirka.yml`; після коду — з `kod: true`: повний шлях збірки й публікації на коміті злиття (`pislia`).
 name: самозлиття документа
 
 on:
   workflow_run:
     workflows: [збірка показу, рядок ЖИВИЙ ПІСЛЯ у тілі PR, стенди обгортки]
     types: [completed]
+  pull_request_target:
+    types: [labeled]
 
 permissions: {}
 
@@ -29,12 +40,37 @@ permissions: {}
 # `рішення` пропущено умовою, решту — за `needs`.
 
 jobs:
+  # Фіксація мітки на SHA голови (дошка 17101, доробка #4718): у момент `labeled` (сніпшот події — голова саме тоді)
+  # ставимо на цей SHA статус; прилад вважає мітку чинною, лише коли такий статус є на ПОТОЧНІЙ голові. Новий коміт —
+  # іншого SHA статуса нема, мітка стара; дат коміту й запусків CI мітка не звіряє. Єдиний запис — статус коміту й лише
+  # коли мітку поставив `mightyrochy`; коду PR job не бере (нема checkout), значення йдуть через env.
+  # Job іде завжди, а умова — на кроці: пропущений job пропускав би залежні `рішення`, `злиття` й `збірку` (неявний
+  # `success()` переносить пропуск предка далі ланцюгом; доробка #4718), і документи без мітки не зливались би.
+  mitka:
+    name: мітка
+    permissions:
+      statuses: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: статус «мітка» на SHA голови
+        if: github.event_name == 'pull_request_target' && github.event.label.name == 'злити' && github.event.sender.login == 'mightyrochy'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          gh api -X POST "repos/$REPO/statuses/$SHA" -f state=success \
+            -f context='самозлиття: мітка «злити»' -f description='мітка поставлена на цю голову'
+
   rishennia:
     name: рішення
-    if: github.event.workflow_run.event == 'pull_request'
+    needs: mitka
+    if: github.event.workflow_run.event == 'pull_request' || (github.event_name == 'pull_request_target' && github.event.label.name == 'злити')
     permissions:
       contents: read
       pull-requests: read
+      issues: read
       actions: read
       checks: read
       statuses: read
@@ -45,6 +81,7 @@ jobs:
     timeout-minutes: 10
     outputs:
       kandydaty: ${{ steps.rishennia.outputs.kandydaty }}
+      stari: ${{ steps.rishennia.outputs.stari }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -63,7 +100,7 @@ jobs:
   zlyttia:
     name: злиття
     needs: rishennia
-    if: needs.rishennia.outputs.kandydaty != '' && needs.rishennia.outputs.kandydaty != '[]'
+    if: (needs.rishennia.outputs.kandydaty != '' && needs.rishennia.outputs.kandydaty != '[]') || (needs.rishennia.outputs.stari != '' && needs.rishennia.outputs.stari != '[]')
     permissions:
       contents: write
       pull-requests: write
@@ -74,6 +111,8 @@ jobs:
     timeout-minutes: 10
     outputs:
       zlyto: ${{ steps.zlyttia.outputs.zlyto }}
+      kod: ${{ steps.zlyttia.outputs.zlyto_kod }}
+      zlyti: ${{ steps.zlyttia.outputs.zlyti }}
       pered: ${{ steps.zlyttia.outputs.pered }}
       pislia: ${{ steps.zlyttia.outputs.pislia }}
     steps:
@@ -90,6 +129,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           KANDYDATY: ${{ needs.rishennia.outputs.kandydaty }}
+          STARI: ${{ needs.rishennia.outputs.stari }}
         run: python3 -I джерела/прилади/документ_без_коду.py --злити
 
   # Робочі процеси `main`, які будить push злиття: згортання дошки й публікація.
@@ -107,3 +147,5 @@ jobs:
     with:
       pered: ${{ needs.zlyttia.outputs.pered }}
       pislia: ${{ needs.zlyttia.outputs.pislia }}
+      kod: ${{ needs.zlyttia.outputs.kod == 'true' }}
+      zlyti: ${{ needs.zlyttia.outputs.zlyti }}

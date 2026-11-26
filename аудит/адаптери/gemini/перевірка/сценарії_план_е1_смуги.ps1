@@ -140,7 +140,7 @@ try {
         $script:PassSkips = @{}
         $result = @(Start-Markers $workers)
         $startedNow = $(if ($lane -eq 'claude') { [int]$result[0] } else { [int]$result[-1] })
-        Check "$lane (3): GPU-наряд, що вийшов у чекання, віддав GPU наступній позначці того ж проходу (запущено 2 з $gpuCount)" ($startedNow -eq 2 -and $script:Started.Count -eq 2)
+        Check "$lane (3): GPU-наряд, що вийшов у чекання, віддав GPU наступній позначці того ж проходу (запущено 2 з $gpuCount)" ($startedNow -eq 2 -and $script:Started.Count -eq 2 -and $script:Started[0] -ceq $script:Markers[0].Name)
         $skips = Read-PassSkips
         Check "$lane (3): решта позначок стоїть, бо GPU тепер справді за живим нарядом" ($skips.Count -eq ($gpuCount - 2) -and @($skips.Values | Where-Object { $_ -cmatch 'її щойно взяв наряд цього проходу' }).Count -eq $skips.Count)
         Check "$lane (3): запущені позначки не названо «щойно взяла» через першу" (@($script:Started | Where-Object { $skips.ContainsKey($_) }).Count -eq 0)

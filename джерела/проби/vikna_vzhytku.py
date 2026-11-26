@@ -62,7 +62,8 @@ print("ФАКТ · форма вікна (≥ %d точок у вікні мет
     "збігається" if форми == V.ФОРМА_ВЖИТКУ else "РОЗХОДИТЬСЯ: %s" % sorted(set(форми) ^ set(V.ФОРМА_ВЖИТКУ)
                                                                          or [к for к in форми if форми[к] != V.ФОРМА_ВЖИТКУ[к]])))
 if "--записати-форму" in sys.argv and "--усі" not in sys.argv:
-    код = open("verify.py", encoding="utf-8").read()
+    with open("verify.py", encoding="utf-8") as ф:
+        код = ф.read()
     початок = код.index("ФОРМА_ВЖИТКУ = {\n") + len("ФОРМА_ВЖИТКУ = {\n"); кінець = код.index("}\n", початок)
     рядки_ф = []
     for сл, р in форми.items():
@@ -71,12 +72,15 @@ if "--записати-форму" in sys.argv and "--усі" not in sys.argv:
         for i in range(0, len(ч), 12):
             рядки_ф.append('  "%s%s"' % (";".join(ч[i:i + 12]), ";" if i + 12 < len(ч) else ""))
         рядки_ф[-1] += "),"
-    open("verify.py", "w", encoding="utf-8").write(код[:початок] + "\n".join(рядки_ф) + "\n" + код[кінець:])
+    with open("verify.py", "w", encoding="utf-8") as ф:
+        ф.write(код[:початок] + "\n".join(рядки_ф) + "\n" + код[кінець:])
     print("ЗАПИСАНО · verify.ФОРМА_ВЖИТКУ: %d слів" % len(форми))
 if "--записати" in sys.argv:
     # увесь блок між мітками пише метод: вікно кожного слова, що відрізняється від лексикону, — і лише воно
-    код = open("verify.py", encoding="utf-8").read()
+    with open("verify.py", encoding="utf-8") as ф:
+        код = ф.read()
     початок = код.index(V.ВЖИТОК_ПОЧАТОК) + len(V.ВЖИТОК_ПОЧАТОК); кінець = код.index(V.ВЖИТОК_КІНЕЦЬ, початок)
     блок = ["ВЖИТОК_РЯДКИ = {"] + [' "%s": "%s",  # %s' % р for р in рядки] + ["}"]
-    open("verify.py", "w", encoding="utf-8").write(код[:початок] + "\n".join(блок) + "\n" + код[кінець:])
+    with open("verify.py", "w", encoding="utf-8") as ф:
+        ф.write(код[:початок] + "\n".join(блок) + "\n" + код[кінець:])
     print("ЗАПИСАНО · verify.ВЖИТОК_РЯДКИ: %d слів (вихід методу, без зерна й підлоги лексикону)" % len(рядки))

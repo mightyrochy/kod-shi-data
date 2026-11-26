@@ -27,7 +27,7 @@ with patch.object(обєкт, імя, обірвати):
                              адрес=0, готово=0, лишилось=1, цикл=1, підстава="обрив")})
             давній = файл.read_bytes()
             п = subprocess.run([sys.executable, "-c", код, str(обхід.ТЕКА), ж, фаза],
-                               env=dict(os.environ, PYTHONIOENCODING="utf-8"), timeout=10)
+                               env=dict(os.environ, PYTHONIOENCODING="utf-8"), timeout=10, check=False)
             оч = ("\t".join(обхід.ШАПКА) + "\r\n").encode() if фаза == "після" else давній
             assert п.returncode == 7 and файл.read_bytes() == оч, фаза
             print(f"Б/обрив={фаза}: файл цілий, код={п.returncode}")

@@ -3,10 +3,10 @@
 (dict/list/tuple/set/re.compile з ≥2 різними кириличними словами ≥3 літер) у файлах ПРОДУКТУ (status.МОДУЛІ_ПРОДУКТУ) — не
 тлумачить, лише лічить, щоб чистку міряти до/після ОДНИМ способом; `zhnyvarka/` (поза МОДУЛІ_ПРОДУКТУ, а гейти читають
 слова крамниць, рядок 6856) — окремим рядком. Прогін: python3 проби/шлях_слова_лічба.py"""
-import ast, glob, io, os, re, sys
+import ast, glob, os, re, sys
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
 import status
-СЛОВО = re.compile(r"[а-яіїєґ]{3,}", re.I)
+СЛОВО = re.compile(r"[а-яіїєґ]{3,}", re.IGNORECASE)
 
 
 def _зібрати(в, слова):
@@ -22,7 +22,9 @@ def _зібрати(в, слова):
 
 def сканувати(файл):
     конструкцій, слів = 0, set()
-    for в in ast.parse(io.open(файл, encoding="utf-8").read(), filename=файл).body:
+    with open(файл, encoding="utf-8") as джерело:
+        модуль = ast.parse(джерело.read(), filename=файл)
+    for в in модуль.body:
         if isinstance(в, (ast.Assign, ast.AnnAssign)) and isinstance(в.value, (ast.Dict, ast.List, ast.Tuple, ast.Set, ast.Call)):
             п = set(); _зібрати(в.value, п)
             конструкцій, слів = (конструкцій + 1, слів | п) if len(п) >= 2 else (конструкцій, слів)

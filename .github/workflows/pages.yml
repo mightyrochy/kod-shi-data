@@ -52,11 +52,15 @@ jobs:
           filter: blob:none
           sparse-checkout: |
             /джерела/прилади/сайт_pages.py
+            /.github/scripts/pages-artifact*.cjs
             *.html
             *.htm
             *.css
             *.svg
           sparse-checkout-cone-mode: false
+
+      - name: перевірка публікації за ID артефакту
+        run: node --test .github/scripts/pages-artifact.test.cjs
 
       - name: звірка з сайтом
         id: zvirka
@@ -107,6 +111,7 @@ jobs:
           filter: blob:none
           sparse-checkout: |
             /джерела/прилади/сайт_pages.py
+            /.github/scripts/pages-artifact.cjs
             *.html
             *.htm
             *.css
@@ -116,6 +121,7 @@ jobs:
       - name: лише файли сайта
         run: |
           set -euo pipefail
+          cp .github/scripts/pages-artifact.cjs "${RUNNER_TEMP}/pages-artifact.cjs"
           python3 -I джерела/прилади/сайт_pages.py --одиниці HEAD | tee -a "$GITHUB_STEP_SUMMARY"
           python3 -I джерела/прилади/сайт_pages.py --шаблони HEAD > "${RUNNER_TEMP}/shablony"
           VIDBYTOK=$(python3 -I джерела/прилади/сайт_pages.py --відбиток HEAD)
@@ -123,9 +129,17 @@ jobs:
           printf '%s %s\n' "${VIDBYTOK}" "${GITHUB_SHA}" > pages_vidbytok.txt
           echo "файлів: $(find . -path ./.git -prune -o -type f -print | wc -l), $(du -sh --exclude=.git . | cut -f1); відбиток ${VIDBYTOK}" | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
+      - id: pakunok
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
         with:
           path: .
 
       - id: rozghortannia
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+        name: розгорнути завантажений артефакт за його ID
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          PAGES_ARTIFACT_ID: ${{ steps.pakunok.outputs.artifact_id }}
+        with:
+          script: |
+            const опублікувати = require(process.env.RUNNER_TEMP + '/pages-artifact.cjs');
+            await опублікувати({github, context, core, artifactId: process.env.PAGES_ARTIFACT_ID});

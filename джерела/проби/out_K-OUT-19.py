@@ -18,7 +18,8 @@ _КОРІНЬ = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_КОРІНЬ))
 import feed as Ф, bridge as B
 
-вх = json.load(open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8"))
+with open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8") as файл:
+    вх = json.load(файл)
 вх["каталог"] = Ф.каталог_на_диску("каталог_повний.xml")
 вх["гілка"] = 0
 вх["сценарій"].update(смуга_погоди='frost', опади="ні", смуга_вітру="moderate", тривалість_год=2)

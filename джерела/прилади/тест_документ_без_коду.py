@@ -20,6 +20,7 @@ python3 -I джерела/прилади/тест_документ_без_код
 заважає; скасований чи червоний останній запуск — «не зливати».
 """
 import copy
+import datetime
 import json
 import os
 import re
@@ -500,7 +501,8 @@ def групи_з_yml(шлях=".github/workflows/samozlyttia.yml"):
         текст = ф.read()
     процесу = re.search(r"^concurrency:\n  group: (.+)\n", текст, re.MULTILINE)
     jobs, умови = {}, {}
-    for блок in re.split(r"\n(?=  [A-Za-z_-]+:\n)", текст.split("\njobs:\n", 1)[1]):
+    тіло = "\n".join(р for р in текст.split("\njobs:\n", 1)[1].splitlines() if not р.lstrip().startswith("#"))
+    for блок in re.split(r"\n(?=  [A-Za-z_-]+:\n)", тіло):
         ім_я = re.match(r"\s*([A-Za-z_-]+):", блок).group(1)
         к = re.search(r"^    concurrency:\n      group: (.+)\n      cancel-in-progress: (\w+)\n", блок, re.MULTILINE)
         if к and "${{" in к.group(1):
@@ -724,7 +726,7 @@ class Злиття(unittest.TestCase):
         api = ФальшивийAPI(self.pr, (200, {"merged": True, "sha": "c" * 40}, ""))
         голова = self.pr["head"]["sha"]
         злито, перед, _ = д.злити(api, [{"номер": 3584, "голова": голова}])
-        self.assertEqual(злито, [(3584, "c" * 40)])
+        self.assertEqual(злито, [(3584, "c" * 40, False)])
         self.assertEqual(перед, "b" * 40)
         put = next(в for в in api.виклики if в[0] == "PUT")
         self.assertEqual(put[2]["sha"], голова)
@@ -742,6 +744,410 @@ class Злиття(unittest.TestCase):
         злито, перед, рядки = д.злити(api, [{"номер": 3584, "голова": self.pr["head"]["sha"]}])
         self.assertEqual((злито, перед), ([], ""))
         self.assertIn("405", рядки[0])
+
+
+class Мітка(unittest.TestCase):
+    """Наряд CI-самозлиття-мітка-злити: код зливається за міткою «злити» від `mightyrochy` на поточній голові й
+    зелених перевірках; записані події — зміна запису PR #3584 (файли — код, голова з часом появи й подіями)."""
+
+    ГОЛОВА_З, МІТКА_О = "2026-11-25T10:00:00Z", "2026-11-25T10:05:00Z"
+
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(ТУТ, "документ_без_коду_події.json"), encoding="utf-8") as ф:
+            cls.база = json.load(ф)
+
+    def стан(self, зміна=None):
+        п = copy.deepcopy(self.база)
+        п["файли"].append({"filename": "джерела/мовний_шар.py", "status": "modified"})
+        п["pr"]["changed_files"] = 3
+        п["pr"]["labels"] = [{"name": д.МІТКА}]
+        # Запуски CI GitHub створює із запізненням — ПІСЛЯ мітки (#4716, дошка 17101): мірилом вони не є.
+        for з in п["запуски"]:
+            з["created_at"] = "2026-11-25T10:05:02Z"
+        # job `мітка` (samozlyttia.yml) ставить на SHA голови статус у момент `labeled`
+        п["статуси"] = [{"context": д.КОНТЕКСТ_МІТКИ, "state": "success", "creator": {"login": д.БОТ},
+                         "created_at": "2026-11-25T10:05:03Z"}] + п["статуси"]
+        п["зараз"] = datetime.datetime(2026, 11, 25, 10, 6, tzinfo=datetime.timezone.utc)
+        п["події"] = [{"id": 1, "event": "labeled", "created_at": self.МІТКА_О, "label": {"name": д.МІТКА},
+                       "actor": {"login": д.АВТОР}}]
+        if зміна:
+            зміна(п)
+        return п
+
+    def рішення(self, зміна=None):
+        п = self.стан(зміна)
+        # код без мітки — не документ
+        self.assertFalse(д.рішення_pr(п["pr"], п["файли"], п["запуски"], п["check_runs"], п["статуси"])[0])
+        return д.рішення_мітка(п["pr"], п["події"], п["запуски"], п["check_runs"], п["статуси"], зараз=п["зараз"])
+
+    def злити(self, зміна=None):
+        так, чому = self.рішення(зміна)
+        self.assertTrue(так, чому)
+
+    def не_зливати(self, зміна, частина):
+        так, чому = self.рішення(зміна)
+        self.assertFalse(так, чому)
+        self.assertIn(частина, чому)
+
+    def test_мітка_на_зеленій_голові_злити(self):
+        self.злити()
+
+    def test_запуски_після_мітки_не_міра_появи_голови(self):
+        # #4716: мітка через 2 с після відкриття, запуски створено пізніше — мітка діє
+        п = self.стан()
+        self.assertTrue(all(з["created_at"] > self.МІТКА_О for з in п["запуски"]))
+        self.злити()
+
+    def без_статуса(self, п, зараз):
+        # голова PR інша, ніж у момент мітки: статуса на ній нема (новий SHA)
+        п["статуси"] = [с for с in п["статуси"] if с.get("context") != д.КОНТЕКСТ_МІТКИ]
+        if зараз:
+            п["зараз"] = зараз
+
+    def test_новий_коміт_після_мітки_знімає_мітку(self):
+        self.не_зливати(lambda п: self.без_статуса(п, datetime.datetime(2026, 11, 25, 10, 30, tzinfo=datetime.timezone.utc)), "не зафіксована")
+
+    def test_коміт_до_мітки_запушений_після_не_діє(self):
+        # доробка #4718: коміт 12:00 (дата в минулому), мітка 12:05, пуш 12:10 — на новій голові статуса нема
+        def з(п):
+            п["події"][0]["created_at"] = "2026-11-25T12:05:00Z"
+            self.без_статуса(п, datetime.datetime(2026, 11, 25, 12, 30, tzinfo=datetime.timezone.utc))
+        self.не_зливати(з, "не зафіксована")
+
+    def test_стара_мітка_стара_а_свіжа_ще_чекає(self):
+        п = self.стан(lambda п: self.без_статуса(п, datetime.datetime(2026, 11, 25, 10, 30, tzinfo=datetime.timezone.utc)))
+        self.assertTrue(д.мітка_стара(п["pr"], п["події"], п["статуси"], п["зараз"]))
+        п = self.стан(lambda п: self.без_статуса(п, datetime.datetime(2026, 11, 25, 10, 6, tzinfo=datetime.timezone.utc)))
+        self.assertFalse(д.мітка_стара(п["pr"], п["події"], п["статуси"], п["зараз"]))
+        self.assertIn("чекаю фіксації", д.мітка_діє(п["pr"], п["події"], п["статуси"], п["зараз"])[1])
+
+    def test_статус_від_попередньої_мітки_не_рахується(self):
+        # мітку зняли й поставили знову на тій самій голові: статус раніший за останню мітку
+        def з(п):
+            п["події"].append({"id": 7, "event": "labeled", "created_at": "2026-11-25T10:20:00Z",
+                               "label": {"name": д.МІТКА}, "actor": {"login": д.АВТОР}})
+            п["зараз"] = datetime.datetime(2026, 11, 25, 10, 21, tzinfo=datetime.timezone.utc)
+        self.не_зливати(з, "чекаю фіксації")
+
+    def test_статус_не_від_бота_не_рахується(self):
+        def з(п):
+            п["статуси"][0]["creator"] = {"login": "інший"}
+            п["зараз"] = datetime.datetime(2026, 11, 25, 10, 30, tzinfo=datetime.timezone.utc)
+        self.не_зливати(з, "не зафіксована")
+
+    def test_статус_не_success_не_рахується(self):
+        def з(п):
+            п["статуси"][0]["state"] = "failure"
+            п["зараз"] = datetime.datetime(2026, 11, 25, 10, 30, tzinfo=datetime.timezone.utc)
+        self.не_зливати(з, "не зафіксована")
+
+    def test_force_push_після_мітки_знімає_мітку(self):
+        def з(п):
+            п["події"].append({"id": 5, "event": "head_ref_force_pushed", "created_at": "2026-11-25T10:07:00Z"})
+        self.не_зливати(з, "force-push")
+
+    def test_force_push_назад_на_старий_sha_після_мітки(self):
+        # голова — старий коміт (дата раніша за мітку), але повернули її force-push після мітки
+        def з(п):
+            п["події"].append({"id": 6, "event": "head_ref_force_pushed", "created_at": "2026-11-25T10:20:00Z"})
+        self.не_зливати(з, "force-push")
+
+    def test_force_push_до_мітки_не_заважає(self):
+        def з(п):
+            п["події"].append({"id": 0, "event": "head_ref_force_pushed", "created_at": "2026-11-25T10:01:00Z"})
+        self.злити(з)
+
+    def test_мітка_відразу_після_відкриття(self):
+        # мітка через 2 с після відкриття, запуски CI пізніше — діє (статус на голові після мітки)
+        def з(п):
+            п["події"][0]["created_at"] = "2026-11-25T10:00:02Z"
+            п["статуси"][0]["created_at"] = "2026-11-25T10:00:04Z"
+        self.злити(з)
+
+    def test_мітка_від_іншого_автора(self):
+        self.не_зливати(lambda п: п["події"][0]["actor"].update(login="інший"), "поставив інший")
+
+    def test_остання_мітка_від_іншого_автора(self):
+        def з(п):
+            п["події"].append({"id": 2, "event": "labeled", "created_at": "2026-11-25T10:06:00Z",
+                               "label": {"name": д.МІТКА}, "actor": {"login": "інший"}})
+        self.не_зливати(з, "поставив інший")
+
+    def test_мітки_нема_на_pr(self):
+        self.не_зливати(lambda п: п["pr"].update(labels=[]), "нема")
+
+    def test_інша_мітка_не_рахується(self):
+        def з(п):
+            п["pr"]["labels"] = [{"name": "інша"}]
+        self.не_зливати(з, "нема")
+
+    def test_мітка_без_події(self):
+        self.не_зливати(lambda п: п.update(події=[]), "події її постановки нема")
+
+    def test_червоний_запуск(self):
+        self.не_зливати(lambda п: п["запуски"][1].update(conclusion="failure"), "failure")
+
+    def test_незавершений_запуск(self):
+        self.не_зливати(lambda п: п["запуски"][1].update(status="in_progress", conclusion=None), "ще йде")
+
+    def test_червоний_check_run(self):
+        self.не_зливати(lambda п: п["check_runs"][0].update(conclusion="failure"), "failure")
+
+    def test_чернетка(self):
+        self.не_зливати(lambda п: п["pr"].update(draft=True), "чернетка")
+
+    def test_форк(self):
+        def з(п):
+            п["pr"]["head"]["repo"]["full_name"] = "хтось/форк"
+        self.не_зливати(з, "форк")
+
+    def test_інший_автор_pr(self):
+        self.не_зливати(lambda п: п["pr"]["user"].update(login="хтось"), "автор")
+
+    def test_копілот(self):
+        def з(п):
+            п["pr"]["head"]["ref"] = "copilot/x"
+        self.не_зливати(з, "Copilot")
+
+    def test_інша_база(self):
+        def з(п):
+            п["pr"]["base"]["ref"] = "release"
+        self.не_зливати(з, "база")
+
+    def test_документ_без_мітки_як_досі(self):
+        п = copy.deepcopy(self.база)
+        self.assertTrue(д.рішення_pr(п["pr"], п["файли"], п["запуски"], п["check_runs"], п["статуси"])[0])
+
+    def test_обійти_код_з_міткою(self):
+        п = self.стан()
+        api = ОбхідAPI(п)
+        підсумок = д.обійти(api)
+        self.assertEqual([(н, г, так, с) for н, г, так, _, с in підсумок], [(3584, п["pr"]["head"]["sha"], True, "мітка")])
+
+    def test_обійти_код_без_мітки_не_злити(self):
+        п = self.стан(lambda п: п["pr"].update(labels=[]))
+        підсумок = д.обійти(ОбхідAPI(п))
+        self.assertFalse(підсумок[0][2])
+
+    def test_злиття_за_міткою_несе_тіло_pr(self):
+        п = self.стан()
+        п["pr"]["body"] = "Тіло PR\n\nЗлито: #4711"
+        api = ФальшивийAPI(п["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
+        злито, _, _ = д.злити(api, [{"номер": 3584, "голова": п["pr"]["head"]["sha"], "спосіб": "мітка"}])
+        self.assertEqual(злито, [(3584, "c" * 40, True)])
+        put = next(в for в in api.виклики if в[0] == "PUT")
+        self.assertEqual((put[2]["sha"], put[2]["merge_method"]), (п["pr"]["head"]["sha"], "squash"))
+        self.assertEqual(put[2]["commit_message"], "Тіло PR\n\nЗлито: #4711")
+        self.assertTrue(put[2]["commit_title"].endswith("(#3584)"))
+
+    def test_мітку_знято_після_рішення_не_злити(self):
+        п = self.стан(lambda п: п["pr"].update(labels=[]))
+        api = ФальшивийAPI(п["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
+        злито, _, рядки = д.злити(api, [{"номер": 3584, "голова": п["pr"]["head"]["sha"], "спосіб": "мітка"}])
+        self.assertEqual(злито, [])
+        self.assertIn("знято", рядки[0])
+        self.assertFalse([в for в in api.виклики if в[0] == "PUT"])
+
+    def test_документ_не_несе_тіло(self):
+        api = ФальшивийAPI(self.база["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
+        д.злити(api, [{"номер": 3584, "голова": self.база["pr"]["head"]["sha"]}])
+        put = next(в for в in api.виклики if в[0] == "PUT")
+        self.assertNotIn("commit_message", put[2])
+
+
+class МіткаБезпека(unittest.TestCase):
+    """`pull_request_target` типу `labeled` запускає прилад з `main`: коду гілки PR крок не бере й не виконує."""
+
+    def test_безпека_workflow(self):
+        with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
+            текст = ф.read()
+        код = "\n".join(р for р in текст.splitlines() if not р.lstrip().startswith("#"))
+        self.assertRegex(код, r"(?m)^  pull_request_target:\n    types: \[labeled\]$")
+        self.assertNotRegex(код, r"(?m)^\s+ref:", "checkout без ref — лише main, не гілка PR")
+        мітка = код.split("  mitka:", 1)[1].split("  rishennia:", 1)[0]
+        решта = код.replace(мітка, "")
+        self.assertNotIn("pull_request.head", решта, "SHA зі сніпшота події — лише в job фіксації мітки")
+        self.assertIn("SHA: ${{ github.event.pull_request.head.sha }}", мітка)
+        self.assertNotIn("checkout", мітка, "job фіксації мітки коду не бере")
+        self.assertRegex(мітка, r"(?m)^      statuses: write$")
+        self.assertNotRegex(мітка, r"(?m)^      (contents|pull-requests|issues): ")
+        self.assertIn("github.event.sender.login == 'mightyrochy'", мітка, "статус — лише за міткою власника")
+        self.assertNotIn("${{", мітка.split("run: |", 1)[1], "значення PR — через env, не в тексті команди")
+        self.assertNotIn("workflow_dispatch", код)
+        self.assertNotIn("auto-merge", код.lower())
+        рішення = код.split("  rishennia:", 1)[1].split("  zlyttia:", 1)[0]
+        self.assertNotRegex(рішення, r"(?m)^      (contents|pull-requests|issues): write", "запис — лише в job злиття")
+        self.assertIn("github.event.label.name == 'злити'", рішення)
+
+    def test_пропуск_предка_не_тягнеться_ланцюгом(self):
+        """Доробка #4718: пропущений job пропускає залежні, якщо вони без функції статусу (неявний `success()`).
+        `мітка` іде на кожній події, умова — на кроці, тож `рішення` → `злиття` → `збірка` не успадковують пропуск:
+        документ без мітки (подія `workflow_run`) зливається, мічена голова, чий CI закінчився після мітки, теж."""
+        _, jobs, умови = групи_з_yml()
+        self.assertEqual(умови["mitka"], "", "job `мітка` без умови: пропуск предка тягнувся б ланцюгом")
+        with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
+            код = "\n".join(р for р in ф.read().splitlines() if not р.lstrip().startswith("#"))
+        блок = код.split("  mitka:", 1)[1].split("  rishennia:", 1)[0]
+        self.assertRegex(блок, r"(?m)^        if: github.event_name == 'pull_request_target' && github.event.label.name == 'злити'"
+                               r" && github.event.sender.login == 'mightyrochy'$")
+        # модель: job запускається, коли всі його `needs` відпрацювали (success) і його `if` істинна
+        def йде(job, подія, мітка):
+            умова = умови[job]
+            if job == "mitka":
+                return True
+            if job == "rishennia":
+                return (подія == "workflow_run") or (подія == "pull_request_target" and мітка)
+            raise AssertionError(job)
+        for подія, мітка in (("workflow_run", False), ("workflow_run", True), ("pull_request_target", True)):
+            self.assertTrue(йде("mitka", подія, мітка))
+            self.assertTrue(йде("rishennia", подія, мітка), (подія, мітка))
+        self.assertNotIn("always()", код)
+        self.assertNotIn("cancelled()", код)
+        self.assertIn("needs: mitka", код)
+        # рядок умови `рішення` — на події workflow_run із pull_request (документ без мітки) і на labeled
+        self.assertIn("github.event.workflow_run.event == 'pull_request'", умови["rishennia"])
+        self.assertIn("github.event_name == 'pull_request_target' && github.event.label.name == 'злити'", умови["rishennia"])
+
+    def test_збірка_після_злиття_коду(self):
+        """Код, злитий токеном CI, `push` не будить: крок викликає `zbirka.yml` з `kod`, а той веде повний шлях на
+        `pislia` (checkout з ref, база й голова історії з входів)."""
+        with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
+            с = ф.read()
+        self.assertIn("kod: ${{ needs.zlyttia.outputs.kod == 'true' }}", с)
+        self.assertIn("zlyti: ${{ needs.zlyttia.outputs.zlyti }}", с)
+        self.assertIn("STARI: ${{ needs.rishennia.outputs.stari }}", с)
+        self.assertIn("if: needs.zlyttia.outputs.zlyto == 'true'", с)
+        with open(os.path.join(КОРІНЬ, ".github/workflows/zbirka.yml"), encoding="utf-8") as ф:
+            з = ф.read()
+        self.assertRegex(з, r"(?m)^      kod:\n        type: boolean")
+        self.assertIn('[ -n "${PISLIA}" ] && [ "${KOD}" = true ]', з)
+        self.assertEqual(з.count("uses: actions/checkout@"), з.count("ref: ${{ inputs.pislia }}"),
+                         "кожен checkout збірки бере ref злитого коміту (порожній — типовий)")
+        self.assertIn("inputs.pislia && (inputs.kod && 'kod' || 'dokument') || 'main'", з,
+                      "повна збірка після коду — своя група: легкий виклик документа її не витісняє")
+        self.assertIn("ZLYTTIA_ZLYTI: ${{ inputs.zlyti }}", з, "погодження живого прогону — за переліком злитих")
+        self.assertNotIn("ZLYTTIA_SHA", з)
+        self.assertIn("node аудит/проби/перевірити_живий_після_злиття.js", з)
+        бази = [р for р in з.splitlines() if "BASE_REF: ${{" in р]
+        self.assertTrue(бази)
+        self.assertTrue(all(р.endswith("github.event.before || inputs.pered }}") for р in бази), бази)
+        self.assertEqual(з.count("HEAD_SHA: ${{ inputs.pislia }}"), з.count("checkout-history.sh"))
+
+    def test_вихід_злиття_код_і_документ(self):
+        api = ФальшивийAPI(Мітка.стан(Мітка(), None)["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
+        злито, _, _ = д.злити(api, [{"номер": 3584, "голова": api.pr["head"]["sha"], "спосіб": "мітка"}])
+        self.assertTrue(any(з[2] for з in злито))
+
+
+class Зняття(unittest.TestCase):
+    """Наряд «Погодження ЖИВИЙ ПІСЛЯ для кожного злитого PR»: мітка знімається після злиття й коли голова з'явилась
+    знову; слід — коментар у PR; вихід `zlyti` — усі PR запуску."""
+
+    ГОЛОВА_З, МІТКА_О = Мітка.ГОЛОВА_З, Мітка.МІТКА_О
+
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(ТУТ, "документ_без_коду_події.json"), encoding="utf-8") as ф:
+            cls.база = json.load(ф)
+
+    def стан(self, зміна=None):
+        return Мітка.стан(self, зміна)
+
+    def test_стара_мітка_у_старих(self):
+        п = self.стан(lambda п: Мітка.без_статуса(self, п, None))
+        старі = []
+        підсумок = д.обійти(ОбхідAPI(п), "", старі)
+        self.assertFalse(підсумок[0][2])
+        self.assertIn("не зафіксована", підсумок[0][3])
+        self.assertEqual(старі, [{"номер": 3584, "голова": п["pr"]["head"]["sha"]}])
+
+    def test_чинна_мітка_не_стара(self):
+        старі = []
+        д.обійти(ОбхідAPI(self.стан()), "", старі)
+        self.assertEqual(старі, [])
+
+    def test_мітка_чужого_автора_не_стара(self):
+        п = self.стан(lambda п: п["події"][0]["actor"].update(login="інший"))
+        старі = []
+        д.обійти(ОбхідAPI(п), "", старі)
+        self.assertEqual(старі, [])
+
+    def test_знімає_й_пише_коментар(self):
+        п = self.стан()
+        api = ФальшивийAPI(п["pr"], (200, {}, ""))
+        рядки = д.прибрати_старі(api, [{"номер": 3584, "голова": п["pr"]["head"]["sha"]}])
+        дії = [(м, ш) for м, ш, _ in api.виклики if м != "GET"]
+        self.assertEqual(дії[0][0], "DELETE")
+        self.assertTrue(дії[0][1].endswith("/issues/3584/labels/%D0%B7%D0%BB%D0%B8%D1%82%D0%B8"), дії)
+        self.assertEqual(len(рядки), 1)
+
+    def test_коментар_лишає_слід(self):
+        п = self.стан()
+
+        class З(ФальшивийAPI):
+            def запит(self, метод, шлях, тіло=None):
+                if метод in ("DELETE", "POST"):
+                    self.виклики.append((метод, шлях, тіло))
+                    return 200, {}, ""
+                return super().запит(метод, шлях, тіло)
+        api = З(п["pr"], (200, {}, ""))
+        д.прибрати_старі(api, [{"номер": 3584, "голова": п["pr"]["head"]["sha"]}])
+        коментар = next(в for в in api.виклики if в[0] == "POST")
+        self.assertTrue(коментар[1].endswith("/issues/3584/comments"))
+        self.assertIn("мітку «злити» знято", коментар[2]["body"])
+        self.assertIn("постав мітку ще раз", коментар[2]["body"])
+
+    def test_голова_змінилась_мітку_не_чіпає(self):
+        п = self.стан()
+        api = ФальшивийAPI(п["pr"], (200, {}, ""))
+        рядки = д.прибрати_старі(api, [{"номер": 3584, "голова": "0" * 40}])
+        self.assertIn("змінився", рядки[0])
+        self.assertFalse([в for в in api.виклики if в[0] != "GET"])
+
+    def test_злиття_знімає_мітку(self):
+        п = self.стан()
+        api = ФальшивийAPI(п["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
+        д.злити(api, [{"номер": 3584, "голова": п["pr"]["head"]["sha"], "спосіб": "мітка"}])
+        self.assertTrue([в for в in api.виклики if в[0] == "DELETE" and "/issues/3584/labels/" in в[1]])
+
+    def test_голова_змінилась_до_злиття_знімає_мітку(self):
+        п = self.стан()
+        api = ФальшивийAPI(п["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
+        злито, _, рядки = д.злити(api, [{"номер": 3584, "голова": "0" * 40, "спосіб": "мітка"}])
+        self.assertEqual(злито, [])
+        self.assertTrue([в for в in api.виклики if в[0] == "DELETE"])
+
+    def test_документ_без_мітки_нічого_не_знімає(self):
+        api = ФальшивийAPI(self.база["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
+        д.злити(api, [{"номер": 3584, "голова": api.pr["head"]["sha"]}])
+        self.assertFalse([в for в in api.виклики if в[0] == "DELETE"])
+
+
+class ОбхідAPI:
+    """Записані відповіді для `обійти`: один відкритий PR зі станом `Мітка.стан`."""
+
+    def __init__(self, п):
+        self.р, self.п = "mightyrochy/kod-shi-data", п
+
+    def усі(self, шлях, ключ=None, межа=30):
+        п = self.п
+        if "/pulls?state=open" in шлях:
+            return [{"number": 3584, "draft": False, "user": п["pr"]["user"], "head": п["pr"]["head"]}]
+        if шлях.endswith("/files"):
+            return п["файли"]
+        if "/actions/runs" in шлях:
+            return п["запуски"]
+        if "/check-runs" in шлях:
+            return п["check_runs"]
+        if "/statuses" in шлях:
+            return п["статуси"]
+        if "/events" in шлях:
+            return п["події"]
+        raise AssertionError(шлях)
+
+    def запит(self, метод, шлях, тіло=None):
+        return 200, self.п["pr"], ""
 
 
 class Самоперевірка(unittest.TestCase):

@@ -173,7 +173,8 @@ def main():
     ап = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ап.add_argument("--тека", default=os.path.join(КОРІНЬ, "аудит", "проби", "поверхня_212"))
     тека = ап.parse_args().тека
-    записи = {з["ключ"]: з for з in json.load(open(os.path.join(тека, "вимір.json"), encoding="utf-8"))["записи"]}
+    with open(os.path.join(тека, "вимір.json"), encoding="utf-8") as файл:
+        записи = {з["ключ"]: з for з in json.load(файл)["записи"]}
     пп = {к: після(тека, з) for к, з in записи.items() if not з.get("помилка")}
     for з in записи.values():           # ДО — тим самим правилом споживача, що й ПІСЛЯ
         до = з.get("до") or {}
@@ -183,7 +184,8 @@ def main():
                 tuple(int(осн[1][і:і + 2], 16) for і in (1, 3, 5)))), з.get("слова_крамниці"), not до.get("другий"))
     with open(os.path.join(тека, "після.json"), "w", encoding="utf-8") as ф:
         json.dump(пп, ф, ensure_ascii=False, indent=1)
-    вердикти = {"%02d" % в["№"]: в for в in json.load(open(ВЕРДИКТИ, encoding="utf-8"))}
+    with open(ВЕРДИКТИ, encoding="utf-8") as файл:
+        вердикти = {"%02d" % в["№"]: в for в in json.load(файл)}
     підписи = {к: "№%s %s · крамниця «%s» · маска %s · очі: %s" % (к, з["id"], ", ".join(з.get("слова_крамниці") or []),
                                                                    з.get("маска"), (вердикти.get(к) or {}).get("що_видно", ""))
                for к, з in записи.items()}

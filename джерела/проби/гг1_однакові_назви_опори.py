@@ -4,7 +4,9 @@
 Запуск із джерела/ (каталог розпакований, ~1 хв): python3 проби/гг1_однакові_назви_опори.py"""
 import json, sys, collections as K
 sys.path.insert(0, "."); import bridge as B, аксесуари_структура as АС, реєстр_правил as РП, міст_відповіді as МВ
-B.виклик("запити", json.dumps(json.load(open("стенд_вх.json", encoding="utf-8")), ensure_ascii=False)); кат = B.каталог_останнього_пакета()
+with open("стенд_вх.json", encoding="utf-8") as ф:
+    вх = json.load(ф)
+B.виклик("запити", json.dumps(вх, ensure_ascii=False)); кат = B.каталог_останнього_пакета()
 С, Л = K.defaultdict(list), K.Counter()
 for x in кат: С[x.get("назва")].append(x)
 for назва, рр in С.items():

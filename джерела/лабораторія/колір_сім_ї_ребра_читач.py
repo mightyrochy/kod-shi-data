@@ -6,7 +6,7 @@ renotation; це не узгодження сіток, не неперервна
 """
 import argparse
 from collections import Counter
-from functools import lru_cache
+from functools import lru_cache, cache
 import importlib.util
 import json
 import math
@@ -66,7 +66,7 @@ def зробити_перетворення(бібліотека):
     хроматичне = ОСНОВА.зробити_перетворення(бібліотека)
     нейтральне = НЕЙТРАЛЬ.зробити_перетворення(бібліотека)
 
-    @lru_cache(maxsize=None)
+    @cache
     def перетворити(H, V, C):
         """Дає точний образ або очікувану відмову без підміни кольором краю."""
         if (not all(math.isfinite(x) for x in (H, V, C))

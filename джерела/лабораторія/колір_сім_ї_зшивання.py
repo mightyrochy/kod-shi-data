@@ -8,6 +8,7 @@ import argparse
 from collections import Counter
 import hashlib
 import importlib.util
+import itertools
 import json
 import math
 from pathlib import Path
@@ -76,7 +77,7 @@ def побудувати(вхід):
         контур = []
         for вісь, точка, (низ, верх), знак in краї_грані(грань):
             поділ = [x for x in осі[вісь] if низ <= x <= верх]
-            for a, b in zip(поділ, поділ[1:]):
+            for a, b in itertools.pairwise(поділ):
                 фіксовані = канонічна_точка(точка)
                 ключ = вісь, tuple(фіксовані[i] for i in range(3) if i != вісь), a, b
                 всі_ребра.add(ключ)

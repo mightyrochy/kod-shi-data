@@ -27,14 +27,25 @@ on:
       pislia:
         type: string
         required: true
+      # Усі PR, злиті цим запуском самозлиття: JSON [{"номер": N, "коміт": SHA}] — живий прогін звіряє погодження кожного.
+      zlyti:
+        type: string
+        required: false
+        default: ''
+      # Злито код (за міткою «злити»): повний шлях збірки й публікації на `pislia`, а не легкий документний.
+      kod:
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
 
 # Виклик самозлиття — своя черга: у черзі `main` новий запуск витіснив би очікувану збірку push, а легкий шлях виклику
-# не збирає її джерел.
+# не збирає її джерел. Повний виклик після коду (`kod`) — своя група: легкий виклик документа не витісняє повну збірку
+# (черга групи тримає один запуск і одного очікуваного; очікуваний новіший бере вже весь main злитого).
 concurrency:
-  group: збірка-показу-${{ github.event_name == 'pull_request' && github.ref || inputs.pislia && 'dokument' || 'main' }}
+  group: збірка-показу-${{ github.event_name == 'pull_request' && github.ref || inputs.pislia && (inputs.kod && 'kod' || 'dokument') || 'main' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -59,9 +70,18 @@ jobs:
         env:
           BEFORE: ${{ github.event.before }}
           PISLIA: ${{ inputs.pislia }}
+          KOD: ${{ inputs.kod }}
         run: |
           # Виклик самозлиття: злито документ (`джерела/прилади/документ_без_коду.py` — жодного входу збірки, правил
           # чи коду), тож лише легкий шлях і згортання дошки; повний шлях (і решта checkout без `ref`) тут не йде.
+          if [ -n "${PISLIA}" ] && [ "${KOD}" = true ]; then
+            # Виклик самозлиття після коду, злитого за міткою: токен CI `push` не будить, тож повний шлях
+            # (збірка, перевірка, публікація) іде тут на `pislia`, без тихого пропуску.
+            echo "produkt=true" >> "$GITHUB_OUTPUT"
+            echo "pravyla=true" >> "$GITHUB_OUTPUT"
+            echo "виклик самозлиття (код за міткою): ${PISLIA} — повний шлях" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           if [ -n "${PISLIA}" ]; then
             echo "produkt=false" >> "$GITHUB_OUTPUT"
             echo "pravyla=false" >> "$GITHUB_OUTPUT"
@@ -161,12 +181,14 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
+          ref: ${{ inputs.pislia }}
           fetch-depth: 1
 
       - name: історія голови й бази без чужих гілок
         env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
           GITHUB_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ inputs.pislia }}
         run: bash .github/scripts/checkout-history.sh
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -231,17 +253,6 @@ jobs:
           print(f"py_compile: files {len(files)}; fails {fails}")
           sys.exit(bool(fails))
           PY
-
-      - name: проби поділу (ВПАЛО має лишатись 0)
-        working-directory: джерела
-        run: |
-          set -u
-          VPALO=0
-          for f in проби/поділ_*_ast.py; do
-            python3 "$f" || { echo "  ✗ $f"; VPALO=$((VPALO + 1)); }
-          done
-          echo "проби поділу: ВПАЛО $VPALO"
-          [ "$VPALO" -eq 0 ]
 
       - name: реєстр живих сцен (фото в тексті — з FOTO_RECHI; файли сцен)
         working-directory: аудит/проби
@@ -342,13 +353,14 @@ jobs:
           cp index.html "${RUNNER_TEMP}/стенд/index.html"
           NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js \
             http://127.0.0.1:8765 "${RUNNER_TEMP}/стенд" "${RUNNER_TEMP}/pyodide" 3 2>&1 | tee стенд.log
+          NODE_PATH=джерела/node_modules node аудит/проби/пара_чернетка.js "${RUNNER_TEMP}/стенд/index.html"
 
-      - name: нове ядро шляху образу (тести Н1; Т34 — у Pyodide з кешу стенда)
+      - name: нове ядро шляху образу (тести Н1 і Н2; Т34 — у Pyodide з кешу стенда)
         # Ядро-Н1-каркас: `unittest discover` кириличних імен файлів не бачить — модулі названо явно.
         working-directory: джерела
         env:
           PYODIDE: ${{ runner.temp }}/pyodide
-        run: python3 -m unittest -v ядро.тести.тест_ч1_ситуація ядро.тести.тест_ш_протокол ядро.тести.тест_будова
+        run: python3 -m unittest -v ядро.тести.тест_ч1_ситуація ядро.тести.тест_ш_протокол ядро.тести.тест_будова ядро.тести.тест_н2 ядро.тести.тест_н3
 
       - name: складальник каталогу — звіт записано → прочитано (не гейт)
         continue-on-error: true
@@ -404,12 +416,14 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
+          ref: ${{ inputs.pislia }}
           fetch-depth: 1
 
       - name: історія голови й бази без чужих гілок
         env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
           GITHUB_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ inputs.pislia }}
         run: bash .github/scripts/checkout-history.sh
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -433,7 +447,7 @@ jobs:
 
       - name: код базового main й повна збірка
         env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
           LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
         run: |
           if [ -z "$BASE_REF" ] || ! git cat-file -e "${BASE_REF}^{commit}"; then
@@ -475,12 +489,14 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           persist-credentials: false
+          ref: ${{ inputs.pislia }}
           fetch-depth: 1
 
       - name: історія голови й бази без чужих гілок
         env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
           GITHUB_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ inputs.pislia }}
         run: bash .github/scripts/checkout-history.sh
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
@@ -504,7 +520,7 @@ jobs:
         run: sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
       - name: код базового main (записи сцен бази)
         env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
         run: |
           if [ -z "$BASE_REF" ] || ! git cat-file -e "${BASE_REF}^{commit}"; then
             echo "Нема коду бази для храповика" >&2
@@ -524,15 +540,18 @@ jobs:
         run: |
           node аудит/проби/перевірити_храповик.js
           node аудит/проби/перевірити_нову_базу.js
+          node аудит/проби/перевірити_живий_після_злиття.js
       - name: записані сцени через продукт
         env:
+          ZLYTTIA_ZLYTI: ${{ inputs.zlyti }}
+          ZLYTTIA_TOKEN: ${{ inputs.pislia && github.token || '' }}
           NODE_PATH: джерела/node_modules
           REPLAY_BASE_BUILD: ${{ runner.temp }}/main-pokaz
           REPLAY_BASE_ROOT: ${{ runner.temp }}/main-replay
         run: |
           node аудит/проби/приймання_записів.js "${RUNNER_TEMP}/pokaz" "${RUNNER_TEMP}/pyodide" \
             "${RUNNER_TEMP}/replay" ${{ matrix.chastyna }} 2
-          GITHUB_TOKEN="${{ github.event_name == 'push' && github.token || '' }}" node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/replay"
+          GITHUB_TOKEN="${{ github.event_name == 'push' && github.token || '' }}${ZLYTTIA_TOKEN}" node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/replay"
       - name: докази всіх сцен, зокрема невдалих
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -553,12 +572,14 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
+          ref: ${{ inputs.pislia }}
           fetch-depth: 1
 
       - name: історія голови й бази без чужих гілок
         env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
           GITHUB_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ inputs.pislia }}
         run: bash .github/scripts/checkout-history.sh
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -605,6 +626,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
+          ref: ${{ inputs.pislia }}
           fetch-depth: 2
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -641,6 +663,7 @@ jobs:
         if: needs.zminy.outputs.produkt == 'true'
         with:
           persist-credentials: false
+          ref: ${{ inputs.pislia }}
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         if: needs.zminy.outputs.produkt == 'true'

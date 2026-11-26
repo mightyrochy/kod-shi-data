@@ -31,8 +31,8 @@ import urllib.request
 
 ТУТ = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(ТУТ))
-import мовний_шар as М            # noqa: E402
-import паспорт_нагоди as ПН        # noqa: E402
+import мовний_шар as М
+import паспорт_нагоди as ПН
 
 ЗБЕРЕЖЕНІ = os.path.join(ТУТ, "мова_збережені.json")
 ЖИВА = (os.environ.get("ZHYVA") or "").strip() or None
@@ -91,7 +91,8 @@ def модель(промпт):
         р = subprocess.run([os.environ.get("ZHYVA_BIN") or "/opt/node22/bin/claude", "-p", "--model", ЖИВА,
                             "--tools", "", "--strict-mcp-config", "--no-session-persistence",
                             "--system-prompt", СИСТЕМНИЙ], input=промпт, capture_output=True, text=True,
-                           timeout=900, env=dict(os.environ, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"))
+                           timeout=900, check=False,
+                           env=dict(os.environ, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"))
         return р.stdout.strip(), time.time() - т0
     тіло = dict(model=МОДЕЛЬ, messages=[dict(role="user", content=промпт)],
                 max_tokens=int(os.environ.get("MODEL_MAX_TOKENS") or 4000), stream=False)

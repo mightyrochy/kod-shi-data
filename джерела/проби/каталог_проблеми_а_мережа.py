@@ -30,6 +30,6 @@ with cf.ThreadPoolExecutor(24) as ex:
 for х, с in рез:
     по_хосту[х][с] += 1
 for х, c in sorted(по_хосту.items(), key=lambda x: x[1]["image"] / sum(x[1].values())):
-    print("  %-30s картинка %2d/%-2d %s" % (х[:30], c["image"], sum(c.values()), dict((к, н) for к, н in c.items() if к != "image") or ""))
+    print("  %-30s картинка %2d/%-2d %s" % (х[:30], c["image"], sum(c.values()), {к: н for к, н in c.items() if к != "image"} or ""))
 разом = collections.Counter(с for _, с in рез)
 print("хостів %d · адрес %d (до %d на хост) ·" % (len(по_хосту), len(рез), НА_ХОСТ), dict(разом.most_common()))

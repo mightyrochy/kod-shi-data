@@ -28,7 +28,7 @@ for (const [сцена, файл] of Object.entries(сцени)) for (const пр
   if (порожніх) process.exitCode = 1;
 }
 '''
-    р = subprocess.run(["node", "-e", код], cwd=корінь, input=json.dumps(сцени), text=True)
+    р = subprocess.run(["node", "-e", код], cwd=корінь, input=json.dumps(сцени), text=True, check=False)
     return р.returncode
 
 

@@ -9,11 +9,15 @@ from math import comb, sqrt
 sys.path.insert(0, os.path.join(КОРІНЬ, "джерела")); import поломки as ПР2
 def файли():   # як `рука2_повтор_сукні.py`: --git — усі версії файлів вердиктів усіх гілок
     if sys.argv[1:] == ["--git"]:
-        git = lambda *а: subprocess.run(("git", "-C", КОРІНЬ) + а, capture_output=True).stdout; рр = git("log", "--all", "--format=", "--raw", "--no-abbrev", "--diff-filter=AM", "--no-renames", "--", ":(glob)**/вердикти*", ":(glob)**/verdykty*").decode().splitlines()
+        git = lambda *а: subprocess.run(("git", "-C", КОРІНЬ) + а, capture_output=True, check=False).stdout; рр = git("log", "--all", "--format=", "--raw", "--no-abbrev", "--diff-filter=AM", "--no-renames", "--", ":(glob)**/вердикти*", ":(glob)**/verdykty*").decode().splitlines()
         yield from (git("cat-file", "blob", б) for б in sorted({р.split()[3] for р in рр if р.startswith(":")})); return
     for ш in sys.argv[1:] or [os.path.join(КОРІНЬ, "аудит", "тести")]:
         for к, _, фф in (os.walk(ш) if os.path.isdir(ш) else [("", 0, [ш])]):
-            yield from (open(os.path.join(к, ф), "rb").read() for ф in фф if "verdykty" in ф or "вердикти" in ф)
+            for ф in фф:
+                if "verdykty" in ф or "вердикти" in ф:
+                    with open(os.path.join(к, ф), "rb") as файл:
+                        дані = файл.read()
+                    yield дані
 речі = lambda в: {r["id"]: r.get("слот") for r in в.get("речі_образу") or [] if isinstance(r, dict)}; пари, записи, гр = {}, {}, collections.defaultdict(collections.Counter)
 for дані in файли():
     try: д = json.loads(gzip.decompress(дані) if дані[:2] == b"\x1f\x8b" else дані)

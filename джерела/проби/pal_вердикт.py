@@ -12,7 +12,8 @@ import bridge as B, colorspace as cs, pipeline as PL
 
 def стенд(гілка=0, **зміни):
     """Готує синтетичний фізичний ввід для перевірок числових правил палітри."""
-    вх = json.load(open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8"))
+    with open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8") as файл:
+        вх = json.load(файл)
     вх.setdefault("source", "uncontrolled")
     вх["гілка"] = гілка
     вх.update(зміни)

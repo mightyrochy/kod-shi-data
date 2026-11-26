@@ -14,7 +14,9 @@ import collections, glob, json, os, re
 ТЕКА = os.path.join(os.path.dirname(ТУТ), "аудит", "тести", "власник_2026-09-25")
 місця, без_вибору = [], 0
 for файл in sorted(glob.glob(os.path.join(ТЕКА, "*.json"))):
-    for прогін in json.load(open(файл, encoding="utf-8"))["прогони"]:
+    with open(файл, encoding="utf-8") as джерело:
+        прогони = json.load(джерело)["прогони"]
+    for прогін in прогони:
         for в in прогін["вердикти"]:
             for виклик in ((в.get("етапи") or {}).get("виклики") or []):
                 текст = (виклик.get("запит") or {}).get("текст") or ""
