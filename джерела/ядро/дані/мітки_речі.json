@@ -1,0 +1,374 @@
+{
+  "про": "Одне визначення запису речі (наряд Запис-речі-новий-вид; корінь Річ-запис-речі, рішення менеджера 21.11 і 26.11). Ключ мітки — поле ПОЛЯ_РЕЧІ ядра (поняття.py) або «слот»; питання — мова промпту запису (англійська); значення — коди названого реєстру; де — слоти ядра, де мітка застосовна (нема — усі); джерела — дозволені за порядком довіри; лише_зі_слів — значення, яке дає лише крамниця (фото відсутності не доводить); читачі — пул, запит чи картка (правила знань, що читають поле, дає ядро/дані/правила.json, ключ «річ»). Тепло шару модель не оцінює: «виведено» каже, з чого його рахує код. Мітка без читача — помилка (тест Ч2).",
+  "групи": {
+    "одяг": [
+      "верх",
+      "низ",
+      "сукня",
+      "комплект",
+      "верхній_шар"
+    ],
+    "прикраси": [
+      "прикраси",
+      "сережки",
+      "намисто",
+      "кольє",
+      "браслет",
+      "каблучка",
+      "брошка"
+    ]
+  },
+  "мітки": {
+    "опис": {
+      "питання": "Describe in Ukrainian, in your own words, everything you can see or read about this item that a stylist would need: print or motif and its scale, embroidery, lace, trims and decoration and where they sit, texture, construction of a multi-part item, fastening, visible edges, details. Name a conflict between the photo and the shop's words. Two to five sentences, no instructions to anyone, no guesses about what is not shown.",
+      "значення": "текст",
+      "джерела": [
+        "фото",
+        "крамниця"
+      ],
+      "читачі": [
+        "запит: стилістка й суддя-модель читають опис поруч із номером речі"
+      ]
+    },
+    "слот": {
+      "питання": "Which single place in an outfit does this item take?",
+      "реєстр": [
+        [
+          "запит",
+          "СЛОТИ"
+        ]
+      ],
+      "джерела": [
+        "крамниця",
+        "фото"
+      ],
+      "читачі": [
+        "пул: ряд кандидатів за слотом",
+        "правила: ключ «слоти»"
+      ]
+    },
+    "тип": {
+      "питання": "What kind of item is it?",
+      "реєстр": [
+        [
+          "внутрішня_мова",
+          "ТАБЛИЦЯ",
+          "item_type"
+        ]
+      ],
+      "джерела": [
+        "крамниця",
+        "фото"
+      ],
+      "читачі": [
+        "пул: відмова за типом і названа нею річ",
+        "запит"
+      ]
+    },
+    "крій": {
+      "питання": "What cut does the item itself show: where it fits close and where it gives volume? Straight is not A-line.",
+      "реєстр": [
+        [
+          "силует_реєстр",
+          "КРІЙ_СЛОТ"
+        ]
+      ],
+      "де": {
+        "група": "одяг"
+      },
+      "джерела": [
+        "крамниця",
+        "фото"
+      ],
+      "читачі": [
+        "запит"
+      ]
+    },
+    "довжина": {
+      "питання": "Where does the hem end on the body, as seen on a full-length photo or stated by the shop?",
+      "реєстр": [
+        [
+          "внутрішня_мова",
+          "ТАБЛИЦЯ",
+          "length"
+        ]
+      ],
+      "де": {
+        "група": "одяг"
+      },
+      "джерела": [
+        "крамниця",
+        "фото"
+      ],
+      "читачі": [
+        "запит"
+      ]
+    },
+    "тканина": {
+      "питання": "What is the visible outer layer made of? For shoes and bags this is the upper material. A photo shows texture, not fibre content.",
+      "реєстр": [
+        [
+          "внутрішня_мова",
+          "ТАБЛИЦЯ",
+          "fabric"
+        ],
+        [
+          "внутрішня_мова",
+          "ТАБЛИЦЯ",
+          "material"
+        ]
+      ],
+      "не_для": {
+        "група": "прикраси"
+      },
+      "джерела": [
+        "крамниця",
+        "фото"
+      ],
+      "читачі": [
+        "пул: відмова за тканиною",
+        "запит"
+      ]
+    },
+    "візерунок": {
+      "питання": "Is there a printed or woven pattern, and which family? A plain base with embroidery or lace is solid: embroidery and lace go to the description only.",
+      "реєстр": [
+        [
+          "внутрішня_мова",
+          "ТАБЛИЦЯ",
+          "pattern"
+        ]
+      ],
+      "без": [
+        "embroidery",
+        "lace_motif"
+      ],
+      "не_для": {
+        "група": "прикраси"
+      },
+      "джерела": [
+        "фото",
+        "крамниця"
+      ],
+      "читачі": [
+        "пул: смілива річ і відмова за візерунком",
+        "запит"
+      ]
+    },
+    "ошатність": {
+      "питання": "Which formality step does the shop state or the item visibly prove (sequins, satin evening cut, sportswear details)? If neither, unknown: do not default to a middle step.",
+      "реєстр": [
+        [
+          "формальність",
+          "ЩАБЕЛЬ"
+        ]
+      ],
+      "джерела": [
+        "крамниця",
+        "фото"
+      ],
+      "читачі": [
+        "пул: смуга нагоди",
+        "запит"
+      ]
+    },
+    "сезон_тканини": {
+      "питання": "For which weather bands does the shop say the item is meant, or does the item visibly prove it (fur, padding, open mesh)? If neither, unknown. Jewellery gets no season.",
+      "реєстр": [
+        [
+          "внутрішня_мова",
+          "ТАБЛИЦЯ",
+          "weather_band"
+        ]
+      ],
+      "кілька": true,
+      "де": [
+        "верх",
+        "низ",
+        "сукня",
+        "комплект",
+        "верхній_шар",
+        "взуття",
+        "головний_убір",
+        "шарф"
+      ],
+      "джерела": [
+        "крамниця",
+        "фото"
+      ],
+      "читачі": [
+        "пул: тканина поза смугою погоди",
+        "запит"
+      ]
+    },
+    "каблук": {
+      "питання": "Heel height in centimetres: a number from the shop's words; 0 when there is no separate heel. From a photo only a range: answer uncertain with bounds. A platform is not heel height.",
+      "значення": "число_см",
+      "де": [
+        "взуття"
+      ],
+      "джерела": [
+        "крамниця",
+        "фото"
+      ],
+      "читачі": [
+        "пул: відмова «без підборів»",
+        "запит",
+        "картка"
+      ]
+    },
+    "підошва": {
+      "питання": "What sole does the pair have: its material from the shop's words, or a smooth versus lug (deep tread) outsole visible on the photo of the sole?",
+      "реєстр": [
+        [
+          "каталог_розбір",
+          "ПІДОШВА"
+        ]
+      ],
+      "де": [
+        "взуття"
+      ],
+      "джерела": [
+        "крамниця",
+        "фото"
+      ],
+      "читачі": [
+        "пул: відмова за підошвою",
+        "запит",
+        "картка"
+      ]
+    },
+    "водостійкість": {
+      "питання": "Does the shop say whether the item is waterproof or water-repellent (membrane, treated)? yes: the shop says it is; no: the shop says it is not. If the shop says nothing about water, unknown: silence is not no. Only the shop's words count: a photo does not prove it.",
+      "значення": [
+        "yes",
+        "no"
+      ],
+      "де": [
+        "взуття",
+        "верхній_шар"
+      ],
+      "джерела": [
+        "крамниця"
+      ],
+      "читачі": [
+        "запит"
+      ]
+    },
+    "утеплення": {
+      "питання": "Is the item insulated? From the shop's words: none: the shop says unlined, no lining or no insulation; light: the shop names a thin warming lining or padding (flannel, thin fleece, thin padding for autumn or spring); warm: the shop names thick padding, down, fur or sheepskin lining, or says it is for winter. From the photo only when insulation is plainly visible: fur or shearling at the opening, collar or cuff, or a quilted padded shell; then light for thin quilting, warm for fur or a thick puffer. The photo never gives none. A closed shoe or a coat without such words or signs is unknown: silence is not none.",
+      "значення": [
+        "none",
+        "light",
+        "warm"
+      ],
+      "де": [
+        "взуття",
+        "верхній_шар",
+        "головний_убір"
+      ],
+      "джерела": [
+        "крамниця",
+        "фото"
+      ],
+      "лише_зі_слів": [
+        "none"
+      ],
+      "читачі": [
+        "запит",
+        "тепло_шару: код"
+      ]
+    },
+    "метал": {
+      "питання": "Which metal does the shop name for the jewellery? A golden colour does not prove gold.",
+      "реєстр": [
+        [
+          "внутрішня_мова",
+          "ТАБЛИЦЯ",
+          "metal"
+        ]
+      ],
+      "де": {
+        "група": "прикраси"
+      },
+      "джерела": [
+        "крамниця"
+      ],
+      "читачі": [
+        "пул: чергування прикрас із металом",
+        "запит"
+      ]
+    },
+    "тепло_шару": {
+      "виведено": [
+        "тканина",
+        "утеплення"
+      ],
+      "значення": [
+        "light",
+        "medium",
+        "warm"
+      ],
+      "де": [
+        "верх",
+        "сукня",
+        "комплект",
+        "верхній_шар"
+      ],
+      "утеплення": {
+        "warm": "warm",
+        "light": "medium"
+      },
+      "тканина": {
+        "warm": [
+          "wool",
+          "cashmere",
+          "mohair",
+          "angora",
+          "alpaca",
+          "tweed",
+          "boucle",
+          "fur",
+          "mouton",
+          "fleece",
+          "felt"
+        ],
+        "medium": [
+          "denim",
+          "corduroy",
+          "velvet",
+          "velour",
+          "jersey",
+          "knitted",
+          "acrylic",
+          "leather",
+          "suede",
+          "faux_leather",
+          "nubuck",
+          "patent_leather"
+        ],
+        "light": [
+          "cotton",
+          "viscose",
+          "tencel",
+          "lyocell",
+          "modal",
+          "linen",
+          "silk",
+          "satin",
+          "atlas",
+          "chiffon",
+          "muslin",
+          "batiste",
+          "lace",
+          "guipure",
+          "openwork"
+        ]
+      },
+      "таблиця_джерело": "джерела нема: параметр ядра, виміряти (як М1 §3 «Числа без джерела»); синтетика без утеплення тепла не визначає",
+      "читачі": [
+        "запит"
+      ]
+    }
+  }
+}
