@@ -156,8 +156,8 @@ window.createMirrorPair = function(R) {
       document.documentElement.dataset.pairLooks=testing?'blind':'waiting';
       const збій=ЯДРО_П&&!testing&&cards.find(c=>c?.рука===1)?.збій;
       if(збій){
-        const html='<p class="не-вийшло"></p>'+action('pair-build','Повторити','',true)+action('pair-summary','До нагоди')+
-          (ready.length?action('pair-test','Сліпий перегляд'):'');
+        const html='<p class="не-вийшло"></p><div class="pair-actions">'+action('pair-build','Повторити','',true)+
+          action('pair-summary','До нагоди')+(ready.length?action('pair-test','Сліпий перегляд'):'')+'</div>';
         if(target._pairMarkup!==html){
           place(target,html);
           збійЖінціП(target.querySelector('.не-вийшло'),ВИДИ_ЗБОЮ_РУКИ_П[збій.вид]||'hand_step_failed',збій.чому||збій.вид);
