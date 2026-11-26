@@ -154,6 +154,16 @@ window.createMirrorPair = function(R) {
     if(!record?.c){
       target._renderKey=null;
       document.documentElement.dataset.pairLooks=testing?'blind':'waiting';
+      const збій=ЯДРО_П&&!testing&&cards.find(c=>c?.рука===1)?.збій;
+      if(збій){
+        const html='<p class="не-вийшло"></p><div class="pair-actions">'+action('pair-build','Повторити','',true)+
+          action('pair-summary','До нагоди')+(ready.length?action('pair-test','Сліпий перегляд'):'')+'</div>';
+        if(target._pairMarkup!==html){
+          place(target,html);
+          збійЖінціП(target.querySelector('.не-вийшло'),ВИДИ_ЗБОЮ_РУКИ_П[збій.вид]||'hand_step_failed',збій.чому||збій.вид);
+        }
+        return;
+      }
       place(target,testing?'':'<p>Продуктового образу ще немає.</p>'+action('pair-summary','До нагоди')+(ready.length?action('pair-test','Сліпий перегляд'):''));return;
     }
     const {c,i}=record,same=position===i,fitted=photoURL(кадрПоказуП(c)),pieces=c.речі||[],key=cardKey(pack,i);
