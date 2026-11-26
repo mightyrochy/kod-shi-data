@@ -27,7 +27,9 @@ _ПОЛЯ_РЕЧІ = {
 }
 _КОЛОНКИ_КОЛЬОРУ = ("color", "hex", "family", "L", "branch_source", "in_arc", "L_from", "palette_branch")
 _КОЛОНКИ = ("n", "price", "kind", *_КОЛОНКИ_КОЛЬОРУ, *_ПОЛЯ_РЕЧІ.values(), "reason", "sources", "rank_facts")
-_ПОЛЯ_ДЖЕРЕЛ = {**_ПОЛЯ_ДНЯ, **_ПОЛЯ_РЕЧІ, "чужий_колір": "reserved_color", "названі_речі": "named_items"}
+_ПОЛЯ_ДЖЕРЕЛ = {**_ПОЛЯ_ДНЯ, **_ПОЛЯ_РЕЧІ, "чужий_колір": "reserved_color", "названі_речі": "named_items",
+               "етапи.частина_дня": "stages.part_of_day", "подія": "occasion", "профіль.колір": "profile.color",
+               "профіль.палітра": "profile.palette"}
 
 
 def _значення(значення):
