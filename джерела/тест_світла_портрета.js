@@ -107,6 +107,10 @@ process.once('beforeExit', () => { if (!process.exitCode) assert.ok(дійшли
   виконати("Екран.відЖінки('кольори-копіювати')");
   assert.match(попередження().textContent, порадаПроСвітло);
 
+  await виконати("Екран.відЖінки('кольори-застосувати')");
+  assert.match(попередження().textContent, порадаПроСвітло);
+  assert.match(попередження().textContent, оцінкаМоделі);
+
   виконати("МОДЕЛЬ_МОВИ_П = 'стенд';");
   await зчитати();
   assert.ok(попередження().textContent.includes(переклад));
@@ -169,5 +173,5 @@ process.once('beforeExit', () => { if (!process.exitCode) assert.ok(дійшли
   assert.equal(запитівДоМоделі, 3);
   assert.equal(запитівДоМережі, 0);
   дійшлиДоКінця = true;
-  console.log('ОК: 8 сценаріїв профілю, мережевих викликів 0');
+  console.log('ОК: 9 сценаріїв профілю, мережевих викликів 0');
 })().catch(помилка => { console.error(помилка); process.exitCode = 1; });
