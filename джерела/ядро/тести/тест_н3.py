@@ -98,6 +98,8 @@ class РукиБезКоду(TestCase):
                 self.assertEqual([р_["назва"] for р_ in к.речі],
                                  ["Cocktail dress", "Heeled sandals", "Clutch", "Drop earrings", "Thin bracelet"])
                 self.assertTrue(all("крамниця" not in р_ and "ціна" not in р_ and "фото" not in р_ for р_ in к.речі))
+                # річ без каталогу позначено: її назву жінці перекладає мовний шар, як на старому шляху (мірило (в))
+                self.assertTrue(all(р_.get("вигадана") is True for р_ in к.речі))
                 self.assertIsNone(к.разом)
                 self.assertEqual(к.вирок, к.образ)
                 self.assertTrue(к.опис_en.startswith("Cocktail dress"))
