@@ -4576,27 +4576,64 @@ function підсумокМоделі(){
       await стор.screenshot({path: кдир + '/n2_vidkryto_390x844_' + i + '.png'});
       await стор.mouse.wheel(0, 650); await стор.waitForTimeout(600);
     }
-    /* Н3-мірило (в): те, що бачить тестувальниця. Екран «Образ» показує одну картку `#картки` за раз (`образи.js`,
-       малювач «образ»: решта `hidden`), а гортає їх пейджер «‹ N / 4 ›» (`#пж-назад`, `#пж-далі`). Стенд гортає так
-       само, як вона: до першої картки, далі по одній; на кожну — знімок 390×844 від верху сторінки й знімок картки цілої */
+    /* Н3-мірило (в): те, що бачить тестувальниця. «Відкрити цей образ» показує лише образ руки 1
+       (`data-pair-looks=one`); будь-яка інша позиція пейджера в цьому режимі — `preview`, а там `#картки` сховано
+       (`показ.css`: `[data-pair-looks=preview] #картки{display:none}`, `pair.js` `nativeVariants`) — тому знімки карток
+       0, 2, 3 доти не виходили (`в3_с4`, 26.11). Усі чотири картки вона бачить у «Сліпому перегляді» (меню «Тестування →
+       Сліпий перегляд і відгуки», `pair-test` → `blind`, `data-pair-looks=blind`): там видно `#картки` на кожній позиції
+       й пейджер «‹ N / 4 ›». Стенд іде тим самим шляхом: «Сліпий перегляд», перша картка, далі «›» по одній. Картка
+       живе в області, що гортається сама (`.studio-work`, `overflow:auto`), тож знімок елемента нижче її краю порожній
+       (`в3_с4`, перший прохід) — стенд гортає область, як пальцем, і знімає кадри 390×844 від верху картки до низу
+       з межами картки й області в `n3_kartka_<i>_кадри.json`; цілу картку з кадрів складає `н3-стенд/склеїти.py`. */
+    const режимПари = () => стор.evaluate(() => ({пара: document.documentElement.dataset.pairLooks || null,
+      поз: Number(Екран.стан.образ.поз), пейджер: ((document.querySelector('#пейджер .пж-н') || {}).textContent || ''),
+      видно_картки: !!(document.getElementById('картки') || {}).offsetParent,
+      видимих: [...document.querySelectorAll('#картки .картка')].filter(е => !е.hidden && е.offsetParent).length}));
     try {
+      if (ПАРА) {
+        try { await діяПари('pair-test'); }
+        catch (е) { console.log('   N3: «Сліпий перегляд» кнопкою не натиснуто: ' + String(е).slice(0, 160)); }
+        await стор.waitForTimeout(1500);
+      }
+      console.log('   N3: після «Сліпого перегляду» — ' + JSON.stringify(await режимПари()));
       const усіх = await стор.locator('#картки .картка').count();
-      /* до першої картки — та сама дія, що кнопка «‹» (`образ-попередній` → `показатиОбраз`); клік Playwright по «›» не
-         дочекався кнопки (30 с, прогін в3_с4 04:22), тож «›» — DOM-подією на кнопці, без перевірки «чи під пальцем» */
-      await стор.evaluate(() => показатиОбраз(0)); await стор.waitForTimeout(500);
+      /* до першої картки — та сама дія, що кнопка «‹» (`образ-попередній` → `показатиОбраз`); «›» — DOM-подією на
+         кнопці: клік Playwright по «›» не дочекався кнопки (30 с, в3_с4 04:22) */
+      await стор.evaluate(() => показатиОбраз(0)); await стор.waitForTimeout(800);
       for (let i = 0; i < усіх; i++) {
-        await стор.evaluate(() => window.scrollTo(0, 0)); await стор.waitForTimeout(500);
-        await стор.screenshot({path: кдир + '/n3_kartka_' + i + '_390x844.png'});
-        if (i === 0) await стор.screenshot({path: кдир + '/n3_usi_390x844.png'});
+        const р = await режимПари();
         const видима = стор.locator('#картки .картка:not([hidden])').first();
-        await видима.screenshot({path: кдир + '/n3_kartka_' + i + '_tsila.png'}).catch(() => {});
-        const пейджер = await стор.evaluate(() => ((document.querySelector('#пейджер .пж-н') || {}).textContent || ''));
-        console.log('   N3: картка ' + i + ' · пейджер «' + пейджер + '» · видимих карток '
-          + await стор.locator('#картки .картка:not([hidden])').count());
-        if (i + 1 < усіх) { await стор.evaluate(() => document.getElementById('пж-далі').click()); await стор.waitForTimeout(500); }
+        /* межі картки й області, що її гортає (найближчий предок з overflow auto|scroll, що справді гортається) */
+        const межі = (зсув) => видима.evaluate((е, зсув) => {
+          let к = е.parentElement;
+          while (к && !(/(auto|scroll)/.test(getComputedStyle(к).overflowY) && к.scrollHeight > к.clientHeight)) к = к.parentElement;
+          if (зсув) { if (к) к.scrollBy(0, зсув); else window.scrollBy(0, зсув); return null; }
+          const r = е.getBoundingClientRect(), кр = к ? к.getBoundingClientRect() : {top: 0, bottom: innerHeight};
+          /* заслона — верх нерухомої смуги внизу екрана (поле «Напиши…»), що лежить поверх області */
+          const заслона = [...document.querySelectorAll('body *')].filter(з => /fixed|sticky/.test(getComputedStyle(з).position))
+            .map(з => з.getBoundingClientRect()).filter(з => з.width > 200 && з.height > 0 && з.top > innerHeight / 2 && з.top < innerHeight)
+            .reduce((м, з) => Math.min(м, з.top), innerHeight);
+          return {верх: r.top, низ: r.bottom, ліво: r.left, право: r.right, вікно_верх: Math.max(0, кр.top),
+            вікно_низ: Math.min(innerHeight, кр.bottom, заслона), область: к ? ('#' + к.id + '.' + к.className) : 'window'};
+        }, зсув);
+        await видима.evaluate(е => е.scrollIntoView({block: 'start'})).catch(() => {});
+        await стор.waitForTimeout(500);
+        const кадри = [];
+        for (let к = 0; к < 20; к++) {
+          const м = await межі(0), файл = 'n3_kartka_' + i + '_390x844' + (к ? '_' + к : '') + '.png';
+          await стор.screenshot({path: кдир + '/' + файл});
+          кадри.push(Object.assign({файл}, м));
+          if (м.низ <= м.вікно_низ + 1 || (к && Math.abs(м.верх - кадри[к - 1].верх) < 1)) break;
+          await межі(Math.max(100, м.вікно_низ - м.вікно_верх - 60)); await стор.waitForTimeout(400);
+        }
+        fs.writeFileSync(кдир + '/n3_kartka_' + i + '_кадри.json', JSON.stringify(кадри, null, 1));
+        const ціла = кадрів => 'кадрів ' + кадрів + ', область ' + (кадри[0] || {}).область + ', висота картки ' + Math.round((кадри[0] || {}).низ - (кадри[0] || {}).верх);
+        console.log('   N3: картка ' + i + ' · ' + JSON.stringify(р) + ' · ' + ціла(кадри.length));
+        if (i + 1 < усіх) { await стор.evaluate(() => document.getElementById('пж-далі').click()); await стор.waitForTimeout(800); }
       }
       console.log('   N3: карток у DOM ' + усіх);
-      await стор.evaluate(() => window.scrollTo(0, 0));
+      await стор.evaluate(() => window.scrollTo(0, 0)); await стор.waitForTimeout(300);
+      await стор.screenshot({path: кдир + '/n3_usi_390x844.png'});
     } catch (е) { console.log('   N3: знімки карток не вдались: ' + String(е).slice(0, 200)); }
     console.log('   N2: картка руки 1 — позиція в DOM ' + позиція + ' (' + назва1 + ')');
     console.log('   N2: стан записано · карток ' + стан.картки.length + ' · готово ' + стан.готово + ' · успіх ' + стан.успіх);
