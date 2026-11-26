@@ -1,0 +1,157 @@
+{
+ "_опис": "Промпти рук 3–4 даними для ядра (`джерела/ядро/дані/руки_без_коду.json`), байт у байт з чинного `руки_без_коду`.",
+ "образ": {
+  "case": {
+   "role": "You are a personal stylist. Put together one outfit for her case.",
+   "rules": [
+    "Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.",
+    "An outer layer only when the weather needs it; in the warm or hot band there is none.",
+    "Last, why this outfit works, in 3–4 sentences."
+   ],
+   "limits": [
+    "Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.",
+    "The answer is plain text laid out as the rules say, not JSON."
+   ],
+   "language": "English",
+   "answer": "OUTFIT_TEXT",
+   "input": [
+    "\"case\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words"
+   ]
+  },
+  "case+main_color": {
+   "role": "You are a personal stylist. Put together one outfit for her case.",
+   "rules": [
+    "Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.",
+    "An outer layer only when the weather needs it; in the warm or hot band there is none.",
+    "Last, why this outfit works, in 3–4 sentences."
+   ],
+   "limits": [
+    "Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.",
+    "The answer is plain text laid out as the rules say, not JSON."
+   ],
+   "language": "English",
+   "answer": "OUTFIT_TEXT",
+   "input": [
+    "\"case\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words",
+    "\"main_color\" — the main color: chosen_by her, conversation (she asked for it in the chat), code (default), her_item_photo (model's reading of an item photo) or unknown (who chose it is not recorded); source carries its kind; build the outfit around it"
+   ]
+  },
+  "case+person": {
+   "role": "You are a personal stylist. Put together one outfit for her case.",
+   "rules": [
+    "Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.",
+    "An outer layer only when the weather needs it; in the warm or hot band there is none.",
+    "Last, why this outfit works, in 3–4 sentences."
+   ],
+   "limits": [
+    "Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.",
+    "The answer is plain text laid out as the rules say, not JSON."
+   ],
+   "language": "English",
+   "answer": "OUTFIT_TEXT",
+   "input": [
+    "\"case\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words",
+    "\"person\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm"
+   ]
+  },
+  "case+main_color+person": {
+   "role": "You are a personal stylist. Put together one outfit for her case.",
+   "rules": [
+    "Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.",
+    "An outer layer only when the weather needs it; in the warm or hot band there is none.",
+    "Last, why this outfit works, in 3–4 sentences."
+   ],
+   "limits": [
+    "Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.",
+    "The answer is plain text laid out as the rules say, not JSON."
+   ],
+   "language": "English",
+   "answer": "OUTFIT_TEXT",
+   "input": [
+    "\"case\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words",
+    "\"person\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm",
+    "\"main_color\" — the main color: chosen_by her, conversation (she asked for it in the chat), code (default), her_item_photo (model's reading of an item photo) or unknown (who chose it is not recorded); source carries its kind; build the outfit around it"
+   ]
+  }
+ },
+ "порядок": {
+  "case": [
+   "case"
+  ],
+  "case+main_color": [
+   "case",
+   "main_color"
+  ],
+  "case+person": [
+   "case",
+   "person"
+  ],
+  "case+main_color+person": [
+   "case",
+   "person",
+   "main_color"
+  ]
+ },
+ "перелік": {
+  "task": {
+   "role": "You read the description of an outfit and list its items as data.",
+   "rules": [
+    "One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.",
+    "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.",
+    "Slot \"accessory\" is for an item no other slot fits.",
+    "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."
+   ],
+   "limits": [
+    "Rely only on the input: do not invent what it does not contain.",
+    "The answer is one JSON object following \"answer_schema\", without explanations and without ```."
+   ],
+   "language": "English",
+   "answer": "ITEM_LIST",
+   "answer_schema": {
+    "is_outfit": "yes|no",
+    "items": [
+     {
+      "name": "<what the item is>",
+      "details": "<its cut, length and fabric>",
+      "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory",
+      "color_hex": "<#rrggbb or null>",
+      "worn": "<true, or false when the description says the outfit goes without it>"
+     }
+    ]
+   },
+   "input": [
+    "\"description\" — the outfit description"
+   ]
+  },
+  "порядок": [
+   "description"
+  ]
+ },
+ "слоти": {
+  "top": "верх",
+  "bottom": "низ",
+  "dress": "сукня",
+  "set": "комплект",
+  "outerwear": "верхній_шар",
+  "shoes": "взуття",
+  "bag": "сумка",
+  "scarf": "шарф",
+  "headwear": "головний_убір",
+  "belt": "пояс",
+  "tights": "колготи",
+  "socks": "шкарпетки",
+  "jewelry": "прикраси",
+  "earrings": "сережки",
+  "collar_necklace": "кольє",
+  "necklace": "намисто",
+  "brooch": "брошка",
+  "bracelet": "браслет",
+  "ring": "каблучка",
+  "glasses": "окуляри",
+  "gloves": "рукавички",
+  "watch": "годинник",
+  "swimwear": "купальник",
+  "underwear": "білизна",
+  "accessory": "аксесуар"
+ }
+}
