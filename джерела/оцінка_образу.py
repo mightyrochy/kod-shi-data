@@ -76,6 +76,7 @@ import verify as _V
 import palettes as _ПЛ
 import колір_річ as _КР
 import дріт_моделі as _ДМ
+import межа_текстів as _МТ
 import trace as _СЛ
 import схема_відповіді as _СВ
 import колір_річ as _КР_ТИП
@@ -1375,11 +1376,10 @@ _СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
         _ЗП.Поле("alternatives", "ids of her items shown as alternatives, not worn in the outfit"),
         _ЗП.Поле("not_in_photo", "kinds of things that are not on her photos (shoes, bag, outerwear, more pieces…): "
                                  "the code did not judge them, and her card tells her so in one line"),
-        _ЗП.Поле("check", "the code's check of the outfit as a whole: findings (rule, strength, sila_np — "
-                          "weight 0–1, register — gate blocks, remark is said, items, statements — what the "
-                          "code found, fix — how to repair it), structure blockers, and the codes of the "
-                          "checklist points the outfit passed and failed",
-                 треба=True),
+        _ЗП.Поле("check", "the code's check: findings, structure blockers, and checklist fact numbers in points. "
+                          "Each checklist fact gives its topic and the code's result.", треба=True),
+        _ЗП.Поле("facts", "facts of this call, by reference number. A sample about map is "
+                          '{"f1":"item"}; copy the actual reference and state from the facts.', треба=True),
         _ЗП.Поле("supported", "what works in the outfit by the code's check: an about code with the ids of the "
                               "outfit items the check supports it for"),
         _ЗП.Поле("worn_unknown", "her items for which the photo does not show whether she wears them or "
@@ -1392,7 +1392,16 @@ _СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
         _ЗП.Поле("unknown", "inputs the code has no value for, so nothing that needs them was judged: "
                             "no_input — the inputs, why — the reason code, items — her items concerned"),
     ),
-    правила=_СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ,
+    правила=(*_СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ,
+             "Each says contains one sentence and its about map names every fact it uses, with the exact state. "
+             "When writing about a checklist topic you must name that checklist fact and its state. "
+             "Use its result even when the photo or the question suggests a different result. "
+             "passed affirms the topic, failed means the criterion was not met, held means the result is inconclusive, "
+             "no_input means the needed information is missing, not_applicable means the criterion does not apply. "
+             "A finding with checklist references in its because field must be cited together with one of those references. "
+             "Only discuss checklist topics relevant to her question or your advice. "
+             "Put uncertainty (held or no_input) under unknown; leave not_applicable out. "
+             "Do not quote the names of states, fact numbers, or rule codes in says."),
     наприкінці="\n".join((
         "\"answer\": answer her question first and directly, in one to three sentences; "
         "without a question, give your view of the outfit as a whole.",
@@ -1412,15 +1421,15 @@ _СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
         "Name her item by its kind and colour.",
         "\"change\": prefer her own alternatives; explain the change's benefit or how she can do the finding's fix.",
     )),
-    вихід="OUTFIT_REVIEW_V1",
+    вихід="ТЕКСТ_ОЦІНКИ",
     скелет={
-        "answer": "<the answer to her question>",
+        "answer": [{"about": {"<fact number>": "<state>"}, "says": "<direct answer to her question>"}],
         "verdict": " | ".join(ВЕРДИКТИ),
-        "works": [{"about": " | ".join(ПРО),
-                   "items": ["<item id>"], "text": "<what works and why>"}],
-        "change": [{"id": "<change id from changes, or finding id from check>",
-                    "items": ["<id of her item the text speaks about>"],
-                    "text": "<why this change helps her>"}],
+        "works": [{"about": " | ".join(ПРО), "items": ["<item number>"],
+                   "text": [{"about": {"<fact number>": "<state>"}, "says": "<what works and why>"}]}],
+        "change": [{"id": "<change or finding number>", "items": ["<item number>"],
+                    "text": [{"about": {"<fact number>": "<state>"}, "says": "<why this helps her>"}]}],
+        "unknown": [{"about": {"<fact number>": "<state>"}, "says": "<what remains uncertain>"}],
     },
     межі=("лише_вхід", "невідомо", "для_неї", "без_чисел_тіла", "без_шкал"),
     мова_промпту="en",
@@ -1558,7 +1567,7 @@ def перевірка_для_моделі(суд_):
 
 # Допит бере той самий суд і спільні настанови; схема й хвіст картки замінюються його власними.
 # Правила картки стоять лише в «now», тому спільний початок до схеми не залежить від виду відповіді.
-_ДОПИТ_СХЕМА = {"answer": "<the answer to her new question>"}
+_ДОПИТ_СХЕМА = {ключ: ОЦІНКА.скелет[ключ] for ключ in ("answer", "unknown")}
 _ДОПИТ_ПРАВИЛО = ("Her new question about the same outfit: answer it alone, in one to four sentences; "
                   "keep to what you already told her unless the check contradicts it; "
                   "suggest replacements only from \"changes\".")
@@ -1573,7 +1582,7 @@ def _питання_дроту(питання):
 
 def хвіст_допиту(питання, попередня):
     """Хвіст «now» допиту: її нове питання, що модель уже сказала (і попередні питання), правило відповіді."""
-    return {"question": _питання_дроту(питання), "previous": _ід_усюди(попередня or {}), "rule": _ДОПИТ_ПРАВИЛО}
+    return {"question": _питання_дроту(питання), "previous": попередня or {}, "rule": _ДОПИТ_ПРАВИЛО}
 
 
 # МОВА — У СХЕМІ, ПІСЛЯ ДАНИХ. Правило мови стояло в «task», перед ~9 тис. симв. даних, а її
@@ -1583,38 +1592,18 @@ def хвіст_допиту(питання, попередня):
 def _схема_мовою(в, мова):
     """Скелет відповіді з мовою в підписі кожного «answer» і «text»: «<…>» → «<…, in English>»."""
     if isinstance(в, dict):
-        return {к: (v[:-1] + ", in %s>" % мова if к in ("answer", "text") and isinstance(v, str) and v.endswith(">")
+        return {к: (v[:-1] + ", in %s>" % мова if к == "says" and isinstance(v, str) and v.endswith(">")
                     else _схема_мовою(v, мова)) for к, v in в.items()}
     return [_схема_мовою(v, мова) for v in в] if isinstance(в, list) else в
 
 
 def промпт_допиту(суд_, питання, попередня, мова_тексту=None, питання_оцінки=None):
     """Збирає допит із даних оцінки, спільних настанов, схеми «answer» й нового питання в «now»."""
-    п = _ЗП.зібрати(ОЦІНКА, _ід_усюди(дані_оцінки(суд_, питання_оцінки)), мова_тексту=мова_тексту)
+    межа, дані = _факти_оцінки(суд_, питання_оцінки)
+    п = _ЗП.зібрати(ОЦІНКА, дані, мова_тексту=мова_тексту)
     п[_ЗП.КЛЮЧІ_EN["схема_відповіді"]] = _схема_мовою(_ДОПИТ_СХЕМА, мова_тексту or _ЗП.МОВА_EN)
-    п[_ЗП.КЛЮЧІ_EN["наприкінці"]] = хвіст_допиту(питання, попередня)
-    return _json.dumps(п, ensure_ascii=False, default=str)
-
-
-def прийняти_допит(відповідь):
-    """Відповідь допиту → {відповідь, причина, проза}: текст з поля «answer» (і з повної відповіді схеми ОЦІНКИ).
-
-    ОДНЕ ПОЛЕ, І ПРОЗА БЕЗ ДУЖОК — ЦЕ ТЕЖ ВІДПОВІДЬ (ОЦІНКА-1000, в). Схема задачі — `{"answer": "…"}`, і
-    жива Sonnet відповідала прозою на ПЕРШУ спробу в 5 прогонах із 6 (02.10, сід 3): показ кликав другий
-    раз із нагадуванням про формат, а в одному з трьох прогонів і друга відповідь була прозою — жінка
-    діставала «Не вдалося відповісти» при готовій відповіді. Як `_ПР.стійкий`: однозначний
-    намір читаємо, а не викидаємо. Лише проза БЕЗ дужок і огорож: уривок JSON чи ```-блок лишається провалом
-    із причиною для повтору. `проза` у виході — щоб журнал показував, що відповідь прийшла не за схемою."""
-    об, причина, нотатки = _СВ.СХЕМИ_ВІДПОВІДІ["ДОПИТ"].прочитати(відповідь)    # проза — правило реєстру
-    т = _текст(об.get("answer")) if isinstance(об, dict) else ""
-    нотатки = нотатки.get("нормалізовано", []) if isinstance(нотатки, dict) else нотатки   # журнал — списком, як доти
-    проза = _СВ.ПРОЗУ_ПРОЧИТАНО in нотатки
-    # ід у дужках — геть; ід поза ними — відповіді нема, і показ робить свій один повтор
-    чисто = _без_ід(т)
-    if т and not чисто:
-        причина = "id_in_answer"
-    return dict(відповідь=чисто, проза=проза, причина=(None if чисто else (причина or "no_answer_field")),
-                нотатки=нотатки)
+    п[_ЗП.КЛЮЧІ_EN["наприкінці"]] = _МТ.номерами(хвіст_допиту(питання, попередня), межа.реєстр)
+    return межа.тіло(_json.dumps(п, ensure_ascii=False, default=str))
 
 
 # Поле, якого бракує пункту чекліста (`суд_чеклісти._чому_без_входу`: «<рід>:<поле>»), → код входу на дроті.
@@ -1778,13 +1767,104 @@ def дані_оцінки(суд_, питання=None):
     return дані
 
 
+_СТАНИ_КЛІТИНОК = dict(_СТАН_КОД, **{"утримано": "held", "без входу": "no_input",
+                                        "не стосується": "not_applicable"})
+
+
+def _без_сирих_чисел(значення):
+    """Лишає якісні ознаки знахідки. Числові складові суду потрібні для розрахунку, а не для прози."""
+    if isinstance(значення, dict):
+        return {к: о for к, в in значення.items() if (о := _без_сирих_чисел(в)) is not None}
+    if isinstance(значення, list):
+        return [о for в in значення if (о := _без_сирих_чисел(в)) is not None]
+    return None if type(значення) in (int, float) else значення
+
+
+def _знахідка_для_тексту(запис, клітинки):
+    """Знахідка дає стан клітинки або якісні відомості й припустиму дію."""
+    запис = dict(запис)
+    запис.pop("sila_np", None)
+    заяви = запис.pop("statements", None) or []
+    if клітинки:
+        запис.pop("strength", None)
+        запис.pop("what", None)
+        запис["checklist"] = клітинки
+        return запис
+    для_тексту = []
+    for заява in заяви:
+        v = заява.get("values")
+        ознаки = _без_сирих_чисел(v)
+        if not v or ознаки:
+            для_тексту.append(dict(заява, values=ознаки))
+    if для_тексту:
+        запис["statements"] = для_тексту
+    return запис
+
+
+def _факти_оцінки(суд_, питання=None):
+    """Вхід тексту картки: клітинка несе результат суду, а виміри, з яких він виведений, лишаються в суді."""
+    дані = дані_оцінки(суд_, питання)
+    межа = _МТ.Межа()
+    for річ in дані["items"]:
+        ід = річ["id"]
+        межа.предмет(ід, **{к: в for к, в in річ.items() if к not in ("id", "length", "palette_strength")})
+    # Заяви правил можуть називати її річ ідом із паспорта, а перелік — ідом оцінки.
+    for ід, номер in list(межа.реєстр.items()):
+        межа.реєстр.setdefault("її-" + ід, номер)
+    for зміна in суд_.get("зміни") or []:
+        if зміна.get("звідки") != "own":
+            межа.зареєструвати([зміна.get("нова"), (зміна.get("річ") or {}).get("id")])
+    for річ in дані["items"]:
+        річ.pop("length", None)
+        річ.pop("palette_strength", None)
+    for поле in ("occasion", "weather", "not_in_photo", "worn_unknown", "unknown"):
+        if дані.get(поле):
+            стан = "no_input" if поле == "unknown" else _МТ.ВІДОМЕ
+            межа.факт(стан, dict(field=поле, value=дані[поле]))
+    межа.факт(_МТ.ВІДОМЕ, dict(field="outfit", value=дані["outfit"]))
+    перевірка = дані["check"]
+    чекліст = (суд_.get("суд") or {}).get("checklist") or {}
+    описи = (*_СЧ.ЧЕКЛІСТ_НАДЛИШКУ, *_СЧ.ЧЕКЛІСТ_ПРІСНОСТІ, *_СЧ.ЧЕКЛІСТ_ПАЛІТРИ, *_СЧ.ЧЕКЛІСТ_АКСЕСУАРІВ)
+    правила_точки = {_ВМ.код_пункту(ід): правила for ід, _, правила, _ in описи}
+    клітинки = {_ВМ.код_пункту(п.get("пункт")): п for п in суд_.get("пункти") or []}
+    клітинки.update((п["код"], п) for бік in чекліст.values() for п in бік.get("пункти", []) if п.get("код"))
+    посилання, правила = [], {}
+    for код, клітинка in клітинки.items():
+        стан = _СТАНИ_КЛІТИНОК.get(клітинка.get("стан"))
+        if not стан or not код:
+            continue
+        номер = межа.факт(стан, dict(point=код, criterion=_ВМ.ПУНКТИ_ЧЕКЛІСТА.get(код)))
+        посилання.append(номер)
+        for правило in правила_точки.get(код, клітинка.get("правила") or []):
+            правила.setdefault(правило, []).append(номер)
+    перевірка["points"] = посилання
+    знахідки = []
+    for запис in перевірка.get("findings", []):
+        клітинки_знахідки = правила.get(запис.get("rule")) or []
+        запис = _знахідка_для_тексту(запис, клітинки_знахідки)
+        знахідки.append(запис)
+        ід = запис.get("id")
+        номер = межа.факт(_МТ.ВІДОМЕ, {к: в for к, в in запис.items() if к != "id"})
+        межа.причини(номер, клітинки_знахідки)
+        if ід:
+            межа.реєстр[ід] = номер
+    if знахідки:
+        перевірка["findings"] = знахідки
+    for зміна in дані["changes"]:
+        зміна.get("with_shop", {}).pop("shop", None)
+        номер = межа.факт(_МТ.ВІДОМЕ, {к: в for к, в in зміна.items() if к != "id"})
+        межа.реєстр[зміна["id"]] = номер
+    дані["facts"] = межа.вхід()
+    return межа, _МТ.номерами(дані, межа.реєстр)
+
+
 def промпт_оцінки(суд_, питання=None, мова_тексту=None):
-    """Промпт задачі `ОЦІНКА` рядком (англійський шаблон збирача); ід — латинкою (`ід_на_дріт`), мова — і в
-    підписах схеми (`_схема_мовою`)."""
-    п = _ЗП.зібрати(ОЦІНКА, _ід_усюди(дані_оцінки(суд_, питання)), мова_тексту=мова_тексту)
+    """Збирає промпт картки і звіряє, що в тілі немає ідів реєстру виклику."""
+    межа, дані = _факти_оцінки(суд_, питання)
+    п = _ЗП.зібрати(ОЦІНКА, дані, мова_тексту=мова_тексту)
     ключ = _ЗП.КЛЮЧІ_EN["схема_відповіді"]
     п[ключ] = _схема_мовою(п[ключ], мова_тексту or _ЗП.МОВА_EN)
-    return _json.dumps(п, ensure_ascii=False, default=str)
+    return межа.тіло(_json.dumps(п, ensure_ascii=False, default=str))
 
 
 # ═══════════ 7. СТОРОЖ: ТВЕРДЖЕННЯ МОДЕЛІ ПРОТИ СУДУ КОДУ ═══════════════════════
@@ -1943,12 +2023,12 @@ def опори_вдалого(суд_):
     return вих
 
 
-def повтор_вдалого(суд_, картка):
+def повтор_вдалого(суд_, картка, реєстр):
     """Рядок для ОДНОГО повтору, коли на картці нема «що вдало», а суд його підтримує (`опори_вдалого`)."""
     опори = опори_вдалого(суд_)
     if not опори or not картка or (картка.get("вдало") or []):
         return None
-    return (_json.dumps(dict(reason="works_missing", supported=_ід_усюди(опори)), ensure_ascii=False)
+    return (_json.dumps(dict(reason="works_missing", supported=_МТ.номерами(опори, реєстр)), ensure_ascii=False)
             + "\n" + _ФФ.ПОВТОР_ЛИШЕ_JSON_EN)
 
 
@@ -2083,22 +2163,91 @@ def прийняти_оцінку(відповідь, суд_):
     return сторож_оцінки_об(об, суд_, причина=причина, нотатки=нотатки)
 
 
-def повтор_вердикту(суд_, сторож):
+def _прийняти_речення_оцінки(межа, речення, де, сторож):
+    """Судить опори речень спільною межею й віддає текст без службових полів."""
+    if речення is None:
+        return ""
+    частина = "unknown" if де == "unknown" else "text"
+    суд = межа.судити({частина: речення})
+    сторож.extend(dict(в, де=де) for в in суд["відкинуто"] if в["чому"] != "facts_not_told")
+    слова = []
+    for р in суд[частина]:
+        непридатні = [н for н, стан in р["about"].items()
+                      if стан == "not_applicable" or (частина == "text" and стан in ("held", "no_input"))]
+        if непридатні:
+            сторож.append(dict(де=де, чому="unchecked_in_main_text", про=непридатні, зняте=р["says"]))
+        else:
+            слова.append(р["says"])
+    return " ".join(слова)
+
+
+def прийняти_текст_оцінки(відповідь, суд_):
+    """Читає нумеровані речення оцінки, тоді передає текст і перевірені посилання сторожеві картки."""
+    об, причина, нотатки = _СВ.СХЕМИ_ВІДПОВІДІ["ТЕКСТ_ОЦІНКИ"].прочитати(відповідь)
+    if об is None:
+        return сторож_оцінки_об(None, суд_, причина=причина, нотатки=нотатки)
+    межа, _ = _факти_оцінки(суд_)
+    іди = {}
+    for ід, номер in межа.реєстр.items():
+        іди.setdefault(номер, ід)
+    сторож = []
+    відповідь = _прийняти_речення_оцінки(межа, об.get("answer"), "answer", сторож)
+    невідоме = _прийняти_речення_оцінки(межа, об.get("unknown"), "unknown", сторож)
+    картка = dict(answer=відповідь, verdict=об.get("verdict"))
+    for поле in ("works", "change"):
+        картка[поле] = []
+        for пункт in об.get(поле) or []:
+            текст = _прийняти_речення_оцінки(межа, пункт.get("text"), поле, сторож)
+            if not текст:
+                continue
+            картка[поле].append(dict(пункт, text=текст, id=іди.get(пункт.get("id"), ""),
+                                      items=[іди.get(н, н) for н in пункт["items"]]))
+    р = сторож_оцінки_об(картка, суд_, нотатки=нотатки)
+    if невідоме:
+        р["картка"]["не_знаю"].insert(0, dict(текст=невідоме))
+        if not р["картка"]["відповідь"]:
+            р["картка"]["відповідь"] = "Відкрий «Чого я не знаю», щоб побачити, що я не змогла перевірити."
+            р["причина"] = None
+    р["сторож"].extend(сторож)
+    повтор = []
+    if сторож:
+        повтор.append("Check each rejected sentence's fact numbers and states against facts. "
+                      "Put uncertainty under unknown. Reasons: " + _МТ.причина(сторож))
+    повтор.extend(х for х in (повтор_вердикту(суд_, р["сторож"], межа.реєстр),
+                             повтор_вдалого(суд_, р["картка"], межа.реєстр)) if х)
+    р["повтор"] = "\n".join(повтор) or None
+    return р
+
+
+def прийняти_текст_допиту(відповідь, суд_):
+    """Приймає речення допиту за тими самими фактами, що й картку."""
+    об, причина, _ = _СВ.СХЕМИ_ВІДПОВІДІ["ТЕКСТ_ДОПИТУ"].прочитати(відповідь)
+    if об is None:
+        return dict(відповідь=None, причина=причина)
+    межа, _ = _факти_оцінки(суд_)
+    сторож = []
+    текст = _прийняти_речення_оцінки(межа, об.get("answer"), "answer", сторож)
+    невідоме = _прийняти_речення_оцінки(межа, об.get("unknown"), "unknown", сторож)
+    return dict(відповідь=" ".join(ч for ч in (текст, невідоме) if ч),
+                причина=_МТ.причина(сторож) or None, сторож=сторож)
+
+
+def повтор_вердикту(суд_, сторож, реєстр):
     """Рядок для ОДНОГО повтору, коли `verdict` суперечить суду: «як є» проти гейта або «з зміною» без
     дійсної зміни (`change_missing`) — що саме в суді, кодами."""
     чому = {с.get("чому") for с in сторож or []}
     if "change_missing" in чому and "contradicts_gate" not in чому:
-        зміни = [ід_на_дріт(с.get("ід")) for с in суд_.get("зміни") or []]
-        ремонти = [ід_на_дріт(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []
+        зміни = [реєстр.get(с.get("ід")) for с in суд_.get("зміни") or []]
+        ремонти = [реєстр.get(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []
                    if з.get("ід") and (з.get("ремонт_заяви") or з.get("ремонт"))]
-        її = [ід_на_дріт(і) for і in (суд_.get("образ") or []) + (суд_.get("запасні") or [])]
+        її = (суд_.get("образ") or []) + (суд_.get("запасні") or [])
         дані = dict(reason="change_missing", verified_changes=зміни, findings_with_fix=ремонти)
         if "items_not_in_outfit" in чому:
             дані["her_items"] = її
-        return _json.dumps(дані, ensure_ascii=False) + "\n" + _ФФ.ПОВТОР_ЛИШЕ_JSON_EN
+        return _json.dumps(_МТ.номерами(дані, реєстр), ensure_ascii=False) + "\n" + _ФФ.ПОВТОР_ЛИШЕ_JSON_EN
     if "contradicts_gate" not in чому:
         return None
-    гейти = [ід_на_дріт(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []
+    гейти = [реєстр.get(з.get("ід")) for з in (суд_.get("суд") or {}).get("findings") or []
              if з.get("регістр") == "гейт" or з.get("без_замків")]
     блок = [_ДМ.код_переліку(_ДМ.БЛОКЕР, б.get("код")) for б in (суд_.get("суд") or {}).get("blockers") or []]
     return (_json.dumps(dict(reason="contradicts_gate", blocking_findings=гейти, structure_blockers=блок),
