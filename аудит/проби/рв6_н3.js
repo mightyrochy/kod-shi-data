@@ -4559,15 +4559,12 @@ function підсумокМоделі(){
     стан.поява_карток = await стор.evaluate(() => window.Н3_ПОЯВА || null).catch(() => null);
     fs.writeFileSync(process.env.N2_STAN, JSON.stringify(стан, null, 1));
     const кдир = process.env.ZNIMKY || '.';
-    /* Н3-мірило (в): «Усі образи» — список карток; кожна картка окремим знімком 390×844 і знімком елемента */
+    /* Н3-мірило (в): картки на тому самому екрані збору, де вони з'явились (без переходу в «Усі образи» — там
+       бібліотека, а `#картки` сховано): перший знімок 390×844 — верх `#картки`, далі кожна картка окремо */
     try {
-      const всі = await стор.evaluate(() => {
-        const a = [...document.querySelectorAll('a,button')].find(e => /Усі образи/.test(e.innerText) && e.offsetParent);
-        if (a) { a.click(); return true; }
-        return false;
-      });
-      await стор.waitForTimeout(1500);
-      await стор.evaluate(() => window.scrollTo(0, 0));
+      const всі = await стор.evaluate(() => { const к = document.getElementById('картки');
+        if (!к || !к.offsetParent) return false; к.scrollIntoView({block: 'start'}); return true; });
+      await стор.waitForTimeout(800);
       await стор.screenshot({path: кдир + '/n3_usi_390x844.png'});
       const кк = await стор.$$('#картки .картка');
       for (let i = 0; i < кк.length; i++) {
@@ -4575,7 +4572,7 @@ function підсумокМоделі(){
         await стор.screenshot({path: кдир + '/n3_kartka_' + i + '_390x844.png'});
         await кк[i].screenshot({path: кдир + '/n3_kartka_' + i + '_tsila.png'}).catch(() => {});
       }
-      console.log('   N3: «Усі образи» — ' + всі + ' · карток у DOM ' + кк.length);
+      console.log('   N3: «#картки» видно — ' + всі + ' · карток у DOM ' + кк.length);
       await стор.evaluate(() => window.scrollTo(0, 0));
     } catch (е) { console.log('   N3: знімки списку не вдались: ' + String(е).slice(0, 200)); }
     await стор.screenshot({path: кдир + '/n2_ekran_390x844.png'});
