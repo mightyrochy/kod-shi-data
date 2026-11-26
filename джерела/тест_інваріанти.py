@@ -432,12 +432,15 @@ class Е3_ПолеБезПисача(unittest.TestCase):
                     невідоме = "Відступ між подолами не підтвердився."
                     обр = виклик("оцінка", dict(крок="оцінка", суд=суд, відповідь_моделі=json.dumps({
                         "answer": [{"about": {відомий: "known"}, "says": дійсне},
-                                   {"about": {номер: "failed"}, "says": хибне}],
+                                   {"about": {номер: "failed"}, "says": хибне},
+                                   {"about": {"ф1": "item"}, "says": "Сукня мені подобається."}],
                         "unknown": [{"about": {номер: стан_факту}, "says": невідоме}] if стан == "утримано" else [],
                         "verdict": "wear_as_is",
                     })))
                     self.assertEqual(обр["картка"]["відповідь"], дійсне)
                     self.assertIn("state_against_fact", обр["повтор"])
+                    self.assertIn("unknown_fact", обр["повтор"])
+                    self.assertNotIn("ф1", обр["повтор"])
                     self.assertNotIn(хибне, json.dumps(обр["картка"], ensure_ascii=False))
                     if стан == "утримано":
                         self.assertEqual(обр["картка"]["не_знаю"][0]["текст"], невідоме)
