@@ -4134,17 +4134,15 @@ def схема():
             "review_items_fix": об(ВИПРАВЛЕННЯ_ПЕРЕЛІКУ, "її слова про те, що не так у переліку речей з фото"),
             "catalog_item": об(РІЧ_КАТАЛОГУ, "річ каталогу", required=["id", "name"]),
             "stylist_reply": об(РЕПЛІКА, "що стилістка каже їй цього ходу, внутрішньою мовою"),
-            # опора — полями на кожне речення (рішення 14177, корінь Е2-межі): `мовний_шар.суд_підтвердження`
-            # рядок — речення без полів: опори не має, тож проходить лише там, де судити нема чого
-            "reply_text": об({"text": {"description": "речення для неї її мовою", "oneOf": [
-                {"type": "array", "items": {
-                    "type": "object", "additionalProperties": False, "required": ["about", "says"], "properties": {
-                        "about": {"type": "array", "items": {"type": "string"}},
-                        "recorded": {"type": "array", "items": {"type": "string"}},
-                        "her_words": {"type": "array", "items": {"type": "string"}},
-                        "says": {"type": "string"}}}},
-                {"type": "string"}]}},
-                             "вихід перекладача репліки: речення з опорою", required=["text"]),
+            # речення з номерами фактів і станом (межа текстів, наряд Шар-текстів-наново): `межа_текстів.Межа.судити`
+            "reply_text": об({к: {"description": о, "type": "array", "items": {
+                "type": "object", "additionalProperties": False, "required": ["about", "says"], "properties": {
+                    "about": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"},
+                              "description": "номер факту (f1, f2…) → його стан (state), який речення стверджує"},
+                    "says": {"type": "string", "minLength": 1}}}}
+                for к, о in (("text", "речення для неї її мовою: що відомо і що з цим робити"),
+                             ("unknown", "чого стилістка не знає: показ ставить це за кнопкою"))},
+                             "вихід перекладача репліки: речення з номерами фактів і станом", required=["text"]),
             # М-5 (п.14): хід розмови — оновлення паспорта, хто відповідає, частини відповіді
             "conversation_turn": _форма_мовного_шару(визначення=False),
             # Ч-1 (п.12): рядки картки образу й екрана «Палітра» — видом і заявами, не фразою

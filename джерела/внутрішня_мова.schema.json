@@ -2868,50 +2868,60 @@
   },
   "reply_text": {
    "type": "object",
-   "description": "вихід перекладача репліки: речення з опорою",
+   "description": "вихід перекладача репліки: речення з номерами фактів і станом",
    "additionalProperties": false,
    "properties": {
     "text": {
-     "description": "речення для неї її мовою",
-     "oneOf": [
-      {
-       "type": "array",
-       "items": {
+     "description": "речення для неї її мовою: що відомо і що з цим робити",
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "about",
+       "says"
+      ],
+      "properties": {
+       "about": {
         "type": "object",
-        "additionalProperties": false,
-        "required": [
-         "about",
-         "says"
-        ],
-        "properties": {
-         "about": {
-          "type": "array",
-          "items": {
-           "type": "string"
-          }
-         },
-         "recorded": {
-          "type": "array",
-          "items": {
-           "type": "string"
-          }
-         },
-         "her_words": {
-          "type": "array",
-          "items": {
-           "type": "string"
-          }
-         },
-         "says": {
-          "type": "string"
-         }
-        }
+        "minProperties": 1,
+        "additionalProperties": {
+         "type": "string"
+        },
+        "description": "номер факту (f1, f2…) → його стан (state), який речення стверджує"
+       },
+       "says": {
+        "type": "string",
+        "minLength": 1
        }
-      },
-      {
-       "type": "string"
       }
-     ]
+     }
+    },
+    "unknown": {
+     "description": "чого стилістка не знає: показ ставить це за кнопкою",
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "about",
+       "says"
+      ],
+      "properties": {
+       "about": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": {
+         "type": "string"
+        },
+        "description": "номер факту (f1, f2…) → його стан (state), який речення стверджує"
+       },
+       "says": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
     }
    },
    "required": [
