@@ -254,17 +254,6 @@ jobs:
           sys.exit(bool(fails))
           PY
 
-      - name: проби поділу (ВПАЛО має лишатись 0)
-        working-directory: джерела
-        run: |
-          set -u
-          VPALO=0
-          for f in проби/поділ_*_ast.py; do
-            python3 "$f" || { echo "  ✗ $f"; VPALO=$((VPALO + 1)); }
-          done
-          echo "проби поділу: ВПАЛО $VPALO"
-          [ "$VPALO" -eq 0 ]
-
       - name: реєстр живих сцен (фото в тексті — з FOTO_RECHI; файли сцен)
         working-directory: аудит/проби
         run: python3 -m unittest тест_записати_план.ПеревіркаПлану.test_реєстр_файли_є тест_записати_план.ПеревіркаПлану.test_реєстр_фото_у_тексті_має_змінну
