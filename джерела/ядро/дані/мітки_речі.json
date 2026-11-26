@@ -1,5 +1,5 @@
 {
-  "про": "Одне визначення запису речі (наряд Запис-речі-новий-вид; корінь Річ-запис-речі, рішення менеджера 21.11 і 26.11). Ключ мітки — поле ПОЛЯ_РЕЧІ ядра (поняття.py) або «слот»; питання — мова промпту запису (англійська); значення — коди названого реєстру; де — слоти ядра, де мітка застосовна (нема — усі); джерела — дозволені за порядком довіри; читачі — пул, запит чи картка (правила знань, що читають поле, дає ядро/дані/правила.json, ключ «річ»). Тепло шару модель не оцінює: «виведено» каже, з чого його рахує код. Мітка без читача — помилка (тест Ч2).",
+  "про": "Одне визначення запису речі (наряд Запис-речі-новий-вид; корінь Річ-запис-речі, рішення менеджера 21.11 і 26.11). Ключ мітки — поле ПОЛЯ_РЕЧІ ядра (поняття.py) або «слот»; питання — мова промпту запису (англійська); значення — коди названого реєстру; де — слоти ядра, де мітка застосовна (нема — усі); джерела — дозволені за порядком довіри; лише_зі_слів — значення, яке дає лише крамниця (фото відсутності не доводить); читачі — пул, запит чи картка (правила знань, що читають поле, дає ядро/дані/правила.json, ключ «річ»). Тепло шару модель не оцінює: «виведено» каже, з чого його рахує код. Мітка без читача — помилка (тест Ч2).",
   "групи": {
     "одяг": [
       "верх",
@@ -256,7 +256,7 @@
       ]
     },
     "утеплення": {
-      "питання": "Is the item insulated? none: the shop says unlined or no insulation, or the photo shows a thin unpadded item; light: a thin warming lining or padding (flannel, thin fleece, thin padding for autumn or spring); warm: thick padding, fur or sheepskin lining, or the shop says it is for winter. From the shop's words, or from fur or padding visible on the photo.",
+      "питання": "Is the item insulated? From the shop's words: none: the shop says unlined, no lining or no insulation; light: the shop names a thin warming lining or padding (flannel, thin fleece, thin padding for autumn or spring); warm: the shop names thick padding, down, fur or sheepskin lining, or says it is for winter. From the photo only when insulation is plainly visible: fur or shearling at the opening, collar or cuff, or a quilted padded shell; then light for thin quilting, warm for fur or a thick puffer. The photo never gives none. A closed shoe or a coat without such words or signs is unknown: silence is not none.",
       "значення": [
         "none",
         "light",
@@ -270,6 +270,9 @@
       "джерела": [
         "крамниця",
         "фото"
+      ],
+      "лише_зі_слів": [
+        "none"
       ],
       "читачі": [
         "запит",
