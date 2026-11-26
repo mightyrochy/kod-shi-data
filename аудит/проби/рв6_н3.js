@@ -3960,6 +3960,26 @@ function підсумокМоделі(){
      CLAUDE.md п.10); звірка — умови `чекаємо` над ПАСПОРТ_П тією самою мовою, що в
      `джерела/проби/м5_вісім_розмов.py`. Знімок стрічки й картки сценарію — після останнього. */
   await ведемоХодиРозмови();
+  /* Н4 (с8): TAP_POLE=<ід поля>=<слово підпису> — після розмови вона обирає плитку поля сценарію (напр. `сц-місце=офіс`):
+     той самий `<select>`, ті самі події `input`/`change`, що від її пальця, тож іде той самий шлях `рукаТоркнуласьП` →
+     `тапЯдромП`; стенд чекає черги ядра й пише, що лягло в Ситуацію. Без змінної — як доти. */
+  if (process.env.TAP_POLE){
+    const [ід, слово] = process.env.TAP_POLE.split('=');
+    const т = await стор.evaluate(async ([ід, слово]) => {
+      const е = document.getElementById(ід); if (!е) return {помилка: 'нема поля ' + ід};
+      const о = [...е.options].find(о => (о.textContent || '').toLowerCase().includes(слово.toLowerCase()) || о.value === слово);
+      if (!о) return {помилка: 'нема плитки «' + слово + '»', плитки: [...е.options].map(о => о.textContent)};
+      е.value = о.value;
+      е.dispatchEvent(new Event('input', {bubbles: true})); е.dispatchEvent(new Event('change', {bubbles: true}));
+      if (typeof ЧЕРГА_РОЗМОВИ_ЯДРА_П !== 'undefined') await ЧЕРГА_РОЗМОВИ_ЯДРА_П;
+      const с = typeof ситуаціяЯдраП === 'function' ? ситуаціяЯдраП() : null;
+      const ж = с ? JSON.stringify(с) : '';
+      return {плитка: о.textContent, значення: о.value, у_ситуації: (ж.match(/"місце"\s*:\s*(\{[^{}]*\}|\[[^\]]*\]|"[^"]*"|null)/) || [])[1] || null};
+    }, [ід, слово]);
+    console.log('\nTAP_POLE · ' + process.env.TAP_POLE + ' → ' + JSON.stringify(т));
+    ф('Н4 · тап «' + слово + '» лягла в Ситуацію ядра', !т.помилка && !!т.у_ситуації && т.у_ситуації !== 'null', т);
+    await знімок('tap_pole', ПАРА ? '#mirror-work' : '#е-випадок');
+  }
   /* Чат може сам почати збір; готові картки — теж цей шлях, якщо збір уже встиг завершитись. */
   const режимПісляЧату = await стор.evaluate(() => Екран.стан.режим);
   const збиранняЗЧату = ['очікування', 'образи'].includes(режимПісляЧату);
