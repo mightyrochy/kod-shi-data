@@ -387,5 +387,100 @@
       "about_items"
     ],
     "additionalProperties": false
+  },
+  "перелік": {
+    "type": "object",
+    "properties": {
+      "is_outfit": {
+        "type": "string",
+        "enum": [
+          "yes",
+          "no"
+        ]
+      },
+      "items": {
+        "type": "array",
+        "minItems": 0,
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "details": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "slot": {
+              "type": "string",
+              "enum": [
+                "top",
+                "bottom",
+                "dress",
+                "set",
+                "outerwear",
+                "shoes",
+                "bag",
+                "scarf",
+                "headwear",
+                "belt",
+                "tights",
+                "socks",
+                "jewelry",
+                "earrings",
+                "collar_necklace",
+                "necklace",
+                "brooch",
+                "bracelet",
+                "ring",
+                "glasses",
+                "gloves",
+                "watch",
+                "swimwear",
+                "underwear",
+                "accessory"
+              ]
+            },
+            "color_hex": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "own": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "worn": {
+              "type": [
+                "boolean",
+                "string"
+              ],
+              "enum": [
+                true,
+                false,
+                "true",
+                "false"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "slot"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "is_outfit",
+      "items"
+    ],
+    "additionalProperties": false
   }
 }

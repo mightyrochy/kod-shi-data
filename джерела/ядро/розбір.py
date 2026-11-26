@@ -9,8 +9,8 @@ from .поняття import Образ, Збій, НЕВІДОМО
 with Path(__file__).with_name("дані").joinpath("відповіді.json").open(encoding="utf-8") as _файл:
     _СХЕМИ = json.load(_файл)
 
-_ВИДИ = {"складання": "образи", "ремонт": "образи", "вибір": "вибір", "опис": "опис"}
-_ТИПИ = {"object": dict, "array": list, "string": str, "null": type(None)}
+_ВИДИ = {"складання": "образи", "ремонт": "образи", "вибір": "вибір", "опис": "опис", "перелік": "перелік"}
+_ТИПИ = {"object": dict, "array": list, "string": str, "null": type(None), "boolean": bool}
 
 
 @dataclass(frozen=True)
@@ -52,7 +52,7 @@ def _перевірити(значення, опис, поле):
         if len(значення) < опис["minItems"]:
             raise _Невірне(поле, "missing array values")
         for номер, елемент in enumerate(значення):
-            _перевірити(елемент, опис["items"], f"{поле}[{номер}]")
+            _перевірити(елемент, опис["items"], f"{поле}[{номер}]" + ("." if isinstance(елемент, dict) else ""))
     if тип == "object":
         поля = опис["properties"]
         for ключ in опис["required"]:
@@ -216,3 +216,60 @@ def замінити(образ, пул, прибрати, додати, дже�
                  версія_ситуації=образ.версія_ситуації, речі=речі, полюс=образ.полюс,
                  попередник=образ.ід, свідомі=tuple(з for з in образ.свідомі if з["річ"] != прибрати),
                  носіння=tuple(з for з in образ.носіння if з["item"] != прибрати))
+
+
+with Path(__file__).with_name("дані").joinpath("руки_без_коду.json").open(encoding="utf-8") as _файл:
+    _СЛОТИ_БЕЗ_КОДУ = json.load(_файл)["слоти"]
+_МІТКА_ПРОЗИ = "OUTFIT_TEXT"   # код форми відповіді в чинному промпті рук 3–4 (`answer`)
+_ОБГОРТКА = " \t\r\n*#_`\"'"
+_HEX = frozenset("0123456789abcdefABCDEF")
+
+
+def проза(відп, спроба=1):
+    """Ч5 руки 3–4: проза образу. Код знімає з початку лише свій код форми (`OUTFIT_TEXT`), слів не читає;
+    порожньо — `Збій`."""
+    if "збій" in відп:
+        return _дані(відп, "образ", спроба)
+    т = відп.get("текст")
+    if not isinstance(т, str):
+        return Збій("схема", "розбір", "text", "expected text", repr(т), спроба)
+    і = 0
+    while і < len(т) and т[і] in _ОБГОРТКА:
+        і += 1
+    if т[і:і + len(_МІТКА_ПРОЗИ)] == _МІТКА_ПРОЗИ:
+        і += len(_МІТКА_ПРОЗИ)
+        while і < len(т) and т[і] in _ОБГОРТКА + ":":
+            і += 1
+        т = т[і:]
+    if not т or all(с in _ОБГОРТКА for с in т):
+        return Збій("порожньо", "розбір", "text", "the hand returned no outfit text", відп.get("текст"), спроба)
+    return т
+
+
+def перелік(відп, рука, версія, спроба=1, повтор=1):
+    """Ч5 руки 3–4: перелік речей прози за схемою `перелік` → `Образ` описаних речей; «не образ» — `Збій`."""
+    дані = None
+    try:
+        дані = _дані(відп, "перелік", спроба)
+    except json.JSONDecodeError as помилка:
+        return Збій("не_json", "розбір", "перелік", помилка.msg, відп.get("текст"), спроба)
+    except _Невірне as помилка:
+        return Збій(помилка.вид, "розбір", помилка.поле, str(помилка), відп.get("текст"), спроба)
+    if isinstance(дані, Збій):
+        return дані
+    if дані["is_outfit"] != "yes":
+        return Збій("не_образ", "розбір", "is_outfit", "the list model says the description is not an outfit",
+                    відп.get("текст"), спроба)
+    речі = []
+    for р in дані["items"]:
+        if р.get("worn") in (False, "false"):
+            continue
+        hx = р.get("color_hex")
+        речі.append({"н": f"о{len(речі) + 1}", "назва": р["name"], "деталі": р.get("details"),
+                     "слот": _СЛОТИ_БЕЗ_КОДУ[р["slot"]],
+                     "hex": hx if isinstance(hx, str) and len(hx) == 7 and hx[0] == "#" and set(hx[1:]) <= _HEX
+                     else None})
+    if not речі:
+        return Збій("схема", "розбір", "items", "no worn item in the list", відп.get("текст"), спроба)
+    return Образ(ід=f"р{рука}-без_коду-{повтор}", номер=f"р{рука}", рука=рука, джерело="модель_без_коду",
+                 версія_ситуації=версія, речі=tuple(речі))
