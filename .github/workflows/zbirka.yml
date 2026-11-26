@@ -802,6 +802,7 @@ jobs:
                 git add index.html build.txt "${ZVIT}"
               fi
               git add -A аудит/БЕКЛОГ.md
+              if [ -d аудит/дошка_архів ]; then git add -A аудит/дошка_архів; fi
               git add -A аудит/дошка 2>/dev/null || true
               git add -A аудит/корені 2>/dev/null || true
               if git diff --cached --quiet; then
