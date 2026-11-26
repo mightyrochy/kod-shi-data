@@ -14,12 +14,15 @@
 це прилад, а не звіт (V34, СТАНДАРТ_КОДУ п. 21). У батарею розділів нічого не
 дописується: полегшений режим §0 `НАРЯДИ.md` це прямо забороняє.
 """
+import ast
 import glob
 import json
 import os
 import re
 import sys
+from pathlib import Path
 
+import slots
 import протокол as P
 
 _ТУТ = os.path.dirname(os.path.abspath(__file__)) or "."
@@ -1739,6 +1742,34 @@ from проби.тест_кроків_відповіді import КрокиВід
 
 _кроки = TextTestRunner(stream=sys.stdout).run(defaultTestLoader.loadTestsFromTestCase(КрокиВідповіді))
 звірка("Три кроки відповіді моделі на записі с5 та зіпсованих входах", _кроки.wasSuccessful())
+
+
+def літерали_груп_слотів():
+    """Знаходить групи слотів, визначені поза модулем слотів у межах наряду."""
+    # Ці файли віддано паралельним нарядам. Тестові фікстури задають незалежні очікування.
+    поза_нарядом = {"slots.py", "statements.py", "суд_покупки.py", "мовний_шар.py", "міст_вхід.py"}
+    назви = set(slots.КЛЮЧІ.values())
+    назви.update(("шар2", "підвіска", "шапка", "рукавиці", "комбінезон"))
+    коди = set(slots.КЛЮЧІ) | {"coat", "jewels", "hat"}
+    для_звірки = (назви, коди)
+    місця = []
+    for файл in sorted(Path(_ТУТ).glob("*.py")):
+        if файл.name in поза_нарядом or файл.name.startswith(("тест_", "test_")):
+            continue
+        дерево = ast.parse(файл.read_text(encoding="utf-8"), filename=str(файл))
+        for вузол in ast.walk(дерево):
+            if not isinstance(вузол, (ast.Tuple, ast.List, ast.Set)) or len(вузол.elts) < 2:
+                continue
+            if not all(isinstance(ел, ast.Constant) and isinstance(ел.value, str) for ел in вузол.elts):
+                continue
+            група = {ел.value for ел in вузол.elts}
+            if len(група) > 1 and any(група <= словник for словник in для_звірки):
+                місця.append(f"{файл.name}:{вузол.lineno}")
+    return sorted(місця)
+
+
+_дублікати_слотів = літерали_груп_слотів()
+звірка("групи слотів визначено лише в slots.py", not _дублікати_слотів, ", ".join(_дублікати_слотів))
 
 print()
 if провали:

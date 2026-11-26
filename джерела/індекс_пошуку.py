@@ -22,6 +22,8 @@ import tempfile
 from urllib.parse import urlsplit
 import zipfile
 
+from slots import ПОРЯДОК_КАТЕГОРІЙ_ПОШУКУ
+
 
 MODULES = re.compile(("const\\s+МОДУЛІ_ПОКАЗУ"+r'\s*=\s*"([a-zA-Z0-9+/=]+)"').encode())
 COLORS = re.compile(r"#[a-fA-F0-9]{6}\Z")
@@ -158,8 +160,7 @@ def order_rows(rows):
     rows.sort(key=lambda r:(r[12] is False,not r[9], r[5] is None, r[4], r[0]))
     for row in rows:
         buckets[row[2]][row[4]].append(row)
-    priority=["dress","top","bottom","coat","shoes","bag","jewels","scarf","set","belt","hat"]
-    slots=list(dict.fromkeys(priority+sorted(buckets)))
+    slots=list(dict.fromkeys([*ПОРЯДОК_КАТЕГОРІЙ_ПОШУКУ, *sorted(buckets)]))
     brand_lists={s:collections.deque(sorted(buckets[s],
                  key=lambda b:(not bool(buckets[s][b][0][9]),len(buckets[s][b])<10,b))) for s in slots if s in buckets and buckets[s]}
     recent=collections.deque(maxlen=7)
