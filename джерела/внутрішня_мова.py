@@ -1218,9 +1218,14 @@ def _опис_keep_by():
                                  "did not prove that the first is better than each of the others, so the order "
                                  "is not advice (values: why — input_missing: an input of the judgement is missing "
                                  "for at least one of them; no_item_proved_better: every item was judged in full, "
-                                 "and none is proved better than each of the others). Say what is known about each "
-                                 "item from its own verdict and that the choice is hers, and give only the reason "
-                                 "named by why (this is not a tie: a tie means all were judged and came out equal)",
+                                 "and none is proved better than each of the others; missing — with input_missing: "
+                                 "which inputs are missing (input), for which items (items), and whose action gives "
+                                 "it (by — her: she can give it — say it, or give a portrait or her measurements; "
+                                 "record: the item's shop record does not know it, and nothing she does changes "
+                                 "that)). Say what is known about each item from its own verdict and that the choice "
+                                 "is hers, and give only the reason named by why and missing: what exactly is "
+                                 "missing and, where by is her, what she can do (this is not a tie: a tie means all "
+                                 "were judged and came out equal)",
     "colour_role_not_judged": "whether the item's colour is a neutral base or an accent was not judged (values: "
                               "missing — colour_measure: neither a measurement nor a shop colour word places it "
                               "on one side; a photo of the item in daylight lets it be judged)",
@@ -3952,6 +3957,12 @@ def визначення_заяв(коди):
     "wear_cost_no_duration", "wear_cost_no_duration_surface",
 ))
 _ВИД_НЕПЕРЕВІРЕНОГО = "card_unchecked"
+
+# ЧОГО НЕ ДАСТЬ НІХТО, КРІМ ЇЇ ВІДПОВІДІ (доповнення менеджера 26.11 до наряду Шар-текстів-наново, (б); розклад
+# `аудит/звіти/не-знаю-2611/РОЗКЛАД.md`, група Г): заява, що річ не закріплена, бо бракує її слова — чия річ у кадрі
+# чи яке це місце. Межа текстів (`межа_текстів.Межа.питати_її`) дозволяє про таку заяву одне питання й каже її одним
+# реченням: шість «ти його не згадала, тож я не знаю, чи він твій» (по одній на річ у кадрі) ставали шістьма «не знаю».
+ЇЙ_ВІДПОВІСТИ = frozenset(("her_item_not_named_others_in_frame", "her_item_slot_unclear"))
 
 # РІЧ У ЗНАЧЕННІ ЗАЯВИ — КОДАМИ (Е2-вхід-опису-кодами): ключі, що за визначеннями `ЗАЯВИ` несуть річ, беруть
 # `річ_заяви` (item_id, kind, color), а не назву крамниці вільним текстом — назва везла вид і колір словами в промпт
