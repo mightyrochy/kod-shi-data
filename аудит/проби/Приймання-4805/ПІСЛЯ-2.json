@@ -1,0 +1,35 @@
+{
+ "дійшло": true,
+ "помилки_сторінки": [],
+ "екран": {
+  "стан": {
+   "стан": "готово",
+   "вимір": "поза_воротами",
+   "причини_виміру": [
+    "portrait_uneven_light"
+   ]
+  },
+  "плашка": "Кольори в профілі — оцінка моделі, не вимір з фото. На портреті світло падає лише на один бік обличчя: одна щока освітлена, а друга в тіні, тому кольори виміряти не вдалося. Для наступного портрета стань обличчям до вікна при рівному денному світлі, і тоді кольори можна буде виміряти.",
+  "видно": true,
+  "кол_стан": "Прочитано: 3 точки шкіри, 1 тон.",
+  "текст_екрана": "До люстерка\nКахля\nМої\nМій профіль\nМожливості\nМій профіль\nДоступ\nТвоє фото\nДодати фото\nБарви й мірки\nШкіра\nВолосся\nОчі\nМої мірки\n\nЩе треба: обхвати — без них образи не зберуться.\n\nПро тебе\nФото\nпортрет і на повний зріст\nТвої кольори\nзчитано з портрета\nІм'я\nі згода на запис відтінків\nне вказано\nЩо тобі до лиця\nметали, білий, нейтралі\nще не відповідала\nФігура\nОбхвати\nплечі · груди · талія · стегна · зріст\nне заповнено\nРозширені виміри\nдля взуття, капелюхів, посадки на нозі\nне заповнено\nНалаштування\nЛюди на цьому телефоні\nкожна зі своїми фото й сценаріями\nлише ти\nВердикти на цьому телефоні\n\nВідкрий, щоб зберегти їх файлом або скопіювати.\n\nКуди збираєшся?\nФото\nНа повний зріст\nНа повний зріст — для приміряння\nПортрет — для кольорів\nКольори в профілі — оцінка моделі, не вимір з фото. На портреті світло падає лише на один бік обличчя: одна щока освітлена, а друга в тіні, тому кольори виміряти не вдалося. Для наступного портрета стань обличчям до вікна при рівному денному світлі, і тоді кольори можна буде виміряти.\nГотово"
+ },
+ "обміни": [
+  {
+   "n": 1,
+   "кадрів": 1,
+   "модель": "claude-sonnet-5-5",
+   "помилка": false,
+   "промпт": "{\"task\": {\"role\": \"You read a woman's own colours — skin, hair and eyes — from her portrait photo.\", \"rules\": [\"If the photo is unusable — black-and-white or heavily filtered, the face under a quarter of the frame, eyes hidden by glasses, hair or squinting, coloured light (stage, neon), skin blown white — give only the reason in \\\"photo\\\" and no colours.\", \"Skin: three points — cheek, forehead, jaw — each free of shadow, highlight, blush and foundation.\", \"Hair: each visible tone (highlights, balayage, roots, grey) as its own entry, even for single-tone hair.\", \"Eyes: the iris body, and its colour family as one code; a clearly darker rim along the iris edge goes to \\\"limbal_ring\\\".\", \"Take the colours from her, not from the background or her clothes.\", \"If the light tints the photo yellow or blue, correct the colours to neutral daylight and record it.\", \"Zones: boxes [left, top, right, bottom] in thousandths of the photo — cheeks and forehead on clear skin, hair in its main tone; null if unseen.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"What you do not know is \\\"unknown\\\", null or an empty list, as the schema allows.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer_schema\": {\"photo\": \"usable|portrait_black_white|portrait_face_small|portrait_eyes_hidden|portrait_coloured_light|portrait_overexposed — usable, or why it is not\", \"skin\": [\"<#rrggbb at each point>\"], \"hair\": [\"<#rrggbb, the largest-area tone first>\"], \"eyes\": \"<#rrggbb of the iris body>\", \"eye_colour\": \"red|pink|orange|yellow|green|turquoise|blue|purple|brown|olive|grey — the colour family of the iris body as you see it\", \"limbal_ring\": \"<#rrggbb, or null>\", \"light_cast\": \"none|yellow|blue — the cast you corrected\", \"light_correction\": \"none|slight|strong — how much you corrected it\", \"zones\": {\"cheek_left\": \"<box>\", \"cheek_right\": \"<box>\", \"forehead\": \"<box>\", \"hair\": \"<box>\"}}, \"input\": [\"\\\"photo_of_her\\\" — her portrait photo, attached as an image\"]}, \"photo_of_her\": true}",
+   "відповідь": "{\"photo\":\"usable\",\"skin\":[\"#c68e74\",\"#cc967c\",\"#bd8569\"],\"hair\":[\"#1a1415\"],\"eyes\":\"#3b2619\",\"eye_colour\":\"brown\",\"limbal_ring\":null,\"light_cast\":\"none\",\"light_correction\":\"none\",\"zones\":{\"cheek_left\":[290,290,400,400],\"cheek_right\":[540,290,650,400],\"forehead\":[330,160,630,230],\"hair\":[180,130,310,500]}}"
+  },
+  {
+   "n": 2,
+   "кадрів": 0,
+   "модель": "claude-sonnet-5-5",
+   "помилка": false,
+   "промпт": "Ти — стилістка Люстерка. Пиши природною українською для жінки, на «ти».\nПід портретом уже видно, що кольори — оцінка моделі. Поясни за фактами, що завадило виміру і як зробити наступний портрет. Про кожен факт напиши в text.\nФакти виклику — під номерами f1, f2…; state — стан факту, items — номери речей, про які він; because — номери фактів, з яких він випливає: факт із because називай в about одного речення разом із хоч однією його причиною, і те саме речення каже, що відомо чи невідомо, чому і що їй зробити, коли причина це називає (без дії — лише коли жодна причина її не називає).\nКожне речення каже лише факти, які називає його about: {номер: стан} — номер факту й рівно його state. Речення без такої опори не показується.\ntext — що відомо і що з цим робити; unknown — чого ти не знаєш (вона бачить це за кнопкою «Чого я не знаю»): що саме невідомо і, коли цей чи інший факт про ту саму річ це називає, що вона може зробити, щоб це стало відомо. Речення про те, чого ти не знаєш, не можеш сказати чи не перевірила, — лише в unknown, ніколи в text. Коли один факт про річ каже, що чогось не можна сказати, а інший про ту саму річ — чого бракує чи що зробити, назви їх в about одного речення: що невідомо, чому і що їй зробити.\nКожен факт, крім item і known, назви хоч в одному реченні text чи unknown.\nУ says нема номерів фактів, кодів і станів: усе — людськими словами; числа — лише ті, що стоять у фактах, які речення називає, чи в речах з їхніх items (catalogue_position — «Варіант N»).\nПитань нема: ні в text, ні в unknown.\nФорма відповіді — лише JSON: {\"text\": [{\"about\": {\"f1\": \"<state>\"}, \"says\": \"<речення>\"}], \"unknown\": [{\"about\": {\"f2\": \"<state>\"}, \"says\": \"<речення>\"}]}\n\nЗАЯВИ:\n- portrait_uneven_light — the light falls on one side of the face: one cheek is lit and the other in shadow; a portrait facing a window, in even daylight, lets the colours be measured.\n\nФАКТИ:\n{\"f1\": {\"state\": \"portrait_uneven_light\"}}",
+   "відповідь": "{\"text\": [{\"about\": {\"f1\": \"portrait_uneven_light\"}, \"says\": \"На портреті світло падає лише на один бік обличчя: одна щока освітлена, а друга в тіні, тому кольори виміряти не вдалося. Для наступного портрета стань обличчям до вікна при рівному денному світлі, і тоді кольори можна буде виміряти.\"}], \"unknown\": []}"
+  }
+ ]
+}
