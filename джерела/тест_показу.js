@@ -1595,6 +1595,44 @@ function поверненняЗаглушка(w){
     }
     тест("кожен інструмент переліку `conversation_tools.ІНСТРУМЕНТИ` має виконавця в `інструментомП`",
          перелік.length > 0 && !безВиконавця.length, безВиконавця);
+    /* КУПІВЛЯ (#4689): дві однойменні речі каталогу — кожна зі своїм ід і видимим місцем «Варіант N» від кнопки до
+       перекладача; річ без кадру лишається в переліку під своїм номером зі штатним силуетом; ід їй не малюється */
+    const ідК = ["ж-тест-1@fixture.invalid", "ж-тест-2@fixture.invalid"];
+    const заяваК = (code, values, item_ids) => ({code, values: values || {}, item_ids: item_ids || []});
+    const пошукК = {варіанти: ідК.map((ід, н) => ({ід, назва: "Куртка джинсова жіноча", url: "https://fixture.invalid/" + (н + 1),
+                      ціна: 1000, фото: н ? ["https://fixture.invalid/кадр.jpg"] : [], slot: "outerwear", item_type: "jacket",
+                      вердикт: {повідомлення: {kind: "her_item_verdict",
+                                             statements: [заяваК(н ? "hem_on_her_body" : "hem_not_judged",
+                                                                 н ? {level: "стегно"} : {missing: "garment_length"})]}}})),
+                    повідомлення: {kind: "catalogue_search", statements: [заяваК("catalogue_variants_found", {count: 2}),
+                                                                           заяваК("buy_order_tie", {}, ідК)]}};
+    const містК = w._міст;
+    w._міст = async (ім, д) => ім === "пошук_речі" ? JSON.parse(JSON.stringify(пошукК)) : містК(ім, д);
+    const модельК = w._модель;
+    w._модель = async п => /\nРЕПЛІКА:\n.*catalogue_search/.test(п) ? (промпти.push(п), JSON.stringify({text: [
+      {about: ["item_verdicts"], recorded: [], her_words: [], says: "Варіант 2 — довжину на тобі пораховано, варіант 1 — ні."},
+      ...(/"required": \["occasion"\]/.test(п) ? [{about: ["required"], says: "Куди ти збираєшся?"}] : [])]}))
+      : модельК(п);
+    промпти.length = 0;
+    відповіді.push(хідІ("find_item", {item_type: "jacket"}));
+    $("чат-поле").value = "знайди мені джинсову куртку";
+    await w.eval("слатиЧатП()");
+    w._міст = містК; w._модель = модельК;
+    const рК = останні(), бК = бульбашки()[бульбашки().length - 1];
+    const рядкиК = бК ? [...бК.querySelectorAll(".змінна-пара")] : [];
+    const промптК = промпти.find(п => /\nРЕПЛІКА:\n.*catalogue_search/.test(п)) || "";
+    тест("find_item: кожен знайдений варіант іде до перекладача зі своїм ід і видимим місцем, у порядку переліку",
+         JSON.stringify((((рК.інструмент || {}).catalogue_search || {}).variants || []).map(в => [в.item_id, в.catalogue_position]))
+           === JSON.stringify([[ідК[0], 1], [ідК[1], 2]])
+         && /"item_id": "ж-тест-2@fixture\.invalid", "catalogue_position": 2/.test(промптК),
+         [рК.інструмент, промптК.slice(-600)]);
+    тест("find_item: однойменні рядки підписано «Варіант 1/2»; річ без кадру лишилась під своїм номером із силуетом; ід не видно",
+         рядкиК.length === 2 && рядкиК.every(р => р.style.display !== "none")
+         && рядкиК.map(р => (р.querySelector(".н .під") || {}).textContent).join("|") === "Варіант 1|Варіант 2"
+         && !!рядкиК[0].querySelector("i.арка") && !рядкиК[0].querySelector("img")
+         && !/@fixture/.test(бК.textContent), бК && бК.innerHTML.slice(0, 600));
+    тест("find_item: речення перекладача з видимим місцем однойменного товару доходить до неї",
+         !!бК && /Варіант 2 — довжину на тобі пораховано/.test(бК.textContent), бК && бК.textContent);
     тест("без винятків", помилки.length === 0, помилки);
   }
 
