@@ -22,6 +22,11 @@ language_contract пакет_моделі міст_пакет міст_запи�
     ("знання", "суд_від_моделі"): "знімає Н5",
     ("знання", "міст_пакет"): "знімає Н4",  # спільний виробник до штатного входу Ситуації
 }
+# Єдина функція ядра, якій дозволено рядкові методи над її словами (рішення менеджера 26.11, §6.2, «Перед Н4»).
+РЯДКИ_МОЖНА = {
+    ("ситуація", "уривок_її"): "звірка уривка: точна лічба збігу суцільного ряду цілих слів у її репліках, а не "
+                                "тлумачення — значення з уривка код не виводить",
+}
 РЯДКОВІ = {"lower", "upper", "casefold", "split", "rsplit", "splitlines", "startswith", "endswith", "replace", "find",
            "rfind", "index", "strip", "lstrip", "rstrip", "translate", "partition", "count", "title", "capitalize"}
 
@@ -57,7 +62,11 @@ class Будова(unittest.TestCase):
 
     def test_нема_функцій_над_рядками_слів(self):
         for ім, д in модулі():
+            дозволені = {id(в) for ф in ast.walk(д) if isinstance(ф, ast.FunctionDef) and (ім, ф.name) in РЯДКИ_МОЖНА
+                         for в in ast.walk(ф)}
             for в in ast.walk(д):
+                if id(в) in дозволені:
+                    continue
                 if isinstance(в, ast.Call) and isinstance(в.func, ast.Attribute) and в.func.attr in РЯДКОВІ:
                     with self.subTest(модуль=ім, рядок=в.lineno):
                         self.fail(f"рядковий метод .{в.func.attr}() — слова тлумачить лише мовна модель (п.12)")
