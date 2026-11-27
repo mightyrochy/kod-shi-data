@@ -362,6 +362,12 @@ function поверненняЗаглушка(w){
          && $("pair-scene").querySelector('[data-ux=pair-occasion]')
          && $("pair-scene").querySelector('[data-ux=library]')
          && $("mirror-input").contains($("чат-ввід")), w.eval("Екран.стан.режим"));
+    const повтор = сторінка({idb: w.indexedDB, url: "https://mightyrochy.github.io/kod-shi-data/показ.html"});
+    await чекатиНа(() => повтор.d.documentElement.dataset.pairPage === 'mirror' && повтор.w.eval("Екран.стан.запущено"), 'збережений профіль не відкрив головну');
+    тест("повторний запуск зі збереженим профілем відкриває головну",
+         повтор.w.eval("ПРОФІЛЬ_СТВОРЕНО") && повтор.d.documentElement.dataset.pairPage === 'mirror'
+         && !повтор.d.getElementById('pair-scene').querySelector('.pair-profile'), повтор.w.eval("Екран.стан.режим"));
+    повтор.дом.window.close();
     тест("ЄДИНА_СТОРІНКА: картка «Зібрати образи» видно, двосторінкового переходу в розмітці нема",
          $("зб-картка").style.display !== "none" && !$("перехід") && !$("п-адреса") && !$("п-пакет"),
          [$("зб-картка").style.display, !!$("перехід")]);
@@ -1725,10 +1731,10 @@ function поверненняЗаглушка(w){
     await чекатиСтарт(w);
     const $ = id => d.getElementById(id);
     тест("без винятків", помилки.length === 0, помилки);
-    тест("з параметрами мосту відкривається нагода з розмовою",
-         w.eval("Екран.стан.режим") === "сценарій" && d.documentElement.dataset.pairPage === "mirror" && $("pair-scene").querySelector(".pair-left")
-         && $("pair-scene").querySelector(".pair-right") && $("pair-handle").getAttribute("aria-controls") === "mirror-letter"
-         && $("mirror-input").contains($("чат-ввід")), w.eval("Екран.стан.режим"));
+    тест("параметри мосту не пропускають профіль на першому запуску",
+         w.eval("Екран.стан.режим") === "профіль" && d.documentElement.dataset.pairPage === "профіль"
+         && d.querySelector('[data-ux=pair-name]') && !$("pair-profile-finish").hidden,
+         w.eval("Екран.стан.режим"));
     тест("шапка не каже «Пакет не розпакувався»", !/не розпакувався/.test($("ш-рядок").textContent), $("ш-рядок").textContent);
     тест("адреса й токен мосту прочитані з хеша", w.eval("МІСТ_П.адреса") === "https://lyusterko-mist.mighty-rochy.workers.dev"
          && w.eval("МІСТ_П.токен") === "tok-a1", w.eval("JSON.stringify(МІСТ_П)"));
@@ -1746,6 +1752,8 @@ function поверненняЗаглушка(w){
     /* профіль заповнено, щоб дійти до перевірки мосту */
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
     for (const [і, v] of [["мр-зріст", 167], ["мр-плечі", 96], ["мр-груди", 92], ["мр-талія", 74], ["мр-стегна", 100]]) ввести($(і), v);
+    d.querySelector('[data-ux=pair-profile-done]').click();
+    await чекатиНа(() => d.documentElement.dataset.pairPage === 'mirror', 'збереження не відкрило нагоду');
     w.eval("ЧАТ_П.push({хто:'людина', текст:'кафе з подругою', тема:'сценарій'})");
     w.eval("зібратиОбразиП()");
     await чекатиНа(() => /токен/.test($("зб-статус").textContent), "збирання без токена не сказало про #токен");
