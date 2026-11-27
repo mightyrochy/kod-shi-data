@@ -254,6 +254,9 @@ function сторінка({url, фід = "каталог_brief.xml", підпи�
   const помилки = [];
   const дом = new JSDOM(html, {runScripts: "dangerously", pretendToBeVisual: true, url,
     beforeParse(w) {
+      // jsdom has no modal dialog implementation; browser tests cover the actual top layer.
+      w.HTMLDialogElement.prototype.showModal = function(){ this.setAttribute('open',''); };
+      w.HTMLDialogElement.prototype.close = function(){ this.removeAttribute('open'); this.dispatchEvent(new w.Event('close')); };
       w.indexedDB = idb || new IDBFactory(); w.IDBKeyRange = IDBKeyRange;
       w.fetch = () => Promise.reject(new Error("мережі в тесті нема"));
       w.scrollTo = () => {};
@@ -347,9 +350,17 @@ function поверненняЗаглушка(w){
     const $ = id => d.getElementById(id);
     await чекатиНа(() => w.eval("Екран.стан.запущено === true"), "старт не прив'язав кнопку «Зібрати образи»");
     тест("скрипт піднявся без винятків", помилки.length === 0, помилки);
-    тест("без профілю видно дві половини люстерка, розмова доступна",
-         w.eval("Екран.стан.режим") === "сценарій" && d.documentElement.dataset.pairPage === "mirror" && $("pair-scene").querySelector(".pair-left")
-         && $("pair-scene").querySelector(".pair-right") && $("pair-handle").getAttribute("aria-controls") === "mirror-letter"
+    await чекатиНа(() => d.documentElement.dataset.pairPage === 'профіль', 'перший запуск не відкрив профіль');
+    тест("перший запуск відкриває профіль з ім’ям і двома фото",
+         w.eval("Екран.стан.режим") === "профіль" && d.querySelector('[data-ux=pair-name]')
+         && d.querySelector('[data-ux=pair-photos]') && d.querySelector('[data-ux=pair-photo]')
+         && !$("pair-profile-finish").hidden, w.eval("Екран.стан.режим"));
+    d.querySelector('[data-ux=pair-profile-done]').click();
+    await чекатиНа(() => d.documentElement.dataset.pairPage === 'mirror', 'збереження профілю не відкрило головну');
+    тест("після збереження — головна з розмовою й діями без картки профілю",
+         w.eval("ПРОФІЛЬ_СТВОРЕНО") && !$("pair-scene").querySelector(".pair-profile")
+         && $("pair-scene").querySelector('[data-ux=pair-occasion]')
+         && $("pair-scene").querySelector('[data-ux=library]')
          && $("mirror-input").contains($("чат-ввід")), w.eval("Екран.стан.режим"));
     тест("ЄДИНА_СТОРІНКА: картка «Зібрати образи» видно, двосторінкового переходу в розмітці нема",
          $("зб-картка").style.display !== "none" && !$("перехід") && !$("п-адреса") && !$("п-пакет"),

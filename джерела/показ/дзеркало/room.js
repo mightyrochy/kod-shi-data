@@ -27,7 +27,7 @@
     clearTimeout(introTimer);
     intro.innerHTML='<div class="pair-intro-art" aria-hidden="true">'+window.Hand.art(M.get(),'welcome')+'</div><div class="pair-intro-wordmark" aria-hidden="true">'+M.mast()+'</div><button type="button" autofocus>Пропустити</button>';
     if(!intro.open)intro.showModal();
-    introTimer=setTimeout(()=>intro.close(),window.matchMedia('(prefers-reduced-motion: reduce)').matches?150:2300);
+    introTimer=setTimeout(()=>intro.close(),window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?150:2300);
   }
   function resumeIntro(){
     if(hiddenAt!==null&&Date.now()-hiddenAt>=resumeAfter)playIntro();
