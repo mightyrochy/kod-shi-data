@@ -114,6 +114,7 @@ class Межа:
     def __init__(self, *, лише_невідоме=None, з_порадами=False):
         self.факти = {}            # номер → {"state": стан, …зміст}
         self.реєстр = {}           # ід → номер речі
+        self.адреси_речей = {}      # адреса рядка пулу → номер речі цього складу
         self._групи = {}           # ключ змісту → номер (одна заява про кілька речей — один факт)
         self.мусить_у_тексті = []  # номери, які мусить назвати основний текст (її власна річ)
         self.лише_невідоме = лише_невідоме
@@ -283,9 +284,10 @@ class Межа:
                 and isinstance(ч.get("says"), str) and ч["says"].strip()):
             return None, dict(частина=де, чому="invalid_sentence",
                               зняте=ч["says"] if isinstance(ч, dict) and isinstance(ч.get("says"), str) else ч)
-        про, текст = ч["about"], " ".join(ч["says"].split())
+        посилання = [(self.адреси_речей.get(н, н), с) for н, с in ч["about"].items()]
+        про, текст = dict(посилання), " ".join(ч["says"].split())
         чужі = [н for н in про if н not in self.факти]
-        всупереч = [н for н, с in про.items() if н in self.факти and с != self.факти[н]["state"]]
+        всупереч = [н for н, с in посилання if н in self.факти and с != self.факти[н]["state"]]
         числа = [ц for ц in _ЧИСЛО.findall(текст) if ц.lstrip("+").replace(",", ".") not in self._числа(про)]
         без_причини = [н for н in про if н in self.факти and self.факти[н].get("because")
                        and not set(self.факти[н]["because"]) & set(про)]
