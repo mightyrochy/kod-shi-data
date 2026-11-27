@@ -3,7 +3,8 @@
 import ast, gzip, importlib.util, json, sys, tempfile
 from pathlib import Path
 
-КОРІНЬ = Path(__file__).resolve().parents[2]
+ТУТ = Path(__file__).resolve().parent
+КОРІНЬ = ТУТ.parents[3]
 sys.path.insert(0, str(КОРІНЬ / "джерела"))
 import семплер as С
 from добір_вагою import рівні
@@ -25,7 +26,7 @@ for гілка in ({"ядро": ядро, "на межі": межа}).values():
 ок &= [r["id"] for r in С.вибрати_зі_слота(слот, 3, 7)] == [r["id"] for r in С.вибрати_зі_слота(слот, 3, 7)]
 
 # 2. Читач: старий запис без «рівні» → None; новий → число.
-спец = importlib.util.spec_from_file_location("вимір", КОРІНЬ / "аудит/звіти/крамниці-рівна-черга/вимір.py")
+спец = importlib.util.spec_from_file_location("вимір", КОРІНЬ / "аудит" / "звіти" / "крамниці-рівна-черга" / "вимір.py")
 В = importlib.util.module_from_spec(спец); спец.loader.exec_module(В)
 ок &= В.рівень_речі(None, "а") is None and В.рівень_речі({}, "а") is None
 ок &= В.рівень_речі(отримано, "в") == 2 and В.рівень_речі(отримано, "нема") is None
@@ -35,7 +36,7 @@ for гілка in ({"ядро": ядро, "на межі": межа}).values():
 ф = Path(з) / "міст_пакет.py"
 ф.write_text("def f():\n    if not пак.get(\"готово\") or _вага(пак) <= _б_зрізу:\n        pass\n", encoding="utf-8")
 sys.argv = ["л", з]
-exec(compile((КОРІНЬ / "аудит/проби/Збирання-запит-склад/межа_пулу/латка_виміру.py").read_text(encoding="utf-8"), "латка", "exec"))
+exec(compile((ТУТ / "латка_виміру.py").read_text(encoding="utf-8"), "латка", "exec"))
 т = ф.read_text(encoding="utf-8"); ast.parse(т)
 ок &= '_мв["рівні"]' in т and "_С.рівні_слота" in т
 print("рівні траси:", отримано, "OK" if ок else "ПОМИЛКА")
