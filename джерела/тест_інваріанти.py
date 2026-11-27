@@ -241,9 +241,9 @@ class Е2_ЗбійЗіСлідом(unittest.TestCase):
 
 
 class Ядро_Обіцянка9(unittest.TestCase):
-    """Обраний плиткою варіант діє або картка пояснює, яка дія допоможе його перевірити."""
+    """Обраний плиткою варіант діє або картка називає брак і доступну їй дію."""
 
-    def test_обрана_тріада_пояснює_брак_портрета(self):
+    def test_обрана_тріада_пояснює_брак_входу(self):
         from types import SimpleNamespace
 
         from ядро import ситуація
@@ -255,24 +255,58 @@ class Ядро_Обіцянка9(unittest.TestCase):
         день = ситуація.тап(ситуації.ситуація("с5"), "схема", "triad", ситуації.ДАТА)
         каталог = [_запис(ід, слот, lab=[50, 0, 0], колір_тип="вимір", колір_джерело="фото")
                    for ід, слот in (("coat", "верхній_шар"), ("dress", "сукня"), ("shoes", "взуття"))]
+        без_кольору = [_запис("dress", "сукня", назва="Сукня Лада", колір_тип="невідомо")
+                       if р["id"] == "dress" else р for р in каталог]
         портрет = {"колір": {"шкіра": "#dbab95", "волосся": "#473227", "очі": "#625448"},
                    "палітра": {"вибір_кольору": {"база": "red", "база_hex": "#a82035", "база_тип": "колір"}}}
+        сірий = {"колір": {"шкіра": "#bcbcbc", "волосся": "#505050", "очі": "#808080"}}
+        графіт = {"база": "графіт", "база_hex": "#4b4b4b", "база_тип": "нейтраль"}
+        її_база = dict(сірий, палітра={"вибір_кольору": dict(графіт, обрала={"base": "her"})})
+        типова_база = dict(сірий, палітра={"вибір_кольору": dict(графіт, база_за_замовчуванням=True)})
+        випадки = (
+            ("брак портрета", {}, каталог, "palette_scheme_needs_portrait", "add_portrait", ()),
+            ("портрет є, основу не обрано", сірий, каталог, "palette_scheme_anchor_missing", None, ()),
+            ("брак тону її бази", її_база, каталог, "palette_scheme_anchor_missing", None, ()),
+            ("неповний портрет", {"колір": {"шкіра": "#dbab95"}}, каталог,
+             "palette_scheme_portrait_colours_incomplete", None, ()),
+            ("портрет лише з оцінкою очей", {"колір": {"колір_очей": "brown"}}, каталог,
+             "palette_scheme_portrait_colours_incomplete", None, ()),
+            ("лише макіяж", {"сценарій": {"макіяж": {"губи": "#a82035"}}}, каталог,
+             "palette_scheme_needs_portrait", "add_portrait", ()),
+            ("брак тону типової бази", типова_база, каталог, "palette_scheme_anchor_missing", None, ()),
+            ("брак кольору речі", портрет, без_кольору, "palette_scheme_item_colour_missing", None, ("dress",)),
+            ("входи відомі", портрет, каталог, None, None, ()),
+        )
         протокол = SimpleNamespace(виклик=lambda запит: bridge.виклик("ядро", запит))
-        for профіль in ({}, портрет):
-            with self.subTest(портрет=bool(профіль)):
-                вхід = обвязка.вхід_с5(каталог=каталог, ситуація=день.в_json(), профіль=профіль)
+        for назва, профіль, речі, код, дія, іди in випадки:
+            with self.subTest(випадок=назва):
+                вхід = обвязка.вхід_с5(розмова="обіцянка-9", каталог=речі, ситуація=день.в_json(), профіль=профіль)
                 вихід, _ = обвязка.прогнати(протокол, вхід, _складач)
                 дані, = (к for к in вихід["картки"] if к["рука"] == 1)
                 картка = Картка.з_json(дані)
                 self.assertIsNone(картка.збій)
-                дія = getattr(картка, "дія_для_вибору", None)
-                if профіль:
-                    self.assertIsNone(дія)
+                рядок = картка.дія_для_вибору
+                if код is None:
+                    self.assertIsNone(рядок)
+                    continue
+                self.assertIsNotNone(рядок, "картка мовчить про її вибір")
+                заява, = рядок["statements"]
+                self.assertEqual(заява["code"], код)
+                self.assertEqual(заява["values"]["scheme"], "triad")
+                if дія:
+                    self.assertEqual(заява["values"]["action"], дія)
                 else:
-                    self.assertIsNotNone(дія, "без портрета картка мовчить про її вибір")
-                    self.assertEqual(дія["kind"], "card_choice_missing_input")
-                    заява, = дія["statements"]
-                    self.assertEqual(заява["values"], {"scheme": "triad", "action": "add_portrait"})
+                    self.assertNotIn("action", заява["values"])
+                self.assertEqual(рядок["kind"], {
+                    "palette_scheme_needs_portrait": "card_choice_missing_input",
+                    "palette_scheme_portrait_colours_incomplete": "card_choice_portrait_colours_incomplete",
+                    "palette_scheme_anchor_missing": "card_choice_anchor_missing",
+                    "palette_scheme_item_colour_missing": "card_choice_item_colour_missing",
+                }[код])
+                self.assertEqual(tuple(заява.get("item_ids", ())), іди)
+                for ід in іди:
+                    self.assertIn((ід, "Сукня Лада"), [(р["ід"], р["назва"]) for р in картка.речі])
+                    self.assertTrue(any(з.get("річ") == ід and з.get("поле") == "колір" for з in картка.невідоме))
 
 
 class Е3_ЗамінаЗПеревіркою(unittest.TestCase):
@@ -1401,7 +1435,7 @@ print(json.dumps([json.loads(результат), sorted(ЗАМІННІ & sys.mo
     Е2_ЗбійЗіСлідом.test_паспорт_з_прози_каже_про_збій,
     Е2_ЗбійЗіСлідом.test_мовний_шар_без_відповіді_каже_чому,
     Е2_ЗбійЗіСлідом.test_питання_про_річ_якої_нема_каже_про_помилку,
-    Ядро_Обіцянка9.test_обрана_тріада_пояснює_брак_портрета,
+    Ядро_Обіцянка9.test_обрана_тріада_пояснює_брак_входу,
     Е3_ЗамінаЗПеревіркою.test_образ_після_заміни_речі_перевірено_наново,
     Е3_ПолеБезПисача.test_пункт_без_входу_називає_вхід_і_не_судить,
     Е3_ПолеБезПисача.test_вирок_пара_вікон_відрізняє_утриманий_вхід,

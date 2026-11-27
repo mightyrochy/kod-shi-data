@@ -3,6 +3,7 @@ from dataclasses import dataclass, replace
 import json
 from pathlib import Path
 
+from внутрішня_мова import КОДИ_БРАКУ_СХЕМИ
 from межа_текстів import ІдУТілі, КАНДИДАТ_ЗАМІНИ, ПРЕДМЕТ
 from .поняття import Образ, Збій, НЕВІДОМО
 
@@ -222,10 +223,13 @@ def _тексти_картки(дані, межа):
     суд = межа.судити(дані)
     розбіжності = [з for з in суд["відкинуто"] if з["чому"] != "facts_not_told"]
     предмети = {н for н, ф in межа.факти.items() if ф["state"] == ПРЕДМЕТ}
-    стан_дії = "palette_scheme_needs_portrait"
-    пояснення = [р for р in суд["text"] if стан_дії not in р["about"].values()]
-    дія = next((р for р in суд["text"] if стан_дії in р["about"].values()), None)
-    поради = [р for р in суд["advice"] if предмети.intersection(р["about"])]
+    факти_вибору = {н for н, ф in межа.факти.items() if ф["state"] in КОДИ_БРАКУ_СХЕМИ}
+    пояснення = [р for р in суд["text"] if факти_вибору.isdisjoint(р["about"])]
+    дозволені_в_рядку = факти_вибору | предмети
+    рядок_вибору = next((р for р in суд["text"] if факти_вибору.intersection(р["about"])
+                        and дозволені_в_рядку.issuperset(р["about"])), None)
+    поради = [р for р in суд["advice"] if предмети.intersection(р["about"])
+              and факти_вибору.isdisjoint(р["about"])]
     if len(поради) != len(суд["advice"]):
         розбіжності.append(dict(чому="advice_item_missing"))
     дані_назв = дані.get("names")
@@ -240,13 +244,14 @@ def _тексти_картки(дані, межа):
     if not пояснення:
         розбіжності.append(dict(чому="explanation_missing"))
     сказані = {н for р in пояснення + поради for н in р["about"]}
-    if дія:
-        сказані.update(дія["about"])
+    if рядок_вибору:
+        сказані.update(рядок_вибору["about"])
     відсутні = (предмети - сказані) | set(суд["не_сказано"])
     if відсутні:
         розбіжності.append(dict(чому="facts_not_told", про=sorted(відсутні)))
-    прийнято_речень = len(пояснення) + len(поради) + len(суд["unknown"]) + bool(дія)
-    return dict(text=пояснення, advice=поради, action=[дія] if дія else [], unknown=невідоме_картки(межа, суд["unknown"]),
+    прийнято_речень = len(пояснення) + len(поради) + len(суд["unknown"]) + bool(рядок_вибору)
+    return dict(text=пояснення, advice=поради, action=[рядок_вибору] if рядок_вибору else [],
+                unknown=невідоме_картки(межа, суд["unknown"]),
                 names=назви, fallback=межа.запасні_рядки_картки()), розбіжності, прийнято_речень
 
 
