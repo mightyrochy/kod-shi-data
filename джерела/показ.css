@@ -1960,3 +1960,23 @@ html[data-hand=klyny] {
 
 .studio-sheet { background:var(--pair-ground); border-radius:var(--pair-panel-radius); }
 [data-hand=klyny] .studio-sheet-head>button { border-radius:0; }
+
+/* Головна: розмова є основним вікном, дії — поруч із нею. */
+html[data-pair-page=mirror] .studio.pair-app { grid-template-columns:1fr; grid-template-rows:auto minmax(240px,1fr) auto; }
+html[data-pair-page=mirror] .pair-app .pair-mast { grid-area:1/1; }
+html[data-pair-page=mirror] .studio.pair-app .studio-work { grid-area:3/1; max-height:38dvh; padding-bottom:12px; }
+html[data-pair-page=mirror] .studio.pair-app .pair-drawer { grid-area:2/1; position:relative; inset:auto; height:auto; min-height:240px; border:1px solid var(--ink); margin:8px var(--pair-pad); padding:12px; box-shadow:none; }
+html[data-pair-page=mirror] #mirror-letter { display:block; flex:1; min-height:100px; }
+html[data-pair-page=mirror] :is(#pair-handle,.pair-chat-head button,.pair-chat-tools,.pair-topline) { display:none; }
+html[data-pair-page=mirror] .pair-app #mirror-input #чат-поле { min-height:70px; }
+.pair-app .pair-mast { grid-template-columns:minmax(110px,1fr) minmax(60px,120px) auto; }
+.pair-my { white-space:nowrap; }
+.pair-profile-intro > button { font-size:1.2rem; margin-bottom:16px; text-align:left; }
+.pair-profile .pair-image { width:100%; min-width:0; }
+.pair-profile .pair-image img { max-width:100%; height:240px; object-fit:contain; }
+.pair-app #е-огляд .рядок { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 16px; position:relative; }
+.pair-app #е-огляд .рядок .н { min-width:0; grid-column:1; }
+.pair-app #е-огляд .рядок .прев { grid-column:1; grid-row:2; width:auto; max-width:100%; text-align:left; white-space:normal; overflow-wrap:anywhere; }
+.pair-app #е-огляд .рядок:after { grid-column:2; grid-row:1/3; }
+[data-hand=vytynanka] .pair-swatches i { border-radius:0; clip-path:polygon(50% 0,100% 25%,85% 80%,50% 100%,0 75%,15% 20%); box-shadow:none; }
+[data-hand=klyny] .pair-swatches i { border-radius:0; clip-path:polygon(25% 0,100% 0,75% 100%,0 100%); box-shadow:none; }

@@ -32,17 +32,11 @@ window.createMirrorPair = function(R) {
   const cardKey=(pack,pos)=>ключЗаписуОбразуП(pack)+'#'+pos;
   const measurements=()=>[['мр-зріст','Зріст'],['мр-талія','Талія']].filter(([id])=>Number(node(id)?.value)>0).map(([id,name])=>'<small>'+name+' · '+e(node(id).value)+' см</small>').join('');
   function home(){
-    const colors=family(),known=colors.some(([hex])=>hex);
-    if(!homeArt.has(M.get()))homeArt.set(M.get(),Hand.art(M.get(),'welcome'));
-    const hasResult=typeof П!=='undefined'&&П?.картки?.some(c=>c&&!c.збій&&String(c.рука)==='1');
-    const introduced=known||!!bodyPhoto();
-    const reflection=introduced?'<button type="button" class="pair-image pair-color-read" data-ux="my-colors">'+swatches(colors)+measurements()+'</button>':'<div class="pair-image pair-glass"><span class="pair-home-art" aria-hidden="true">'+homeArt.get(M.get())+'</span></div>';
-    const sides=relation(label('Ти',person()),'',label(introduced?'Барви й мірки':'Люстерко',reflection),'pair-hand-frame');
-    return sides+'<div class="pair-captions">'+action('my-colors',known?'Виправити барви':introduced?'Додати барви':'Мої барви')+(hasResult?action('pair-result','Готовий образ'):action('compose','Зібрати вручну'))+'</div>'+
-      '<div class="pair-start-actions">'+action(R.hasCase()?'pair-summary':'pair-occasion',R.hasCase()?'Моя нагода':'Зібрати образ','',true)+action('assess','Оцінити вбрання')+'</div>'+
-      '<div class="pair-shortcuts">'+b('anchor','Під мою річ','вішак')+b('buy','Купити чи ні?','сумка')+b('catalog','Знайти річ','пошук')+b('closet','Мої речі','збірка')+'</div>'+
+    return '<div class="pair-start-actions">'+action('pair-occasion','Зібрати образ','',true)+action('assess','Оцінити вбрання')+'</div>'+
+      '<div class="pair-shortcuts">'+b('library','Мої образи','збірка')+b('anchor','Під мою річ','вішак')+b('buy','Купити чи ні?','сумка')+b('catalog','Знайти річ','пошук')+b('closet','Мої речі','збірка')+b('compose','Зібрати вручну','вішак')+'</div>'+
       '<div class="pair-future-link">'+action('pair-plans','У планах')+'</div>';
   }
+
   function row(left,sign,right,css=''){
     return '<div class="pair-fact '+css+'"><div>'+left+'</div><i aria-hidden="true">'+e(sign)+'</i><div>'+right+'</div></div>';
   }
@@ -248,8 +242,9 @@ window.createMirrorPair = function(R) {
       }
       if(mode==='профіль'&&!extra){
         host.hidden=false;
-        const measures=measurements();
-        place(host,relation(label('Твоє фото',person()),'',label('Барви й мірки',swatches(family())+measures+action('pair-measures','Мої мірки')),'pair-profile'));
+        const name=node('пр-імʼя')?.value||'Як до тебе звертатися?';
+        const portrait=photoURL(node('ф-портрет')?.querySelector('img')?.getAttribute('src'));
+        place(host,'<div class="pair-profile-intro"><button type="button" class="studio-text" data-ux="pair-name">'+e(name)+'</button>'+relation(label('Портрет','<button type="button" class="pair-image" data-ux="pair-photos">'+(portrait?image(portrait,'Портрет'):ik('камера',27)+' Додати портрет')+'</button>'),'',label('На повний зріст',person()),'pair-profile')+'</div>');
       }
     }
     if(!extra&&mode==='образи')nativeVariants();else delete document.documentElement.dataset.pairLooks;
@@ -289,7 +284,7 @@ window.createMirrorPair = function(R) {
   }
   function photo(){const field=node('ф-зріст')?.querySelector('input[type=file]');if(field)field.click();else{R.route('профіль',false);відкритиАркушПрофілю('ф-блок');}}
   function afterOccasion(key){if(!key)R.openDrawer(true);}
-  const handlers={'pair-home':()=>stage('mirror'),'pair-occasion':()=>stage('occasion'),'pair-summary':()=>stage('understood'),'pair-photo':photo,'pair-edit':openEdit,'pair-save-case':()=>node('сц-зберегти').click(),
+  const handlers={'pair-name':()=>відкритиАркушПрофілю('проф-блок'),'pair-photos':()=>відкритиАркушПрофілю('ф-блок'),'pair-home':()=>stage('mirror'),'pair-occasion':()=>stage('occasion'),'pair-summary':()=>stage('understood'),'pair-photo':photo,'pair-edit':openEdit,'pair-save-case':()=>node('сц-зберегти').click(),
     'pair-build':()=>{if(режимЕкрана()!=='сценарій')stage('understood');Екран.відЖінки('розуміння-так');node('зб-зібрати').click();},'pair-palette':()=>R.route('палітра'),'pair-agree':k=>factDecision(k,true),'pair-remove':k=>factDecision(k,false),
     'pair-open-product':idx=>{показатиОбраз(Number(idx));nativeVariants();},'pair-result':showProduct,
     'pair-reverse':pos=>{if(!П?.картки?.[Number(pos)])return;const key=cardKey(П,Number(pos));reverseKey=reverseKey===key?'':key;nativeVariants();},

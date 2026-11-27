@@ -25,7 +25,8 @@
   sheet.addEventListener('click',ev=>{if(ev.target===sheet){const r=sheet.getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)close();}});
   function say(text){node('mirror-chat-status').textContent=text;}
   function setDrawer(open,focus=false){
-    drawerOpen=!!open;const expanded=!mobile.matches||drawerOpen;
+    const home=document.documentElement.dataset.pairPage==='mirror';
+    drawerOpen=!!open&&!home;const expanded=!mobile.matches||drawerOpen;
     document.documentElement.dataset.drawer=expanded?'open':'closed';
     node('pair-handle').setAttribute('aria-expanded',String(expanded));
     node('pair-curtain').hidden=!(mobile.matches&&drawerOpen);
@@ -65,7 +66,7 @@
   function renderPerson(){
     const b=node('mirror-person'),photo=node('ф-портрет')?.querySelector('img')?.getAttribute('src')||'';
     if(b._hand===M.get()&&b._photo===photo)return;b._hand=M.get();b._photo=photo;
-    b.innerHTML=Hand.mark(M.get(),28,photo)+'<span>Мій профіль</span>';b.title='Мій профіль';
+    b.textContent='Профіль';b.title='Профіль';
   }
   function themeButtons(){
     const hand=M.get();
@@ -162,6 +163,7 @@
     node('pair-review-chat').hidden=!review;
     if(!inCase&&!extra)setHeading(titles[mode]||'Люстерко',mode==='бібліотека'?button('closet','Мої речі','вішак'):mode==='профіль'?button('access','Доступ'):button('face','До люстерка','назад'));
     pair.render(mode,extra);
+    if(document.documentElement.dataset.pairPage==='mirror'){work.inert=false;document.querySelector('.pair-mast').inert=false;node('pair-curtain').hidden=true;}
     feedback.hidden=!!extra||!inCase||document.documentElement.dataset.pairPage!=='understood';
     if(mode==='бібліотека'&&!extra){nativeSeals();node('mirror-saved-manual').hidden=pair.blindShelf();if(!pair.blindShelf())window.Rack?.library();}
     const last=ЧАТ_П.at(-1);
