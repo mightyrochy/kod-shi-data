@@ -720,6 +720,36 @@ class Річ_КолірМітка(unittest.TestCase):
                          ("uncertain", "unknown", ["black", "dark_gray"]))
 
 
+class Річ_МіркиКрамниці(unittest.TestCase):
+    """Мірка з фіду доїжджає до запиту складання з одиницею й джерелом."""
+
+    def test_довжина_їде_зі_свідченням_а_невідоме_лишається_порожнім(self):
+        from ядро.тести import обвязка
+
+        # Поля першої сукні — ж-00059, diadia.ua. Інша річ має лише мірку рукава.
+        каталог = """<yml_catalog><shop><categories><category id="1">Сукні</category></categories><offers>
+        <offer id="ж-00059"><name>Сукня лляна з воланом</name><price>1200</price><categoryId>1</categoryId>
+        <param name="~Довжина сукні до талії">48 см.</param><param name="~Довжина виробу">94 см.</param></offer>
+        <offer id="без-мірки"><name>Сукня лляна</name><price>1300</price><categoryId>1</categoryId>
+        <param name="~Довжина рукава">48 см</param><param name="~Довжина виробу">94</param></offer>
+        </offers></shop></yml_catalog>"""
+        with tempfile.TemporaryDirectory() as тека:
+            шлях = os.path.join(тека, "каталог.xml")
+            with open(шлях, "w", encoding="utf-8") as файл:
+                файл.write(каталог)
+            вхід = обвязка.вхід_с5(каталог=шлях)
+            вхід["перемикачі"]["записи_речі"] = "нові"
+            вихід = виклик("ядро", {"дія": "почати", "вхід": вхід})
+        запит = next(з for з in вихід["запити"] if з["вид"] == "складання")
+        пул = json.loads(запит["модель"]["messages"][0]["content"])["pool"]
+        рядки = {р["price"]: р for р in (dict(zip(пул["cols"], рядок)) for рядок in пул["rows"])}
+        мірка = рядки[1200]["garment_length"]
+        self.assertEqual((мірка.get("value"), мірка.get("unit")), (94, "cm"))
+        self.assertEqual(рядки[1200]["sources"]["garment_length"]["source"], "крамниця")
+        self.assertEqual(рядки[1300]["garment_length"], "unknown")
+        self.assertNotIn("garment_length", рядки[1300]["sources"])
+
+
 class Річ_ОзнакиОбличчяОчі(unittest.TestCase):
     """Корінь Річ-ознаки-обличчя (наряд Річ-ознаки-обличчя-очі-називає-модель): сім'ю очей називає модель зору — і в
     запит палітри вона доходить тією самою, під джерелом «оцінка моделі» (дротом `model_hex`, статус `estimate`, не
