@@ -838,6 +838,8 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "card_unknowns_toggle": "напис на кнопці, що розгортає на картці образу згорнутий перелік того, "
                             "що в цьому образі лишилось не перевіреним: кілька слів, без числа, без "
                             "крапки в кінці; лічбу рядків екран допише сам",
+    "card_choice_missing_input": "одне коротке речення на картці образу: назви обрану нею схему, "
+                                 "поясни, чому не змогла її перевірити, і скажи, що їй зробити",
     # ЗАМІНА-МОВЧИТЬ: заміна відповіла «готово» без речі — раніше жінці не казали нічого
     "replacement_not_found": "рядок на картці образу біля речі, яку вона позначила на заміну: стилістка "
                              "не знайшла їй заміни, річ лишилась у образі, а кнопку можна натиснути знову",
@@ -2002,6 +2004,9 @@ def _опис_keep_by():
                                    "without the photos)",
     "items_prices_links_are_true": "the items, the prices and the links on this card are true, so the outfit "
                                    "can be judged without the explanation",
+    "palette_scheme_needs_portrait": "the selected colour scheme could not be checked without a portrait in her "
+                                     "profile (values: scheme — the scheme she chose; action: add_portrait — "
+                                     "she can add a portrait to her profile so the stylist can check the scheme)",
     "name_occasion_or_place": "she chooses an occasion or a place on the scenario screen, or says in words "
                               "where she is going, and builds again",
     "photo_shared_by_other_products": "the photo the code measured the item on stands on several other "
