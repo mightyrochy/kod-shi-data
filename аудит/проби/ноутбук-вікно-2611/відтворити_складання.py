@@ -1,6 +1,6 @@
 """Відтворює обірвані виклики складання руки 1 з автоживого 344d840e на LM Studio: форма відповіді — записана («до») чи
 з коду цієї гілки («після»: «worn» лише на речі без факту типу, складання без «done»), стеля 4000; друкує finish_reason,
-токени й скільки образів прочитав суворий розбір. Запуск з кореня: python <цей файл> до|після [N] > рядки JSONL."""
+токени й скільки образів прочитав суворий розбір. Запуск з кореня: python <цей файл> до|після [до N [від M]] >> рядки JSONL."""
 import glob, json, sys, time, urllib.request
 from pathlib import Path
 К = Path(__file__).resolve().parents[3]; sys.path.insert(0, str(К / "джерела"))
@@ -18,8 +18,8 @@ def після(текст):
     о["worn"] = нов["worn"]
     if "Build outfits" in текст[:400]: о.pop("done", None); assert о == нов, "скелет складання розійшовся з кодом"
     return текст[:і] + json.dumps(с, ensure_ascii=False, separators=(",", ":")) + текст[і + к:]
-варіант, межа = sys.argv[1], int(sys.argv[2]) if len(sys.argv) > 2 else 99
-for ф, з in list(обірвані())[:межа]:
+варіант, межа, від = sys.argv[1], int(sys.argv[2]) if len(sys.argv) > 2 else 99, int(sys.argv[3]) if len(sys.argv) > 3 else 0
+for ф, з in list(обірвані())[від:межа]:
     текст = "".join(б.get("text", "") for б in з["messages"][0]["content"] if б.get("type") == "text")
     текст = після(текст) if варіант == "після" else текст
     кадри = [{"type": "image_url", "image_url": {"url": "data:%s;base64,%s" % (б["source"]["media_type"], б["source"]["data"])}}
