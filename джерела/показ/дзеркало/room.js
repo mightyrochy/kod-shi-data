@@ -30,7 +30,13 @@
     introTimer=setTimeout(()=>intro.close(),window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?150:2300);
   }
   function resumeIntro(){
-    if(hiddenAt!==null&&Date.now()-hiddenAt>=resumeAfter)playIntro();
+    if(hiddenAt!==null&&Date.now()-hiddenAt>=resumeAfter){
+      if(available()){
+        if(зрізПрофіляП().профілі.створено)pair.stage('mirror');
+        else route('профіль',false);
+      }
+      playIntro();
+    }
     hiddenAt=null;
   }
   function move(item, parent){if(item&&parent&&item.parentNode!==parent)parent.append(item);}
