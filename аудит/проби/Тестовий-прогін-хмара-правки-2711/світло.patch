@@ -1,0 +1,7 @@
+3146a3147,3152
+>     if (ПАРА) await розділПрофілю('ф-блок');
+>     { const св = await стор.evaluate(() => { const в = document.getElementById('ф-світло-портрета'), п = document.getElementById('ф-підказка-портрета'),
+>         сл = document.querySelector('#ф-портрет'); return {текст_поради: в ? в.textContent : null, порада_видна: !!в && в.getClientRects().length > 0,
+>         підказка_схована: п ? п.hidden : null, текст_слота: сл ? сл.innerText : null, кол_стан: (document.getElementById('кол-стан') || {}).textContent}; });
+>       console.log('СВІТЛО ПІД ПОРТРЕТОМ:', JSON.stringify(св));
+>       await стор.evaluate(() => document.getElementById('ф-світло-портрета').scrollIntoView({block: 'center'})); await знімок('portret_svitlo', null, true); }
