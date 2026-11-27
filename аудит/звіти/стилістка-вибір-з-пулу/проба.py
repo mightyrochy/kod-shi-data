@@ -10,7 +10,8 @@ from pathlib import Path
 ТЕКА = Path(__file__).resolve().parent
 сп = importlib.util.spec_from_file_location("попередній", ТЕКА.parent / "крамниці-рівна-черга" / "вимір.py")
 П = importlib.util.module_from_spec(сп); sys.modules["попередній"] = П; сп.loader.exec_module(П)
-ЗАПИТ = "ж3_кафе_20/1/7"
+ЗАПИТ = os.environ.get("ПРОБА_ЗАПИТ", "ж3_кафе_20/1/7")
+ТЕКА_ВІДПОВІДЕЙ = ТЕКА / os.environ.get("ПРОБА_ТЕКА", "проба")
 СИСТЕМНИЙ = ("You are the model behind a mobile styling app. The user message is the application prompt, "
              "verbatim. Do exactly what it asks and output only the answer it asks for: raw JSON with no code "
              "fence when it asks for JSON, plain prose when it asks for prose. No preamble, no commentary, no "
@@ -32,7 +33,7 @@ def промпт(сід, ключ=ЗАПИТ):
 
 
 def виклик(сід):
-    вихід = ТЕКА / "проба" / f"{сід:02d}.json"
+    вихід = ТЕКА_ВІДПОВІДЕЙ / f"{сід:02d}.json"
     if вихід.exists():
         return
     т0 = time.time()

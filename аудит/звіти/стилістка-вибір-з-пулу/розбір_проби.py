@@ -6,7 +6,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 import importlib.util, sys
 ТЕКА = Path(__file__).resolve().parent
-ТЕКА_ = ТЕКА
+сп = importlib.util.spec_from_file_location("проба", ТЕКА / "проба.py"); ПР = importlib.util.module_from_spec(сп); sys.modules["проба"] = ПР; сп.loader.exec_module(ПР)
 
 
 def вілсон(k, n):
@@ -38,7 +38,7 @@ def розібрати():
     в_записі = {r["n"]: int(r["взято"]) for r in рядки}
     п2 = {r["ід"]: int(r["взято"]) for r in csv.DictReader((ТЕКА / "речі.csv").open(encoding="utf-8"))}
     запуски = []
-    for ф in sorted((ТЕКА / "проба").glob("*.json")):
+    for ф in sorted(ПР.ТЕКА_ВІДПОВІДЕЙ.glob("*.json")):
         o = json.loads(ф.read_text(encoding="utf-8"))
         try:
             в = ПР.П.розібрати_json(o["відповідь"])
@@ -86,7 +86,7 @@ def розібрати():
                                    колись_20_але_ніколи_п2=колись_20_і_ніколи_п2, колись_20_колись_п2=колись_20_і_колись_п2),
                  частота_топ=Counter({n: частота[n] for n in частота}).most_common(5),
                  у_запису_взято_в_цьому_запиті=sum(в_записі.values()))
-    (ТЕКА / "проба-підсумок.json").write_text(json.dumps(вихід, ensure_ascii=False, indent=1, default=list) + "\n", encoding="utf-8")
+    (ТЕКА / (ПР.ТЕКА_ВІДПОВІДЕЙ.name + "-підсумок.json")).write_text(json.dumps(вихід, ensure_ascii=False, indent=1, default=list) + "\n", encoding="utf-8")
     print(json.dumps(вихід, ensure_ascii=False, indent=1, default=list))
 
 
