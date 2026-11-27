@@ -305,7 +305,7 @@ def _рядок(н, річ, кандидат):
     ранг = кандидат.get("факти_рангу", {})
     гілка = ранг.get("branch")
     вихід = {"n": н, "price": _значення(річ.ціна), "kind": СЛОТИ[річ.слот],
-             "color": дані.get("color") or межі.get("color") or "unknown",
+             "color": дані.get("color") or межі.get("color") or ("uncertain" if "відтінки" in межі else "unknown"),
              "hex": дані.get("hex") or "unknown", "family": дані.get("family") or "unknown",
              "L": дані.get("L", "unknown"), "branch_source": колір.джерело or "unknown",
              "in_arc": "unknown",
@@ -326,8 +326,11 @@ def _рядок(н, річ, кандидат):
     if колір.джерело:
         джерело = _поле(колір)
         if дані:
+            # Код відтінку (`відтінки.py`): точка — центроїд ділянки коду, не вимір; стилістці — коди з частками й
+            # принт, а hex, родина й світлота ділянки стоять у рядку.
+            повтор = ("color", "hex", "family", "L", "lab") if "відтінки" in дані else ("color", "hex", "family", "L")
             джерело["value"] = {к: в for к, в in дані.items()
-                                 if к not in ("color", "hex", "family", "L") or в != вихід[к]}
+                                 if к not in повтор or к != "lab" and в != вихід[к]}
         вихід["sources"]["color"] = джерело
     return вихід
 
