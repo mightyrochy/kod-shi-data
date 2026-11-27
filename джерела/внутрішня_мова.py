@@ -840,6 +840,12 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                             "крапки в кінці; лічбу рядків екран допише сам",
     "card_choice_missing_input": "одне коротке речення на картці образу: назви обрану нею схему, "
                                  "поясни, чому не змогла її перевірити, і скажи, що їй зробити",
+    "card_choice_anchor_needs_portrait": "одне коротке речення на картці образу: назви обрану нею схему, "
+                                         "скажи, що для перевірки бракує відтінку, і попроси додати портрет",
+    "card_choice_anchor_missing": "одне коротке речення на картці образу: назви обрану нею схему "
+                                  "й скажи, чому бракує кольору для її перевірки; жодних порад чи запрошень до дії",
+    "card_choice_item_colour_missing": "одне коротке речення на картці образу: назви обрану нею схему й поясни, "
+                                       "що колір речі невідомий; жодних порад, назву речі допише екран",
     # ЗАМІНА-МОВЧИТЬ: заміна відповіла «готово» без речі — раніше жінці не казали нічого
     "replacement_not_found": "рядок на картці образу біля речі, яку вона позначила на заміну: стилістка "
                              "не знайшла їй заміни, річ лишилась у образі, а кнопку можна натиснути знову",
@@ -2007,6 +2013,14 @@ def _опис_keep_by():
     "palette_scheme_needs_portrait": "the selected colour scheme could not be checked without a portrait in her "
                                      "profile (values: scheme — the scheme she chose; action: add_portrait — "
                                      "she can add a portrait to her profile so the stylist can check the scheme)",
+    "palette_scheme_anchor_missing": "the selected colour scheme could not be checked because no usable "
+                                     "reference hue was available (values: scheme — the scheme she chose; "
+                                     "action: add_portrait — if present, invite her to add a portrait to her profile; "
+                                     "if absent, explain the lack of a reference hue without asking her to do anything)",
+    "palette_scheme_item_colour_missing": "the selected colour scheme could not be checked because the colour "
+                                          "of one or more of its items is unknown (values: scheme — the scheme she chose; "
+                                          "items — the items with unknown colour). Give no action or advice; "
+                                          "the card appends the exact product names",
     "name_occasion_or_place": "she chooses an occasion or a place on the scenario screen, or says in words "
                               "where she is going, and builds again",
     "photo_shared_by_other_products": "the photo the code measured the item on stands on several other "

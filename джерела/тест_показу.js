@@ -4596,6 +4596,17 @@ function поверненняЗаглушка(w){
       тест('17299: один підпис на справді відсутнє поле зі всіма його речами, без запасних повторів',
            блок?.querySelector('summary')?.textContent.endsWith('· 2') &&
            JSON.stringify(рядки) === JSON.stringify(['Колір · Сукня міді, Сумка на плече', 'Підошва · Черевики']), рядки);
+      дані.дія_для_вибору = {kind: 'card_choice_item_colour_missing',
+        statements: [{code: 'palette_scheme_item_colour_missing', item_ids: ['a']}]};
+      const карткаВибору = w.eval('карткаЯдраНаЕкранП(' + JSON.stringify(дані) + ', 1)');
+      for (const дія of [карткаВибору.дія_для_вибору, 'Не перевірила тріаду, бо бракує кольору речі.']){
+        w.eval('П.картки[0] = ' + JSON.stringify({...карткаВибору, свідомі: [], дія_для_вибору: дія}) + '; 0');
+        const картка = w.рендерКартку(0);
+        const рядок = [...картка.querySelectorAll('p.не-вийшло')].find(р => р.textContent.includes('Сукня міді'));
+        тест('17303: рядок про брак кольору називає точну річ, подробиці лишаються за кнопкою',
+             !!рядок && !рядок.closest('details') && !/портрет|сумка/i.test(рядок.textContent) &&
+             картка.querySelector('details.питання-коду')?.textContent.includes('Колір · Сукня міді'), рядок?.textContent);
+      }
     }
   }
 
