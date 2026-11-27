@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You are a personal stylist. Put together one outfit for her case.\", \"rules\": [\"Items one per line, garments first, then shoes and accessories: what it is, cut, length, color with its hex code, fabric.\", \"An outer layer only when the weather needs it; in the warm or hot band there is none.\", \"Last, why this outfit works, in 3–4 sentences.\"], \"limits\": [\"Do not name lightness numbers, body measurements or height in numbers, or body-type labels, and do not say you had limits.\", \"The answer is plain text laid out as the rules say, not JSON.\"], \"language\": \"English\", \"answer\": \"OUTFIT_TEXT\", \"input\": [\"\\\"case\\\" — her case: the occasion, where and when, the weather, the dress code, her wishes and refusals — as codes, her own words as quotes; do not take an item that goes against her refusals or her words\", \"\\\"formality\\\" — dress band; origin in sources: home (loungewear, athleisure, sportswear) < everyday (jeans, a T-shirt and sneakers; neat casual, dark denim) < neat (business: a blouse, a shirt or a refined knit with trousers or a skirt, a textured jacket or a cardigan, loafers, ballet flats or ankle boots; social: a day dress, a refined knit with a skirt or trousers, a textured jacket, neat flats or ankle boots) < smart (business: a jacket with trousers or a skirt, a blouse or a shirt, loafers or pumps; a sheath dress with a jacket; social: a cocktail dress, heeled shoes) < formal (business: a business suit — a jacket with trousers or a skirt of one fabric — with a blouse, pumps; social: a formal dress of a noble fabric, heeled shoes) < very_smart (an evening gown) < ceremonial (a full-length evening gown with long gloves)\", \"\\\"person\\\" — facts about her from her photo and measurements, without conclusions: colors in hex (one per measurement), sizes in cm\"]}, \"case\": {\"field_quotes\": {\"occasion\": \"на роботу пішки\", \"place\": \"увесь день дощ\", \"movement\": \"пішки\", \"wants\": \"взуття — замшеві чоботи\"}, \"wish_quotes\": [\"взуття — замшеві чоботи\"], \"formality_reason\": \"norm\", \"sources\": {\"field_quotes\": {\"kind\": \"default\"}, \"formality_reason\": {\"kind\": \"default\"}, \"wish_quotes\": {\"kind\": \"default\"}, \"wishes\": {\"kind\": \"reading\", \"quote\": \"взуття — замшеві чоботи\", \"parts\": [{\"kind\": \"reading\", \"quote\": \"взуття — замшеві чоботи\"}]}, \"refusals\": {\"kind\": \"reading\"}, \"open_zones\": {\"kind\": \"reading\"}, \"place\": {\"kind\": \"reading\", \"quote\": \"увесь день дощ\"}, \"accent_place\": {\"kind\": \"reading\"}, \"occasion\": {\"kind\": \"reading\", \"quote\": \"на роботу пішки\"}, \"precipitation\": {\"kind\": \"her\", \"quote\": \"увесь день дощ\"}, \"formality\": {\"kind\": \"reading\"}, \"event\": {\"kind\": \"reading\"}, \"movement\": {\"kind\": \"reading\", \"quote\": \"пішки\"}}, \"event\": \"на роботу пішки\", \"movement\": \"walk\", \"precipitation\": \"rain\", \"wishes\": [\"ankle_boots, suede\"], \"occasion\": \"work\", \"place\": \"office_creative\", \"open_zones\": \"one\", \"accent_place\": \"other_accessories\", \"formality\": [\"neat\"], \"season\": \"autumn\"}, \"person\": {\"skin_hex\": [\"#deb295\", \"#d8a98c\", \"#e2ba9f\"], \"hair_hex\": \"#e5cd99\", \"eyes_hex\": \"#759087\", \"height_cm\": 168, \"girths_cm\": {\"shoulders\": 98, \"bust\": 92, \"waist\": 74, \"hips\": 99}}}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"Tapered wool-blend coat in navy blue (#000080), knee-length hem, relaxed fit, heavy-weight woven fabric for rain protection.\\nCrew-neck merino wool tunic in charcoal gray (#36454F), hip-length cut with a subtle ribbed texture, soft knit fabric.\\nWide-leg crepe trousers in stone beige (#D2B48C), ankle-length hem to keep the silhouette streamlined while walking, fluid woven fabric.\\nChelsea boots in suede taupe (#9CAE8D), ankle height with an elastic side panel for easy wear, water-resistant finish, sturdy sole.\\n\\nThis outfit prioritizes functionality and comfort for a full day of walking through rainy autumn weather, fulfilling the specific wish for suede ankle boots while providing necessary coverage with a trench-style coat. The neutral color palette of charcoal, stone, and navy creates a polished yet relaxed look that fits a creative office environment without requiring formal attire. Every piece is chosen to manage moisture and allow ease of movement, ensuring she looks put-together and feels confident from morning commute until late afternoon meetings.\"}],\"usage\":{\"input_tokens\":921,\"output_tokens\":227},\"stop_reason\":\"end_turn\"}"
+ }
+}

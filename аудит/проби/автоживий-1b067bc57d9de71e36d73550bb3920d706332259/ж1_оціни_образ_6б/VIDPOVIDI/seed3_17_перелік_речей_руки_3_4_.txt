@@ -1,0 +1,30 @@
+── ПРОМПТ (1910 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Cream silk blouse, relaxed fit, knee-length hem, hex #F5F5DC.\nDark charcoal wide-leg trousers, tapered cut, ankle length, hex #2F4F4F.\nOxblood leather ankle boots, pointed toe, hex #6E0B17.\nThis ensemble perfectly balances the creative office environment with a polished neat business look suitable for autumn daylight. The soft silk blouse adds texture and warmth against the crisp wool-like trousers, while the rich oxblood boots ground the outfit in season-appropriate depth. This combination respects the refusal against reading-heavy outfits by focusing entirely on tactile clothing elements that define her accent place without overwhelming the space."}
+
+── ВІДПОВІДЬ (561 симв., 3.2 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "blouse",
+      "details": "silk, relaxed fit, knee-length hem",
+      "slot": "top",
+      "color_hex": "#F5F5DC",
+      "worn": true
+    },
+    {
+      "name": "trousers",
+      "details": "charcoal wool-like fabric, wide-leg, tapered cut, ankle length",
+      "slot": "bottom",
+      "color_hex": "#2F4F4F",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "leather, pointed toe, ankle length",
+      "slot": "shoes",
+      "color_hex": "#6E0B17",
+      "worn": true
+    }
+  ]
+}
