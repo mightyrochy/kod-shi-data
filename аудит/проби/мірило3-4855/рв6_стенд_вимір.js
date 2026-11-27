@@ -35,14 +35,15 @@
    адреса, за якою сторінка бачить сама себе й міст. */
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
+const ПРОБИ = path.join(__dirname, '..'); /* ЗМІНА: файл лежить у мірило3-4855/, усі шляхи рв6_стенд.js — від аудит/проби */
 const ХІД_Н6 = process.env.N6_PLAN
-  ? require('../звіти/ядро-образу-наново/приймання/хід.js').записН6(process.env.N6_PLAN) : null;
-const {ЗаписанийОбмін, ТекстовіВідповіді, записатиОбмін, імТипу} = require('./записаний_обмін.js');
+  ? require(path.join(ПРОБИ, '..', 'звіти', 'ядро-образу-наново', 'приймання', 'хід.js')).записН6(process.env.N6_PLAN) : null;
+const {ЗаписанийОбмін, ТекстовіВідповіді, записатиОбмін, імТипу} = require(path.join(ПРОБИ, 'записаний_обмін.js'));
 const ЗАПИСАНИЙ_ОБМІН = process.env.REPLAY_EXCHANGE ? new ЗаписанийОбмін(process.env.REPLAY_EXCHANGE)
   : process.env.REPLAY_RECORDINGS ? new ТекстовіВідповіді(process.env.REPLAY_RECORDINGS) : null;
 let номерОбміну = 0;
 let ЗАВЕРШЕННЯ_ПОВТОРУ = null;
-const { чекатиСтан, ВИДНО_ЕЛЕМЕНТ } = require('../../джерела/проби/очікування.js');
+const { чекатиСтан, ВИДНО_ЕЛЕМЕНТ } = require(path.join(ПРОБИ, '..', '..', 'джерела', 'проби', 'очікування.js'));
 /* РЯДОК 2671: файл сцен з Windows-checkout несе `\r` у кінці рядка, і останнє поле сцени
    (`OTSINKA=0\r`) не дорівнювало '0' — «Оціни мій образ» бігло в кожному прогоні (40–67 с).
    Хвіст `\r`/`\n` знімається з кожної змінної оточення до першого читання. */
@@ -53,16 +54,16 @@ for (const к of Object.keys(process.env)){
 /* SLABKA=<форма,…> — слабка модель поверх заглушки (рядок 208, `слабка_модель.js`) */
 /* Короткий прохід чотирьох сімей: без збирання образів, які не належать цій сцені. */
 if (process.env.DO === 'produkt') for (const ключ of ['PRODUKT', 'OTSINKA_PRAVKA', 'FOTO_STEND']) process.env[ключ] = '1';
-const СЛАБКА = require(path.join(__dirname, 'слабка_модель.js'));
+const СЛАБКА = require(path.join(ПРОБИ, 'слабка_модель.js'));
 /* CHASY=1 / ZATRYMKA=… — годинник збору (наряд Ш-1, `часи_збору.js`); без них — як доти */
-const ЧАСИ = require(path.join(__dirname, 'часи_збору.js'));
+const ЧАСИ = require(path.join(ПРОБИ, 'часи_збору.js'));
 /* ZAPYS_VYKLYKIV=<файл> — входи мосту прогону для знімка Pyodide (крок 0.2-А, `запис_викликів.js`) */
-const ЗАПИС_ВИКЛИКІВ = require(path.join(__dirname, 'запис_викликів.js'));
+const ЗАПИС_ВИКЛИКІВ = require(path.join(ПРОБИ, 'запис_викликів.js'));
 /* ZBIJ=katalog|pomady|skhovyshche|foto|kadr — наведений збій живих сцен кореня Е2-збій-без-сліду (`збій_наведення.js`); без неї — як доти */
-const ЗБІЙ = require(path.join(__dirname, 'збій_наведення.js'))(process.env.ZBIJ || '');
-const {джерелоШару, перекладШару, питаньЗВідповіддю} = require(path.join(__dirname, 'записи_шару.js'));
+const ЗБІЙ = require(path.join(ПРОБИ, 'збій_наведення.js'))(process.env.ZBIJ || '');
+const {джерелоШару, перекладШару, питаньЗВідповіддю} = require(path.join(ПРОБИ, 'записи_шару.js'));
 /* відсічення позначки жінки мусить бути названо, лише коли позначена річ була серед кандидатів (ЖИВІ-21 №13) */
-const { відсіченняНазване } = require(path.join(__dirname, 'відсічення_назване.js'));
+const { відсіченняНазване } = require(path.join(ПРОБИ, 'відсічення_назване.js'));
 const БАЗА = process.argv[2] || 'http://127.0.0.1:8765', КОРІНЬ = process.argv[3] || process.cwd();
 const ТЕКА_PYODIDE = process.argv[4] || '/tmp/pyodide';
 /* СІД — пʼятим аргументом (або env `SEED`, латиницею: кириличних імен env
@@ -390,7 +391,7 @@ const ПАСПОРТ_ПОВЕРХ = ПАСПОРТ_НАКЛАДКА;
 const знайтиФайлСцени = (змінна, ім) => {
   const тека = process.env.TEKA_FOTO_SCENY || '';
   const кандидати = path.isAbsolute(ім) ? [ім]
-    : [...new Set([path.resolve(КОРІНЬ, ім), path.resolve(process.cwd(), ім), path.join(__dirname, 'фото_сцен', ім)]
+    : [...new Set([path.resolve(КОРІНЬ, ім), path.resolve(process.cwd(), ім), path.join(ПРОБИ, 'фото_сцен', ім)]
       .concat(тека ? [path.join(тека, ім)] : []))];
   const є = кандидати.find(к => { try { return fs.statSync(к).isFile(); } catch (_) { return false; } });
   if (є) return є;
@@ -568,7 +569,7 @@ const РОЗМІРИ = [];
    який на справжній стелі впав би на першому ж запиті (саме так узято числа
    «до» наряду Л-2). Без змінної — стеля з `worker.js`, як у справжнього моста. */
 const СТЕЛЯ_ВХОДУ_СТЕНДА = Number(process.env.STELIA) || Number((/СТЕЛЯ_ВХОДУ_СИМВ\s*=\s*(\d+)/
-  .exec(fs.readFileSync(path.join(__dirname, '..', '..', 'джерела', 'worker.js'), 'utf8')) || [])[1] || 400000);
+  .exec(fs.readFileSync(path.join(ПРОБИ, '..', '..', 'джерела', 'worker.js'), 'utf8')) || [])[1] || 400000);
 /* ПОРАДА-ЗАПРОШЕННЯ (рядок 108): тему обирає КОД (`паспорт_нагоди.порада_коду`) і кладе в промпт
    рядком «Можеш запропонувати як ПОРАДУ …»; заглушка, як модель, лише вдягає її в одне речення.
    Без рядка від коду — порожньо: інакше «≤ 1 і без повторів» тримала б модель, а не код. */
@@ -602,7 +603,7 @@ const паспортМоделі = (текст) => {
 };
 /* Паспорт заглушки (ключі ядра) → внутрішня мова (коди) — зворотний бік ТІЄЇ САМОЇ таблиці, що
    в Python (`внутрішня_мова.ТАБЛИЦЯ`, файл схеми): друга таблиця тут розійшлась би з нею. */
-const ТАБЛИЦЯ_ВМ = (() => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'джерела',
+const ТАБЛИЦЯ_ВМ = (() => { try { return JSON.parse(fs.readFileSync(path.join(ПРОБИ, '..', '..', 'джерела',
   'внутрішня_мова.schema.json'), 'utf8'))['x-таблиця'] || {}; } catch (_) { return {}; } })();
 const кодВМ = (поле, ключ) => { const т = ТАБЛИЦЯ_ВМ[поле] || {}; return Object.keys(т).find(к => т[к] === ключ) || null; };
 /* ── ЗАГЛУШКА ПЕРЕКЛАДАЧА — СУМЛІННА (куратор 25.09, повернення #317) ─────────────
@@ -703,7 +704,7 @@ const н = р => (р && typeof р === 'object') ? (р.н ?? р.n ?? р.номе�
    нема — з назви, лише щоб скласти образ «верх+низ+взуття+сумка+третя», як доти зі слота.
    Відповідає тими самими англійськими ключами, якими пише жива модель
    (`протокол.КЛЮЧІ_ВІДПОВІДІ_EN`); збірку main (український вигляд) читає як доти. */
-const {відповідьЗадачі, допитОцінки, видРечі, пулЗаВидами, рядкиПулу} = require(path.join(__dirname, 'види_речей.js'));
+const {відповідьЗадачі, допитОцінки, видРечі, пулЗаВидами, рядкиПулу} = require(path.join(ПРОБИ, 'види_речей.js'));
 const ТРЕТІ_СЛОТИ = ['верхній_шар', 'шар2', 'прикраси', 'пояс', 'шарф', 'головний_убір',
   'сережки', 'намисто', 'кольє', 'браслет', 'брошка', 'окуляри', 'годинник', 'рукавички'];
 let першийПорожнійВіддано = false;
@@ -838,10 +839,10 @@ const МОДЕЛЬ_ЖИВА = process.env.MODEL || (КЛОД ? 'claude:' + КЛ�
    карток, фото — щонайменше одне, коли їх чекають (FOTO=1 або режим сцени «+фото» в `живі_сцени.txt`: SCENA=<id> чи
    впізнана за ZHINKA і CHAT_TEXT; 7610 — ПІСЛЯ без FOTO=1 на питання про фото), невідомих промптів заглушки 0 (8302),
    ходів плиток з відповіддю ≥ 1 під PLYTKY=1 (8119). Коду виходу запис не міняє: його читають run.sh і CI. */
-const ДП = require(path.join(__dirname, '..', '..', 'джерела', 'прилади', 'доказ_прогону.js'));
+const ДП = require(path.join(ПРОБИ, '..', '..', 'джерела', 'прилади', 'доказ_прогону.js'));
 const СЦЕНА_РЕЄСТРУ = (() => {
   try {
-    const рядки = fs.readFileSync(path.join(__dirname, 'живі_сцени.txt'), 'utf8').split('\n')
+    const рядки = fs.readFileSync(path.join(ПРОБИ, 'живі_сцени.txt'), 'utf8').split('\n')
       .filter(р => р.trim() && !р.startsWith('#')).map(р => р.replace(/\r$/, '').split('|'));
     const жінка = process.env.ZHINKA ? path.basename(process.env.ZHINKA, '.json') : null;
     const збіг = process.env.SCENA ? рядки.filter(р => р[0] === process.env.SCENA)
@@ -866,7 +867,7 @@ const ДОКАЗ = (() => {
       режим[м[1]] = м[1] === 'PASPORT' ? '(sha у входах)' : process.env[м[1]];
   режим.сід = СІД;
   if (СЦЕНА_РЕЄСТРУ) режим.сцена = СЦЕНА_РЕЄСТРУ;
-  return new ДП.Доказ({прилад: 'рв6_стенд', код: Object.assign({дерево: ДП.головаДерева(__dirname)}, штампи), режим,
+  return new ДП.Доказ({прилад: 'рв6_стенд', код: Object.assign({дерево: ДП.головаДерева(ПРОБИ)}, штампи), режим,
     модель: {стилістка: МОДЕЛЬ_ЖИВА || 'заглушка', мова: process.env.MODEL_MOVA || null},
     входи: Object.assign({сторінка: ш}, process.env.PASPORT ? {паспорт: {вміст: process.env.PASPORT}} : {},
       process.env.ZHINKA ? {жінка: process.env.ZHINKA} : {}, process.env.ROZMOVA ? {розмова: {вміст: process.env.ROZMOVA}} : {})});
@@ -965,7 +966,7 @@ if (ТЕКА_ВІДПОВІДЕЙ && МОДЕЛЬ_ЖИВА && !ЗАПИСАНИ�
 }
 const ТЕМПЕРАТУРА = ('MODEL_TEMP' in process.env) ? Number(process.env.MODEL_TEMP) : null;
 const ТЕМПЕРАТУРА_МОВИ = ('MODEL_TEMP_MOVA' in process.env) ? Number(process.env.MODEL_TEMP_MOVA) : null;
-const ВИБІРКА_ЗАПИТУ = require(path.join(__dirname, 'вибірка_запиту.js'));
+const ВИБІРКА_ЗАПИТУ = require(path.join(ПРОБИ, 'вибірка_запиту.js'));
 const ЖУРНАЛ_МОДЕЛІ = [];
 if (ТЕКА_ВІДПОВІДЕЙ) fs.mkdirSync(ТЕКА_ВІДПОВІДЕЙ, {recursive: true});
 if (КЛОД_ШВОМ) console.log('МОДЕЛЬ ЖИВА (claude -p, підписка): ' + КЛОД + ' · ' + КЛОД_БІН
@@ -1196,7 +1197,7 @@ const ЧЕКАЄ_JSON = т => /ОБРАЗИ_V1|ВИБІР_V1|ОЦІНКИ_V1|Т�
    звіт списав би це на продукт. Тут таймаута нема взагалі: скільки модель
    рахує, стільки й чекаємо (сторінка сама має свої межі). */
 /* постЖСОН і передача обриву до моделі — `обрив_моста.js` (рядок 5813) */
-const {постЖСОН, стежитиЗаОбривом} = require(path.join(__dirname, 'обрив_моста.js'));
+const {постЖСОН, стежитиЗаОбривом} = require(path.join(ПРОБИ, 'обрив_моста.js'));
 const ЖИВІ_ЗАПИТИ = new Map(), ОБРИВИ = [];
 /* ФОТО РЕЧЕЙ ПРИХОДЯТЬ АДРЕСОЮ, А LM STUDIO БЕРЕ ЛИШЕ BASE64 (виміряно 24.09.2026).
    Показ шле в опис `{type:'image', source:{type:'url', url:'https://крамниця…'}}` —
@@ -1214,7 +1215,7 @@ const ЖИВІ_ЗАПИТИ = new Map(), ОБРИВИ = [];
    jpeg. Визначення формату й обмеження розміру спільні для URL і base64:
    заголовок крамниці може бути відсутнім або не відповідати байтам (10616). */
 let _sharp = null; try { _sharp = require('sharp'); } catch (_) {}
-const {підготуватиКадр} = require('./кадр_моделі.js');
+const {підготуватиКадр} = require(path.join(ПРОБИ, 'кадр_моделі.js'));
 /* ВЕЛИКИЙ КАДР ВАЛИТЬ РУШІЙ (виміряно 25.09.2026, LM Studio llama.cpp cuda12 2.45.0,
    gemma-4-12b-it-qat): фото речі 1200×1800 — «The model has crashed without
    additional information» на будь-якому контексті (8 192 … 65 536), без Exif
@@ -1460,7 +1461,7 @@ async function клодомCLI(тіло, тип){
    образи, ComfyUI малює кадри); PRYMIRKA_USI=1 — кадр на кожній картці з речами. */
 const COMFY = process.env.COMFY === '1';
 const COMFY_URL = (process.env.COMFY_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
-const ВОРКФЛОУ_ПРИМІРКИ = path.join(__dirname, '..', '..',
+const ВОРКФЛОУ_ПРИМІРКИ = path.join(ПРОБИ, '..', '..',
   'open-source-stylist', 'system', 'workflows', 'qie2511_vton_lightning.json');
 async function завантажитиВComfy(байти, ім){
   const ф = new FormData();
@@ -3097,7 +3098,7 @@ function підсумокМоделі(){
     /* Python живе у воркері (4.1-Б-3): файл і код ідуть повідомленням-приладом, `приладМостуП` сам піднімає міст */
     await стор.evaluate(async () => { await підняти_міст_показу(); });
     await чекатиСтан(стор, 'міст готовий (МІСТ_ГОТОВИЙ_П)', () => typeof МІСТ_ГОТОВИЙ_П !== 'undefined' && МІСТ_ГОТОВИЙ_П, null, 120000);
-    const код = fs.readFileSync(path.join(__dirname, 'рв6_правило_руки2.py'), 'utf8');
+    const код = fs.readFileSync(path.join(ПРОБИ, 'рв6_правило_руки2.py'), 'utf8');
     await стор.evaluate(async ([код, ід]) => {
       await приладМостуП({'/рв6_правило_руки2.py': код},
         'import sys\nif "/" not in sys.path: sys.path.insert(0, "/")\nimport рв6_правило_руки2 as Р\nР.встановити(' + JSON.stringify(ід) + ')');
