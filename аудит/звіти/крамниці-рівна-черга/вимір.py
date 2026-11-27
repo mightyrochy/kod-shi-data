@@ -88,13 +88,14 @@ def повний_фід():
     return картки
 
 
-def знімок(копія):
+def знімок(копія, код_показу=None):
     import індекс_пошуку
     import таблиця_каталогу
     import фід_розбір
 
     html = копія / "index.html"
-    код_показу = файл("index.html")
+    if код_показу is None:
+        код_показу = файл("index.html")
     html.write_bytes(код_показу)
     with індекс_пошуку.load_modules(html) as пакет:
         xml = копія / "каталог_brief.xml"

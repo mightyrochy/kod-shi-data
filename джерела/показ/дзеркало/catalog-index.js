@@ -150,6 +150,22 @@ window.MirrorIndex = (() => {
     if (value==null || !Number.isFinite(Number(value))) return fallback;
     return Math.min(maximum,Math.max(0,Math.floor(Number(value))));
   }
+  // Одна перестановка на відкриття. Наступні порції читають той самий список.
+  function shelfRows(db, slot, seed) {
+    if (db.shelf?.seed===seed && db.shelf.slot===slot) return db.shelf.rows;
+    const rows=slot ? db.rows.filter(row=>slot===row[2] || slot===row[3]) : db.rows.slice();
+    let state=seed;
+    for (let i=rows.length-1;i>0;i--) {
+      // Mulberry32 із 32-бітним станом і перемішування Фішера—Єйтса.
+      state=(state+0x6d2b79f5)>>>0;
+      let value=Math.imul(state^(state>>>15),state|1);
+      value^=value+Math.imul(value^(value>>>7),value|61);
+      const j=Math.floor(((value^(value>>>14))>>>0)/2**32*(i+1));
+      [rows[i],rows[j]]=[rows[j],rows[i]];
+    }
+    db.shelf={slot,seed,rows};
+    return rows;
+  }
   async function search(query="", options={}) {
     const db=await store();
     const {words,minimum,maximum}=prepareQuery(query);
@@ -158,6 +174,10 @@ window.MirrorIndex = (() => {
     const slot=options?.slot;
     const availableOnly=options?.availableOnly===true;
     const priceFilter=minimum>0 || maximum<Infinity;
+    if(Number.isInteger(options?.seed) && !String(query ?? "").trim() && !availableOnly) {
+      const rows=shelfRows(db,slot,options.seed>>>0);
+      return {results:rows.slice(offset,offset+limit).map(asProduct),total:rows.length,offset,limit};
+    }
     if(!words.length && !priceFilter && !slot && !availableOnly) {
       return {results:db.rows.slice(offset,offset+limit).map(asProduct),total:db.rows.length,offset,limit};
     }
