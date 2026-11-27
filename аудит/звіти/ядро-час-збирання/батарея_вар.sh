@@ -4,5 +4,5 @@
 P=$1; shift; T=$(dirname "$0")
 for a in "$@"; do
   IFS=: read -r v s m <<< "$a"
-  STOR=/tmp/n4/stor_вар MEZHA=$m bash <(sed 's#рв6_н3_час.js#рв6_н3_час_вар.js#' $T/сцена.sh) $P/${v}_$s $s
+  STOR=${STOR:-/tmp/n4/stor_вар} MEZHA=$m bash <(sed 's#рв6_н3_час.js#рв6_н3_час_вар.js#' $T/сцена.sh) $P/${v}_$s $s
 done
