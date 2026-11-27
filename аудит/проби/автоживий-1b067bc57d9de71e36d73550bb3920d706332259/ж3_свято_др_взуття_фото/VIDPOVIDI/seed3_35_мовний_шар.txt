@@ -1,0 +1,56 @@
+── ПРОМПТ (7106 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: suit · about it: text н=1
+2 — kind: shirt · about it: text н=2
+3 — kind: belt · about it: text н=3
+4 — about it: text н=4
+5 — kind: tote · about it: text н=5
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The suit's tailored waist belt elongates your silhouette while the soft pale green brings a relaxed elegance perfect for an evening celebration. Its voluminous cut flows effortlessly over your hips, creating a flattering shape that stays comfortable all night long.",
+"2": "The deep green floral shirt adds vibrant contrast to the pale green suit without overpowering it—the playful pattern keeps things interesting as you dance and mingle with your friends at the birthday party.",
+"3": "The brown leather belt ties everything together seamlessly, adding understated sophistication while maintaining comfort throughout the evening. Its classic buckle provides just enough structure to balance the softness of both pieces.",
+"4": "These white strappy sandals offer effortless support for dancing through the night, their simple design complementing your pale green suit perfectly while keeping you looking polished without trying too hard.",
+"5": "The oversized suede tote gives you plenty of room to carry your essentials comfortably without weighing you down at the party. Its relaxed shape pairs beautifully with the suit's flowing lines, keeping you practical yet stylish as you enjoy the evening.",
+"6": "You're celebrating your friend's birthday on a Saturday evening, and this outfit brings just the right mix of relaxed elegance for the party. The soft pale green suit offers comfort with an elongated silhouette thanks to its tailored waist belt, while the deep green floral shirt adds playful contrast to keep things interesting as you mingle. White strappy sandals provide effortless support for dancing through the night, and the oversized suede tote gives you plenty of space to carry essentials without weighing you down. The brown leather belt ties everything together with understated sophistication.",
+"7": "Let the voluminous suit jacket flow loosely over your hips to emphasize the defined waist created by the matching belt",
+"8": "Tuck the floral shirt in slightly at the front if you want to highlight the waistline more, or leave it untucked for a relaxed party vibe",
+"9": "Carry the suede tote on the shoulder and let it rest naturally against your hip for effortless movement throughout the evening",
+"10": "Ремінь жіночий Welfare коричневий — Replaced the graphite suit (too dark) with a warm brown belt to bridge colors and add earthy interest; belt added as third piece.",
+"11": "Жіноча сумка тоут замшева бежева, Костюм: піджак прямого крою, з паском, рукава 3/4; штани з лампасами та косими кишенями, прямі, широкі, посадка висока (Max Mara) Max Mara — I accept this formality spread because the beige suit elevates the look to 'very_smart', creating the necessary festive balance for a birthday party, while the black shirt grounds it with an unexpected edge."
+}
+
+── ВІДПОВІДЬ (2879 симв., 18.0 с, HTTP 200) ──
+```json
+{
+  "1": "Піджак-костюм з підкресленою талією подовжує твій силует, а м’який блідо-зелений колір додає невимушену елегантність, ідеально підходячи для вечірнього святкування. Його об’ємний крій вільно спадає на стегнах, створюючи лестивий силует, який залишається комфортним протягом усієї ночі.",
+  "2": "Сорочка з глибоким зеленим квітковим принтом додає яскравого контрасту до блідо-зеленого костюма без того, щоб він перебивав його — грайливий візерунок робить все цікавим, поки ти танцюєш і спілкуєшся зі своїми друзями на дні народження.",
+  "3": "Коричневий шкіряний ремінь гармонійно поєднує всі елементи разом, додаючи стриманої вишуканості та зберігаючи комфорт протягом усього вечора. Його класична пряжка забезпечує достатньо структури для балансу м’якості обох предметів.",
+  "4": "Ці білі ремінні сандалії пропонують безпроблемну підтримку, щоб танцювати всю ніч; їхній простий дизайн ідеально доповнює твій блідо-зелений костюм, зберігаючи тебе охайною без особливих зусиль.",
+  "5": "Великий замшевий тоут дає тобі достатньо місця для зручного носіння необхідних речей, не обтяжуючи тебе на вечірці. Його розслаблена форма чудово поєднується з плавними лініями костюма, зберігаючи твій практичний і стильний вигляд під час насолоди вечором.",
+  "6": "Ти святкуєш день народження подруги в суботній вечір, а цей образ приносить саме ту правильну комбінацію невимушеної елегантності для вечірки. М’який блідо-зелений костюм пропонує комфорт з видовженим силуетом завдяки підкресленій талії за допомогою ременя, тоді як сорочка з глибоким зеленим квітковим принтом додає грайливого контрасту, щоб все було цікавим. Білі ремінні сандалії забезпечують безпроблемну підтримку для танців всю ніч, а великий замшевий тоут дає тобі достатньо місця для носіння необхідних речей, не обтяжуючи тебе. Коричневий шкіряний ремінь гармонійно поєднує всі елементи разом з вишуканою стриманістю.",
+  "7": "Дай вільно спадати піджаку-костюму на стегна, щоб підкреслити талію, створену відповідним ременем",
+  "8": "Злегка заправ сорочку спереду, якщо хочеш більше виділити лінію талії, або носи її не заправленою для невимушеної атмосфери вечірки.",
+  "9": "Носи замшевий тоут на плечі і дай йому природно лежати біля стегна для безпроблемного руху протягом усього вечора",
+  "10": "Ремінь жіночий Welfare коричневий — Замінила графітовий костюм (занадто темний) теплим коричневим ременем, щоб з’єднати кольори та додати земної цікавості; ремінь додано як третій предмет.",
+  "11": "Жіноча сумка тоут замшева бежева, Костюм: піджак прямого крою, з паском, рукави 3/4; штани з лампасами та косими кишенями, прямі, широкі, посадка висока (Max Mara) Max Mara — Я приймаю цю формальність поширення, оскільки бежевий костюм підносить образ до рівня «дуже_ошатного», створюючи необхідний святковий баланс для дня народження, тоді як чорна сорочка додає несподіваний акцент."
+}
+```

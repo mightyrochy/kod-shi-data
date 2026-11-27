@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silky slip dress, fluid bias cut to the floor, deep emerald green (#043927), crepe de chine with a subtle luster.\\nStructured wool-blend blazer, single-breasted tailored fit to hip length, charcoal gray (#36454F), heavy worsted wool.\\nPointed-toe pumps, moderate heel height, obsidian black (#000000), polished calfskin leather with a velvet insole for comfort.\\nGold-dipped crystal drop earrings and a matching clutch bag, both featuring geometric filigree details to catch the theater's artificial light.\\n\\nThis outfit works because it balances the elegance required for an evening at the theatre with the warmth of autumn weather through a sophisticated layered approach. The rich emerald hue of the slip dress contrasts beautifully against the dark charcoal blazer, creating a timeless and chic silhouette suitable for a social guest role. The pointed-toe pumps add a touch of classic femininity without sacrificing comfort during the performance, while the gold accessories provide just enough sparkle to complement the venue's lighting without overwhelming the natural fabric textures.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Silky slip dress\\\",\\n      \\\"details\\\": \\\"fluid bias cut to the floor, crepe de chine with a subtle luster\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#043927\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Structured wool-blend blazer\\\",\\n      \\\"details\\\": \\\"single-breasted tailored fit to hip length, heavy worsted wool\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36454F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Pointed-toe pumps\\\",\\n      \\\"details\\\": \\\"moderate heel height, polished calfskin leather with a velvet insole\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#000000\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Gold-dipped crystal drop earrings\\\",\\n      \\\"details\\\": \\\"featuring geometric filigree details\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Clutch bag\\\",\\n      \\\"details\\\": \\\"gold-dipped crystal with matching geometric filigree details\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":582,\"output_tokens\":347},\"stop_reason\":\"end_turn\"}"
+ }
+}

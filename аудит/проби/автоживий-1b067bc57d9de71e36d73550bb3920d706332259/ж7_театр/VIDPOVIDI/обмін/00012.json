@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Charcoal wool-blend sheath dress, knee-length cut, #2f353a color, structured fabric.\\nSilver-tone heeled pumps, medium height and slender silhouette, #C0C0C0 color, polished leather.\\nPearl drop earrings, medium length and delicate design, White color (#FFFFFF), cultured pearl and 18k white gold setting.\\nClasp necklace, short length resting at the collarbone, Silver color (#E5E4E2), sterling silver with small diamond accents.\\n\\nThis ensemble creates an elegant silhouette perfect for an evening theatre performance while respecting the social formality of the event. The charcoal dress offers a sophisticated neutral base that harmonizes beautifully with her light skin tone and ash-blonde hair without competing with stage lighting or other costumes. Heeled pumps elongate the legs to balance her height, while the subtle silver jewelry adds a refined touch appropriate for an evening occasion without appearing overly flashy in artificial light.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Charcoal wool-blend sheath dress\\\",\\n      \\\"details\\\": \\\"knee-length cut, structured fabric\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#2f353a\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Silver-tone heeled pumps\\\",\\n      \\\"details\\\": \\\"medium height and slender silhouette, polished leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#C0C0C0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Pearl drop earrings\\\",\\n      \\\"details\\\": \\\"medium length and delicate design, cultured pearl and 18k white gold setting\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": \\\"#FFFFFF\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Clasp necklace\\\",\\n      \\\"details\\\": \\\"short length resting at the collarbone, sterling silver with small diamond accents\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": \\\"#E5E4E2\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":550,\"output_tokens\":283},\"stop_reason\":\"end_turn\"}"
+ }
+}
