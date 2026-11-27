@@ -13,7 +13,8 @@ for л in gzip.open("каталог_записи_v1.jsonl.gz", "rt", encoding="u
     р = json.loads(л)
     if р.get("ід") in ПОТРІБНІ:
         R[р["ід"]] = р
-ТЕКА_М, ТЕКА_А = "/tmp/колір-с5/модель", "/tmp/колір-с5/аркуш"
+ТЕКА_Б = os.environ.get("ТЕКА_КОЛІР", "/tmp/колір-с5")
+ТЕКА_М, ТЕКА_А = f"{ТЕКА_Б}/модель", f"{ТЕКА_Б}/аркуш"
 os.makedirs(ТЕКА_М, exist_ok=True); os.makedirs(ТЕКА_А, exist_ok=True)
 
 
@@ -58,6 +59,6 @@ def одна(в):
 
 with ThreadPoolExecutor(10) as п:
     рез = list(п.map(одна, ВИБ))
-json.dump(dict(рез), open("/tmp/колір-с5/кадрів.json", "w"), ensure_ascii=False)
+json.dump(dict(рез), open(f"{ТЕКА_Б}/кадрів.json", "w"), ensure_ascii=False)
 print("нема в каталозі:", [і for і, н in рез if н < 0], "без фото:", [і for і, н in рез if н == 0],
       "кадрів:", sum(н for _, н in рез if н > 0), "речей з кадрами:", sum(1 for _, н in рез if н > 0))
