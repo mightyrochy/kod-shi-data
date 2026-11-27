@@ -404,21 +404,57 @@ class Е3_ПолеБезПисача(unittest.TestCase):
                 else:
                     self.assertFalse(брак)
                     self.assertNotIn("бракує", клітинка)
+                if стан == "утримано":
+                    (знахідка,) = (з for з in суд["суд"]["findings"]
+                                   if з.get("правило") == "K-OUT-03" and з.get("сила") == стан)
+                    (факт,) = знахідка["заяви"]
+                    self.assertEqual(знахідка["сила_нп"], 0)
+                    self.assertEqual(факт["code"], "outer_edges_gap_measured")
+                    self.assertEqual((факт["values"]["gap_cm"], факт["values"]["error_cm"]), (30, 21.34))
                 for крок in ("оцінка_промпт", "допит_промпт"):
-                    відповідь = міст_оцінка.оцінка(dict(крок=крок, суд=суд, питання="Що з довжинами?"))
-                    тіло = json.loads(json.loads(відповідь)["промпт"])
-                    точки = тіло["check"]["points"]
-                    self.assertEqual(код in точки["passed"], стан == "пройдено")
-                    self.assertNotIn(код, точки["failed"])
-                    self.assertIn("interest_sources", точки["failed"])
+                    відповідь = виклик("оцінка", dict(крок=крок, суд=суд, питання="Що з довжинами?"))
+                    тіло = json.loads(відповідь["промпт"])
+                    точки = {тіло["facts"][н]["point"]: (н, тіло["facts"][н]["state"])
+                             for н in тіло["check"]["points"]}
+                    номер, стан_факту = точки[код]
+                    self.assertRegex(номер, r"^f[0-9]+$")
+                    self.assertEqual(стан_факту, {"пройдено": "passed", "утримано": "held", "без входу": "no_input",
+                                                 "не стосується": "not_applicable"}[стан])
+                    self.assertEqual(точки["interest_sources"][1], "failed")
+                    self.assertNotIn('"gap_cm"', відповідь["промпт"])
+                    self.assertNotIn('"error_cm"', відповідь["промпт"])
+                    self.assertNotIn('"length_cm"', відповідь["промпт"])
                     self.assertFalse(any("item_length_cm" in п.get("no_input", []) for п in тіло["unknown"]))
+                if стан in ("утримано", "пройдено"):
+                    відомий = next(н for н, ф in тіло["facts"].items() if ф.get("field") == "outfit")
+                    дійсне = "Оцінила речі на фото разом."
+                    хибне = "Подоли майже збігаються."
+                    невідоме = "Відступ між подолами не підтвердився."
+                    обр = виклик("оцінка", dict(крок="оцінка", суд=суд, відповідь_моделі=json.dumps({
+                        "answer": [{"about": {відомий: "known"}, "says": дійсне},
+                                   {"about": {номер: "failed"}, "says": хибне},
+                                   {"about": {"ф1": "item"}, "says": "Сукня мені подобається."}],
+                        "unknown": [{"about": {номер: стан_факту}, "says": невідоме}] if стан == "утримано" else [],
+                        "verdict": "wear_as_is",
+                    })))
+                    self.assertEqual(обр["картка"]["відповідь"], дійсне)
+                    self.assertIn("state_against_fact", обр["повтор"])
+                    self.assertIn("unknown_fact", обр["повтор"])
+                    self.assertNotIn("ф1", обр["повтор"])
+                    self.assertNotIn(хибне, json.dumps(обр["картка"], ensure_ascii=False))
                     if стан == "утримано":
-                        (утримання,) = (п for п in тіло["check"]["findings"]
-                                        if п.get("rule") == "K-OUT-03" and п.get("strength") == стан)
-                        (факт,) = утримання["statements"]
-                        self.assertEqual(утримання["sila_np"], 0)
-                        self.assertEqual(факт["code"], "outer_edges_gap_measured")
-                        self.assertEqual((факт["values"]["gap_cm"], факт["values"]["error_cm"]), (30, 21.34))
+                        self.assertEqual(обр["картка"]["не_знаю"][0]["текст"], невідоме)
+                        відповідь_без_країв = json.dumps({
+                            "answer": [{"about": {відомий: "known"}, "says": дійсне}],
+                            "verdict": "wear_as_is", "unknown": [],
+                        })
+                        без_країв = виклик("оцінка", dict(крок="оцінка", суд=суд, відповідь_моделі=відповідь_без_країв))
+                        пропущені = [п for п in без_країв["сторож"] if п["чому"] == "held_facts_not_told"]
+                        self.assertIn(номер, пропущені[0]["про"])
+                        self.assertIn(номер, без_країв["повтор"])
+                        запасний = [р["текст"] for р in без_країв["картка"]["не_знаю"] if р.get("готовий_текст")]
+                        self.assertTrue(any("довжина виробу" in р for р in запасний))
+                        self.assertEqual(без_країв["картка"]["відповідь"], дійсне)
 
     def test_пізнє_утримання_не_входить_до_перевірених(self):
         """Пізнє утримання знімає прохід, а справжній провал лишається в знаменнику."""
@@ -455,6 +491,42 @@ class Е3_ПолеБезПисача(unittest.TestCase):
                         if isinstance(п, dict) and правило in (п.get("правила") or []) and п.get("стан") == "без входу":
                             сказано.append(п)
                 self.assertTrue(сказано, "без її обхватів правило %s мовчить" % правило)
+
+
+class Річ_РівнийШанс(unittest.TestCase):
+    """Повторює записаний вузький запит зі звіту «Крамниці · рівна черга»."""
+
+    def test_рівна_частота_в_рівні_і_нижча_частота_гіршого(self):
+        """На 1 000 сідах шанс кожної з кращих речей у межах випадковості."""
+        from collections import Counter
+        from math import ceil, floor, log, prod, sqrt
+        from pathlib import Path
+        from семплер import вибрати
+
+        вхід = json.loads(Path("фікстури/рівний_шанс_речі.json").read_text(encoding="utf-8"))
+        речі, квота = вхід["кандидати"], вхід["квота"]
+        гірша = "ж-15887@wearme.ua"
+        сідів = 1000
+        лічба = Counter()
+        for сід in range(1, сідів + 1):
+            ряд = вибрати({"сукня": речі}, квота, сід=сід)["сукня"]
+            self.assertEqual(len({річ["id"] for річ in ряд}), квота)
+            лічба.update(річ["id"] for річ in ряд)
+
+        кращих = len(речі) - 1
+        # Імовірність гіршої — доповнення добутку шансів її оминути в усіх місцях.
+        шанс_гіршої = 1 - prod(n / (n + 0.5) for n in range(кращих, кращих - квота, -1))
+        шанс_кращої = (квота - шанс_гіршої) / кращих
+        # Гефдінг і об'єднання подій: шанс порушення хоча б для однієї кращої ≤ 0,001.
+        відступ = sqrt(log(2 * кращих / 0.001) / (2 * сідів))
+        нижня = floor(сідів * (шанс_кращої - відступ))
+        верхня = ceil(сідів * (шанс_кращої + відступ))
+        частоти = [лічба[річ["id"]] for річ in речі if річ["id"] != гірша]
+        факт = (min(частоти), max(частоти))
+        self.assertGreaterEqual(факт[0], нижня, факт)
+        self.assertLessEqual(факт[1], верхня, факт)
+        self.assertLess(0, лічба[гірша])
+        self.assertLess(лічба[гірша], факт[0])
 
 
 class Річ_КолірВимір(unittest.TestCase):
@@ -857,6 +929,7 @@ class Купівля_РічВаріант(unittest.TestCase):
     Е3_ПолеБезПисача.test_вирок_країв_через_міст_оцінки,
     Е3_ПолеБезПисача.test_пізнє_утримання_не_входить_до_перевірених,
     Е3_ПолеБезПисача.test_без_її_обхватів_правило_фігури_каже_що_входу_нема,
+    Річ_РівнийШанс.test_рівна_частота_в_рівні_і_нижча_частота_гіршого,
     Річ_КолірВимір.test_річ_з_кольором_лише_від_крамниці_не_дістає_точки,
     Річ_ОзнакиОбличчяОчі.test_сім_я_очей_від_моделі_доходить_до_запиту_палітри,
     Річ_ОзнакиОбличчяОчі.test_без_кольору_очей_сім_я_невідома,
