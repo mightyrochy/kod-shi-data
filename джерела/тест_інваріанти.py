@@ -1441,7 +1441,49 @@ print(json.dumps([json.loads(результат), sorted(ЗАМІННІ & sys.mo
                 self.assertEqual(модулі, [])
 
 
+class ТестГоловногоПравила(unittest.TestCase):
+    def test_старий_шлях_не_вантажиться_каталогом_і_купівлею(self):
+        код = """
+import json
+import sys
+
+шлях, каталог, кеш = sys.argv[1:]
+if шлях == 'каталог':
+    from фід_каталог import база_прогону
+    from каталог_розбір import схема_відповіді
+
+    база = база_прогону(каталог, кеш=кеш, кешувати=False)
+    кількість = len(база['каталог'])
+    assert схема_відповіді()
+else:
+    from пошук_речі import пошук
+
+    # Та сама покупка джинсової куртки зі стенда, що й у Купівля_РічВаріант.
+    вхід = dict(json.load(sys.stdin), каталог=каталог, кеш_кольорів=кеш, опис={'item_type': 'jacket'})
+    кількість = len(json.loads(пошук(вхід))['варіанти'])
+print(json.dumps([кількість, sorted(sys.modules)]))
+"""
+        with open("стенд_вх.json", encoding="utf-8") as файл:
+            профіль = файл.read()
+        # Модулі старого шляху, відчеплені цією частиною від кожного входу.
+        for шлях, старі in (
+            ("каталог", {"language_contract", "мовний_шар"}),
+            ("купівля", {"міст_опис", "міст_пакет", "міст_рука2", "оцінка_образу"}),
+        ):
+            with self.subTest(шлях=шлях), tempfile.TemporaryDirectory() as тека:
+                кеш = os.path.join(тека, "кеш_кольорів.json")
+                with open(кеш, "w", encoding="utf-8") as файл:
+                    json.dump({}, файл)
+                процес = subprocess.run([sys.executable, "-c", код, шлях, КАТАЛОГ, кеш], input=профіль,
+                                        text=True, capture_output=True, cwd=ТУТ)
+                self.assertEqual(процес.returncode, 0, процес.stderr)
+                кількість, модулі = json.loads(процес.stdout)
+                self.assertGreater(кількість, 0)
+                self.assertEqual(sorted(старі.intersection(модулі)), [])
+
+
 ТЕСТИ = (
+    ТестГоловногоПравила.test_старий_шлях_не_вантажиться_каталогом_і_купівлею,
     Н7_ПрофільПалітра.test_перші_чипи_й_сходинка_без_старого_шляху,
     Е2_НевідомеНаКартціОцінки.test_невідоме_доходить_до_відкритої_картки,
     Е2_ВтратаСлова.test_слово_з_розмови_дійшло_до_запиту_стилістці,
