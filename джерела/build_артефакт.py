@@ -189,7 +189,7 @@ def _покласти_ядро(z, джерело, імена):
             імя = os.path.relpath(шлях, джерело).replace(os.sep, "/")
             if ф.endswith(".py"):
                 _покласти(z, імя, _стрип(шлях), імена)
-            elif ф.endswith(".json"):
+            elif ф.endswith((".json", ".json.gz")):
                 _покласти_файл(z, шлях, імя, імена)
 
 

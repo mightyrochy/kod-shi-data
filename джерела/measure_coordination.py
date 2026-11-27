@@ -17,6 +17,7 @@
 порядок ІНШИЙ. Правильність знімається вердиктом «носитиму / ні», якого нема.
 Каталог синтетичний (діалект Rozetka, `run_outfit.МОДЕЛІ`).
 """
+import slots as _СЛОТИ
 import os, sys, tempfile
 import colorspace as cs, feed, outfit as O, fit as ПС
 import composer as КМ, coordination as КО, run_outfit as ПО
@@ -105,7 +106,7 @@ def прогін():
     def _E(*hx):
         return O.елементи([dict(id=n, слот=s, hex=h, площа=0.33, near=0.5)
                            for n, s, h in zip(("A", "B", "C"),
-                                              ("верх", "низ", "взуття"), hx)])
+                                              _СЛОТИ.ВЕРХ_НИЗ_І_ВЗУТТЯ, hx)])
     для = [("приглушена шавлія + приглушена іржа  (корпус: координується)",
             ("#8a9a7b", "#a86a4a", "#c2ab90"), False),
            ("приглушена шавлія + НЕОНОВА іржа     (корпус: не координується)",
