@@ -1,6 +1,6 @@
 """Відтворює обірвані виклики складання руки 1 з автоживого 344d840e на LM Studio: форма відповіді — записана («до») чи
-з коду цієї гілки («після»: «worn» лише на речі без факту типу, складання без «done»), стеля 4000; друкує finish_reason,
-токени й скільки образів прочитав суворий розбір. Запуск з кореня: python <цей файл> до|після [до N [від M]] >> рядки JSONL."""
+з коду цієї гілки («після»: «worn» лише на речі без факту типу й без зайвих ключів, стислий JSON, складання без «done»), стеля 4000; друкує finish_reason,
+токени й скільки образів прочитав суворий розбір. Запуск з кореня: python <цей файл> до|після|після-з-відступами [до N [від M]] >> рядки JSONL."""
 import glob, json, sys, time, urllib.request
 from pathlib import Path
 К = Path(__file__).resolve().parents[3]; sys.path.insert(0, str(К / "джерела"))
@@ -17,11 +17,13 @@ def після(текст):
     о = с["outfits"][0]; нов = З.скелет(П._з_вибором(П.СКЛАДАННЯ) if "chosen" in с else П.СКЛАДАННЯ)["outfits"][0]
     о["worn"] = нов["worn"]
     if "Build outfits" in текст[:400]: о.pop("done", None); assert о == нов, "скелет складання розійшовся з кодом"
-    return текст[:і] + json.dumps(с, ensure_ascii=False, separators=(",", ":")) + текст[і + к:]
+    текст = текст[:і] + json.dumps(с, ensure_ascii=False, separators=(",", ":")) + текст[і + к:]
+    якір = json.dumps(П.РЯДОК_ЛИШЕ_НОМЕР, ensure_ascii=False) + ","       # нові правила — там само, де в коді
+    return текст if "Build outfits" not in текст[:400] else текст.replace(якір, якір + "".join(json.dumps(р, ensure_ascii=False) + "," for р in (П.РЯДОК_МІСЦЯ_РЕЧЕЙ, П.РЯДОК_СТИСЛОГО_JSON)[:2 if варіант == "після" else 1]), 1)
 варіант, межа, від = sys.argv[1], int(sys.argv[2]) if len(sys.argv) > 2 else 99, int(sys.argv[3]) if len(sys.argv) > 3 else 0
 for ф, з in list(обірвані())[від:межа]:
     текст = "".join(б.get("text", "") for б in з["messages"][0]["content"] if б.get("type") == "text")
-    текст = після(текст) if варіант == "після" else текст
+    текст = після(текст) if варіант.startswith("після") else текст
     кадри = [{"type": "image_url", "image_url": {"url": "data:%s;base64,%s" % (б["source"]["media_type"], б["source"]["data"])}}
              for б in з["messages"][0]["content"] if б.get("type") == "image"]       # кадри — як стенд, перед текстом
     тіло = {"model": з["model"], "messages": [{"role": "user", "content": кадри + [{"type": "text", "text": текст}]}], "max_tokens": 4000,
