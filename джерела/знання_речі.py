@@ -5,6 +5,7 @@ source — його чинний писач. Явна відсутність є 
 чи not_applicable. Матриця визначає застосовність, а не наявність значення.
 Склад — склад речі загалом: правило «без тканини» не робить його NA.
 """
+import slots as _СЛОТИ
 import внутрішня_мова as _ВМ
 import колір_річ as _К
 
@@ -19,15 +20,13 @@ import колір_річ as _К
     "composition": "пакет_моделі.річ_пулу; фід_атрибути.матеріал_речі; ПРОДУКТ п.16",
     "metal": "фід_атрибути.МЕТАЛ_СЛОТИ/МЕТАЛ_СЛОТИ_ПОЛЕ; траурний_регістр.метал_біля_обличчя",
 }
-_ЮВЕЛІРНІ = frozenset(("earrings", "necklace", "collar_necklace", "bracelet", "ring",
-                        "brooch", "watch", "jewelry"))
-_ТКАНИННІ = frozenset(("top", "bottom", "dress", "set", "outerwear", "scarf", "headwear",
-                       "gloves", "tights", "socks", "underwear", "swimwear"))
+_ЮВЕЛІРНІ = frozenset(_СЛОТИ.КОДИ_ЮВЕЛІРНИХ_СЛОТІВ)
+_ТКАНИННІ = frozenset(_СЛОТИ.КОДИ_ТКАНИННИХ_СЛОТІВ)
 МАТРИЦЯ = {
     тип: {"color": {"applicability": "applicable", "source": ДЖЕРЕЛА_МАТРИЦІ["color"]},
           "composition": {"applicability": "applicable" if слот in _ТКАНИННІ else "unknown",
                           "source": ДЖЕРЕЛА_МАТРИЦІ["composition"]},
-          "metal": {"applicability": "applicable" if слот in _ЮВЕЛІРНІ | {"belt", "bag"} else "unknown",
+          "metal": {"applicability": "applicable" if слот in _ЮВЕЛІРНІ | set(_СЛОТИ.КОДИ_ПОЛЯ_МЕТАЛУ) else "unknown",
                     "source": ДЖЕРЕЛА_МАТРИЦІ["metal"]}}
     for тип, слот in _ВМ.СЛОТ_ТИПУ.items()
 }
@@ -140,8 +139,8 @@ def на_дріт(дані, має_точку=False):
 # прикметником: «светр» (`sweater`); опис, що читає «kind: headwear, type: sweater», пише пов'язку на голову. Винятки
 # законні: половина комплекту (`set`), верх, що носиться верхнім шаром (кардиган, жилет — `top` ↔ `outerwear`), і
 # прикраса без уточнення на будь-якому роді прикрас.
-_РОДИ_ПОРУЧ = {frozenset(("top", "outerwear"))}
-_РОДИ_ПРИКРАС = frozenset(("jewelry", "necklace", "collar_necklace", "bracelet", "earrings", "brooch", "ring"))
+_РОДИ_ПОРУЧ = {frozenset(_СЛОТИ.КОДИ_СЛОТІВ_ВЕРХІВ)}
+_РОДИ_ПРИКРАС = frozenset(_СЛОТИ.КОДИ_СЛОТІВ_ПРИКРАС)
 _ЧАСТИНА = {"верх": "top", "низ": "bottom"}
 
 
