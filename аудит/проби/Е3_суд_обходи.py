@@ -33,6 +33,8 @@ def вимір(база=None):
                 обходи.append(f"{файл.as_posix()}:{вузол.lineno}: {ast.unparse(вираз)}")
     for ім in ("суд_погода", "аксесуари_погода", "верхнє_погода"):
         файл = Path("джерела", ім + ".py")
+        if not база and not файл.exists():
+            continue   # прохідний модуль видалено (Код-фасади-геть)
         текст = (subprocess.check_output(["git", "show", f"{база}:{файл.as_posix()}"]).decode("utf-8")
                  if база else файл.read_text(encoding="utf-8-sig"))
         дерево = ast.parse(текст)
