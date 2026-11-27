@@ -105,5 +105,34 @@ class ЗаписРечіНовогоВиду(unittest.TestCase):
         self.assertNotIn("lace_motif", текст)
 
 
+class КолірЗапису(unittest.TestCase):
+    """Мітка «колір» (наряд `Запис-речі-колір-мітка`): читач зводить ясну форму до визначення, а хибне відкидає."""
+
+    def test_понад_чотири_коди_основний_і_три_найбільші(self):
+        from ядро import відтінки
+        в = [{"код": "black", "частка": 0.3}, {"код": "strong_orange_yellow", "частка": 0.25},
+             {"код": "strong_red", "частка": 0.1}, {"код": "moderate_purplish_pink", "частка": 0.2},
+             {"код": "moderate_green", "частка": 0.15}]
+        мітка, збій = відтінки.перевірити({"в": в, "принт": True}, "фото")
+        self.assertIsNone(збій)
+        self.assertEqual([к["код"] for к in мітка["значення"]],
+                         ["black", "strong_orange_yellow", "moderate_purplish_pink", "moderate_green"])
+
+    def test_один_код_уся_річ(self):
+        from ядро import відтінки
+        мітка, збій = відтінки.перевірити({"в": [{"код": "vivid_red", "частка": 0.0}]}, "фото")
+        self.assertIsNone(збій)
+        self.assertEqual(мітка["значення"], [{"код": "vivid_red", "частка": 1}])
+
+    def test_вигаданий_код_і_нульовий_основний_збій(self):
+        from ядро import відтінки
+        for в in ([{"код": "vivid_red", "частка": 0.9}, {"код": "metal_placeholder", "частка": 0.1}],
+                  [{"код": "vivid_red", "частка": 0}, {"код": "black", "частка": 1}],
+                  [{"код": "vivid_red", "частка": None}, {"код": "black", "частка": 0.5}]):
+            мітка, збій = відтінки.перевірити({"в": в}, "фото")
+            self.assertIsNone(мітка)
+            self.assertTrue(збій)
+
+
 if __name__ == "__main__":
     unittest.main()
