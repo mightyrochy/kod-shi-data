@@ -1319,6 +1319,7 @@ console.log(JSON.stringify(результат));
         перший, повтор = запити
         запасна, = перший["swap_candidates"]
         self.assertEqual(перший["facts"][запасна]["state"], "swap_candidate")
+        self.assertIn("крім item, known і swap_candidate", " ".join(перший["task"]["rules"]))
         self.assertIn(повтор["photo_check_item"], повтор["photos"])
         self.assertEqual(повтор["facts"][повтор["photo_check_item"]]["state"], "item")
         self.assertEqual(повтор["swap_candidates"], [])

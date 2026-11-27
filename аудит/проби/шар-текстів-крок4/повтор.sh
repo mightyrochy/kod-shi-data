@@ -5,6 +5,7 @@ ROOT=$(git rev-parse --show-toplevel)
 BASE=e862f9ba896bec33ef9cb32ed934f7f8b98d378d
 STAND_REF=f973d965a0b4a3b52079ad3ddb481bb9eb81a842
 HEAD_REF=$(git rev-parse "${1:?Передай точний SHA голови #4848}^{commit}")
+PATCH_PATH=аудит/проби/приймання-н2-782c/стенд/рв6_н2.patch
 OUT=${2:-$(mktemp -d)}
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
@@ -17,7 +18,8 @@ OUT=$(cd "$OUT" && pwd)
 }
 
 if [ "${STAND_ONLY:-0}" = 1 ]; then
-  підготувати_стенд "$ROOT/аудит/проби/приймання-н2-782c/стенд/рв6_н2.patch" "$OUT/рв6_крок4.js"
+  git -C "$ROOT" show "$HEAD_REF:$PATCH_PATH" > "$OUT/рв6_н2.patch"
+  підготувати_стенд "$OUT/рв6_н2.patch" "$OUT/рв6_крок4.js"
   printf '%s\n' "$OUT/рв6_крок4.js"
   exit 0
 fi
@@ -41,7 +43,7 @@ for SIDE in до після; do
   (
     cd "$OUT/код-$SIDE"
     STAND=аудит/проби/рв6_крок4.js
-    підготувати_стенд аудит/проби/приймання-н2-782c/стенд/рв6_н2.patch "$STAND"
+    підготувати_стенд "$PATCH_PATH" "$STAND"
     if [ "$SIDE" = до ]; then
       # ДО зберігає попередню поведінку. У звіт додаються лише лічильники відхилень.
       python3 - <<'PY'
