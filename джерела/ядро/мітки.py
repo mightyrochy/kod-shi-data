@@ -54,9 +54,6 @@ def читачі(поле):
 
 def _реєстр(шлях):
     модуль, *ключі = шлях
-    if модуль == "запит":
-        from .пул import СЛОТИ
-        return tuple(СЛОТИ)
     значення = importlib.import_module(модуль)
     for ключ in ключі:
         значення = значення[ключ] if isinstance(значення, dict) else getattr(значення, ключ)
