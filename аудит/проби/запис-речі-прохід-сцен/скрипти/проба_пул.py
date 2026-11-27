@@ -16,8 +16,8 @@ from pathlib import Path
 
 КОРІНЬ = Path(__file__).resolve().parents[4]
 ПРОБА = КОРІНЬ / "аудит/проби/запис-речі-прохід-сцен"
-os.environ["ПРОБА_ЗАПИТ"] = "с5_весілля_сестри/1/7"
-os.environ["ПРОБА_ТЕКА"] = "../../проби/запис-речі-прохід-сцен/проба"
+os.environ.setdefault("ПРОБА_ЗАПИТ", "с5_весілля_сестри/1/7")  # ж3: ПРОБА_ЗАПИТ=ж3_кафе_20/1/7 ПРОБА_ТЕКА=../../проби/запис-речі-прохід-сцен/проба-ж3
+os.environ.setdefault("ПРОБА_ТЕКА", "../../проби/запис-речі-прохід-сцен/проба")
 sys.path.insert(0, str(КОРІНЬ / "джерела"))
 сп = importlib.util.spec_from_file_location("проба", КОРІНЬ / "аудит/звіти/стилістка-вибір-з-пулу/проба.py")
 ПР = importlib.util.module_from_spec(сп); sys.modules["проба"] = ПР; сп.loader.exec_module(ПР)
@@ -33,6 +33,12 @@ def мітки_за_n():
     import csv, gzip
     записи = {к.split("@")[0]: в for к, в in json.load(gzip.open(ПРОБА / "дані/записи_речі.json.gz", "rt", encoding="utf-8")).items()}
     вихід = {}
+    мапа = json.load(gzip.open(ПРОБА / "дані/мапа_ід.json.gz", "rt", encoding="utf-8")).get(os.environ["ПРОБА_ЗАПИТ"])
+    if мапа:  # ід з мапи ознак рядка (`мапа_ід.py`): рядки без ід у звіті теж
+        for n, (ід, _ст, _к) in мапа.items():
+            к = записи.get(ід.split("@")[0], {}).get("мітки", {}).get("колір") if ід else None
+            if к: вихід[n] = (к, None)
+        return вихід
     for р in csv.DictReader(gzip.open(КОРІНЬ / "аудит/звіти/стилістка-вибір-з-пулу/рядки.csv.gz", "rt", encoding="utf-8")):
         if р["запит"] != os.environ["ПРОБА_ЗАПИТ"] or not р["ід"]:
             continue

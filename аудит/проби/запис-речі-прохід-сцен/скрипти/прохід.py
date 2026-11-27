@@ -14,7 +14,7 @@ import запис_речі
 ЗУСИЛЛЯ = os.environ.get("ЗУСИЛЛЯ", "high"); БІН = "/opt/node22/bin/claude"; ТЕКА_Ф = "/tmp/прохід-сцен/кадри"
 ВЕРСІЯ = hashlib.sha1(open("джерела/ядро/дані/мітки_речі.json", "rb").read()).hexdigest()[:12]
 os.makedirs(ТЕКА_Ф, exist_ok=True)
-ПЕРЕЛІК = [р["ід"] for р in json.load(open("аудит/проби/запис-речі-прохід-сцен/дані/перелік.json", encoding="utf-8"))["речі"]]
+ПЕРЕЛІК = [р["ід"] for р in json.load(open(os.environ.get("ПЕРЕЛІК") or "аудит/проби/запис-речі-прохід-сцен/дані/перелік.json", encoding="utf-8"))["речі"]]  # ПЕРЕЛІК — інший файл переліку (нові речі, продовження)
 if os.environ.get("ІД"): ПЕРЕЛІК = [і for і in ПЕРЕЛІК if і in set(open(os.environ["ІД"]).read().split())]
 R = {}
 for л in gzip.open("каталог_записи_v1.jsonl.gz", "rt", encoding="utf-8"):
