@@ -360,7 +360,7 @@ jobs:
         working-directory: джерела
         env:
           PYODIDE: ${{ runner.temp }}/pyodide
-        run: python3 -m unittest -v ядро.тести.тест_ч1_ситуація ядро.тести.тест_ш_протокол ядро.тести.тест_будова ядро.тести.тест_н2 ядро.тести.тест_н3
+        run: python3 -m unittest -v ядро.тести.тест_ч1_ситуація ядро.тести.тест_ш_протокол ядро.тести.тест_будова ядро.тести.тест_н2 ядро.тести.тест_н3 ядро.тести.тест_н4 ядро.тести.тест_н5 ядро.тести.тест_запис_речі
 
       - name: складальник каталогу — звіт записано → прочитано (не гейт)
         continue-on-error: true
@@ -802,6 +802,7 @@ jobs:
                 git add index.html build.txt "${ZVIT}"
               fi
               git add -A аудит/БЕКЛОГ.md
+              if [ -d аудит/дошка_архів ]; then git add -A аудит/дошка_архів; fi
               git add -A аудит/дошка 2>/dev/null || true
               git add -A аудит/корені 2>/dev/null || true
               if git diff --cached --quiet; then

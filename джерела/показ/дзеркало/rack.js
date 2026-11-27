@@ -43,8 +43,10 @@
   function tile(p,action='rack-item',own=false){return '<button type="button" class="rack-tile" data-ux="'+action+'" data-value="'+e(p.id)+'">'+photo(p)+'<small>'+e(p.shop||p.slotLabel||'Своя річ')+'</small><b>'+e(p.name)+'</b><span>'+e(own?'У гардеробі':cash(p))+'</span></button>';}
   function catalogTitle(){return ({left:'Річ із крамниці',right:'Друга річ',set:'Річ до образу',anchor:'Під одну річ'})[picker]||'Каталог';}
   function pickerBack(){return picker==='left'||picker==='right'?'buy':picker==='set'?'compose':picker==='anchor'?'anchor':'face';}
-  function searchPage(purpose='',keep=false){
-    if(!keep){picker=purpose;query='';offset=0;shown=[];}
+  let shelfSeed;
+  function searchPage(purpose=''){
+    shelfSeed=globalThis.crypto.getRandomValues(new Uint32Array(1))[0];
+    picker=purpose;query='';offset=0;shown=[];
     R.showExtra('catalog',catalogTitle(),'<form id="rack-search" class="rack-search">'+ik('пошук')+'<label for="rack-query" class="rack-sr">Пошук речі</label><input type="search" enterkeyhint="search" id="rack-query" value="'+e(query)+'" placeholder="Назва, барва, ціна"><button class="studio-primary" type="submit">Знайти</button></form><div id="rack-results" aria-live="polite"></div>',b(pickerBack(),'Назад','назад'));
     find(false);
   }
@@ -52,7 +54,7 @@
     const ticket=++seq,div=$('rack-results');if(!div)return;
     if(!more){offset=0;shown=[];div.textContent='Шукаю…';}
     try{
-      const result=await I.search(query,{offset:more?offset:0,limit:18});
+      const result=await I.search(query,{offset:more?offset:0,limit:18,seed:shelfSeed});
       if(ticket!==seq||!div.isConnected)return;
       const fresh=result.results.map(slim);fresh.forEach(p=>products.set(p.id,p));shown=more?[...shown,...fresh]:fresh;total=result.total;offset=shown.length;
       if(!shown.length){div.innerHTML='<p>Нічого не знайдено.</p>';return;}

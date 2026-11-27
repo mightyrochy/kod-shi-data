@@ -1,0 +1,59 @@
+── ПРОМПТ (7444 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: suit · about it: text н=1
+2 — kind: ring · about it: text н=2
+3 — kind: pumps · about it: text н=3
+4 — kind: clutch · about it: text н=4
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This linen suit is chosen for its airy fabric that keeps you comfortable in autumn warmth, and its cut creates a clean vertical line that suits your figure. It fits the celebration occasion with a relaxed elegance.",
+"2": "The gold ring complements your palette and adds a subtle touch of shine without overwhelming the outfit. Its understated design works well for your event.",
+"3": "These pumps offer steady polish and a refined silhouette that matches the formality of your celebration. They anchor the outfit with a touch of classic sophistication.",
+"4": "The clutch provides a sleek, streamlined shape for carrying essentials while adding to the overall elegance of your look. Its dark tone harmonizes beautifully with the suit and shoes.",
+"5": "You are wearing the linen suit for its lightness and breathability, which keep you cool as the sun warms up; I chose this set because it fits your celebration occasion perfectly. The black pumps anchor your look with steady polish that matches the formality of your event. The gold ring adds a subtle spark to your palette without overpowering the outfit, while the clutch provides a sleek silhouette for carrying essentials. If the roads are salted late in the day, these closed-toe shoes offer protection and grip. The loose cut of the suit complements your figure by creating a clean vertical line from shoulder to ankle.",
+"6": "Start with the jacket draped over one arm to show off the suit’s relaxed tailoring as you arrive, then slip it on when the sun gets stronger.",
+"7": "Keep the clutch in hand or let it rest against your leg; its soft shape adds a fluid counterpoint to the crisp lines of the linen.",
+"8": "If you plan to stay outdoors for hours, swap the pumps for flats or wedges—though they work just fine on smooth pavement.",
+"9": "Костюм-трійка: піджак прямого крою; жилет приталеного крою; штани прямі, широкі, пасок комбінований з гумовою стрічкою, посадка висока (Chloe) Chloe — Kept despite 'fabric_out_of_season' finding (autumn vs linen) because the item is a formal suit and we are prioritizing the formal level over fabric warmth; the day description will acknowledge the chill.",
+"10": "Туфлі човники, ATTICO, еколак, колір чорний — Added black patent leather pumps to replace missing shoes (blocker b-o7-1) and provide a formal base.",
+"11": "Шкіряний клатч Rose — Added black clutch to replace missing bag (blocker b-o7-2) for the formal occasion.",
+"12": "Костюм-трійка: піджак прямого крою; жилет приталеного крою; штани прямі, широкі, пасок комбінований з гумовою стрічкою, посадка висока (Chloe) Chloe — I accepted this finding because the linen suit's texture and formal level are deliberate choices to serve your celebration, and I prioritized your intent over the seasonal fabric warning in my day description.",
+"13": "Костюм-трійка: піджак прямого крою; жилет приталеного крою; штани прямі, широкі, пасок комбінований з гумовою стрічкою, посадка висока (Chloe) Chloe — This remark was noted as an informational observation about the visual layers rather than a blocker, so it does not prevent us from choosing this outfit for its strong formal foundation."
+}
+
+── ВІДПОВІДЬ (3172 симв., 20.5 с, HTTP 200) ──
+```json
+{
+"1": "Цей лляний костюм обрано за його легку тканину, яка зберігає комфорт у теплій осені, а крій створює чисту вертикальну лінію, що личить твоїй фігурі. Він відповідає святковій нагоді з невимушеною елегантністю.",
+"2": "Золоте кільце доповнює твою палітру та додає ледь помітний блиск без перевантаження образу. Його стриманий дизайн добре підходить для твоєї події.",
+"3": "Ці туфлі-човники пропонують стійку елегантність і витончений силует, що відповідають урочистості твого святкування. Вони завершують образ з ноткою класичної вишуканості.",
+"4": "Клатч забезпечує гладку та струнку форму для перенесення необхідних речей, водночас додаючи загальної елегантності твоєму вигляду. Його темний тон гармонійно поєднується з костюмом і взуттям.",
+"5": "Ти носиш лляний костюм за його легкість та повітропроникність, які зберігають тебе прохолодною, коли сонце починає пригрівати; я обрала цей комплект, тому що він чудово підходить для твоєї святкової нагоди. Чорні туфлі-човники завершують твій образ з елегантною витонченістю, яка відповідає урочистості події. Золоте кільце додає ледь помітний блиск до твоєї палітри без перевантаження образу, а клатч забезпечує гладку форму для носіння необхідних речей. Якщо дороги будуть посипані сіллю пізніше вдень, це закрите взуття захистить тебе та дасть зчеплення. Вільний крій костюма підкреслює твою фігуру, створюючи чисту вертикальну лінію від плеча до щиколотки.",
+"6": "Почни з того, що накинь жакет на одну руку, щоб продемонструвати невимушений крій костюма при вході, а потім одягни його, коли сонце стане сильнішим.",
+"7": "Тримай клатч у руці або поклади його біля ноги; його м’яка форма додає плинний контраст до чітких ліній лляного костюма.",
+"8": "Якщо ти плануєш перебувати на вулиці кілька годин, заміни туфлі-човники на балетки або босоніжки — хоча вони чудово підходять і для гладкої поверхні.",
+"9": "Костюм-трійка: піджак прямого крою; жилет приталеного крою; штани прямі, широкі, пасок комбінований з гумовою стрічкою, посадка висока (Chloe) Chloe — Залишено попри попередження про «не сезонну тканину» (осінь проти льону), оскільки костюм є формальним і ми надаємо пріоритет урочистості над теплом тканини; опис дня врахує холод.",
+"10": "Туфлі-човники, ATTICO, еколак, колір чорний — Додано чорні лаковані туфлі-човники замість відсутнього взуття (блокер b-o7-1) та для створення формальної основи.",
+"11": "Шкіряний клатч Rose — Додано чорний клатч замість відсутньої сумки (блокер b-o7-2) на урочисту подію.",
+"12": "Костюм-трійка: піджак прямого крою; жилет приталеного крою; штани прямі, широкі, пасок комбінований з гумовою стрічкою, посадка висока (Chloe) Chloe — Цей висновок було прийнято, оскільки лляний костюм є навмисним вибором для твоєї святкової події, і я надала пріоритет твоїй меті над попередженням про сезонну тканину в описі дня.",
+"13": "Костюм-трійка: піджак прямого крою; жилет приталеного крою; штани прямі, широкі, пасок комбінований з гумовою стрічкою, посадка висока (Chloe) Chloe — Цей коментар було відзначено як інформаційне спостереження про візуальні шари, а не як блокер, тому він не заважає нам обрати цей костюм для його міцної формальної основи."
+}
+```

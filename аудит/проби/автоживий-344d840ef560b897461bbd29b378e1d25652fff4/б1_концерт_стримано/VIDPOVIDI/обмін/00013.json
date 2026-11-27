@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Turtleneck sweater, crew neck, long body, heather grey (#f5f5f0), fine-gauge cotton wool.\\nWide-leg trousers, straight cut, ankle length, charcoal (#36454f), heavy twill.\\nDerby shoes, pointed toe, low heel, black (#1a1a1a), calfskin leather.\\nThin chain necklace, delicate link design, silver, sterling silver.\\n\\nThis outfit works because the heather grey turtleneck and charcoal wide-leg trousers create a streamlined silhouette that feels inherently classic while remaining comfortable enough for standing in a crowded concert hall. The choice of wool and twill fabrics adds texture and warmth suitable for an autumn evening, ensuring you stay cozy amidst the throngs without needing an outer layer. Finally, the black Derby shoes and silver necklace provide just enough polish to keep the look grounded and refined, perfectly honoring your request for something restrained yet stylish.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Turtleneck sweater\\\",\\n      \\\"details\\\": \\\"crew neck, long body, fine-gauge cotton wool\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#f5f5f0\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Wide-leg trousers\\\",\\n      \\\"details\\\": \\\"straight cut, ankle length, heavy twill\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#36454f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Derby shoes\\\",\\n      \\\"details\\\": \\\"pointed toe, low heel, calfskin leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#1a1a1a\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Thin chain necklace\\\",\\n      \\\"details\\\": \\\"delicate link design, sterling silver\\\",\\n      \\\"slot\\\": \\\"collar_necklace\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":544,\"output_tokens\":269},\"stop_reason\":\"end_turn\"}"
+ }
+}

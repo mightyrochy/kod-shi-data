@@ -2571,6 +2571,7 @@ function підсумокМоделі(){
     };
   });
   const консоль = [];
+  globalThis.__КОНСОЛЬ_СТЕНДУ = консоль; globalThis.__СТОР_СТЕНДУ = стор;   /* Н4: що було на сторінці, коли стенд упав */
   if (process.env.MEREZHA_LOG) стор.on('request', з => fs.appendFileSync(process.env.MEREZHA_LOG, new Date().toISOString() + ' ' + з.method() + ' ' + з.resourceType() + ' ' + з.url().slice(0, 300) + '\n'));  /* Н2-приймання: журнал усіх запитів сторінки */
   стор.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') консоль.push(m.type() + ': ' + m.text().slice(0, 300)); });
   стор.on('pageerror', e => консоль.push('pageerror: ' + String(e).slice(0, 300)));
@@ -3663,9 +3664,32 @@ function підсумокМоделі(){
     for (const [і, лист] of РОЗМОВА_СТЕНДУ.filter(л => !л.перший).entries()){
       const [було, даніДо] = await стор.evaluate(() => [ЧАТ_П.length, ((ПАСПОРТ_П || {}).поради_дані || []).slice()]);
       await стор.fill('#чат-поле', лист.вона);
+      /* Н4: слід дій «сценарій»/«чат» і мертвих звірок ходу — щоб мовчання стилістки мало причину в лозі, а не здогад */
+      if (process.env.ROZMOVA_TYSHA_MS) await стор.evaluate(() => {
+        if (window.__СЛІД_ДІЙ) return;
+        const слід = window.__СЛІД_ДІЙ = [], стек = () => new Error().stack.split('\n').slice(2, 6).map(р => р.trim()).join(' | ');
+        const п = почитиДіюП, с = скасуватиДіюП, ж = живийХідП;
+        window.почитиДіюП = (к, н) => { if (к === 'сценарій' || к === 'чат') слід.push(['почати ' + к, Date.now(), стек()]); return п(к, н); };
+        window.скасуватиДіюП = к => { if (к === 'сценарій' || к === 'чат') слід.push(['скасувати ' + к, Date.now(), стек()]); return с(к); };
+        window.живийХідП = () => { const ф = ж(); return () => { const т = ф(); if (!т) слід.push(['хід мертвий', Date.now(), стек()]); return т; }; };
+      });
       await стор.click('#чат-слати');
-      await чекатиСтан(стор, 'відповідь стилістки в розмові, чат-поле живе', б => ЧАТ_П.length >= б + 2 && ЧАТ_П[ЧАТ_П.length - 1].хто === 'ші'
-        && !document.getElementById('чат-поле').disabled, було, 480000);
+      /* Н4: ROZMOVA_TYSHA_MS — скільки чекати відповіді стилістки; не прийшла, а її репліка стоїть і поле живе — це факт
+         прогону («стилістка мовчить»), а не обрив стенда: далі стенд чекає черги ядра й веде сцену. Без змінної — як доти. */
+      try {
+        await чекатиСтан(стор, 'відповідь стилістки в розмові, чат-поле живе', б => ЧАТ_П.length >= б + 2 && ЧАТ_П[ЧАТ_П.length - 1].хто === 'ші'
+          && !document.getElementById('чат-поле').disabled, було, Number(process.env.ROZMOVA_TYSHA_MS || 480000));
+      } catch (e) {
+        const мовчить = process.env.ROZMOVA_TYSHA_MS && await стор.evaluate(б => ЧАТ_П.length >= б + 1
+          && ЧАТ_П[ЧАТ_П.length - 1].хто === 'людина' && !document.getElementById('чат-поле').disabled, було);
+        if (!мовчить) throw e;
+        console.log('\n1ж. СТИЛІСТКА МОВЧИТЬ: після ходу «' + лист.вона + '» за ' + process.env.ROZMOVA_TYSHA_MS + ' мс репліки нема, поле живе');
+        console.log('   слід дій: ' + JSON.stringify(await стор.evaluate(() => (window.__СЛІД_ДІЙ || []).slice(-12)))
+          + '\n   стан розмови: ' + JSON.stringify(await стор.evaluate(() => СТАН_РОЗМОВИ_П))
+          + '\n   консоль: ' + JSON.stringify((globalThis.__КОНСОЛЬ_СТЕНДУ || []).slice(-8)));
+        ф('стилістка відповіла на хід «' + лист.вона + '»', false, {мовчить: true});
+        await стор.evaluate(async () => { if (typeof ЧЕРГА_РОЗМОВИ_ЯДРА_П !== 'undefined') await ЧЕРГА_РОЗМОВИ_ЯДРА_П; });
+      }
       const х = await зняти(і + 2, лист.вона, лист.чекаємо);
       console.log('\n1ж. М-5 · хід ' + (і + 2) + '\n   ВОНА: ' + лист.вона + '\n   СТИЛІСТКА: ' + х.стилістка
         + '\n   ПАСПОРТ: ' + х.випадок + '\n   ЗАПИСИ ШАРУ: ' + JSON.stringify(х.записи)
@@ -3960,6 +3984,35 @@ function підсумокМоделі(){
      CLAUDE.md п.10); звірка — умови `чекаємо` над ПАСПОРТ_П тією самою мовою, що в
      `джерела/проби/м5_вісім_розмов.py`. Знімок стрічки й картки сценарію — після останнього. */
   await ведемоХодиРозмови();
+  /* Н4 (с8): TAP_POLE=<ід поля>=<слово підпису> — після розмови вона обирає плитку поля сценарію (напр. `сц-місце=офіс`):
+     той самий `<select>`, ті самі події `input`/`change`, що від її пальця, тож іде той самий шлях `рукаТоркнуласьП` →
+     `тапЯдромП`; стенд чекає черги ядра й пише, що лягло в Ситуацію. Без змінної — як доти. */
+  if (process.env.TAP_POLE){
+    const [ід, слово] = process.env.TAP_POLE.split('=');
+    const т = await стор.evaluate(async ([ід, слово]) => {
+      const е = document.getElementById(ід); if (!е) return {помилка: 'нема поля ' + ід};
+      const о = [...е.options].find(о => (о.textContent || '').toLowerCase().includes(слово.toLowerCase()) || о.value === слово);
+      if (!о) return {помилка: 'нема плитки «' + слово + '»', плитки: [...е.options].map(о => о.textContent)};
+      е.value = о.value;
+      е.dispatchEvent(new Event('input', {bubbles: true})); е.dispatchEvent(new Event('change', {bubbles: true}));
+      if (typeof ЧЕРГА_РОЗМОВИ_ЯДРА_П !== 'undefined') await ЧЕРГА_РОЗМОВИ_ЯДРА_П;
+      const с = typeof ситуаціяЯдраП === 'function' ? ситуаціяЯдраП() : null;
+      const ж = с ? JSON.stringify(с) : '';
+      return {плитка: о.textContent, значення: о.value, у_ситуації: (ж.match(/"місце"\s*:\s*(\{[^{}]*\}|\[[^\]]*\]|"[^"]*"|null)/) || [])[1] || null};
+    }, [ід, слово]);
+    console.log('\nTAP_POLE · ' + process.env.TAP_POLE + ' → ' + JSON.stringify(т));
+    ф('Н4 · тап «' + слово + '» лягла в Ситуацію ядра', !т.помилка && !!т.у_ситуації && т.у_ситуації !== 'null', т);
+    await знімок('tap_pole', ПАРА ? '#mirror-work' : '#е-випадок');
+  }
+  /* Н4: картка сценарію, яку вона бачить після розмови (і тапу), — знімок 390×844 і картка ядра даними */
+  if (process.env.YADRO === '1'){
+    const кя = await стор.evaluate(() => ({картка: typeof картаСценаріюЯдраП === 'function' ? картаСценаріюЯдраП() : null,
+      ситуація: typeof ситуаціяЯдраП === 'function' ? ситуаціяЯдраП() : null,
+      екран: ((document.querySelector('#mirror-work') || document.querySelector('#е-випадок') || {}).innerText || '').slice(0, 3000)}));
+    if (ЗНІМКИ) fs.writeFileSync(path.join(ЗНІМКИ, 'n4_kartka_stsenariiu.json'), JSON.stringify(кя, null, 1) + '\n', 'utf8');
+    console.log('\nН4 · КАРТКА СЦЕНАРІЮ ЯДРА: ' + JSON.stringify(кя.картка));
+    await знімок('n4_kartka_stsenariiu', ПАРА ? '#mirror-work' : '#е-випадок');
+  }
   /* Чат може сам почати збір; готові картки — теж цей шлях, якщо збір уже встиг завершитись. */
   const режимПісляЧату = await стор.evaluate(() => Екран.стан.режим);
   const збиранняЗЧату = ['очікування', 'образи'].includes(режимПісляЧату);
@@ -7514,6 +7567,10 @@ function підсумокМоделі(){
     process.exit(ЗАВЕРШЕННЯ_ПОВТОРУ.rc);
   }
   console.error('стенд не піднявся:', e);
+  console.error('консоль сторінки (помилки/попередження):', JSON.stringify((globalThis.__КОНСОЛЬ_СТЕНДУ || []).slice(-15)));
+  try { console.error('стан чату:', JSON.stringify(await globalThis.__СТОР_СТЕНДУ.evaluate(() => ({
+    реплік: ЧАТ_П.length, хвіст: ЧАТ_П.slice(-3).map(р => [р.хто, String(р.текст || '').slice(0, 120)]),
+    поле_вимкнено: (document.getElementById('чат-поле') || {}).disabled, режим: Екран.стан.режим})))); } catch (_) {}
   ДОКАЗ.обірвано('кидок: ' + String((e && e.message) || e).slice(0, 200));
   try { підсумокМоделі(); } catch (_) {}
   console.log('\nВПАЛО ' + (провалів + 1) + ' · прогін обірвався на кидку (див. «стенд не піднявся» вище); підсумок моделі надруковано');

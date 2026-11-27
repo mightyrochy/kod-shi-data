@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'прилади'))
 import згорнути_дошку as згортання
 from дошка_зріз import читати_дошку, підрахувати
-from дошка_поля import ПЕРШИЙ_СУВОРИЙ_НОМЕР, метадані, перевірити_поля
+from дошка_поля import ПЕРШИЙ_СУВОРИЙ_НОМЕР, метадані, перевірити_поля, шляхи_дошки
 from дошка_дати_сценарії import перевірити_хронологію
 без = lambda т, п: '<!-- дошка: ' + '; '.join(f'{к}={з}' for к, з in метадані(т).items() if к != п) + ' -->'
 Р = lambda н, стан='**ВІДКРИТО**', поля='': f'| {н} | проба | низька | {стан} | опис | файл | виявлено: проба; внесено: давнє {поля} |'
@@ -48,7 +48,9 @@ with tempfile.TemporaryDirectory() as тека:
     ще_не_згорнуто = {н for ф in (корінь_репо / 'аудит' / 'дошка').rglob('*.md')
                       for пара in re.findall(r'^(?:стан!? (\d+): \*\*ЧАСТКОВО|заміна!? \| (\d+) \|)',
                                              ф.read_text(encoding='utf-8'), re.MULTILINE) for н in пара if н}
-    for р in (корінь_репо / 'аудит' / 'БЕКЛОГ.md').read_text(encoding='utf-8').split('\n'):
+    усі_рядки = (р for ш in шляхи_дошки(корінь_репо / 'аудит/БЕКЛОГ.md') if ш.exists()
+                 for р in ш.read_text(encoding='utf-8').split('\n'))
+    for р in усі_рядки:
         м = згортання.РЯДОК.match(р)
         if not м or int(м[1]) < ПЕРШИЙ_СУВОРИЙ_НОМЕР or м[1] in ще_не_згорнуто or not згортання.межі_стану(р):
             continue

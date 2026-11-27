@@ -1,0 +1,46 @@
+--- "/tmp/h5/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\321\200\320\2626_\320\2753.js"	2026-11-26 18:31:59.495401837 +0000
++++ "/tmp/h5/\320\260\321\203\320\264\320\270\321\202/\320\277\321\200\320\276\320\261\320\270/\321\200\320\2626_\320\2753_\320\277.js"	2026-11-26 19:02:32.602558784 +0000
+@@ -2904,6 +2904,17 @@
+         return route.fulfill({status: 504, contentType: 'text/plain', body: 'міст: провайдер не відповів за ' + с_ + ' с (тиша заглушки)'}).catch(() => {});
+       }
+     }
++    /* перевірка Н5 (ґ): M503_N запитів типу «інший промпт» (кроки рук) після M503_ПІСЛЯ пропущених — HTTP 503 */
++    if (process.env.M503_N && типПромпту(текст) === 'інший промпт'){
++      const ст = (globalThis.__m503 = globalThis.__m503 || {бачено: 0, віддано: 0});
++      ст.бачено++;
++      if (ст.бачено > Number(process.env.M503_PISLIA || 0) && ст.віддано < Number(process.env.M503_N)){
++        ст.віддано++;
++        fs.appendFileSync(process.env.N2_DUMP || '/dev/null', JSON.stringify({час: new Date().toISOString(), тип: 'M503 крок рук', статус: 503, номер: ст.бачено, довжина: текст.length}) + '\n');
++        console.log('   ↔ M503: запит рук №' + ст.бачено + ' → HTTP 503 (' + ст.віддано + ' з ' + process.env.M503_N + ')');
++        return route.fulfill({status: 503, contentType: 'text/plain', body: 'міст: сервіс недоступний (проба 503)'}).catch(() => {});
++      }
++    }
+     const живийШар = !!(МОДЕЛЬ_МОВИ_СТЕНДУ && !ШАР_ВИМКНЕНО && /^мовний шар/.test(типПромпту(текст)));
+     if (МОДЕЛЬ_ЖИВА || живийШар){
+       const тип = типПромпту(текст);
+@@ -4682,6 +4693,25 @@
+         fs.writeFileSync(кдир + '/n3_kartka_' + i + '_кадри.json', JSON.stringify(кадри, null, 1));
+         const ціла = кадрів => 'кадрів ' + кадрів + ', область ' + (кадри[0] || {}).область + ', висота картки ' + Math.round((кадри[0] || {}).низ - (кадри[0] || {}).верх);
+         console.log('   N3: картка ' + i + ' · ' + JSON.stringify(р) + ' · ' + ціла(кадри.length));
++        /* перевірка Н5 (г): розгорнути «Що я не змогла перевірити» цієї картки, дочекатись слів, записати */
++        try {
++          const бл = видима.locator('details.питання-коду');
++          if (await бл.count()) {
++            const вже = await бл.first().evaluate(е => е.open).catch(() => false);
++            if (!вже) await бл.first().locator('summary').click({timeout: 10000});
++            await чекатиСтан(стор, 'питання картки ' + i + ' дописано', () => {
++              const в = [...document.querySelectorAll('#картки .картка:not([hidden]) details.питання-коду')][0];
++              return !!в && !в.querySelector('.задум-чекає');
++            }, null, 240000, {можеНеСтатись: true});
++            const вміст = await видима.locator('details.питання-коду').first().evaluate(е => ({
++              підпис: (е.querySelector('summary') || {}).textContent, рядки: [...е.querySelectorAll('.задум > *')].map(x => (x.innerText || '').trim()),
++              чекає: е.querySelectorAll('.задум-чекає').length}));
++            fs.writeFileSync(кдир + '/n5_nezn_' + i + '.json', JSON.stringify(вміст, null, 1));
++            await видима.locator('details.питання-коду').first().scrollIntoViewIfNeeded().catch(() => {});
++            await стор.waitForTimeout(400);
++            await стор.screenshot({path: кдир + '/n5_nezn_' + i + '_390x844.png'});
++          } else fs.writeFileSync(кдир + '/n5_nezn_' + i + '.json', JSON.stringify({підпис: null, рядки: []}));
++        } catch (е) { console.log('   N5: розгортання питань картки ' + i + ' не вдалось: ' + String(е).slice(0, 200)); }
+         if (i + 1 < усіх) { await стор.evaluate(() => document.getElementById('пж-далі').click()); await стор.waitForTimeout(800); }
+       }
+       console.log('   N3: карток у DOM ' + усіх);

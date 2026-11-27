@@ -838,6 +838,8 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
     "card_unknowns_toggle": "напис на кнопці, що розгортає на картці образу згорнутий перелік того, "
                             "що в цьому образі лишилось не перевіреним: кілька слів, без числа, без "
                             "крапки в кінці; лічбу рядків екран допише сам",
+    "card_choice_missing_input": "одне коротке речення на картці образу: назви обрану нею схему, "
+                                 "поясни, чому не змогла її перевірити, і скажи, що їй зробити",
     # ЗАМІНА-МОВЧИТЬ: заміна відповіла «готово» без речі — раніше жінці не казали нічого
     "replacement_not_found": "рядок на картці образу біля речі, яку вона позначила на заміну: стилістка "
                              "не знайшла їй заміни, річ лишилась у образі, а кнопку можна натиснути знову",
@@ -1218,9 +1220,14 @@ def _опис_keep_by():
                                  "did not prove that the first is better than each of the others, so the order "
                                  "is not advice (values: why — input_missing: an input of the judgement is missing "
                                  "for at least one of them; no_item_proved_better: every item was judged in full, "
-                                 "and none is proved better than each of the others). Say what is known about each "
-                                 "item from its own verdict and that the choice is hers, and give only the reason "
-                                 "named by why (this is not a tie: a tie means all were judged and came out equal)",
+                                 "and none is proved better than each of the others; missing — with input_missing: "
+                                 "which inputs are missing (input), for which items (items), and whose action gives "
+                                 "it (by — her: she can give it — say it, or give a portrait or her measurements; "
+                                 "record: the item's shop record does not know it, and nothing she does changes "
+                                 "that)). Say what is known about each item from its own verdict and that the choice "
+                                 "is hers, and give only the reason named by why and missing: what exactly is "
+                                 "missing and, where by is her, what she can do (this is not a tie: a tie means all "
+                                 "were judged and came out equal)",
     "colour_role_not_judged": "whether the item's colour is a neutral base or an accent was not judged (values: "
                               "missing — colour_measure: neither a measurement nor a shop colour word places it "
                               "on one side; a photo of the item in daylight lets it be judged)",
@@ -1997,6 +2004,9 @@ def _опис_keep_by():
                                    "without the photos)",
     "items_prices_links_are_true": "the items, the prices and the links on this card are true, so the outfit "
                                    "can be judged without the explanation",
+    "palette_scheme_needs_portrait": "the selected colour scheme could not be checked without a portrait in her "
+                                     "profile (values: scheme — the scheme she chose; action: add_portrait — "
+                                     "she can add a portrait to her profile so the stylist can check the scheme)",
     "name_occasion_or_place": "she chooses an occasion or a place on the scenario screen, or says in words "
                               "where she is going, and builds again",
     "photo_shared_by_other_products": "the photo the code measured the item on stands on several other "
@@ -3546,88 +3556,152 @@ if _спільні:
 # самим шляхом, що коди заяв. Визначення називає ID правил пункту (сторож — `тест_протоколу`:
 # кожне правило пункту стоїть у його визначенні). Імена пунктів українською лишаються в
 # обʼєкті коду — для звіту власника (`чекліст_вердикту`).
-ПУНКТИ_ЧЕКЛІСТА = {
-    'event_role_known': 'the role she named at this event is known',
-    'companion_formality_known': 'the companion formalness level from her words is known',
-    'occasion_season_known': 'the event season she named is known',
-    'wardrobe_known': 'her available wardrobe items are known',
-    'life_transition_known': 'the life transition she volunteered is known',
-    'declared_break_known': 'whether she explicitly declared a style grammar break is known',
-    'matching_opaque_tights_known': 'whether she named opaque tights matching her shoes is known',
-    'declared_column_known': 'whether she declared a column of one colour is known',
-    "direct_sun_heat": "direct sunlight is known before judging dark close-fitting garments (K-WEA-03)",
-    "host_context_known": "whether the event has a host or stakes is known before applying risk asymmetry (K-KOH-07)",
-    "creative_environment_known": "whether the environment is creative is known before inverting risk asymmetry (K-KOH-07)",
+_ОПИСИ_КЛІТИНОК = {
+    "event_role_known": ("зрозуміла твоя роль на цій події",
+                         'the role she named at this event is known'),
+    "companion_formality_known": ("зрозуміло, наскільки ошатно вдягнеться твоя компанія",
+                                  'the companion formalness level from her words is known'),
+    "occasion_season_known": ("відома пора року для цієї нагоди",
+                              'the event season she named is known'),
+    "wardrobe_known": ("відомо, які речі є у твоєму гардеробі",
+                       'her available wardrobe items are known'),
+    "life_transition_known": ("зрозуміло, яку зміну в житті ти назвала",
+                              'the life transition she volunteered is known'),
+    "declared_break_known": ("зрозуміло, яке правило стилю ти свідомо порушуєш",
+                             'whether she explicitly declared a style grammar break is known'),
+    "matching_opaque_tights_known": ("непрозорі колготи пасують за кольором до взуття",
+                                     'whether she named opaque tights matching her shoes is known'),
+    "declared_column_known": ("ти задумала однотонний силует",
+                              'whether she declared a column of one colour is known'),
+    "direct_sun_heat": ("доведеться бути під прямим сонцем",
+                        "direct sunlight is known before judging dark close-fitting garments (K-WEA-03)"),
+    "host_context_known": ("нагода вимагає врахувати господарів чи особливу відповідальність",
+                           "whether the event has a host or stakes is known before applying risk asymmetry (K-KOH-07)"),
+    "creative_environment_known": ("середовище дає простір для сміливішого образу",
+                                   "whether the environment is creative is known before inverting risk asymmetry (K-KOH-07)"),
     # надлишок (K-SYS-08)
-    "chroma_budget": "at most 1–2 loud colours in the outfit, hair and glasses frames included (K-COL-02)",
-    "single_focus": "exactly one focal point (K-CRA-02, K-COL-05)",
-    "lightness_steps": "lightness in 2–3 clear steps, not noise (K-COL-01)",
-    "one_silhouette_letter": "one readable silhouette letter (K-SIL-01)",
-    "formality_spread": "the formality of the items spreads over at most 2 steps, or a high-low mix is declared "
-                        "(K-KOH-02, K-SHO-03)",
-    "shine_budget": "at most 1–2 shiny surfaces (K-MAT-04, K-MAT-04-L, K-MAT-04-A)",
-    "print_budget": "prints share a common thread and differ in scale (K-COL-10, R-PRN-03, R-PRN-02)",
-    "layering_depth": "at most 3 visible layers, with a visible step between them (K-CRA-06)",
-    "accent_echo": "each accent echoes at least twice or is the single focus (K-COL-05, K-COMP-05)",
-    "one_sprezzatura": "at most one sprezzatura gesture (K-CRA-03)",
-    "hem_off_widest_point": "no hem lands on the widest point of a body zone, when her goal asks for it (K-FIT-03)",
-    "one_metal": "one metal, or a deliberate mix with a repeat (K-CRA-07, K-CRA-07-N)",
-    "genre_dominant": "one style genre leads (K-KOH-04, K-REG-01)",
-    "one_trend_item": "one trend item in a lasting base, not a seasonal uniform (K-CRA-08)",
-    "fabric_cut_formality": "the fabric and the cut of one item do not pull to different formality levels "
-                            "(K-MAT-02, K-MAT-01)",
-    "scale_to_person": "the scale of prints, accessories and textures matches her own scale (K-SIL-06)",
-    "layer_hems_apart": "the hems of the outer layer and of what is under it do not almost coincide "
-                        "(K-OUT-03, K-OUT-04, K-OUT-43)",
-    "repairs_not_opposed": "two repairs on one item do not pull in opposite directions (K-COL-CONF, K-COL-JOIN)",
-    "near_face_weight": "the visual weight of the items near the face is keyed to the viewing distance (K-COND-04)",
-    "neutrals_tone_or_step": "two neutrals on one lightness are tone-on-tone or set apart by a lightness step, "
-                             "not «almost the same» (K-COL-06)",
+    "chroma_budget": ("яскраві кольори врівноважені в образі",
+                      "at most 1–2 loud colours in the outfit, hair and glasses frames included (K-COL-02)"),
+    "single_focus": ("в образі є один виразний центр уваги",
+                     "exactly one focal point (K-CRA-02, K-COL-05)"),
+    "lightness_steps": ("світлі й темні тони утворюють чіткі переходи",
+                        "lightness in 2–3 clear steps, not noise (K-COL-01)"),
+    "one_silhouette_letter": ("речі разом утворюють виразний силует",
+                              "one readable silhouette letter (K-SIL-01)"),
+    "formality_spread": ("рівень ошатності речей узгоджений",
+                         "the formality of the items spreads over at most 2 steps, or a high-low mix is declared "
+                         "(K-KOH-02, K-SHO-03)"),
+    "shine_budget": ("блискучі поверхні врівноважені в образі",
+                     "at most 1–2 shiny surfaces (K-MAT-04, K-MAT-04-L, K-MAT-04-A)"),
+    "print_budget": ("візерунки поєднуються за мотивом і масштабом",
+                     "prints share a common thread and differ in scale (K-COL-10, R-PRN-03, R-PRN-02)"),
+    "layering_depth": ("чітко видно перехід від одного шару до іншого",
+                       "at most 3 visible layers, with a visible step between them (K-CRA-06)"),
+    "accent_echo": ("виразні деталі повторюються або одна з них веде образ",
+                    "each accent echoes at least twice or is the single focus (K-COL-05, K-COMP-05)"),
+    "one_sprezzatura": ("в образі досить одного невимушеного штриха",
+                        "at most one sprezzatura gesture (K-CRA-03)"),
+    "hem_off_widest_point": ("край речі минає найширше місце тієї ділянки, яку ти хочеш підкреслити",
+                             "no hem lands on the widest point of a body zone, when her goal asks for it (K-FIT-03)"),
+    "one_metal": ("метали в прикрасах узгоджені між собою",
+                  "one metal, or a deliberate mix with a repeat (K-CRA-07, K-CRA-07-N)"),
+    "genre_dominant": ("один стиль веде весь образ",
+                       "one style genre leads (K-KOH-04, K-REG-01)"),
+    "one_trend_item": ("модна деталь врівноважена тривкішою основою",
+                       "one trend item in a lasting base, not a seasonal uniform (K-CRA-08)"),
+    "fabric_cut_formality": ("тканина й крій речі однаково ошатні",
+                             "the fabric and the cut of one item do not pull to different formality levels "
+                             "(K-MAT-02, K-MAT-01)"),
+    "scale_to_person": ("розміри візерунків, прикрас і фактур пасують твоїм рисам",
+                        "the scale of prints, accessories and textures matches her own scale (K-SIL-06)"),
+    "layer_hems_apart": ("подоли верхнього й нижнього шарів помітно розходяться",
+                         "the hems of the outer layer and of what is under it do not almost coincide "
+                         "(K-OUT-03, K-OUT-04, K-OUT-43)"),
+    "repairs_not_opposed": ("дві зміни однієї речі працюють разом",
+                            "two repairs on one item do not pull in opposite directions (K-COL-CONF, K-COL-JOIN)"),
+    "near_face_weight": ("виразність речей біля обличчя відповідає відстані, з якої їх бачать",
+                         "the visual weight of the items near the face is keyed to the viewing distance (K-COND-04)"),
+    "neutrals_tone_or_step": ("нейтральні кольори збігаються в тон або чітко різняться за світлістю",
+                              "two neutrals on one lightness are tone-on-tone or set apart by a lightness step, "
+                              "not «almost the same» (K-COL-06)"),
     # прісність (K-SYS-09)
-    "interest_sources": "enough sources of interest for her intent (K-INT-04)",
-    "not_median_choice": "at least one element is not the median choice for the case",
-    "not_default_formula": "the outfit is not the default «neutral base + at most one accent, no print»",
-    "texture_adds": "texture or material carries what the colour does not",
-    "silhouette_decided": "the silhouette is a decision, not a default: a letter is chosen (K-SIL-01)",
-    "not_same_for_anyone": "this is not the answer the system would give another person",
-    "passport_from_talk": "the case passport was filled by the language model that saw the whole conversation "
-                          "with her",
+    "interest_sources": ("виразних деталей вистачає для твого задуму",
+                         "enough sources of interest for her intent (K-INT-04)"),
+    "not_median_choice": ("є річ, яка виділяється серед звичних варіантів для цієї нагоди",
+                          "at least one element is not the median choice for the case"),
+    "not_default_formula": ("образ виходить за межі звичного поєднання нейтральної основи з однією яскравою деталлю",
+                            "the outfit is not the default «neutral base + at most one accent, no print»"),
+    "texture_adds": ("фактура або матеріал додає образу виразності",
+                     "texture or material carries what the colour does not"),
+    "silhouette_decided": ("силует виразно читається в поєднанні речей",
+                           "the silhouette is a decision, not a default: a letter is chosen (K-SIL-01)"),
+    "not_same_for_anyone": ("рішення враховує саме твої особливості",
+                            "this is not the answer the system would give another person"),
+    "passport_from_talk": ("умови нагоди враховують усю розмову",
+                           "the case passport was filled by the language model that saw the whole conversation "
+                           "with her"),
     # палітра (K-PAL)
-    "face_colour_in_windows": "the colour near the face lies in her palette windows (K-PAL-09, K-PAL-14)",
-    "colours_in_her_pairings": "the colours of the outfit follow the logic of her pairings (K-PAL-15)",
-    "print_dominant_hers": "the dominant colour of a print is her colour (K-PAL-10)",
-    "off_palette_has_carrier": "a colour outside her palette has a carrier: the contrast of the outfit (K-PAL-08)",
-    "grey_hair_eyes_lead": "with grey hair, the eyes stay the main accent (K-PAL-13)",
-    "context_keeps_edge_colour": "the context does not push an edge colour out of her palette (K-PAL-16)",
-    "face_colour_eye_side": "a coloured item near the face lies on the side of the yellow–blue axis her eyes "
-                            "give (R-COL-16)",
-    "scheme_chosen": "the scheme of the outfit was chosen by her or by the stylist, not by a blind rank of the code",
-    "soft_palette_drama_by_lightness": "a soft palette is made dramatic by lightness contrast, texture and "
-                                       "shine, not by chroma (K-PAL-12)",
+    "face_colour_in_windows": ("колір біля обличчя входить до твоєї палітри",
+                               "the colour near the face lies in her palette windows (K-PAL-09, K-PAL-14)"),
+    "colours_in_her_pairings": ("кольори образу пасують одне одному в межах твоєї палітри",
+                                "the colours of the outfit follow the logic of her pairings (K-PAL-15)"),
+    "print_dominant_hers": ("провідний колір візерунка пасує твоїй палітрі",
+                            "the dominant colour of a print is her colour (K-PAL-10)"),
+    "off_palette_has_carrier": ("контраст образу врівноважує колір поза твоєю палітрою",
+                                "a colour outside her palette has a carrier: the contrast of the outfit (K-PAL-08)"),
+    "grey_hair_eyes_lead": ("очі лишаються найвиразнішими поруч із сивим волоссям",
+                            "with grey hair, the eyes stay the main accent (K-PAL-13)"),
+    "context_keeps_edge_colour": ("сусідні кольори втримують межовий відтінок у твоїй палітрі",
+                                  "the context does not push an edge colour out of her palette (K-PAL-16)"),
+    "face_colour_eye_side": ("теплота кольору біля обличчя пасує барві очей",
+                             "a coloured item near the face lies on the side of the yellow–blue axis her eyes "
+                             "give (R-COL-16)"),
+    "scheme_chosen": ("поєднання кольорів обрала ти або стилістка",
+                      "the scheme of the outfit was chosen by her or by the stylist, not by a blind rank of the code"),
+    "soft_palette_drama_by_lightness": ("контраст світлого й темного, фактура та блиск додають виразності м’якій палітрі",
+                                        "a soft palette is made dramatic by lightness contrast, texture and "
+                                        "shine, not by chroma (K-PAL-12)"),
     # аксесуари
-    "glove_sleeve_length": "glove length and sleeve length are one decision (K-GLV-02)",
-    "tights_density": "the density of the tights matches the fabric weight of the day (K-HOS-01)",
-    "tights_link": "tights are a link of «shoes – leg – bottom», not a separate choice (K-HOS-02)",
-    "jewelry_scale": "the scale of the jewelry repeats the scale of her features (K-JEW-02)",
-    "necklace_off_neckline": "the edge of a necklace does not coincide with the edge of the neckline (K-JEW-01)",
-    "accessory_edge_placement": "the edge of an accessory does not sit on a curve of the body where it can go "
-                                "elsewhere (K-EDG-01, K-ACC-04)",
-    "price_per_combinations": "the price is divided by the combinations the item enters (K-PRC-01)",
-    "repairable_shoes": "repairability lengthens the price denominator of the shoes (K-PRC-02)",
-    "refusal_reason_physical": "a physical reason for a refusal is named, not reduced to taste (K-END-02)",
-    "glasses_in_chroma": "glasses frames count in the chroma budget as a permanent colour near the face "
-                         "(K-FCE-04)",
-    "jewelry_kind_asked": "the jewelry is of the kind she asked for (pearls, ethnic), not only of that metal "
-                          "(K-COL-06-M)",
-    "accent_surfaces_differ": "two accent surfaces do not match exactly, unless a colour column is declared "
-                              "(K-ACC-10)",
-    "weather_withstood": "the weather of the day: layers, fabric, shoes and hem withstand it (K-WEA-01, K-WEA-05)",
-    "metal_is_surface": "the metal of the jewelry is the surface of the item, not a rim on fabric or a stone "
-                        "setting (K-COL-06-M, K-CRA-07)",
+    "glove_sleeve_length": ("довжини рукавичок і рукавів узгоджені",
+                            "glove length and sleeve length are one decision (K-GLV-02)"),
+    "tights_density": ("щільність колгот відповідає щільності решти тканин",
+                       "the density of the tights matches the fabric weight of the day (K-HOS-01)"),
+    "tights_link": ("колготи поєднують взуття з нижньою частиною образу",
+                    "tights are a link of «shoes – leg – bottom», not a separate choice (K-HOS-02)"),
+    "jewelry_scale": ("розмір прикрас пасує твоїм рисам",
+                      "the scale of the jewelry repeats the scale of her features (K-JEW-02)"),
+    "necklace_off_neckline": ("край намиста помітно відділений від краю вирізу",
+                              "the edge of a necklace does not coincide with the edge of the neckline (K-JEW-01)"),
+    "accessory_edge_placement": ("край прикраси вдало лежить відносно вигину тіла",
+                                 "the edge of an accessory does not sit on a curve of the body where it can go "
+                                 "elsewhere (K-EDG-01, K-ACC-04)"),
+    "price_per_combinations": ("ціна речі виправдана кількістю поєднань із нею",
+                               "the price is divided by the combinations the item enters (K-PRC-01)"),
+    "repairable_shoes": ("взуття можна ремонтувати й довше носити",
+                         "repairability lengthens the price denominator of the shoes (K-PRC-02)"),
+    "refusal_reason_physical": ("є конкретна причина, через яку річ не підходить",
+                                "a physical reason for a refusal is named, not reduced to taste (K-END-02)"),
+    "glasses_in_chroma": ("колір оправи врівноважений іншими кольорами образу",
+                          "glasses frames count in the chroma budget as a permanent colour near the face "
+                          "(K-FCE-04)"),
+    "jewelry_kind_asked": ("тип прикраси відповідає твоєму побажанню",
+                           "the jewelry is of the kind she asked for (pearls, ethnic), not only of that metal "
+                           "(K-COL-06-M)"),
+    "accent_surfaces_differ": ("виразні поверхні помітно різняться між собою",
+                               "two accent surfaces do not match exactly, unless a colour column is declared "
+                               "(K-ACC-10)"),
+    "weather_withstood": ("речі разом підходять для цієї погоди",
+                          "the weather of the day: layers, fabric, shoes and hem withstand it (K-WEA-01, K-WEA-05)"),
+    "metal_is_surface": ("метал утворює поверхню прикраси",
+                         "the metal of the jewelry is the surface of the item, not a rim on fabric or a stone "
+                         "setting (K-COL-06-M, K-CRA-07)"),
     # пункт оцінки «Оціни мій образ» (`оцінка_образу._контраст_обличчя`), не чекліста суду: суд
     # образу віддає лише порушення K-CLR-02, а «в межах» оцінка робить пунктом сама (ВМ-3б)
-    "face_contrast": "the lightness jump near her face matches her own contrast (K-CLR-02)",
+    "face_contrast": ("перехід від світлого до темного біля обличчя відповідає твоєму контрасту",
+                      "the lightness jump near her face matches her own contrast (K-CLR-02)"),
 }
+ПУНКТИ_ЧЕКЛІСТА = {код: визначення for код, (_, визначення) in _ОПИСИ_КЛІТИНОК.items()}
+ТЕМИ_КЛІТИНОК = {код: тема for код, (тема, _) in _ОПИСИ_КЛІТИНОК.items()}
 # ід пункту (`суд_чеклісти.ЧЕКЛІСТ_*`, перше поле) → код. Ід унікальні через усі чотири списки;
 # «K-CLR-02» — пункт контрасту біля обличчя, який оцінка образу додає до них сама (ВМ-3б).
 ЧЕКЛІСТ_КОДИ = {24: 'event_role_known', 25: 'companion_formality_known', 26: 'occasion_season_known', 27: 'wardrobe_known', 28: 'life_transition_known', 29: 'declared_break_known', 30: 'matching_opaque_tights_known', 31: 'declared_column_known', 22: "host_context_known", 23: "creative_environment_known", 21: "direct_sun_heat", 1: "chroma_budget", 2: "single_focus", 3: "lightness_steps", 4: "one_silhouette_letter",
@@ -3953,6 +4027,12 @@ def визначення_заяв(коди):
 ))
 _ВИД_НЕПЕРЕВІРЕНОГО = "card_unchecked"
 
+# ЧОГО НЕ ДАСТЬ НІХТО, КРІМ ЇЇ ВІДПОВІДІ (доповнення менеджера 26.11 до наряду Шар-текстів-наново, (б); розклад
+# `аудит/звіти/не-знаю-2611/РОЗКЛАД.md`, група Г): заява, що річ не закріплена, бо бракує її слова — чия річ у кадрі
+# чи яке це місце. Межа текстів (`межа_текстів.Межа.питати_її`) дозволяє про таку заяву одне питання й каже її одним
+# реченням: шість «ти його не згадала, тож я не знаю, чи він твій» (по одній на річ у кадрі) ставали шістьма «не знаю».
+ЇЙ_ВІДПОВІСТИ = frozenset(("her_item_not_named_others_in_frame", "her_item_slot_unclear"))
+
 # РІЧ У ЗНАЧЕННІ ЗАЯВИ — КОДАМИ (Е2-вхід-опису-кодами): ключі, що за визначеннями `ЗАЯВИ` несуть річ, беруть
 # `річ_заяви` (item_id, kind, color), а не назву крамниці вільним текстом — назва везла вид і колір словами в промпт
 # опису й перекладача, і модель брала їх звідти. Одна точка для всіх виробників, як і словник кодів вище.
@@ -4134,17 +4214,15 @@ def схема():
             "review_items_fix": об(ВИПРАВЛЕННЯ_ПЕРЕЛІКУ, "її слова про те, що не так у переліку речей з фото"),
             "catalog_item": об(РІЧ_КАТАЛОГУ, "річ каталогу", required=["id", "name"]),
             "stylist_reply": об(РЕПЛІКА, "що стилістка каже їй цього ходу, внутрішньою мовою"),
-            # опора — полями на кожне речення (рішення 14177, корінь Е2-межі): `мовний_шар.суд_підтвердження`
-            # рядок — речення без полів: опори не має, тож проходить лише там, де судити нема чого
-            "reply_text": об({"text": {"description": "речення для неї її мовою", "oneOf": [
-                {"type": "array", "items": {
-                    "type": "object", "additionalProperties": False, "required": ["about", "says"], "properties": {
-                        "about": {"type": "array", "items": {"type": "string"}},
-                        "recorded": {"type": "array", "items": {"type": "string"}},
-                        "her_words": {"type": "array", "items": {"type": "string"}},
-                        "says": {"type": "string"}}}},
-                {"type": "string"}]}},
-                             "вихід перекладача репліки: речення з опорою", required=["text"]),
+            # речення з номерами фактів і станом (межа текстів, наряд Шар-текстів-наново): `межа_текстів.Межа.судити`
+            "reply_text": об({к: {"description": о, "type": "array", "items": {
+                "type": "object", "additionalProperties": False, "required": ["about", "says"], "properties": {
+                    "about": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"},
+                              "description": "номер факту (f1, f2…) → його стан (state), який речення стверджує"},
+                    "says": {"type": "string", "minLength": 1}}}}
+                for к, о in (("text", "речення для неї її мовою: що відомо і що з цим робити"),
+                             ("unknown", "чого стилістка не знає: показ ставить це за кнопкою"))},
+                             "вихід перекладача репліки: речення з номерами фактів і станом", required=["text"]),
             # М-5 (п.14): хід розмови — оновлення паспорта, хто відповідає, частини відповіді
             "conversation_turn": _форма_мовного_шару(визначення=False),
             # Ч-1 (п.12): рядки картки образу й екрана «Палітра» — видом і заявами, не фразою

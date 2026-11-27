@@ -47,7 +47,24 @@ window.createMirrorPair = function(R) {
     return '<div class="pair-fact '+css+'"><div>'+left+'</div><i aria-hidden="true">'+e(sign)+'</i><div>'+right+'</div></div>';
   }
   const fields=[['нагода','Нагода','сц-нагода'],['місце','Місце','сц-місце'],['дрес','Ошатність','сц-дрес'],['коли','Коли й погода',''],['макіяж','Макіяж','сц-макіяж'],['прикраси','Прикраси','сц-прикраси'],['мета','Мета','сц-мета']];
+  /* `#ядро=1`: «Люстерко зрозуміло» — з картки сценарію ядра (поля Ситуації, Т36), а не зі старого паспорта: її уривок
+     ліворуч, назва поля праворуч; число — з одиницею, тап — підписом плитки; «Не записано» — `сказала.без_поля` */
+  function coreFacts(card){
+    const rows=[];
+    for(const r of card.рядки||[]){
+      const name=НАЗВИ_ПОЛІВ_ЯДРА_П[r.поле];if(!name)continue;
+      const tile=r.джерело==='форма'?підписПлиткиЯдраП(r.поле):null;
+      const value=typeof r.значення==='number'?r.значення+(ОДИНИЦІ_ЯДРА_П[r.поле]||''):tile;
+      const left=r.уривок?'«'+e(r.уривок)+'»':tile?'Твій вибір':null;
+      if(!left)continue;
+      rows.push(row(left,'=','<small>'+e(name)+'</small>'+(value?'<strong>'+e(value)+'</strong>':'')));
+    }
+    for(const phrase of new Set(card.не_записано||[]))rows.push(row('«'+e(phrase)+'»','?',action('write','Уточнити словами')));
+    return rows;
+  }
   function structuredFacts(){
+    const core=typeof картаСценаріюЯдраП==='function'?картаСценаріюЯдраП():null;
+    if(core)return coreFacts(core);
     const passport=ПАСПОРТ_П;if(!passport)return [];
     const facts={...passport.картка_запиту};
     for(const [key,quote] of Object.entries(passport.цитати_полів||{})){
@@ -137,6 +154,16 @@ window.createMirrorPair = function(R) {
     if(!record?.c){
       target._renderKey=null;
       document.documentElement.dataset.pairLooks=testing?'blind':'waiting';
+      const збій=ЯДРО_П&&!testing&&cards.find(c=>c?.рука===1)?.збій;
+      if(збій){
+        const html='<p class="не-вийшло"></p><div class="pair-actions">'+action('pair-build','Повторити','',true)+
+          action('pair-summary','До нагоди')+(ready.length?action('pair-test','Сліпий перегляд'):'')+'</div>';
+        if(target._pairMarkup!==html){
+          place(target,html);
+          збійЖінціП(target.querySelector('.не-вийшло'),ВИДИ_ЗБОЮ_РУКИ_П[збій.вид]||'hand_step_failed',збій.чому||збій.вид);
+        }
+        return;
+      }
       place(target,testing?'':'<p>Продуктового образу ще немає.</p>'+action('pair-summary','До нагоди')+(ready.length?action('pair-test','Сліпий перегляд'):''));return;
     }
     const {c,i}=record,same=position===i,fitted=photoURL(кадрПоказуП(c)),pieces=c.речі||[],key=cardKey(pack,i);
@@ -176,9 +203,11 @@ window.createMirrorPair = function(R) {
       const replace=node('замін-'+i+'-'+j);
       return '<details class="pair-item-details"><summary>'+e(p.назва||'Річ')+'</summary>'+itemPreview(p)+shop+'<div class="pair-inline">'+(replace?action('pair-native-replace','Не ця · замінити',i+'|'+j):'')+action('pair-own-piece','Маю свою',i+'|'+j)+'</div></details>';
     }).join(''):'';
-    const signature=[key,testing,same,M.get(),worn,reverseKey,recent,itemRows,lead,photos,bodyPhoto(),entry?.дата,group?.нагода].join('·');
+    const дія=!testing&&!same?рядокДіїВиборуКарткиП(c):null;
+    const signature=[key,testing,same,M.get(),worn,reverseKey,recent,itemRows,lead,photos,bodyPhoto(),entry?.дата,group?.нагода,дія].join('·');
     if(target._renderKey===signature)return;target._renderKey=signature;
     place(target,spread+stampButton+recent+(photos?'<div class="pair-piece-shelf">'+photos+'</div>':'')+itemRows+
+      (дія?'<p class="не-вийшло">'+e(дія)+'</p>':'')+
       (!testing&&!same?action('pair-open-product','Відкрити цей образ',String(i),true):'')+
       (testing?action('pair-result','До мого образу'):''));
   }

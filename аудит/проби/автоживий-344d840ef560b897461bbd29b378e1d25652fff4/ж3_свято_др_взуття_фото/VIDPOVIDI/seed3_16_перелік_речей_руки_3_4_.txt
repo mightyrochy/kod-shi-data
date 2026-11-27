@@ -1,0 +1,41 @@
+── ПРОМПТ (2370 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "own": "<id from her_items or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description", "\"her_items\" — her own items; an item of the description that is one of them gets its id in \"own\""]}, "description": "A crisp white silk blouse tailored to the waist, cut straight with a relaxed but polished silhouette.  \nHigh-waisted charcoal-grey wool-blend trousers, cropped at mid-calf with a subtle drape, finished with a narrow hem.  \nWhite platform sandals with ankle strap in leather — color: #FFFFFF — bold black rubber sole for contrast and comfort.  \nTiny silver hoop earrings to add a touch of sparkle without overpowering the clean lines of the outfit.\n\nThis ensemble works because it balances celebration-ready polish with personal flair: the crisp blouse and tailored trousers elevate the look for a birthday party, while the white sandals honor her wish to wear them as stated. The dark trousers ground the brightness of the top and shoes, creating visual harmony under artificial evening light. The minimalist accessories ensure attention stays on her confident style and cherished footwear.", "her_items": [{"id": "її-ф1", "name": "White platform sandals with ankle strap"}]}
+
+── ВІДПОВІДЬ (933 симв., 3.9 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "white silk blouse",
+      "details": "tailored to the waist, cut straight with a relaxed but polished silhouette",
+      "slot": "top",
+      "color_hex": "#FFFFFF",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "charcoal-grey wool-blend trousers",
+      "details": "high-waisted, cropped at mid-calf with a subtle drape and narrow hem",
+      "slot": "bottom",
+      "color_hex": "#36454F",
+      "own": null,
+      "worn": true
+    },
+    {
+      "name": "white platform sandals with ankle strap",
+      "details": "leather upper with bold black rubber sole",
+      "slot": "shoes",
+      "color_hex": "#FFFFFF",
+      "own": "її-ф1",
+      "worn": true
+    },
+    {
+      "name": "tiny silver hoop earrings",
+      "details": "minimalist sparkle",
+      "slot": "earrings",
+      "color_hex": "#C0C0C0",
+      "own": null,
+      "worn": true
+    }
+  ]
+}

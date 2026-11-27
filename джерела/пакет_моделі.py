@@ -625,7 +625,7 @@ import внутрішня_мова as _ВМ_П
                  як="an outfit in which none of them carries colour does not keep the scheme: it reads as "
                     "bland, not calm"),
         # Пулу — лише порядок щаблів; одяг щабля нагоди в її гілці — у рядку рівня (`occasion_level`)
-        _ЗП.Поле("pool", "admitted catalog items: in stock, suited to the weather and "
+        _ЗП.Поле("pool", "admitted catalog items: suited to the weather and "
                          "the stated dress code, within her palette's lightness and her refusals; «formality» — "
                          "the item's step or steps from…to, the same steps as the occasion: " + _БР_Щ.ЩАБЛІ_ПОРЯДОК_EN + "; «L» — lightness 0 to "
                          "100; «hem_cm» — where the hem falls, cm above the floor; «fabric_bands» — weather bands "
@@ -844,24 +844,11 @@ def _задача_руки(о, *, прогін_руки=None):
 # −1,1…+0,9 % (`проби/бюджет_пулу_токени.py` друкує обидва числа). Токенізатора в продукті нема
 # (12 МБ і бібліотека); лічба знаків за класом коштує як `len`. Код слів не читає: рахує знаки,
 # як `len` (п.12).
-_ТОКЕНІВ_НА_КИРИЛИЧНУ = 0.475                                 # літера U+0400–U+04FF або «ʼ»
-_ТОКЕНІВ_НА_ЦИФРУ = 1.375                                     # цифри Qwen рахує по одній
-_ТОКЕНІВ_НА_ЛАТИНСЬКУ = 0.34
-_ТОКЕНІВ_НА_ІНШИЙ_ЗНАК = 0.186                                # лапки, коми, дужки, пробіли
-_ЛАТИНИЦЯ, _ЦИФРИ = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", b"0123456789"
+from міра_токенів import (
+    _ТОКЕНІВ_НА_КИРИЛИЧНУ, _ТОКЕНІВ_НА_ЦИФРУ, _ТОКЕНІВ_НА_ЛАТИНСЬКУ, _ТОКЕНІВ_НА_ІНШИЙ_ЗНАК, _ЛАТИНИЦЯ, _ЦИФРИ, токенів,
+)
 
 
-def токенів(текст):
-    """Оцінка числа токенів Qwen 3.5 у тексті (`_ТОКЕНІВ_НА_…`). Знаки лічаться в байтах UTF-8
-    (кирилична літера — провідний байт 0xD0–0xD3): пошук бюджету кличе це на кожному кроці
-    над ~110–450 тис. символів, і лічба регулярним виразом коштувала 12 мс, а так — 2."""
-    текст = текст or ""
-    б = текст.encode("utf-8")
-    кир = sum(map(б.count, (b"\xd0", b"\xd1", b"\xd2", b"\xd3", "ʼ".encode("utf-8"))))
-    цифр = len(б) - len(б.translate(None, _ЦИФРИ))
-    лат = len(б) - len(б.translate(None, _ЛАТИНИЦЯ))
-    return int(round(кир * _ТОКЕНІВ_НА_КИРИЛИЧНУ + цифр * _ТОКЕНІВ_НА_ЦИФРУ + лат * _ТОКЕНІВ_НА_ЛАТИНСЬКУ
-                     + (len(текст) - кир - цифр - лат) * _ТОКЕНІВ_НА_ІНШИЙ_ЗНАК))
 
 
 def вага_пулу(текст):

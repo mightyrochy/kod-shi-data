@@ -35,6 +35,8 @@
    адреса, за якою сторінка бачить сама себе й міст. */
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
+const ХІД_Н6 = process.env.N6_PLAN
+  ? require('../звіти/ядро-образу-наново/приймання/хід.js').записН6(process.env.N6_PLAN) : null;
 const {ЗаписанийОбмін, ТекстовіВідповіді, записатиОбмін, імТипу} = require('./записаний_обмін.js');
 const ЗАПИСАНИЙ_ОБМІН = process.env.REPLAY_EXCHANGE ? new ЗаписанийОбмін(process.env.REPLAY_EXCHANGE)
   : process.env.REPLAY_RECORDINGS ? new ТекстовіВідповіді(process.env.REPLAY_RECORDINGS) : null;
@@ -1140,6 +1142,10 @@ const ОЦІНКА_УК = {
   'Yes, these colors go together; one change would make the outfit calmer.': 'Так, ці кольори поєднуються; одна зміна зробить образ спокійнішим.',
   'Contrast near your face matches your own contrast.': 'Контраст біля обличчя такий самий, як твій власний.',
   'These colors are from your palette.': 'Ці кольори — з твоєї палітри.',
+  'These pieces work together.': 'Ці речі пасують одна до одної.',
+  'The hems of your coat and dress are clearly apart.': 'Подоли пальта й сукні мають виразний відступ.',
+  'I cannot establish how the two hems line up.': 'Не можу достовірно визначити відступ між подолами пальта й сукні.',
+  'I cannot give a definite conclusion for these parts of the outfit.': 'Щодо цих ознак образу певного висновку не маю.',
   'Every color here is yours.': 'Усі кольори тут — твої.',
   'Your burgundy pair from the photo continues the skirt down to the feet.': 'Твоя бордова пара з фото продовжує спідницю до самих ступнів.',
   'Where you are going: without it I did not judge formality.': 'Куди ти йдеш: без цього ошатність я не судила.',
@@ -1927,39 +1933,50 @@ function відповісти(текст) {
     if (/\?\s*$/.test(слова.trim())) Object.assign(в, {question: {free_text: слова.trim(), lang: 'uk'}, question_about: 'look'});
     return {тип: 'мовний шар: вхід', текст: JSON.stringify(в)};
   }
-  if (/\nРЕПЛІКА:\n/.test(текст || '') && /^Ти — перекладачка в застосунку-стилістці/.test(текст)) {
-    const р = JSON.parse(текст.slice(текст.lastIndexOf('РЕПЛІКА:') + 'РЕПЛІКА:'.length));
-    /* М-1: додане до сценарію приходить кодами (`added`) — заглушка каже це так, як сказав би перекладач */
-    const додано = р.added ? ['Додала до сценарію' + ((р.added.own_items || []).length
-      ? ': ' + р.added.own_items.map(x => '«' + x.free_text + '»').join(', ') : ' як побажання') + '.'] : [];
-    /* Ч-1 (п.12): вердикт її речі приходить ЗАЯВАМИ, і визначення кожної стоять у самому
-       промпті («- code — визначення.») — сумлінна заглушка читає їх звідти, як і в
-       повідомленнях, а не тримає другої таблиці. */
+  /* РЕПЛІКА ЧЕРЕЗ МЕЖУ ТЕКСТІВ (наряд Шар-текстів-наново, крок 1): вхід — факти `fN` після «ФАКТИ:» (стан — `state`,
+     речі — номерами `items`), відповідь — {text: [{about: {fN: state}, says}], unknown: []}. Сумлінна заглушка
+     пише одне речення text про всі факти: так кожен факт з `because` стоїть поруч зі своєю причиною, а факт `ask_her`
+     сказано рівно раз. Визначення заяв і кодів значень бере з самого промпта, як і в повідомленнях; кодів, цифр і
+     знаків питання в словах не лишає — питання одне, наприкінці, і лише коли є факт `ask`. */
+  if (/\nФАКТИ:\n/.test(текст || '') && /^Ти — перекладачка в застосунку-стилістці/.test(текст)) {
+    const ф = JSON.parse(текст.slice(текст.lastIndexOf('ФАКТИ:') + 'ФАКТИ:'.length));
     const визнЗаяв = {};
     for (const [, к, о] of текст.matchAll(/^- ([a-z_]+) — ([^\n]+?)\.$/gm)) визнЗаяв[к] = о;
-    const вердикти = (р.item_verdicts || []).map(в => {
-      const кодиЗн = кодиЗПромпта(текст);
-      /* Намальована червона сукня: заглушка перекладає заяви цього кадру українською,
-         інакше сторож закономірно знімає англійські визначення разом із вердиктом. */
-      const перекладФото = process.env.FOTO_STEND === '1' ? {
-        item_suits_with_condition: 'з умовою',
-        colour_outside_palette_near_face: 'колір біля обличчя поза палітрою',
-        item_contrast_higher_near_face: 'контраст біля обличчя вищий за твій'} : {};
-      const тіло = ((в.verdict || {}).statements || []).map(з => перекладФото[з.code]
-        || заявоюСловами(з, визнЗаяв, кодиЗн)).join('; ');
-      const назва = process.env.FOTO_STEND === '1' ? ((ТАБЛИЦЯ_ВМ.slot || {})[в.slot] || 'Річ')
-        : (в.item || {}).free_text;
-      return (назва ? '«' + назва + '» — ' : '') + тіло + '.';
-    });
-    const рядки = ['Записала.'].concat(додано, вердикти, р.answer ? [українськоюВідповіді(р.answer.free_text) || р.answer.free_text] : [],
-      /* Ч-5: подію вона вже назвала (`event_place`) — сумлінна перекладачка її не перепитує */
-      (р.required || []).includes('event_place') ? ['Скажи, де буде ця подія і наскільки вона святкова: без цього образи не зберуться.']
-        : (р.required || []).length ? ['Скажи, куди ти йдеш: без цього образи не зберуться.'] : [],
-      (р.advice_topics || []).length ? ['Якщо хочеш, розкажи ще трохи про цей вихід — а можна й ні, образи зберу й так.'] : []);
+    const кодиЗн = кодиЗПромпта(текст);
+    const чисто = т_ => String(т_ || '').replace(/\b[a-z]+_[a-z_]+\b|\bunknown\b|(?<![\w-])f\d+\b/g, '')
+      .replace(/\d+/g, '').replace(/[?？]/g, '').replace(/\s+/g, ' ').replace(/\s+([,.;:])/g, '$1').trim();
+    const назва = н => { const р = ф[н] || {}; return р.name || ((ТАБЛИЦЯ_ВМ.slot || {})[р.slot]) || ''; };
+    /* Намальована червона сукня: заглушка перекладає заяви цього кадру українською (FOTO_STEND) */
+    const перекладФото = process.env.FOTO_STEND === '1' ? {
+      item_suits_with_condition: 'з умовою',
+      colour_outside_palette_near_face: 'колір біля обличчя поза палітрою',
+      item_contrast_higher_near_face: 'контраст біля обличчя вищий за твій'} : {};
+    const частини = ['Записала'];
+    let питання = '';
+    for (const факт of Object.values(ф)) {
+      const с = факт.state;
+      if (с === 'item' || с === 'known') continue;
+      if (с === 'recorded') частини.push('Записала ' + (факт.label || факт.field || '') + (факт.quote ? ': «' + факт.quote + '»' : ''));
+      else if (с === 'not_recorded' || с === 'partly_recorded')
+        частини.push('Цього я не записала — напиши ще раз своїми словами, якщо хочеш');
+      else if (с === 'added') частини.push('Додала до сценарію' + ((факт.own_items || []).length
+        ? ': ' + факт.own_items.map(x => '«' + ((x && (x.free_text || (x.name || {}).free_text)) || назва(x)) + '»').join(', ')
+        : ' як побажання'));
+      else if (с === 'answer') частини.push(українськоюВідповіді(факт.text) || факт.text || '');
+      else if (с === 'ask') питання = (факт.field === 'event_place')
+        ? 'Скажи, де буде ця подія і наскільки вона святкова' : 'Скажи, куди ти йдеш';
+      else {
+        const речі = (факт.items || []).map(назва).filter(Boolean);
+        const тіло = перекладФото[с] || заявоюСловами({code: с, values: факт.values}, визнЗаяв, кодиЗн);
+        частини.push((речі.length ? '«' + речі.join('», «') + '» — ' : '') + тіло);
+      }
+    }
+    const says = частини.map(чисто).filter(Boolean).join('. ') + (питання ? '. ' + питання + '?' : '.');
     /* РЯДОК 5987: REPLIKA_VIDMOVA=1 — перший виклик перекладача репліки відмовляє (немає поля `text` →
        `no_text_field`): хід іде шляхом main, а паспорт ходу лишається (#1110, рядок 5242) */
     if (РЕПЛІКА_ВІДМОВА && !реплікуВідмовлено++) return {тип: 'мовний шар: репліка', текст: '{}'};
-    return {тип: 'мовний шар: репліка', текст: JSON.stringify({text: рядки.join(' ')})};
+    const about = Object.fromEntries(Object.entries(ф).map(([н, факт]) => [н, факт.state]));
+    return {тип: 'мовний шар: репліка', текст: JSON.stringify({text: [{about, says}], unknown: []})};
   }
   /* ПОВІДОМЛЕННЯ ВНУТРІШНЬОЮ МОВОЮ (Ч-1, аудит/ПРОДУКТ.md п.12): код віддає вид рядка й заяви
      кодами, речення складає перекладачка. Заглушка поводиться як сумлінна модель: бере
@@ -2023,25 +2040,49 @@ function відповісти(текст) {
       : process.env.OTSINKA === 'bezfoto' ? ОЦІНКА_РЕЧІ.map(({photo, ...р}) => р) : ОЦІНКА_РЕЧІ})};
   if (об && об.task && відповідьЗадачі(об) === 'OUTFIT_REVIEW_V1') {
     const en = об.task.language !== 'Ukrainian', т = к => en ? к : (ОЦІНКА_УК[к] || к);
+    const факти = об.facts || {};
+    const нумерована = Array.isArray((об.answer_schema || {}).answer);
+    const факт = ловить => Object.keys(факти).find(н => ловить(факти[н]));
+    const речення = (рядок, ...номери) => нумерована
+      ? [{about: Object.fromEntries(номери.filter(н => факти[н]).map(н => [н, факти[н].state])), says: т(рядок)}]
+      : т(рядок);
+    const склад = факт(ф => ф.field === 'outfit');
+    const зміна = (об.changes || [])[0];
     if (допитОцінки(об))
-      return {тип: 'ОЦІНКА: допит', текст: JSON.stringify({answer: т('Yes: with the darker pair the outfit is calmer, because the leg line is no longer cut.')})};
+      return {тип: 'ОЦІНКА: допит', текст: JSON.stringify({
+        answer: речення('Yes: with the darker pair the outfit is calmer, because the leg line is no longer cut.',
+                         (зміна || {}).id || склад)})};
     const речі = об.items || [], образ = об.outfit || [];
     const у = речі.filter(р => образ.includes(р.id) && р.palette === 'in').map(р => р.id);
     const поза = речі.filter(р => образ.includes(р.id) && р.palette === 'out').map(р => р.id);
     const обличчя = речі.filter(р => образ.includes(р.id) && р.near_face).map(р => р.id);
-    const works = [{about: 'contrast', items: обличчя, text: т('Contrast near your face matches your own contrast.')}];
-    if (у.length) works.push({about: 'palette', items: у, text: т('These colors are from your palette.')});
-    if (поза.length) works.push({about: 'palette', items: поза, text: т('Every color here is yours.')});
-    /* зміни оцінки — лише її речі (`replacements[].with_own`, #3159): крамничної гілки в заглушці нема */
-    const зміна = (об.changes || [])[0];
-    const невідоме = (об.unknown || []).filter(н => н.input === 'occasion' || н.input === 'temperature')
-      .map(н => ({text: т(н.input === 'occasion' ? 'Where you are going: without it I did not judge formality.'
-                                                 : 'The weather: without it I did not judge warmth.')}));
+    const works = нумерована ? (об.supported || []).slice(0, 1).map(о => ({
+      ...о, text: речення('These pieces work together.', ...о.items)})) :
+      [{about: 'contrast', items: обличчя, text: т('Contrast near your face matches your own contrast.')}];
+    if (у.length) works.push({about: 'palette', items: у, text: речення('These colors are from your palette.', ...у)});
+    if (поза.length) works.push({about: 'palette', items: поза, text: речення('Every color here is yours.', ...поза)});
+    const погода = факт(ф => ф.point === 'weather_withstood' && ф.state === 'no_input');
+    const невідоме = нумерована
+      ? (погода ? речення('The weather: without it I did not judge warmth.', погода) : [])
+      : (об.unknown || []).filter(н => н.input === 'occasion' || н.input === 'temperature')
+        .map(н => ({text: т(н.input === 'occasion' ? 'Where you are going: without it I did not judge formality.'
+                                                   : 'The weather: without it I did not judge warmth.')}));
+    let основна = речення('Yes, these colors go together; one change would make the outfit calmer.', склад, (зміна || {}).id);
+    if (нумерована){
+      const краї = process.env.OTSINKA_KRAI && факт(ф => ф.point === 'layer_hems_apart');
+      if (факти[краї]?.state === 'passed')
+        основна = речення('The hems of your coat and dress are clearly apart.', краї);
+      if (факти[краї]?.state === 'held')
+        невідоме.push(...речення('I cannot establish how the two hems line up.', краї));
+      const утримані = Object.keys(факти).filter(н => н !== краї && факти[н].state === 'held');
+      if (утримані.length) невідоме.push(...речення('I cannot give a definite conclusion for these parts of the outfit.', ...утримані));
+    }
     return {тип: 'ОЦІНКА: відповідь', текст: JSON.stringify({
-      answer: т('Yes, these colors go together; one change would make the outfit calmer.'),
+      answer: основна,
       verdict: зміна ? 'wear_with_change' : 'wear_as_is', works,
       /* рядок 6459: «items» зміни мусять нести річ, яку вона міняє (`replace`) — без цілі сторож знімає зміну */
-      change: зміна ? [{id: зміна.id, items: зміна.replace || [], text: т('Your burgundy pair from the photo continues the skirt down to the feet.')}] : [],
+      change: зміна ? [{id: зміна.id, items: зміна.replace || [],
+        text: речення('Your burgundy pair from the photo continues the skirt down to the feet.', зміна.id)}] : [],
       unknown: невідоме})};
   }
   /* ЗАМІНА ОДНІЄЇ РЕЧІ (рядок 4945, `заміна_речі.py`): промпт складання з `replacement` і пулом лише слота заміни — один образ
@@ -2721,6 +2762,10 @@ function підсумокМоделі(){
   стежитиЗаОбривом(стор, ЖИВІ_ЗАПИТИ);
   await стор.route(u => цеМіст(u), async route => {
     const тіло = route.request().postDataJSON() || {};
+    if (ХІД_Н6){
+      const закінчити = ХІД_Н6.початиОбмін(тіло), виконати = route.fulfill.bind(route);
+      route.fulfill = async відповідь => { закінчити(відповідь); return виконати(відповідь); };
+    }
     if (!ЗАПИСАНИЙ_ОБМІН && ТЕКА_ВІДПОВІДЕЙ && МОДЕЛЬ_ЖИВА) {
       const номер = ++номерОбміну, виконати = route.fulfill.bind(route);
       route.fulfill = async відповідь => {
@@ -2938,6 +2983,7 @@ function підсумокМоделі(){
   const ВІКНО_СТЕНДУ = await вікноРушія(МОДЕЛЬ_ЖИВА && !КЛОД_ШВОМ ? МОДЕЛЬ_ЖИВА : null, 'MODEL_CTX');
   const ВІКНО_МОВИ_СТЕНДУ = await вікноРушія(МОДЕЛЬ_МОВИ_СТЕНДУ, 'MODEL_MOVA_CTX');
   await стор.goto(БАЗА + '/index.html#міст=' + БАЗА + '/міст&т=tok-rv6'
+    + (ХІД_Н6 && process.env.SHLIAKH === 'ядро' ? '&ядро=1' : '')
     /* РЯДОК 5985: модель складання — та, що на ноутбуці; без цього `МОДЕЛЬ_П` = типова gemini і стеля складання
        міряється гілкою Gemini (3400), а не локальною (2800, рядок 5240) */
     + (МОДЕЛЬ_ЖИВА && !КЛОД_ШВОМ ? '&модель=' + encodeURIComponent(МОДЕЛЬ_ЖИВА) : '')
@@ -3005,6 +3051,26 @@ function підсумокМоделі(){
   /* «Пара» починається з люстерка: дані вводимо в доступних аркушах профілю.
      Старий прохід лишається для порівняння зі збірками до зміни інтерфейсу. */
   const ПАРА = await стор.locator('#mirror-studio').count() > 0;
+  const пройтиН6 = async () => {
+    if (ФОТО_РЕЧІ_СПИСОК.length){
+      const файли = ФОТО_РЕЧІ_СПИСОК.map((ім, і) => ({name: 'річ-' + (і + 1) + '.jpg', mimeType: 'image/jpeg', buffer: fs.readFileSync(ім)}));
+      await стор.setInputFiles('#чат-фото-вхід', файли);
+      await стор.waitForFunction(н => ФОТО_ВКЛАДЕНІ_П.length === н, файли.length);
+    }
+    try {
+      await ХІД_Н6.пройти(стор, {
+        передЗбором: () => ЗБІЙ.передЗбиранням(стор, {знімок}),
+        післяЗбору: () => ЗБІЙ.післяЗбирання(стор, {знімок}),
+        показатиКартку: поз => показатиОбразСтенд(стор, поз),
+      });
+      підсумокМоделі();
+    } finally { await браузер.close(); }
+    кінецьПрогону('хід Н6', 0);
+  };
+  if (ХІД_Н6 && !ПОРТРЕТ){
+    await ХІД_Н6.профіль(стор, ЖІНКА);
+    await пройтиН6();
+  }
   const згорнутиПару = async () => {
     if (ПАРА && await стор.locator('#mirror-work').evaluate(е => е.inert)) await стор.click('#pair-handle');
   };
@@ -3205,6 +3271,8 @@ function підсумокМоделі(){
   await знімок('ekran_scenarii_porozhnii', ПАРА ? '#mirror-work' : '#е-випадок');
   await зібратиТекст('сценарій порожній (аркуш листа)', ПАРА ? '#mirror-work' : '#е-випадок');
 
+  if (ХІД_Н6) await пройтиН6();
+
   /* Крок 9 §5 оцінки показу: наявні профілі та бібліотека сценаріїв.
      Записи створюються/відкриваються/видаляються кнопками; IndexedDB читається лише для звірки.
      Наприкінці повертаємо початковий профіль і порожній сценарій перед звичайним проходом. */
@@ -3279,6 +3347,58 @@ function підсумокМоделі(){
     await стор.click('#сцн-новий');
     ф('0б: після сцени лишився початковий профіль і новий порожній сценарій',
       await стор.evaluate(ід => АКТИВНИЙ === ід && !СЦ.ід && !ПАСПОРТ_П && Екран.стан.режим === 'сценарій', до.ід));
+  }
+
+  /* Записані мінімальні входи #4676, рядок 17102. Суд міряє їх як звичайно; до сцени переліку
+     кадри вже перетворено на виміри речей. Далі йде звичайний ланцюг картки від суду. */
+  if (process.env.OTSINKA_KRAI){
+    const довжини = {passed: 60, held: 70};
+    const довжина = довжини[process.env.OTSINKA_KRAI];
+    if (!довжина || process.env.DO !== 'otsinka') throw new Error('Для OTSINKA_KRAI потрібні passed або held і DO=otsinka');
+    await стор.setViewportSize({width: 390, height: 844});
+    const результат = await стор.evaluate(async ({довжина, питання}) => {
+      const річ = (ід, вид, слот, назва, hex, lab, маска, см) => ({
+        ід, вид, слот, назва, в_образі: true, принт: 'однотонний', вимір: {lab, hex, маска},
+        ...(см == null ? {} : {довжина: 'коліно', довжина_см: см})
+      });
+      const речі = [
+        річ("ф1", "dress_generic", "сукня", "Синтетична сукня", "#375647", [33.821448832449576, -15.212734114393832, 5.127440152712081], 0.45, 100),
+        річ("ф2", "coat", "верхній_шар", "Синтетичне пальто", "#6a594e", [39.17154094139468, 5.049145355384754, 8.946811996615834], 0.5, довжина),
+        річ("ф3", "loafers", "взуття", "Синтетичне взуття", "#403831", [24.12925780001332, 2.1401189949584176, 5.659559807326719], 0.15)
+      ];
+      const вхід = {зріст: 168, обхвати: {плечі: 98, груди: 92, талія: 74, стегна: 99},
+        шкіра: ['#edc4ad'], волосся: ['#66412f'], очі: '#6f7858', сценарій_оцінки: {місяць: 11}};
+      const міст = містП;
+      містП = (ім, дані) => міст(ім, ім === 'оцінка' && дані.крок === 'суд' ? {...дані, крамниця: false} : дані);
+      try {
+        ОЦ = новаОцінкаП();
+        ОЦ.питання = питання;
+        ОЦ.етапи = {почато: new Date().toISOString(), питання, сценарій_екрана: {}, фото: [],
+          виклики: [], мова_шару: [], з_розмови: false};
+        ОЦ.перелік = {речі, hex: {}, довідник: {слоти: [], кольори: []}, мініатюри: {}, назви: {},
+          так: true, показано_о: Date.now(), звіт: {показано: речі.length, дії: [], дотиків: 0},
+          готовий: true, лічильник: 0, для_слів: [], імена: Promise.resolve(),
+          контекст: {база: вхід, пікселі: {}, пікселі_фото: {}, питання: {free_text: питання, lang: 'uk'}, сценарій: {}}};
+        режим('оцінка'); показатиОцінку();
+        await ланцюгПерелікуП();
+      } finally {
+        містП = міст;
+      }
+      const суд = ОЦ.етапи.суд || {};
+      const клітинка = (суд.суд?.checklist?.надлишок?.пункти || []).find(п => п.код === 'layer_hems_apart');
+      const промпт = ОЦ.етапи.виклики.find(в => в.крок === 'оцінка')?.запит.текст || '{}';
+      const факт = Object.entries(JSON.parse(промпт).facts || {}).find(([, ф]) => ф.point === 'layer_hems_apart');
+      return {стан: клітинка?.стан, номер: факт?.[0], стан_запиту: факт?.[1].state,
+        сирі_числа: /"(gap_cm|error_cm)"\s*:/.test(промпт), помилка: ОЦ.етапи.помилка,
+        картка: !!document.getElementById('оц-картка')};
+    }, {довжина, питання: process.env.CHAT_TEXT || 'Чи пасують довжини в цьому образі?'});
+    await знімок('otsinka_17102_' + process.env.OTSINKA_KRAI, '#оц-картка');
+    await знімок('otsinka_17102_vikno_' + process.env.OTSINKA_KRAI, null, true);
+    await зібратиТекст('картка 17102', '#оц-картка');
+    await розгорнутиНеЗнаюОцінки('17102_' + process.env.OTSINKA_KRAI);
+    console.log('   17102: ' + JSON.stringify(результат));
+    await браузер.close();
+    кінецьПрогону('DO=otsinka: 17102 ' + process.env.OTSINKA_KRAI, провалів ? 1 : 0);
   }
 
   /* DO=otsinka (наряд ОЦІНКА-1000) — лише сцена 6 (+6б): після знайомства одразу екран «Оцінити». Живій

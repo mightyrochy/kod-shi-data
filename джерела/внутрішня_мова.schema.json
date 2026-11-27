@@ -2868,50 +2868,60 @@
   },
   "reply_text": {
    "type": "object",
-   "description": "вихід перекладача репліки: речення з опорою",
+   "description": "вихід перекладача репліки: речення з номерами фактів і станом",
    "additionalProperties": false,
    "properties": {
     "text": {
-     "description": "речення для неї її мовою",
-     "oneOf": [
-      {
-       "type": "array",
-       "items": {
+     "description": "речення для неї її мовою: що відомо і що з цим робити",
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "about",
+       "says"
+      ],
+      "properties": {
+       "about": {
         "type": "object",
-        "additionalProperties": false,
-        "required": [
-         "about",
-         "says"
-        ],
-        "properties": {
-         "about": {
-          "type": "array",
-          "items": {
-           "type": "string"
-          }
-         },
-         "recorded": {
-          "type": "array",
-          "items": {
-           "type": "string"
-          }
-         },
-         "her_words": {
-          "type": "array",
-          "items": {
-           "type": "string"
-          }
-         },
-         "says": {
-          "type": "string"
-         }
-        }
+        "minProperties": 1,
+        "additionalProperties": {
+         "type": "string"
+        },
+        "description": "номер факту (f1, f2…) → його стан (state), який речення стверджує"
+       },
+       "says": {
+        "type": "string",
+        "minLength": 1
        }
-      },
-      {
-       "type": "string"
       }
-     ]
+     }
+    },
+    "unknown": {
+     "description": "чого стилістка не знає: показ ставить це за кнопкою",
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "about",
+       "says"
+      ],
+      "properties": {
+       "about": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": {
+         "type": "string"
+        },
+        "description": "номер факту (f1, f2…) → його стан (state), який речення стверджує"
+       },
+       "says": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
     }
    },
    "required": [
@@ -4782,6 +4792,10 @@
        "description": "напис на кнопці, що розгортає на картці образу згорнутий перелік того, що в цьому образі лишилось не перевіреним: кілька слів, без числа, без крапки в кінці; лічбу рядків екран допише сам"
       },
       {
+       "const": "card_choice_missing_input",
+       "description": "одне коротке речення на картці образу: назви обрану нею схему, поясни, чому не змогла її перевірити, і скажи, що їй зробити"
+      },
+      {
        "const": "replacement_not_found",
        "description": "рядок на картці образу біля речі, яку вона позначила на заміну: стилістка не знайшла їй заміни, річ лишилась у образі, а кнопку можна натиснути знову"
       },
@@ -5422,7 +5436,7 @@
          },
          {
           "const": "buy_order_not_established",
-          "description": "these items she is choosing between are shown in the code's order, but the code did not prove that the first is better than each of the others, so the order is not advice (values: why — input_missing: an input of the judgement is missing for at least one of them; no_item_proved_better: every item was judged in full, and none is proved better than each of the others). Say what is known about each item from its own verdict and that the choice is hers, and give only the reason named by why (this is not a tie: a tie means all were judged and came out equal)"
+          "description": "these items she is choosing between are shown in the code's order, but the code did not prove that the first is better than each of the others, so the order is not advice (values: why — input_missing: an input of the judgement is missing for at least one of them; no_item_proved_better: every item was judged in full, and none is proved better than each of the others; missing — with input_missing: which inputs are missing (input), for which items (items), and whose action gives it (by — her: she can give it — say it, or give a portrait or her measurements; record: the item's shop record does not know it, and nothing she does changes that)). Say what is known about each item from its own verdict and that the choice is hers, and give only the reason named by why and missing: what exactly is missing and, where by is her, what she can do (this is not a tie: a tie means all were judged and came out equal)"
          },
          {
           "const": "colour_role_not_judged",
@@ -6603,6 +6617,10 @@
          {
           "const": "items_prices_links_are_true",
           "description": "the items, the prices and the links on this card are true, so the outfit can be judged without the explanation"
+         },
+         {
+          "const": "palette_scheme_needs_portrait",
+          "description": "the selected colour scheme could not be checked without a portrait in her profile (values: scheme — the scheme she chose; action: add_portrait — she can add a portrait to her profile so the stylist can check the scheme)"
          },
          {
           "const": "name_occasion_or_place",
