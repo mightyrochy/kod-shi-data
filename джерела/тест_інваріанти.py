@@ -353,7 +353,7 @@ class Ядро_ЦілаКартка(unittest.TestCase):
                 return _складач(запит)
             речі = {н: ф["state"] for н, ф in факти.items() if ф["state"] == "item"}
             рядок = {"about": речі, "says": "Ці речі я поєднала для твоєї нагоди."}
-            назви = {н: "Річ образу" for н in речі if факти[н].get("needs_name")}
+            назви = dict.fromkeys(речі, "Річ образу") if вид == "текст_картки" else {}
             дані = {"text": [рядок], "advice": [рядок], "names": назви, "unknown": []}
             return {"текст": json.dumps(дані, ensure_ascii=False), "фото": [ф["n"] for ф in запит["фото"]]}
 
