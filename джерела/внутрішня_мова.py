@@ -840,8 +840,8 @@ assert set(ПОТРЕБИ) == set(ТАБЛИЦЯ["need"])
                             "крапки в кінці; лічбу рядків екран допише сам",
     "card_choice_missing_input": "одне коротке речення на картці образу: назви обрану нею схему, "
                                  "поясни, чому не змогла її перевірити, і скажи, що їй зробити",
-    "card_choice_anchor_needs_portrait": "одне коротке речення на картці образу: назви обрану нею схему, "
-                                         "скажи, що для перевірки бракує відтінку, і попроси додати портрет",
+    "card_choice_portrait_colours_incomplete": "одне коротке речення на картці образу: назви обрану нею схему й скажи, "
+                                              "що наявних кольорів портрета для перевірки бракує; жодних порад чи дій",
     "card_choice_anchor_missing": "одне коротке речення на картці образу: назви обрану нею схему "
                                   "й скажи, чому бракує кольору для її перевірки; жодних порад чи запрошень до дії",
     "card_choice_item_colour_missing": "одне коротке речення на картці образу: назви обрану нею схему й поясни, "
@@ -2013,10 +2013,12 @@ def _опис_keep_by():
     "palette_scheme_needs_portrait": "the selected colour scheme could not be checked without a portrait in her "
                                      "profile (values: scheme — the scheme she chose; action: add_portrait — "
                                      "she can add a portrait to her profile so the stylist can check the scheme)",
+    "palette_scheme_portrait_colours_incomplete": "the selected colour scheme could not be checked with the "
+                                                  "available portrait colours (values: scheme — the scheme she chose). "
+                                                  "Explain the reason without asking her to do anything",
     "palette_scheme_anchor_missing": "the selected colour scheme could not be checked because no usable "
-                                     "reference hue was available (values: scheme — the scheme she chose; "
-                                     "action: add_portrait — if present, invite her to add a portrait to her profile; "
-                                     "if absent, explain the lack of a reference hue without asking her to do anything)",
+                                     "reference hue was available (values: scheme — the scheme she chose). "
+                                     "Explain the reason without asking her to do anything",
     "palette_scheme_item_colour_missing": "the selected colour scheme could not be checked because the colour "
                                           "of one or more of its items is unknown (values: scheme — the scheme she chose; "
                                           "items — the items with unknown colour). Give no action or advice; "
@@ -4047,8 +4049,8 @@ _ВИД_НЕПЕРЕВІРЕНОГО = "card_unchecked"
 # реченням: шість «ти його не згадала, тож я не знаю, чи він твій» (по одній на річ у кадрі) ставали шістьма «не знаю».
 ЇЙ_ВІДПОВІСТИ = frozenset(("her_item_not_named_others_in_frame", "her_item_slot_unclear"))
 
-КОДИ_БРАКУ_СХЕМИ = frozenset(("palette_scheme_needs_portrait", "palette_scheme_anchor_missing",
-                             "palette_scheme_item_colour_missing"))
+КОДИ_БРАКУ_СХЕМИ = frozenset(("palette_scheme_needs_portrait", "palette_scheme_portrait_colours_incomplete",
+                             "palette_scheme_anchor_missing", "palette_scheme_item_colour_missing"))
 
 # РІЧ У ЗНАЧЕННІ ЗАЯВИ — КОДАМИ (Е2-вхід-опису-кодами): ключі, що за визначеннями `ЗАЯВИ` несуть річ, беруть
 # `річ_заяви` (item_id, kind, color), а не назву крамниці вільним текстом — назва везла вид і колір словами в промпт

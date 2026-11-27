@@ -1,6 +1,8 @@
 """Ч7. Збирає дані показу з перевіреного складу."""
 from dataclasses import replace
 
+from face_features import ПОЛЕ_ОЦІНКИ_ОЧЕЙ
+
 from внутрішня_мова import ЇЙ_У_НЕПЕРЕВІРЕНОМУ, заява, ключ, код, повідомлення, річ_заяви
 from .знання import відоме_для_опису
 from .поняття import Картка, Збій, НЕВІДОМО
@@ -31,12 +33,13 @@ def _рядок_вибору(ситуація, поле, брак, речі):
     if not схема:
         return None
     if поле == "профіль.колір":
+        риси = ситуація.риси_портрета or {}
+        if any(риси.get(к) for к in ("шкіра", "волосся", "очі", "очі_кільце", ПОЛЕ_ОЦІНКИ_ОЧЕЙ)):
+            return повідомлення("card_choice_portrait_colours_incomplete", заява(
+                "palette_scheme_portrait_colours_incomplete", scheme=схема))
         return повідомлення("card_choice_missing_input", заява(
             "palette_scheme_needs_portrait", scheme=схема, action="add_portrait"))
     if поле == "палітра.якір_тон":
-        if брак.get("якір_від_неї"):
-            return повідомлення("card_choice_anchor_needs_portrait", заява(
-                "palette_scheme_anchor_missing", scheme=схема, action="add_portrait"))
         return повідомлення("card_choice_anchor_missing", заява("palette_scheme_anchor_missing", scheme=схема))
     if іди := брак.get("речі"):
         предмети = [річ_заяви(dict(id=р["ід"], слот=р["слот"])) for р in речі if р["ід"] in іди]

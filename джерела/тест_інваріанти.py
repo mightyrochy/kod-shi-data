@@ -241,8 +241,14 @@ class Ядро_Обіцянка9(unittest.TestCase):
         типова_база = dict(сірий, палітра={"вибір_кольору": dict(графіт, база_за_замовчуванням=True)})
         випадки = (
             ("брак портрета", {}, каталог, "palette_scheme_needs_portrait", "add_portrait", ()),
-            ("брак тону портрета", сірий, каталог, "palette_scheme_anchor_missing", "add_portrait", ()),
-            ("брак тону її бази", її_база, каталог, "palette_scheme_anchor_missing", "add_portrait", ()),
+            ("портрет є, основу не обрано", сірий, каталог, "palette_scheme_anchor_missing", None, ()),
+            ("брак тону її бази", її_база, каталог, "palette_scheme_anchor_missing", None, ()),
+            ("неповний портрет", {"колір": {"шкіра": "#dbab95"}}, каталог,
+             "palette_scheme_portrait_colours_incomplete", None, ()),
+            ("портрет лише з оцінкою очей", {"колір": {"колір_очей": "brown"}}, каталог,
+             "palette_scheme_portrait_colours_incomplete", None, ()),
+            ("лише макіяж", {"сценарій": {"макіяж": {"губи": "#a82035"}}}, каталог,
+             "palette_scheme_needs_portrait", "add_portrait", ()),
             ("брак тону типової бази", типова_база, каталог, "palette_scheme_anchor_missing", None, ()),
             ("брак кольору речі", портрет, без_кольору, "palette_scheme_item_colour_missing", None, ("dress",)),
             ("входи відомі", портрет, каталог, None, None, ()),
@@ -265,12 +271,14 @@ class Ядро_Обіцянка9(unittest.TestCase):
                 self.assertEqual(заява["values"]["scheme"], "triad")
                 if дія:
                     self.assertEqual(заява["values"]["action"], дія)
-                    вид = ("card_choice_missing_input" if код == "palette_scheme_needs_portrait"
-                           else "card_choice_anchor_needs_portrait")
                 else:
                     self.assertNotIn("action", заява["values"])
-                    вид = "card_choice_item_colour_missing" if іди else "card_choice_anchor_missing"
-                self.assertEqual(рядок["kind"], вид)
+                self.assertEqual(рядок["kind"], {
+                    "palette_scheme_needs_portrait": "card_choice_missing_input",
+                    "palette_scheme_portrait_colours_incomplete": "card_choice_portrait_colours_incomplete",
+                    "palette_scheme_anchor_missing": "card_choice_anchor_missing",
+                    "palette_scheme_item_colour_missing": "card_choice_item_colour_missing",
+                }[код])
                 self.assertEqual(tuple(заява.get("item_ids", ())), іди)
                 for ід in іди:
                     self.assertIn((ід, "Сукня Лада"), [(р["ід"], р["назва"]) for р in картка.речі])
