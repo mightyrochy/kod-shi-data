@@ -36,7 +36,7 @@ import композитор_реєстр as _КПРГ
 import композитор_річ as _КПР
 import поломки_ядро as _ПОЛ
 import palettes as _ПЛ
-from аксесуари_погода import непогода_пулу, бажання_вологочутливого   # непогода пулу — там (3.3)
+from суд_погода import непогода_пулу, бажання_вологочутливого   # непогода пулу — там (3.3)
 from протокол import скелет_схеми   # скелет відповіді — у протоколі поруч зі схемами (3.3)
 import dataclasses as _dataclasses
 import реєстри as _РЕ
@@ -54,7 +54,7 @@ import суд_погода as _ПОГ
 import trace as _СЛ_полюси
 import паспорт_нагоди as _ПН_сл
 import паспорт_поля as _ПП
-import аксесуари_погода as _АП_в
+import суд_погода as _АП_в
 import знання_дріт as _ЗД
 import fit as _ПС
 import accessory as _A

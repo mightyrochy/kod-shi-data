@@ -165,7 +165,7 @@ def файли_фасаду(файл):
             адреса = __import__(в.module)
             for ім in в.names:
                 обʼєкт = getattr(адреса, ім.name, None)
-                if not inspect.isfunction(обʼєкт) or обʼєкт.__module__ == в.module:
+                if not inspect.isfunction(обʼєкт):
                     continue
                 власник = inspect.getmodule(обʼєкт)
                 if власник is None or власник.__name__ in повні:

@@ -21,7 +21,7 @@ import семплер as _С
 import річ_з_фото as _РФ
 import внутрішня_мова as _ВМ_Б
 import сценарій as _НАГОДА
-import аксесуари_погода as _АП
+import суд_погода as _АП
 import реєстр_правил as _Р
 import колір_річ as _КР_ТИП
 
