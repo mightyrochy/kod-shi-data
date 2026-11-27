@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Trench coat, straight cut, knee-length, beige, waxed cotton for water resistance.\\nWool-blend skirt, A-line silhouette, midi length, charcoal gray, heavy tweed to repel moisture.\\nSilk blouse, relaxed fit with dropped shoulders, ivory, lightweight satin with a slight stretch.\\nAnkle boots, pointed toe, heel height of two inches, taupe, suede leather.\\n\\nThis outfit works because the trench coat provides essential protection against the all-day rain while maintaining a sleek professional silhouette suitable for walking to work. The charcoal tweed skirt and ivory silk blouse create a refined monochromatic palette that adheres to the \\\"neat\\\" dress code without feeling heavy or restricted by the wet weather. Finally, the suede ankle boots fulfill her specific wish for this material while offering the necessary coverage and traction for navigating slippery autumn streets.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Trench coat\\\",\\\"details\\\":\\\"straight cut, knee-length, waxed cotton\\\",\\\"slot\\\":\\\"outerwear\\\",\\\"color_hex\\\":\\\"#F5F5DC\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Wool-blend skirt\\\",\\\"details\\\":\\\"A-line silhouette, midi length, heavy tweed\\\",\\\"slot\\\":\\\"bottom\\\",\\\"color_hex\\\":\\\"#36454F\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Silk blouse\\\",\\\"details\\\":\\\"relaxed fit with dropped shoulders, lightweight satin with a slight stretch\\\",\\\"slot\\\":\\\"top\\\",\\\"color_hex\\\":\\\"#FFFFF0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Ankle boots\\\",\\\"details\\\":\\\"pointed toe, heel height of two inches, suede leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#483C32\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":528,\"output_tokens\":171},\"stop_reason\":\"end_turn\"}"
+ }
+}

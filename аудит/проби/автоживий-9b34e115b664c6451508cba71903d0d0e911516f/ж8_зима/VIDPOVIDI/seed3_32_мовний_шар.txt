@@ -1,0 +1,59 @@
+── ПРОМПТ (6717 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: sweater · about it: text н=1
+2 — kind: trousers · about it: text н=2
+3 — kind: ankle_boots · about it: text н=3
+4 — kind: bag_generic · about it: text н=4
+5 — kind: belt · about it: text н=5
+6 — kind: coat · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This oversized sweater suits your work occasion with its comfortable, casual level, providing soft warmth and a relaxed silhouette that balances the structured trousers.",
+"2": "These tailored trousers maintain the professional polish of your outfit, offering a straight line that pairs well with the voluminous top to keep your proportions balanced.",
+"3": "Your ankle boots are essential for comfort and steadiness on an urban commute, and their neutral color fits your palette seamlessly while grounding the look.",
+"4": "This bag is a practical choice for carrying your essentials to work, complementing your outfit with its structured shape that echoes the formality of your trousers and coat.",
+"5": "The belt cinches your waist to create a defined focal point, ensuring the volume of the sweater and trousers feels intentional rather than overwhelming on your figure.",
+"6": "This wool coat serves as your essential layer for cold weather, ranking above other winter fabrics in warmth to keep you comfortable throughout your day at work.",
+"7": "This sweater brings you a cozy, effortless warmth that fits perfectly within your everyday work occasion, while the tailored trousers keep your silhouette polished and structured. The ankle boots offer steady ground with their thick soles, and the belt defines your waist to create a focused vertical line, ensuring your volume is anchored right where it belongs. The coat provides reliable protection against the cold, standing as your primary outer layer in winter weather.",
+"8": "Tuck the sweater slightly into the trousers at the front to highlight the waist created by the belt.",
+"9": "Брюки прямого крою — Keeping the beige trousers but adding an outer layer to meet the frost requirement, as they provide the necessary bottom slot.",
+"10": "Черевики жіночі, ATTICO, нубук, колір коричневий — Adding ankle boots in brown to match the chocolate brooch and add warmth against the salted road, addressing the weather needs.",
+"11": "Armonelli Сумка жовта — Adding a yellow hobo bag to introduce a bright color that breaks the neutral palette and adds visual interest near the face, addressing the blandness.",
+"12": "Пасок з пірʼям червоний — Adding a red belt to create a strong horizontal line that defines the waist and breaks the monochromatic flow, adding a bold accent."
+}
+
+── ВІДПОВІДЬ (2290 симв., 15.0 с, HTTP 200) ──
+```json
+{
+  "1": "Цей оверсайз светр підходить для твоєї робочої нагоди завдяки комфортному, невимушеному рівню. Він дарує м’яке тепло та розслаблений силует, який гармонійно поєднується зі структурованими штанами.",
+  "2": "Ці завужені брюки зберігають професійний вигляд твого образу, пропонуючи пряму лінію, яка добре пасує до об’ємного верху та збалансовує пропорції твоєї фігури.",
+  "3": "Твої черевички на підборах необхідні для комфорту й стійкості в міській метушні. Їх нейтральний колір бездоганно доповнює твою палітру та завершує образ, надаючи йому стабільності.",
+  "4": "Ця сумка — практичний вибір для носіння необхідних речей на роботу. Вона гармонійно поєднується з твоїм образом завдяки своїй структурованій формі, яка перегукується з офіційністю брюк і пальта.",
+  "5": "Цей пояс підкреслює талію, створюючи виразний акцент. Він гарантує, що об’єм светра й штанів виглядатиме навмисно, а не надмірно на твоїй фігурі.",
+  "6": "Це вовняне пальто служить тобі як основний шар для холодної погоди та зігріває тебе протягом усього робочого дня.",
+  "7": "Цей светр дарує тобі затишне, безтурботне тепло, яке ідеально підходить для твоєї повсякденної роботи. Завужені брюки зберігають твій силует витонченим та структурованим. Черевички на підборах забезпечують стійкість завдяки своїй товстій підошві, а пояс визначає лінію талії, щоб створити вертикальний акцент і збалансувати об’єм твого образу. Пальто захищає тебе від холоду й служить основним верхнім шаром у зимову погоду.",
+  "8": "Злегка заправ светр спереду в штани, щоб підкреслити талію, створену поясом.",
+  "9": "Брюки прямого крою — Залишаємо бежеві брюки, але додаємо верхній шар для захисту від морозу, оскільки вони забезпечують необхідний нижній елемент.",
+  "10": "Черевички жіночі, ATTICO, нубук, колір коричневий — Додаємо черевички на підборах коричневого кольору, щоб поєднати їх з шоколадною брошкою та додати тепла проти засоленого асфальту.",
+  "11": "Armonelli Сумка жовта — Додаємо жовту сумку-хобо, щоб ввести яскравий колір, який розбавить нейтральну палітру й додасть візуального інтересу біля обличчя.",
+  "12": "Пасок з пірʼям червоний — Додаємо червоний пояс, щоб створити сильну горизонтальну лінію, яка підкреслить талію та розбавить монохромність образу, додавши сміливий акцент."
+}
+```

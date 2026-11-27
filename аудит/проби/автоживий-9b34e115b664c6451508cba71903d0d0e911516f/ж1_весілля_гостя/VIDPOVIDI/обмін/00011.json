@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Midi-length sheath dress in a fluid silk-georgette blend, empire waist silhouette, soft champagne with hex code #F5E6CA.  \\nSilver-tone open-back pumps with a 3-inch stiletto heel and thin strap.  \\nDelicate pearl drop earrings, a single strand of freshwater pearls at the neck, and a small clutch in woven gold leather.  \\n\\nThis ensemble honors your sister's wedding by day to evening transition, as the sheer silk catches the late summer light while remaining respectful for both the outdoor ceremony and restaurant reception. The champagne shade complements warm skin tones without competing with floral decor or other guests' attire, ensuring you remain a graceful presence throughout the event. Open-back heels provide elegance suitable for August heat while maintaining the refined silhouette expected at formal weddings.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"sheath dress\\\",\\n      \\\"details\\\": \\\"midi-length, fluid silk-georgette blend, empire waist silhouette\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#F5E6CA\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pumps\\\",\\n      \\\"details\\\": \\\"silver-tone, open-back, 3-inch stiletto heel, thin strap\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"pearl drop earrings\\\",\\n      \\\"details\\\": \\\"delicate\\\",\\n      \\\"slot\\\": \\\"earrings\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"freshwater pearl necklace\\\",\\n      \\\"details\\\": \\\"single strand at the neck\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"clutch\\\",\\n      \\\"details\\\": \\\"small, woven gold leather\\\",\\n      \\\"slot\\\": \\\"bag\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":519,\"output_tokens\":304},\"stop_reason\":\"end_turn\"}"
+ }
+}
