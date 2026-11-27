@@ -200,7 +200,7 @@
     feedback.hidden=!!extra||!inCase||document.documentElement.dataset.pairPage!=='understood';
     if(mode==='бібліотека'&&!extra){nativeSeals();node('mirror-saved-manual').hidden=pair.blindShelf();if(!pair.blindShelf())window.Rack?.library();}
     const last=ЧАТ_П.at(-1);
-    if(last!==lastTurn&&last&&following&&(!mobile.matches||drawerOpen)){
+    if(last!==lastTurn&&last&&following&&(!mobile.matches||drawerOpen||document.documentElement.dataset.pairPage==='mirror')){
       requestAnimationFrame(()=>{const letter=node('mirror-letter');letter.scrollTop=letter.scrollHeight;});
     }
     lastTurn=last;decorateChoices();renderPerson();
