@@ -107,7 +107,7 @@ def образ_і_суд(назва, сцен):
     Саме тут живуть відра `pipeline.перевірити_образ`, і саме тут видно, які з
     них доходять до виходу.
     """
-    import bridge as B, pipeline as PL, composer as КМ, fit as ПС
+    import bridge as B, pipeline as PL, геометрія_речі as КМ, fit as ПС
     вх = json.load(open("стенд_вх.json"))
     вх["сценарій"] = сцен
     вх["випадок"] = назва
