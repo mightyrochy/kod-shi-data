@@ -18,7 +18,7 @@ import sys, pathlib, json, collections, os, io, contextlib
 КОРІНЬ = pathlib.Path(__file__).resolve().parents[2]
 код = pathlib.Path(sys.argv[sys.argv.index("--код") + 1]).resolve() if "--код" in sys.argv else КОРІНЬ / "джерела"
 os.chdir(код); sys.path.insert(0, str(код))
-import feed as Ф, bridge as B, outfit as O, composer as КМ, fit as ПС, outer as ОУ
+import feed as Ф, bridge as B, outfit as O, composer as КМ, fit as ПС, верхнє_суд as ОУ
 
 ПРАВИЛА = ("K-FIT-01", "K-FIT-03", "K-FIT-04", "K-FIT-06", "K-SHO-02", "K-SIL-02", "K-OUT-05", "K-OUT-41", "K-OUT-42")
 вх = json.load(open(код / "стенд_вх.json", encoding="utf-8"))

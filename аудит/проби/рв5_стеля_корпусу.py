@@ -14,13 +14,14 @@
 import json, os, re, sys
 ДЖ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "джерела")
 sys.path.insert(0, os.path.abspath(ДЖ)); os.chdir(os.path.abspath(ДЖ))
-import реєстр_правил as РП, accessory as А, outer as ВРХ, fit as ПС
+import реєстр_правил as РП, accessory as А, верхнє_реєстр as ВРХ, fit as ПС
 import стенд_знімок as СЗ
+from audit_feed_поля import ДЖЕРЕЛА_ВЕРХНЬОГО, тексти_фасаду
 
 РЕЄСТРИ = {"K-SHO": А.РЕЄСТР, "K-EYE": А.РЕЄСТР, "K-HAT": А.РЕЄСТР, "K-GLV": А.РЕЄСТР,
            "K-WEA": А.РЕЄСТР, "K-OUT": ВРХ.РЕЄСТР, "K-FIT": ПС.РЕЄСТР}
 ЕМІТЕНТИ = {"K-SHO": "accessory.py", "K-EYE": "accessory.py", "K-HAT": "accessory.py",
-            "K-GLV": "accessory.py", "K-WEA": "accessory.py", "K-OUT": "outer.py",
+            "K-GLV": "accessory.py", "K-WEA": "accessory.py", "K-OUT": ДЖЕРЕЛА_ВЕРХНЬОГО,
             "K-FIT": "fit.py", "K-KOH": "формальність.py", "K-PC-": "суд_образу.py",
             "профіль": "pipeline.py"}
 
@@ -30,7 +31,7 @@ def сили_емітента(правило):
     ф = next((ф for п, ф in ЕМІТЕНТИ.items() if правило.startswith(п)), None)
     if not ф:
         return []
-    т = open(ф, encoding="utf-8").read()
+    т = тексти_фасаду(ф) if ф is ДЖЕРЕЛА_ВЕРХНЬОГО else open(ф, encoding="utf-8").read()
     return sorted(set(re.findall(r'_зн\(\s*"%s",\s*"(\w+)"' % re.escape(правило), т)))
 
 

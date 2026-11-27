@@ -12,7 +12,7 @@ def run(name, fn):
         tb = traceback.format_exc().splitlines()[-3:-1]; print("     ", ' | '.join(l.strip()[:120] for l in tb))
 
 import colorspace as cs, bridge as B, fit as ПС, hypergraph as HG, silhouette as SL, outfit as O, pipeline as PL
-import personal_palette as PP, palettes as PLS, palette as PAL, coordination as CO, accessory as AC, outer as OU, face_contrast as FC, bases as BS, areas as AR, feed as FD, composer as KM
+import personal_palette as PP, palettes as PLS, palette as PAL, coordination as CO, accessory as AC, верхнє_догляд as OU, face_contrast as FC, bases as BS, areas as AR, feed as FD, composer as KM
 
 sec("P08 H/X межа")
 def p08():
@@ -83,7 +83,7 @@ def p22():
     rx = getattr(PL, '_ВИМКНЕНІ_СЛОВА', None); print("  _ВИМКНЕНІ_СЛОВА:", getattr(rx, 'pattern', rx))
     fn = [n for n in dir(PL) if 'вимкн' in n.lower()]; print("  функції:", fn)
     words = ['припуск', 'прилягання', 'тісн', 'ковзанн']
-    for f in ['silhouette.py', 'fit.py', 'outfit.py', 'outer.py', 'accessory.py']:
+    for f in ['silhouette.py', 'fit.py', 'outfit.py', 'верхнє_стан.py', 'верхнє_суд.py', 'accessory.py']:
         hits = [(n, ln.strip()[:110]) for n, ln in enumerate(open(f, encoding='utf-8'), 1) if any(w in ln for w in words) and ('суть' in ln or '"' in ln) and not ln.strip().startswith('#')]
         print(f"  {f}: {len(hits)} рядків із цими словами у рядкових літералах; напр. {hits[:3]}")
 run("P22", p22)

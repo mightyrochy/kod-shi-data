@@ -20,7 +20,7 @@ import суд_погода as _СП
 import outfit as _O
 import pipeline as _PL
 import accessory as _АК
-import outer as _ВШ
+import верхнє_суд as _ВШ
 import palettes as _ПЛ
 import сценарій as _СЦ
 import hypergraph as _ГГ_оп

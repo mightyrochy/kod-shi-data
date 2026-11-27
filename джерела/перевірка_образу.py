@@ -26,7 +26,6 @@ import сценарій as _СЦ
 import регістр_уваги as _РУ_М
 import дистанція as _ДИСТ
 import trace as _СЛ_IO
-import outer as _ВШ0
 import accessory as АК
 import реєстри as _РЕ
 import language_gate as МГ

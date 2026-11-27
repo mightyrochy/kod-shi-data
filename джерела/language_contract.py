@@ -5,29 +5,7 @@ import json
 import re
 import внутрішня_мова as М
 import формальність as Ф
-
-
-def пояснити_повтор(промпт, причина, маркер=""):
-    """Додати розбіжність, зберігши структурований вхід промпта придатним до розбору."""
-    if not причина:
-        return промпт
-    if not маркер:
-        об = json.loads(промпт)
-        об["format_error"] = "Correct the previous answer: " + str(причина)
-        return json.dumps(об, ensure_ascii=False)
-    код, _, слова = str(причина).partition(": ")
-    чому = {"no_text_field": "немає непорожнього рядка text",
-             "only_questions": "текст не передає прийнятих фактів або ставить недозволені питання",
-             "no_card_confirmation": "her_words речення не стоять цілими її словами в quote (з плитки — уся "
-                                     "label) полів, які воно каже записаними, або таке поле без свого шматка (%s)"
-                                     % слова,
-             "no_field_state": "речення не каже полем recorded, які поля about записано (%s)" % слова,
-             "state_against_record": "recorded речення розходиться з recorded входу (%s)" % слова,
-             "not_about_recorded": "about речення називає поле, якого нема у вході (%s)" % слова,
-             "unrecorded_number": "у text є число, якого нема в recorded",
-             "code_in_text": "у text є код замість слів",
-             "no_confirmation_text": "text не підтверджує recorded"}.get(код, str(причина))
-    return промпт.replace(маркер, "Розбіжність попередньої відповіді: " + чому + ".\n\n" + маркер, 1)
+from фрази_формату import пояснити_повтор
 
 
 def відсутні_поля(значення, схема, шлях=""):
