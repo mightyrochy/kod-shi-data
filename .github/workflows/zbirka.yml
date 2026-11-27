@@ -14,6 +14,7 @@ on:
       - 'index.html'
       - 'build.txt'
       - '.github/workflows/zbirka.yml'
+      - '.github/scripts/perevirene-derevo.sh'
       - 'аудит/дошка/**'
       - 'аудит/корені/*.d/**'
   workflow_dispatch:
@@ -52,18 +53,48 @@ jobs:
   zminy:
     permissions:
       contents: read
+      actions: read
+      pull-requests: read
     name: що змінилось у push чи PR
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
       produkt: ${{ steps.zmina.outputs.produkt }}
       pravyla: ${{ steps.zmina.outputs.pravyla }}
+      perevirenyi_run: ${{ steps.derevo.outputs.run_id }}
+      perevirenyi_vantazh: ${{ steps.derevo.outputs.artifact }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          persist-credentials: false
-          fetch-depth: 2
           ref: ${{ inputs.pislia }}
+          fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.gitattributes
+            /.github/
+            /.claude/
+            /*.md
+            /zhnyvarka/
+            /index.html
+            /build.txt
+            /джерела/
+            /аудит/адаптери/
+            /аудит/*.*
+            /аудит/проби/*.*
+            !*.png
+            !*.jpg
+            !*.webp
+            !*.gz
+            !*.jsonl
+            !*.tsv
+            !*.csv
+            !*.log
+            !*.xml
+            /аудит/БЕКЛОГ.md
+            /аудит/дошка/
+            /аудит/дошка_архів/
+            /аудит/корені/
 
       - name: які шляхи змінено
         id: zmina
@@ -94,7 +125,7 @@ jobs:
           pravyla_dok=false
           znano=false
           if [ "${GITHUB_EVENT_NAME}" = push ] && [ -n "${BEFORE//0/}" ] \
-             && git fetch --no-tags --depth=1 origin "${BEFORE}" 2>/dev/null; then
+             && git fetch --no-tags --filter=blob:none --depth=1 origin "${BEFORE}" 2>/dev/null; then
             git -c core.quotepath=off diff --name-only --no-renames -z "${BEFORE}" "${GITHUB_SHA}" > /tmp/zminy
             znano=true
           elif [ "${GITHUB_EVENT_NAME}" = pull_request ] && git rev-parse -q --verify HEAD^2 >/dev/null; then
@@ -108,7 +139,7 @@ jobs:
               case "${shliakh}" in
                 # Звіти автоживого — дані, збірка їх не читає (читає лише аудит/проби/нічні й скрипти).
                 аудит/проби/автоживий-*) ;;
-                джерела/*|аудит/проби/*|каталог_повний.xml.gz|index.html|build.txt|.github/workflows/zbirka.yml) produkt=true ;;
+                джерела/*|аудит/проби/*|каталог_повний.xml.gz|index.html|build.txt|.github/workflows/zbirka.yml|.github/scripts/perevirene-derevo.sh) produkt=true ;;
               esac
               case "${shliakh}" in
                 *.md|джерела/прилади/журнал_і_розмір_правил.py|.github/workflows/zbirka.yml) pravyla=true ;;
@@ -132,12 +163,12 @@ jobs:
           # не прочитано — теж повний.
           if [ "${GITHUB_EVENT_NAME}" = push ] && [ "${produkt}" = false ]; then
             SHTAMP=""
-            if git fetch --no-tags --depth=1 origin refs/heads/main 2>/dev/null; then
+            if git fetch --no-tags --filter=blob:none --depth=1 origin refs/heads/main 2>/dev/null; then
               SHTAMP=$(git show FETCH_HEAD:build.txt 2>/dev/null | tr -d '[:space:]' || true)
             fi
-            if [[ "${SHTAMP}" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags --depth=1 origin "${SHTAMP}" 2>/dev/null; then
+            if [[ "${SHTAMP}" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags --filter=blob:none --depth=1 origin "${SHTAMP}" 2>/dev/null; then
               if [ -n "$(git -c core.quotepath=off diff --name-only "${SHTAMP}" "${GITHUB_SHA}" -- джерела аудит/проби \
-                         каталог_повний.xml.gz .github/workflows/zbirka.yml ':(exclude)джерела/аудит/ДОСЯЖНІСТЬ.md' \
+                         каталог_повний.xml.gz .github/workflows/zbirka.yml .github/scripts/perevirene-derevo.sh ':(exclude)джерела/аудит/ДОСЯЖНІСТЬ.md' \
                          ':(exclude,glob)аудит/проби/автоживий-*/**')" ]; then
                 produkt=true
                 echo "джерела новіші за опублікований штамп ${SHTAMP} — повний шлях" >> "$GITHUB_STEP_SUMMARY"
@@ -169,31 +200,54 @@ jobs:
       - name: прилад «документ без коду» (імена коду, клас, рішення CI)
         run: python3 -I джерела/прилади/тест_документ_без_коду.py
 
+      - name: зелені звірки PR для того самого дерева
+        id: derevo
+        if: steps.zmina.outputs.produkt == 'true' && (github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.pislia && inputs.kod)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
+        run: bash .github/scripts/perevirene-derevo.sh
+
   perevirka:
+    name: перевірка джерел
     permissions:
       contents: read
-    name: перевірка джерел
     needs: zminy
-    if: needs.zminy.outputs.produkt == 'true'
-    # 3.12.1 (байткод Pyodide) є в versions-manifest лише для 24.04; на 26.04 setup-python падає (прогін 42342674729)
+    if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          persist-credentials: false
           ref: ${{ inputs.pislia }}
           fetch-depth: 1
-
-      - name: історія голови й бази без чужих гілок
-        env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
-          GITHUB_TOKEN: ${{ github.token }}
-          HEAD_SHA: ${{ inputs.pislia }}
-        run: bash .github/scripts/checkout-history.sh
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.gitattributes
+            /джерела/
+            /каталог_повний.xml.gz
+            /каталог_записи_v1.jsonl.gz
+            /каталог_звіт_v1.json
+            /каталог_маніфест_кадрів.json.gz
+            /аудит/БЕКЛОГ.md
+            /аудит/дошка/
+            /аудит/дошка_архів/
+            /аудит/корені/
+            /zhnyvarka/
+            /аудит/проби/*.*
+            /аудит/проби/Живий-через-міст/стенд/службове/с5_весілля_сестри/обміни.jsonl
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: залежності батареї показу
+        working-directory: джерела
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: файли дошки згортаються (лише перевірка)
         if: github.event_name == 'pull_request'
@@ -206,14 +260,6 @@ jobs:
       - name: стенд паспорта-файлу-гілки (ДО → ПІСЛЯ)
         if: github.event_name == 'pull_request'
         run: python3 -I джерела/прилади/стенд_паспорта_файл_гілки.py | tee -a "$GITHUB_STEP_SUMMARY"
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: '22'
-
-      - name: залежності батареї показу
-        working-directory: джерела
-        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: node --check на кожен .js у джерела/
         run: |
@@ -256,7 +302,27 @@ jobs:
 
       - name: реєстр живих сцен (фото в тексті — з FOTO_RECHI; файли сцен)
         working-directory: аудит/проби
-        run: python3 -m unittest тест_записати_план.ПеревіркаПлану.test_реєстр_файли_є тест_записати_план.ПеревіркаПлану.test_реєстр_фото_у_тексті_має_змінну
+        run: |
+          python3 - <<'PY' | git -C "$GITHUB_WORKSPACE" sparse-checkout add --stdin
+          import glob
+          from pathlib import Path
+          from записати_сцену import ФАЙЛОВІ, КОРІНЬ, ТЕКА_ФОТО_СЦЕН
+
+          шляхи = set()
+          for рядок in Path("живі_сцени.txt").read_text(encoding="utf-8").splitlines():
+              if рядок.startswith("#") or "|" not in рядок:
+                  continue
+              for ознака in рядок.split("|")[3].split():
+                  ключ, _, значення = ознака.partition("=")
+                  if ключ in ФАЙЛОВІ:
+                      for імя in значення.split(","):
+                          for тека in (КОРІНЬ, ТЕКА_ФОТО_СЦЕН):
+                              шлях = (тека / імя).resolve()
+                              if шлях.is_relative_to(КОРІНЬ):
+                                  шляхи.add("/" + glob.escape(шлях.relative_to(КОРІНЬ).as_posix()))
+          print("\n".join(sorted(шляхи)))
+          PY
+          python3 -m unittest тест_записати_план.ПеревіркаПлану.test_реєстр_файли_є тест_записати_план.ПеревіркаПлану.test_реєстр_фото_у_тексті_має_змінну
 
       - name: розпакувати каталоги й почистити фід
         working-directory: джерела
@@ -287,80 +353,12 @@ jobs:
         working-directory: джерела
         run: python3 тест_місця_речі.py
 
-      - name: компілятор байткоду повного показу
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
-        id: pyc_python
-        with:
-          python-version: '3.12.1'
-          update-environment: false
-
-      - name: зібрати показ-повний і перевірити jsdom
-        working-directory: джерела
-        env:
-          LYUSTERKO_CATALOG: повний
-          LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
-        run: |
-          set -o pipefail
-          python3 build_артефакт.py . ../index.html показ-повний 2>&1 \
-            | tee -a "$GITHUB_STEP_SUMMARY"
-
-      - name: перевірений показ → job'у публікації
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: pokaz-povnyi-${{ github.sha }}
-          path: index.html
-          if-no-files-found: error
-          retention-days: 7
-
       - name: міст (50 звірок)
         id: mist
         working-directory: джерела
         run: |
           set -o pipefail
           node тест_мосту.js 2>&1 | tee ../міст.log
-
-      - name: досяжність («НІХТО» мусить лишатись 0)
-        id: dosiazhnist
-        working-directory: джерела
-        run: |
-          set -o pipefail
-          python3 досяжність.py 2>&1 | tee ../досяжність.log
-          NIKHTO=$(grep -oE '«НІХТО» = [0-9]+' ../досяжність.log | tail -1 | grep -oE '[0-9]+')
-          echo "«НІХТО» = ${NIKHTO}"
-          [ "${NIKHTO}" = "0" ]
-
-      - name: звіт досяжності → job'у збірки
-        if: always() && steps.dosiazhnist.outcome != 'skipped'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: dosiazhnist-zvit
-          path: джерела/аудит/ДОСЯЖНІСТЬ.md
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: стенд у браузері (Chromium + Pyodide, 20 звірок)
-        id: stend
-        # Д6 (12177): блокує — сцена 6 зелена на голові PR і на `main` (20 з 20), 12158; червоний стенд зупиняє збірку.
-        # 12114: крок ставить залежності браузера (apt-get); зелені 57 прогонів — медіана 187 с, макс 450 с
-        timeout-minutes: 15
-        env:
-          LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
-        run: |
-          set -o pipefail
-          bash .github/scripts/zalezhnosti-brauzera.sh ./джерела/node_modules/.bin/playwright
-          sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
-          mkdir -p "${RUNNER_TEMP}/стенд"
-          cp index.html "${RUNNER_TEMP}/стенд/index.html"
-          NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js \
-            http://127.0.0.1:8765 "${RUNNER_TEMP}/стенд" "${RUNNER_TEMP}/pyodide" 3 2>&1 | tee стенд.log
-          NODE_PATH=джерела/node_modules node аудит/проби/пара_чернетка.js "${RUNNER_TEMP}/стенд/index.html"
-
-      - name: нове ядро шляху образу (тести Н1 і Н2; Т34 — у Pyodide з кешу стенда)
-        # Ядро-Н1-каркас: `unittest discover` кириличних імен файлів не бачить — модулі названо явно.
-        working-directory: джерела
-        env:
-          PYODIDE: ${{ runner.temp }}/pyodide
-        run: python3 -m unittest -v ядро.тести.тест_ч1_ситуація ядро.тести.тест_ш_протокол ядро.тести.тест_будова ядро.тести.тест_н2 ядро.тести.тест_н3 ядро.тести.тест_н4 ядро.тести.тест_н5 ядро.тести.тест_запис_речі
 
       - name: складальник каталогу — звіт записано → прочитано (не гейт)
         continue-on-error: true
@@ -385,12 +383,210 @@ jobs:
             else
               echo "- \`node тест_мосту.js\` — крок не дійшов до виводу"
             fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  dosiazhnist:
+    name: досяжність джерел
+    permissions:
+      contents: read
+    needs: zminy
+    if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.pislia }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.gitattributes
+            /джерела/
+            /каталог_повний.xml.gz
+            /каталог_записи_v1.jsonl.gz
+            /каталог_звіт_v1.json
+            /каталог_маніфест_кадрів.json.gz
+            *.py
+            *.js
+            *.html
+            !index.html
+            !показ_зонд.html
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: розпакувати каталоги й почистити фід
+        working-directory: джерела
+        run: |
+          python3 -c "import чистка_каталогу as ч, feed as Ф; print('фід:', ч.забезпечити_чистим('каталог_повний.xml')); print('фікстура:', Ф.каталог_на_диску('каталог_brief.xml'))"
+
+      - name: досяжність («НІХТО» мусить лишатись 0)
+        id: dosiazhnist
+        working-directory: джерела
+        run: |
+          set -o pipefail
+          python3 досяжність.py 2>&1 | tee ../досяжність.log
+          NIKHTO=$(grep -oE '«НІХТО» = [0-9]+' ../досяжність.log | tail -1 | grep -oE '[0-9]+')
+          echo "«НІХТО» = ${NIKHTO}"
+          [ "${NIKHTO}" = "0" ]
+
+      - name: звіт досяжності → job'у збірки
+        if: always() && steps.dosiazhnist.outcome != 'skipped'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dosiazhnist-zvit
+          path: джерела/аудит/ДОСЯЖНІСТЬ.md
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: числа приладів у підсумок
+        if: always()
+        run: |
+          {
+            echo "### Числа приладів"
+            echo ""
             if [ -f досяжність.log ]; then
               NIKHTO=$(grep -oE '«НІХТО» = [0-9]+' досяжність.log | tail -1 | grep -oE '[0-9]+' || true)
               echo "- \`python3 досяжність.py\` — «НІХТО»: **${NIKHTO:-?}** (рядок 8 дошки закрито; було 1 на \`main\` 18.09 — крок блокує)"
             else
               echo "- \`python3 досяжність.py\` — крок не дійшов до виводу"
             fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  pokaz:
+    name: показ-повний і jsdom
+    permissions:
+      contents: read
+    needs: zminy
+    if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.pislia }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.gitattributes
+            /джерела/
+            /каталог_повний.xml.gz
+            /каталог_записи_v1.jsonl.gz
+            /каталог_звіт_v1.json
+            /каталог_маніфест_кадрів.json.gz
+            /аудит/проби/б1/ПІСЛЯ-Е3/06_б1_концерт_сміливо/VIDPOVIDI/seed3_08_ПАКЕТ_V1_ОБРАЗИ_V1.txt
+            /аудит/проби/б1/ПІСЛЯ-Е3/06_б1_концерт_сміливо/VIDPOVIDI/seed3_15_ВЕРДИКТ_V1_ОБРАЗИ_V1.txt
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: залежності батареї показу
+        working-directory: джерела
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: компілятор байткоду повного показу
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        id: pyc_python
+        with:
+          python-version: '3.12.1'
+          update-environment: false
+
+      - name: зібрати показ-повний і перевірити jsdom
+        working-directory: джерела
+        env:
+          LYUSTERKO_CATALOG: повний
+          LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
+        run: |
+          set -o pipefail
+          python3 build_артефакт.py . ../index.html показ-повний 2>&1 \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: перевірений показ → job'у публікації
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pokaz-povnyi-${{ inputs.pislia || github.sha }}
+          path: index.html
+          if-no-files-found: error
+          retention-days: 7
+
+  stend:
+    name: стенд зібраного показу
+    permissions:
+      contents: read
+    needs: [zminy, pokaz]
+    if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.pislia }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.gitattributes
+            /джерела/
+            /каталог_повний.xml.gz
+            /каталог_записи_v1.jsonl.gz
+            /каталог_звіт_v1.json
+            /каталог_маніфест_кадрів.json.gz
+            /аудит/проби/*.*
+            /аудит/проби/фото_сцен/
+            /.github/scripts/zalezhnosti-brauzera.sh
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: залежності батареї показу
+        working-directory: джерела
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: компілятор байткоду повного показу
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        id: pyc_python
+        with:
+          python-version: '3.12.1'
+          update-environment: false
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: pokaz-povnyi-${{ inputs.pislia || github.sha }}
+          path: .
+
+      - name: стенд у браузері (Chromium + Pyodide, 20 звірок)
+        id: stend
+        # Д6 (12177): блокує — сцена 6 зелена на голові PR і на `main` (20 з 20), 12158; червоний стенд зупиняє збірку.
+        # 12114: крок ставить залежності браузера (apt-get); зелені 57 прогонів — медіана 187 с, макс 450 с
+        timeout-minutes: 15
+        env:
+          LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
+        run: |
+          set -o pipefail
+          bash .github/scripts/zalezhnosti-brauzera.sh ./джерела/node_modules/.bin/playwright
+          sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
+          mkdir -p "${RUNNER_TEMP}/стенд"
+          cp index.html "${RUNNER_TEMP}/стенд/index.html"
+          NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js \
+            http://127.0.0.1:8765 "${RUNNER_TEMP}/стенд" "${RUNNER_TEMP}/pyodide" 3 2>&1 | tee стенд.log
+          NODE_PATH=джерела/node_modules node аудит/проби/пара_чернетка.js "${RUNNER_TEMP}/стенд/index.html"
+
+      - name: числа приладів у підсумок
+        if: always()
+        run: |
+          {
+            echo "### Числа приладів"
+            echo ""
             if [ -f стенд.log ]; then
               ZELENYH=$(grep -cE '^  ✔' стенд.log || true)
               CHERVONYH=$(grep -cE '^  ✗' стенд.log || true)
@@ -400,12 +596,60 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+  yadro:
+    name: тести нового ядра
+    permissions:
+      contents: read
+    needs: zminy
+    if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.pislia }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.gitattributes
+            /джерела/
+            /каталог_повний.xml.gz
+            /каталог_записи_v1.jsonl.gz
+            /каталог_звіт_v1.json
+            /каталог_маніфест_кадрів.json.gz
+            /аудит/проби/стенд_pyodide_кеш.sh
+            /аудит/проби/Живий-через-міст/стенд/службове/*/обміни.jsonl
+            /аудит/проби/Живий-через-міст/с8_мінус_десять_сніг/verdykty-2026-11-20-0057.json
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: розпакувати каталоги й почистити фід
+        working-directory: джерела
+        run: |
+          python3 -c "import чистка_каталогу as ч, feed as Ф; print('фід:', ч.забезпечити_чистим('каталог_повний.xml')); print('фікстура:', Ф.каталог_на_диску('каталог_brief.xml'))"
+
+      - name: Pyodide 0.26.4 для тестів ядра
+        run: sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
+
+      - name: нове ядро шляху образу (тести Н1 і Н2; Т34 — у Pyodide з кешу стенда)
+        # Ядро-Н1-каркас: `unittest discover` кириличних імен файлів не бачить — модулі названо явно.
+        working-directory: джерела
+        env:
+          PYODIDE: ${{ runner.temp }}/pyodide
+        run: python3 -m unittest -v ядро.тести.тест_ч1_ситуація ядро.тести.тест_ш_протокол ядро.тести.тест_будова ядро.тести.тест_н2 ядро.тести.тест_н3 ядро.тести.тест_н4 ядро.тести.тест_н5 ядро.тести.тест_запис_речі
+
   bazovyi:
     permissions:
       contents: read
     name: базовий показ main для записаних сцен
     needs: zminy
-    if: needs.zminy.outputs.produkt == 'true'
+    if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
     # Повну збірку базового main кожна з 10 частин записаного живого шляху робила сама (мед 5,2 хв × 10 на запуск —
     # чверть хвилин раннерів тижня 01–08.11, а раннерів 20 на всіх: черга PR). Тепер її робить один джоб паралельно з
     # перевіркою джерел, частини беруть готовий показ (`аудит/перевірка/ci_час_0811/`).
@@ -415,16 +659,28 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          persist-credentials: false
           ref: ${{ inputs.pislia }}
           fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /джерела/package.json
+            /джерела/package-lock.json
 
-      - name: історія голови й бази без чужих гілок
-        env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
-          GITHUB_TOKEN: ${{ github.token }}
-          HEAD_SHA: ${{ inputs.pislia }}
-        run: bash .github/scripts/checkout-history.sh
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
+          fetch-depth: 1
+          persist-credentials: false
+          path: main-replay
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.gitattributes
+            /джерела/
+            /каталог_повний.xml.gz
+            /каталог_записи_v1.jsonl.gz
+            /каталог_звіт_v1.json
+            /каталог_маніфест_кадрів.json.gz
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
@@ -447,22 +703,18 @@ jobs:
 
       - name: код базового main й повна збірка
         env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
+          BASE_REF: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
           LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
         run: |
-          if [ -z "$BASE_REF" ] || ! git cat-file -e "${BASE_REF}^{commit}"; then
-            echo "Нема коду бази для храповика" >&2
-            exit 1
-          fi
-          git worktree add --detach "${RUNNER_TEMP}/main-replay" "$BASE_REF"
+          [[ "$BASE_REF" =~ ^[0-9a-f]{40}$ && -n "${BASE_REF//0/}" ]]
           mkdir -p "${RUNNER_TEMP}/main-pokaz"
-          NODE_PATH="${GITHUB_WORKSPACE}/джерела/node_modules" LYUSTERKO_CATALOG=повний python3 "${RUNNER_TEMP}/main-replay/джерела/build_артефакт.py" \
-            "${RUNNER_TEMP}/main-replay/джерела" "${RUNNER_TEMP}/main-pokaz/index.html" показ-повний
+          NODE_PATH="${GITHUB_WORKSPACE}/джерела/node_modules" LYUSTERKO_CATALOG=повний python3 "${GITHUB_WORKSPACE}/main-replay/джерела/build_артефакт.py" \
+            "${GITHUB_WORKSPACE}/main-replay/джерела" "${RUNNER_TEMP}/main-pokaz/index.html" показ-повний
 
       - name: базовий показ → частинам записаного живого шляху
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: main-pokaz-${{ github.sha }}
+          name: main-pokaz-${{ inputs.pislia || github.sha }}
           path: ${{ runner.temp }}/main-pokaz
           if-no-files-found: error
           retention-days: 7
@@ -472,8 +724,8 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    needs: [zminy, perevirka, bazovyi]
-    if: needs.zminy.outputs.produkt == 'true'
+    needs: [zminy, pokaz, bazovyi]
+    if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
     # 3.12.1 (байткод Pyodide) є в versions-manifest лише для 24.04; на 26.04 setup-python падає (прогін 42342674729)
     runs-on: ubuntu-24.04
     timeout-minutes: 40
@@ -486,18 +738,25 @@ jobs:
       matrix:
         chastyna: [0, 1]
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          persist-credentials: false
           ref: ${{ inputs.pislia }}
           fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.gitattributes
+            /джерела/
+            /каталог_повний.xml.gz
+            /каталог_записи_v1.jsonl.gz
+            /каталог_звіт_v1.json
+            /каталог_маніфест_кадрів.json.gz
+            /аудит/проби/*.*
+            /аудит/проби/фото_сцен/
+            /аудит/проби/нічні/
+            /аудит/проби/нова_база_відтворення/
+            /.github/scripts/zalezhnosti-brauzera.sh
 
-      - name: історія голови й бази без чужих гілок
-        env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
-          GITHUB_TOKEN: ${{ github.token }}
-          HEAD_SHA: ${{ inputs.pislia }}
-        run: bash .github/scripts/checkout-history.sh
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.11'
@@ -514,23 +773,35 @@ jobs:
           bash ../.github/scripts/zalezhnosti-brauzera.sh ./node_modules/.bin/playwright
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: pokaz-povnyi-${{ github.sha }}
+          name: pokaz-povnyi-${{ inputs.pislia || github.sha }}
           path: ${{ runner.temp }}/pokaz
       - name: Pyodide 0.26.4 з диска
         run: sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
-      - name: код базового main (записи сцен бази)
+      - name: має бути точний SHA записів бази
         env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
-        run: |
-          if [ -z "$BASE_REF" ] || ! git cat-file -e "${BASE_REF}^{commit}"; then
-            echo "Нема коду бази для храповика" >&2
-            exit 1
-          fi
-          git worktree add --detach "${RUNNER_TEMP}/main-replay" "$BASE_REF"
+          BASE_SHA: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
+        run: '[[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && -n "${BASE_SHA//0/}" ]]'
+
+      - name: код базового main (записи сцен бази)
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
+          fetch-depth: 1
+          persist-credentials: false
+          path: main-replay
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.gitattributes
+            /джерела/
+            /каталог_повний.xml.gz
+            /аудит/проби/*.*
+            /аудит/проби/фото_сцен/
+            /аудит/проби/нічні/
+
       - name: базовий показ main зі збірки бази
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: main-pokaz-${{ github.sha }}
+          name: main-pokaz-${{ inputs.pislia || github.sha }}
           path: ${{ runner.temp }}/main-pokaz
       - name: усі звірки мають огляд і контрприклади перевірено
         run: node аудит/проби/звірки_Е1.js
@@ -548,7 +819,7 @@ jobs:
           ZLYTTIA_TOKEN: ${{ inputs.pislia && github.token || '' }}
           NODE_PATH: джерела/node_modules
           REPLAY_BASE_BUILD: ${{ runner.temp }}/main-pokaz
-          REPLAY_BASE_ROOT: ${{ runner.temp }}/main-replay
+          REPLAY_BASE_ROOT: ${{ github.workspace }}/main-replay
           REPLAY_MATRIX_SUMMARY: ${{ runner.temp }}/replay-summary.json
         run: |
           node аудит/проби/приймання_записів.js "${RUNNER_TEMP}/pokaz" "${RUNNER_TEMP}/pyodide" \
@@ -558,7 +829,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: replay-${{ matrix.chastyna }}-${{ github.sha }}
+          name: replay-${{ matrix.chastyna }}-${{ inputs.pislia || github.sha }}
           path: ${{ runner.temp }}/replay
           if-no-files-found: error
           retention-days: 7
@@ -567,7 +838,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: replay-summary-${{ matrix.chastyna }}-${{ github.sha }}
+          name: replay-summary-${{ matrix.chastyna }}-${{ inputs.pislia || github.sha }}
           path: ${{ runner.temp }}/replay-summary.json
           if-no-files-found: error
           overwrite: true
@@ -592,34 +863,44 @@ jobs:
           node-version: '22'
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          pattern: replay-summary-*-${{ github.sha }}
+          pattern: replay-summary-*-${{ inputs.pislia || github.sha }}
           path: ${{ runner.temp }}/replay-summary
       - name: звірити всі частини записаних сцен
+        env:
+          SOURCE_SHA: ${{ inputs.pislia || github.sha }}
         run: |
           node аудит/проби/підсумок_відтворення.js \
-            "${RUNNER_TEMP}/replay-summary/replay-summary-0-${GITHUB_SHA}/replay-summary.json" \
-            "${RUNNER_TEMP}/replay-summary/replay-summary-1-${GITHUB_SHA}/replay-summary.json"
+            "${RUNNER_TEMP}/replay-summary/replay-summary-0-${SOURCE_SHA}/replay-summary.json" \
+            "${RUNNER_TEMP}/replay-summary/replay-summary-1-${SOURCE_SHA}/replay-summary.json"
 
   rozdily:
     permissions:
       contents: read
     name: розділи й контракти
     needs: zminy
-    if: needs.zminy.outputs.produkt == 'true'
+    if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          persist-credentials: false
           ref: ${{ inputs.pislia }}
           fetch-depth: 1
-
-      - name: історія голови й бази без чужих гілок
-        env:
-          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || inputs.pered }}
-          GITHUB_TOKEN: ${{ github.token }}
-          HEAD_SHA: ${{ inputs.pislia }}
-        run: bash .github/scripts/checkout-history.sh
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.gitattributes
+            /джерела/
+            /каталог_повний.xml.gz
+            /каталог_записи_v1.jsonl.gz
+            /каталог_звіт_v1.json
+            /каталог_маніфест_кадрів.json.gz
+            /аудит/проби/*.*
+            /аудит/корені/
+            /аудит/БЕКЛОГ.md
+            /zhnyvarka/
+            /.github/
+            /index.html
+            /build.txt
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
@@ -648,13 +929,12 @@ jobs:
         working-directory: джерела
         run: python3 audit_contracts.py
 
-
   pravyla:
     permissions:
       contents: read
     name: звіт правил (не гейт)
     needs: zminy
-    if: needs.zminy.outputs.pravyla == 'true'
+    if: needs.zminy.outputs.pravyla == 'true' && needs.zminy.outputs.perevirenyi_run == ''
     continue-on-error: true
     timeout-minutes: 10
     runs-on: ubuntu-latest
@@ -664,9 +944,16 @@ jobs:
       # Журналу власника досить бази — першого батька голови (глибина 2).
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          persist-credentials: false
           ref: ${{ inputs.pislia }}
           fetch-depth: 2
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*.md
+            /аудит/*.md
+            /аудит/адаптери/**/*.md
+            /джерела/прилади/журнал_і_розмір_правил.py
+            /джерела/прилади/запуск_python.py
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
@@ -692,17 +979,35 @@ jobs:
   zbirka:
     permissions:
       contents: read
+      actions: read
+      pull-requests: read
     name: зібрати показ-повний
-    needs: [zminy, perevirka, rozdily, pryimannia, pidsumok_pryimannia]
-    if: ${{ !cancelled() && needs.zminy.result == 'success' && (needs.zminy.outputs.produkt == 'false' || (needs.perevirka.result == 'success' && needs.rozdily.result == 'success' && needs.pryimannia.result == 'success' && needs.pidsumok_pryimannia.result == 'success')) }}
+    needs: [zminy, perevirka, dosiazhnist, pokaz, stend, yadro, rozdily, pryimannia, pidsumok_pryimannia]
+    if: >-
+      ${{ !cancelled() && needs.zminy.result == 'success' &&
+          (needs.zminy.outputs.produkt == 'false' || needs.zminy.outputs.perevirenyi_run != '' ||
+           (needs.perevirka.result == 'success' && needs.dosiazhnist.result == 'success' &&
+            needs.pokaz.result == 'success' && needs.stend.result == 'success' && needs.yadro.result == 'success' &&
+            needs.rozdily.result == 'success' && needs.pryimannia.result == 'success' &&
+            needs.pidsumok_pryimannia.result == 'success')) }}
     runs-on: ubuntu-latest
     steps:
-      # Легкий шлях (продукт не змінено) кроків не має: checkout дерева в 3 ГБ — ~0,9 хв на шляху документного PR.
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         if: needs.zminy.outputs.produkt == 'true'
         with:
-          persist-credentials: false
           ref: ${{ inputs.pislia }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.gitattributes
+            /джерела/
+            /каталог_повний.xml.gz
+            /каталог_записи_v1.jsonl.gz
+            /каталог_звіт_v1.json
+            /каталог_маніфест_кадрів.json.gz
+            /.github/scripts/perevirene-derevo.sh
+            /аудит/проби/живий_після_CI.js
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         if: needs.zminy.outputs.produkt == 'true'
@@ -710,11 +1015,39 @@ jobs:
           python-version: '3.11'
 
       - name: перевірений показ із перевірки
-        if: needs.zminy.outputs.produkt == 'true'
+        if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: pokaz-povnyi-${{ github.sha }}
+          name: pokaz-povnyi-${{ inputs.pislia || github.sha }}
           path: .
+
+      - name: перевірені файли з зеленого PR
+        if: needs.zminy.outputs.perevirenyi_run != ''
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ needs.zminy.outputs.perevirenyi_vantazh }}
+          run-id: ${{ needs.zminy.outputs.perevirenyi_run }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/perevirene
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: needs.zminy.outputs.perevirenyi_run != ''
+        with:
+          node-version: '22'
+
+      - name: погодження живого прогону після злиття
+        if: needs.zminy.outputs.perevirenyi_run != ''
+        env:
+          ZLYTTIA_ZLYTI: ${{ inputs.zlyti }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          for chastyna in 0 1; do
+            node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/perevirene/replay-$chastyna"
+          done
+
+      - name: скласти показ із перевірених файлів зі штампом злиття
+        if: needs.zminy.outputs.perevirenyi_run != ''
+        run: bash .github/scripts/perevirene-derevo.sh --зібрати "${RUNNER_TEMP}/perevirene"
 
       - name: звірка вантажу з джерелами
         if: needs.zminy.outputs.produkt == 'true'
@@ -722,7 +1055,7 @@ jobs:
         run: python3 звірка_вантажу.py
 
       - name: свіжий звіт досяжності з перевірки
-        if: needs.zminy.outputs.produkt == 'true'
+        if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: dosiazhnist-zvit
@@ -732,10 +1065,32 @@ jobs:
         if: needs.zminy.outputs.produkt == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: publikatsiia-${{ github.sha }}
+          name: publikatsiia-${{ inputs.pislia || github.sha }}
           path: |
             index.html
             джерела/аудит/ДОСЯЖНІСТЬ.md
+          if-no-files-found: error
+          retention-days: 7
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        if: github.event_name == 'pull_request' && needs.zminy.outputs.produkt == 'true'
+        with:
+          pattern: replay-summary-*-${{ inputs.pislia || github.sha }}
+          path: ${{ runner.temp }}/perevirene-zapysy
+
+      - name: дерево та база всіх пройдених звірок
+        if: github.event_name == 'pull_request' && needs.zminy.outputs.produkt == 'true'
+        id: dokaz
+        env:
+          BASE_SHA: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
+        run: bash .github/scripts/perevirene-derevo.sh --доказ
+
+      - name: перевірені файли й докази звірок дерева
+        if: steps.dokaz.outputs.artifact != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ steps.dokaz.outputs.artifact }}
+          path: ${{ runner.temp }}/dokaz/
           if-no-files-found: error
           retention-days: 7
 
@@ -750,6 +1105,18 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ inputs.pislia }}
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /джерела/прилади/*.py
+            /аудит/БЕКЛОГ.md
+            /аудит/дошка/
+            /аудит/дошка_архів/
+            /аудит/корені/
+            /.gitattributes
+            /build.txt
+            /index.html
+            /джерела/аудит/ДОСЯЖНІСТЬ.md
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
@@ -759,8 +1126,12 @@ jobs:
         if: needs.zminy.outputs.produkt == 'true'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: publikatsiia-${{ github.sha }}
+          name: publikatsiia-${{ inputs.pislia || github.sha }}
           path: .
+
+      - name: історія main для порядку паспортів і звірки опублікованого штампа
+        run: |
+          git fetch --no-tags --filter=blob:none --unshallow origin "$(git rev-parse HEAD)" refs/heads/main
 
       - name: згорнути дошку
         id: zghortannia
@@ -809,7 +1180,7 @@ jobs:
           OSNOVA="${SOURCE_SHA}"
           KOMIT=""
           for sproba in 1 2 3 4 5; do
-            git fetch --no-tags origin refs/heads/main
+            git fetch --no-tags --filter=blob:none origin refs/heads/main
             MAIN_SHA=$(git rev-parse FETCH_HEAD)
             if ! git merge-base --is-ancestor "${SOURCE_SHA}" "${MAIN_SHA}"; then
               echo "main ${MAIN_SHA} не містить джерел ${SOURCE_SHA} — публікацію зупинено без силового push" | tee -a "$GITHUB_STEP_SUMMARY"
