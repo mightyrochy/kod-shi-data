@@ -13,6 +13,26 @@
   let contextWords='', originator=null, extra='', pageMode='', headerKey='', scheduled=false, other=false;
   const titles={'сценарій':'Образ','профіль':'Мій профіль','старт':'Мій профіль','оцінка':'Оцінити вбрання','сценарії':'Мої нагоди','образи':'Образ','бібліотека':'Мої образи','палітра':'Барви','очікування':'Збираю образи'};
   const actions=new Map();
+  // Five minutes away is a fresh visit; brief app switches keep the conversation uninterrupted.
+  const resumeAfter=5*60*1000;
+  let hiddenAt=null,introTimer=null,intro=null;
+  function playIntro(){
+    if(document.hidden)return;
+    if(!intro){
+      intro=document.createElement('dialog');intro.id='mirror-intro';intro.setAttribute('aria-label','Люстерко');
+      document.body.append(intro);
+      intro.addEventListener('click',()=>intro.close());
+      intro.addEventListener('close',()=>clearTimeout(introTimer));
+    }
+    clearTimeout(introTimer);
+    intro.innerHTML='<div class="pair-intro-art" aria-hidden="true">'+window.Hand.art(M.get(),'welcome')+'</div><div class="pair-intro-wordmark" aria-hidden="true">'+M.mast()+'</div><button type="button" autofocus>Пропустити</button>';
+    if(!intro.open)intro.showModal();
+    introTimer=setTimeout(()=>intro.close(),window.matchMedia('(prefers-reduced-motion: reduce)').matches?150:2300);
+  }
+  function resumeIntro(){
+    if(hiddenAt!==null&&Date.now()-hiddenAt>=resumeAfter)playIntro();
+    hiddenAt=null;
+  }
   function move(item, parent){if(item&&parent&&item.parentNode!==parent)parent.append(item);}
   function activeProfile(){return АКТИВНИЙ;}
   function dialog(title, content){
@@ -26,7 +46,7 @@
   function say(text){node('mirror-chat-status').textContent=text;}
   function setDrawer(open,focus=false){
     const home=document.documentElement.dataset.pairPage==='mirror';
-    drawerOpen=!!open&&!home;const expanded=!mobile.matches||drawerOpen;
+    drawerOpen=!!open&&!home;const expanded=home||!mobile.matches||drawerOpen;
     document.documentElement.dataset.drawer=expanded?'open':'closed';
     node('pair-handle').setAttribute('aria-expanded',String(expanded));
     node('pair-curtain').hidden=!(mobile.matches&&drawerOpen);
@@ -162,8 +182,9 @@
     updateSend(inCase);placeNoteEdits();node('чат-ввід').hidden=false;
     node('pair-review-chat').hidden=!review;
     if(!inCase&&!extra)setHeading(titles[mode]||'Люстерко',mode==='бібліотека'?button('closet','Мої речі','вішак'):mode==='профіль'?button('access','Доступ'):button('face','До люстерка','назад'));
+    const previousPage=document.documentElement.dataset.pairPage;
     pair.render(mode,extra);
-    if(document.documentElement.dataset.pairPage==='mirror'){work.inert=false;document.querySelector('.pair-mast').inert=false;node('pair-curtain').hidden=true;}
+    if(previousPage!==document.documentElement.dataset.pairPage||document.documentElement.dataset.pairPage==='mirror')setDrawer(false);
     feedback.hidden=!!extra||!inCase||document.documentElement.dataset.pairPage!=='understood';
     if(mode==='бібліотека'&&!extra){nativeSeals();node('mirror-saved-manual').hidden=pair.blindShelf();if(!pair.blindShelf())window.Rack?.library();}
     const last=ЧАТ_П.at(-1);
@@ -290,8 +311,15 @@
     document.addEventListener('keydown',e=>{if(e.target.id==='чат-поле'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&node('чат-поле').value.trim()){const b=node('чат-слати');if(!b.disabled){e.preventDefault();e.stopImmediatePropagation();b.click();}}},true);
     document.addEventListener('click',e=>{const b=e.target.closest('[data-ux]');if(b&&!b.disabled&&actions.has(b.dataset.ux)){actions.get(b.dataset.ux)(b.dataset.value||'',b);}});
     document.addEventListener('submit',e=>{if(e.target.matches('[data-form="access"]')){e.preventDefault();const token=new FormData(e.target).get('token').trim();if(!token)return;try{localStorage.setItem('міст:токен',token);}catch{}МІСТ_П.токен=token;close();say('Код збережено.');}});
-    window.addEventListener(M.changeEvent,()=>{themeButtons();schedule();window.Rack?.repaintArtwork();});
+    window.addEventListener(M.changeEvent,()=>{themeButtons();schedule();window.Rack?.repaintArtwork();queueMicrotask(playIntro);});
     themeButtons();keyboardSpace();setDrawer(false);sync();
+    document.addEventListener('visibilitychange',()=>{
+      if(document.hidden){hiddenAt=Date.now();if(intro?.open)intro.close();}
+      else resumeIntro();
+    });
+    window.addEventListener('pagehide',()=>{if(hiddenAt===null)hiddenAt=Date.now();});
+    window.addEventListener('pageshow',event=>{if(event.persisted)resumeIntro();});
+    playIntro();
     Екран.малювач('дзеркало-робота',['режим','вхід','крок','запущено','панель','розмова','випадок','сценарій','профілі','поля','аркуш','збирання','образ','образи','палітра','фото','бібліотека','кошик','заміна','картка','статус_збирання','стан_палітри','оцінка'],schedule);
   }
   const handlers={talk:()=>goTalk(),speak:()=>editWords(true),write:()=>editWords(),face:goFace,cases:()=>route('сценарії'),assess:()=>route('оцінка'),library:()=>pair.dailyShelf(),profile:()=>route('профіль'),access,'edit-note':editNote,'save-note':saveNote,hand:k=>{M.set(k);close();},'close-sheet':close,occasion:chooseOccasion,
