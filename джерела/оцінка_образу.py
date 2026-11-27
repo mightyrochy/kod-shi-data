@@ -1377,7 +1377,8 @@ _СПІЛЬНІ_ПРАВИЛА_ОЦІНКИ = (
         _ЗП.Поле("not_in_photo", "kinds of things that are not on her photos (shoes, bag, outerwear, more pieces…): "
                                  "the code did not judge them, and her card tells her so in one line"),
         _ЗП.Поле("check", "the code's check: findings, structure blockers, and checklist fact numbers in points. "
-                          "Each checklist fact gives its topic and the code's result.", треба=True),
+                          "Each checklist fact gives its criterion and the code's result. For held facts, topic gives "
+                          "the subject in plain Ukrainian; use it to say exactly what remains uncertain.", треба=True),
         _ЗП.Поле("facts", "facts of this call, by reference number. A sample about map is "
                           '{"f1":"item"}; copy the actual reference and state from the facts.', треба=True),
         _ЗП.Поле("supported", "what works in the outfit by the code's check: an about code with the ids of the "
@@ -1840,7 +1841,8 @@ def _факти_оцінки(суд_, питання=None):
         стан = _СТАНИ_КЛІТИНОК.get(клітинка.get("стан"))
         if not стан or not код:
             continue
-        номер = межа.факт(стан, dict(point=код, criterion=_ВМ.ПУНКТИ_ЧЕКЛІСТА.get(код)))
+        тема = _ВМ.ТЕМИ_КЛІТИНОК.get(код) if стан == "held" else None
+        номер = межа.факт(стан, dict(point=код, criterion=_ВМ.ПУНКТИ_ЧЕКЛІСТА.get(код), topic=тема))
         посилання.append(номер)
         for правило in правила_точки.get(код, клітинка.get("правила") or []):
             правила.setdefault(правило, []).append(номер)
@@ -2170,10 +2172,10 @@ def прийняти_оцінку(відповідь, суд_):
     return сторож_оцінки_об(об, суд_, причина=причина, нотатки=нотатки)
 
 
-def _прийняти_речення_оцінки(межа, речення, де, сторож, висловлені=None):
-    """Судить опори речень і за потреби повертає номери прийнятих фактів через `висловлені`."""
+def _прийняти_речення_оцінки(межа, речення, де, сторож):
+    """Повертає речення з перевіреними опорами."""
     if речення is None:
-        return ""
+        return []
     частина = "unknown" if де == "unknown" else "text"
     суд = межа.судити({частина: речення})
     сторож.extend(dict(в, де=де) for в in суд["відкинуто"] if в["чому"] != "facts_not_told")
@@ -2184,10 +2186,13 @@ def _прийняти_речення_оцінки(межа, речення, де
         if непридатні:
             сторож.append(dict(де=де, чому="unchecked_in_main_text", про=непридатні, зняте=р["says"]))
         else:
-            слова.append(р["says"])
-            if висловлені is not None:
-                висловлені.update(р["about"])
-    return " ".join(слова)
+            слова.append(р)
+    return слова
+
+
+def _текст_речень(речення):
+    """З'єднує речення для одного поля картки."""
+    return " ".join(р["says"] for р in речення)
 
 
 def _причина_повтору_оцінки(сторож):
@@ -2199,45 +2204,35 @@ def _причина_повтору_оцінки(сторож):
 def прийняти_текст_оцінки(відповідь, суд_):
     """Читає нумеровані речення оцінки, тоді передає текст і перевірені посилання сторожеві картки."""
     об, причина, нотатки = _СВ.СХЕМИ_ВІДПОВІДІ["ТЕКСТ_ОЦІНКИ"].прочитати(відповідь)
-    if об is None:
-        return сторож_оцінки_об(None, суд_, причина=причина, нотатки=нотатки)
     межа, _ = _факти_оцінки(суд_)
+    сторож = []
+    невідоме = _прийняти_речення_оцінки(межа, (об or {}).get("unknown"), "unknown", сторож)
+    рядки, пропуски, повтор_невідомого = межа.рядки_невідомого(невідоме, ("held",))
+    if об is None:
+        if not рядки:
+            return сторож_оцінки_об(None, суд_, причина=причина, нотатки=нотатки)
+        об = {}
     іди = {}
     for ід, номер in межа.реєстр.items():
         іди.setdefault(номер, ід)
-    сторож = []
-    відповідь = _прийняти_речення_оцінки(межа, об.get("answer"), "answer", сторож)
-    висловлені = set()
-    невідоме = _прийняти_речення_оцінки(межа, об.get("unknown"), "unknown", сторож, висловлені)
-    пропущені = {н: ф["point"] for н, ф in межа.факти.items()
-                if ф["state"] == "held" and ф.get("point") and н not in висловлені}
+    відповідь = _текст_речень(_прийняти_речення_оцінки(межа, об.get("answer"), "answer", сторож))
     картка = dict(answer=відповідь, verdict=об.get("verdict"))
     for поле in ("works", "change"):
         картка[поле] = []
         for пункт in об.get(поле) or []:
-            текст = _прийняти_речення_оцінки(межа, пункт.get("text"), поле, сторож)
+            текст = _текст_речень(_прийняти_речення_оцінки(межа, пункт.get("text"), поле, сторож))
             if not текст:
                 continue
             картка[поле].append(dict(пункт, text=текст, id=іди.get(пункт.get("id"), ""),
                                       items=[іди.get(н, н) for н in пункт["items"]]))
     р = сторож_оцінки_об(картка, суд_, нотатки=нотатки)
-    рядки = [dict(текст=невідоме)] if невідоме else []
-    if пропущені:
-        клітинки = _клітинки_оцінки(суд_)
-        ознаки = dict.fromkeys(клітинки[код].get("вхід") or "цей образ" for код in пропущені.values())
-        рядки.extend(dict(текст=f"Не можу зробити певного висновку за ознакою «{ознака}».", готовий_текст=True)
-                     for ознака in ознаки)
     if рядки:
         р["картка"]["не_знаю"][:0] = рядки
         if not р["картка"]["відповідь"]:
             р["картка"]["відповідь"] = "Відкрий «Чого я не знаю», щоб побачити, що я не змогла перевірити."
-            р["причина"] = None
-    р["сторож"].extend(сторож)
-    повтор = []
-    if пропущені:
-        р["сторож"].append(dict(де="unknown", чому="held_facts_not_told", про=list(пропущені)))
-        повтор.append("In unknown, acknowledge the inconclusive checklist facts with their exact state held: "
-                      + ", ".join(пропущені) + ".")
+            р["причина"] = причина
+    р["сторож"].extend(сторож + пропуски)
+    повтор = [повтор_невідомого] if повтор_невідомого else []
     if сторож:
         повтор.append("Check each rejected sentence's fact numbers and states against facts. "
                       "Put uncertainty under unknown. Reasons: " + _причина_повтору_оцінки(сторож))
@@ -2256,7 +2251,7 @@ def прийняти_текст_допиту(відповідь, суд_):
     сторож = []
     текст = _прийняти_речення_оцінки(межа, об.get("answer"), "answer", сторож)
     невідоме = _прийняти_речення_оцінки(межа, об.get("unknown"), "unknown", сторож)
-    return dict(відповідь=" ".join(ч for ч in (текст, невідоме) if ч),
+    return dict(відповідь=_текст_речень(текст + невідоме),
                 причина=_причина_повтору_оцінки(сторож) or None, сторож=сторож)
 
 
