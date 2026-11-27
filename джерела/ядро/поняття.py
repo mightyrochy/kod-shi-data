@@ -404,6 +404,7 @@ class СкладКартки(_Поняття):
     збій_опису: object = None
     збій: Збій = None
     дія_для_вибору: dict | None = None
+    запис_заміни: dict | None = None
 
     def __post_init__(self):
         _версія("СкладКартки", self.версія_ситуації)
@@ -418,8 +419,8 @@ class Картка(СкладКартки):
     def __post_init__(self):
         super().__post_init__()
         рядки = self.речення or {}
-        має_пояснення = any(р.get("says", "").strip() for п in ("text", "fallback") for р in рядки.get(п, ()))
-        if self.збій is not None or not (self.опис_en.strip() or має_пояснення):
+        пояснення = [self.опис_en, *(р.get("says") for п in ("text", "fallback") for р in рядки.get(п, ()))]
+        if self.збій is not None or not any(рядок and not рядок.isspace() for рядок in пояснення):
             raise ХибнеЗначення("Картка: потрібне пояснення")
 
 
@@ -427,6 +428,8 @@ class Картка(СкладКартки):
 class ВідмоваРуки(_Поняття):
     """Один видимий рядок для руки, що не дала цілої картки. Пише Ч7."""
 
+    ПИСАЧ = "картка"
+    _ВКЛАДЕНІ = {"збій": Збій.з_json}
     рука: int
     версія_ситуації: int
     збій: Збій
