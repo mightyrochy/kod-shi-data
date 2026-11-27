@@ -4598,14 +4598,17 @@ function поверненняЗаглушка(w){
            JSON.stringify(рядки) === JSON.stringify(['Колір · Сукня міді, Сумка на плече', 'Підошва · Черевики']), рядки);
       дані.дія_для_вибору = {kind: 'card_choice_item_colour_missing',
         statements: [{code: 'palette_scheme_item_colour_missing', item_ids: ['a']}]};
-      const карткаВибору = w.eval('карткаЯдраНаЕкранП(' + JSON.stringify(дані) + ', 1)');
-      for (const дія of [карткаВибору.дія_для_вибору, 'Не перевірила тріаду, бо бракує кольору речі.']){
-        w.eval('П.картки[0] = ' + JSON.stringify({...карткаВибору, свідомі: [], дія_для_вибору: дія}) + '; 0');
+      const відШару = {text: [{says: 'Простий силует для зустрічі.'}], advice: [{says: 'Неси сумку на плечі.'}],
+        action: [{says: 'Не перевірила тріаду, бо бракує кольору речі.'}],
+        unknown: [{текст: 'Не вдалося перевірити колір сукні.'}]};
+      for (const [речення, подробиця] of [[null, 'Колір · Сукня міді'], [відШару, відШару.unknown[0].текст]]){
+        const карткаВибору = w.eval('карткаЯдраНаЕкранП(' + JSON.stringify({...дані, речення}) + ', 1)');
+        w.eval('П.картки[0] = ' + JSON.stringify({...карткаВибору, свідомі: []}) + '; 0');
         const картка = w.рендерКартку(0);
         const рядок = [...картка.querySelectorAll('p.не-вийшло')].find(р => р.textContent.includes('Сукня міді'));
         тест('17303: рядок про брак кольору називає точну річ, подробиці лишаються за кнопкою',
              !!рядок && !рядок.closest('details') && !/портрет|сумка/i.test(рядок.textContent) &&
-             картка.querySelector('details.питання-коду')?.textContent.includes('Колір · Сукня міді'), рядок?.textContent);
+             картка.querySelector('details.питання-коду')?.textContent.includes(подробиця), рядок?.textContent);
       }
     }
   }

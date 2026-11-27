@@ -3,6 +3,8 @@ from dataclasses import dataclass, replace
 import json
 from pathlib import Path
 
+from внутрішня_мова import КОДИ_БРАКУ_СХЕМИ
+from межа_текстів import ІдУТілі, КАНДИДАТ_ЗАМІНИ, ПРЕДМЕТ
 from .поняття import Образ, Збій, НЕВІДОМО
 
 НАРЯД = None
@@ -25,11 +27,30 @@ class Опис:
     про_речі: tuple
     заміна: dict | None = None
     кадри_оцінено: bool = False
+    речення: dict | None = None
+    розбіжності: tuple = ()
+    прийнято_речень: int = 0
 
 
 def схема(вид):
     """Повертає схему, з якої також будується вимога формату запиту."""
     return _СХЕМИ[_ВИДИ[вид]]
+
+
+def схема_тексту_картки(фото=False):
+    """Додає до договору текстів лише ті поля, які потрібні для звірки фото."""
+    рядок = {"type": "string", "minLength": 1}
+    номери = {"type": "object", "properties": {}, "required": [], "additionalProperties": рядок}
+    речення = {"type": "object", "properties": {"about": номери, "says": рядок},
+               "required": ["about", "says"], "additionalProperties": False}
+    список = {"type": "array", "items": речення, "minItems": 0}
+    поля = {к: список for к in ("text", "advice", "unknown")}
+    поля["names"] = номери
+    обовʼязкові = list(поля)
+    if фото:
+        поля.update({к: схема("опис")["properties"][к] for к in ("wrong_photos", "swap")})
+        обовʼязкові.append("wrong_photos")
+    return {"type": "object", "properties": поля, "required": обовʼязкові, "additionalProperties": False}
 
 
 class _Невірне(ValueError):
@@ -62,9 +83,10 @@ def _перевірити(значення, опис, поле):
                 raise _Невірне(f"{поле}{ключ}", "missing field", вид)
         for ключ, в in значення.items():
             адреса = f"{поле}{ключ}"
-            if ключ not in поля:
+            правило = поля.get(ключ, опис.get("additionalProperties"))
+            if not isinstance(правило, dict):
                 raise _Невірне(адреса, "field outside schema")
-            _перевірити(в, поля[ключ], адреса + "." if isinstance(в, dict) else адреса)
+            _перевірити(в, правило, адреса + "." if isinstance(в, dict) else адреса)
 
 
 def _обʼєкт(пари):
@@ -77,7 +99,7 @@ def _обʼєкт(пари):
     return д
 
 
-def _дані(відп, вид, спроба):
+def _дані(відп, вид, спроба, *, усе_за_схемою=True):
     """Розпаковує JSON-об'єкт або повертає діагноз відповіді."""
     if "збій" in відп:
         з = відп["збій"]
@@ -90,7 +112,10 @@ def _дані(відп, вид, спроба):
                     секунди=з.get("секунди"), спроба=спроба)
     текст = відп.get("текст", "")
     дані = json.loads(текст, object_pairs_hook=_обʼєкт)
-    _перевірити(дані, схема(вид), "")
+    if усе_за_схемою:
+        _перевірити(дані, схема(вид), "")
+    elif not isinstance(дані, dict):
+        raise _Невірне("response", "expected an object")
     return дані
 
 
@@ -180,6 +205,105 @@ def _опис(дані, образ):
     пояснення = {рядок["n"]: рядок["text"] for рядок in про_речі}
     return Опис(образ.ід, склад, дані["text"], tuple(дані.get("how_to_wear", ())),
                 фото_не_те, tuple((н, пояснення[н]) for н in склад), дані.get("swap"), "wrong_photos" in дані)
+
+
+def невідоме_картки(межа, речення=()):
+    """Повертає рядки з темами тих самих фактів на випадок пропуску або збою показу."""
+    рядки, _, _ = межа.рядки_невідомого(речення, ("held",), формат="Не вдалося перевірити {тема}.", з_номерами=True)
+    return рядки
+
+
+def запас_картки(межа):
+    """Той самий склад і відкладене невідоме, коли пояснення не прочитане."""
+    return dict(unknown=невідоме_картки(межа), fallback=межа.запасні_рядки_картки())
+
+
+def _тексти_картки(дані, межа):
+    """Звіряє опори, зберігає поділ на пояснення, поради та невідоме."""
+    суд = межа.судити(дані)
+    розбіжності = [з for з in суд["відкинуто"] if з["чому"] != "facts_not_told"]
+    предмети = {н for н, ф in межа.факти.items() if ф["state"] == ПРЕДМЕТ}
+    факти_вибору = {н for н, ф in межа.факти.items() if ф["state"] in КОДИ_БРАКУ_СХЕМИ}
+    пояснення = [р for р in суд["text"] if факти_вибору.isdisjoint(р["about"])]
+    дозволені_в_рядку = факти_вибору | предмети
+    рядок_вибору = next((р for р in суд["text"] if факти_вибору.intersection(р["about"])
+                        and дозволені_в_рядку.issuperset(р["about"])), None)
+    поради = [р for р in суд["advice"] if предмети.intersection(р["about"])
+              and факти_вибору.isdisjoint(р["about"])]
+    if len(поради) != len(суд["advice"]):
+        розбіжності.append(dict(чому="advice_item_missing"))
+    дані_назв = дані.get("names")
+    назви = {н: назва for н, т in (дані_назв.items() if isinstance(дані_назв, dict) else ())
+             if н in предмети and межа.факти[н].get("needs_name") and isinstance(т, str)
+             and (назва := межа.назва_речі(т))}
+    для_назви = {н for н in предмети if межа.факти[н].get("needs_name")}
+    if для_назви != назви.keys() or not isinstance(дані_назв, dict) or len(назви) != len(дані_назв):
+        розбіжності.append(dict(чому="item_names_missing", про=sorted(для_назви - назви.keys())))
+    if not поради:
+        розбіжності.append(dict(чому="advice_item_missing"))
+    if not пояснення:
+        розбіжності.append(dict(чому="explanation_missing"))
+    сказані = {н for р in пояснення + поради for н in р["about"]}
+    if рядок_вибору:
+        сказані.update(рядок_вибору["about"])
+    відсутні = (предмети - сказані) | set(суд["не_сказано"])
+    if відсутні:
+        розбіжності.append(dict(чому="facts_not_told", про=sorted(відсутні)))
+    прийнято_речень = len(пояснення) + len(поради) + len(суд["unknown"]) + bool(рядок_вибору)
+    return dict(text=пояснення, advice=поради, action=[рядок_вибору] if рядок_вибору else [],
+                unknown=невідоме_картки(межа, суд["unknown"]),
+                names=назви, fallback=межа.запасні_рядки_картки()), розбіжності, прийнято_речень
+
+
+def _кадри_картки(дані, межа, фото, розбіжності):
+    """Переводить номери фактів кадрів і заміни в адреси лише після перевірки."""
+    схема_опису = схема("опис")["properties"]
+    хибні, заміна, оцінено = (), None, False
+    if фото or "wrong_photos" in дані:
+        try:
+            номери = дані.get("wrong_photos")
+            межа.тіло(json.dumps(номери, ensure_ascii=False))
+            _перевірити(номери, схема_опису["wrong_photos"], "wrong_photos")
+            адреси = tuple(dict.fromkeys(межа.адреса_речі(н) for н in номери))
+            if set(адреси) - set(фото):
+                raise _Невірне("wrong_photos", "fact has no delivered photo")
+            хибні, оцінено = адреси, True
+        except ІдУТілі as помилка:
+            розбіжності.append(dict(чому="pool_address" if помилка.збій.вид == "pool_address_in_body" else "wrong_photo_fact"))
+        except _Невірне:
+            розбіжності.append(dict(чому="wrong_photo_fact"))
+    if "swap" in дані:
+        try:
+            зміна = дані["swap"]
+            межа.тіло(json.dumps(зміна, ensure_ascii=False))
+            _перевірити(зміна, схема_опису["swap"], "swap")
+            забрати, взяти = зміна["item"], зміна.get("to")
+            адреса, кандидат = межа.адреса_речі(забрати), межа.адреса_речі(взяти)
+            if адреса not in хибні or кандидат is None or межа.факти[взяти]["state"] != КАНДИДАТ_ЗАМІНИ:
+                raise _Невірне("swap", "expected a flagged photo and candidate fact")
+            заміна = dict(зміна, item=адреса, to=кандидат)
+        except ІдУТілі as помилка:
+            розбіжності.append(dict(чому="pool_address" if помилка.збій.вид == "pool_address_in_body" else "swap_fact"))
+        except _Невірне:
+            розбіжності.append(dict(чому="swap_fact"))
+    return хибні, заміна, оцінено
+
+
+def текст_картки(відп, межа, склад, спроба, фото=()):
+    """Читає спільний вихід мовної моделі й звірку доставлених кадрів, коли вона була запитана."""
+    try:
+        дані = _дані(відп, "опис", спроба, усе_за_схемою=False)
+        if isinstance(дані, Збій):
+            return дані
+        речення, розбіжності, прийнято = _тексти_картки(дані, межа)
+        хибні, заміна, оцінено = _кадри_картки(дані, межа, фото, розбіжності)
+        номери = (н for н, ф in межа.факти.items() if ф["state"] == ПРЕДМЕТ)
+        речення["items"] = dict(zip((р["н"] for р in склад.речі), номери, strict=True))
+        return Опис(склад.образ, tuple(р["н"] for р in склад.речі), "", (), хибні, (),
+                    заміна, оцінено, речення, tuple(розбіжності), прийнято)
+    except (ValueError, TypeError) as помилка:
+        поле = помилка.поле if isinstance(помилка, _Невірне) else "response"
+        return Збій("схема", "розбір", поле, str(помилка), відп.get("текст"), спроба)
 
 
 def прочитати(відп, вид, пул, спроба=1, образи=(), образ=None, дозволені=None, відкинуті=None):

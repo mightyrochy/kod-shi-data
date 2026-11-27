@@ -1,0 +1,37 @@
+── ПРОМПТ (5424 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — назва в тексті н=2
+2 — назва в тексті н=3
+3 — назва в тексті н=4
+5 — назва в тексті н=5
+6 — назва в тексті н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "Fine-knit top: fitted crew-neck jumper, hip length, dove lilac-grey, merino-blend knit\n\nSkirt: pleated A-line midi, falling mid-calf, black, crepe with a soft sheen\n\nJacket: short boxy jacket with a slightly cropped length, charcoal, textured wool bouclé\n\nShoes: your white slingback flat sandals with a black lug sole, worn as they are, white faux leather\n\nBag: small structured top-handle bag, black, smooth leather\n\nEarrings: small hoop earrings, silver, polished metal\n\nWhy this outfit works: The neat social look of a refined knit, a skirt and a textured jacket suits a Saturday-evening birthday party without feeling stiff. The black skirt and the black lug sole of your sandals echo each other, so the white upper stands out as a fresh accent. The soft lilac-grey knit and the silver earrings, which match the buckle on your sandals, keep the palette cool and cohesive. The jacket adds warmth for an autumn evening, and the pleated midi gives you easy movement on the dance floor.",
+"2": "Fine-knit crew-neck jumper",
+"3": "Pleated A-line midi skirt",
+"4": "Short boxy jacket",
+"5": "Small structured top-handle bag",
+"6": "Small hoop earrings"
+}
+
+── ВІДПОВІДЬ (1344 симв., 17.6 с, HTTP 200) ──
+{"1":"Верх: тонкий приталений джемпер з круглим вирізом, довжиною до стегон, голубино-лілово-сірий, трикотаж зі сумішшю мериноса\n\nСпідниця: плісирована спідниця міді А-подібного крою, довжиною до середини литки, чорна, креп із м'яким блиском\n\nЖакет: короткий жакет прямого крою, трохи вкороченої довжини, вугільно-сірий, фактурне вовняне букле\n\nВзуття: твої білі пласкі сандалі з ремінцем навколо п'ятки та чорною рифленою підошвою, у такому вигляді, як є, біла штучна шкіра\n\nСумка: невелика структурована сумка з верхньою ручкою, чорна, гладка шкіра\n\nСережки: невеликі сережки-кільця, срібні, полірований метал\n\nЧому цей образ працює: охайний святковий вигляд вишуканого трикотажу, спідниці та фактурного жакета пасує до вечірнього дня народження в суботу й не здається скутим. Чорна спідниця та чорна підошва твоїх сандалій перегукуються, тому біла верхня частина виділяється свіжим акцентом. М'який лілово-сірий трикотаж і срібні сережки, що пасують до пряжки на твоїх сандаліях, тримають палітру прохолодною та цілісною. Жакет додає тепла осіннього вечора, а плісирована спідниця міді дає тобі легкість рухів на танцполі.","2":"Тонкий джемпер з круглим вирізом","3":"Плісирована спідниця міді А-подібного крою","4":"Короткий жакет прямого крою","5":"Невелика структурована сумка з верхньою ручкою","6":"Невеликі сережки-кільця"}

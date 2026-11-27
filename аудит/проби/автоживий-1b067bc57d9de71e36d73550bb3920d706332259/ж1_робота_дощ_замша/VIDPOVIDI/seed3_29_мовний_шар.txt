@@ -1,0 +1,53 @@
+── ПРОМПТ (6554 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: suit · about it: text н=1
+2 — kind: dress_shoes · about it: text н=2
+3 — kind: coat · about it: text н=3
+4 — kind: tote · about it: text н=4
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This tailored suit provides the structure and professional polish you need for your office day, its clean lines creating a streamlined silhouette that carries you confidently.",
+"2": "The pumps are chosen for their elegance and fit within your colour palette, offering a graceful finish to the outfit that matches the formality of your work occasion.",
+"3": "The coat is essential for protection against the rain you mentioned for all day; its wool fabric ensures warmth and keeps you dry while maintaining a relaxed, chic shape over your suit.",
+"4": "Your tote bag completes the ensemble with a versatile dark tone that matches your palette perfectly, offering ample space for your work essentials as you walk to and from the office.",
+"5": "Your black suit offers a sharp, professional foundation for your walk to work on rainy days. The wool coat adds the necessary warmth and protection against the wet weather, while the burgundy pumps bring a sophisticated pop of colour that complements your neutral palette. Your dark leather tote grounds the look, providing practical storage without weighing you down as you move through the city.",
+"6": "Wear the coat open to keep the suit's line visible and allow air circulation if the rain lessens during your commute.",
+"7": "Жіноче вовняне пальто бежеве з англійським коміром и ґудзиками Stella Polare — This camel coat is added as a rain layer to satisfy your need for protection against the entire day's rain, preventing your inner suit from getting wet.",
+"8": "LeBERDES Туфлі бордові — Burgundy patent loafers replace the missing shoes to ground the monochrome look, adding a bold accent that stands out against the grey rain and fulfills your wish for color.",
+"9": "Костюм штани прямі + піджак прямий чорний, LeBERDES Туфлі бордові — The code points out a chroma gap between your black suit and red shoes; I embrace this gap as a deliberate design choice that elevates the outfit from plain to polished, ensuring you stand out as a creative professional in the rain.",
+"10": "Жіноче вовняне пальто бежеве з англійським коміром и ґудзиками Stella Polare — This camel coat is added as a rain layer to satisfy your need for protection against the entire day's rain, ensuring you stay dry while walking."
+}
+
+── ВІДПОВІДЬ (2320 симв., 14.5 с, HTTP 200) ──
+```json
+{
+"1": "Цей приталений костюм дає тобі ту структуру та професійний вигляд, які потрібні для твого робочого дня. Його чіткі лінії створюють стрункий силует, який впевнено несе тебе.",
+"2": "Туфлі-човники обрані за їхню елегантність і гармонійно поєднуються з твоєю кольоровою палітрою. Вони завершують образ витонченим акцентом, що відповідає урочистості твого робочого заходу.",
+"3": "Пальто необхідне для захисту від дощу, який ти згадала на весь день. Його вовняна тканина забезпечує тепло та тримає тебе в сухості, зберігаючи при цьому розслаблений і стильний силует над твоїм костюмом.",
+"4": "Твоя сумка-тоут завершує ансамбль універсальним темним тоном, який чудово поєднується з твоєю палітрою. Вона пропонує достатньо місця для всіх необхідних речей на роботі під час твого шляху до та від офісу.",
+"5": "Твій чорний костюм дає тобі гостру професійну основу для прогулянки на роботу в дощові дні. Вовняне пальто додає потрібного тепла і захисту від вологої погоди, а бордові туфлі-човники привносять вишуканий колірний акцент, який гармонує з твоєю нейтральною палітрою. Твоя темна шкіряна сумка-тоут завершує образ, забезпечуючи практичне зберігання без зайвого обтяження під час пересування містом.",
+"6": "Одягни пальто розстебнутим, щоб зберегти лінію костюма та дозволити циркуляцію повітря, якщо дощ послабиться під час твоєї поїздки.",
+"7": "Жіноче вовняне бежеве пальто з англійським коміром і ґудзиками Stella Polare — Це кемелове пальто додається як захисний шар від дощу на весь день, щоб запобігти промоканню твого внутрішнього костюма.",
+"8": "LeBERDES Бордові лофери — Бордові лаковані лофери замінюють відсутнє взуття, щоб завершити монохромний образ і додати сміливий акцент, який виділяється на тлі сірого дощу та відповідає твоєму бажанню мати колір.",
+"9": "Костюм: прямі штани + прямий піджак чорного кольору, LeBERDES Бордові лофери — Код вказує на різницю між хроматикою твого чорного костюма та червоних туфель; я сприймаю цю різницю як свідомий дизайнерський вибір, який робить образ не просто стильним, а й елегантним, гарантуючи тобі увагу креативного професіонала в дощ.",
+"10": "Жіноче вовняне бежеве пальто з англійським коміром і ґудзиками Stella Polare — Це кемелове пальто додається як захисний шар від дощу на весь день, щоб ти залишалася сухою під час прогулянки."
+}
+```

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "claude-sonnet-5-5",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Silk satin wrap dress, V-neck, sleeveless with a defined waist and a softly flared skirt, midi length falling below the calf, deep sage green #4F6F62, silk satin\\nHeeled sandals, ankle strap, block heel, open toe, warm sand #C9A27E, smooth leather\\nEnvelope clutch, small, champagne #D9C3A0, satin\\nDrop earrings, slim and elongated, polished gold #C8A24A, metal\\nThin bracelet, delicate chain, polished gold #C8A24A, metal\\n\\nWhy this outfit works: The silk satin wrap dress meets the formal level expected of a wedding guest, and the midi length keeps it elegant and easy to move in on an outdoor ceremony lawn. Bare arms are the only open area, which keeps it graceful in August warmth without feeling revealing, and no outer layer is needed. The deep sage green echoes the grey-green of your eyes and flatters your warm skin and golden hair, while staying clear of white and bridal tones. Block heels give stability on grass and carry you comfortably into the restaurant, and the soft gold and champagne accents add a festive glow that suits late-afternoon light.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "claude:sonnet"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"is_outfit\\\":\\\"yes\\\",\\\"items\\\":[{\\\"name\\\":\\\"Wrap dress\\\",\\\"details\\\":\\\"V-neck, sleeveless, defined waist, softly flared skirt, midi length falling below the calf, silk satin\\\",\\\"slot\\\":\\\"dress\\\",\\\"color_hex\\\":\\\"#4F6F62\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Heeled sandals\\\",\\\"details\\\":\\\"Ankle strap, block heel, open toe, smooth leather\\\",\\\"slot\\\":\\\"shoes\\\",\\\"color_hex\\\":\\\"#C9A27E\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Envelope clutch\\\",\\\"details\\\":\\\"Small, satin\\\",\\\"slot\\\":\\\"bag\\\",\\\"color_hex\\\":\\\"#D9C3A0\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Drop earrings\\\",\\\"details\\\":\\\"Slim and elongated, metal\\\",\\\"slot\\\":\\\"earrings\\\",\\\"color_hex\\\":\\\"#C8A24A\\\",\\\"worn\\\":true},{\\\"name\\\":\\\"Thin bracelet\\\",\\\"details\\\":\\\"Delicate chain, metal\\\",\\\"slot\\\":\\\"bracelet\\\",\\\"color_hex\\\":\\\"#C8A24A\\\",\\\"worn\\\":true}]}\"}],\"usage\":{\"input_tokens\":2066,\"output_tokens\":314},\"stop_reason\":\"end_turn\"}"
+ }
+}
