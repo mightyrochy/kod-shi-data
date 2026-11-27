@@ -678,6 +678,8 @@ class Річ_МісцеІзЗапису(unittest.TestCase):
         self.assertEqual([р["kind"] for р in рядки.values()], ["outerwear"])
         рядок, = рядки.values()
         self.assertEqual(рядок["sources"]["kind"], {"source": "фото"})
+        без = Річ_КолірМітка.пул([жакет], перемикачі={"записи_речі": "без"})
+        self.assertEqual([р["kind"] for р in без.values()], ["top"])
 
 
 class Річ_КолірМітка(unittest.TestCase):
@@ -687,13 +689,13 @@ class Річ_КолірМітка(unittest.TestCase):
     нового виду (`мітки_речі`), записаним тестом, і сцена с5 ядра; вихід — рядки пулу запиту складання."""
 
     @staticmethod
-    def пул(каталог):
+    def пул(каталог, **зміни):
         from types import SimpleNamespace
 
         from ядро.тести import обвязка
 
         протокол = SimpleNamespace(виклик=lambda запит: bridge.виклик("ядро", запит))
-        вихід = обвязка.почати(протокол, обвязка.вхід_с5(каталог=каталог))
+        вихід = обвязка.почати(протокол, обвязка.вхід_с5(каталог=каталог, **зміни))
         запит = next(з for з in вихід["запити"] if з["вид"] == "складання")
         пул = json.loads(запит["модель"]["messages"][0]["content"])["pool"]
         return {р[0]: dict(zip(пул["cols"], р)) for р in пул["rows"]}
