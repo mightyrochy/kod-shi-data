@@ -539,6 +539,7 @@ jobs:
       - name: храповик і відомі червоні звірки
         run: |
           node аудит/проби/перевірити_храповик.js
+          node аудит/проби/перевірити_підсумок_відтворення.js
           node аудит/проби/перевірити_нову_базу.js
           node аудит/проби/перевірити_живий_після_злиття.js
       - name: записані сцени через продукт
@@ -548,6 +549,7 @@ jobs:
           NODE_PATH: джерела/node_modules
           REPLAY_BASE_BUILD: ${{ runner.temp }}/main-pokaz
           REPLAY_BASE_ROOT: ${{ runner.temp }}/main-replay
+          REPLAY_MATRIX_SUMMARY: ${{ runner.temp }}/replay-summary.json
         run: |
           node аудит/проби/приймання_записів.js "${RUNNER_TEMP}/pokaz" "${RUNNER_TEMP}/pyodide" \
             "${RUNNER_TEMP}/replay" ${{ matrix.chastyna }} 2
@@ -560,6 +562,43 @@ jobs:
           path: ${{ runner.temp }}/replay
           if-no-files-found: error
           retention-days: 7
+
+      - name: підсумок частини записаних сцен
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: replay-summary-${{ matrix.chastyna }}-${{ github.sha }}
+          path: ${{ runner.temp }}/replay-summary.json
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 7
+
+  pidsumok_pryimannia:
+    name: підсумок записаних сцен через продукт
+    needs: pryimannia
+    if: ${{ !cancelled() && needs.pryimannia.result != 'skipped' }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.pislia }}
+          sparse-checkout: /аудит/проби/підсумок_відтворення.js
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: replay-summary-*-${{ github.sha }}
+          path: ${{ runner.temp }}/replay-summary
+      - name: звірити всі частини записаних сцен
+        run: |
+          node аудит/проби/підсумок_відтворення.js \
+            "${RUNNER_TEMP}/replay-summary/replay-summary-0-${GITHUB_SHA}/replay-summary.json" \
+            "${RUNNER_TEMP}/replay-summary/replay-summary-1-${GITHUB_SHA}/replay-summary.json"
 
   rozdily:
     permissions:
@@ -654,8 +693,8 @@ jobs:
     permissions:
       contents: read
     name: зібрати показ-повний
-    needs: [zminy, perevirka, rozdily, pryimannia]
-    if: ${{ !cancelled() && needs.zminy.result == 'success' && (needs.zminy.outputs.produkt == 'false' || (needs.perevirka.result == 'success' && needs.rozdily.result == 'success' && needs.pryimannia.result == 'success')) }}
+    needs: [zminy, perevirka, rozdily, pryimannia, pidsumok_pryimannia]
+    if: ${{ !cancelled() && needs.zminy.result == 'success' && (needs.zminy.outputs.produkt == 'false' || (needs.perevirka.result == 'success' && needs.rozdily.result == 'success' && needs.pryimannia.result == 'success' && needs.pidsumok_pryimannia.result == 'success')) }}
     runs-on: ubuntu-latest
     steps:
       # Легкий шлях (продукт не змінено) кроків не має: checkout дерева в 3 ГБ — ~0,9 хв на шляху документного PR.

@@ -12,7 +12,7 @@ if (process.env.RATCHET_PROBE) {
     const тека = параметри.env.ZNIMKY;
     const id = path.basename(path.dirname(path.dirname(параметри.env.REPLAY_EXCHANGE)));
     fs.mkdirSync(тека, {recursive: true});
-    const завершено = базовий && варіант.нова;
+    const завершено = (базовий && варіант.нова) || id === варіант.завершена;
     const запит = базовий ? {model: 'зразок', messages: [{content: id, role: 'user'}]}
       : {messages: [{role: 'user', content: варіант.іншийВхід ? id + ' змінено' : id}], model: 'зразок'};
     if (завершено)
@@ -21,7 +21,8 @@ if (process.env.RATCHET_PROBE) {
       fs.writeFileSync(path.join(тека, 'помилка_відтворення.json'), JSON.stringify({
         код: 'REPLAY_STALE', виклик: базовий ? 7 : варіант.виклик, причина: 'запис застарів',
         ...(!(базовий ? варіант.безВходуБази : варіант.безВходу) ? {запит} : {})}));
-    const лог = (!базовий && варіант.регрес ? '  ✗ зелена зразкова звірка' : '  ✔ зелена зразкова звірка') +
+    const регрес = !базовий && (варіант.регрес === true || варіант.регрес === id);
+    const лог = (регрес ? '  ✗ зелена зразкова звірка' : '  ✔ зелена зразкова звірка') +
       '\n  ✗ відома червона звірка\n';
     fs.writeSync(параметри.stdio[1], лог);
     return {status: завершено ? 1 : 3};
