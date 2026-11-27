@@ -27,7 +27,8 @@ for f in sorted(glob.glob("*.py")):
 print("читачі поля `наповнювач` (get / [] / атрибут) поза feed і приладами:", читачі or "НІКОГО")
 
 import fit as F  # noqa: E402
-import outer as O  # noqa: E402
+import верхнє_суд as O  # noqa: E402
+from суд_погода import теплова_функція  # noqa: E402
 
 T = F.тіло(168.0, dict(плечі=96, груди=92, талія=76, стегна=98))
 
@@ -57,7 +58,7 @@ def знахідки(x, акум):
 відбитки = {}
 for нап in ("ВІДСУТНЄ", None, False, "синтепон", "пух"):
     з = sorted(set(знахідки(O.перевірити(речі(нап), тіло=T, темп_c=-5.0), [])), key=str)
-    тф = json.dumps(O.теплова_функція(речі(нап)), ensure_ascii=False, sort_keys=True, default=str)
+    тф = json.dumps(теплова_функція(речі(нап)), ensure_ascii=False, sort_keys=True, default=str)
     відбитки[нап] = (з, тф)
     print("наповнювач=%-10r → знахідок %d · теплова_функція %s" % (нап, len(з), тф[:90]))
 однакові = len({json.dumps(v, ensure_ascii=False, default=str) for v in відбитки.values()}) == 1

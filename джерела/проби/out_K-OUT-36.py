@@ -20,7 +20,7 @@
 import sys, pathlib, json
 _КОРІНЬ = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_КОРІНЬ))
-import feed as Ф, bridge as B, outer as OU
+import feed as Ф, bridge as B, верхнє_стан as OU
 
 with open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8") as файл:
     вх = json.load(файл)

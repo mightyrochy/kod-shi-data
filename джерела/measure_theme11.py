@@ -13,7 +13,7 @@
   Проба НЕ каже, чи правило застосоване ПРАВИЛЬНО. Тільки чи взагалі може.
 """
 import itertools
-import outer as ВШ
+import верхнє_суд as ВШ
 import fit as ПС
 import trace as _СЛ
 

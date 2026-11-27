@@ -26,7 +26,7 @@ import реєстр_правил as _РЕЄСТР
 import колір_річ as _КР
 import місце_речі as _МІСЦЕ
 import brief as _Б
-import outer as _ВШ
+import верхнє_стан as _ВШ
 import суд_погода as _ПОГ
 import назва_речі as _НР
 import суд_від_моделі as _СВМ
