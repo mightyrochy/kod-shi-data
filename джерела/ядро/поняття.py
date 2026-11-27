@@ -399,6 +399,7 @@ class Картка(_Поняття):
     невідоме: tuple = ()
     про_речі_en: tuple = ()
     свідомі: tuple = ()
+    речення: dict | None = None
     збій_опису: object = None
     збій: Збій = None
     дія_для_вибору: dict | None = None
