@@ -217,6 +217,7 @@ class Ядро_Обіцянка9(unittest.TestCase):
         from types import SimpleNamespace
 
         from ядро import ситуація
+        from ядро.поняття import Картка
         from ядро.тести import обвязка, ситуації
         from ядро.тести.тест_н2 import _запис
         from ядро.тести.тест_н3 import _складач
@@ -231,9 +232,10 @@ class Ядро_Обіцянка9(unittest.TestCase):
             with self.subTest(портрет=bool(профіль)):
                 вхід = обвязка.вхід_с5(каталог=каталог, ситуація=день.в_json(), профіль=профіль)
                 вихід, _ = обвязка.прогнати(протокол, вхід, _складач)
-                картка, = (к for к in вихід["картки"] if к["рука"] == 1)
-                self.assertIsNone(картка["збій"])
-                дія = картка.get("дія_для_вибору")
+                дані, = (к for к in вихід["картки"] if к["рука"] == 1)
+                картка = Картка.з_json(дані)
+                self.assertIsNone(картка.збій)
+                дія = getattr(картка, "дія_для_вибору", None)
                 if профіль:
                     self.assertIsNone(дія)
                 else:
