@@ -3,7 +3,8 @@
 (`дані/вибірка.json`) через `claude -p` за підпискою — той самий транспорт, що в #4769 (`запис-речі-вибірка-300/скрипти/
 прохід_новий.py`). Промпт — `запис_речі.промпт` з одного визначення міток ядра; слова крамниці й таблиця мірок —
 `вхід.поля_крамниці` проби 300; фото — уся галерея варіанта (до 8 кадрів, /tmp/колір-с5/модель від `фото.py`).
-Запуск з кореня: python3 аудит/проби/запис-речі-колір-с5/скрипти/прохід.py <модель> <журнал.jsonl> [паралельно]"""
+Запуск з кореня: python3 аудит/проби/запис-речі-колір-с5/скрипти/прохід.py <модель> <журнал.jsonl> [паралельно]
+`ЛИШЕ_ОЧИМА=1` — лише 60 речей огляду очима (повтор (а) після поправки визначення за перевіркою: журнали `*_2.jsonl`, після другої поправки — `*_3.jsonl`; `ЗУСИЛЛЯ=high` — зусилля моделі, журнал `sonnet_3_high.jsonl`)."""
 import base64, glob, gzip, json, os, subprocess, sys, tempfile, threading
 from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, "аудит/проби/запис-речі-вибірка-300/скрипти"); sys.path.insert(0, "джерела")
@@ -34,7 +35,7 @@ def один(в):
     з = {"ід": ід, "модель": МОДЕЛЬ, "фото": len(фото)}
     for спроба in range(3):
         try:
-            п = subprocess.run([БІН, "-p", "--model", МОДЕЛЬ, "--effort", "low", "--tools", "", "--strict-mcp-config", "--no-session-persistence",
+            п = subprocess.run([БІН, "-p", "--model", МОДЕЛЬ, "--effort", os.environ.get("ЗУСИЛЛЯ", "low"), "--tools", "", "--strict-mcp-config", "--no-session-persistence",
                                 "--input-format", "stream-json", "--output-format", "stream-json", "--verbose", "--system-prompt", системний],
                                input=вхід, capture_output=True, text=True, timeout=600, cwd=ТЕКА,
                                env=dict(os.environ, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"))
@@ -54,6 +55,6 @@ def один(в):
             з.update({"статус": "збій", "помилка": f"{type(e).__name__}: {e}"[:300]})
     with замок, open(ЖУРНАЛ, "a", encoding="utf-8") as ф: ф.write(json.dumps(з, ensure_ascii=False) + "\n")
     return з["статус"]
-рядки = [в for в in ВИБ if в["ід"] not in готові][: int(os.environ.get("СКІЛЬКИ", 10**9))]
+рядки = [в for в in ВИБ if в["ід"] not in готові and (not os.environ.get("ЛИШЕ_ОЧИМА") or в.get("очима"))][: int(os.environ.get("СКІЛЬКИ") or 10**9)]
 with ThreadPoolExecutor(ПАР) as п: підсумок = list(п.map(один, рядки))
 print(МОДЕЛЬ, "зроблено", підсумок.count("ok"), "збоїв", len(підсумок) - підсумок.count("ok"), "готових раніше", len(готові))
