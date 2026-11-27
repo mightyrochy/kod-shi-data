@@ -17,7 +17,7 @@ success»), і її знімуть тим самим PR.
 
 Прогін (з теки `джерела`):  python3 -m unittest -v тест_інваріанти     (~20 с, офлайн)
 """
-import sys, os, json, re, tempfile, unittest
+import sys, os, json, re, subprocess, tempfile, unittest
 import xml.etree.ElementTree as ET
 
 ТУТ = os.path.dirname(os.path.abspath(__file__))
@@ -1364,7 +1364,30 @@ console.log(JSON.stringify(результат));
         self.assertNotIn(self.ДІЯ, показ["невідоме"])
 
 
+class Н7_ПрофільПалітра(unittest.TestCase):
+    def test_перші_чипи_й_сходинка_без_старого_шляху(self):
+        from міст_основи import чипи, помади
+
+        код = """
+import importlib, json, sys
+from ядро.тести.тест_будова import ЗАМІННІ
+модуль, імʼя, вхід = sys.argv[1:]
+результат = getattr(importlib.import_module(модуль), імʼя)(вхід)
+print(json.dumps([json.loads(результат), sorted(ЗАМІННІ & sys.modules.keys())]))
+"""
+        with open("стенд_вх.json", encoding="utf-8") as файл:
+            профіль = файл.read()
+        for функція, вхід, поле in ((чипи, профіль, "шкіра"), (помади, "{}", "сходинки")):
+            with self.subTest(імʼя=функція.__name__):
+                # Фасад моста змінюється в частині Ґ. Тут викликаємо визначення ендпойнта.
+                відповідь, модулі = json.loads(subprocess.check_output(
+                    [sys.executable, "-c", код, функція.__module__, функція.__name__, вхід], text=True))
+                self.assertTrue(відповідь[поле])
+                self.assertEqual(модулі, [])
+
+
 ТЕСТИ = (
+    Н7_ПрофільПалітра.test_перші_чипи_й_сходинка_без_старого_шляху,
     Е2_НевідомеНаКартціОцінки.test_невідоме_доходить_до_відкритої_картки,
     Е2_ВтратаСлова.test_слово_з_розмови_дійшло_до_запиту_стилістці,
     Е2_ВтратаСлова.test_відмова_яку_код_не_взяв_видна_як_не_взята,

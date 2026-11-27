@@ -26,8 +26,7 @@ from колір_простір_надійність import ДЖЕРЕЛО_ФОТ
 from реєстр_правил import ТИПОВИЙ_НАМІР
 import colorspace as cs
 import колір_тон as _КТ   # визначення кола: різниця й середина, зсув, нормування, перетин дуг
-from colorspace import reliability, MIN_TO_EMIT
-import колір_образу as _КОЛІР
+from колір_простір_надійність import reliability, MIN_TO_EMIT
 import місце_речі as _МІСЦЕ
 import face_features as _ОБ
 from палітра_схеми import (ЯКІРНІ_СЛОТИ, ВІДНОШЕННЯ_СХЕМИ, звірити_відношення,
