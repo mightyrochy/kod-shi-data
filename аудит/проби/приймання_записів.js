@@ -204,6 +204,8 @@ function виконати() {
     console.log('Частина без сцен: ' + частина + '/' + частин);
     fs.writeFileSync(path.join(вихід, 'підсумок.json'), '[]\n');
   }
+  if (process.env.REPLAY_MATRIX_SUMMARY)
+    fs.writeFileSync(process.env.REPLAY_MATRIX_SUMMARY, JSON.stringify(підсумок) + '\n');
 }
 
 if (require.main === module) {

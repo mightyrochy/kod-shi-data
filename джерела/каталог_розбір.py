@@ -66,6 +66,7 @@ color_name, length, shaft), крій — із `силует_крої.КРОЇ`. 
 ФРАГМЕНТІВ, кожен із цитатою: фрагмент, чия цитата не тримається, випадає (`invented`).
 Відтінок кольору в рядку лишається (власник 01.10, аудит/ПРОДУКТ.md п.16: заборону К-5 скасовано).
 """
+import slots as _СЛОТИ
 import json
 import os
 import re
@@ -245,27 +246,21 @@ class Мірка(tuple):
 # інакше — "unknown" і рядок `invented` (`_поля_нема`). Таблиця — кошик А (п.12): коди слота й типу
 # → поле, слів не читає. Невідомий слот — поля могло й бути, тож теж "unknown". «Аксесуар»
 # (`accessory`) — не названий вид, у таблиці його нема ніде. Та сама таблиця пише правило промпта.
-_ПРИКРАСИ = ("jewelry", "earrings", "collar_necklace", "necklace", "brooch", "bracelet", "ring", "watch")
-_ДРІБНЕ = ("scarf", "headwear", "belt", "tights", "socks", "glasses", "gloves")
-_ПОЗА_ВЗУТТЯМ = tuple(к for к in ВМ.ТАБЛИЦЯ["slot"] if к not in ("shoes", "accessory"))
+_ПОЗА_ВЗУТТЯМ = tuple(к for к in ВМ.ТАБЛИЦЯ["slot"] if к not in _СЛОТИ.КОДИ_ВИНЯТКІВ_З_ПОЛІВ_КАТАЛОГУ)
 # Взуття без халяви — типи слота shoes, крім чобіт і черевиків (`внутрішня_мова.СЛОТ_ТИПУ`).
 _БЕЗ_ХАЛЯВИ = ("ballet_flats", "mules", "espadrilles", "pumps", "dress_shoes", "moccasins", "loafers",
                "sneakers", "plimsolls", "heeled_sandals", "sandals")
-_БЕЗ_РУКАВА = ("bottom", "shoes", "bag") + _ПРИКРАСИ + _ДРІБНЕ
-_БЕЗ_КРОЮ = ("shoes", "bag") + _ПРИКРАСИ + _ДРІБНЕ
-_БЕЗ_ТКАНИНИ = _ПРИКРАСИ + ("glasses", "shoes", "bag", "belt")
 # Ворс, хутро, простібка, утеплювач і застібка бувають і на взутті та сумках; їх нема лише в
 # прикрас, окулярів і тонкого (колготи, шкарпетки).
-_ТВЕРДЕ_Й_ТОНКЕ = _ПРИКРАСИ + ("glasses", "tights", "socks")
 _ЛИШЕ = lambda *слоти: frozenset(к for к in ВМ.ТАБЛИЦЯ["slot"] if к not in слоти + ("accessory",))
 НЕМА_ПОЛЯ = {
     # тканину взуття, сумки й паска несе `material` (опис поля), тканини прикрас і окулярів нема
-    "fabric": frozenset(_БЕЗ_ТКАНИНИ),
-    "material": frozenset(к for к in _ПОЗА_ВЗУТТЯМ if к not in ("bag", "belt")),
-    "cut": frozenset(_БЕЗ_КРОЮ),
-    "length": frozenset(_БЕЗ_КРОЮ),     # у взуття — `shaft`
-    "sleeve": frozenset(_БЕЗ_РУКАВА),
-    "neckline": frozenset(_БЕЗ_РУКАВА),
+    "fabric": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_ТКАНИНИ),
+    "material": frozenset(к for к in _ПОЗА_ВЗУТТЯМ if к not in _СЛОТИ.КОДИ_ПОЛЯ_МЕТАЛУ),
+    "cut": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_КРОЮ),
+    "length": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_КРОЮ),     # у взуття — `shaft`
+    "sleeve": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_РУКАВА),
+    "neckline": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_РУКАВА),
     "vamp": frozenset(_ПОЗА_ВЗУТТЯМ),
     "shaft": frozenset(_ПОЗА_ВЗУТТЯМ + _БЕЗ_ХАЛЯВИ),
     "heel.present": frozenset(_ПОЗА_ВЗУТТЯМ),
@@ -273,22 +268,22 @@ _ЛИШЕ = lambda *слоти: frozenset(к for к in ВМ.ТАБЛИЦЯ["slot
     "heel.shape": frozenset(_ПОЗА_ВЗУТТЯМ),
     "heel.height": frozenset(_ПОЗА_ВЗУТТЯМ),
     # рядки 6425–6428
-    "fabric_kind": frozenset(_БЕЗ_ТКАНИНИ),
-    "texture": frozenset(_ПРИКРАСИ + ("glasses",)),
-    "elastane_pct": frozenset(_БЕЗ_ТКАНИНИ),
-    "wool_pct": frozenset(_БЕЗ_ТКАНИНИ),
-    "length_cm": frozenset(_БЕЗ_КРОЮ),
-    "sleeve_cut": frozenset(_БЕЗ_РУКАВА),
-    "collar": frozenset(_БЕЗ_РУКАВА),
-    "closure": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
-    "breasted": frozenset(_БЕЗ_РУКАВА),
-    "belt": frozenset(_БЕЗ_КРОЮ),
-    "elastic_waist": frozenset(_БЕЗ_КРОЮ),
-    "hood": frozenset(_БЕЗ_КРОЮ),
-    "fur_trim": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
-    "pile": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
-    "quilted": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
-    "filling": frozenset(_ТВЕРДЕ_Й_ТОНКЕ),
+    "fabric_kind": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_ТКАНИНИ),
+    "texture": frozenset(_СЛОТИ.КОДИ_ЮВЕЛІРНИХ_СЛОТІВ + ("glasses",)),
+    "elastane_pct": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_ТКАНИНИ),
+    "wool_pct": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_ТКАНИНИ),
+    "length_cm": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_КРОЮ),
+    "sleeve_cut": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_РУКАВА),
+    "collar": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_РУКАВА),
+    "closure": frozenset(_СЛОТИ.КОДИ_ТВЕРДИХ_І_ТОНКИХ_СЛОТІВ),
+    "breasted": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_РУКАВА),
+    "belt": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_КРОЮ),
+    "elastic_waist": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_КРОЮ),
+    "hood": frozenset(_СЛОТИ.КОДИ_СЛОТІВ_БЕЗ_КРОЮ),
+    "fur_trim": frozenset(_СЛОТИ.КОДИ_ТВЕРДИХ_І_ТОНКИХ_СЛОТІВ),
+    "pile": frozenset(_СЛОТИ.КОДИ_ТВЕРДИХ_І_ТОНКИХ_СЛОТІВ),
+    "quilted": frozenset(_СЛОТИ.КОДИ_ТВЕРДИХ_І_ТОНКИХ_СЛОТІВ),
+    "filling": frozenset(_СЛОТИ.КОДИ_ТВЕРДИХ_І_ТОНКИХ_СЛОТІВ),
     "heel.height_cm": frozenset(_ПОЗА_ВЗУТТЯМ),
     "sole": frozenset(_ПОЗА_ВЗУТТЯМ),
     "shoe_width": frozenset(_ПОЗА_ВЗУТТЯМ),
@@ -306,7 +301,7 @@ _ЛИШЕ = lambda *слоти: frozenset(к for к in ВМ.ТАБЛИЦЯ["slot
 # допустимі коди металу чи каменю, а таких у ньому нема: метал — окреме поле `metal`. Текстильний код
 # каблучки ж-11728 («жовте золото 750») і сережки ж-11794 («срібло 925») — не слова з тексту, а
 # заповнювач тиші, і сторож цитат його не ловить: підрядок доводить, що слова є, не що вони кажуть цей код.
-ДОПУСТИМІ_КОДИ = {"material": {слот: frozenset() for слот in _ПРИКРАСИ}}
+ДОПУСТИМІ_КОДИ = {"material": {слот: frozenset() for слот in _СЛОТИ.КОДИ_ЮВЕЛІРНИХ_СЛОТІВ}}
 assert set(ДОПУСТИМІ_КОДИ) <= {ш for ш, _, _ in ПОЛЯ}, "поле таблиці — серед ПОЛЯ"
 assert all(к in ВМ.ТАБЛИЦЯ["slot"] for за_слотом in ДОПУСТИМІ_КОДИ.values() for к in за_слотом)
 # Тип — другий рід `not_applicable` (6755): слова називають тип, а коду в переліку нема. Таблиці
