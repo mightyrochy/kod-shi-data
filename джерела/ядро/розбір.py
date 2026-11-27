@@ -3,6 +3,7 @@ from dataclasses import dataclass, replace
 import json
 from pathlib import Path
 
+from межа_текстів import ПРЕДМЕТ
 from .поняття import Образ, Збій, НЕВІДОМО
 
 НАРЯД = None
@@ -25,11 +26,29 @@ class Опис:
     про_речі: tuple
     заміна: dict | None = None
     кадри_оцінено: bool = False
+    речення: dict | None = None
+    розбіжності: tuple = ()
 
 
 def схема(вид):
     """Повертає схему, з якої також будується вимога формату запиту."""
     return _СХЕМИ[_ВИДИ[вид]]
+
+
+def схема_тексту_картки(фото=False):
+    """Додає до договору текстів лише ті поля, які потрібні для звірки фото."""
+    рядок = {"type": "string", "minLength": 1}
+    номери = {"type": "object", "properties": {}, "required": [], "additionalProperties": рядок}
+    речення = {"type": "object", "properties": {"about": номери, "says": рядок},
+               "required": ["about", "says"], "additionalProperties": False}
+    список = {"type": "array", "items": речення, "minItems": 0}
+    поля = {к: список for к in ("text", "advice", "unknown")}
+    поля["names"] = номери
+    обовʼязкові = list(поля)
+    if фото:
+        поля.update({к: схема("опис")["properties"][к] for к in ("wrong_photos", "swap")})
+        обовʼязкові.append("wrong_photos")
+    return {"type": "object", "properties": поля, "required": обовʼязкові, "additionalProperties": False}
 
 
 class _Невірне(ValueError):
@@ -62,9 +81,10 @@ def _перевірити(значення, опис, поле):
                 raise _Невірне(f"{поле}{ключ}", "missing field", вид)
         for ключ, в in значення.items():
             адреса = f"{поле}{ключ}"
-            if ключ not in поля:
+            правило = поля.get(ключ, опис.get("additionalProperties"))
+            if not isinstance(правило, dict):
                 raise _Невірне(адреса, "field outside schema")
-            _перевірити(в, поля[ключ], адреса + "." if isinstance(в, dict) else адреса)
+            _перевірити(в, правило, адреса + "." if isinstance(в, dict) else адреса)
 
 
 def _обʼєкт(пари):
@@ -77,7 +97,7 @@ def _обʼєкт(пари):
     return д
 
 
-def _дані(відп, вид, спроба):
+def _дані(відп, вид, спроба, договір=None):
     """Розпаковує JSON-об'єкт або повертає діагноз відповіді."""
     if "збій" in відп:
         з = відп["збій"]
@@ -90,7 +110,7 @@ def _дані(відп, вид, спроба):
                     секунди=з.get("секунди"), спроба=спроба)
     текст = відп.get("текст", "")
     дані = json.loads(текст, object_pairs_hook=_обʼєкт)
-    _перевірити(дані, схема(вид), "")
+    _перевірити(дані, договір or схема(вид), "")
     return дані
 
 
@@ -180,6 +200,63 @@ def _опис(дані, образ):
     пояснення = {рядок["n"]: рядок["text"] for рядок in про_речі}
     return Опис(образ.ід, склад, дані["text"], tuple(дані.get("how_to_wear", ())),
                 фото_не_те, tuple((н, пояснення[н]) for н in склад), дані.get("swap"), "wrong_photos" in дані)
+
+
+def невідоме_картки(межа, речення=()):
+    """Повертає рядки з темами тих самих фактів на випадок пропуску або збою показу."""
+    рядки, _, _ = межа.рядки_невідомого(речення, ("held",), формат="Не вдалося перевірити {тема}.", з_номерами=True)
+    return рядки
+
+
+def _тексти_картки(дані, межа):
+    """Звіряє опори, зберігає поділ на пояснення, поради та невідоме."""
+    суд = межа.судити(дані)
+    розбіжності = [з for з in суд["відкинуто"] if з["чому"] != "facts_not_told"]
+    предмети = {н for н, ф in межа.факти.items() if ф["state"] == ПРЕДМЕТ}
+    стан_дії = "palette_scheme_needs_portrait"
+    пояснення = [р for р in суд["text"] if стан_дії not in р["about"].values()]
+    дія = next((р for р in суд["text"] if стан_дії in р["about"].values()), None)
+    поради = [р for р in суд["advice"] if предмети.intersection(р["about"])]
+    if len(поради) != len(суд["advice"]):
+        розбіжності.append(dict(чому="advice_item_missing"))
+    назви = {н: назва for н, т in дані["names"].items()
+             if н in предмети and межа.факти[н].get("needs_name") and (назва := межа.назва_речі(т))}
+    для_назви = {н for н in предмети if межа.факти[н].get("needs_name")}
+    if для_назви != назви.keys() or len(назви) != len(дані["names"]):
+        розбіжності.append(dict(чому="item_names_missing", про=sorted(для_назви - назви.keys())))
+    if not поради:
+        розбіжності.append(dict(чому="advice_item_missing"))
+    if not пояснення:
+        розбіжності.append(dict(чому="explanation_missing"))
+    сказані = {н for р in пояснення + поради for н in р["about"]}
+    if дія:
+        сказані.update(дія["about"])
+    відсутні = (предмети - сказані) | set(суд["не_сказано"])
+    if відсутні:
+        розбіжності.append(dict(чому="facts_not_told", про=sorted(відсутні)))
+    if not поради or предмети - сказані:
+        пояснення, поради = [], []
+    return dict(text=пояснення, advice=поради, action=[дія] if дія else [], unknown=невідоме_картки(межа, суд["unknown"]),
+                names=назви), tuple(розбіжності)
+
+
+def текст_картки(відп, межа, склад, спроба, фото=()):
+    """Читає спільний вихід мовної моделі й звірку доставлених кадрів, коли вона була запитана."""
+    try:
+        дані = _дані(відп, "опис", спроба, схема_тексту_картки(bool(фото)))
+        if isinstance(дані, Збій):
+            return дані
+        хибні = tuple(dict.fromkeys(дані.get("wrong_photos", ())))
+        if set(хибні) - set(фото):
+            raise _Невірне("wrong_photos", "item has no delivered photo")
+        речення, розбіжності = _тексти_картки(дані, межа)
+        номери = (н for н, ф in межа.факти.items() if ф["state"] == ПРЕДМЕТ)
+        речення["items"] = dict(zip((р["н"] for р in склад.речі), номери, strict=True))
+        return Опис(склад.образ, tuple(р["н"] for р in склад.речі), "", (), хибні, (),
+                    дані.get("swap"), "wrong_photos" in дані, речення, розбіжності)
+    except (ValueError, TypeError) as помилка:
+        поле = помилка.поле if isinstance(помилка, _Невірне) else "response"
+        return Збій("схема", "розбір", поле, str(помилка), відп.get("текст"), спроба)
 
 
 def прочитати(відп, вид, пул, спроба=1, образи=(), образ=None, дозволені=None, відкинуті=None):

@@ -46,6 +46,8 @@ _НЕ_ОБОВʼЯЗКОВІ = frozenset((ПРЕДМЕТ, ВІДОМЕ))
              "стало побажанням до образів; build_on: scenario_screen — образи з цим збираються кнопкою «Зібрати "
              "образи» на екрані «Сценарій»",
     "answer": "відповідь стилістки на її питання: передай її зміст",
+    "held": "цього не вдалося перевірити (topic — що саме): назви це лише в unknown",
+    "stylist_choice": "свідомий хід стилістки (reason — причина): поясни його з огляду на обрані речі",
     ПИТАННЯ: "без чого образ не збирається (meaning): спитай про це прямо одним питанням",
     ПРЕДМЕТ: "річ. Без catalogue_position — її власна річ; з catalogue_position — товар каталогу, підписаний на "
              "картці «Варіант <catalogue_position>». Річ називай її видом (item_type) чи назвою (name); коли виду "
@@ -59,6 +61,7 @@ _НЕ_ОБОВʼЯЗКОВІ = frozenset((ПРЕДМЕТ, ВІДОМЕ))
 _ЧИСЛО = re.compile(r"(?<![\w.,:])[+-]?\d+(?:[:.,]\d+)?")
 _ПИТАННЯ_ЗНАК = re.compile(r"[?？]")
 _НОМЕР = re.compile(r"^f\d+$")
+_МАРКЕР_КАРТКИ = re.compile(r"\[(?:colou?r|колір)\s*:|#[0-9a-f]{6}\b|\bK-[A-Z]+-\d+\b", re.I)
 
 
 class ІдУТілі(Exception):
@@ -108,11 +111,13 @@ class Межа:
     """Факти одного виклику: номери одного роду, стани, реєстр ід. Писач тексту додає факти, межа нумерує їх,
     будує вхід моделі, звіряє тіло й судить відповідь."""
 
-    def __init__(self):
+    def __init__(self, *, лише_невідоме=None, з_порадами=False):
         self.факти = {}            # номер → {"state": стан, …зміст}
         self.реєстр = {}           # ід → номер речі
         self._групи = {}           # ключ змісту → номер (одна заява про кілька речей — один факт)
         self.мусить_у_тексті = []  # номери, які мусить назвати основний текст (її власна річ)
+        self.лише_невідоме = лише_невідоме
+        self.розділи = ("text", "advice", "unknown") if з_порадами else ("text", "unknown")
 
     def _новий(self, стан, зміст):
         н = "f%d" % (len(self.факти) + 1)
@@ -184,10 +189,11 @@ class Межа:
         """Факти для промпту: {номер: факт}, ід — номерами (`номерами` за реєстром)."""
         return номерами(self.факти, self.реєстр)
 
-    def словник_станів(self):
+    def словник_станів(self, додаткові=None):
         """Рядки визначень лише тих станів, що стоять у фактах: стани межі й заяви коду (`внутрішня_мова.ЗАЯВИ`)."""
         стани = list(dict.fromkeys(ф["state"] for ф in self.факти.values()))
-        свої = ["- %s — %s." % (с, СТАНИ[с]) for с in СТАНИ if с in стани]
+        словник = {**СТАНИ, **(додаткові or {})}
+        свої = ["- %s — %s." % (с, словник[с]) for с in словник if с in стани]
         заяви = ["- %s — %s." % (с, _ВМ.ЗАЯВИ[с]) for с in _ВМ.ЗАЯВИ if с in стани]
         return свої, заяви
 
@@ -223,7 +229,17 @@ class Межа:
         """Звірити тіло запиту до виклику (`перевірити_тіло`)."""
         return перевірити_тіло(текст, self.реєстр)
 
-    def рядки_невідомого(self, речення, стани):
+    def назва_речі(self, т):
+        """Повертає непорожню назву без службових маркерів і адрес із цього запиту."""
+        if КОД_У_ТЕКСТІ.search(т) or _МАРКЕР_КАРТКИ.search(т):
+            return None
+        try:
+            self.тіло(т)
+        except ІдУТілі:
+            return None
+        return т.strip() or None
+
+    def рядки_невідомого(self, речення, стани, *, формат="Не можу певно сказати, чи {тема}.", з_номерами=False):
         """Складає рядки показу та причину одного повтору для пропущених фактів зі станами `стани`.
 
         Коли повтор не дає речення, і коли показ не може прочитати прийняте речення, її рядок називає тему
@@ -232,17 +248,20 @@ class Межа:
         потрібні = {н: ф["topic"] for н, ф in self.факти.items() if ф["state"] in стани and ф.get("topic")}
 
         def запас(номери):
-            return " ".join(f"Не можу певно сказати, чи {потрібні[н]}." for н in номери if н in потрібні)
+            return " ".join(формат.format(тема=потрібні[н]) for н in номери if н in потрібні)
 
         сказано = {н for р in речення for н in р["about"]}
         пропущені = [н for н in потрібні if н not in сказано]
         рядки = []
         for р in речення:
             рядок = dict(текст=р["says"])
+            if з_номерами:
+                рядок["about"] = р["about"]
             if запасний := запас(р["about"]):
                 рядок["запасний_текст"] = запасний
             рядки.append(рядок)
-        рядки.extend(dict(текст=запас([н])) for н in пропущені)
+        рядки.extend(dict(текст=запас([н]), **({"about": {н: self.факти[н]["state"]}} if з_номерами else {}))
+                     for н in пропущені)
         пропуски = [dict(де="unknown", чому="unknown_facts_not_told", про=пропущені)] if пропущені else []
         повтор = ("In unknown, explain what remains uncertain for these missing fact numbers: "
                   + ", ".join(пропущені) + ". Use the exact state of each fact in about.") if пропущені else None
@@ -270,24 +289,29 @@ class Межа:
         числа = [ц for ц in _ЧИСЛО.findall(текст) if ц.lstrip("+").replace(",", ".") not in self._числа(про)]
         без_причини = [н for н in про if н in self.факти and self.факти[н].get("because")
                        and not set(self.факти[н]["because"]) & set(про)]
+        невідомі = [н for н in про if н in self.факти and self.факти[н].get("state") in (self.лише_невідоме or ())]
         питання = len(_ПИТАННЯ_ЗНАК.findall(текст))
         чому = ("unknown_fact" if чужі else "state_against_fact" if всупереч
-                else "code_in_text" if КОД_У_ТЕКСТІ.search(текст) else "unrecorded_number" if числа
+                else "unknown_section" if self.лише_невідоме and (bool(невідомі) != (де == "unknown"))
+                else "code_in_text" if КОД_У_ТЕКСТІ.search(текст) or (
+                    self.лише_невідоме and _МАРКЕР_КАРТКИ.search(текст))
+                else "unrecorded_number" if числа
                 else "question_not_allowed" if питання and (де != "text" or not any(
                     self.факти[н]["state"] == ПИТАННЯ or self.факти[н].get("ask_her") for н in про))
                 else "too_many_questions" if питання > 1
                 else "reason_missing" if без_причини else None)
         if чому:
             return None, dict(частина=де, чому=чому, зняте=текст,
-                              про=чужі or всупереч or числа or без_причини or list(про))
+                              про=чужі or всупереч or числа or без_причини or невідомі or list(про))
         return dict(about=dict(про), says=текст), None
 
     def судити(self, відповідь):
         """Відповідь моделі (dict) → {text, unknown, відкинуто, не_сказано, питання}: прийняті речення, причини
         відмов і номери фактів, які мусили дійти й не дійшли. Слів код не читає: лише номер, стан, число й знак."""
         об = відповідь if isinstance(відповідь, dict) else {}
-        вих = dict(text=[], unknown=[], відкинуто=[])
-        for де in ("text", "unknown"):
+        вих = {де: [] for де in self.розділи}
+        вих["відкинуто"] = []
+        for де in self.розділи:
             частини = об.get(де) if де in об else []
             if not isinstance(частини, list):
                 вих["відкинуто"].append(dict(частина=де, чому="invalid_sentence", зняте=частини))
@@ -306,7 +330,7 @@ class Межа:
         вих["text"] = [р for р in вих["text"] if not р.pop("зняти", False)]
         # факт її відповіді (`ask_her`) — одним реченням: друге й далі про нього знімаються
         бачено = set()
-        for де in ("text", "unknown"):
+        for де in self.розділи:
             for р in вих[де]:
                 свої = {н for н in р["about"] if self.факти[н].get("ask_her")}
                 if свої & бачено:
@@ -315,7 +339,7 @@ class Межа:
                     р["зняти"] = True
                 бачено |= свої
             вих[де] = [р for р in вих[де] if not р.pop("зняти", False)]
-        сказано = {н for де in ("text", "unknown") for р in вих[де] for н in р["about"]}
+        сказано = {н for де in self.розділи for р in вих[де] for н in р["about"]}
         у_тексті = {н for р in вих["text"] for н in р["about"]}
         вих["не_сказано"] = [н for н, ф in self.факти.items()
                              if (ф["state"] not in _НЕ_ОБОВʼЯЗКОВІ and н not in сказано)
@@ -338,6 +362,7 @@ _ЧОМУ = {
     "invalid_sentence": "речення без about {номер: стан} чи без says",
     "unknown_fact": "about називає номер, якого нема серед фактів (%s)",
     "state_against_fact": "стан у about не той, що у факту (%s): пиши рівно його state",
+    "unknown_section": "факт невідомого (%s) має бути лише в unknown, а речення unknown має назвати такий факт",
     "code_in_text": "у says стоїть код, стан чи номер факту замість слів",
     "unrecorded_number": "у says є число, якого нема у фактах, названих у about (%s)",
     "question_not_allowed": "питання поза фактом стану ask або в unknown",
@@ -347,6 +372,9 @@ _ЧОМУ = {
     "question_not_last": "питання не останнім реченням text",
     "required_question_missing": "нема питання про факт стану ask (%s) останнім реченням text",
     "facts_not_told": "ці факти не названо в жодному реченні (%s)",
+    "advice_item_missing": "у advice потрібна конкретна дія з річчю складу, названою в says і в about",
+    "explanation_missing": "у text потрібне пояснення поєднання речей",
+    "item_names_missing": "у names потрібні назви лише для фактів із needs_name (%s)",
 }
 
 
