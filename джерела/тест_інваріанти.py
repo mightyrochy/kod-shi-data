@@ -48,6 +48,7 @@ import feed
 
 ЗОВНІШНІ_ВХОДИ = {
     "photo_check_item": "номер факту нового кадру в JSON запиту Ч4 (`ядро/запит.py`)",
+    "garment_length": "довжина виробу в рядку запиту Ч4 (`ядро/запит.py`)",
     "swap_candidates": "номери фактів запасних речей у JSON запиту Ч4 (`ядро/запит.py`)",
     "без_опису": "рядок збою з даних JS-картки (`показ/ядро.js`, `карткаЯдраНаЕкранП`)",
 }
@@ -732,6 +733,9 @@ class Річ_МіркиКрамниці(unittest.TestCase):
         <param name="~Довжина сукні до талії">48 см.</param><param name="~Довжина виробу">94 см.</param></offer>
         <offer id="без-мірки"><name>Сукня лляна</name><price>1300</price><categoryId>1</categoryId>
         <param name="~Довжина рукава">48 см</param><param name="~Довжина виробу">94</param></offer>
+        <offer id="за-розміром"><name>Сукня міні зі знімним комірцем</name><price>1400</price><categoryId>1</categoryId>
+        <param name="опис">Параметри виробу: XS: Довжина виробу - 84 см., Довжина рукава - 64,5 см.
+        S: Довжина виробу - 85,5 см., Довжина рукава - 64,7 см.</param></offer>
         </offers></shop></yml_catalog>"""
         with tempfile.TemporaryDirectory() as тека:
             шлях = os.path.join(тека, "каталог.xml")
@@ -748,6 +752,7 @@ class Річ_МіркиКрамниці(unittest.TestCase):
         self.assertEqual(рядки[1200]["sources"]["garment_length"]["source"], "крамниця")
         self.assertEqual(рядки[1300]["garment_length"], "unknown")
         self.assertNotIn("garment_length", рядки[1300]["sources"])
+        self.assertEqual(рядки[1400]["garment_length"]["by_size"], {"XS": 84, "S": 85.5})
 
 
 class Річ_ОзнакиОбличчяОчі(unittest.TestCase):

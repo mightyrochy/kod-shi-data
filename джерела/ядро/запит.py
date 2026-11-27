@@ -670,6 +670,16 @@ def запит(вид, пул, ситуація, профіль, *, образи
         "kind_limits": пул.межі_слотів, "kinds_missing": [СЛОТИ[р["слот"]] for р in пул.нема_в_каталозі],
         "answer_schema": розбір.схема(вид),
     }
+    if вид in ("опис", "ремонт", "вибір") and any(
+        пул.записи[н].поля["мірки_крамниці"].джерело
+        or (isinstance(довжина := пул.записи[н].поля["довжина_виробу"].значення, dict)
+            and довжина.get("unit") == "cm")
+        for н in склад
+    ):
+        тіло["task"]["rules"].append(
+            "Use the shop measurements for these items as stated, with their units. A size chart can guide what "
+            "to compare before trying the item on. Use a numerical comparison only with the same kind of measurement."
+        )
     if вид in ("ремонт", "вибір"):
         таблиці = {}
         for н in склад:
