@@ -1,25 +1,30 @@
-"""Відтворює обірвані виклики складання руки 1 з автоживого 344d840e на LM Studio: форма відповіді — записана («до») чи
-з коду цієї гілки («після»: «worn» лише на речі без факту типу й без зайвих ключів, стислий JSON, складання без «done»), стеля 4000; друкує finish_reason,
-токени й скільки образів прочитав суворий розбір. Запуск з кореня: python <цей файл> до|після|після-з-відступами [до N [від M]] >> рядки JSONL."""
-import glob, json, sys, time, urllib.request
+"""Відтворює 23 обірвані (max_tokens) виклики складання руки 1 з автоживого 344d840e на LM Studio зі стелею 4000.
+«до» — промпт як записано; «після» / «після-з-відступами» — спроби вкоротити відповідь, які вимір не підтвердив і в коді
+їх нема (тут вони цілком): «worn» лише на речі без факту типу + підказки «лише де щось каже», без «done» у складанні,
+«після» — ще й стислий JSON. Друкує finish_reason, токени, «worn» і скільки образів прочитав суворий розбір.
+Запуск з кореня: python <цей файл> до|після|після-з-відступами [до N [від M]] > рядки JSONL."""
+import json, sys, time, urllib.request
 from pathlib import Path
 К = Path(__file__).resolve().parents[3]; sys.path.insert(0, str(К / "джерела"))
-import збирач_промптів as З, пакет_моделі as П, протокол as ПР
+import пакет_моделі as П, протокол as ПР
 ЗАПИСИ = К / "аудит/проби/автоживий-344d840ef560b897461bbd29b378e1d25652fff4"
 def обірвані():
     for ф in sorted(ЗАПИСИ.glob("*/VIDPOVIDI/обмін/*.json")):
         д = json.loads(ф.read_text(encoding="utf-8")); т = д["відповідь"].get("body", "")
         if д["запит"]["model"].startswith("qwen/") and '"stop_reason":"max_tokens"' in т and "outfits_wanted" in str(д["запит"]):
             yield ф, д["запит"]
+МІСЦЯ = ("In «worn» name only the items whose kind does not already say where they are on her — not shoes, "
+         "socks, tights, earrings, glasses, bracelets, rings, belts or bags.")
+СТИСЛО, ТАК_НІ = "Write the JSON compactly: no indentation and no line breaks.", ", one of: yes, no"
+ПІДКАЗКИ = {"visible_under_coat": "only for an item under an outer layer" + ТАК_НІ, "unbuttoned": "only for an outer layer"
+            + ТАК_НІ, "words": "only what the answers above leave out, in a few words"}
 def після(текст):
-    """Скелет «answer_schema» записаного промпта → скелет коду гілки (лише поля «worn» і «done» складання)."""
     і = текст.index('"answer_schema":') + len('"answer_schema":'); с, к = json.JSONDecoder().raw_decode(текст[і:])
-    о = с["outfits"][0]; нов = З.скелет(П._з_вибором(П.СКЛАДАННЯ) if "chosen" in с else П.СКЛАДАННЯ)["outfits"][0]
-    о["worn"] = нов["worn"]
-    if "Build outfits" in текст[:400]: о.pop("done", None); assert о == нов, "скелет складання розійшовся з кодом"
+    о, складання = с["outfits"][0], "Build outfits" in текст[:400]; о["worn"][0].update({к_: "<%s>" % п for к_, п in ПІДКАЗКИ.items()})
+    if складання: о.pop("done", None)       # ремонт (вердикт) «done» має
     текст = текст[:і] + json.dumps(с, ensure_ascii=False, separators=(",", ":")) + текст[і + к:]
-    якір = json.dumps(П.РЯДОК_ЛИШЕ_НОМЕР, ensure_ascii=False) + ","       # нові правила — там само, де в коді
-    return текст if "Build outfits" not in текст[:400] else текст.replace(якір, якір + "".join(json.dumps(р, ensure_ascii=False) + "," for р in (П.РЯДОК_МІСЦЯ_РЕЧЕЙ, П.РЯДОК_СТИСЛОГО_JSON)[:2 if варіант == "після" else 1]), 1)
+    якір = json.dumps(П.РЯДОК_ЛИШЕ_НОМЕР, ensure_ascii=False) + ","
+    return текст if not складання else текст.replace(якір, якір + "".join(json.dumps(р, ensure_ascii=False) + "," for р in (МІСЦЯ, СТИСЛО)[:2 if варіант == "після" else 1]), 1)
 варіант, межа, від = sys.argv[1], int(sys.argv[2]) if len(sys.argv) > 2 else 99, int(sys.argv[3]) if len(sys.argv) > 3 else 0
 for ф, з in list(обірвані())[від:межа]:
     текст = "".join(б.get("text", "") for б in з["messages"][0]["content"] if б.get("type") == "text")
