@@ -245,6 +245,8 @@ window.createMirrorPair = function(R) {
         const name=node('пр-імʼя')?.value||'Як до тебе звертатися?';
         const portrait=photoURL(node('ф-портрет')?.querySelector('img')?.getAttribute('src'));
         place(host,'<div class="pair-profile-intro"><button type="button" class="studio-text" data-ux="pair-name">'+e(name)+'</button>'+relation(label('Портрет','<button type="button" class="pair-image" data-ux="pair-photos">'+(portrait?image(portrait,'Портрет'):ik('камера',27)+' Додати портрет')+'</button>'),'',label('На повний зріст',person()),'pair-profile')+'</div>');
+        const finish=node('pair-profile-finish');
+        if(finish){finish.hidden=зрізПрофіляП().профілі.створено;place(finish,action('pair-profile-done','Зберегти й продовжити','',true));}
       }
     }
     if(!extra&&mode==='образи')nativeVariants();else delete document.documentElement.dataset.pairLooks;
@@ -284,7 +286,7 @@ window.createMirrorPair = function(R) {
   }
   function photo(){const field=node('ф-зріст')?.querySelector('input[type=file]');if(field)field.click();else{R.route('профіль',false);відкритиАркушПрофілю('ф-блок');}}
   function afterOccasion(key){if(!key)R.openDrawer(true);}
-  const handlers={'pair-name':()=>відкритиАркушПрофілю('проф-блок'),'pair-photos':()=>відкритиАркушПрофілю('ф-блок'),'pair-home':()=>stage('mirror'),'pair-occasion':()=>stage('occasion'),'pair-summary':()=>stage('understood'),'pair-photo':photo,'pair-edit':openEdit,'pair-save-case':()=>node('сц-зберегти').click(),
+  const handlers={'pair-profile-done':async()=>{await завершитиОнбординг();stage('mirror');},'pair-name':()=>відкритиАркушПрофілю('проф-блок'),'pair-photos':()=>відкритиАркушПрофілю('ф-блок'),'pair-home':()=>stage('mirror'),'pair-occasion':()=>stage('occasion'),'pair-summary':()=>stage('understood'),'pair-photo':photo,'pair-edit':openEdit,'pair-save-case':()=>node('сц-зберегти').click(),
     'pair-build':()=>{if(режимЕкрана()!=='сценарій')stage('understood');Екран.відЖінки('розуміння-так');node('зб-зібрати').click();},'pair-palette':()=>R.route('палітра'),'pair-agree':k=>factDecision(k,true),'pair-remove':k=>factDecision(k,false),
     'pair-open-product':idx=>{показатиОбраз(Number(idx));nativeVariants();},'pair-result':showProduct,
     'pair-reverse':pos=>{if(!П?.картки?.[Number(pos)])return;const key=cardKey(П,Number(pos));reverseKey=reverseKey===key?'':key;nativeVariants();},

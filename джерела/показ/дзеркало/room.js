@@ -15,7 +15,7 @@
   const actions=new Map();
   // Five minutes away is a fresh visit; brief app switches keep the conversation uninterrupted.
   const resumeAfter=5*60*1000;
-  let hiddenAt=null,introTimer=null,intro=null;
+  let hiddenAt=null,introTimer=null,intro=null,opened=false;
   function playIntro(){
     if(document.hidden)return;
     if(!intro){
@@ -171,6 +171,12 @@
   }
   function sync(){
     scheduled=false;
+    if(available()&&!opened){
+      opened=true;
+      if(зрізПрофіляП().профілі.створено)pair.stage('mirror');
+      else route('профіль',false);
+      return;
+    }
     const mode=режимЕкрана()||'сценарій';document.documentElement.dataset.room=mode;
     if(pageMode&&pageMode!==mode){closeExtras();setDrawer(false);say('');work.scrollTop=0;}
     pageMode=mode;
@@ -287,6 +293,7 @@
     const colors=document.createElement('div');colors.id='mirror-my-colors';node('пал-картка').before(colors);
     const looks=document.createElement('div');looks.id='mirror-look-sides';node('картки').before(looks);
     move(node('журнал'),node('е-огляд'));
+    const finish=document.createElement('div');finish.id='pair-profile-finish';finish.className='pair-actions';node('е-огляд').append(finish);
     const shelf=document.createElement('div');shelf.id='mirror-saved-manual';node('біб-список').before(shelf);
     node('mirror-home').addEventListener('click',goFace);
     node('mirror-style').addEventListener('click',showThemes);node('mirror-person').addEventListener('click',()=>route('профіль'));

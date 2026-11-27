@@ -3078,7 +3078,8 @@ function підсумокМоделі(){
     await згорнутиПару();
     if (await стор.locator('#аркуш-готово').isVisible()) await стор.click('#аркуш-готово');
     await стор.click('#mirror-person');
-    await стор.locator('[data-аркуш="' + ід + '"]:visible').click();
+    const кнопка = ід === 'проф-блок' ? '[data-ux=pair-name]' : ід === 'ф-блок' ? '[data-ux=pair-photos]' : '[data-аркуш="' + ід + '"]';
+    await стор.locator(кнопка + ':visible').click();
   };
   const діяПари = async ключ => {
     await згорнутиПару();
@@ -3212,7 +3213,7 @@ function підсумокМоделі(){
         Number(збереженіМірки['мр-' + к]) === Number(мірки[к] ?? [98, 92, 74, 99, process.env.ZRIST ?? 168][і])), збереженіМірки,
       'знайомство — рівно три кроки, і «Готово» стоїть лише на третьому');
     await стор.click('#аркуш-готово');
-    await стор.click('#mirror-home');
+    await стор.click('[data-ux=pair-profile-done]');
     await чекатиСтан(стор, 'Пара: повернення до нагоди', () => Екран.стан.режим === 'сценарій', null, 60000);
   } else {
     await стор.click('#н-далі');
