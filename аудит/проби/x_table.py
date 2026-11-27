@@ -18,7 +18,7 @@
 import sys
 
 import accessory as A
-import outer as OU
+import верхнє_реєстр as OU
 import fit as F
 
 import реєстр_політика as RP

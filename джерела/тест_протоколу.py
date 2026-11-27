@@ -151,7 +151,7 @@ print("── ОДНА ФОРМА ЗНАХІДКИ Й ОДНА ПОЛІТИКА 
 # перевіряється не «карта правильна», а те, що ІНШИХ МІСЦЬ НЕМА: щойно
 # зʼявиться пʼяте, ця звірка впаде.
 import реєстр_правил as _РП
-import accessory as _АКС, outer as _ВРХ, fit as _ПОС, silhouette as _СИЛ, coordination as _КРД
+import accessory as _АКС, верхнє_реєстр as _ВРХ, fit as _ПОС, silhouette as _СИЛ, coordination as _КРД
 
 _свої_карти = [м.__name__ for м in (_РП, _АКС, _ВРХ, _ПОС, _СИЛ, _КРД)
                if hasattr(м, "РЕГІСТР_ПРАВИЛА")]

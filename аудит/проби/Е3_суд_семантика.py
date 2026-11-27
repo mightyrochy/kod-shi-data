@@ -60,8 +60,9 @@ if __name__ == "__main__":
     assert [д["field"] for п in метали for д in п["бракує"]] == ["площа"]
     сегментація = модуль("суд_огляд").перевірка_сегментації({"очі": dict(L=40, a=None, b=2)}, [])
     assert [д["field"] for п in сегментація for д in п["бракує"]] == ["a"]
-    import accessory, outer, суд_образу
-    assert {accessory.сезон_і_погода.__module__, outer.теплові_знахідки.__module__,
+    import accessory, суд_образу
+    from суд_погода import теплові_знахідки
+    assert {accessory.сезон_і_погода.__module__, теплові_знахідки.__module__,
             суд_образу.погода.__module__} == {"суд_погода"}
     print(json.dumps(dict(ДО=до, ПІСЛЯ=після, ланцюг="питання → припущення → без входу",
         погодних_власників=1, утримання_після_перевірки="збережено"), ensure_ascii=False, indent=2))
