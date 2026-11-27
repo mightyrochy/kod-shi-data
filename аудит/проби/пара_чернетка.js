@@ -331,6 +331,8 @@ async function клікЗБібліотеки() {
       (значення === undefined ? '' : '[data-value="' + значення + '"]') + ':visible').first().click();
     const дані = () => стор.evaluate(() => читатиКв('дзеркало:речі:1:' + АКТИВНИЙ));
     await відкрити();
+    await дія('pair-profile-done');
+    await стор.waitForFunction(() => document.documentElement.dataset.pairPage === 'mirror');
     await стор.evaluate(async () => {
       const речі = ['a', 'b', 'c'].map((id, i) => ({id, name: ['Сорочка', 'Спідниця', 'Штани'][i],
         color: '#f0ede5', price: null, image: '', url: '', shop: '', slot: i ? 'bottom' : 'top'}));
