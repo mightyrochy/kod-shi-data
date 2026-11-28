@@ -1993,6 +1993,22 @@ html[data-pair-page=mirror] .pair-app #mirror-input #чат-поле { min-heigh
 .pair-app #е-огляд .рядок .н { min-width:0; grid-column:1; }
 .pair-app #е-огляд .рядок .прев { grid-column:1; grid-row:2; width:auto; max-width:100%; text-align:left; white-space:normal; overflow-wrap:anywhere; }
 .pair-app #е-огляд .рядок:after { grid-column:2; grid-row:1/3; }
+/* Кахля: глазуровані зразки й округла керамічна рамка замість базового паперового зрізу. */
+[data-hand=kahlia] :is(#пал-основа,#пал-схема) .чип:has(.зразки) {
+  clip-path:none; border:1.5px solid var(--hair); border-radius:8px 23px 9px 12px;
+  padding:10px 10px 12px; overflow:hidden; background:var(--surface); color:var(--ink);
+}
+[data-hand=kahlia] #пал-основа .чип:has(.зразки)::after { content:none; }
+[data-hand=kahlia] :is(#пал-основа,#пал-схема) .чип:has(.зразки) .зразки {
+  width:100%; margin:0 0 10px; gap:5px;
+}
+[data-hand=kahlia] :is(#пал-основа,#пал-схема) .чип:has(.зразки) .зразки i {
+  min-width:0; border:1.5px solid var(--ink); border-radius:48% 40% 52% 25%;
+  clip-path:none; box-shadow:inset 2px 2px 3px #fff5,inset -1px -2px 2px #0002;
+}
+[data-hand=kahlia] :is(#пал-основа,#пал-схема) .чип.вибр:has(.зразки) {
+  border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink),0 0 0 3px var(--wash);
+}
 [data-hand=vytynanka] :is(.pair-swatches,.зразки) i { border-radius:0; clip-path:polygon(50% 0,100% 25%,85% 80%,50% 100%,0 75%,15% 20%); box-shadow:none; }
 [data-hand=klyny] :is(.pair-swatches,.зразки) i { border-radius:0; clip-path:polygon(25% 0,100% 0,75% 100%,0 100%); box-shadow:none; }
 
