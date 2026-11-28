@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Blazer, structured, knee-length in a tailored silhouette, charcoal gray heather with a fine wool blend.\\nTrousers, wide-leg cut hitting just at the ankle for easy movement during standing or walking, navy deep marine blue with a stretch cotton twill fabric.\\nSilk blouse, relaxed collar and slightly dropped shoulders for comfort, soft cream with a smooth charmeuse material.\\nLoafers, square-toed and chunky sole to maintain height without heels, rich burgundy leather.\\nStatement necklace, geometric pendant in polished gold tone to add warmth and personality to the monochromatic base.\\n\\nThis outfit works because the charcoal blazer and navy trousers strike a professional yet approachable balance suitable for an analyst role at a bank, while avoiding the requested color black entirely. The cream blouse adds necessary visual relief to keep the look from feeling too severe or uniform-like, which is crucial for building rapport during a morning interview. Chunky loafers provide the stability needed for standing in place and walking on parquet floors, respecting her specific request against heels while still maintaining a polished silhouette. Finally, the gold accent introduces a touch of individuality that prevents the ensemble from looking like standard corporate wear.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Blazer\\\",\\n      \\\"details\\\": \\\"structured knee-length tailored silhouette, fine wool blend\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#36393f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Trousers\\\",\\n      \\\"details\\\": \\\"wide-leg cut hitting just at the ankle, stretch cotton twill\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#001f3f\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Silk blouse\\\",\\n      \\\"details\\\": \\\"relaxed collar and slightly dropped shoulders, smooth charmeuse material\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#f5f5dc\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Loafers\\\",\\n      \\\"details\\\": \\\"square-toed and chunky sole to maintain height, rich leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#800020\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Statement necklace\\\",\\n      \\\"details\\\": \\\"geometric pendant in polished gold tone\\\",\\n      \\\"slot\\\": \\\"necklace\\\",\\n      \\\"color_hex\\\": \\\"#ffd700\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":595,\"output_tokens\":335},\"stop_reason\":\"end_turn\"}"
+ }
+}

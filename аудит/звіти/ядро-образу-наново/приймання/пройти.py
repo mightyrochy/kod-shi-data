@@ -36,7 +36,7 @@ def сцени():
         if "ROZMOVA" in змінні and not any(дія.startswith("репліка:") for дія in дії_до):
             листи = json.loads((КОРІНЬ / змінні["ROZMOVA"]).read_text(encoding="utf-8"))
             дії_до = [f"репліка:{лист['вона']}" for лист in листи if not лист.get("перший")] + дії_до
-        використані = {к: в for к, в in змінні.items() if к in {"FOTO_RECHI", "ZBIJ", "ZRIST"}}
+        використані = {к: в for к, в in змінні.items() if к in {"FOTO_RECHI", "ZBIJ", "ZRIST", "PORTRET"}}
         плани[номер] = dict(ід=ід, номер=номер, слова=слова, до=дії_до, після=дії_після,
                            вхід=dict(використані, ZHINKA=str(ПРОБИ / f"жінки/{жінка}.json"),
                                      FOTO="1", SCENA=ід, CHAT_TEXT=слова))

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Wool-blend coat, relaxed fit, knee-length, charcoal gray (#3E454B), heavy woven fabric.\\nTurtleneck sweater, crew neck, ribbed hem, cream white (#F5F5DC), soft cotton knit.\\nWide-leg trousers, high waist, ankle length, olive green (#556B2F), thick brushed polyester.\\nLeather boots, chunky sole, mid-calf height, dark brown (#3B2F2F), full-grain leather.\\nThis outfit prioritizes warmth and comfort for a two-hour stroll in deep frost, adhering to her wish to dress warmly while maintaining an everyday casual aesthetic suitable for a park setting near home. The layering of the heavy coat over a cozy turtleneck ensures she stays protected from the cold without sacrificing style or mobility. The earthy color palette of charcoal, cream, and olive complements her natural tones and fits the autumn season perfectly for a relaxed gathering with friends.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Wool-blend coat\\\",\\n      \\\"details\\\": \\\"Relaxed fit, knee-length, heavy woven fabric\\\",\\n      \\\"slot\\\": \\\"outerwear\\\",\\n      \\\"color_hex\\\": \\\"#3E454B\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Turtleneck sweater\\\",\\n      \\\"details\\\": \\\"Crew neck, ribbed hem, soft cotton knit\\\",\\n      \\\"slot\\\": \\\"top\\\",\\n      \\\"color_hex\\\": \\\"#F5F5DC\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Wide-leg trousers\\\",\\n      \\\"details\\\": \\\"High waist, ankle length, thick brushed polyester\\\",\\n      \\\"slot\\\": \\\"bottom\\\",\\n      \\\"color_hex\\\": \\\"#556B2F\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Leather boots\\\",\\n      \\\"details\\\": \\\"Chunky sole, mid-calf height, full-grain leather\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#3B2F2F\\\",\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":553,\"output_tokens\":278},\"stop_reason\":\"end_turn\"}"
+ }
+}

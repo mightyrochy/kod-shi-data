@@ -1,0 +1,55 @@
+── ПРОМПТ (6580 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: two_piece_set · about it: text н=1
+2 — kind: brooch · about it: text н=2
+3 — kind: dress_shoes · about it: text н=3
+4 — kind: clutch · about it: text н=4
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This set provides a relaxed yet refined look that suits your August wedding guest occasion perfectly, with breathable fabric for the summer weather and a tailored fit that flatters your figure without being too formal.",
+"2": "The brooch adds a touch of delicate color to your ensemble, staying true to your palette while serving as a subtle statement piece for the outdoor ceremony.",
+"3": "These dress shoes offer understated sophistication and comfort for standing through the ceremony and moving through the venue, ensuring you stay steady on any surface during your evening out.",
+"4": "This clutch completes your look with sleek minimalism, ideal for carrying essentials at an event that transitions from a daytime ceremony to an evening reception.",
+"5": "I chose this two-piece set to give you a polished silhouette for your sister's wedding, blending casual ease with the formality an outdoor ceremony calls for. I picked the pink brooch because its soft tone sits perfectly in your palette and adds a gentle focal point without overpowering your look. The dress shoes offer sleek refinement that elevates your outfit, while the clutch keeps things elegant and light enough for an afternoon event followed by dinner at a restaurant.",
+"6": "Try tucking the top of the set to highlight your waistline",
+"7": "Tuck the shirt slightly at the back to create a more fitted silhouette",
+"8": "Червоний клатч зі шкіри — Added a missing bag (clutch) to resolve the 'no_bag' blocker and increase the item count, ensuring the outfit meets the minimum 4-item rule for a complete look.",
+"9": "Червоний клатч зі шкіри — Added a missing bag (clutch) to resolve the 'no_bag' blocker and complete the outfit with four distinct items, replacing the neutral red clutch found in the verdict which was redundant or mismatched.",
+"10": "Червоний клатч зі шкіри — Added a missing bag (clutch) to resolve the 'no_bag' blocker. The burgundy color adds warmth and festivity appropriate for an evening wedding, contrasting with the cool grey and beige.",
+"11": "Червоний клатч зі шкіри — Added a missing bag (clutch) to resolve the 'no_bag' blocker and complete the outfit count. The black clutch provides a strong neutral anchor that contrasts with the rich burgundy without clashing."
+}
+
+── ВІДПОВІДЬ (2310 симв., 14.9 с, HTTP 200) ──
+```json
+{
+"1": "Цей комплект дарує розслаблений, але вишуканий образ, який ідеально підходить для твоєї літньої весільної події. Він має дихаючу тканину на спекотну погоду та пошитий крій, що прикрашає твою фігуру без зайвої офіційності.",
+"2": "Брошка додає до твого вбрання ніжний колір, залишаючись у межах твоєї палітри й слугуючи витонченим акцентом для відкритої церемонії.",
+"3": "Ці туфлі на підборах пропонують стриману елегантність і комфорт, щоб ти могла стояти протягом усієї церемонії та пересуватися по залу. Вони забезпечать тобі стійкість на будь-якій поверхні ввечері.",
+"4": "Цей клатч завершує твій образ лаконічною мінімалістичністю, ідеальний для носіння необхідних речей під час події, що переходить від денної церемонії до вечірнього прийому.",
+"5": "Я обрала цей комплект, щоб надати тобі витончений силует на весіллі твоєї сестри. Він поєднує невимушену легкість з урочистістю, яку потребує відкрита церемонія. Я підібрала рожеву брошку, тому що її м’який тон ідеально вписується у твою палітру та додає ніжний акцент без перевантаження образу. Туфлі на підборах пропонують елегантну вишуканість, яка доповнює твоє вбрання, а клатч зберігає все витонченим і достатньо легким для денної події з вечерею у ресторані.",
+"6": "Спробуй трохи заправити верх комплекту, щоб підкреслити твою талію",
+"7": "Злегка заправ сорочку на спині, щоб створити більш приталений силует",
+"8": "Червоний клатч зі шкіри — Додала відсутню сумочку (клатч), щоб усунути проблему 'no_bag' і збільшити кількість предметів. Це забезпечує відповідність образу мінімальній вимозі в 4 предмети для повного вигляду.",
+"9": "Червоний клатч зі шкіри — Додала відсутню сумочку (клатч), щоб усунути проблему 'no_bag' і завершити образ чотирма різними предметами, замінивши нейтральний червоний клатч з вердикту, який був зайвим або не підходив.",
+"10": "Червоний клатч зі шкіри — Додала відсутню сумочку (клатч), щоб усунути проблему 'no_bag'. Бургундський колір додає тепла та урочистості, що доречно для вечірнього весілля, контрастуючи з прохолодним сірим і бежевим.",
+"11": "Червоний клатч зі шкіри — Додала відсутню сумочку (клатч), щоб усунути проблему 'no_bag' і завершити кількість предметів. Чорний клатч забезпечує міцну нейтральну основу, яка контрастує з насиченим бургундським кольором без конфлікту."
+}
+```

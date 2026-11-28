@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A structured navy blue blouse with a subtle sheen, cut in a classic fit-and-flare silhouette to elongate the torso and ending at the high hip for ease of movement, crafted from lightweight ponte knit to maintain a polished shape throughout the interview. A tailored charcoal grey wool-blend blazer, featuring clean lines, notch lapels, and structured shoulders that provide professional authority while accommodating slight shifts in posture, finished with elbow-length sleeves and single-button closure. High-waisted pleated trousers in matching charcoal wool blend, offering a fluid drape from waist to ankle with a mid-calf length that avoids constriction while maintaining a sharp silhouette suitable for standing during the assessment. Flat leather loafers in a deep brown hue, constructed with a minimal heel and rounded toe to ensure comfort during the walk-and-talk portions of the conversation while projecting a grounded and reliable demeanor. A delicate gold-tone necklace with a small geometric pendant, adding a touch of warmth that complements her skin tone without appearing overpowering for a corporate setting. This outfit works perfectly because the navy blouse paired with charcoal trousers creates a sophisticated monochrome base that signals competence and seriousness appropriate for a banking environment. The tailored blazer adds the necessary layer of formality required for an interview while the pleats and mid-calf length ensure comfort during periods of standing. By avoiding black entirely in favor of navy and charcoal, the ensemble respects her specific preference while still delivering a sharp, professional look that balances authority with approachability.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"blouse\\\",\\n\\\"details\\\": \\\"classic fit-and-flare silhouette ending at the high hip, lightweight ponte knit fabric\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#001f3f\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"blazer\\\",\\n\\\"details\\\": \\\"tailored clean lines with notch lapels and structured shoulders, elbow-length sleeves single-button closure\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#36454F\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"trousers\\\",\\n\\\"details\\\": \\\"high-waisted pleated offering fluid drape from waist to ankle, mid-calf length\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#36454F\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"loafers\\\",\\n\\\"details\\\": \\\"flat leather with minimal heel and rounded toe\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#654321\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"necklace\\\",\\n\\\"details\\\": \\\"delicate gold-tone with small geometric pendant\\\",\\n\\\"slot\\\": \\\"collar_necklace\\\",\\n\\\"color_hex\\\": \\\"#FFD700\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":649,\"output_tokens\":305},\"stop_reason\":\"end_turn\"}"
+ }
+}
