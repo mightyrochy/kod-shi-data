@@ -17,6 +17,19 @@ stub() { if [ -n "$WIN" ]; then mkdir -p "$STUBS"; cp "$H"/fake_*.py "$STUBS/"
 if [ -n "$WIN" ] && [ -z "${PWSH:-}" ]; then mkdir -p "$STUBS"; printf '#!/bin/sh\nexec powershell -ExecutionPolicy Bypass "$@"\n' > "$STUBS/pwb"
   chmod +x "$STUBS/pwb"; export PWSH="$STUBS/pwb"; fi
 
+# Вузли входу рушіїв (queue_lanes.ps1, EngineAuthHosts) — локальний слухач: стенд із текстом «потрібен вхід» не залежить від
+# зовнішньої мережі, а вузол «досяжний». Слухач гасне з оболонкою стенда.
+auth_hosts_local() {
+  local f port; f=$(mktemp "${TMPDIR:-/tmp}/auth-port.XXXXXX")
+  $PY -c "import socket
+s = socket.socket(); s.bind(('127.0.0.1', 0)); s.listen(8); print(s.getsockname()[1], flush=True)
+while True: s.accept()[0].close()" > "$f" &
+  AUTH_PID=$!; trap 'kill $AUTH_PID 2>/dev/null' EXIT
+  for _ in $(seq 50); do [ -s "$f" ] && break; sleep 0.2; done
+  port=$(head -n1 "$f" | tr -dc '0-9'); rm -f "$f"
+  export ENGINE_AUTH_HOSTS="agy=127.0.0.1:$port;codex=127.0.0.1:$port;claude=127.0.0.1:$port"
+}
+
 # Доставлений рядок перевіряємо з JSON-журналу заглушки, а не з діагностичного stdout різних процесів.
 delivered() { $PY - "$(wp "$1")" <<'P'
 import json, sys
