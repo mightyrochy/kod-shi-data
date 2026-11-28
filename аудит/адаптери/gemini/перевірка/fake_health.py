@@ -24,6 +24,10 @@ elif role == 'gh':
 elif role == 'sleep':
     time.sleep(2)
 elif role == 'agy':
+    if mode == 'agy_login' and args[:2] == ['-p', '/usage']:
+        # Справжній текст agy без токена: той самий за виходу з акаунта й за обриву мережі (рядок із бінарника agy).
+        print("Error: authentication required. Run 'agy' to log in.", file=sys.stderr)
+        sys.exit(1)
     if mode == 'agy_auth':
         print('401 authentication required; текст, якого не має бути у тривозі', file=sys.stderr)
         sys.exit(1)

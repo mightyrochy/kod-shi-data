@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path.cwd()))
 import стенд_знімок as С
-import composer as КМ
+import геометрія_речі as КМ
 import bridge as Б
 import pipeline
 import колір_річ as КР

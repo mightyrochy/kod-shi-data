@@ -1217,7 +1217,12 @@ function Get-ClaudeNoReportLines {
 
 function Get-ErrorCode([string]$Text) {
     if ($Text -match 'issue with the selected model|unrecognized_model|model_not_found|not_found_error.{0,80}model') { return 'MODEL_INVALID' }
-    if ($Text -match 'Not logged in|/login|authentication_error|Invalid API key|OAuth token|\b401\b') { return 'AUTH' }
+    if ($Text -match 'Not logged in|/login|authentication_error|Invalid API key|OAuth token|\b401\b') {
+        # Без вузла оновлення входу (EngineAuthHosts: claude — platform.claude.com) claude не оновить токен і просить вхід так
+        # само, як за справжнього виходу з акаунта: AUTH лише коли цей вузол досяжний просто зараз.
+        if (-not (Test-EngineReachable 'claude')) { Write-Log 'CLAUDE: текст «потрібен вхід», але вузла оновлення входу рушія нема — NETWORK, тривоги AUTH нема'; return 'NETWORK' }
+        return 'AUTH'
+    }
     if ($Text -match 'usage limit|hit your limit|limit reached|rate.?limit|rate_limit_error|\b429\b|quota|overloaded_error') { return 'QUOTA' }
     if ($Text -match "ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|Can't reach the API server") { return 'NETWORK' }
     'EXIT'
