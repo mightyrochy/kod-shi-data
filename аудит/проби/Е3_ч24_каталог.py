@@ -22,7 +22,7 @@ def _арг(імʼя, типове=None):
 код = pathlib.Path(_арг("--код", КОРІНЬ / "джерела")).resolve()
 кеш = _арг("--кеш"); ліміт = int(_арг("--ліміт", 1200))
 os.chdir(код); sys.path.insert(0, str(код))
-import feed as Ф, bridge as B, composer as КМ, fit as ПС
+import feed as Ф, bridge as B, геометрія_речі as КМ, fit as ПС
 import верхнє_суд as ВС
 
 print(f"код: {код}")
