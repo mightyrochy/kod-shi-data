@@ -2458,7 +2458,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         # ПОРАДИ НЕМА ЗОВСІМ (`invite` порожнє при дозволених
         # темах і без обовʼязкового). Правило промпту велить запросити, щойно дозволені теми лишились, а модель мовчала,
         # і жінка не чула поради п.9 жодного разу. Брак поради — та сама вада форми, що й зіпсована: повторний запит.
-        if частини.get("need", "none") == "none" and дозволені and not обовʼязкове \
+        if частини.get("need", "none") in ("none", "case") and дозволені and not обовʼязкове \
                 and not частини.get("invite") and not частини.get("invite_topics"):
             відкинуто.append(dict(частина="invite", чому="no_invite", теми=[], дозволені=list(дозволені)))
         # знята за формою порада — на повторний запит (`ремонт_поради`)
@@ -3623,20 +3623,17 @@ _ОБОВʼЯЗКОВЕ_EN = {
 assert set(_ОБОВʼЯЗКОВЕ_EN) == set(_ВМ.ОБОВʼЯЗКОВЕ)
 # Межа мовної моделі (п.3 наряду) — англійськими визначеннями кодів `внутрішня_мова.ПОТРЕБИ`.
 _ПОТРЕБИ_EN = {
-    # «general style knowledge» модель читала як дозвіл радити — «замша не
-    # боїться води» на «замшеві чоботи, увесь день дощ»; що пасує погоді й нагоді, знає перевірка коду
-    # «she told about her outing» — хвіст опису `look` («Telling about her outing … asks nothing: that is none»)
     "none": "you answer her yourself: she asked what you know for sure "
             "without her items, looks and photos — what a word or a style term means",
     "app": "a question about this app — its screens, buttons, her saved data, what to do next: you "
            "answer it in your next message, from what the app shows",
-    # «йду на роботу пішки, … відкритого не хочу» — без питання, а
-    # need=look у 2 з 2 сідів; стилістка відповідала на непитання й вигадувала «куртку» і «Мінськ»
-    "look": "her new message itself asks to judge her items or her look (how they look, whether they go "
-            "together or suit her) or asks why a particular item or look was chosen: you answer it in your "
-            "next message, after the app has checked her items and looks. Telling about her outing, its weather and her wishes or limits for the look asks nothing: "
-            "that is none",
-    "build": "she asks to put the looks together now: the app does it",
+    "look": "she asks you to assess the outfit in her attached photo(s), for example whether the colours go together "
+            "or suit her. Still use look if she names an occasion or time she wants that outfit judged for, "
+            "and put the occasion and its dress level or time of day in update",
+    "item": "she asks about an individual item, including what to wear with the item in her photo, "
+            "or why you chose an item or outfit: you answer after the app checks it",
+    "case": "she is describing or changing the outing, its weather, her items, wishes or limits for the case",
+    "build": "she asks to put together new outfits now, even if she attaches a photo to use for them: the app does it",
 }
 assert set(_ПОТРЕБИ_EN) == set(_ВМ.ПОТРЕБИ)
 
@@ -3736,7 +3733,7 @@ def _коди_розмови():
     р.append("Required questions — code: what to ask · when it applies (after your update):")
     р.append("  · dressiness fields — " + ", ".join(_СЦ._КОДИ_ВИЗНАЧАЛЬНИХ))
     р += ["- %s: %s · %s" % (к, що, коли) for к, (що, коли) in _ОБОВʼЯЗКОВЕ_EN.items()]
-    р.append("need — who answers her this turn:")
+    р.append("need — what she wants in this turn:")
     р += ["- %s — %s" % (к, о) for к, о in _ПОТРЕБИ_EN.items()]
     # Е2-усе-з-розмови: перелік інструментів розмови — з одного джерела (`conversation_tools`), як і схема `tool`
     р += _ІНСТР.коди_для_промпту()
@@ -4737,7 +4734,7 @@ def _на_своє_поле(оновлення):
 
 # «ОЦІНИ МІЙ ОБРАЗ» — НЕ БАЖАННЯ (qwen3.5-9b мовним шаром). На 6б «Оціни мій образ — як тобі?» з
 # двома фото модель дала `need: look` і `wants: [{quote: «мій образ» / уся репліка, item_type: dress_generic(, slot: set)}]`
-# у 10 з 10; поле в `update`, і показ (`лишеПитанняП`) вів хід у сценарій, а не в оцінку. Слів код не читає (п.12): при
+# у 10 з 10; її слова не були бажанням до збирання. Слів код не читає (п.12): при
 # `need: look` (вона просить судити свої речі чи образ) запис `wants` без жодної ознаки, крім уривка, слота `set` і
 # загального виду (`<рід>_generic`), нічого не просить — як запис лише зі слотом (`_слот_без_ознаки`). Бажання з ознакою
 # чи точним видом лишається. У `перенесено` — `wants.look_request`.
@@ -4766,12 +4763,10 @@ def прийняти_розмову(відповідь):
 
     `внутрішня` — оновлення паспорта, розібране ТИМ САМИМ шляхом, що переклад сценарію
     (`прийняти_вхід("scenario", …)`: пари → поле й уривок у `quotes`, коди поза переліком — у
-    `незнайомі`). `need` стає й старою темою питання (`question_about`: look / app) — її читають
-    гілки оцінки й довідки показу. `частини` — сирі частини відповіді; судить їх шов (`суд_частин`).
+    `незнайомі`). Маршрут показу — `частини.need`. Решту частин відповіді судить шов (`суд_частин`).
     `частини.tool` — виклик інструмента розмови, що пройшов договір (`conversation_tools.прийняти_виклик`); його
     розбіжності — у `незнайомі`, тож повтор каже їх словами.
-    Не JSON-обʼєкт (`протокол.розбір`: код із місцем вади, без ремонту форми — Е2-межі п.4) чи без `text` — причина,
-    і показ робить один повтор, далі хід іде шляхом main (як відмова перекладача доти)."""
+    Не JSON-обʼєкт або хід без тексту, питання й дії має код причини для одного повтору."""
     об, чому_не = _обʼєкт(відповідь)
     if not isinstance(об, dict):
         return dict(внутрішня={}, частини={}, незнайомі=[], невідомо=[], заглушки=[],
@@ -4804,10 +4799,10 @@ def прийняти_розмову(відповідь):
         # `text` переліком рядків без `about` («["У тебе робочий день
         # в офісі, і ти хочеш приховати животик. Зрозуміла."]»): доти хід ішов як `no_text_field` шляхом паспорта, і
         # записане `goal_zones` губилось. Про що речення, код не знає, тож показує лише перше з кількох слів, як
-        # `says`; решта — у `відкинуто` (`extra_sentence`). При `need` app чи look бульбашку пише
+        # `says`; решта — у `відкинуто` (`extra_sentence`). Для питань про застосунок, образ і річ бульбашку пише
         # код, і такий текст («Я подивлюся… і відповім») не показується
         if к == "text" and isinstance(т, list) and т and all(isinstance(x, str) for x in т) \
-                and частини.get("need") not in ("app", "look"):
+                and need not in ("app", "look", "item"):
             шматки = [x for x in _РЕЧЕННЯ.split(" ".join(т)) if x.strip()]
             т = next((x for x in шматки if len(x.split()) > 1), шматки[0] if шматки else "")
             if len(шматки) > 1:
@@ -4840,20 +4835,15 @@ def прийняти_розмову(відповідь):
     шапка = _шапка(об.get("header"), незнайомі, в)
     if шапка:
         частини["header"] = шапка
-    if частини.get("need") in ("app", "look"):
-        в["question_about"] = частини["need"]
     # Е2-усе-з-розмови: виклик інструмента — схемою з переліку; прийнята частина виконується й після повтору
     виклик, вади_виклику = _ІНСТР.прийняти_виклик(об.get("tool"))
     if виклик:
         частини["tool"] = виклик
     незнайомі += вади_виклику
     в, зняте_оцінки = _бажання_оцінки(в, частини.get("need"))
-    # ПИТАННЯ, НА ЯКЕ ВІДПОВІДАЄ НЕ ВОНА: при `need` app чи look її бульбашку пише код
-    # (оцінка образу чи перекладач із відповіддю стилістки або помічниці), а `text` каже лише записане — коли
-    # не записано нічого, речень нема. MamayLM на фото з «оціни мій образ» двічі дала `need: look` і
-    # `text: [{"about": []}]`; код рахував це битим форматом (`no_text_field`), і репліка йшла в сценарій.
-    # Хід, що лише кличе інструмент («збережи»), — не битий: результат у розмові показує картка інструмента.
-    причина = None if частини.get("text") or частини.get("ask") or частини.get("need") in ("app", "look") \
+    # Коли потрібна дія застосунку, результат покаже картка або відповідь відповідної функції.
+    # Оновлення паспорта (`case`) теж може обійтися без бульбашки.
+    причина = None if частини.get("text") or частини.get("ask") or (частини.get("need", "none") != "none") \
         or частини.get("tool") else "no_text_field"
     if причина and частини_в_update:      # частина ходу не на своєму місці: повтор каже, які ключі `update` — не поля
         причина = "unknown_key: " + ", ".join(частини_в_update)
