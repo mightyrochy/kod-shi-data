@@ -138,10 +138,11 @@ jobs:
     name: збірка показу після злиття
     needs: zlyttia
     if: needs.zlyttia.outputs.zlyto == 'true'
-    # Межа — найширший job викликаного: `publish` (contents: write), `pryimannia` (pull-requests: read). Вужча межа —
+    # Межа — права всіх job викликаного процесу: публікація, пошук перевіреного дерева й погодження живого. Вужча межа —
     # startup_failure всього процесу без жодного job, навіть коли job викликаного пропущено умовою.
     permissions:
       contents: write
+      actions: read
       pull-requests: read
     uses: ./.github/workflows/zbirka.yml
     with:

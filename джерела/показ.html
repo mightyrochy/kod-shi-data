@@ -52,6 +52,10 @@
     <button type="button" class="pair-directory" data-ux="features">Можливості</button>
    </nav>
    <div id="mirror-heading" class="studio-heading"></div>
+   <div id="pair-profile-finish" hidden>
+    <button type="button" class="studio-primary" data-ux="pair-profile-done" aria-describedby="pair-profile-missing">Зберегти й продовжити</button>
+    <p id="pair-profile-missing" role="status"></p>
+   </div>
    <div id="pair-scene"></div>
    <div id="mirror-occasions" tabindex="-1" hidden>
     <h2 class="studio-prompt"><span id="mirror-prompt-mark" aria-hidden="true"></span>Куди збираємось?</h2>
@@ -69,7 +73,9 @@
    <div class="pair-chat-head"><strong>Розмова</strong><button type="button" data-ux="collapse" aria-label="Згорнути розмову">×</button></div>
    <div class="pair-chat-tools"><button type="button" data-ux="pair-occasion">Нагода</button><button type="button" data-ux="assess">Оцінити вбрання</button><button type="button" data-ux="features">Усі дії</button></div>
    <div id="pair-chat-context" hidden><button type="button" data-ux="context-question"></button></div>
-   <div id="mirror-thread" class="studio-thread"></div><div id="mirror-suggestions"></div>
+   <div id="mirror-thread" class="studio-thread">
+    <div id="pair-chat-welcome" class="репліка ші" hidden><strong>Привіт, я Ші, твоя стилістка.</strong><p>Куди збираєшся? Можеш попросити зібрати образ, оцінити вбрання або підібрати щось до твоєї речі.</p></div>
+   </div><div id="mirror-suggestions"></div>
   </div>
   <div id="mirror-input"></div><div id="mirror-chat-status" role="status"></div>
   <div id="pair-review-chat" hidden><button type="button" data-ux="ask-review">Моє питання про вбрання</button></div>
@@ -86,6 +92,7 @@
  <symbol id="мі-камера" viewBox="0 0 24 24"><path d="M2.5 7.5h4l2-3h6.8l2 3h4.2V20h-19z"/><circle cx="12" cy="13" r="3.6"/></symbol>
  <symbol id="мі-сумка" viewBox="0 0 24 24"><path d="M4.2 8h15.6l1.1 13H3.1zM8.2 9V6a3.8 3.8 0 0 1 7.6 0v3"/></symbol>
  <symbol id="мі-вішак" viewBox="0 0 24 24"><path d="M9 6a3 3 0 1 1 5.3 1.9L12 10v1.5l8.3 5.4c1 .7.8 2.1-.6 2.1H4.3c-1.4 0-1.6-1.4-.6-2.1l8.3-5.4"/></symbol>
+ <symbol id="мі-шафа" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="17" rx="1"/><path d="M12 3v17m-3-9v3m6-3v3M6 20v2m12-2v2"/></symbol>
  <symbol id="мі-пошук" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.8"/><path d="m15.8 15.8 5 5"/></symbol>
  <symbol id="мі-міра" viewBox="0 0 24 24"><path d="m3 16 13-13 5 5L8 21zM13.6 5.5l2 2m-5 1 1.5 1.5m-4.4 1.4 2 2"/></symbol>
  <symbol id="мі-назад" viewBox="0 0 24 24"><path d="m14.5 4.5-7 7.5 7 7.5"/></symbol>

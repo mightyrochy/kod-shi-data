@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"A refined wool-blend knit top with a relaxed fit, knee-length cut, charcoal gray color (#3F4C61), and a soft drape.\\nWide-leg trousers crafted from heavy ponte roma fabric, full length to the ankle, deep navy blue with a hex code of #001F3F, offering structure without stiffness.\\nLeather ankle boots in black (hex #1A1A1A) with a modest 2-inch heel, block shape for stability on salted roads, and water-resistant finish.\\nThis outfit works perfectly for a frosty morning commute to the office because the thick knit and ponte fabric provide essential warmth against the snow while maintaining a professional neat aesthetic. The dark color palette creates a sleek silhouette appropriate for business settings, and the ankle boots ensure secure footing on slippery, salt-treated surfaces without sacrificing style. It balances the need for comfort during a twenty-minute walk with the requirement for polished office attire.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"knit top\\\",\\n\\\"details\\\": \\\"refined wool-blend knit, relaxed fit, knee-length cut, soft drape\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#3F4C61\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"trousers\\\",\\n\\\"details\\\": \\\"wide-leg, heavy ponte roma fabric, full length to ankle, offering structure without stiffness\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#001F3F\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"ankle boots\\\",\\n\\\"details\\\": \\\"leather, black, modest 2-inch heel, block shape, water-resistant finish\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#1A1A1A\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":545,\"output_tokens\":200},\"stop_reason\":\"end_turn\"}"
+ }
+}

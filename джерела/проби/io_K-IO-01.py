@@ -10,7 +10,8 @@
 import sys, pathlib, json
 _КОРІНЬ = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_КОРІНЬ))
-import feed as Ф, bridge as B, composer as К, сценарій as СЦ
+import feed as Ф, bridge as B, композитор_збирання as К, сценарій as СЦ
+from композитор_придатні import придатні
 
 with open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8") as файл:
     вх = json.load(файл)
@@ -19,8 +20,8 @@ with open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8") as файл:
 кат = B.каталог_останнього_пакета()
 d = B._нормалізувати_вхід(B._застосувати_паспорт(dict(вх)))
 F, T, _, kw = B._збірка(d)
-без, _ = К.придатні(кат, None, None, T, сцен={})
-зі, _ = К.придатні(кат, None, None, T, сцен=dict(вх["сценарій"]))
+без, _ = придатні(кат, None, None, T, сцен={})
+зі, _ = придатні(кат, None, None, T, сцен=dict(вх["сценарій"]))
 print("каталог %d речей · у пул без сцени пройшло б %d (типів %d) · під стенд-нагодою %s — %d"
       % (len(кат), len(без), len({r.get("тип") for r in без}), json.dumps(вх["сценарій"], ensure_ascii=False), len(зі)))
 рез = К.зібрати(F, кат, тіло=T)                       # жодного поля сценарію
