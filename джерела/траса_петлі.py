@@ -3,7 +3,7 @@
 ітерації, що дістає ші, які правила спрацьовують. Пише промпти у теку траса/."""
 import sys, os, json, random, re, collections, time
 sys.path.insert(0, ".")
-import bridge as B, pipeline as PL, composer as КМ
+import bridge as B, pipeline as PL
 
 
 def main():

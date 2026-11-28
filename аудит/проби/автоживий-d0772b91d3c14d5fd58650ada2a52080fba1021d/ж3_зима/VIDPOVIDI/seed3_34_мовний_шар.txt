@@ -1,0 +1,56 @@
+── ПРОМПТ (6160 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: blazer · about it: text н=1
+2 — kind: trousers · about it: text н=2
+3 — kind: belt · about it: text н=3
+4 — kind: necklace · about it: text н=4
+5 — kind: boots · about it: text н=5
+6 — kind: crossbody_bag · about it: text н=6
+7 — kind: coat · about it: text н=7
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This blazer fits your occasion perfectly, staying within the right level of formality for work while its color matches your personal palette.",
+"2": "These trousers complement your work setting and their color is drawn directly from your own style palette.",
+"3": "This belt adds a touch of color that reflects your personal words and preference, bringing just the right amount of definition to your waist.",
+"4": "The necklace introduces a soft element that sits beautifully within your palette, adding a gentle highlight to your neckline.",
+"5": "These boots provide the sturdy support needed for your daily walk, and their shade is part of your own color range.",
+"6": "This crossbody bag keeps essentials accessible without weighing you down, and its color is a perfect match from your palette.",
+"7": "The coat offers the necessary outer layer for your workday, fitting the occasion well while bringing a hue that belongs to your palette.",
+"8": "Your blazer and coat ground your look with a structured, professional line that respects the work setting, while your trousers offer a clean silhouette to balance them. The belt defines your waist without adding bulk, keeping the outfit streamlined as you move through your day. Your boots provide steady footing, and the crossbody bag keeps essentials close at hand. The necklace adds a subtle touch of warmth to complete this polished ensemble.",
+"9": "Wear the blazer over your top to keep shoulders neat while leaving the coat open for easy movement when stepping outside.",
+"10": "Жіноча сумка через плече шкіряна бежева — The small crossbody bag is a deliberate choice here; its compact scale prevents the outfit from becoming overwhelmed and keeps your silhouette sharp for walking."
+}
+
+── ВІДПОВІДЬ (1804 симв., 11.7 с, HTTP 200) ──
+```json
+{
+  "1": "Цей блейзер ідеально підходить для твоєї нагоди, зберігаючи потрібний рівень офіційності для роботи, а його колір гармоніює з твоїм особистим колоритом.",
+  "2": "Ці штани доповнюють твоє робоче середовище, і їхній колір безпосередньо взятий із твого власного стилю.",
+  "3": "Цей пояс додає нотку кольору, що відображає твої особисті слова та вподобання, привносячи саме ту кількість визначення до твоєї талії.",
+  "4": "Намисто вносить м’який елемент, який чудово поєднується з твоїм колоритом, додаючи ніжний акцент на твою лінію шиї.",
+  "5": "Ці черевики забезпечують необхідну стійку підтримку для твоєї щоденної прогулянки, а їхній відтінок є частиною власного колірного діапазону.",
+  "6": "Ця сумка через плече тримає найнеобхідніше під рукою без зайвого обтяження, і її колір — ідеальний збіг із твоїм колоритом.",
+  "7": "Пальто пропонує необхідний зовнішній шар для твоєї робочої днини, добре відповідаючи нагоді та привносячи відтінок, який належить до твого палітри.",
+  "8": "Твій блейзер і пальто створюють структуровану професійну лінію, що поважає робоче середовище, а твої штани пропонують чистий силует для їхнього балансування. Пояс визначає твою талію без додавання об’єму, зберігаючи образ струнким протягом дня. Твої черевики забезпечують стійку опору, а сумка через плече тримає найнеобхідніше під рукою. Намисто додає ледь помітний теплий акцент для завершення цього вишуканого ансамблю.",
+  "9": "Одягни блейзер поверх своєї сорочки, щоб зберегти охайність плечей, залишаючи пальто розстебнутим для легкості рухів під час виходу на вулицю.",
+  "10": "Жіноча сумка через плече шкіряна сіро-бежева — Ця невеличка сумка через плече є свідомим вибором тут; її компактний розмір запобігає перевантаженню образу, зберігаючи твій силует чітким під час ходьби."
+}
+```

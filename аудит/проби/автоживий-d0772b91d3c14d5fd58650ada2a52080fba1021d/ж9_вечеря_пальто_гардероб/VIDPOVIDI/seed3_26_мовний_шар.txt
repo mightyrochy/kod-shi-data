@@ -1,0 +1,59 @@
+── ПРОМПТ (7030 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: dress_generic · about it: text н=1
+2 — kind: coat · about it: text н=2
+3 — kind: bag_generic · about it: text н=3
+4 — kind: ankle_boots · about it: text н=4
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "You asked for the dress, so it’s the star of your night. Its tailored waist and flowing skirt give you a confident line without feeling too formal—just right for celebrating.",
+"2": "This coat wraps you warmly as you arrive or leave, its dark tone deepening the elegance of the dress underneath. It’s an outer layer that respects your event without overpowering it.",
+"3": "The floral bag brings joy and contrast to your outfit. Its lively pattern is a perfect touch of personality against your more classic pieces, making you feel put together but still yourself.",
+"4": "These boots offer reliable footing for an evening outing and keep you grounded when moving through the restaurant or stepping outside. They add structure to your look while staying comfortable enough for all-night wear.",
+"5": "You asked to wear the dress for your restaurant dinner, and I chose this look because it honors that wish while keeping you comfortable and polished. The polka-dot dress is the heart of your outfit, its neat lines and waist-defining belt create a clean silhouette perfect for an evening out. The black coat adds warmth and sophistication without adding bulk, letting the dress remain the focus. Your ankle boots give you steady ground in any weather or on the walk to the venue, while the vibrant floral bag injects playful color that balances the classic palette of your clothes.",
+"6": "Start with the dress as your foundation, then layer the coat over it when you step outside.",
+"7": "Let the bold pattern of the bag be your statement piece; keep the rest simple to let it shine.",
+"8": "Міні-сумочка Розалія mustard small — Added clutch to resolve the no-bag blocker and add a formal accessory.",
+"9": "Черевики жіночі, REMONTE, шкіра/екошкіра, колір чорний — Added pumps to address the long coat length proportion and satisfy the shoe requirement.",
+"10": "Чорна сукня в білий горох, Черевики жіночі, REMONTE, шкіра/екошкіра, колір чорний, Кашемірове довге пальто Асторія (зима) чорне — This outfit carries the formality needed to match your wish for a cocktail dress at the restaurant, even with an everyday bag, because the tonal black construction and structured coat elevate the look beyond simple smart-casual.",
+"11": "Міні-сумочка Розалія mustard small — Added as the required third piece to move from a mono-object silhouette to a styled ensemble.",
+"12": "Черевики жіночі, REMONTE, шкіра/екошкіра, колір чорний — Added pumps to fix the missing shoes blocker and judge the hem proportion.",
+"13": "Міні-сумочка Розалія mustard small — Added clutch to resolve the no-bag blocker for the restaurant occasion.",
+"14": "Міні-сумочка Розалія mustard small — Added clutch to resolve the missing bag blocker."
+}
+
+── ВІДПОВІДЬ (2746 симв., 18.2 с, HTTP 200) ──
+{
+"1": "Ти попросила сукню, тож вона зірка твого вечора. Її приталений пояс і розлітна спідниця дають тобі впевнену лінію без надмірної офіційності — саме те для святкування.",
+"2": "Цей пальта обіймає тебе теплом, коли ти приходиш чи йдеш, його темний тон поглиблює елегантність сукні під ним. Це верхній одяг, який шанує твою подію без перевантаження її.",
+"3": "Квіткова сумка приносить радість і контраст у твій образ. Її жвавий візерунок — досконалий штрих індивідуальності на тлі більш класичних речей, роблячи тебе зібраною та водночас собою.",
+"4": "Ці черевички дають тобі стійкість для вечірнього виходу і тримають тебе впевнено під час пересування рестораном чи прогулянки надворі. Вони додають структури твоєму образу, залишаючись достатньо зручними для цілонічної шкарпетки.",
+"5": "Ти попросила одягнути сукню на вечерю в ресторані, і я підібрала цей образ, бо він шанує твій вибір, водночас тримаючи тебе комфортно та охайно. Поліцейська сукня — серце твого образу, її чіткі лінії й пояс, що окреслює талію, створюють чистий силует для вечірнього виходу. Чорне пальто додає тепла і вишуканості без зайвого об’єму, дозволяючи сукні залишатися в центрі уваги. Твої черевички дають тобі надійну опору за будь-якої погоди чи під час прогулянки до місця події, а яскрава квіткова сумка додає грайливого кольору, який збалансовує класичну палітру твого одягу.",
+"6": "Почни із сукні як основи, потім накинь пальто зверху, коли вийдеш надвір.",
+"7": "Нехай сміливий візерунок сумки стане твоєю родзинкою; тримай решту простою, щоб вона сяяла.",
+"8": "Міні-сумочка Розалія mustard small — Додала клатч, щоб вирішити проблему відсутності сумки та додати формальний аксесуар.",
+"9": "Черевики жіночі, REMONTE, шкіра/екошкіра, колір чорний — Додала туфлі-човники, щоб виправити пропорції довгого пальта і задовольнити вимогу щодо взуття.",
+"10": "Чорна сукня в білий горох, Черевики жіночі, REMONTE, шкіра/екошкіра, колір чорний, Кашемірове довге пальто Асторія (зима) чорне — Цей образ має потрібну урочистість для відповідності твоєму бажанню щодо коктейльної сукні в ресторані, навіть із повсякденною сумкою, бо тональний чорний крій і структуроване пальто піднімають його за межі простого смарт-кежуалу.",
+"11": "Міні-сумочка Розалія mustard small — Додала як третій необхідний елемент для переходу від монооб’єктного силуету до стилізованого ансамблю.",
+"12": "Черевики жіночі, REMONTE, шкіра/екошкіра, колір чорний — Додала туфлі-човники, щоб виправити проблему відсутності взуття і оцінити пропорції подолу.",
+"13": "Міні-сумочка Розалія mustard small — Додала клатч, щоб вирішити проблему відсутності сумки для ресторанної події.",
+"14": "Міні-сумочка Розалія mustard small — Додала клатч, щоб виправити проблему відсутності сумки."
+}

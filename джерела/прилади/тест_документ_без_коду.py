@@ -1010,8 +1010,7 @@ class МіткаБезпека(unittest.TestCase):
         self.assertIn("github.event_name == 'pull_request_target' && github.event.label.name == 'злити'", умови["rishennia"])
 
     def test_збірка_після_злиття_коду(self):
-        """Код, злитий токеном CI, `push` не будить: крок викликає `zbirka.yml` з `kod`, а той веде повний шлях на
-        `pislia` (checkout з ref, база й голова історії з входів)."""
+        """Злиття токеном CI викликає збірку на `pislia`, а мілкі копії бази беруть `pered`."""
         with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
             с = ф.read()
         self.assertIn("kod: ${{ needs.zlyttia.outputs.kod == 'true' }}", с)
@@ -1022,17 +1021,22 @@ class МіткаБезпека(unittest.TestCase):
             з = ф.read()
         self.assertRegex(з, r"(?m)^      kod:\n        type: boolean")
         self.assertIn('[ -n "${PISLIA}" ] && [ "${KOD}" = true ]', з)
-        self.assertEqual(з.count("uses: actions/checkout@"), з.count("ref: ${{ inputs.pislia }}"),
-                         "кожен checkout збірки бере ref злитого коміту (порожній — типовий)")
+        копії = [крок for крок in re.split(r"(?m)^      - ", з) if "uses: actions/checkout@" in крок]
+        бази = [крок for крок in копії if "path: main-replay" in крок]
+        self.assertEqual(len(бази), 2, "збірка бази й приймання беруть окремі копії точної бази")
+        for крок in копії:
+            ref = ("inputs.pered || github.event.pull_request.base.sha || github.event.before"
+                   if крок in бази else "inputs.pislia")
+            self.assertIn("ref: ${{ " + ref + " }}", крок)
+        for крок in бази:
+            self.assertIn("fetch-depth: 1", крок)
         self.assertIn("inputs.pislia && (inputs.kod && 'kod' || 'dokument') || 'main'", з,
                       "повна збірка після коду — своя група: легкий виклик документа її не витісняє")
         self.assertIn("ZLYTTIA_ZLYTI: ${{ inputs.zlyti }}", з, "погодження живого прогону — за переліком злитих")
         self.assertNotIn("ZLYTTIA_SHA", з)
         self.assertIn("node аудит/проби/перевірити_живий_після_злиття.js", з)
-        бази = [р for р in з.splitlines() if "BASE_REF: ${{" in р]
-        self.assertTrue(бази)
-        self.assertTrue(all(р.endswith("github.event.before || inputs.pered }}") for р in бази), бази)
-        self.assertEqual(з.count("HEAD_SHA: ${{ inputs.pislia }}"), з.count("checkout-history.sh"))
+        self.assertIn("BASE_REF: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}", з)
+        self.assertIn("BASE_SHA: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}", з)
 
     def test_вихід_злиття_код_і_документ(self):
         api = ФальшивийAPI(Мітка.стан(Мітка(), None)["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
