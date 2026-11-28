@@ -1,0 +1,37 @@
+── ПРОМПТ (2070 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Silk-blend cocktail dress, A-line silhouette with a fitted bodice and flared skirt ending just above the knee, deep emerald green (#043927), smooth satin finish.\nLeather ankle boots, pointed toe with a low block heel for stability on restaurant floors, chocolate brown (#3E2723), soft nubuck texture.\nGold vermeil drop earrings and a thin velvet clutch in matching dark tones.\n\nThis outfit fulfills her specific wish to wear a dress while adhering to the smart social band appropriate for an upscale evening dinner. The rich emerald silk creates a luxurious focal point under artificial restaurant lighting, balancing elegance with the comfort of autumn-appropriate footwear. The structured A-line cut flatters the silhouette without being overly formal, ensuring she feels confident and celebrated at her own event."}
+
+── ВІДПОВІДЬ (799 симв., 3.4 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "dress",
+      "details": "A-line silhouette with fitted bodice and flared skirt ending above the knee, smooth satin finish",
+      "slot": "dress",
+      "color_hex": "#043927",
+      "worn": true
+    },
+    {
+      "name": "boots",
+      "details": "Pointed toe with low block heel for stability on restaurant floors, soft nubuck texture",
+      "slot": "shoes",
+      "color_hex": "#3E2723",
+      "worn": true
+    },
+    {
+      "name": "earrings",
+      "details": "Drop style in gold vermeil",
+      "slot": "earrings",
+      "color_hex": null,
+      "worn": true
+    },
+    {
+      "name": "clutch",
+      "details": "Thin velvet bag in matching dark tones",
+      "slot": "bag",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
