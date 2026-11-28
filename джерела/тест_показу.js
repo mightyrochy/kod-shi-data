@@ -1932,6 +1932,26 @@ async function звіритиНамірОцінки(){
     тест('заміна з деталей закриває діалог і викликає чинну дію речі',замін===1&&!d.getElementById('mirror-sheet').open);
     host.querySelector('[data-ux=pair-reverse]').click();
     тест('на звороті кожна річ теж показана один раз',host.querySelectorAll('[data-ux=pair-piece]').length===5);
+    w.eval(`П.сценарій_знімок={чат:[{фото:[{ід:'ф1',тип:'image/jpeg',дані:'AAAA'}]}]};
+      ЧАТ_П=[{фото:[{ід:'ф1',тип:'image/jpeg',дані:'BBBB'}]}];
+      Object.assign(П.картки[0].речі[0],{власна:true,фото_ід:'ф1',фото:null});
+      П.картки[0].речі[1].фото_усі=['https://example.com/1.jpg','https://example.com/backup.jpg'];
+      MirrorRoom.refresh();`);
+    await чекатиНа(()=>host.querySelector('[data-pair-piece-photo="0"]')?.src==='data:image/jpeg;base64,AAAA', 'власне фото не підставилось');
+    host.querySelector('[data-ux=pair-piece]').click();
+    тест('власне фото в плитці й діалозі — зі сценарію образу, а не з іншої розмови',
+      d.querySelector('#mirror-sheet-content img').src==='data:image/jpeg;base64,AAAA');
+    w.MirrorRoom.close();
+    const запасне=host.querySelector('[data-pair-piece-photo="1"]');
+    запасне.dispatchEvent(new w.Event('error'));
+    тест('плитка переходить до запасного фото після помилки',запасне.src==='https://example.com/backup.jpg');
+    host.querySelectorAll('[data-ux=pair-piece]')[1].click();
+    const велике=d.querySelector('#mirror-sheet-content img');
+    велике.dispatchEvent(new w.Event('error'));
+    тест('велике фото в деталях також переходить до запасного',велике.src==='https://example.com/backup.jpg');
+    for(let n=0;n<3;n++)велике.dispatchEvent(new w.Event('error'));
+    тест('коли всі фото вичерпані, немає зламаного зображення',!d.querySelector('#mirror-sheet-content img'));
+    w.MirrorRoom.close();
     w.eval(`П.картки[0].картинка='https://example.com/fitted.jpg';MirrorRoom.refresh();`);
     await чекатиНа(()=>host.querySelector('.pair-fitted'), 'примірка не відобразилась');
     тест('примірка не ховає речей зі звороту',host.querySelectorAll('[data-ux=pair-piece]').length===5);
