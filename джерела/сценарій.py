@@ -311,6 +311,13 @@ def є_сценарій(сцен):
 
 # Смуги впорядковані від холоду до спеки; ранг — відстань у смугах, не градуси.
 СМУГИ_ПОГОДИ = tuple(_ВМ.ТАБЛИЦЯ["weather_band"])
+# Межі K-WEA-01 з поділом 18–26 у П-5. Цей опис читає модель, яка тлумачить її градуси.
+МЕЖІ_СМУГ_ДЛЯ_МОДЕЛІ = (
+    "deep_frost: below -8 C; frost: -8 to below 2 C; cold: 2 to below 10 C; "
+    "cool: 10 to below 18 C; mild: 18 to below 22 C; warm: 22 to below 26 C; "
+    "hot: 26 C and above."
+)
+
 МОРОЗНІ_СМУГИ = frozenset(("deep_frost", "frost"))
 ПАЛЬТОВІ_СМУГИ = МОРОЗНІ_СМУГИ | {"cold"}
 ЛІТНІ_СМУГИ = frozenset(("mild", "warm", "hot"))

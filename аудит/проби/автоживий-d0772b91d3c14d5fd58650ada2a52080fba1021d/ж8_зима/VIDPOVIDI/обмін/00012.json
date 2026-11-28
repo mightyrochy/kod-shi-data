@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Cream wool-blend blazer with a tailored notched lapel, classic cut, length ending at the hip bone, color #f5f0e1.\\nMatching cream wool-blend straight-leg trousers, standard width leg, full length reaching the ankle, color #f5f0e1.\\nWhite silk button-down blouse with a pointed collar, relaxed fit, length hemmed to tuck neatly into trousers, color #ffffff.\\nNude suede ankle boots with a low block heel, sharp pointed toe, shaft height ending just above the ankle bone, color #d4c5b6.\\nThis outfit works perfectly for a frosty morning commute in an office setting by combining warmth and professionalism. The wool blend ensures comfort against the cold snow while the neutral cream palette harmonizes with her warm skin tones and dark hair. As it is a neat business occasion requiring only standard movement like a short walk, the tailored silhouette remains polished without needing an outer layer.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n\\\"is_outfit\\\": \\\"yes\\\",\\n\\\"items\\\": [\\n{\\n\\\"name\\\": \\\"blazer\\\",\\n\\\"details\\\": \\\"wool-blend with tailored notched lapel and classic cut ending at the hip bone\\\",\\n\\\"slot\\\": \\\"outerwear\\\",\\n\\\"color_hex\\\": \\\"#f5f0e1\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"trousers\\\",\\n\\\"details\\\": \\\"wool-blend straight-leg standard width full length reaching the ankle\\\",\\n\\\"slot\\\": \\\"bottom\\\",\\n\\\"color_hex\\\": \\\"#f5f0e1\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"blouse\\\",\\n\\\"details\\\": \\\"silk button-down with pointed collar relaxed fit hemmed to tuck neatly into trousers\\\",\\n\\\"slot\\\": \\\"top\\\",\\n\\\"color_hex\\\": \\\"#ffffff\\\",\\n\\\"worn\\\": true\\n},\\n{\\n\\\"name\\\": \\\"ankle boots\\\",\\n\\\"details\\\": \\\"suede with low block heel sharp pointed toe shaft height ending just above the ankle bone\\\",\\n\\\"slot\\\": \\\"shoes\\\",\\n\\\"color_hex\\\": \\\"#d4c5b6\\\",\\n\\\"worn\\\": true\\n}\\n]\\n}\"}],\"usage\":{\"input_tokens\":549,\"output_tokens\":251},\"stop_reason\":\"end_turn\"}"
+ }
+}

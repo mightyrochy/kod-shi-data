@@ -40,6 +40,7 @@
 
 БЕЗ МОДЕЛІ ШАРУ ВСЕ ЯК ДОТИ: показ не кличе цей модуль.
 """
+import спільні_вимоги as _ВИМ
 import json as _json_
 import copy as _копія_
 import re
@@ -49,6 +50,7 @@ import фрази_формату as _ФФ
 import людський_вихід as _ЛВ
 from людський_вихід import ЗВЕРТАННЯ_ТИ as _ЗВЕРТАННЯ_ТИ
 import внутрішня_мова as _ВМ
+from сценарій import МЕЖІ_СМУГ_ДЛЯ_МОДЕЛІ
 import знання_речі as _ЗН
 import паспорт_поля as _ПП
 # «невідомо» на кожному рівні й вільний текст — у внутрішній мові, її речі шару — у речі з фото (3.3, К-4)
@@ -154,7 +156,7 @@ U = _ВМ.UNKNOWN
 # «This camel sweater…» перекладачка дала «Цей кашеміровий
 # светр», «кашеміровий светр капучино» — колір став тканиною (річ — `fabric: jersey`, «Светр-павутинка капучино
 # кемел»). Слів код не читає (п.12): `camel` у словничку названо кольором.
-МОВА_ДЛЯ_НЕЇ = ("Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — "
+МОВА_ДЛЯ_НЕЇ = ("Ім’я помічниці й назва застосунку Liusterko українською — Люстерко. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — "
                "літерами лише української абетки, без жодної латинської літери чи стороннього знака "
                "всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. "
                "Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: "
@@ -212,7 +214,7 @@ _УРІЗАНО_КОДИ = ("shorter_than_source", "ends_cut")
 РЕЧЕННЯ_УРІЗАНО = (" Твій перший переклад текстів %s урізано (коротший за джерело чи обірваний): переклади кожен із них увесь, до останнього "
                    "абзацу й останнього речення джерела, нічого не пропускаючи й не скорочуючи.")
 ПЕРЕКЛАДАЧКА = "Ти — перекладачка в застосунку-стилістці."  # хто вона — раз для трьох промптів шару
-РОЛЬ_ЧАТУ = "You are the stylist of a styling app in a live chat with a woman."  # хто вона — для розмови й поради
+РОЛЬ_ЧАТУ = _ВИМ.РОЛЬ_ЗАСТОСУНКУ + " You are in a live chat with a woman."  # хто вона — для розмови й поради
 ПОЛЯ_ЗА_СЛОВАМИ = "every field her words give grounds for, in its form from \"codes\""  # скелет перекладу слів
 КОДИ_ЗА_НОРМОЮ = "its codes from \"codes\", when the event has such a norm"
 ПРОМПТ_ВИХОДУ = ПЕРЕКЛАДАЧКА + """ Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
@@ -2456,7 +2458,7 @@ def паспорт_з_шару(внутрішня, сценарій, вето_ч
         # ПОРАДИ НЕМА ЗОВСІМ (`invite` порожнє при дозволених
         # темах і без обовʼязкового). Правило промпту велить запросити, щойно дозволені теми лишились, а модель мовчала,
         # і жінка не чула поради п.9 жодного разу. Брак поради — та сама вада форми, що й зіпсована: повторний запит.
-        if частини.get("need", "none") == "none" and дозволені and not обовʼязкове \
+        if частини.get("need", "none") in ("none", "case") and дозволені and not обовʼязкове \
                 and not частини.get("invite") and not частини.get("invite_topics"):
             відкинуто.append(dict(частина="invite", чому="no_invite", теми=[], дозволені=list(дозволені)))
         # знята за формою порада — на повторний запит (`ремонт_поради`)
@@ -3259,7 +3261,6 @@ def прийняти_повідомлення(розмітка, відповід
 # нею, від найсталішого до найсвіжішого: профіль, давні ходи, розмова, паспорт, плитки, теми,
 # обовʼязкове, фото, її нове повідомлення.
 import збирач_промптів as _ЗП_Р
-import спільні_вимоги as _ВИМ
 
 # Рядки полів сценарію англійською (п.12). Коди — ті самі переліки схеми (`внутрішня_мова.
 # СЦЕНАРІЙ`); нагода й місце — з підписами плиток довідника: це слова екрана, за якими модель
@@ -3409,9 +3410,7 @@ _ПОЛЯ_EN = {
     # мітки бази знань, не вимога; знято (Е2-промпти, п.1)
     "weather_band": "the weather band, from the degrees she names (digits or words) or her feeling of "
                     "the weather: "
-                    "deep_frost: below -8 C; frost: -8 to below 2 C; cold: 2 to below 10 C; "
-                    "cool: 10 to below 18 C; mild: 18 to below 22 C; warm: 22 to below 26 C; "
-                    "hot: 26 C and above. Read her whole phrase, including the sign and a number "
+                    + МЕЖІ_СМУГ_ДЛЯ_МОДЕЛІ + " Read her whole phrase, including the sign and a number "
                     "written in words; when she gives no degrees, choose a band from her weather "
                     "words, or the usual weather of the season, month, holiday or place she names, "
                     "with that word as quote. No weather evidence — absent",
@@ -3624,20 +3623,17 @@ _ОБОВʼЯЗКОВЕ_EN = {
 assert set(_ОБОВʼЯЗКОВЕ_EN) == set(_ВМ.ОБОВʼЯЗКОВЕ)
 # Межа мовної моделі (п.3 наряду) — англійськими визначеннями кодів `внутрішня_мова.ПОТРЕБИ`.
 _ПОТРЕБИ_EN = {
-    # «general style knowledge» модель читала як дозвіл радити — «замша не
-    # боїться води» на «замшеві чоботи, увесь день дощ»; що пасує погоді й нагоді, знає перевірка коду
-    # «she told about her outing» — хвіст опису `look` («Telling about her outing … asks nothing: that is none»)
     "none": "you answer her yourself: she asked what you know for sure "
             "without her items, looks and photos — what a word or a style term means",
     "app": "a question about this app — its screens, buttons, her saved data, what to do next: you "
            "answer it in your next message, from what the app shows",
-    # «йду на роботу пішки, … відкритого не хочу» — без питання, а
-    # need=look у 2 з 2 сідів; стилістка відповідала на непитання й вигадувала «куртку» і «Мінськ»
-    "look": "her new message itself asks to judge her items or her look (how they look, whether they go "
-            "together or suit her) or asks why a particular item or look was chosen: you answer it in your "
-            "next message, after the app has checked her items and looks. Telling about her outing, its weather and her wishes or limits for the look asks nothing: "
-            "that is none",
-    "build": "she asks to put the looks together now: the app does it",
+    "look": "she asks you to assess the outfit in her attached photo(s), for example whether the colours go together "
+            "or suit her. Still use look if she names an occasion or time she wants that outfit judged for, "
+            "and put the occasion and its dress level or time of day in update",
+    "item": "she asks about an individual item, including what to wear with the item in her photo, "
+            "or why you chose an item or outfit: you answer after the app checks it",
+    "case": "she is describing or changing the outing, its weather, her items, wishes or limits for the case",
+    "build": "she asks to put together new outfits now, even if she attaches a photo to use for them: the app does it",
 }
 assert set(_ПОТРЕБИ_EN) == set(_ВМ.ПОТРЕБИ)
 
@@ -3737,7 +3733,7 @@ def _коди_розмови():
     р.append("Required questions — code: what to ask · when it applies (after your update):")
     р.append("  · dressiness fields — " + ", ".join(_СЦ._КОДИ_ВИЗНАЧАЛЬНИХ))
     р += ["- %s: %s · %s" % (к, що, коли) for к, (що, коли) in _ОБОВʼЯЗКОВЕ_EN.items()]
-    р.append("need — who answers her this turn:")
+    р.append("need — what she wants in this turn:")
     р += ["- %s — %s" % (к, о) for к, о in _ПОТРЕБИ_EN.items()]
     # Е2-усе-з-розмови: перелік інструментів розмови — з одного джерела (`conversation_tools`), як і схема `tool`
     р += _ІНСТР.коди_для_промпту()
@@ -4738,7 +4734,7 @@ def _на_своє_поле(оновлення):
 
 # «ОЦІНИ МІЙ ОБРАЗ» — НЕ БАЖАННЯ (qwen3.5-9b мовним шаром). На 6б «Оціни мій образ — як тобі?» з
 # двома фото модель дала `need: look` і `wants: [{quote: «мій образ» / уся репліка, item_type: dress_generic(, slot: set)}]`
-# у 10 з 10; поле в `update`, і показ (`лишеПитанняП`) вів хід у сценарій, а не в оцінку. Слів код не читає (п.12): при
+# у 10 з 10; її слова не були бажанням до збирання. Слів код не читає (п.12): при
 # `need: look` (вона просить судити свої речі чи образ) запис `wants` без жодної ознаки, крім уривка, слота `set` і
 # загального виду (`<рід>_generic`), нічого не просить — як запис лише зі слотом (`_слот_без_ознаки`). Бажання з ознакою
 # чи точним видом лишається. У `перенесено` — `wants.look_request`.
@@ -4767,12 +4763,10 @@ def прийняти_розмову(відповідь):
 
     `внутрішня` — оновлення паспорта, розібране ТИМ САМИМ шляхом, що переклад сценарію
     (`прийняти_вхід("scenario", …)`: пари → поле й уривок у `quotes`, коди поза переліком — у
-    `незнайомі`). `need` стає й старою темою питання (`question_about`: look / app) — її читають
-    гілки оцінки й довідки показу. `частини` — сирі частини відповіді; судить їх шов (`суд_частин`).
+    `незнайомі`). Маршрут показу — `частини.need`. Решту частин відповіді судить шов (`суд_частин`).
     `частини.tool` — виклик інструмента розмови, що пройшов договір (`conversation_tools.прийняти_виклик`); його
     розбіжності — у `незнайомі`, тож повтор каже їх словами.
-    Не JSON-обʼєкт (`протокол.розбір`: код із місцем вади, без ремонту форми — Е2-межі п.4) чи без `text` — причина,
-    і показ робить один повтор, далі хід іде шляхом main (як відмова перекладача доти)."""
+    Не JSON-обʼєкт або хід без тексту, питання й дії має код причини для одного повтору."""
     об, чому_не = _обʼєкт(відповідь)
     if not isinstance(об, dict):
         return dict(внутрішня={}, частини={}, незнайомі=[], невідомо=[], заглушки=[],
@@ -4805,10 +4799,10 @@ def прийняти_розмову(відповідь):
         # `text` переліком рядків без `about` («["У тебе робочий день
         # в офісі, і ти хочеш приховати животик. Зрозуміла."]»): доти хід ішов як `no_text_field` шляхом паспорта, і
         # записане `goal_zones` губилось. Про що речення, код не знає, тож показує лише перше з кількох слів, як
-        # `says`; решта — у `відкинуто` (`extra_sentence`). При `need` app чи look бульбашку пише
+        # `says`; решта — у `відкинуто` (`extra_sentence`). Для питань про застосунок, образ і річ бульбашку пише
         # код, і такий текст («Я подивлюся… і відповім») не показується
         if к == "text" and isinstance(т, list) and т and all(isinstance(x, str) for x in т) \
-                and частини.get("need") not in ("app", "look"):
+                and need not in ("app", "look", "item"):
             шматки = [x for x in _РЕЧЕННЯ.split(" ".join(т)) if x.strip()]
             т = next((x for x in шматки if len(x.split()) > 1), шматки[0] if шматки else "")
             if len(шматки) > 1:
@@ -4841,20 +4835,15 @@ def прийняти_розмову(відповідь):
     шапка = _шапка(об.get("header"), незнайомі, в)
     if шапка:
         частини["header"] = шапка
-    if частини.get("need") in ("app", "look"):
-        в["question_about"] = частини["need"]
     # Е2-усе-з-розмови: виклик інструмента — схемою з переліку; прийнята частина виконується й після повтору
     виклик, вади_виклику = _ІНСТР.прийняти_виклик(об.get("tool"))
     if виклик:
         частини["tool"] = виклик
     незнайомі += вади_виклику
     в, зняте_оцінки = _бажання_оцінки(в, частини.get("need"))
-    # ПИТАННЯ, НА ЯКЕ ВІДПОВІДАЄ НЕ ВОНА: при `need` app чи look її бульбашку пише код
-    # (оцінка образу чи перекладач із відповіддю стилістки або помічниці), а `text` каже лише записане — коли
-    # не записано нічого, речень нема. MamayLM на фото з «оціни мій образ» двічі дала `need: look` і
-    # `text: [{"about": []}]`; код рахував це битим форматом (`no_text_field`), і репліка йшла в сценарій.
-    # Хід, що лише кличе інструмент («збережи»), — не битий: результат у розмові показує картка інструмента.
-    причина = None if частини.get("text") or частини.get("ask") or частини.get("need") in ("app", "look") \
+    # Коли потрібна дія застосунку, результат покаже картка або відповідь відповідної функції.
+    # Оновлення паспорта (`case`) теж може обійтися без бульбашки.
+    причина = None if частини.get("text") or частини.get("ask") or (частини.get("need", "none") != "none") \
         or частини.get("tool") else "no_text_field"
     if причина and частини_в_update:      # частина ходу не на своєму місці: повтор каже, які ключі `update` — не поля
         причина = "unknown_key: " + ", ".join(частини_в_update)

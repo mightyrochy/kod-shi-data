@@ -7,7 +7,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from ядро import знання, запит, протокол, розбір, руки, суд
-from ядро.поняття import Картка, Факт, Ситуація
+from ядро.поняття import Картка, ВідмоваРуки, Факт, Ситуація
 from ядро.тести import обвязка
 from ядро.тести.тест_н2 import _ситуація, _складений_каталог, _запис
 
@@ -19,7 +19,8 @@ def _турнірний_каталог():
 
 
 def _картки(в):
-    return {к["рука"]: Картка.з_json(к) for к in в["картки"]}
+    return {к["рука"]: cls.з_json(к) for вид, cls in (("картки", Картка), ("відмови", ВідмоваРуки))
+            for к in в.get(вид, ())}
 
 
 def _складач(з):
@@ -176,7 +177,7 @@ class Т17_Рука2(TestCase):
         в, журнал = self._прогнати("т17")
         сіди = {з["рука"]: з["сід"] for з in журнал["запити"]}
         self.assertNotEqual(сіди[1], сіди[2])
-        дія, = [з for з in в["звіт"] if з.get("заява") == "hand_2_breakage"]
+        дія = [з for з in в["звіт"] if з.get("заява") == "hand_2_breakage"][-1]
         суд_ = [з for з in в["звіт"] if з.get("заява") == "hand_2_breakage_judge"]
         діє = bool(дія["пул"] or дія["запит"] or any(з["суд"] for з in суд_))
         к2 = _картки(в)[2]
@@ -216,8 +217,8 @@ class Т32_КарткиРазом(TestCase):
                                                               ensure_ascii=False)))
                     черга += вв["запити"]
                     повідомлення.append(вв)
-                self.assertEqual([len(п["картки"]) for п in повідомлення], [0] * (len(повідомлення) - 1) + [4])
-                self.assertEqual(sorted(к["рука"] for к in повідомлення[-1]["картки"]), [1, 2, 3, 4])
+                self.assertEqual([len(_картки(п)) for п in повідомлення], [0] * (len(повідомлення) - 1) + [4])
+                self.assertEqual(sorted(_картки(повідомлення[-1])), [1, 2, 3, 4])
 
 
 class Т49_РежимиПеремикачів(TestCase):

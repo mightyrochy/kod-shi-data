@@ -33,7 +33,7 @@ window.createMirrorPair = function(R) {
   const measurements=()=>[['мр-зріст','Зріст'],['мр-талія','Талія']].filter(([id])=>Number(node(id)?.value)>0).map(([id,name])=>'<small>'+name+' · '+e(node(id).value)+' см</small>').join('');
   function home(){
     return '<div class="pair-start-actions">'+action(R.hasCase()?'pair-summary':'pair-occasion','Зібрати образ','',true)+action('assess','Оцінити вбрання')+'</div>'+
-      '<div class="pair-shortcuts">'+b('library','Мої образи','збірка')+b('anchor','Під мою річ','вішак')+b('buy','Купити чи ні?','сумка')+b('catalog','Знайти річ','пошук')+b('closet','Мої речі','збірка')+b('compose','Зібрати вручну','вішак')+'</div>'+
+      '<div class="pair-shortcuts">'+b('library','Мої образи','збірка')+b('anchor','Під мою річ','вішак')+b('buy','Купити чи ні?','сумка')+b('catalog','Знайти річ','пошук')+b('closet','Мої речі','шафа')+b('compose','Зібрати вручну','плюс')+'</div>'+
       '<div class="pair-future-link">'+action('features','Можливості')+' · '+action('pair-plans','У планах')+'</div>';
   }
 
@@ -144,11 +144,16 @@ window.createMirrorPair = function(R) {
     const cards=pack?.картки||[];
     const ready=cards.map((c,i)=>({c,i})).filter(({c})=>c&&!c.збій&&c.речі?.length);
     const main=ready.find(({c})=>String(c.рука)==='1')||ready.find(({c})=>!c.рука);
-    const position=Number(Екран.стан.образ?.поз||0),record=testing?{c:cards[position],i:position}:main;
+    const поступово=!!pack?.ядро?.поступово, кілька=testing||поступово;
+    const position=Number(Екран.стан.образ?.поз||0),record=кілька?{c:cards[position],i:position}:main;
     target.hidden=false;
+    if(поступово&&record?.c?.збій){
+      document.documentElement.dataset.pairLooks='blind';
+      target.hidden=true;return;
+    }
     if(!record?.c){
       target._renderKey=null;
-      document.documentElement.dataset.pairLooks=testing?'blind':'waiting';
+      document.documentElement.dataset.pairLooks=кілька?'blind':'waiting';
       const збій=ЯДРО_П&&!testing&&cards.find(c=>c?.рука===1)?.збій;
       if(збій){
         const html='<p class="не-вийшло"></p><div class="pair-actions">'+action('pair-build','Повторити','',true)+
@@ -168,7 +173,7 @@ window.createMirrorPair = function(R) {
       ? '<i class="арка" role="img" aria-label="Фото комплекту немає"></i>' : '<span>Комплект</span>';
     const lead=fitted?image(fitted,'Приміряний образ'):pics[0]?image(pics[0].фото,pics[0].назва||'Річ із комплекту'):безКадру;
     const picture='<div class="pair-image">'+lead+'</div>';
-    document.documentElement.dataset.pairLooks=testing?'blind':same?'one':'preview';
+    document.documentElement.dataset.pairLooks=кілька?'blind':same?'one':'preview';
     const colors=pieces.map(x=>tone(x.hex)).filter(Boolean),worn=!!window.Rack?.nativeWorn(key);
     const entry=БІБЛІОТЕКА_П.плитки.find(x=>x.ід===key),group=entry&&БІБЛІОТЕКА_П.групи.find(g=>g.плитки?.some(x=>x.ід===key));
     let spread=relation(label('Ти',person()),'',label(fitted?'Приміряння':'Комплект',picture),'pair-outfit');
@@ -229,6 +234,16 @@ window.createMirrorPair = function(R) {
     const inCase=mode==='сценарій'&&!extra;
     document.documentElement.dataset.pairPage=extra||(inCase?page:mode);
     choices.hidden=!inCase||page!=='occasion';host.hidden=!inCase;
+    node('pair-chat-welcome').hidden=!inCase||page!=='mirror'||ЧАТ_П.length>0;
+    const finish=node('pair-profile-finish');
+    const profile=!extra&&(mode==='профіль'||mode==='старт')?зрізПрофіляП():null;
+    finish.hidden=!profile||profile.профілі.створено;
+    if(!finish.hidden){
+      const missing=бракПрофілюП(profile).map(item=>item.назва);
+      const hint=node('pair-profile-missing');
+      const message=missing.length?'Ще треба: '+missing.join(', ')+'.':'';
+      if(hint.textContent!==message)текстЖінціП(hint,message);
+    }
     if(inCase){
       const title=page==='understood'?'Моя нагода':page==='occasion'?'Куди збираємось?':'';
       node('mirror-heading').hidden=!title;
@@ -246,16 +261,13 @@ window.createMirrorPair = function(R) {
         const name=node('пр-імʼя')?.value||'Як до тебе звертатися?';
         const portrait=photoURL(node('ф-портрет')?.querySelector('img')?.getAttribute('src'));
         place(host,'<div class="pair-profile-intro"><button type="button" class="studio-text" data-ux="pair-name">'+e(name)+'</button>'+relation(label('Портрет','<button type="button" class="pair-image" data-ux="pair-photos">'+(portrait?image(portrait,'Портрет'):ik('камера',27)+' Додати портрет')+'</button>'),'',label('На повний зріст',person()),'pair-profile')+'</div>');
-        const finish=node('pair-profile-finish');
-        if(finish){finish.hidden=зрізПрофіляП().профілі.створено;place(finish,action('pair-profile-done','Зберегти й продовжити','',true));}
       }
     }
     if(!extra&&mode==='образи')nativeVariants();else delete document.documentElement.dataset.pairLooks;
     if(!extra&&mode==='палітра')nativePalette();
     if(!extra&&mode==='очікування')waitView();
     node('mirror-native').hidden=!!extra;
-    const latest=[...ЧАТ_П].reverse();
-    node('pair-latest').textContent=latest.find(n=>n.хто==='ші'&&n.текст)?.текст||latest.find(n=>n.текст)?.текст||(mode==='оцінка'&&!extra?'Питання про вбрання':'Куди збираєшся?');
+    node('pair-latest').textContent='Запитай';
   }
   const live=[
     ['Образ',[['pair-occasion','Зібрати для нагоди'],['pair-summary','Умови нагоди'],['pair-palette','Барви образу'],['compose','Два варіанти вручну'],['assess','Оцінити моє вбрання'],['anchor','Підібрати під мою річ']]],
@@ -287,7 +299,7 @@ window.createMirrorPair = function(R) {
   }
   function photo(){const field=node('ф-зріст')?.querySelector('input[type=file]');if(field)field.click();else{R.route('профіль',false);відкритиАркушПрофілю('ф-блок');}}
   function afterOccasion(key){if(!key)R.openDrawer(true);}
-  const handlers={'pair-profile-done':async()=>{await завершитиОнбординг();stage('mirror');},'pair-name':()=>відкритиАркушПрофілю('проф-блок'),'pair-photos':()=>відкритиАркушПрофілю('ф-блок'),'pair-home':()=>stage('mirror'),'pair-occasion':()=>stage('occasion'),'pair-summary':()=>stage('understood'),'pair-photo':photo,'pair-edit':openEdit,'pair-save-case':()=>node('сц-зберегти').click(),
+  const handlers={'pair-profile-done':async()=>{if(await завершитиОнбординг())stage('mirror');else відкритиБракПрофілюП();},'pair-name':()=>відкритиАркушПрофілю('проф-блок'),'pair-photos':()=>відкритиАркушПрофілю('ф-блок'),'pair-home':()=>stage('mirror'),'pair-occasion':()=>stage('occasion'),'pair-summary':()=>stage('understood'),'pair-photo':photo,'pair-edit':openEdit,'pair-save-case':()=>node('сц-зберегти').click(),
     'pair-build':()=>{if(режимЕкрана()!=='сценарій')stage('understood');Екран.відЖінки('розуміння-так');node('зб-зібрати').click();},'pair-palette':()=>R.route('палітра'),'pair-agree':k=>factDecision(k,true),'pair-remove':k=>factDecision(k,false),
     'pair-open-product':idx=>{показатиОбраз(Number(idx));nativeVariants();},'pair-result':showProduct,
     'pair-reverse':pos=>{if(!П?.картки?.[Number(pos)])return;const key=cardKey(П,Number(pos));reverseKey=reverseKey===key?'':key;nativeVariants();},
