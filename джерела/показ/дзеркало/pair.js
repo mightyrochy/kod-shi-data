@@ -143,11 +143,16 @@ window.createMirrorPair = function(R) {
     const cards=pack?.картки||[];
     const ready=cards.map((c,i)=>({c,i})).filter(({c})=>c&&!c.збій&&c.речі?.length);
     const main=ready.find(({c})=>String(c.рука)==='1')||ready.find(({c})=>!c.рука);
-    const position=Number(Екран.стан.образ?.поз||0),record=testing?{c:cards[position],i:position}:main;
+    const поступово=!!pack?.ядро?.поступово, кілька=testing||поступово;
+    const position=Number(Екран.стан.образ?.поз||0),record=кілька?{c:cards[position],i:position}:main;
     target.hidden=false;
+    if(поступово&&record?.c?.збій){
+      document.documentElement.dataset.pairLooks='blind';
+      target.hidden=true;return;
+    }
     if(!record?.c){
       target._renderKey=null;
-      document.documentElement.dataset.pairLooks=testing?'blind':'waiting';
+      document.documentElement.dataset.pairLooks=кілька?'blind':'waiting';
       const збій=ЯДРО_П&&!testing&&cards.find(c=>c?.рука===1)?.збій;
       if(збій){
         const html='<p class="не-вийшло"></p><div class="pair-actions">'+action('pair-build','Повторити','',true)+
@@ -167,7 +172,7 @@ window.createMirrorPair = function(R) {
       ? '<i class="арка" role="img" aria-label="Фото комплекту немає"></i>' : '<span>Комплект</span>';
     const lead=fitted?image(fitted,'Приміряний образ'):pics[0]?image(pics[0].фото,pics[0].назва||'Річ із комплекту'):безКадру;
     const picture='<div class="pair-image">'+lead+'</div>';
-    document.documentElement.dataset.pairLooks=testing?'blind':same?'one':'preview';
+    document.documentElement.dataset.pairLooks=кілька?'blind':same?'one':'preview';
     const colors=pieces.map(x=>tone(x.hex)).filter(Boolean),worn=!!window.Rack?.nativeWorn(key);
     const entry=БІБЛІОТЕКА_П.плитки.find(x=>x.ід===key),group=entry&&БІБЛІОТЕКА_П.групи.find(g=>g.плитки?.some(x=>x.ід===key));
     let spread=relation(label('Ти',person()),'',label(fitted?'Приміряння':'Комплект',picture),'pair-outfit');
