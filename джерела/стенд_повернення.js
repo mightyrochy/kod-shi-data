@@ -7,6 +7,11 @@
                          без неї файли йдуть із мережі тими самими адресами й відбитками;
      [тека_виводу]     — куди покласти кадри примірки й повернення для очей.
 
+   Записані пари: node стенд_повернення.js --пари <JSON> [тека_медіапайп] [тека_виводу]
+     JSON — масив {назва, фото, кадр, макіяж, та_сама}; шляхи відносні до JSON, макіяж і та_сама — boolean.
+     Підставлені кадри іншої жінки позначаються та_сама=false. Невірне рішення стенд позначає кодом 1.
+     CHROMIUM_PATH — шлях до системного Chromium, коли Chromium Playwright не встановлений.
+
    Справжнього генератора тут нема: «кадр примірки» стенд робить із її фото так, як його
    псує генератор, — масштаб і зсув кадру, інші пропорції, зсув тону шкіри, — і дві примірки
    паспорта: зміна кольору (одяг іншого кольору) і зміна крою (новий рукав і комір
@@ -16,8 +21,14 @@ const fs = require('fs');
 const path = require('path');
 const {chromium} = require('playwright');
 
-const [фото, текаМП, текаВих] = process.argv.slice(2);
-if (!фото){ console.error('потрібне фото: node стенд_повернення.js <фото> [тека_медіапайп] [тека_виводу]'); process.exit(2); }
+const аргументи = process.argv.slice(2);
+const режимПар = аргументи[0] === '--пари';
+if (режимПар) аргументи.shift();
+const [вхід, текаМП, текаВих] = аргументи;
+if (!вхід){
+  console.error('node стенд_повернення.js [--пари] <фото_або_JSON> [тека_медіапайп] [тека_виводу]');
+  process.exit(2);
+}
 const модуль = fs.readFileSync(path.join(__dirname, 'показ', 'повернення.js'), 'utf8');
 
 /* У сторінці: синтетичний кадр примірки, повернення, лічба. */
@@ -52,7 +63,7 @@ async function проба(вид){
   кт.drawImage(дж, зх, зу, о.ш * м, о.в * м);
   const кадр = п.toDataURL('image/png');
   const р = await повернутиЛюдинуП(Promise.resolve({о}), {media_type: 'image/png', data: кадр.split(',')[1]}, false);
-  if (!р.кадр) return {вид, звіт: р.звіт};
+  if (!р.кадр) return {вид, звіт: р.звіт, кадр_примірки: кадр};
   /* лічба на рамці повернення: її частини поза новою річчю — рівні фото?; нова річ — з примірки? */
   const [рх, ру, рш, рв] = р.звіт.рамка;
   const б = await createImageBitmap(await (await fetch(р.кадр)).blob());
@@ -80,36 +91,67 @@ async function проба(вид){
   return {вид, звіт: р.звіт, лічба: л, кадр_примірки: кадр, кадр_повернення: р.кадр};
 }
 
-(async () => {
-  const б = await chromium.launch();
-  const стор = await б.newPage();
-  if (текаМП){
-    const назви = {'vision_bundle.mjs': 'vision_bundle.mjs', 'vision_wasm_internal.js': 'wasm/vision_wasm_internal.js',
-      'vision_wasm_internal.wasm': 'wasm/vision_wasm_internal.wasm', 'selfie_multiclass_256x256.tflite': 'selfie_multiclass_256x256.tflite'};
-    await стор.route(/cdn\.jsdelivr\.net|storage\.googleapis\.com/, маршрут => {
-      const ім = маршрут.request().url().split('/').pop();
-      маршрут.fulfill({path: path.join(текаМП, назви[ім] || ім),
-        headers: {'access-control-allow-origin': '*', 'content-type': ім.endsWith('.wasm') ? 'application/wasm' : 'application/octet-stream'}});
-    });
+function джерелоКадру(файл){
+  const тип = /\.png$/i.test(файл) ? 'image/png' : /\.webp$/i.test(файл) ? 'image/webp' : 'image/jpeg';
+  return {media_type: тип, data: fs.readFileSync(файл).toString('base64')};
+}
+
+function зберегтиКадр(назва, кадр){
+  if (текаВих && кадр) fs.writeFileSync(path.join(текаВих, назва + '.png'), Buffer.from(кадр.split(',')[1], 'base64'));
+}
+
+async function повторитиПари(стор, файл){
+  const пари = JSON.parse(fs.readFileSync(файл, 'utf8'));
+  if (!Array.isArray(пари) || !пари.length) throw new Error('Потрібен непорожній масив пар');
+  const тека = path.dirname(файл);
+  for (const [і, пара] of пари.entries()){
+    const {назва, фото, кадр, макіяж, та_сама} = пара;
+    if (typeof назва !== 'string' || typeof фото !== 'string' || typeof кадр !== 'string'
+        || typeof макіяж !== 'boolean' || typeof та_сама !== 'boolean') throw new Error('Поля пари ' + (і + 1));
+    const р = await стор.evaluate(([о, г, змінаОбличчя]) =>
+      повернутиЛюдинуП(підготуватиПоверненняП({тип: о.media_type, дані: о.data}), г, змінаОбличчя),
+      [джерелоКадру(path.resolve(тека, фото)), джерелоКадру(path.resolve(тека, кадр)), макіяж]);
+    const прийнято = !!р.кадр;
+    console.log(JSON.stringify({назва, та_сама, макіяж, прийнято, ...р.звіт}));
+    if (прийнято !== та_сама || р.звіт.чому === 'segmenter_failed') process.exitCode = 1;
+    if (та_сама) зберегтиКадр((і + 1) + '_повернення', р.кадр);
   }
-  await стор.setContent('<!doctype html><meta charset="utf-8"><body>');
-  await стор.addScriptTag({content: модуль});
-  const тип = /\.png$/i.test(фото) ? 'image/png' : 'image/jpeg';
-  await стор.evaluate(([т, д]) => { window.ФОТО = {тип: т, дані: д}; }, [тип, fs.readFileSync(фото).toString('base64')]);
-  await стор.addScriptTag({content: 'window.проба = ' + проба.toString()});
-  for (const вид of ['колір', 'крій']){
-    const р = await стор.evaluate(в => window.проба(в), вид);
-    const л = р.лічба;
-    console.log(вид + ' · звіт ' + JSON.stringify(р.звіт));
-    if (!л) continue;
-    const ч = (а, б_) => (100 * а / Math.max(1, б_)).toFixed(1) + ' %';
-    console.log(вид + ' · її частини поза новою річчю: ' + л.частин + ' px; рівні фото ДО ' + ч(л.до_рівні, л.частин)
-      + ' → ПІСЛЯ ' + ч(л.після_рівні, л.частин) + '; середнє відхилення ДО ' + (л.до_відхил / л.частин).toFixed(1)
-      + ' → ПІСЛЯ ' + (л.після_відхил / л.частин).toFixed(1) + '; нова річ із примірки ' + ч(л.нова_з_примірки, л.нової));
-    if (текаВих){
-      for (const [ім, у] of [['примірка', р.кадр_примірки], ['повернення', р.кадр_повернення]])
-        fs.writeFileSync(path.join(текаВих, вид + '_' + ім + '.png'), Buffer.from(у.split(',')[1], 'base64'));
+}
+
+async function головна(){
+  const б = await chromium.launch({executablePath: process.env.CHROMIUM_PATH || undefined});
+  try {
+    const стор = await б.newPage();
+    if (текаМП){
+      const назви = {'vision_bundle.mjs': 'vision_bundle.mjs', 'vision_wasm_internal.js': 'wasm/vision_wasm_internal.js',
+        'vision_wasm_internal.wasm': 'wasm/vision_wasm_internal.wasm', 'selfie_multiclass_256x256.tflite': 'selfie_multiclass_256x256.tflite'};
+      await стор.route(/cdn\.jsdelivr\.net|storage\.googleapis\.com/, маршрут => {
+        const ім = маршрут.request().url().split('/').pop();
+        маршрут.fulfill({path: path.join(текаМП, назви[ім] || ім),
+          headers: {'access-control-allow-origin': '*', 'content-type': ім.endsWith('.wasm') ? 'application/wasm' : 'application/octet-stream'}});
+      });
     }
+    await стор.setContent('<!doctype html><meta charset="utf-8"><body>');
+    await стор.addScriptTag({content: модуль});
+    if (режимПар) return await повторитиПари(стор, вхід);
+    const {media_type, data} = джерелоКадру(вхід);
+    await стор.evaluate(([т, д]) => { window.ФОТО = {тип: т, дані: д}; }, [media_type, data]);
+    await стор.addScriptTag({content: 'window.проба = ' + проба.toString()});
+    for (const вид of ['колір', 'крій']){
+      const р = await стор.evaluate(в => window.проба(в), вид);
+      const л = р.лічба;
+      console.log(вид + ' · звіт ' + JSON.stringify(р.звіт));
+      зберегтиКадр(вид + '_примірка', р.кадр_примірки);
+      зберегтиКадр(вид + '_повернення', р.кадр_повернення);
+      if (!л) continue;
+      const ч = (а, б_) => (100 * а / Math.max(1, б_)).toFixed(1) + ' %';
+      console.log(вид + ' · її частини поза новою річчю: ' + л.частин + ' px; рівні фото ДО ' + ч(л.до_рівні, л.частин)
+        + ' → ПІСЛЯ ' + ч(л.після_рівні, л.частин) + '; середнє відхилення ДО ' + (л.до_відхил / л.частин).toFixed(1)
+        + ' → ПІСЛЯ ' + (л.після_відхил / л.частин).toFixed(1) + '; нова річ із примірки ' + ч(л.нова_з_примірки, л.нової));
+    }
+  } finally {
+    await б.close();
   }
-  await б.close();
-})().catch(е => { console.error(е); process.exit(1); });
+}
+
+головна().catch(е => { console.error(е); process.exitCode = 1; });
