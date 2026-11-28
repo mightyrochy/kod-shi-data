@@ -401,7 +401,8 @@ def _заяви(вирок, адреси):
         д = з.значення
         запис = {"id": з.ід, "code": з.код, "values": _номери_заяви(д["факти"], адреси), "items": з.речі,
                  "rule": з.правило, "register": д["регістр"], "repair": д["ремонт"]}
-        for поле, ключ in (("вага", "weight"), ("утримано", "withheld"), ("впевненість", "confidence")):
+        for поле, ключ in (("сила", "strength"), ("вага", "weight"), ("утримано", "withheld"),
+                           ("впевненість", "confidence")):
             if д.get(поле) is not None:
                 запис[ключ] = д[поле]
         заяви.append(запис)
@@ -776,7 +777,7 @@ def запит(вид, пул, ситуація, профіль, *, образи
     тіло["knowledge_legend"] = {
         "unknown": "The value is missing. Make no claim about it.",
         "uncertain": "Only the supplied interval or bounds are known.",
-        "missing_input": "The rule could not be applied with the available inputs.",
+        "missing_input": "Some inputs are missing. A finding can still report a judgment on the known evidence.",
     }
     if any(з["findings"] and any(р.get("withheld") for р in з["findings"]) for з in тіло.get("verdict", ())):
         тіло["knowledge_legend"]["withheld"] = "Judgment withheld. Keep the uncertainty. It is neither a finding to fix nor evidence of a pass."
