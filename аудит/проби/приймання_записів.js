@@ -3,6 +3,7 @@ const fs = require('fs'), path = require('path');
 const {spawnSync} = require('child_process');
 const {знімок, звіритиБазу, порівняти, затягнутиЗелені} = require('./храповик_записів.js');
 const {ключЗапиту, різницяЗапитів} = require('./записаний_обмін.js');
+const {шляхМодулівСтенда} = require('./шлях_модулів_стенда.js');
 const корінь = path.resolve(__dirname, '../..');
 
 function серіяДва() {
@@ -103,7 +104,8 @@ function середовищеСцени(сцена, тека, стенд = path.
   const код = fs.readFileSync(стенд, 'utf8');
   for (const м of код.matchAll(/process\.env\.([\p{Lu}_][\p{Lu}\d_]*)/gu))
     if (!['CHROMIUM', 'NODE_PATH', 'HTTPS_PROXY'].includes(м[1])) delete середовище[м[1]];
-  Object.assign(середовище, сцена.змінні, {ZNIMKY: path.join(тека, 'знімки')});
+  Object.assign(середовище, сцена.змінні, {ZNIMKY: path.join(тека, 'знімки'),
+    NODE_PATH: шляхМодулівСтенда(корінь, середовище.NODE_PATH)});
   if (сцена.жінка) {
     fs.mkdirSync(тека, {recursive: true});
     const файл = path.join(тека, 'жінка.json');
@@ -114,10 +116,11 @@ function середовищеСцени(сцена, тека, стенд = path.
   return середовище;
 }
 
-/* Один запуск стенда на записаних відповідях; його вивід — `лог.txt` у `тека` (знімки — за `ZNIMKY` середовища). */
-function запуститиСтенд(збірка, кеш, сід, середовище, тека, стенд = path.join(__dirname, 'рв6_стенд.js')) {
+/* Запускає стенд на записаних відповідях; знімки йдуть за ZNIMKY, лог можна зберегти окремо від них. */
+function запуститиСтенд(збірка, кеш, сід, середовище, тека, {
+  стенд = path.join(__dirname, 'рв6_стенд.js'), файлЛогу = path.join(тека, 'лог.txt')} = {}) {
   fs.mkdirSync(тека, {recursive: true});
-  const лог = fs.openSync(path.join(тека, 'лог.txt'), 'w');
+  const лог = fs.openSync(файлЛогу, 'w');
   try {
     return spawnSync(process.execPath, [стенд,
       'http://127.0.0.1:8765', path.resolve(збірка), path.resolve(кеш), String(сід)],
@@ -194,7 +197,7 @@ function виконати() {
         const текаБази = path.join(тека, 'main');
         const стенд = стендБази();
         const до = запуститиСтенд(process.env.REPLAY_BASE_BUILD, кеш, сцена.сід,
-          середовищеСцени(базоваСцена, текаБази, стенд), текаБази, стенд);
+          середовищеСцени(базоваСцена, текаБази, стенд), текаБази, {стенд});
         вимірБази = результатСтенда(текаБази, до.status === null ? 2 : до.status);
         fs.writeFileSync(path.join(тека, 'вимір-бази.json'), JSON.stringify(вимірБази, null, 1) + '\n');
         if (вимірБази.застарілий) console.log('База main: ' + вимірБази.застарілий.причина);

@@ -4,7 +4,7 @@ import copy
 import pathlib
 import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-import accessory as А
+import аксесуари_край as А
 import fit as П
 import похибка_вимірів_тіла as В
 from знахідка import припущення
@@ -36,5 +36,5 @@ if __name__ == "__main__":
         assert len(А.кольє_проти_горловини(т, пара)) == 1
     assert А.кольє_проти_горловини(тіло, пара[:1]) == []
     assert А.кольє_проти_горловини(тіло, [пара[0], dict(пара[1], виріз_тип="невідомий")]) == []
-    assert А._край_горловини(dict(виріз_тип="V-подібний"), None)[0] is None
-    assert А._край_горловини(dict(край_джерело="річ", верх_см=130), None)[0] == 130
+    assert А.висота_горловини(dict(виріз_тип="V-подібний"), None)[0] is None
+    assert А.висота_горловини(dict(край_джерело="річ", верх_см=130), None)[0] == 130

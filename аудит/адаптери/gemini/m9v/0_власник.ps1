@@ -55,9 +55,10 @@ Get-FileHash "$pub\gemini_publish.ps1", "$env:TEMP\gemini_run.ps1" | Format-List
 Invoke-WebRequest "$base/wrapper_health.ps1" -OutFile "$pub\wrapper_health.ps1" -UseBasicParsing
 Invoke-WebRequest "$base/wrapper_health.ps1" -OutFile "$env:TEMP\wrapper_health.ps1" -UseBasicParsing
 Invoke-WebRequest "$base/wrapper_health.ps1" -OutFile "$cr\wrapper_health.ps1" -UseBasicParsing
+Invoke-WebRequest "$base/wrapper_health.ps1" -OutFile "$w\wrapper_health.ps1" -UseBasicParsing
 Get-FileHash "$pub\wrapper_health.ps1", "$env:TEMP\wrapper_health.ps1", "$env:TEMP\queue_lanes.ps1" | Format-List Hash, Path
 Get-FileHash "$cr\claude_run.ps1", "$cr\queue_lanes.ps1", "$cr\wrapper_health.ps1" | Format-List Hash, Path
-foreach ($target in @($pub, $env:TEMP, $cr)) {
+foreach ($target in @($pub, $env:TEMP, $cr, $w)) {
     if ((Get-FileHash "$target\wrapper_health.ps1" -Algorithm SHA256).Hash -ne $expected['wrapper_health.ps1']) { Stop-Here 'хеш wrapper_health.ps1 не збігся' }
 }
 # Нові модулі публікатора перевіряються до першого запуску копії.

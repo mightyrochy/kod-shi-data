@@ -370,6 +370,8 @@ def виконати():
     env.update(LMS_MODE="http", PORT="1235", CTX=json.dumps({env["MODEL"]: КОНТЕКСТ_СТИЛІСТКИ, env["MODEL_MOVA"]: КОНТЕКСТ_МОВИ}),
                MODEL_URL="http://127.0.0.1:1235/v1", ODNOCHASNO="1", VIDPOVIDI=str(вихід / "VIDPOVIDI"),
                ZNIMKY=str(вихід / "знімки"), ZVIT_OUT=str(вихід / "вердикти.txt"))
+    env["NODE_PATH"] = subprocess.check_output([п.node, str(Path(__file__).with_name("шлях_модулів_стенда.js"))],
+        cwd=КОРІНЬ, env=env, text=True, encoding="utf-8")
     до = api()
     if any(м["loaded_instances"] for м in до["models"]):
         raise RuntimeError("Сервер тримає чужу модель")

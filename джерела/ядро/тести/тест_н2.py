@@ -93,14 +93,20 @@ class ПалітраУШтатномуЗапуску(TestCase):
 
     def test_прикраси_для_волосся_дістають_вікно_палітри(self):
         """Прикраси у своєму слоті потрапляють у ядро палітри понад підлогу добору."""
-        колір = {"lab": (50, 0, 0), "колір_тип": "вимір", "колір_джерело": "фото"}
+        from colorspace import hx
+
         мітки = {"опис": "Обруч", "мітки": {"тип": {"значення": "headband", "джерело": "фото"},
                                             "слот": {"значення": "головний_убір", "джерело": "фото"}}}
-        каталог = [_запис("dress", "сукня", lab=(8, -16, 12), колір_тип="вимір", колір_джерело="фото")]
-        каталог += [_запис(f"hair-{і:02}", "головний_убір", мітки_речі=мітки, **колір) for і in range(24)]
-        основа = {"база_тип": "колір", "база_hex": "#74704c"}
+        основа = {"база_тип": "нейтраль", "база_hex": "#74704c"}
         for вибір in (None, основа):
             with self.subTest(основа=вибір):
+                # Нейтральна основа аналогової схеми лишає прикрасі кольорову роль.
+                колір = {"lab": hx("#c6926d") if вибір else (50, 0, 0),
+                         "колір_тип": "вимір", "колір_джерело": "фото"}
+                каталог = [_запис("dress", "сукня", lab=(8, -16, 12),
+                                  колір_тип="вимір", колір_джерело="фото")]
+                каталог += [_запис(f"hair-{і:02}", "головний_убір", мітки_речі=мітки, **колір)
+                            for і in range(24)]
                 тіло, рядки = self._перший_запит(каталог, схема="аналогова", вибір=вибір)
                 волосся = [р for р in рядки if р["kind"] == "hair"]
                 self.assertEqual(len(волосся), 24)
@@ -188,9 +194,16 @@ class ПортретУШтатномуСуді(TestCase):
                 return _відповідь(outfits=[{"id": "o1", "items": [р[адреса] for р in пакунок["rows"]]}])
             if дріт["вид"] == "ремонт":
                 вирок, = тіло["verdict"]
-                self.assertCountEqual([(з["rule"], з["code"], з["weight"]) for з in вирок["findings"]], [
+                очікувані = [
                     ("K-CRA-02", "focus_count_over_ceiling", .5), ("K-COL-05", "accent_orphan", .5),
-                ])
+                    ("K-KOH-05", "outfit_level_off_occasion", .25),
+                    ("K-CRA-04", "item_removable_no_metric_drops", .08),
+                    ("K-CRA-01", "no_third_piece_dressed_not_styled", .75),
+                    ("K-SIL-09", "mono_object_silhouette", .5),
+                ]
+                if дріт["рука"] == 2:
+                    очікувані.append(("K-ACC-01", "loud_accessory_without_role", .75))
+                self.assertCountEqual([(з["rule"], з["code"], з["weight"]) for з in вирок["findings"]], очікувані)
                 return _відповідь(outfits=[{"id": вирок["id"], "items": вирок["items"]}])
             if дріт["вид"] == "вибір":
                 return _відповідь(chosen="o1")
@@ -872,8 +885,8 @@ class ДоговірН2(TestCase):
         self.assertEqual(повна["kind_colours"]["shoes"]["area"], [5, 15])
         self.assertEqual(повна["kind_colours"]["shoes"]["shares_role_with"], ["bag"])
         self.assertEqual(повна["colour_kinds"], ["shoes", "bag", "belt", "headwear", "scarf", "jewelry"])
-        self.assertEqual(повна["base"], {"colour": "graphite #4b4b4b", "chosen_by": "stylist"})
-        self.assertEqual(дріт(основа)["base"], {"colour": "graphite #4b4b4b", "chosen_by": "unknown"})
+        self.assertEqual(повна["base"], {"colour": "graphite #4b4b4b", "chosen_by": "stylist", "role": "dominant"})
+        self.assertEqual(дріт(основа)["base"], {"colour": "graphite #4b4b4b", "chosen_by": "unknown", "role": "dominant"})
         self.assertNotIn("base", дріт(None))
         self.assertEqual(дріт(основа, {}), {"base": {"colour": "graphite #4b4b4b", "chosen_by": "unknown"}})
 

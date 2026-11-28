@@ -27,6 +27,7 @@ import re
 import subprocess
 import sys
 import unittest
+from unittest import mock
 
 ТУТ = os.path.dirname(os.path.abspath(__file__))
 КОРІНЬ = os.path.normpath(os.path.join(ТУТ, "..", ".."))
@@ -963,7 +964,7 @@ class МіткаБезпека(unittest.TestCase):
         with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
             текст = ф.read()
         код = "\n".join(р for р in текст.splitlines() if not р.lstrip().startswith("#"))
-        self.assertRegex(код, r"(?m)^  pull_request_target:\n    types: \[labeled\]$")
+        self.assertRegex(код, r"(?m)^  pull_request_target:\n    branches: \[main\]\n    types: \[labeled, ready_for_review\]$")
         self.assertNotRegex(код, r"(?m)^\s+ref:", "checkout без ref — лише main, не гілка PR")
         мітка = код.split("  mitka:", 1)[1].split("  rishennia:", 1)[0]
         решта = код.replace(мітка, "")
@@ -1010,7 +1011,7 @@ class МіткаБезпека(unittest.TestCase):
         self.assertIn("github.event_name == 'pull_request_target' && github.event.label.name == 'злити'", умови["rishennia"])
 
     def test_збірка_після_злиття_коду(self):
-        """Злиття токеном CI викликає збірку на `pislia`, а мілкі копії бази беруть `pered`."""
+        """Злиття токеном CI викликає збірку на `pislia`, а обидві копії бази беруть спільний SHA."""
         with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
             с = ф.read()
         self.assertIn("kod: ${{ needs.zlyttia.outputs.kod == 'true' }}", с)
@@ -1025,8 +1026,7 @@ class МіткаБезпека(unittest.TestCase):
         бази = [крок for крок in копії if "path: main-replay" in крок]
         self.assertEqual(len(бази), 2, "збірка бази й приймання беруть окремі копії точної бази")
         for крок in копії:
-            ref = ("inputs.pered || github.event.pull_request.base.sha || github.event.before"
-                   if крок in бази else "inputs.pislia")
+            ref = "needs.zminy.outputs.base_sha" if крок in бази else "inputs.pislia"
             self.assertIn("ref: ${{ " + ref + " }}", крок)
         for крок in бази:
             self.assertIn("fetch-depth: 1", крок)
@@ -1035,8 +1035,14 @@ class МіткаБезпека(unittest.TestCase):
         self.assertIn("ZLYTTIA_ZLYTI: ${{ inputs.zlyti }}", з, "погодження живого прогону — за переліком злитих")
         self.assertNotIn("ZLYTTIA_SHA", з)
         self.assertIn("node аудит/проби/перевірити_живий_після_злиття.js", з)
-        self.assertIn("BASE_REF: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}", з)
-        self.assertIn("BASE_SHA: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}", з)
+        база = з.split("id: baza", 1)[1].split("id: zmina", 1)[0]
+        self.assertIn("base_sha: ${{ steps.baza.outputs.sha }}", з)
+        self.assertIn("BASE_SHA: ${{ inputs.pered || github.event.before }}", база)
+        self.assertIn('[ "${GITHUB_EVENT_NAME}" = pull_request ] && [ -z "${PISLIA}" ]', база)
+        self.assertIn('git rev-parse --verify "${GITHUB_SHA}^1^{commit}"', база)
+        self.assertNotIn("github.event.pull_request.base.sha", з)
+        self.assertIn("BASE_REF: ${{ needs.zminy.outputs.base_sha }}", з)
+        self.assertEqual(з.count("BASE_SHA: ${{ needs.zminy.outputs.base_sha }}"), 2)
 
     def test_вихід_злиття_код_і_документ(self):
         api = ФальшивийAPI(Мітка.стан(Мітка(), None)["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))
@@ -1148,10 +1154,274 @@ class ОбхідAPI:
             return п["статуси"]
         if "/events" in шлях:
             return п["події"]
+        if шлях.endswith("/reviews"):
+            return []
         raise AssertionError(шлях)
 
     def запит(self, метод, шлях, тіло=None):
         return 200, self.п["pr"], ""
+
+
+class ЗаписAPIКоду(ОбхідAPI):
+    """Записана голова #4957 з REST і GraphQL; PUT лише фіксує намір тестованого приладу."""
+
+    def __init__(self, п):
+        super().__init__(п)
+        self.записи_злиття = []
+
+    def усі(self, шлях, ключ=None, межа=30):
+        if шлях.endswith("/reviews"):
+            return self.п["рецензії"]
+        if "/pulls?state=open" in шлях:
+            return [self.п["pr"]]
+        return super().усі(шлях, ключ, межа)
+
+    def запит(self, метод, шлях, тіло=None):
+        if метод == "POST" and шлях == "/graphql":
+            змінні = тіло["variables"]
+            if змінні["number"] != self.п["pr"]["number"]:
+                raise AssertionError(змінні)
+            return 200, self.п.get(змінні["cursor"] or "треди"), ""
+        if метод == "GET" and шлях.endswith("/attempts/1"):
+            ід = int(шлях.split("/")[-3])
+            return 200, self.п["перші_спроби"][ід], ""
+        if метод == "PUT" and шлях.endswith("/merge"):
+            self.записи_злиття.append(тіло)
+            return 200, {"merged": True, "sha": "c" * 40}, ""
+        if шлях.endswith("/commits/" + "c" * 40):
+            return 200, {"parents": [{"sha": "b" * 40}]}, ""
+        return super().запит(метод, шлях, тіло)
+
+
+class Код(unittest.TestCase):
+    """Голова #4957 зелена, рецензія Copilot на ній, тредів нема. Відкриваємо PR і змінюємо по одній умові."""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(os.path.join(ТУТ, "документ_без_коду_рецензії.json"), encoding="utf-8") as ф:
+            cls.база = json.load(ф)
+
+    def стан(self):
+        п = copy.deepcopy(self.база)
+        п["pr"].update(state="open", merged=False)
+        return п
+
+    def обійти(self, п, злити, причина, спосіб="код", час="2026-11-28T03:35:00Z"):
+        зараз = datetime.datetime.fromisoformat(час)
+        with mock.patch.object(д, "_зараз", return_value=зараз, create=True):
+            підсумок = д.обійти(ЗаписAPIКоду(п))
+        self.assertEqual(len(підсумок), 1, підсумок)
+        н, г, так, чому, як = підсумок[0]
+        self.assertEqual((н, г), (п["pr"]["number"], п["pr"]["head"]["sha"]))
+        self.assertEqual((так, як), (злити, спосіб), чому)
+        self.assertIn(причина, чому)
+
+    def з_тредами(self, бот):
+        п = self.стан()
+        треди = п["треди"]["data"]["repository"]["pullRequest"]["reviewThreads"]["nodes"]
+        запис = п[f"треди_{бот}"]["data"]["repository"]["pullRequest"]["reviewThreads"]["nodes"][0]
+        треди.append(запис)
+        return п, запис
+
+    def test_зелена_голова_без_тредів(self):
+        self.обійти(self.стан(), True, "перевірки голови зелені")
+
+    def test_рецензія_Codex_на_голові(self):
+        п = self.стан()
+        п["рецензії"] = п["рецензії_Codex"]
+        п["рецензії"][0]["commit_id"] = п["pr"]["head"]["sha"]
+        self.обійти(п, True, "рецензія Codex на голові")
+
+    def test_рецензія_попередньої_голови(self):
+        п = self.стан()
+        п["рецензії"][0]["commit_id"] = "a" * 40
+        self.обійти(п, False, "рецензії на голові нема, голові 20 хв")
+
+    def test_30_хв_після_виходу_з_чернетки(self):
+        п = self.стан()
+        п["рецензії"] = []
+        self.обійти(п, False, "голові 29 хв", час="2026-11-28T03:44:13Z")
+        self.обійти(п, True, "голові 30 хв", час="2026-11-28T03:44:14Z")
+
+    def test_30_хв_після_першого_ci_тієї_самої_голови(self):
+        п = self.стан()
+        п["рецензії"] = []
+        готовність = п["треди"]["data"]["repository"]["pullRequest"]["readyForReview"]["nodes"]
+        готовність[0]["createdAt"] = "2026-11-28T01:40:00Z"
+        п["запуски"] = [з for з in п["запуски"] if з["run_started_at"] < "2026-11-28T03:00:00Z"]
+        п["запуски"].append({**п["запуски"][0], "head_sha": "a" * 40, "run_started_at": "2026-11-27T22:00:00Z"})
+        self.обійти(п, False, "голові 29 хв", час="2026-11-28T02:22:47Z")
+        self.обійти(п, True, "голові 30 хв", час="2026-11-28T02:22:48Z")
+
+    def test_старий_нерозібраний_тред_стримує_після_30_хв(self):
+        п, _ = self.з_тредами("Codex")
+        п["рецензії"] = []
+        self.обійти(п, False, "тред Codex без відповіді", час="2026-11-28T03:50:00Z")
+
+    def test_повтор_перевірки_зберігає_час_першої_спроби(self):
+        п = self.стан()
+        п["рецензії"] = []
+        п["треди"]["data"]["repository"]["pullRequest"]["readyForReview"]["nodes"].clear()
+        п["запуски"] = [з for з in п["запуски"] if з["run_started_at"] == "2026-11-28T01:52:48Z"]
+        п["перші_спроби"] = {з["id"]: з.copy() for з in п["запуски"]}
+        for запуск in п["запуски"]:
+            запуск.update(run_attempt=2, run_started_at="2026-11-28T02:10:00Z")
+        self.обійти(п, True, "голові 30 хв", час="2026-11-28T02:22:48Z")
+
+    def test_бракує_часу_першого_ci(self):
+        п = self.стан()
+        п["рецензії"] = []
+        for запуск in п["запуски"]:
+            запуск.pop("run_started_at")
+        self.обійти(п, False, "бракує часу першого CI")
+
+    def test_треди_ботів_без_відповіді(self):
+        for бот in ("Copilot", "Codex"):
+            with self.subTest(бот=бот):
+                п, тред = self.з_тредами(бот)
+                посилання = тред["firstComment"]["nodes"][0]["url"]
+                self.обійти(п, False, f"тред {бот} без відповіді: {посилання}")
+
+    def test_тред_з_останньою_відповіддю_автора(self):
+        п, тред = self.з_тредами("Copilot")
+        тред["lastComment"]["nodes"][0]["author"] = {"__typename": "User", "login": "mightyrochy"}
+        self.обійти(п, True, "розібрані")
+
+    def test_закритий_тред(self):
+        п, тред = self.з_тредами("Codex")
+        тред["isResolved"] = True
+        self.обійти(п, True, "розібрані")
+
+    def test_планове_рішення_після_закриття_останнього_треда(self):
+        п, тред = self.з_тредами("Copilot")
+        self.обійти(п, False, "тред Copilot без відповіді")
+        тред["isResolved"] = True  # Та сама голова, CI і останній коментар.
+        self.обійти(п, True, "розібрані")
+
+        шлях = os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml")
+        with open(шлях, encoding="utf-8") as ф:
+            процес = ф.read()
+        self.assertRegex(процес, r"(?m)^  schedule:\n    - cron: ")
+        _, _, умови = групи_з_yml()
+        self.assertIn("github.event_name == 'schedule'", умови["rishennia"])
+
+    def test_тред_чужого_акаунта(self):
+        п, тред = self.з_тредами("Copilot")
+        тред["firstComment"]["nodes"][0]["author"]["__typename"] = "User"
+        self.обійти(п, True, "розібрані")
+
+    def test_закриті_місця_без_мітки(self):
+        for шлях in (".github/workflows/samozlyttia.yml", ".claude/settings.json", "аудит/адаптери/gemini/скрипт.py",
+                     "AGENTS.md", "джерела/прилади/документ_без_коду.py", "джерела/прилади/тест_документ_без_коду.py",
+                     "джерела/прилади/документ_без_коду_рецензії.json"):
+            with self.subTest(шлях=шлях):
+                п = self.стан()
+                п["файли"][0].update(filename=шлях)
+                self.обійти(п, False, f"закрите місце: {шлях}")
+
+    def test_закрите_місце_зі_старим_іменем(self):
+        п = self.стан()
+        п["файли"][0].update(status="renamed", previous_filename=".github/workflows/samozlyttia.yml")
+        self.обійти(п, False, "закрите місце: .github/workflows/samozlyttia.yml")
+
+    def test_закрите_місце_з_міткою(self):
+        Мітка.setUpClass()
+        п = Мітка().стан()
+        п["файли"][0].update(filename=".github/workflows/samozlyttia.yml")
+        підсумок = д.обійти(ОбхідAPI(п))
+        self.assertTrue(підсумок[0][2], підсумок)
+        self.assertEqual(підсумок[0][4], "мітка")
+
+    def test_чернетка(self):
+        п = self.стан()
+        п["pr"]["draft"] = True
+        self.обійти(п, False, "чернетка")
+
+    def test_червона_перевірка(self):
+        п = self.стан()
+        п["check_runs"].append({"name": "перевірка запису", "status": "completed", "conclusion": "failure"})
+        self.обійти(п, False, "failure")
+
+    def test_гілка_copilot(self):
+        п = self.стан()
+        п["pr"]["head"]["ref"] = "copilot/зміна"
+        self.обійти(п, False, "PR агента Copilot")
+
+    def test_неповний_список_файлів(self):
+        п = self.стан()
+        п["файли"].pop()
+        self.обійти(п, False, "список файлів неповний")
+
+    def test_неповна_відповідь_graphql(self):
+        п = self.стан()
+        п["треди"]["errors"] = [{"message": "Resource not accessible by integration"}]
+        self.обійти(п, False, "не вдалося прочитати треди")
+
+    def test_тред_на_наступній_сторінці(self):
+        п, тред = self.з_тредами("Copilot")
+        п["треди_друга_сторінка"] = copy.deepcopy(п["треди"])
+        треди = п["треди"]["data"]["repository"]["pullRequest"]["reviewThreads"]
+        треди["nodes"].clear()
+        треди["pageInfo"].update(hasNextPage=True, endCursor="треди_друга_сторінка")
+        self.обійти(п, False, f"тред Copilot без відповіді: {тред['firstComment']['nodes'][0]['url']}")
+
+    def test_голова_змінилась_під_час_читання_тредів(self):
+        п = self.стан()
+        п["треди"]["data"]["repository"]["pullRequest"]["headRefOid"] = "a" * 40
+        self.обійти(п, False, "голова змінилась під час читання тредів")
+
+    def test_злиття_коду_будить_повну_збірку(self):
+        п = self.стан()
+        api = ЗаписAPIКоду(п)
+        голова = п["pr"]["head"]["sha"]
+        злито, перед, _ = д.злити(api, [{"номер": 4957, "голова": голова, "спосіб": "код"}])
+        self.assertEqual(злито, [(4957, "c" * 40, True)])
+        self.assertEqual(перед, "b" * 40)
+        self.assertEqual(api.записи_злиття[0]["sha"], голова)
+
+    def test_тред_між_рішенням_і_злиттям(self):
+        п, _ = self.з_тредами("Copilot")
+        api = ЗаписAPIКоду(п)
+        злито, _, рядки = д.злити(api, [{"номер": 4957, "голова": п["pr"]["head"]["sha"], "спосіб": "код"}])
+        self.assertEqual(злито, [])
+        self.assertEqual(api.записи_злиття, [])
+        self.assertIn("тред Copilot без відповіді", рядки[0])
+
+    def test_очікування_і_повторний_вихід_з_чернетки_перед_злиттям(self):
+        п = self.стан()
+        п["рецензії"] = []
+        api = ЗаписAPIКоду(п)
+        зараз = datetime.datetime.fromisoformat("2026-11-28T03:45:15Z")
+        with mock.patch.object(д, "_зараз", return_value=зараз):
+            початки_ci = {}
+            self.assertTrue(д.обійти(api, початки_ci=початки_ci)[0][2])
+            кандидат = {"номер": 4957, "голова": п["pr"]["head"]["sha"], "спосіб": "код", "початок_ci": початки_ci[4957]}
+            злито, _, _ = д.злити(api, [кандидат])
+            self.assertEqual(злито, [(4957, "c" * 40, True)])
+
+            готовність = п["треди"]["data"]["repository"]["pullRequest"]["readyForReview"]["nodes"]
+            готовність[0]["createdAt"] = "2026-11-28T03:44:14Z"
+            злито, _, рядки = д.злити(api, [кандидат])
+            self.assertEqual(злито, [])
+            self.assertEqual(len(api.записи_злиття), 1)
+            self.assertIn("голові 1 хв", рядки[0])
+
+    def test_рецензія_і_зняття_чернетки_будять_рішення(self):
+        тека = os.path.join(КОРІНЬ, ".github/workflows")
+        шлях_сигналу = os.path.join(тека, "samozlyttia-retsenziia.yml")
+        self.assertTrue(os.path.isfile(шлях_сигналу), "нема процесу-сигналу для рецензій")
+        with open(шлях_сигналу, encoding="utf-8") as ф:
+            сигнал = "\n".join(р for р in ф.read().splitlines() if not р.lstrip().startswith("#"))
+        with open(os.path.join(тека, "samozlyttia.yml"), encoding="utf-8") as ф:
+            процес = ф.read()
+        self.assertRegex(сигнал, r"(?m)^permissions: \{\}$")
+        self.assertNotRegex(сигнал, r"(?m)^\s*(uses|env):")
+        self.assertIn("    if: ${{ false }}", сигнал)
+        for подія, тип in (("pull_request_review", "submitted"), ("pull_request_review_comment", "created")):
+            self.assertIn(f"  {подія}:\n    types: [{тип}", сигнал)
+            self.assertIn(f"github.event.workflow_run.event == '{подія}'", процес)
+        self.assertRegex(процес, r"(?m)^    workflows: \[.*рецензія для самозлиття\]$")
+        self.assertIn("github.event.action == 'ready_for_review'", процес)
 
 
 class Самоперевірка(unittest.TestCase):

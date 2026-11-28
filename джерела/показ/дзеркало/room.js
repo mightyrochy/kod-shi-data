@@ -196,6 +196,7 @@
     if(!inCase&&!extra)setHeading(titles[mode]||'Люстерко',mode==='бібліотека'?button('closet','Мої речі','вішак'):mode==='профіль'?button('access','Доступ'):button('face','До люстерка','назад'));
     const previousPage=document.documentElement.dataset.pairPage;
     pair.render(mode,extra);
+    pair.advance(mode,extra);
     const save=node('pair-profile-finish');
     const saveBefore=!save.hidden&&Екран.стан.аркуш?node('аркуш-тіло'):node('pair-scene');
     if(save.nextElementSibling!==saveBefore)saveBefore.before(save);
@@ -300,12 +301,12 @@
     node('сц-зберегти').textContent='Зберегти нагоду';
     const making=document.createElement('div');making.id='mirror-making';node('ткання').before(making);
     const colors=document.createElement('div');colors.id='mirror-my-colors';node('пал-картка').before(colors);
-    const looks=document.createElement('div');looks.id='mirror-look-sides';node('картки').before(looks);
+    const looks=document.createElement('div');looks.id='mirror-look-sides';node('е-образи').prepend(looks);
     move(node('журнал'),node('е-огляд'));
     const shelf=document.createElement('div');shelf.id='mirror-saved-manual';node('біб-список').before(shelf);
     node('mirror-home').addEventListener('click',goFace);
     node('mirror-style').addEventListener('click',showThemes);node('mirror-person').addEventListener('click',()=>route('профіль'));
-    node('чат-поле').setAttribute('aria-label','Повідомлення стилістці');
+    node('чат-поле').setAttribute('aria-label','Запитай Люстерко про стиль або застосунок');
     node('чат-слати').innerHTML=ik('далі');node('чат-слати').setAttribute('aria-label','Надіслати');
     if(window.ResizeObserver){
       const size=new ResizeObserver(()=>decorateChoices());size.observe(node('mirror-choices'));size.observe(node('аркуш'));size.observe(node('pair-scene'));size.observe(node('пал-картка'));
@@ -326,7 +327,7 @@
     document.addEventListener('keydown',e=>{if(e.target.id==='чат-поле'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&node('чат-поле').value.trim()){const b=node('чат-слати');if(!b.disabled){e.preventDefault();e.stopImmediatePropagation();b.click();}}},true);
     document.addEventListener('click',e=>{const b=e.target.closest('[data-ux]');if(b&&!b.disabled&&actions.has(b.dataset.ux)){actions.get(b.dataset.ux)(b.dataset.value||'',b);}});
     document.addEventListener('submit',e=>{if(e.target.matches('[data-form="access"]')){e.preventDefault();const token=new FormData(e.target).get('token').trim();if(!token)return;try{localStorage.setItem('міст:токен',token);}catch{}МІСТ_П.токен=token;close();say('Код збережено.');}});
-    window.addEventListener(M.changeEvent,()=>{themeButtons();schedule();window.Rack?.repaintArtwork();});
+    window.addEventListener(M.changeEvent,()=>{themeButtons();schedule();window.Rack?.repaintArtwork();queueMicrotask(playIntro);});
     themeButtons();keyboardSpace();setDrawer(false);sync();
     document.addEventListener('visibilitychange',()=>{
       if(document.hidden){hiddenAt=Date.now();if(intro?.open)intro.close();}
@@ -335,7 +336,7 @@
     window.addEventListener('pagehide',()=>{if(hiddenAt===null)hiddenAt=Date.now();});
     window.addEventListener('pageshow',event=>{if(event.persisted)resumeIntro();});
     playIntro();
-    Екран.малювач('дзеркало-робота',['режим','вхід','крок','запущено','панель','розмова','випадок','сценарій','профілі','мірки','колір','поля','аркуш','збирання','образ','образи','палітра','фото','бібліотека','кошик','заміна','картка','статус_збирання','стан_палітри','оцінка'],schedule);
+    Екран.малювач('дзеркало-робота',['режим','вхід','крок','запущено','панель','розмова','випадок','сценарій','профілі','мірки','колір','поля','аркуш','збирання','образ','образи','палітра','фото','бібліотека','кошик','заміна','картка','примірка','статус_збирання','стан_палітри','оцінка'],schedule);
   }
   const handlers={talk:()=>goTalk(),speak:()=>editWords(true),write:()=>editWords(),face:goFace,cases:()=>route('сценарії'),assess:()=>route('оцінка'),library:()=>pair.dailyShelf(),profile:()=>route('профіль'),access,'edit-note':editNote,'save-note':saveNote,hand:k=>{M.set(k);close();},'close-sheet':close,occasion:chooseOccasion,
     'context-question':()=>{if(contextWords)startWords(contextWords);},'my-colors':personalColors, collapse:()=>{setDrawer(false);node('pair-handle').focus({preventScroll:true});},
