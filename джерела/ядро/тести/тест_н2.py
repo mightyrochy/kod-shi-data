@@ -879,8 +879,8 @@ class ДоговірН2(TestCase):
         self.assertEqual(повна["kind_colours"]["shoes"]["area"], [5, 15])
         self.assertEqual(повна["kind_colours"]["shoes"]["shares_role_with"], ["bag"])
         self.assertEqual(повна["colour_kinds"], ["shoes", "bag", "belt", "headwear", "scarf", "jewelry"])
-        self.assertEqual(повна["base"], {"colour": "graphite #4b4b4b", "chosen_by": "stylist"})
-        self.assertEqual(дріт(основа)["base"], {"colour": "graphite #4b4b4b", "chosen_by": "unknown"})
+        self.assertEqual(повна["base"], {"colour": "graphite #4b4b4b", "chosen_by": "stylist", "role": "dominant"})
+        self.assertEqual(дріт(основа)["base"], {"colour": "graphite #4b4b4b", "chosen_by": "unknown", "role": "dominant"})
         self.assertNotIn("base", дріт(None))
         self.assertEqual(дріт(основа, {}), {"base": {"colour": "graphite #4b4b4b", "chosen_by": "unknown"}})
 
