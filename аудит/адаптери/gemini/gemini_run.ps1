@@ -433,7 +433,11 @@ function Update-UsageCache {
             Write-Log "квота: agy $(if ($v) { $v } else { '?' }) < $($script:UsageMinVersion) — /usage не кличу"
         } else {
             $r = Invoke-Native $script:Agy @('-p', '/usage', '--output-format', 'json') $RepoDir $QuotaMinutes
-            if ($r.TimedOut -or $r.Code -ne 0) { [void](Get-ErrorCode ($r.Out + $r.Err)); Write-Log "квота: agy /usage -> $($r.Code)" } else { $c.text = $r.Out }
+            if ($r.TimedOut -or $r.Code -ne 0) {
+                # Початок тексту помилки рушія — у журнал: код сам не каже, вихід це з акаунта чи обрив мережі (Get-ErrorCode).
+                $code = Get-ErrorCode ($r.Out + $r.Err)
+                Write-Log "квота: agy /usage -> $($r.Code) ($code): $(Get-FailReason (Expand-JsonEscapes ($r.Out + $r.Err)))"
+            } else { $c.text = $r.Out }
         }
         $c.models = @(Get-AgyModels)
     } catch { Write-Log "квота: $($_.Exception.Message)" }
@@ -891,6 +895,10 @@ function Get-ErrorCode([string]$Text, [string]$EngineName = 'agy', [string]$Effo
     # 429 — код HTTP, окреме число: у ідентифікаторі, хеші чи довшому числі події (`…a4290…`, `1429`) це не відмова за лімітом.
     if ($Text -match '(?<![\p{L}\p{N}_-])(?<![0-9][.,])429(?![\p{L}\p{N}_-])(?![.,][0-9])|RESOURCE_EXHAUSTED|[Qq]uota|[Uu]sage limit|[Rr]ate limit') { return 'QUOTA' }
     if ($Text -match 'authentication required|[Nn]ot logged in|[Pp]lease (?:log ?in|sign in)|authentication_error|\b401\b') {
+        # Без вузла оновлення входу свого рушія (EngineAuthHosts: agy — oauth2.googleapis.com, codex — auth.openai.com) рушій
+        # не оновить токен і друкує те саме «потрібен вхід», що за справжнього виходу з акаунта: вхід злетів, лише коли цей
+        # вузол досяжний просто зараз (перевірка саме тут, а не раніше: fetch проходу міг пройти за хвилину до обриву).
+        if (-not (Test-EngineReachable $EngineName)) { Write-Log "$($EngineName.ToUpperInvariant()): текст «потрібен вхід», але вузла оновлення входу рушія нема — NETWORK, тривоги AUTH нема"; return 'NETWORK' }
         Add-HealthAlert 'AUTH' $EngineName.ToUpperInvariant(); return 'AUTH'
     }
     'AGY_ERROR'
@@ -1110,7 +1118,7 @@ function Invoke-Agent($M, [string]$Start, [string]$Prompt, [string]$Dir, $Sel) {
 
 # Коди кінця без звіту агента, чию причину знає лише рушій: його текст помилки (stderr, остання подія `error`) інакше
 # лишається в теці прогону користувача gemini, якої ніхто, крім нього, не читає.
-$script:EngineErrorCodes = @('AGY_ERROR', 'TIMEOUT', 'QUOTA', 'AUTH', 'EFFORT_INVALID', 'MODEL_INVALID')
+$script:EngineErrorCodes = @('AGY_ERROR', 'TIMEOUT', 'QUOTA', 'AUTH', 'NETWORK', 'EFFORT_INVALID', 'MODEL_INVALID')
 
 # Хвіст тексту помилки рушія для кінця без звіту: текст статусу result, а нема його (процес упав, eof, межа часу) — stderr
 # з теки прогону; рядків — стільки ж, скільки в хвості відповідей агента. Для інших кодів порожньо.
@@ -1316,7 +1324,7 @@ $script:CauseOfCode = @{
     TASK_TOO_LONG = 'умови наряду'; PLAN_FAILED = 'умови наряду'; EMPTY_PLAN = 'умови наряду'
     MODEL_INVALID = 'умови наряду'; EFFORT_INVALID = 'умови наряду'; PLAN_WAIT = 'умови наряду'
     INTERRUPTED = 'ноутбук і обгортка'; CRASH = 'ноутбук і обгортка'; ENGINE_MISSING = 'ноутбук і обгортка'
-    AUTH = 'ноутбук і обгортка'; REVIEW_API = 'ноутбук і обгортка'; COPY_FAILED = 'ноутбук і обгортка'
+    AUTH = 'ноутбук і обгортка'; NETWORK = 'ноутбук і обгортка'; REVIEW_API = 'ноутбук і обгортка'; COPY_FAILED = 'ноутбук і обгортка'
     RECORD_FAILED = 'ноутбук і обгортка'
 }
 
@@ -1414,7 +1422,7 @@ function Complete-Status($Status, [string]$StatePath, [string]$Tail, [datetime]$
         $Tail = (@($Tail, (Get-CrashEvidence $since)) | Where-Object { $_ }) -join "`n"
     }
     if ($Tail) { [System.IO.File]::WriteAllText((Join-Path $OutDir ($Status.id + '.tail.txt')), $Tail, $script:Utf8) }
-    # Кінець без звіту агента (AGY_ERROR, TIMEOUT, QUOTA, AUTH, EFFORT_INVALID, MODEL_INVALID): текст помилки рушія — рядок `reason`
+    # Кінець без звіту агента (AGY_ERROR, TIMEOUT, QUOTA, AUTH, NETWORK, EFFORT_INVALID, MODEL_INVALID): текст помилки рушія — рядок `reason`
     # результату й, коли гілки нема, примітка в #1856 (blocked-reasons.json); повний хвіст уже в <id>.tail.txt.
     if ($EngineError -and $Status.code -in $script:EngineErrorCodes) {
         $engineReason = Get-EngineErrorReason $EngineError
