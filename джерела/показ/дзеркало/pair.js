@@ -127,7 +127,8 @@ window.createMirrorPair = function(R) {
     const host=node('mirror-my-colors');if(!host)return;
     const bar=node('пал-стрічка'),strip=bar?.querySelector('.стрічка'),caption=bar?.querySelector('.стрічка-підпис')?.textContent||'';
     const chosen=!!strip?.querySelector('i[style]');
-    place(host,relation(label('Твої барви',swatches(family())+action('my-colors','Виправити')),'·',label('Барви образу',chosen?strip.outerHTML+'<small>'+e(caption)+'</small>':'<span>Ще не обрано</span>'),'pair-palette')+'<div class="pair-actions">'+(chosen?action('pair-build','Зібрати з цими','',true):action('my-colors','Додати барви'))+action('pair-summary','Моя нагода')+'</div>');
+    const note=chosen||strip?.classList.contains('очікує-тону')?'<small>'+e(caption)+'</small>':'<span>Ще не обрано</span>';
+    place(host,relation(label('Твої барви',swatches(family())+action('my-colors','Виправити')),'·',label('Барви образу',(chosen?strip.outerHTML:'')+note),'pair-palette')+'<div class="pair-actions">'+(chosen?action('pair-build','Зібрати з цими','',true):action('my-colors','Додати барви'))+action('pair-summary','Моя нагода')+'</div>');
   }
   function waitView(){
     const s=зрізЗбиранняП(),failed=s.готово&&!s.успіх;
