@@ -1975,6 +1975,17 @@ async function звіритиНамірОцінки(){
       }
       тест(theme+': п’ять різних станів деталей, поки етап сервера не змінюється',new Set(snapshots).size===5);
     }
+    w.MirrorMaterial.set('vytynanka');
+    const paper=w.MirrorMaterial.reveal(host,{startedAt:now()-45000,expectedSeconds:216});
+    const left=[...host.querySelectorAll('.vt-l-cut')],right=[...host.querySelectorAll('.vt-p-cut')].sort((a,b)=>Number(a.dataset.cutPair)-Number(b.dataset.cutPair));
+    тест('прорізи парні, без прозорості та розтягування половини',left.every((p,i)=>p.style.fill===right[i].style.fill
+      &&p.style.strokeDashoffset===right[i].style.strokeDashoffset&&!p.style.opacity&&!p.style.transform)
+      &&!host.querySelector('.vt-p').style.transform);
+    тест('виріз забирається тільки після замкненого контуру',left.every(p=>p.style.fill===(p.style.strokeDashoffset==='0'?'black':'none')));
+    let completed=0;paper.finish(()=>completed++);paper.finish(()=>completed++);
+    await чекатиНа(()=>paper.done,'вирізання не завершилось');
+    тест('фінал закінчує всі прорізи й сповіщає один раз',completed===1&&left.concat(right).every(p=>p.style.fill==='black'&&p.style.strokeDashoffset==='0'));
+    paper.stop();
     const media=w.matchMedia;w.matchMedia=()=>({matches:true});
     const still=w.MirrorMaterial.reveal(host,{startedAt:now()});still.stop();
     тест('зменшений рух показує повний малюнок одразу',host.dataset.reveal==='1');

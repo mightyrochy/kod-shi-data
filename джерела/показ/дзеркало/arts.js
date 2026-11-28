@@ -307,11 +307,13 @@
     const cuts = side => id + '-cuts-' + side;
     const shape = id + '-silhouette';
     const sides = solo ? ['l'] : ['l','p'];
+    // Пари прорізів авторського малюнка: волосся, комір, рукави, складки й поділ.
+    const rightPairs=[0,1,2,5,3,4,8,6,7,10,9,11,12,13,14,15];
     const definitions = sides.map(side => {
       const left = side === 'l';
       return '<clipPath id="' + clip(side) + '"><rect x="' + (left ? 60 : 627) + '" y="60" width="' + (left ? 567 : 569) + '" height="1134"/></clipPath>' +
         '<mask id="' + cuts(side) + '" maskUnits="userSpaceOnUse" x="60" y="60" width="1136" height="1134" style="mask-type:luminance"><rect x="60" y="60" width="1136" height="1134" fill="white"/>' +
-        D.ch.filter(piece => piece.b === side).map(piece => '<path class="vt-pr vt-' + side + '-cut z' + piece.z + '" d="' + piece.d + '" fill="black"/>').join('') +
+        D.ch.filter(piece => piece.b === side).map((piece,index) => '<path data-cut-pair="'+(left?index:rightPairs[index])+'" class="vt-pr vt-' + side + '-cut z' + piece.z + '" d="' + piece.d + '" fill="black"/>').join('') +
         '</mask>';
     }).join('');
     const panels = sides.map(side => '<g class="vt-' + side + '"><g clip-path="url(#' + clip(side) + ')" mask="url(#' + cuts(side) + ')">' +

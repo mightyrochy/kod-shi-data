@@ -159,6 +159,7 @@ window.createMirrorPair = function(R) {
     if(art&&!reveal){
       const start=Number(art.dataset.started)||buildStarted||Date.now();
       reveal=M.reveal(art,{startedAt:start,expectedSeconds:buildExpected});
+      if(mode==='образи')R.refresh();
     }
   }
   function pieceImage(p,j,cls=''){
@@ -203,6 +204,10 @@ window.createMirrorPair = function(R) {
     const tiles=pieces.map((p,j)=>'<button type="button" data-ux="pair-piece" data-value="'+i+'|'+j+'" aria-label="'+e(p.назва||'Річ')+'">'+pieceImage(p,j)+'</button>').join('');
     const lead=fitted?image(fitted,'Приміряний образ'):tiles;
     const fitState=показПриміркиП(i),fitMessage=node('прм-'+i)?.textContent||'';
+    // Готовий кадр не обриває останні прорізи видимого малюнка.
+    if(reveal&&!reveal.done&&target.contains(reveal.host)&&(fitted||(!fitState.іде&&!pendingBuild))){
+      reveal.finish(()=>R.refresh());return;
+    }
     const picture=fitted?'<div class="pair-image pair-fitted">'+lead+'</div>':
       '<div class="pair-fitting-placeholder">'+(fitState.іде||pendingBuild?'<div class="pair-making-art" data-reveal-art data-started="'+(buildStarted||fitState.почато||Date.now())+'"></div><p role="status">Приміряю образ…</p>':
         '<p>'+(e(fitMessage)||'Примірка ще не готова')+'</p>'+action(fitState.код==='нема_фото'&&!bodyPhoto()?'pair-photo':'pair-fit',fitState.код==='нема_фото'&&!bodyPhoto()?'Додати фото':'Приміряти образ',String(i),true))+'</div>';
