@@ -1987,7 +1987,8 @@ html[data-pair-page=mirror] .pair-app #mirror-input #чат-поле { min-heigh
 #mirror-work:has(#pair-profile-finish:not([hidden])) #пф-стан { display:none; }
 .pair-profile-intro > button { font-size:1.2rem; margin-bottom:16px; text-align:left; }
 .pair-profile .pair-image { width:100%; min-width:0; }
-.pair-profile .pair-image img { max-width:100%; height:240px; object-fit:contain; }
+.pair-profile .pair-image:has(img) { height:240px; aspect-ratio:auto; }
+.pair-profile .pair-image img { width:100%; max-width:100%; height:100%; object-fit:cover; object-position:center; }
 .pair-app #е-огляд .рядок { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 16px; position:relative; }
 .pair-app #е-огляд .рядок .н { min-width:0; grid-column:1; }
 .pair-app #е-огляд .рядок .прев { grid-column:1; grid-row:2; width:auto; max-width:100%; text-align:left; white-space:normal; overflow-wrap:anywhere; }

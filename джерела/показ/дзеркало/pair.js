@@ -266,8 +266,7 @@ window.createMirrorPair = function(R) {
     if(!extra&&mode==='палітра')nativePalette();
     if(!extra&&mode==='очікування')waitView();
     node('mirror-native').hidden=!!extra;
-    const latest=[...ЧАТ_П].reverse();
-    node('pair-latest').textContent=latest.find(n=>n.хто==='ші'&&n.текст)?.текст||latest.find(n=>n.текст)?.текст||(mode==='оцінка'&&!extra?'Питання про вбрання':'Куди збираєшся?');
+    node('pair-latest').textContent='Запитай';
   }
   const live=[
     ['Образ',[['pair-occasion','Зібрати для нагоди'],['pair-summary','Умови нагоди'],['pair-palette','Барви образу'],['compose','Два варіанти вручну'],['assess','Оцінити моє вбрання'],['anchor','Підібрати під мою річ']]],
