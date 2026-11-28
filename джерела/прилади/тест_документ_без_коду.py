@@ -1011,7 +1011,7 @@ class МіткаБезпека(unittest.TestCase):
         self.assertIn("github.event_name == 'pull_request_target' && github.event.label.name == 'злити'", умови["rishennia"])
 
     def test_збірка_після_злиття_коду(self):
-        """Злиття токеном CI викликає збірку на `pislia`, а мілкі копії бази беруть `pered`."""
+        """Злиття токеном CI викликає збірку на `pislia`, а обидві копії бази беруть спільний SHA."""
         with open(os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml"), encoding="utf-8") as ф:
             с = ф.read()
         self.assertIn("kod: ${{ needs.zlyttia.outputs.kod == 'true' }}", с)
@@ -1026,8 +1026,7 @@ class МіткаБезпека(unittest.TestCase):
         бази = [крок for крок in копії if "path: main-replay" in крок]
         self.assertEqual(len(бази), 2, "збірка бази й приймання беруть окремі копії точної бази")
         for крок in копії:
-            ref = ("inputs.pered || github.event.pull_request.base.sha || github.event.before"
-                   if крок in бази else "inputs.pislia")
+            ref = "needs.zminy.outputs.base_sha" if крок in бази else "inputs.pislia"
             self.assertIn("ref: ${{ " + ref + " }}", крок)
         for крок in бази:
             self.assertIn("fetch-depth: 1", крок)
@@ -1036,8 +1035,14 @@ class МіткаБезпека(unittest.TestCase):
         self.assertIn("ZLYTTIA_ZLYTI: ${{ inputs.zlyti }}", з, "погодження живого прогону — за переліком злитих")
         self.assertNotIn("ZLYTTIA_SHA", з)
         self.assertIn("node аудит/проби/перевірити_живий_після_злиття.js", з)
-        self.assertIn("BASE_REF: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}", з)
-        self.assertIn("BASE_SHA: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}", з)
+        база = з.split("id: baza", 1)[1].split("id: zmina", 1)[0]
+        self.assertIn("base_sha: ${{ steps.baza.outputs.sha }}", з)
+        self.assertIn("BASE_SHA: ${{ inputs.pered || github.event.before }}", база)
+        self.assertIn('[ "${GITHUB_EVENT_NAME}" = pull_request ] && [ -z "${PISLIA}" ]', база)
+        self.assertIn('git rev-parse --verify "${GITHUB_SHA}^1^{commit}"', база)
+        self.assertNotIn("github.event.pull_request.base.sha", з)
+        self.assertIn("BASE_REF: ${{ needs.zminy.outputs.base_sha }}", з)
+        self.assertEqual(з.count("BASE_SHA: ${{ needs.zminy.outputs.base_sha }}"), 2)
 
     def test_вихід_злиття_код_і_документ(self):
         api = ФальшивийAPI(Мітка.стан(Мітка(), None)["pr"], (200, {"merged": True, "sha": "c" * 40}, ""))

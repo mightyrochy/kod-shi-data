@@ -3,7 +3,8 @@ import ast
 import pathlib
 import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
-import accessory
+import аксесуари_реєстр
+import суд_погода
 import outfit
 import реєстр_правил
 import суд_образу
@@ -26,7 +27,7 @@ def main():
         """Залишити оцінку й діагностику оригінального гейта."""
         print(назва, доказ)
         assert умова, доказ
-    простір = dict(_A121=accessory, O=outfit, _СУД=суд_образу,
+    простір = dict(_A121=аксесуари_реєстр, _СП121=суд_погода, O=outfit, _СУД=суд_образу,
                    _РЕЄСТР=реєстр_правил, тест=перевірити)
     exec(compile(ast.Module(body=вибрані, type_ignores=[]), str(шлях), 'exec'), простір)
 

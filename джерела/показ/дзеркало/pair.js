@@ -130,14 +130,37 @@ window.createMirrorPair = function(R) {
     const note=chosen||strip?.classList.contains('очікує-тону')?'<small>'+e(caption)+'</small>':'<span>Ще не обрано</span>';
     place(host,relation(label('Твої барви',swatches(family())+action('my-colors','Виправити')),'·',label('Барви образу',(chosen?strip.outerHTML:'')+note),'pair-palette')+'<div class="pair-actions">'+(chosen?action('pair-build','Зібрати з цими','',true):action('my-colors','Додати барви'))+action('pair-summary','Моя нагода')+'</div>');
   }
+  let reveal=null, pendingBuild=null, buildStarted=0, buildExpected=180;
+  const fittingAttempts=new WeakSet();
+  const automaticFittingCard=c=>c&&!c.збій&&c.речі?.length&&(String(c.рука)==='1'||!c.рука);
   function waitView(){
     const s=зрізЗбиранняП(),failed=s.готово&&!s.успіх;
-    const phase=s.готово&&s.успіх?5:Math.max(1,Math.min(4,Number(s.етап||0)+1));
     const target=node('mirror-making');if(!target)return;
-    const key=[M.get(),phase,failed,s.готово,bodyPhoto()].join('/');
-    target.dataset.busy=String(!s.готово);
-    if(target._result===key)return;target._result=key;
-    target.innerHTML=relation(label('Ти',person()),failed?'×':'…',label(failed?'Збирання зупинилось':'Відбиття','<div class="pair-progress-art">'+(failed?M.error():M.waiting(phase))+'</div>'),'pair-progress');
+    place(target,failed?'<div class="pair-making-art">'+M.error()+'</div>':'<div class="pair-making-art" data-reveal-art aria-label="Збираю образ"></div>');
+  }
+  // Controller after rendering: a fresh collection gets one fitting, never all experimental hands.
+  function advance(mode,extra){
+    const s=зрізЗбиранняП();
+    if(mode==='очікування'&&s.є&&!s.готово){
+      pendingBuild=Number(s.почато)||Date.now();buildStarted=pendingBuild;buildExpected=Number(s.минулий_с)||180;
+    }
+    if(mode==='образи'&&!extra&&pendingBuild&&!testing){
+      const pack=typeof П!=='undefined'?П:null;
+      const index=(pack?.картки||[]).findIndex(automaticFittingCard);
+      const card=pack?.картки?.[index];
+      if(card){
+        pendingBuild=null;
+        if(!кадрПоказуП(card)&&!fittingAttempts.has(card)&&!показПриміркиП(index).іде){
+          fittingAttempts.add(card);void приміряти(index);
+        }
+      }
+    }else if(!['очікування','образи'].includes(mode)){pendingBuild=null;}
+    const art=!extra&&(mode==='очікування'?node('mirror-making'):mode==='образи'?node('mirror-look-sides'):null)?.querySelector('[data-reveal-art]');
+    if(reveal&&(reveal.host!==art||reveal.theme!==M.get())){reveal.stop();reveal=null;}
+    if(art&&!reveal){
+      const start=Number(art.dataset.started)||buildStarted||Date.now();
+      reveal=M.reveal(art,{startedAt:start,expectedSeconds:buildExpected});
+    }
   }
   function pieceImage(p,j,cls=''){
     return '<img class="'+cls+'" data-pair-piece-photo="'+j+'" alt="'+e(p.назва||'Річ')+'">';
@@ -159,16 +182,19 @@ window.createMirrorPair = function(R) {
     const fitted=photoURL(кадрПоказуП(c)),pieces=речіДляПоказуП(c),key=cardKey(П,i);
     const кадрРечі=p=>кадриРечі(p,відхиленняКадруРечі(c,p)).find(photoURL);
     const tiles=pieces.map((p,j)=>'<button type="button" data-ux="pair-piece" data-value="'+i+'|'+j+'" aria-label="'+e(p.назва||'Річ')+'">'+pieceImage(p,j)+'</button>').join('');
-    const lead=fitted?image(fitted,'Приміряний образ'):tiles;
-    const picture='<div class="'+(fitted?'pair-image pair-fitted':'pair-outfit-grid')+'">'+lead+'</div>';
+    const fitState=показПриміркиП(i),fitMessage=node('прм-'+i)?.textContent||'';
+    const fitting=fitState.іде||(!testing&&pendingBuild&&automaticFittingCard(c));
+    const picture=fitted?'<div class="pair-image pair-fitted">'+image(fitted,'Приміряний образ')+'</div>':
+      '<div class="pair-fitting-placeholder">'+(fitting?'<div class="pair-making-art" data-reveal-art data-started="'+(buildStarted||fitState.почато||Date.now())+'"></div><p role="status">Приміряю образ…</p>':
+        '<p>'+(e(fitMessage)||'Примірка ще не готова')+'</p>'+action(fitState.код==='нема_фото'&&!bodyPhoto()?'pair-photo':'pair-fit',fitState.код==='нема_фото'&&!bodyPhoto()?'Додати фото':'Приміряти образ',String(i),true))+'</div>';
     const colors=pieces.map(x=>tone(x.hex)).filter(Boolean),worn=!!window.Rack?.nativeWorn(key);
     const entry=БІБЛІОТЕКА_П.плитки.find(x=>x.ід===key),group=entry&&БІБЛІОТЕКА_П.групи.find(g=>g.плитки?.some(x=>x.ід===key));
-    let spread=relation(label('Ти',person()),'',label(fitted?'Приміряння':'Комплект',picture),'pair-outfit');
+    let spread='<section class="pair-result-hero">'+picture+'</section>';
     if(reverseKey===key){
       const keyArt=[M.get(),key,colors,worn].join('/');
       if(target._stampKey!==keyArt){target._stampKey=keyArt;target._stamp=M.seal(colors,worn,76);}
       const meta=[group?.нагода,entry?.дата].filter(Boolean).map(t=>'<small>'+e(t)+'</small>').join('');
-      spread=relation(label('Образ',picture),'',label('Зворот',target._stamp+meta+(worn?'<strong>Вдягала</strong>':'')+action('pair-worn',worn?'Зняти позначку':'Вдягала',key)),'pair-record');
+      spread='<section class="pair-result-record">'+target._stamp+meta+(worn?'<strong>Вдягала</strong>':'')+action('pair-worn',worn?'Зняти позначку':'Вдягала',key)+'</section>';
     }
     const stampButton=action('pair-reverse',reverseKey===key?'До образу':'Зворот',String(i));
     let recent='';
@@ -191,9 +217,9 @@ window.createMirrorPair = function(R) {
       return pieceImage(p,j,'pair-swap-photo')+(native||((typeof p.ціна==='number'?'<small>'+e(money(p.ціна))+'</small>':'')+shop))+(!testing?'<div class="pair-inline">'+(replace?action('pair-native-replace','Не ця · замінити',i+'|'+j):'')+action('pair-own-piece','Маю свою',i+'|'+j)+'</div>':'');
     });
     target._itemDetails=itemRows;target._pieces=pieces;target._card=c;
-    const signature=[key,testing,M.get(),worn,reverseKey,recent,itemRows,lead,tiles,JSON.stringify(pieces.map(p=>кадриРечі(p,відхиленняКадруРечі(c,p)))),bodyPhoto(),entry?.дата,group?.нагода].join('·');
+    const signature=[key,testing,M.get(),worn,reverseKey,recent,itemRows,picture,tiles,JSON.stringify(pieces.map(p=>кадриРечі(p,відхиленняКадруРечі(c,p)))),bodyPhoto(),entry?.дата,group?.нагода].join('·');
     if(target._renderKey===signature)return;target._renderKey=signature;
-    place(target,spread+stampButton+recent+(reverseKey===key&&fitted?'<div class="pair-outfit-grid pair-reverse-pieces" aria-label="Речі образу">'+tiles+'</div>':'')+
+    place(target,spread+stampButton+recent+'<div class="pair-outfit-grid pair-reverse-pieces" aria-label="Речі образу">'+tiles+'</div>'+
       (testing?action('pair-result','До мого образу'):''));
     bindPiecePhotos(target,pieces,c);
   }
@@ -288,11 +314,12 @@ window.createMirrorPair = function(R) {
     'pair-result':showProduct,
     'pair-reverse':pos=>{if(!П?.картки?.[Number(pos)])return;const key=cardKey(П,Number(pos));reverseKey=reverseKey===key?'':key;nativeVariants();},
     'pair-worn':async key=>{if(window.Rack)await Rack.toggleNativeWorn(key);R.refresh();},
+    'pair-fit':value=>{const i=Number(value);if(П?.картки?.[i])void приміряти(i);},
     'pair-piece':value=>{const [i,j]=value.split('|').map(Number),host=node('mirror-look-sides'),p=host._pieces?.[j],html=host._itemDetails?.[j];if(П?.картки?.[i]!==host._card||!p||!html)return;R.dialog(p.назва||'Річ','<div class="pair-piece-detail">'+html+'</div>');bindPiecePhotos(node('mirror-sheet-content'),host._pieces,host._card);},
     'pair-native-replace':value=>{R.close();const [i,j]=value.split('|');node('замін-'+i+'-'+j)?.click();},
     'pair-own-piece':value=>{R.close();window.Rack?.substituteNative(value);},'pair-test':blind,'pair-goal':key=>{Екран.відЖінки('мета-обрати',key);R.refresh();},
     'pair-measures':()=>{R.route('профіль',false);відкритиАркушПрофілю('мір-блок');},'pair-drape':()=>{R.route('профіль',false);відкритиАркушПрофілю('др-блок');},features:()=>tools(false),'pair-plans':()=>tools(true),'pair-future':future};
   const dailyShelf=()=>{testingShelf=false;R.route('бібліотека');};
   document.addEventListener('click',event=>{if(event.target.closest('.біб-образ'))openingBlind=testingShelf;},true);
-  return {render,dailyShelf,blindShelf:()=>testingShelf,afterOccasion,stage,handlers,person,relation,bodyPhoto,occasionLabel,swatches,tools};
+  return {render,advance,dailyShelf,blindShelf:()=>testingShelf,afterOccasion,stage,handlers,person,relation,bodyPhoto,occasionLabel,swatches,tools};
 };

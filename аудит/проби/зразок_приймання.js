@@ -4,7 +4,8 @@ const fs = require('fs'), path = require('path');
 function створитиЗразок(тека, сцени, джерело = __dirname) {
   const проби = path.join(тека, 'зразок/аудит/проби');
   fs.mkdirSync(проби, {recursive: true});
-  for (const ім of ['приймання_записів.js', 'храповик_записів.js', 'записаний_обмін.js', 'живий_після_CI.js'])
+  for (const ім of ['приймання_записів.js', 'храповик_записів.js', 'записаний_обмін.js',
+    'шлях_модулів_стенда.js', 'живий_після_CI.js'])
     fs.copyFileSync(path.join(джерело, ім), path.join(проби, ім));
   fs.writeFileSync(path.join(проби, 'рв6_стенд.js'), '/* Дочірній браузер замінено виходами зразка. */\n');
   for (const {id, база} of сцени) {

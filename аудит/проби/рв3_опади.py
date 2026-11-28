@@ -5,7 +5,7 @@ import os, sys; sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(
 матеріалу K-WEA-01 / K-WEA-05, які знають лише «дощ / мокрий_сніг / злива», мовчать.
 Запуск із теки `джерела`: python3 ../аудит/проби/рв3_опади.py"""
 import json
-import сценарій as СЦ, bridge as B, outfit as O, суд_образу as С, accessory as A
+import сценарій as СЦ, bridge as B, outfit as O, суд_образу as С, суд_погода as A
 
 сц = dict(нагода="побачення", місце="ресторан_районний", година=19, темп_c=12, опади="дощ")   # плитка «дощ»
 п = dict(подія="побачення в ресторані", нагода="побачення", опади="так", джерело="модель", вето={})

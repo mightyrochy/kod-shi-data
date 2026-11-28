@@ -19,7 +19,7 @@ import міст_річ as _МР
 import суд_погода as _СП
 import outfit as _O
 import pipeline as _PL
-import accessory as _АК
+import аксесуари_структура as _АК
 import верхнє_суд as _ВШ
 import palettes as _ПЛ
 import сценарій as _СЦ

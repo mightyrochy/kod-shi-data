@@ -585,15 +585,21 @@ async function звіритиНамірОцінки(){
       const річ = () => $("mirror-look-sides").querySelector('[data-ux="pair-piece"]')?.getAttribute("aria-label");
       const позиція = () => горталка.querySelector(".пж-н").textContent;
       const пакет = {в: "ПОКАЗ-V1", прогін: "пр-17570", картки: ядро ? картки.slice(0, 1) : картки};
-      if (ядро) пакет.ядро = {поступово: true};
+      if (ядро) {
+        пакет.ядро = {поступово: true};
+        w.eval("window._примірки17570 = []; приміряти = async поз => { _примірки17570.push(поз); };"
+             + " ЗБ = {картки: Array(4).fill(null), етап: [0, 0, 0, 0], стадії: [], почато: Date.now()}; режим('очікування')");
+        await відпустити();
+      }
       w.eval("П = " + JSON.stringify(пакет) + "; рендер()");
       await відпустити();
       if (ядро) {
-        w.eval("ЗБ = {картки: Array(4).fill(null), етап: [0, 0, 0, 0], стадії: []};"
-             + " почавсяЗбірПрогонуП(П.прогін, () => {}); показатиПідписОбразів()");
+        w.eval("почавсяЗбірПрогонуП(П.прогін, () => {}); показатиПідписОбразів()");
         тест("ядро: перша річ з’являється одразу й видно, що збираються ще три образи",
              річ() === назви[0] && !видно(горталка) && видно($("обр-підпис")) && /ще 3/.test($("обр-підпис").textContent),
              [річ(), $("обр-підпис").textContent]);
+        тест("готова картка іншої руки не показує чужу примірку",
+             !$("mirror-look-sides").querySelector("[data-reveal-art]") && !w._примірки17570.length);
         w.eval("П.картки.push(" + JSON.stringify(картки[1]) + "); дописатиОбрази(1)");
         await відпустити();
         тест("ядро: за другою карткою можна гортати, ще дві збираються",
@@ -604,6 +610,8 @@ async function звіритиНамірОцінки(){
         await відпустити();
         тест("ядро: нові картки лишають вибрану другою і прибирають рядок очікування",
              позиція() === "2 / 4" && річ() === назви[1] && !видно($("обр-підпис")), [позиція(), річ()]);
+        тест("свіжий збір автоматично приміряє лише руку 1 на її позиції",
+             JSON.stringify(w._примірки17570) === "[1]", w._примірки17570);
         $("пж-назад").click();
         await відпустити();
       }
@@ -2015,11 +2023,59 @@ async function звіритиНамірОцінки(){
     for(let n=0;n<3;n++)велике.dispatchEvent(new w.Event('error'));
     тест('коли всі фото вичерпані, немає зламаного зображення',!d.querySelector('#mirror-sheet-content img'));
     w.MirrorRoom.close();
+    host.querySelector('[data-ux=pair-reverse]').click();
     w.eval(`П.картки[0].картинка='https://example.com/fitted.jpg';MirrorRoom.refresh();`);
     await чекатиНа(()=>host.querySelector('.pair-fitted'), 'примірка не відобразилась');
     тест('примірка не ховає речей зі звороту',host.querySelectorAll('[data-ux=pair-piece]').length===5);
     тест('без винятків',помилки.length===0,помилки);
     дом.window.close();
+  }
+
+  розділ("1р. ЗБИРАННЯ: деталі від початку, одна примірка, великий готовий кадр");
+  {
+    const {w,d,дом,помилки}=сторінка();
+    await чекатиНа(()=>w.MirrorRoom?.available(), 'Люстерко не відкрилося');
+    const host=d.createElement('div');d.body.append(host);
+    const now=w.Date.now;
+    for(const theme of ['kahlia','vytynanka','klyny']){
+      w.MirrorMaterial.set(theme);
+      const snapshots=[];
+      for(const seconds of [15,45,90,180,300]){
+        const run=w.MirrorMaterial.reveal(host,{startedAt:now()-seconds*1000,expectedSeconds:216});
+        snapshots.push(host.innerHTML);run.stop();
+      }
+      тест(theme+': п’ять різних станів деталей, поки етап сервера не змінюється',new Set(snapshots).size===5);
+    }
+    const media=w.matchMedia;w.matchMedia=()=>({matches:true});
+    const still=w.MirrorMaterial.reveal(host,{startedAt:now()});still.stop();
+    тест('зменшений рух показує повний малюнок одразу',host.dataset.reveal==='1');
+    w.matchMedia=media;host.remove();
+    w.eval(`window.fits=[];
+      приміряти=async i=>{fits.push(i);ПОКАЗ_ПРИМІРКИ_П.set(П.картки[i],{іде:true,код:'за_фото',почато:Date.now()});показатиПримірку(i);};
+      зрізЗбиранняП=()=>({є:true,готово:false,почато:Date.now()-90000,минулий_с:216,статус:{},решта:[]});
+      MirrorRoom.route('очікування');`);
+    await чекатиНа(()=>d.querySelector('#mirror-making [data-reveal-art]'), 'немає малюнка очікування');
+    тест('під час збирання немає звичайного фото людини',!d.querySelector('#mirror-making img'));
+    w.eval(`П={ід:'примірка-проба',картки:[1,2].map(рука=>({рука,речі:[{id:'x',назва:'Сукня',фото:'https://example.com/dress.jpg'}]}))};
+      Екран.змінити({образ:{поз:0}});document.getElementById('картки').replaceChildren(рендерКартку(0));MirrorRoom.route('образи');`);
+    await чекатиНа(()=>w.fits.length===1,'примірка не почалася');
+    тест('після свіжого збору приміряється лише продуктова рука',JSON.stringify(w.fits)==='[0]');
+    w.MirrorRoom.refresh();await new Promise(r=>setTimeout(r,30));
+    тест('перемалювання не запускає другу генерацію',w.fits.length===1);
+    w.eval(`ПОКАЗ_ПРИМІРКИ_П.set(П.картки[0],{іде:false,код:'збій'});показатиПримірку(0);`);
+    await чекатиНа(()=>d.querySelector('#mirror-look-sides [data-ux=pair-fit]'),'немає повтору після збою');
+    тест('збій не викликає нескінченних автоматичних повторів',w.fits.length===1);
+    d.querySelector('#mirror-look-sides [data-ux=pair-fit]').click();
+    await чекатиНа(()=>w.fits.length===2,'явний повтор не працює');
+    w.eval(`П.картки[0].картинка='https://example.com/fitted.jpg';ПОКАЗ_ПРИМІРКИ_П.set(П.картки[0],{іде:false,код:'підпис'});показатиПримірку(0);`);
+    await чекатиНа(()=>d.querySelector('.pair-result-hero .pair-fitted img'),'немає готового кадру');
+    тест('готовий кадр — перший у результаті, без звичайного фото',d.getElementById('е-образи').firstElementChild.id==='mirror-look-sides'
+      &&!d.querySelector('#mirror-look-sides .pair-person-photo'));
+    w.MirrorRoom.route('сценарій');await new Promise(r=>setTimeout(r,30));
+    w.eval(`П.картки[0]={рука:1,речі:[{id:'saved',назва:'Збережена сукня'}]};MirrorRoom.route('образи');`);
+    await new Promise(r=>setTimeout(r,30));
+    тест('відкриття збереженого образу не запускає генерації',w.fits.length===2);
+    тест('без винятків',помилки.length===0,помилки);дом.window.close();
   }
 
   розділ("2. ХЕШ ІЗ ПАРАМЕТРАМИ МОСТУ — НЕ ПАКЕТ");

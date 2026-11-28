@@ -20,7 +20,7 @@ from реєстр_правил import (C, зн as _зн, джерело_гілк
 from реєстр_сила import перезважити
 from selection_policy import намір as _намір
 import внутрішня_мова as _ВМ
-import accessory as _АР
+import аксесуари_реєстр as _АР
 import пара_взуття as _ПАРА
 
 

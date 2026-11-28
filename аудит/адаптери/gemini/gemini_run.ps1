@@ -452,7 +452,7 @@ function Update-UsageCache {
 # настало, — тож його перечитуємо; це правило тут, у єдиному читачі, тож його мають усі виклики (Get-Quota, обидва чекання).
 function Read-Usage([switch]$Fresh, [long]$After = 0) {
     $c = $null
-    try { $c = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'usage.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+    try { $c = (Read-FileText (Join-Path $RunsDir 'usage.json')) | ConvertFrom-Json } catch { $null = $_ }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $age = (Get-Limit $script:Limits 'UsageMinutes' 'usage_minutes') * 60
     $u = $null
@@ -588,7 +588,7 @@ function Get-CodexHome {
 function Read-CodexQuota {
     $q = [ordered]@{}
     try {
-        $o = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json
+        $o = (Read-FileText (Join-Path $RunsDir 'quota-codex.json')) | ConvertFrom-Json
         foreach ($p in $o.PSObject.Properties) { $q[$p.Name] = ConvertTo-PlainJson $p.Value }
     } catch { $null = $_ }
     $q
@@ -814,7 +814,7 @@ function Get-RunDelivered([string]$Id, [string[]]$Also = @()) {
     if (-not $Id) { return $out }
     $res = Join-Path $OutDir ($Id + '.json')
     if (Test-Path -LiteralPath $res -PathType Leaf) {
-        try { $out += @([string](Get-JsonProp ([IO.File]::ReadAllText($res, $script:Utf8) | ConvertFrom-Json) 'start') | Where-Object { $_ }) }
+        try { $out += @([string](Get-JsonProp ((Read-FileText $res) | ConvertFrom-Json) 'start') | Where-Object { $_ }) }
         catch { Write-Log "доставлене ${Id}: результат не прочитано — $(ConvertTo-NoteText $_.Exception.Message)" }
     }
     $bundle = Join-Path $OutDir ($Id + '.bundle')
@@ -985,7 +985,7 @@ function Invoke-OneShotTurn($M, $Run, [string]$Text) {
         return [pscustomobject]@{ Kind = 'stall'; Result = $null }
     }
     $resp = ''; $err = ''
-    if (Test-Path -LiteralPath $outFile) { $resp = [System.IO.File]::ReadAllText($outFile, $script:Utf8) }
+    if (Test-Path -LiteralPath $outFile) { $resp = (Read-FileText $outFile) }
     if ($r.Code -ne 0) { $err = ($r.Err + "`n" + $r.Out.Substring([Math]::Max(0, $r.Out.Length - 2000))).Trim() }
     if ($r.Code -ne 0 -and -not $err) { $err = "код виходу $($r.Code)" }
     $res = [pscustomobject]@{ status = $(if ($err) { 'ERROR' } else { 'SUCCESS' }); response = $resp; error = $err; answered = $(if ($err) { '' } else { $answered }) }
@@ -1125,7 +1125,7 @@ $script:EngineErrorCodes = @('AGY_ERROR', 'TIMEOUT', 'QUOTA', 'AUTH', 'NETWORK',
 function Get-EngineError($Res) {
     if ($Res.Code -notin $script:EngineErrorCodes) { return '' }
     $text = [string]$Res.EngineErr
-    if (-not $text.Trim()) { try { $text = [System.IO.File]::ReadAllText($Res.ErrLog, $script:Utf8) } catch { $text = '' } }
+    if (-not $text.Trim()) { try { $text = (Read-FileText $Res.ErrLog) } catch { $text = '' } }
     (($text -split "`r?`n") | Select-Object -Last 60) -join "`n"
 }
 
@@ -1171,7 +1171,7 @@ function Get-CopyState {
         $out.Add("копія $repo`: тека $(if (Test-Path -LiteralPath $repo -PathType Container) { 'є' } else { 'нема' })")
         $dotGit = Join-Path $repo '.git'
         if (Test-Path -LiteralPath $dotGit -PathType Leaf) {
-            $text = [IO.File]::ReadAllText($dotGit, $script:Utf8).Trim()
+            $text = (Read-FileText $dotGit).Trim()
             $out.Add(".git — файл: $text")
             $m = [regex]::Match($text, '^gitdir:\s*(.+)$')
             if ($m.Success) {
@@ -1278,7 +1278,7 @@ function Import-SleepRetries {
         try {
         if (-not (Test-SleepRetryPath $file.FullName) -or $file.Name -cnotmatch '^sleep-retry-([0-9]{8}-[0-9]{6}-[0-9a-f]{12})\.json$') { continue }
         $parent = $Matches[1]
-        $request = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
+        $request = (Read-FileText $file.FullName) | ConvertFrom-Json
         if ($request.parent -cne $parent -or $request.head -cnotmatch '^[0-9a-f]{40}$' -or $request.marker -cnotmatch '^[0-9a-f]{40}$' -or $request.sleep -cnotmatch '^[0-9a-f]{64}$') { continue }
         $matches = @(Get-Markers | Where-Object { $_.Valid -and $_.Name -ceq $request.queue -and $_.Sha -ceq $request.marker -and $script:Lanes -contains $_.Lane })
         if ($matches.Count -ne 1) { continue }
@@ -1286,11 +1286,11 @@ function Import-SleepRetries {
         $state = Get-StatePath $key
         $retry = $state + '.sleep.json'
         if (Test-Path -LiteralPath $retry) {
-            $previous = [IO.File]::ReadAllText($retry, $script:Utf8) | ConvertFrom-Json
+            $previous = (Read-FileText $retry) | ConvertFrom-Json
             # Стан WAIT міг не встигнути записатися до вимкнення.
             if ($previous.parent -cne $parent) { continue }
         }
-        if (-not (Test-Path -LiteralPath $state) -or [IO.File]::ReadAllText($state, $script:Utf8) -cnotmatch ('^DONE ' + [regex]::Escape($parent) + ' (?:STALL|STALL_PUBLISHED|AGY_ERROR|BLOCKED|BLOCKED_PUBLISHED|INTERRUPTED)$')) { continue }
+        if (-not (Test-Path -LiteralPath $state) -or (Read-FileText $state) -cnotmatch ('^DONE ' + [regex]::Escape($parent) + ' (?:STALL|STALL_PUBLISHED|AGY_ERROR|BLOCKED|BLOCKED_PUBLISHED|INTERRUPTED)$')) { continue }
         if (Test-SlugBusy $m.Slug $script:Lanes) { continue }
         $head = Get-RefSha "refs/remotes/origin/gemini/$($m.Slug)"
         if (-not $head) { $head = Get-RefSha 'refs/remotes/origin/main' }
@@ -1307,7 +1307,7 @@ function Get-SleepParent([string]$StatePath) {
     <# Дозвіл повтору переживає WAIT, STARTED і відмови за квотою. #>
     $path = $StatePath + '.sleep.json'
     if (Test-Path -LiteralPath $path) {
-        $retry = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+        $retry = (Read-FileText $path) | ConvertFrom-Json
         [string]$retry.parent
     } else { '' }
 }
@@ -1476,7 +1476,7 @@ function New-RunId([string]$Key) { '{0:yyyyMMdd-HHmmss}-{1}' -f (Get-Date), (Get
 # Прогони, що не йдуть: стан STARTED без живого процесу наряду (замок його слота вільний) — закрити й забандлити.
 function Resume-Interrupted {
     foreach ($sf in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.txt' -File)) {
-        $text = [System.IO.File]::ReadAllText($sf.FullName, $script:Utf8)
+        $text = (Read-FileText $sf.FullName)
         if (-not $text.StartsWith('STARTED {')) { continue }
         $j = $text.Substring(8) | ConvertFrom-Json
         $slot = [string](Get-JsonProp $j 'slot')
@@ -1499,7 +1499,7 @@ function Invoke-Task($M, $Job) {
         start = ''; head = ''; code = ''; report = 'NONE'; ahead = 0; turns = 0; engine_answer_utc = ''; minutes = 0; bundle = ''
         engine = (Get-StartEngine $M.Model ([string](Get-JsonProp (Get-JsonProp $Job 'sel') 'engine')))
         retakes = (Get-Retakes $statePath); started_utc = [datetime]::UtcNow.ToString('o'); ended_utc = ''; sleep_parent = (Get-SleepParent $statePath) }
-    $prev = $(if (Test-Path -LiteralPath $statePath) { [IO.File]::ReadAllText($statePath, $script:Utf8) } else { $null })
+    $prev = $(if (Test-Path -LiteralPath $statePath) { (Read-FileText $statePath) } else { $null })
     Write-FileAtomic $statePath ('STARTED ' + ($status | ConvertTo-Json -Compress))
     $dir = [string]$Job.dir
     $t0 = Get-Date
@@ -1631,7 +1631,7 @@ function Enter-RunQuotaWait($M, $Sel, $Status, $Res, [string]$Dir) {
         if ($q.Known -and $q.ResetAt -gt $now) { $until = [long]$q.ResetAt }
     } else {
         $err = ''
-        try { $err = [System.IO.File]::ReadAllText((Join-Path $Dir 'agy.stderr.txt'), $script:Utf8) } catch { $null = $_ }
+        try { $err = (Read-FileText (Join-Path $Dir 'agy.stderr.txt')) } catch { $null = $_ }
         # `codex exec --json` друкує відмову подією `error` у stdout (agy.jsonl), не в stderr: остання подія про ліміт чи скидання.
         $ev = ''
         try {
@@ -1814,7 +1814,7 @@ function Start-Markers($Workers) {
     # п'яти цифр) стояла мовчки, у #1856 — лише «? наряд». Стан INVALID_NAME — до рядка FORMAT: такий отримує рядок раз.
     foreach ($m in @($all | Where-Object { -not $_.Valid })) {
         $state = Get-StatePath (Get-MarkerKey $m)
-        if ((Test-Path -LiteralPath $state) -and [System.IO.File]::ReadAllText($state, $script:Utf8).Trim() -cne 'INVALID_NAME') { continue }
+        if ((Test-Path -LiteralPath $state) -and (Read-FileText $state).Trim() -cne 'INVALID_NAME') { continue }
         Write-Log "позначка $($m.Name): назва не за форматом gemini-queue/<наряд>/<модель>/<спроба>[/<умови>] — пропущено"
         $name = ([string]$m.Name -replace '[^\p{L}\p{Nd}._/-]', '_')
         if ($name.Length -gt 173) { $name = $name.Substring(0, 173) }
@@ -1907,7 +1907,7 @@ function Get-GeminiHealth {
     # Кеш /usage, як у квоті heartbeat: сам вимір agy не запускає; нема кешу — «?» у стані.
     $zero = ''
     try {
-        $uc = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'usage.json'), $script:Utf8) | ConvertFrom-Json
+        $uc = (Read-FileText (Join-Path $RunsDir 'usage.json')) | ConvertFrom-Json
         $u = ConvertFrom-UsageText ([string]$uc.text) ([long]$uc.time)
         if ($u.Known) {
             $groups = @(Merge-UsageWindows $u.Windows)
@@ -1951,14 +1951,14 @@ function Write-Heartbeat([string]$Iso) {
             try { $hb.since = ([datetime]::ParseExact($first.since, "yyyy-MM-dd'T'HH:mm:ss'Z'", [cultureinfo]::InvariantCulture, 'AssumeUniversal,AdjustToUniversal')).ToLocalTime().ToString('s') } catch { $null = $_ }
         }
         try {
-            $c = [System.IO.File]::ReadAllText((Join-Path $RunsDir 'usage.json'), $script:Utf8) | ConvertFrom-Json
+            $c = (Read-FileText (Join-Path $RunsDir 'usage.json')) | ConvertFrom-Json
             $u = ConvertFrom-UsageText ([string]$c.text) ([long]$c.time)
             $hb.quota = [ordered]@{ read = (Get-UtcStamp $u.Read.UtcDateTime); known = $u.Known
                 windows = @(foreach ($w in @($u.Windows | Select-Object -First 12)) {
                     [ordered]@{ g = (ConvertTo-GroupCode $w.Name); w = $w.Window; left = $w.Left; reset = $(if ($null -ne $w.Reset) { Get-UtcStamp $w.Reset.UtcDateTime } else { '' }) }
                 }) }
         } catch { $null = $_ }
-        try { $hb.codex = ConvertTo-PlainJson ([System.IO.File]::ReadAllText((Join-Path $RunsDir 'quota-codex.json'), $script:Utf8) | ConvertFrom-Json) } catch { $null = $_ }
+        try { $hb.codex = ConvertTo-PlainJson ((Read-FileText (Join-Path $RunsDir 'quota-codex.json')) | ConvertFrom-Json) } catch { $null = $_ }
         $hb.codex_fallback = (Test-CodexFallback)
         $hb.wait = @(foreach ($w in @(Get-WaitingMarkers | Select-Object -First 12)) { [ordered]@{ marker = $w.Marker; until = $w.Until; g = $w.Group } })
         try { $hb.health = Get-GeminiHealth } catch { Write-Log "здоров'я: $($_.Exception.Message)" }
@@ -2032,7 +2032,7 @@ function Initialize-SharedMarkerState {
         $pending = @(foreach ($claim in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.claim' -File)) {
             $state = $claim.FullName -replace '\.claim$', '.txt'
             # STARTED без зайнятого слота відновить штатний Resume-Interrupted вже після перенесення.
-            if (-not (Test-Path -LiteralPath $state) -or -not ([IO.File]::ReadAllText($state, $script:Utf8)).StartsWith('STARTED ')) { $claim }
+            if (-not (Test-Path -LiteralPath $state) -or -not ((Read-FileText $state)).StartsWith('STARTED ')) { $claim }
         })
         if ($pending.Count) {
             Write-Log 'перенесення стану: чекаю завершення старих узятих позначок'
@@ -2042,7 +2042,7 @@ function Initialize-SharedMarkerState {
         foreach ($file in @(Get-ChildItem -LiteralPath $script:StateDir -File)) {
             # part не є завершеним записом; усі кінцеві стани й бічні файли зберігаємо.
             if ($file.Extension -ceq '.part') { continue }
-            Write-FileAtomic (Join-Path $target $file.Name) ([IO.File]::ReadAllText($file.FullName, $script:Utf8))
+            Write-FileAtomic (Join-Path $target $file.Name) ((Read-FileText $file.FullName))
         }
         Write-FileAtomic $ready '1'
         Write-Log "стан позначок: $target"
@@ -2074,21 +2074,21 @@ function Restore-FinishedMarkerState([string]$Target) {
         Where-Object { $_.Name -cmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json$' } | Sort-Object Name -Descending)
     foreach ($file in $results) {
         try {
-            $r = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
+            $r = (Read-FileText $file.FullName) | ConvertFrom-Json
             $code = [string](Get-JsonProp $r 'code'); $slug = [string](Get-JsonProp $r 'slug'); $model = [string](Get-JsonProp $r 'model')
             $n = [string](Get-JsonProp $r 'n'); $cond = [string](Get-JsonProp $r 'cond'); $sha = [string](Get-JsonProp $r 'marker')
             if (-not $code -or $code -cin @('QUOTA_ZERO', 'ISOLATION') -or $sha -cnotmatch '^[0-9a-f]{40}$' -or -not $slug -or -not $model -or $n -cnotmatch '^[1-9][0-9]*$') { continue }
             $ref = "refs/remotes/origin/gemini-queue/$slug/$model/$n" + $(if ($cond) { "/$cond" } else { '' })
             # Завершений результат важливіший за старий WAIT, крім WAIT, записаного після нього (повтор після сну чи квоти).
             $prev = Get-StatePath "$ref $sha" $old
-            if ([IO.File]::Exists($prev) -and [IO.File]::ReadAllText($prev, $script:Utf8).StartsWith('WAIT ') -and
+            if ([IO.File]::Exists($prev) -and (Read-FileText $prev).StartsWith('WAIT ') -and
                 (Get-Item -LiteralPath $prev).LastWriteTimeUtc -gt $file.LastWriteTimeUtc) { continue }
             $added += & $put (Get-StatePath "$ref $sha" $Target) ('DONE ' + $file.BaseName + ' ' + $code)
         } catch { Write-Log "відновлення стану: $($file.Name): $($_.Exception.Message)" }
     }
     foreach ($file in @(Get-ChildItem -LiteralPath $old -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
         try {
-            $text = [IO.File]::ReadAllText($file.FullName, $script:Utf8)
+            $text = (Read-FileText $file.FullName)
             if ($file.Extension -ceq '.txt' -and -not $text.StartsWith('STARTED ')) { $added += & $put (Join-Path $Target $file.Name) $text }
         } catch { Write-Log "відновлення стану: $($file.Name): $($_.Exception.Message)" }
     }
