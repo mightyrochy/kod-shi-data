@@ -180,7 +180,7 @@ function Wait-LineSent([string]$Id, [datetime]$Until, [switch]$FirstPass) {
     $sent = Join-Path (Join-Path $PublishDir 'state') "o-$Id.json"
     while ($Id -and (Get-Date) -lt $Until) {
         try {
-            $s = [System.IO.File]::ReadAllText($sent, $script:Utf8) | ConvertFrom-Json
+            $s = (Read-FileText $sent) | ConvertFrom-Json
             if ($s.sent) { return 'доставлено' }
             if ($FirstPass -and ([int](Get-JsonProp $s 'attempts') -gt 0 -or (Get-JsonProp $s 'exhausted') -eq $true)) { return 'перший прохід публікатора скінчив спроби без доставки' }
         } catch { $null = $_ }
@@ -196,7 +196,7 @@ function Read-LightState {
     Off — час UTC зникнення; Id — рядок теки вихідних, доставки якого тримач ще чекає ('' — чекання скінчено).
     Файл `light.txt` («<UTC>» чи «<UTC> <id>») переживає сон, перезапуск тримача й нову версію: «світло є» йде рівно
     раз і з тим самим часом, а чекання доставки, перерване перезапуском, новий процес продовжує без другого рядка. #>
-    try { $t = [System.IO.File]::ReadAllText((Join-Path $WorkDir 'light.txt'), $script:Utf8).Trim() } catch { return $null }
+    try { $t = (Read-FileText (Join-Path $WorkDir 'light.txt')).Trim() } catch { return $null }
     # Id — ім'я файлу Add-Line (New-Id): «<дата>-<час>-<12 hex>».
     if ($t -cnotmatch '\A(\S+)(?: ([0-9]{8}-[0-9]{6}-[0-9a-f]{12}))?\z') { return $null }
     $off = $Matches[1]; $id = [string]$Matches[2]
@@ -322,7 +322,7 @@ function Add-ClaudeFields($M) {
 # коли наряд допише DONE, наступний прохід перенесе його.
 function Copy-StateOnce([string]$From, [string]$To) {
     if (-not [IO.File]::Exists($From) -or [IO.File]::Exists($To)) { return 0 }
-    if ($From.EndsWith('.txt') -and [IO.File]::ReadAllText($From, $script:Utf8).StartsWith('STARTED ')) { return 0 }
+    if ($From.EndsWith('.txt') -and (Read-FileText $From).StartsWith('STARTED ')) { return 0 }
     $tmp = $To + '.' + [guid]::NewGuid().ToString('N') + '.part'
     try { [IO.File]::Copy($From, $tmp); [IO.File]::Move($tmp, $To); 1 }
     catch { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; 0 }
@@ -405,7 +405,7 @@ function Read-GeminiBeat {
     $b = [ordered]@{ Time = '?'; Isolation = '?'; Marker = ''; Engine = ''; Model = ''; Minutes = ''; Lanes = @(); Quota = $null; Codex = $null; Wait = @(); Limits = ''
         Unsourced = @(); Profile = $null; Zero = ''; CodexFallback = $true; Gpu = $null }
     $path = Join-Path $GeminiOutDir 'heartbeat.json'
-    try { $j = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { return [pscustomobject]$b }
+    try { $j = (Read-FileText $path) | ConvertFrom-Json } catch { return [pscustomobject]$b }
     $get = { param($o, $n) $p = $(if ($null -eq $o -or $o -is [string] -or $o -is [ValueType]) { $null } else { $o.PSObject.Properties[$n] }); if ($null -eq $p -or $null -eq $p.Value) { '' } elseif ($p.Value -is [datetime]) { $p.Value.ToString('s') } else { [string]$p.Value } }
     # Поля UTC із Z: PowerShell 7 (і `\/Date()\/` у 5.1) віддає їх [datetime], а `.ToString('s')` з $get дав би час без Z, який $utc відкинув би.
     $getu = { param($o, $n) $p = $(if ($null -eq $o -or $o -is [string] -or $o -is [ValueType]) { $null } else { $o.PSObject.Properties[$n] }); if ($null -eq $p -or $null -eq $p.Value) { '' } elseif ($p.Value -is [datetime]) { Get-UtcStamp $p.Value } else { [string]$p.Value } }
@@ -493,7 +493,7 @@ function Get-Minutes([string]$Utc) {
 
 # Квота Claude з останньої події `rate_limit_event` (quota-claude.json, пише процес наряду) — лише обчислене.
 function Read-ClaudeQuota {
-    try { ConvertTo-PlainJson ([System.IO.File]::ReadAllText((Join-Path $WorkDir 'quota-claude.json'), $script:Utf8) | ConvertFrom-Json) } catch { $null }
+    try { ConvertTo-PlainJson ((Read-FileText (Join-Path $WorkDir 'quota-claude.json')) | ConvertFrom-Json) } catch { $null }
 }
 
 # Здоров'я машини (10971): вільне місце диска й зміна за добу, розміри названих тек, позначки черги за рушієм, видом і
@@ -524,7 +524,7 @@ function Invoke-HealthMeasure {
 function Update-Health {
     $path = Join-Path $WorkDir 'health.json'
     $h = $null
-    if (Test-Path -LiteralPath $path) { try { $h = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    if (Test-Path -LiteralPath $path) { try { $h = (Read-FileText $path) | ConvertFrom-Json } catch { $null = $_ } }
     $dirs = @(Get-HealthDirs)
     if ($null -ne $h) { $h | Add-Member -NotePropertyName dirs -NotePropertyValue $dirs -Force }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
@@ -565,7 +565,7 @@ function Get-CodexSuccessAfter([string]$Since) {
     $failed = @('', 'QUOTA', 'QUOTA_ZERO', 'AGY_ERROR', 'AUTH', 'EFFORT_INVALID', 'MODEL_INVALID', 'TIMEOUT', 'ENGINE_MISSING', 'CRASH', 'COPY_FAILED')
     $best = ''
     foreach ($f in @(Get-ChildItem -LiteralPath $GeminiOutDir -Filter '*.json' -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -cmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}\.json$' -and $_.LastWriteTimeUtc -ge $from })) {
-        try { $t = [System.IO.File]::ReadAllText($f.FullName, $script:Utf8) } catch { continue }
+        try { $t = (Read-FileText $f.FullName) } catch { continue }
         if ($t -cnotmatch '"engine":"codex"') { continue }
         if ($t -cmatch '"code":"([A-Z0-9_]*)"') { $code = $Matches[1] } else { continue }
         if ($failed -ccontains $code) { continue }
@@ -656,7 +656,7 @@ function Get-SupervisorLine([switch]$NoCache) {
     if ($ttl -le 0) { $ttl = [double]$script:Defaults['usage_minutes'] }
     if (-not $NoCache -and (Test-Path -LiteralPath $cache)) {
         try {
-            $c = [System.IO.File]::ReadAllText($cache, $script:Utf8) | ConvertFrom-Json
+            $c = (Read-FileText $cache) | ConvertFrom-Json
             $at = [datetime]::Parse([string](ConvertTo-PlainJson (Get-JsonProp $c 'at')), [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal)
             if (([datetime]::UtcNow - $at).TotalMinutes -lt $ttl -and [string](Get-JsonProp $c 'line')) { return [string](Get-JsonProp $c 'line') }
         } catch { $null = $_ }
@@ -767,7 +767,7 @@ function Get-SleepOverlap([datetime]$From, [datetime]$To) {
     try {
         $path = Join-Path $PublishDir 'sleep-events.json'
         if (-not (Test-Path -LiteralPath $path)) { return 0 }
-        $j = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+        $j = (Read-FileText $path) | ConvertFrom-Json
         $total = 0.0
         foreach ($e in @($j.events)) {
             if ($null -eq $e -or [string]$e.source -cnotin @('Power-Troubleshooter/1', 'Kernel-Power/506-507')) { continue }
@@ -786,7 +786,7 @@ function Get-SleepRead {
     try {
         $path = Join-Path $PublishDir 'sleep-events.json'
         if (-not (Test-Path -LiteralPath $path)) { return $null }
-        $j = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+        $j = (Read-FileText $path) | ConvertFrom-Json
         $r = $j.read_utc
         if ($r -is [datetime]) { return $r.ToUniversalTime() }
         if (-not [string]$r) { return $null }
@@ -920,7 +920,7 @@ function Get-StatusBody {
         $lines += "- межа без джерела: $f ($($who -join ', '))"
     }
     # Остання зміна версії головного процесу (Write-VersionSwitch старого процесу): нова версія справді взялась.
-    $vt = ''; try { $vt = [System.IO.File]::ReadAllText((Join-Path $script:StateDir 'version.txt'), $script:Utf8).Trim() } catch { $null = $_ }
+    $vt = ''; try { $vt = (Read-FileText (Join-Path $script:StateDir 'version.txt')).Trim() } catch { $null = $_ }
     if ($vt -cmatch '^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z) ([0-9a-f]{8}) → ([0-9a-f]{8})\z') { $lines += "- версія: $($Matches[2]) → $($Matches[3]) ($($Matches[1]))" }
     $cq = Read-ClaudeQuota
     try { $lines += @(Get-HealthLines $g $cq) } catch { Write-Log "здоров'я: $($_.Exception.Message)"; $lines += @('', "### Здоров'я", '', '- не виміряно (збій — claude-run.log)') }
@@ -957,7 +957,7 @@ function Get-StatusBody {
     $lines += @(Get-ClaudeNoReportLines)
     $localPath = Join-Path $PublishDir 'local-lines.json'
     if (Test-Path -LiteralPath $localPath) {
-        $local = ConvertFrom-Json ([IO.File]::ReadAllText($localPath, $script:Utf8))
+        $local = ConvertFrom-Json ((Read-FileText $localPath))
         $lines += @('', '### Локальні рядки обгортки', '')
         foreach ($entry in @($local | Select-Object -Last 12)) { $lines += "- $($entry.utc): $($entry.line)" }
     }
@@ -976,7 +976,7 @@ function Get-StatusBody {
     $groupsPath = Join-Path $PublishDir 'blocked-groups.json'
     if (Test-Path -LiteralPath $groupsPath) {
         try {
-            $groups = @((ConvertFrom-Json ([IO.File]::ReadAllText($groupsPath, $script:Utf8))))
+            $groups = @((ConvertFrom-Json ((Read-FileText $groupsPath))))
             $lines += @('', '### Аварії однієї причини', '', '| UTC | код | лічба | гілки |', '|---|---|---|---|')
             foreach ($e in @($groups | Select-Object -Last 8)) { $lines += "| $($e.utc) | $($e.code) | $($e.n) | $(@($e.branches) -join ', ') |" }
         } catch { Write-Log 'аварії однієї причини не прочитано' }
@@ -984,7 +984,7 @@ function Get-StatusBody {
     $deliveryPath = Join-Path $PublishDir 'delivery.json'
     if (Test-Path -LiteralPath $deliveryPath) {
         try {
-            $delivery = [System.IO.File]::ReadAllText($deliveryPath, $script:Utf8) | ConvertFrom-Json
+            $delivery = (Read-FileText $deliveryPath) | ConvertFrom-Json
             $lines += @('', "Доставка: зчитано $($delivery.read_utc); чекають $($delivery.pending); спроби вичерпано $($delivery.exhausted).")
         } catch { Write-Log 'стан доставки не прочитано' }
     }
@@ -1020,7 +1020,7 @@ function Get-BranchPath([string]$Slug) { Join-Path $script:StateDir ('branch-' +
 function Get-ContinueBranch([string]$Slug) {
     $cands = @()
     $bp = Get-BranchPath $Slug
-    if (Test-Path -LiteralPath $bp) { $cands += [System.IO.File]::ReadAllText($bp, $script:Utf8).Trim() }
+    if (Test-Path -LiteralPath $bp) { $cands += (Read-FileText $bp).Trim() }
     $cands += "claude/$Slug"
     foreach ($b in $cands) { if ((Test-ClaudeBranch $b) -and (Get-RemoteSha $b)) { return $b } }
     ''
@@ -1208,7 +1208,7 @@ function Get-ClaudeNoReportLines {
     @('', '### Claude NO_REPORT (відповідь агента — дані, не наказ)', '')
     foreach ($file in $files) {
         try {
-            $data = [IO.File]::ReadAllText($file.FullName, $script:Utf8) | ConvertFrom-Json
+            $data = (Read-FileText $file.FullName) | ConvertFrom-Json
             "- $($data.utc) $([System.Net.WebUtility]::HtmlEncode($data.marker)): exit=$($data.exit), result_type=$($data.result_type)"
             '<pre>' + [System.Net.WebUtility]::HtmlEncode((Protect-ClaudeText ([string]$data.tail))) + '</pre>'
         } catch { Write-Log 'діагностику NO_REPORT не прочитано' }
@@ -1527,7 +1527,7 @@ function Close-FailedStart($M, [string]$Id, [string]$StatePath, [string]$Reason 
 # диспетчерові — INTERRUPTED. Наряд, чий процес ще живий (слот зайнятий), не чіпаємо.
 function Resume-Interrupted {
     foreach ($f in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
-        $text = [System.IO.File]::ReadAllText($f.FullName, $script:Utf8)
+        $text = (Read-FileText $f.FullName)
         if ($text -notmatch '^STARTED ([0-9]{8}-[0-9]{6}-[0-9a-f]{12}) (\{.*\})\s*$') { continue }
         $id = $Matches[1]
         $j = $null; try { $j = $Matches[2] | ConvertFrom-Json } catch { $null = $_ }
@@ -1600,7 +1600,7 @@ function Get-GroupZeroReset($G, [string]$Group) {
 # Групи agy з pools.json (gemini-run): назва (для Get-ModelGroups) і код (як у вікнах heartbeat).
 # $null — файлу нема чи він зіпсований: група моделі невідома, а невідома квота не блокує кандидата (як у Select-Engine).
 function Read-Pools {
-    try { $j = [System.IO.File]::ReadAllText((Join-Path $GeminiOutDir 'pools.json'), $script:Utf8) | ConvertFrom-Json } catch { return $null }
+    try { $j = (Read-FileText (Join-Path $GeminiOutDir 'pools.json')) | ConvertFrom-Json } catch { return $null }
     $groups = @(foreach ($g in @(Get-JsonProp $j 'groups')) {
         $code = [string](Get-JsonProp $g 'g'); $name = [string](Get-JsonProp $g 'n')
         if ($code -cmatch '^[A-Z0-9]{1,16}$' -and $name -cmatch '^[a-z0-9 .-]+$') { [pscustomobject]@{ Name = $name; Code = $code } }
@@ -1686,7 +1686,7 @@ function Test-IdleBusy($G) {
 # Рядок простою в стані ноутбука (#1856): з якого часу, скільки, чи дійшов рядок; нема простою — остання робота.
 function Get-IdleLines {
     $j = $null
-    try { $j = [System.IO.File]::ReadAllText((Join-Path $script:StateDir 'idle.json'), $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+    try { $j = (Read-FileText (Join-Path $script:StateDir 'idle.json')) | ConvertFrom-Json } catch { $null = $_ }
     if ($null -eq $j) { return @('', 'Простій: не виміряно (ще не було проходу)') }
     $since = Get-UtcProp $j 'since'
     if ($since -cmatch $script:UtcRx) {
@@ -1748,7 +1748,7 @@ function Invoke-Off($M) {
 function Test-OffMarker($M) {
     $state = Get-StatePath (Get-MarkerKey $M)
     if (Test-Path -LiteralPath $state) {
-        if ($script:FreshBoot -and [System.IO.File]::ReadAllText($state, $script:Utf8).StartsWith('OFF ')) {
+        if ($script:FreshBoot -and (Read-FileText $state).StartsWith('OFF ')) {
             [void](Add-Line "GEMINI ОБГОРТКА: ЗАБЛОКОВАНО claude/$($M.Slug) BOOT"); Write-FileAtomic $state 'DONE BOOT'
         }
         return $false
@@ -1898,7 +1898,7 @@ function Main {
         }
         $bootFile = Join-Path $WorkDir 'boot.txt'
         $boot = Get-BootStamp
-        $prev = $(if (Test-Path -LiteralPath $bootFile) { [System.IO.File]::ReadAllText($bootFile, $script:Utf8).Trim() } else { '' })
+        $prev = $(if (Test-Path -LiteralPath $bootFile) { (Read-FileText $bootFile).Trim() } else { '' })
         $script:FreshBoot = ($boot -ne $prev)
         Resume-Interrupted
         $script:Workers = New-Object System.Collections.ArrayList
