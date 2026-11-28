@@ -1,0 +1,61 @@
+── ПРОМПТ (6769 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Ім’я помічниці й назва застосунку Liusterko українською — Люстерко. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: casual_suit · about it: text н=1
+2 — kind: belt · about it: text н=2
+3 — kind: coat · about it: text н=3
+4 — kind: ring · about it: text н=4
+5 — kind: crossbody_bag · about it: text н=5
+6 — kind: boots · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The casual suit grounds your look with a neat, everyday texture that stays sharp through the holiday season without feeling too formal for a restaurant evening.",
+"2": "This wide belt anchors your silhouette at the waist, giving structure to the soft suit fabric while keeping your proportions balanced and polished.",
+"3": "The oversized coat provides warmth and a relaxed drape that feels effortlessly elegant against the crisp winter air inside the restaurant.",
+"4": "A delicate pop of sparkle on your finger adds just the right touch of celebration to your refined outfit, catching the light as you mingle.",
+"5": "The rich blue bag brings festive contrast and practical depth to your look—perfect for holding essentials during a night out in town.",
+"6": "These suede boots add warmth and steady elegance under the restaurant’s soft lighting, grounding your entire silhouette with quiet confidence.",
+"7": "Your pinstripe casual suit brings a grounded, elegant texture that stays chic even through the frosty air, while the wide belt at your waist defines your silhouette just enough to keep the volume balanced and anchored. The grey coat wraps you warmly without losing its clean line over the crisp white walls of the restaurant. A touch of sparkle from the ring catches every light as you mingle, and the deep blue bag adds a rich, festive contrast that feels perfect for your evening in town.",
+"8": "Let the coat hang open to show off the suit's pinstripes—it keeps the look fresh and airy despite the cold.",
+"9": "Tuck your hands casually into your pockets; it opens up the jacket and highlights your confident posture.",
+"10": "Костюм з бомбером сірий в смужку — This black two-piece set is kept as it provides the formal structure required, accepting the 'casual' metric warning to prioritize formality.",
+"11": "Пальто вкорочене сіре — This grey coat is kept to ensure warmth against frost, despite being counted as a single layer.",
+"12": "Костюм з бомбером сірий в смужку — This black two-piece set maintains the formal 'smart' silhouette required for the restaurant occasion despite code warnings about casual metrics.",
+"13": "Пальто вкорочене сіре — This grey coat is kept as a neutral outer layer suitable for frost weather, accepting the 'too few layers' finding as it provides necessary coverage."
+}
+
+── ВІДПОВІДЬ (2069 симв., 17.3 с, HTTP 200) ──
+```json
+{
+  "1": "Повсякденний костюм робить твій образ стриманим і повсякденним, зберігаючи елегантність протягом усього святкового сезону без надмірної офіційності для вечірнього відпочинку в ресторані.",
+  "2": "Цей широкий пояс підкреслює талію, надаючи форму м’якій тканині костюма і збалансовуючи пропорції твого силуету.",
+  "3": "Об’ємний пальта дарує тепло й невимушену елегантність у зимовому повітрі всередині ресторану.",
+  "4": "Ніжна прикраса на пальці додає образу святкового настрою, переливаючись світлом під час спілкування.",
+  "5": "Синя сумка з ремінцем через плече створює контраст і практичний акцент у твоєму образі — ідеально для вечора в місті.",
+  "6": "Замшеві чоботи додають тепла й витонченості під м’яким освітленням ресторану, завершуючи твій силует з тихою впевненістю.",
+  "7": "Твій костюм у смужку робить образ стриманим і елегантним, залишаючись стильним навіть на морозі. Широкий пояс підкреслює талію, додаючи об’єму й балансу. Сіре пальто зігріває тебе без втрати чистої лінії біля стін ресторану. Прикраса на пальці переливається світлом під час спілкування, а синя сумка доповнює образ насиченим святковим акцентом.",
+  "8": "Залиш пальта розстебнутим, щоб показати смужки костюма — це освіжає й полегшує образ навіть у холод.",
+  "9": "Недбало поклади руки в кишені; так ти відкриєш піджак і підкреслиш свою впевнену поставу.",
+  "10": "Костюм з бомбером сірий в смужку — Цей чорний комплект зберігається, оскільки він забезпечує необхідну офіційність. Попередження про повсякденність пріоритезує формальність.",
+  "11": "Пальто вкорочене сіре — Це пальто залишається для тепла на морозі, незважаючи на те, що його вважають одношаровим одягом.",
+  "12": "Костюм з бомбером сірий в смужку — Цей чорний комплект зберігає формальний силует «smart», необхідний для ресторану, попри попередження коду про повсякденність.",
+  "13": "Пальто вкорочене сіре — Це пальто залишається як нейтральний верхній шар у морозну погоду. Попередження про недостатню кількість шарів приймається, оскільки воно забезпечує необхідне покриття."
+}
+```

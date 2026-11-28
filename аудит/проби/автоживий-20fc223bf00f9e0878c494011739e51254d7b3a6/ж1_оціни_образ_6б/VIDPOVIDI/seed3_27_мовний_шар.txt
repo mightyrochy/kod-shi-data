@@ -1,0 +1,53 @@
+── ПРОМПТ (6450 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Ім’я помічниці й назва застосунку Liusterko українською — Люстерко. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: necklace · about it: text н=1
+2 — kind: ring · about it: text н=2
+3 — kind: loafers · about it: text н=3
+4 — kind: blouse · about it: text н=4
+5 — kind: crossbody_bag · about it: text н=5
+6 — kind: trousers · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The black-and-brown bead necklace adds personal flair while maintaining the outfit’s cohesive palette, offering a touch of heritage-inspired elegance suitable for your daily work environment.",
+"2": "This white enamel ring with diamond accents serves as a refined detail that catches light subtly without drawing undue attention during professional interactions.",
+"3": "These brown loafers provide a polished yet effortless finish that suits your office routine while adding warmth through their rich color contrast.",
+"4": "This black blouse with sheer dotted sleeves brings quiet visual interest to your office look while maintaining a professional tone—its soft drape flatters your figure and pairs well with the tailored trousers.",
+"5": "The deep brown crossbody bag offers practical carrying capacity and a sophisticated accent that harmonizes with the loafers and adds depth to your ensemble.",
+"6": "The grey wide-leg trousers offer comfort and elegance, their clean lines complementing the blouse’s texture and supporting a poised silhouette for daily work.",
+"7": "I chose these pieces to build your workday in the office: a black blouse with sheer, dotted sleeves adds quiet texture without disrupting the professional line you want. The wide-leg trousers in a soft grey keep the silhouette relaxed yet structured, balancing the subtle volume of the top. A deep brown crossbody bag offers a rich contrast and easy carrying for daily essentials, while the polished loafers ground the look in understated sophistication. The black-and-brown beads necklace and white enamel ring add personal touches that elevate the outfit without overpowering it.",
+"8": "Tuck the blouse slightly to define your waist subtly if you prefer structure during meetings, or leave it untucked for a breezier feel throughout the day.",
+"9": "Намисто Journey – Agate (mini) — Kept as the only item that can serve as the top (necklace) since no other tops fit the monochromatic theme well from the original list."
+}
+
+── ВІДПОВІДЬ (2098 симв., 13.3 с, HTTP 200) ──
+```json
+{
+  "1": "Чорно-коричневе намисто з бісеру додає особистого шарму, зберігаючи при цьому цілісну палітру вбрання та пропонуючи дотик елегантності у стилі спадщини, що підходить для твоєї повсякденної робочої обстановки.",
+  "2": "Це біле емальоване кільце з діамантовими акцентами слугує вишуканою деталлю, яка ледь помітно ловить світло без зайвої уваги під час професійних взаємодій.",
+  "3": "Ці коричневі лофери забезпечують відполірований і водночас невимушений фінал, який пасує до твого офісного розпорядку та додає тепла завдяки їхньому насиченому кольоровому контрасту.",
+  "4": "Чорна блузка з прозорими рукавами в горошок привносить тихий візуальний інтерес у твій робочий образ, зберігаючи професійний тон — її м’який драпірування підкреслює фігуру та добре поєднується зі штанами прямого крою.",
+  "5": "Коричнева сумка-кросбоді пропонує практичну місткість і вишуканий акцент, який гармонізує з лоферами та додає глибини твоєму ансамблю.",
+  "6": "Широкі сірі штани забезпечують комфорт і елегантність, їхні чіткі лінії доповнюють текстуру блузки та підтримують впевнену поставу для щоденної роботи.",
+  "7": "Я обрала ці речі, щоб створити твій робочий день у офісі: чорна блузка з прозорими рукавами в горошок додає тихий візерунок без порушення професійного стилю, який ти хочеш. Широкі сірі штани зберігають силует розслабленим і водночас структурованим, балансуючи ледь помітний об’єм верху. Коричнева сумка-кросбоді пропонує насичений контраст і зручну місткість для щоденних речей, а відполіровані лофери завершують образ у невимушеній витонченості. Чорно-коричневе намисто з бісеру та емальоване кільце додають особистих штрихів, які підкреслюють вбрання без надмірності.",
+  "8": "Злегка заправ блузку всередину, щоб ледь позначити твою талію, якщо ти віддаєш перевагу структурованості на зустрічах, або носи її не заправленою для більш вільного відчуття протягом дня.",
+  "9": "Намисто Journey – Agate (mini) — Залишається єдиним предметом, який може слугувати верхом (намистом), оскільки інші блузки погано вписуються у монохромну тему з оригінального списку."
+}
+```
