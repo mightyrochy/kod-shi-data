@@ -305,7 +305,7 @@
     const shelf=document.createElement('div');shelf.id='mirror-saved-manual';node('біб-список').before(shelf);
     node('mirror-home').addEventListener('click',goFace);
     node('mirror-style').addEventListener('click',showThemes);node('mirror-person').addEventListener('click',()=>route('профіль'));
-    node('чат-поле').setAttribute('aria-label','Повідомлення стилістці');
+    node('чат-поле').setAttribute('aria-label','Запитай Люстерко про стиль або застосунок');
     node('чат-слати').innerHTML=ik('далі');node('чат-слати').setAttribute('aria-label','Надіслати');
     if(window.ResizeObserver){
       const size=new ResizeObserver(()=>decorateChoices());size.observe(node('mirror-choices'));size.observe(node('аркуш'));size.observe(node('pair-scene'));size.observe(node('пал-картка'));
@@ -326,7 +326,7 @@
     document.addEventListener('keydown',e=>{if(e.target.id==='чат-поле'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&node('чат-поле').value.trim()){const b=node('чат-слати');if(!b.disabled){e.preventDefault();e.stopImmediatePropagation();b.click();}}},true);
     document.addEventListener('click',e=>{const b=e.target.closest('[data-ux]');if(b&&!b.disabled&&actions.has(b.dataset.ux)){actions.get(b.dataset.ux)(b.dataset.value||'',b);}});
     document.addEventListener('submit',e=>{if(e.target.matches('[data-form="access"]')){e.preventDefault();const token=new FormData(e.target).get('token').trim();if(!token)return;try{localStorage.setItem('міст:токен',token);}catch{}МІСТ_П.токен=token;close();say('Код збережено.');}});
-    window.addEventListener(M.changeEvent,()=>{themeButtons();schedule();window.Rack?.repaintArtwork();});
+    window.addEventListener(M.changeEvent,()=>{themeButtons();schedule();window.Rack?.repaintArtwork();queueMicrotask(playIntro);});
     themeButtons();keyboardSpace();setDrawer(false);sync();
     document.addEventListener('visibilitychange',()=>{
       if(document.hidden){hiddenAt=Date.now();if(intro?.open)intro.close();}
