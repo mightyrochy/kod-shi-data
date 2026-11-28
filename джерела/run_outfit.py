@@ -22,7 +22,7 @@ import slots as _СЛОТИ
 import os, sys, tempfile, itertools
 import colorspace as cs, palette as P, outfit as O, feed, fit as ПС, silhouette as СЛ
 import суд_образу as _СУД   # Н-02-01, сесія 4
-import pipeline, profile as PR, language_gate as МГ, composer as КМ
+import pipeline, profile as PR, language_gate as МГ, композитор_збирання as КМ
 
 # ── КАТАЛОГ: діалект Rozetka, реальні цінові й колірні патерни масмаркету ────
 КАТАЛОГ_XML = """<?xml version="1.0" encoding="UTF-8"?>

@@ -19,7 +19,7 @@ import схеми_розбору as _СР
 import руки_без_коду as _РБК
 import вердикт_моделі as _ВМ
 import траурний_регістр as _ТР_к
-import composer as _КМ0
+import геометрія_речі as _КМ0
 import порядок_запиту as _ПЗ
 import pipeline as _P
 import повнота_образу as _ПО

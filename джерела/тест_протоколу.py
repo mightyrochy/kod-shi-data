@@ -107,7 +107,7 @@ for ім, сх in sorted(P.СХЕМИ.items()):
 
 print("── переліки проти власників слова")
 import pipeline as _PL
-import composer as _КМ
+import композитор_реєстр as _КМ
 import знахідка as _З
 
 # Поля розмови (Т-08) паспорт несе, а ВИПАДОК — ні: питання до жінки моделі,
