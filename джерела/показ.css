@@ -1513,7 +1513,7 @@ html.mirror-ready :is(button,input,select,textarea,h1,h2,h3){font-family:var(--b
 body>#бік,body>#правий,.mirror-ready #бік,.mirror-ready #правий,.mirror-ready #ніг,.mirror-ready .шапка,.mirror-ready #сц-лист,.mirror-ready #сц-вступ,.mirror-ready #сц-приклади,.mirror-ready #сц-рукою-ряд,.mirror-ready #ткання,.mirror-ready #службове:not([open]),.mirror-empty-case #сц-увага-місце{display:none!important}
 html.mirror-ready #колонка{max-width:none;width:100%;padding:0;margin:0;min-height:0;display:block;grid-column:auto}
 html.mirror-ready .екран{padding:0;margin:0;max-width:none;min-width:0;animation:none}
-html.mirror-ready .екран>.вступ h1,html.mirror-ready .екран>.вступ>p:empty,html.mirror-ready #е-огляд .профіль-шапка h1{display:none}html.mirror-ready .екран>.вступ{padding:0;margin:0}.mirror-ready #е-сценарії>.вступ,.mirror-ready #е-бібліотека>.вступ,.mirror-ready #е-оцінка>.вступ,.mirror-ready #е-профіль>.вступ,.mirror-ready #е-образи #обр-підпис:not(.поступ-ядра),.mirror-ready #е-образи .вступ h1{display:none}
+html.mirror-ready .екран>.вступ h1,html.mirror-ready .екран>.вступ>p:empty,html.mirror-ready #е-огляд .профіль-шапка h1{display:none}html.mirror-ready .екран>.вступ{padding:0;margin:0}.mirror-ready #е-сценарії>.вступ,.mirror-ready #е-бібліотека>.вступ,.mirror-ready #е-оцінка>.вступ,.mirror-ready #е-профіль>.вступ,.mirror-ready #е-образи #обр-підпис:not(.поступ-збору),.mirror-ready #е-образи .вступ h1{display:none}
 .mirror-ready #е-оцінка>#оц-назад,.mirror-ready #е-оцінка>.ряд:first-child,.mirror-ready #е-сценарії>.ряд:first-child,.mirror-ready #е-палітра>.ряд:first-child{display:none}
 html.mirror-ready .розділ{border-color:var(--fine);padding:14px 0;margin:0}.mirror-ready .підказка,.mirror-ready .мета{color:var(--muted)}
 html.mirror-ready .паспорт{margin:0;background:var(--surface);border:1px solid var(--hair);border-radius:var(--radius);padding:0 16px;box-shadow:none;clip-path:none}
@@ -1744,8 +1744,6 @@ html[data-room=сценарій] #mirror-native,html[data-pair-looks=compare] :i
 .pair-intent{display:flex;gap:7px;margin:16px 0}.pair-intent button{flex:1;border:1px solid var(--hair);border-radius:var(--radius);font-size:.88rem;min-height:44px}.pair-intent button[aria-pressed=true]{background:var(--wash);border-color:var(--accent);font-weight:650}
 .pair-replacement strong,.pair-replacement small,.pair-profile small{display:block;margin-top:8px}.pair-replacement .rack-photo,.pair-record .rack-photo,.pair-outfit .rack-photo{width:100%;height:clamp(130px,37vw,260px);margin:0 0 8px}.pair-piece-shelf button{background:white;min-width:46px;padding:0}
 .pair-outfit,.pair-record,.pair-palette,.pair-profile,.pair-progress{margin:0 0 16px}.pair-record .hand-seal{display:block;width:72px;max-width:100%}.pair-record p{margin:7px 0;font-size:.93rem}
-html:is([data-pair-looks=one],[data-pair-looks=preview],[data-pair-looks=waiting]) :is(#пейджер,#пейджер-низ){display:none}
-html:is([data-pair-looks=preview],[data-pair-looks=waiting]) #картки{display:none}
 [data-room=палітра] #пал-стрічка{display:none}
 .pair-hand-frame .pair-color-read{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px}
 .pair-color-read>small,.pair-record .pair-right>small{display:block;line-height:1.45}
@@ -2057,5 +2055,5 @@ html[data-pair-page=mirror] .pair-app #mirror-input #чат-поле { min-heigh
 }
 @keyframes pair-wait-breathe { 0%,100% { transform:translateY(2px) scale(.97); } 50% { transform:translateY(-3px) scale(1); } }
 
-/* В основному образі речі відкриваються з плиток; сліпий перегляд лишає свій показ. */
-html[data-pair-looks=one] .pair-app #картки .картка>:is(.к-шапка,.колаж-поле,.список) { display:none; }
+/* У звичайному перегляді речі відкриваються з плиток. */
+html[data-pair-looks=product] .pair-app #картки .картка>:is(.к-шапка,.колаж-поле,.список) { display:none; }
