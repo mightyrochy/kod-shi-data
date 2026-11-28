@@ -5,6 +5,7 @@ import slots as _СЛОТИ
 from dataclasses import dataclass as _dataclass
 from реєстр_правил import ТИПОВИЙ_НАМІР
 import json as _json
+from bridge import колір as колір
 import trace as СЛ
 import знахідка as ЗН
 import внутрішня_мова as _ВМ_в
@@ -1682,21 +1683,3 @@ def вердикт(вхід):
         return _json.dumps(_P.калібрування(d["записи"], мінімум=int(d.get("мінімум") or 8)), ensure_ascii=False)
     return _json.dumps(_P.вердикт_у_ребра(d.get("вердикт"), d.get("в") or {}, d.get("коментар") or "",
                                             зведено=d.get("зведено")), ensure_ascii=False)
-
-
-def колір(вхід):
-    """Ендпойнт моста `колір` (Е2-межі-показу): {відповідь_моделі} → результат форми PORTRAIT_COLOURS реєстру
-    (`міст_вхід.прийняти_колір`: стан, кольори, рамки зон, відмова, повтор); {виміряти} — вимір кадру портрета
-    кодом (`портрет_вимір.виміряти`). {} — прогрів: Pyodide піднімається, поки модель дивиться на портрет, а розбір
-    чекати його не мусить."""
-    d = _json.loads(вхід) if isinstance(вхід, str) else (вхід or {})
-    if isinstance(d.get("виміряти"), dict):
-        # {виміряти: {кадри: {зона: пікселі}, рамки}} — вимір кадру портрета кодом (`портрет_вимір.виміряти`):
-        # шкіра, волосся, очі з розкидом; рамки (тисячні кадру) повертаються з виміром — збережений кадр
-        в = d["виміряти"]
-        import портрет_вимір as _ПВ
-        return _json.dumps(dict(_ПВ.виміряти(в.get("кадри") or {}), рамки=в.get("рамки") or {}), ensure_ascii=False)
-    if d.get("відповідь_моделі") is None:
-        return _json.dumps(dict(готово=True), ensure_ascii=False)
-    return _json.dumps(_СР.схема_за_назвою("PORTRAIT_COLOURS").виконати_розбір(d["відповідь_моделі"]),
-                       ensure_ascii=False)

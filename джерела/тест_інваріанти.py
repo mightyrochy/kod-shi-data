@@ -2052,6 +2052,36 @@ class Е3_БарвиВідОснови(unittest.TestCase):
         self.assertEqual(мисматч["зразки"], [])
 
 
+class Н7_Міст(unittest.TestCase):
+    def test_міст_вантажить_тільки_обраний_маршрут(self):
+        код = """
+import asyncio, json, sys
+
+import bridge
+from ядро.тести.тест_будова import ЗАМІННІ
+
+старі = ЗАМІННІ - {"bridge"}
+до_вибору = sorted(старі & sys.modules.keys())
+ім = sys.argv[1]
+вхід = sys.stdin.read()
+if ім == "помади":
+    відповідь = asyncio.run(bridge.виклик_а(ім, вхід))
+else:
+    відповідь = bridge.виклик(ім, вхід)
+print(json.dumps([json.loads(відповідь), до_вибору, sorted(старі & sys.modules.keys())]))
+"""
+        with open("стенд_вх.json", encoding="utf-8") as файл:
+            профіль = файл.read()
+        for ім, вхід, поле in (("чипи", профіль, "шкіра"), ("помади", "{}", "сходинки"),
+                                ("колір", "{}", "готово")):
+            with self.subTest(маршрут=ім):
+                відповідь, до, після = json.loads(subprocess.check_output(
+                    [sys.executable, "-c", код, ім], cwd=ТУТ, input=вхід, text=True))
+                self.assertTrue(відповідь[поле])
+                self.assertFalse(до, f"Старий шлях завантажено до вибору маршруту: {до}")
+                self.assertFalse(після, f"Маршрут завантажив старий шлях: {після}")
+
+
 class Н7_ПрофільПалітра(unittest.TestCase):
     def test_перші_чипи_й_сходинка_без_старого_шляху(self):
         from міст_основи import чипи, помади
@@ -2116,6 +2146,7 @@ print(json.dumps([кількість, sorted(sys.modules)]))
 
 
 ТЕСТИ = (
+    Н7_Міст.test_міст_вантажить_тільки_обраний_маршрут,
     ТестГоловногоПравила.test_старий_шлях_не_вантажиться_каталогом_і_купівлею,
     Н7_ПрофільПалітра.test_перші_чипи_й_сходинка_без_старого_шляху,
     Е2_НевідомеНаКартціОцінки.test_невідоме_доходить_до_відкритої_картки,

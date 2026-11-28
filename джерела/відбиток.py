@@ -284,6 +284,24 @@ def _верхні_функції(імя_файла, дерева, корінь):
             if isinstance(в, (ast.FunctionDef, ast.AsyncFunctionDef))}, тіло
 
 
+def _входи_відкладеного_маршруту(файл, вузол):
+    """Адреса в JS і визначення функції, яку повертає локальний імпорт гілки."""
+    for зіставлення in (в for в in вузол.body if isinstance(в, ast.Match)):
+        for гілка in зіставлення.cases:
+            взірець, повернення = гілка.pattern, гілка.body[-1]
+            if not (isinstance(взірець, ast.MatchValue) and isinstance(взірець.value, ast.Constant)
+                    and isinstance(взірець.value.value, str) and isinstance(повернення, ast.Return)
+                    and isinstance(повернення.value, ast.Name)):
+                continue
+            привезені = {ім.asname or ім.name: (в.module.replace(".", "/") + ".py", ім.name)
+                         for в in гілка.body if isinstance(в, ast.ImportFrom) and в.level == 0 and в.module
+                         for ім in в.names}
+            джерело = привезені.get(повернення.value.id)
+            if джерело:
+                yield файл, взірець.value.value
+                yield джерело
+
+
 def входи_рядком(дерева, корінь=None):
     """{(файл, імя)} — функції, які кличуть РЯДКОМ, а не викликом.
 
@@ -304,6 +322,8 @@ def входи_рядком(дерева, корінь=None):
                      if isinstance(вузол, ast.ImportFrom) and вузол.level == 0 and вузол.module
                      for a in вузол.names}
         for вузол in тіло:
+            if файл == "bridge.py" and isinstance(вузол, ast.FunctionDef) and вузол.name == "_маршрут":
+                вих.update(_входи_відкладеного_маршруту(файл, вузол))
             if not (isinstance(вузол, (ast.FunctionDef, ast.AsyncFunctionDef))
                     and вузол.name == диспетчер):
                 continue
