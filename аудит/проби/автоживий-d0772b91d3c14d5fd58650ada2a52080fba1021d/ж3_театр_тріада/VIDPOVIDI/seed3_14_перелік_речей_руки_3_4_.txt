@@ -1,0 +1,44 @@
+── ПРОМПТ (2215 симв.) ──
+{"task": {"role": "You read the description of an outfit and list its items as data.", "rules": ["One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.", "One item carries one thing — of two alternatives list the first; a note in brackets is not an item.", "Slot \"accessory\" is for an item no other slot fits.", "\"is_outfit\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note."], "limits": ["Rely only on the input: do not invent what it does not contain.", "The answer is one JSON object following \"answer_schema\", without explanations and without ```."], "language": "English", "answer": "ITEM_LIST", "answer_schema": {"is_outfit": "yes|no", "items": [{"name": "<what the item is>", "details": "<its cut, length and fabric>", "slot": "top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory", "color_hex": "<#rrggbb or null>", "worn": "<true, or false when the description says the outfit goes without it>"}]}, "input": ["\"description\" — the outfit description"]}, "description": "Charcoal wool-blend blazer with a structured shoulder and single-breasted front in hex #36454F.\nCream silk blouse with a delicate puff sleeve and relaxed fit in hex #FFFDD0.\nHigh-waisted midi skirt in soft tweed with a subtle houndstooth pattern in hex #D2B48C.\nLeather ankle boots in polished black with a low block heel in hex #1C1B1A.\nPearl drop earrings and a thin gold chain necklace to highlight the accent on jewellery.\nThis outfit is perfect for an evening at the theatre as it balances the social dress code of neat casual elegance while allowing full freedom of movement during the play. The warm autumnal tones of the tweed skirt harmonize beautifully with her hair color, creating a cohesive look that feels intentional yet comfortable for two hours of sitting. By choosing an ankle boot instead of high heels and adding structured blazer layers, the ensemble remains sophisticated without sacrificing the practicality needed for theatre etiquette."}
+
+── ВІДПОВІДЬ (993 симв., 4.5 с, HTTP 200) ──
+{
+  "is_outfit": "yes",
+  "items": [
+    {
+      "name": "Charcoal wool-blend blazer",
+      "details": "structured shoulder and single-breasted front",
+      "slot": "outerwear",
+      "color_hex": "#36454F",
+      "worn": true
+    },
+    {
+      "name": "Cream silk blouse",
+      "details": "delicate puff sleeve and relaxed fit",
+      "slot": "top",
+      "color_hex": "#FFFDD0",
+      "worn": true
+    },
+    {
+      "name": "High-waisted midi skirt",
+      "details": "soft tweed with a subtle houndstooth pattern",
+      "slot": "bottom",
+      "color_hex": "#D2B48C",
+      "worn": true
+    },
+    {
+      "name": "Leather ankle boots",
+      "details": "polished black with a low block heel",
+      "slot": "shoes",
+      "color_hex": "#1C1B1A",
+      "worn": true
+    },
+    {
+      "name": "Pearl drop earrings and a thin gold chain necklace",
+      "details": "to highlight the accent on jewellery",
+      "slot": "jewelry",
+      "color_hex": null,
+      "worn": true
+    }
+  ]
+}
