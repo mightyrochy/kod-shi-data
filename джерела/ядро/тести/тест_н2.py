@@ -169,9 +169,16 @@ class ПортретУШтатномуСуді(TestCase):
                 return _відповідь(outfits=[{"id": "o1", "items": [р[адреса] for р in пакунок["rows"]]}])
             if дріт["вид"] == "ремонт":
                 вирок, = тіло["verdict"]
-                self.assertCountEqual([(з["rule"], з["code"], з["weight"]) for з in вирок["findings"]], [
+                очікувані = [
                     ("K-CRA-02", "focus_count_over_ceiling", .5), ("K-COL-05", "accent_orphan", .5),
-                ])
+                    ("K-KOH-05", "outfit_level_off_occasion", .25),
+                    ("K-CRA-04", "item_removable_no_metric_drops", .08),
+                    ("K-CRA-01", "no_third_piece_dressed_not_styled", .75),
+                    ("K-SIL-09", "mono_object_silhouette", .5),
+                ]
+                if дріт["рука"] == 2:
+                    очікувані.append(("K-ACC-01", "loud_accessory_without_role", .75))
+                self.assertCountEqual([(з["rule"], з["code"], з["weight"]) for з in вирок["findings"]], очікувані)
                 return _відповідь(outfits=[{"id": вирок["id"], "items": вирок["items"]}])
             if дріт["вид"] == "вибір":
                 return _відповідь(chosen="o1")

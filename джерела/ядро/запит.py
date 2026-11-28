@@ -777,7 +777,8 @@ def запит(вид, пул, ситуація, профіль, *, образи
     тіло["knowledge_legend"] = {
         "unknown": "The value is missing. Make no claim about it.",
         "uncertain": "Only the supplied interval or bounds are known.",
-        "missing_input": "Some inputs are missing. A finding can still report a judgment on the known evidence.",
+        "missing_input": ("Some inputs are missing. A finding can still report a judgment on the known evidence."
+                          if образи else "The rule could not be applied with the available inputs."),
     }
     if any(з["findings"] and any(р.get("withheld") for р in з["findings"]) for з in тіло.get("verdict", ())):
         тіло["knowledge_legend"]["withheld"] = "Judgment withheld. Keep the uncertainty. It is neither a finding to fix nor evidence of a pass."
