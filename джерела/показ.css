@@ -2034,3 +2034,28 @@ html[data-pair-page=mirror] .pair-app #mirror-input #чат-поле { min-heigh
 
 .pair-profile .pair-image { flex-direction:column; gap:10px; padding:8px; overflow-wrap:normal; font-size:.9rem; }
 .pair-profile .pair-image:has(img) { padding:0; }
+
+/* Пара очікування має власну висоту; старі рамки не є ще одним результатом. */
+.pair-app #mirror-making { height:auto; border:0; background:transparent; margin:18px 0; }
+.pair-app :is(#стани,#рамки) { display:none; }
+.pair-app .pair-person-photo:has(img),.pair-app .pair-fitted { padding:0; border:0; }
+.pair-app :is(.pair-person-photo,.pair-fitted)>img { width:100%; height:100%; object-fit:cover; object-position:center top; }
+.pair-app :is(.pair-progress,.pair-outfit)>section { display:flex; flex-direction:column; }
+.pair-app :is(.pair-progress,.pair-outfit) .pair-person-photo { flex:1; min-height:180px; }
+.pair-app :is(.pair-progress,.pair-outfit) .pair-person-photo>img { position:absolute; inset:0; }
+.pair-progress-art { flex:1; min-height:180px; }
+.pair-app .pair-outfit-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; align-content:start; }
+.pair-app .pair-outfit-grid button { display:grid; place-items:center; min-width:0; min-height:44px; padding:0; aspect-ratio:1; background:var(--surface); overflow:hidden; border:1px solid var(--hair); border-radius:var(--radius); }
+.pair-app .pair-outfit-grid img { display:block; width:100%; height:100%; object-fit:contain; }
+.pair-app .pair-outfit-grid span { padding:6px; font-size:.8rem; }
+.pair-app .pair-reverse-pieces { grid-template-columns:repeat(3,minmax(0,1fr)); margin-block:12px; }
+.pair-piece-detail .pair-swap-photo { width:100%; height:min(45vh,350px); }
+.pair-piece-detail strong { display:none; }
+/* Рух очікування триває між реальними стадіями; стадії не прискорюємо таймером. */
+@media (prefers-reduced-motion:no-preference) {
+  #mirror-making[data-busy=true] .pair-progress-art { animation:pair-wait-breathe 2.8s ease-in-out infinite; will-change:transform; }
+}
+@keyframes pair-wait-breathe { 0%,100% { transform:translateY(2px) scale(.97); } 50% { transform:translateY(-3px) scale(1); } }
+
+/* В основному образі речі відкриваються з плиток; сліпий перегляд лишає свій показ. */
+html[data-pair-looks=one] .pair-app #картки .картка>:is(.к-шапка,.колаж-поле,.список) { display:none; }
