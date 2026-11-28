@@ -59,6 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
+      base_sha: ${{ steps.baza.outputs.sha }}
       produkt: ${{ steps.zmina.outputs.produkt }}
       zapysy: ${{ steps.zmina.outputs.zapysy }}
       pravyla: ${{ steps.zmina.outputs.pravyla }}
@@ -97,10 +98,25 @@ jobs:
             /аудит/дошка_архів/
             /аудит/корені/
 
+      - name: SHA бази перевіреного дерева
+        id: baza
+        env:
+          BASE_SHA: ${{ inputs.pered || github.event.before }}
+          PISLIA: ${{ inputs.pislia }}
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = pull_request ] && [ -z "${PISLIA}" ]; then
+            [[ "$(git rev-parse HEAD)" == "${GITHUB_SHA}" ]]
+            git rev-parse --verify "${GITHUB_SHA}^2^{commit}" >/dev/null
+            BASE_SHA=$(git rev-parse --verify "${GITHUB_SHA}^1^{commit}")
+            printf 'База PR %s — перший батько перевіреного merge-коміту %s\n' "${BASE_SHA}" "${GITHUB_SHA}" \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+          printf 'sha=%s\n' "${BASE_SHA}" >> "$GITHUB_OUTPUT"
+
       - name: які шляхи змінено
         id: zmina
         env:
-          BEFORE: ${{ github.event.before }}
+          BASE_SHA: ${{ steps.baza.outputs.sha }}
           PISLIA: ${{ inputs.pislia }}
           KOD: ${{ inputs.kod }}
         run: |
@@ -126,12 +142,10 @@ jobs:
           pravyla=true
           pravyla_dok=false
           znano=false
-          if [ "${GITHUB_EVENT_NAME}" = push ] && [ -n "${BEFORE//0/}" ] \
-             && git fetch --no-tags --filter=blob:none --depth=1 origin "${BEFORE}" 2>/dev/null; then
-            git -c core.quotepath=off diff --name-only --no-renames -z "${BEFORE}" "${GITHUB_SHA}" > /tmp/zminy
-            znano=true
-          elif [ "${GITHUB_EVENT_NAME}" = pull_request ] && git rev-parse -q --verify HEAD^2 >/dev/null; then
-            git -c core.quotepath=off diff --name-only --no-renames -z HEAD^1 HEAD > /tmp/zminy
+          if [ "${GITHUB_EVENT_NAME}" = pull_request ] ||
+             { [ "${GITHUB_EVENT_NAME}" = push ] && [ -n "${BASE_SHA//0/}" ] \
+               && git fetch --no-tags --filter=blob:none --depth=1 origin "${BASE_SHA}" 2>/dev/null; }; then
+            git -c core.quotepath=off diff --name-only --no-renames -z "${BASE_SHA}" "${GITHUB_SHA}" > /tmp/zminy
             znano=true
           fi
           if [ "${znano}" = true ] && [ -s /tmp/zminy ]; then
@@ -210,7 +224,7 @@ jobs:
         if: steps.zmina.outputs.produkt == 'true' && (github.event_name == 'push' && github.ref == 'refs/heads/main' || inputs.pislia && inputs.kod)
         env:
           GH_TOKEN: ${{ github.token }}
-          BASE_SHA: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
+          BASE_SHA: ${{ steps.baza.outputs.sha }}
         run: bash .github/scripts/perevirene-derevo.sh
 
   perevirka:
@@ -674,7 +688,7 @@ jobs:
 
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          ref: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
+          ref: ${{ needs.zminy.outputs.base_sha }}
           fetch-depth: 1
           persist-credentials: false
           path: main-replay
@@ -708,7 +722,7 @@ jobs:
 
       - name: код базового main й повна збірка
         env:
-          BASE_REF: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
+          BASE_REF: ${{ needs.zminy.outputs.base_sha }}
           LYUSTERKO_PYC_PYTHON: ${{ steps.pyc_python.outputs.python-path }}
         run: |
           [[ "$BASE_REF" =~ ^[0-9a-f]{40}$ && -n "${BASE_REF//0/}" ]]
@@ -784,13 +798,13 @@ jobs:
         run: sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
       - name: має бути точний SHA записів бази
         env:
-          BASE_SHA: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
+          BASE_SHA: ${{ needs.zminy.outputs.base_sha }}
         run: '[[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && -n "${BASE_SHA//0/}" ]]'
 
       - name: код базового main (записи сцен бази)
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          ref: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
+          ref: ${{ needs.zminy.outputs.base_sha }}
           fetch-depth: 1
           persist-credentials: false
           path: main-replay
@@ -1094,7 +1108,7 @@ jobs:
         if: github.event_name == 'pull_request' && needs.zminy.outputs.produkt == 'true'
         id: dokaz
         env:
-          BASE_SHA: ${{ inputs.pered || github.event.pull_request.base.sha || github.event.before }}
+          BASE_SHA: ${{ needs.zminy.outputs.base_sha }}
         run: bash .github/scripts/perevirene-derevo.sh --доказ
 
       - name: перевірені файли й докази звірок дерева
