@@ -33,6 +33,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'wrapper_health.ps1')
 
 $script:SlugPattern = '^[\p{L}\p{Nd}][\p{L}\p{Nd}._-]{0,79}$'
 $script:Owner = 'mightyrochy'
@@ -61,13 +62,6 @@ function Write-WatchLog([string]$Text) {
     }
     $line = '{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $Text
     [System.IO.File]::AppendAllText($path, $line + "`n", $script:Utf8)
-}
-
-function Write-FileAtomic([string]$Path, [string]$Text) {
-    $tmp = $Path + '.part'
-    [System.IO.File]::WriteAllText($tmp, $Text, $script:Utf8)
-    if (Test-Path -LiteralPath $Path) { Remove-Item -LiteralPath $Path -Force }
-    Move-Item -LiteralPath $tmp -Destination $Path
 }
 
 function ConvertTo-ArgString([string[]]$Items) {
@@ -281,7 +275,7 @@ function Read-State {
     $path = Join-Path $WorkDir 'state.json'
     if (-not (Test-Path -LiteralPath $path)) { return $st }
     try {
-        $o = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+        $o = (Read-FileText $path) | ConvertFrom-Json
         foreach ($p in $o.PSObject.Properties) { $st[$p.Name] = Get-Stamp $p.Value }
     } catch { Write-WatchLog "state.json не читається, починаю з базової лінії: $($_.Exception.Message)"; return @{} }
     $st

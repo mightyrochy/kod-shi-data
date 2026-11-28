@@ -26,6 +26,70 @@ $script:PowerOnLineTemplate = '\AGEMINI ОБГОРТКА: СВІТЛО Є 20[0-9
 $script:SleepLineStamp = '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z'
 $script:SleepLineTemplate = "\AGEMINI ОБГОРТКА: (?:ВИМКНЕНО-СТАРТ $($script:SleepLineStamp) → $($script:SleepLineStamp), нарядів [0-9]{1,5}|СОН $($script:SleepLineStamp) → $($script:SleepLineStamp), нарядів [0-9]{1,5}(?: СВІТЛА НЕ БУЛО З $($script:SleepLineStamp)(?: ДОСТУПНИЙ З $($script:SleepLineStamp))?)?)\z"
 
+# --- спільні запис і читання файлів ------------------------------------------------------------------------------
+# Повтори запису й читання: зайнята ціль — кілька спроб, а не виняток посеред наряду. 20 × 50 мс — те, що Write-FileAtomic
+# мала в queue_lanes.ps1 до перенесення сюди; нового числа тут нема.
+$script:FileRetries = 20
+$script:FileRetryMs = 50
+$script:NativeMove = $null   # Move-FileOver: $null — ще не з'ясовано
+
+function Move-FileOver([string]$From, [string]$To) {
+    <# Переносить $From на $To одним кроком файлової системи; наявна ціль підміняється, і шлях ні на мить не лишається без
+    файла. У Windows — MoveFileExW із MOVEFILE_REPLACE_EXISTING: `File.Replace` (ReplaceFileW) на NTFS на мить знімає
+    ціль, і читач, що відкрив шлях саме тоді, бачив «нема файла» (вимір 28.11 у стенді: 393 з 14 тис. читань). Деінде —
+    rename(2) крізь File.Replace/Move, він атомарний. Compile Add-Type — раз на процес; не склався — запасний File.Replace. #>
+    if ($null -eq $script:NativeMove) {
+        $script:NativeMove = $false
+        if ([System.IO.Path]::DirectorySeparatorChar -eq [char]92) {
+            try {
+                if (-not ('KodShi.Native' -as [type])) {
+                    Add-Type -Namespace KodShi -Name Native -MemberDefinition '[System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)] public static extern bool MoveFileExW(string from, string to, int flags);'
+                }
+                $script:NativeMove = $true
+            } catch { $script:NativeMove = $false }
+        }
+    }
+    if ($script:NativeMove) {
+        if (-not [KodShi.Native]::MoveFileExW($From, $To, 1)) {
+            throw (New-Object System.IO.IOException((New-Object System.ComponentModel.Win32Exception([System.Runtime.InteropServices.Marshal]::GetLastWin32Error())).Message))
+        }
+    } elseif ([System.IO.File]::Exists($To)) { [System.IO.File]::Replace($From, $To, [NullString]::Value) }
+    else { [System.IO.File]::Move($From, $To) }
+}
+
+function Write-FileAtomic([string]$Path, [string]$Text) {
+    <# Запис через тимчасовий файл і заміну: читач не бачить половини, а шлях ні на мить не лишається без файла.
+
+    Спільні файли (стан, heartbeat, кеш квоти, local-lines.json) пишуть водночас планувальник, публікатор і процеси
+    нарядів. Видаляти старий і переносити новий не можна: між двома кроками читач бачив «нема файла» (28.11 16:19,
+    `local-lines.json`) — підміна йде одним кроком (Move-FileOver). Зайнята ціль (читач тримає файл) — повтор, не виняток. #>
+    $tmp = $Path + '.' + [guid]::NewGuid().ToString('N').Substring(0, 8) + '.part'
+    [System.IO.File]::WriteAllText($tmp, $Text, $script:Utf8)
+    for ($i = 0; $i -lt $script:FileRetries; $i++) {
+        try { Move-FileOver $tmp $Path; return }
+        catch {
+            if ($i -eq $script:FileRetries - 1) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; throw }
+            Start-Sleep -Milliseconds $script:FileRetryMs
+        }
+    }
+}
+
+function Read-FileText([string]$Path) {
+    <# Текст файла UTF-8, який пише інший процес. Файл зайнятий (IOException, окрім «нема файла/теки») — ті самі повтори,
+    що в Write-FileAtomic. Нема файла чи інша помилка — одразу, як ReadAllText. Вид винятку — через -is, не типізованим
+    catch: у Windows PowerShell 5.1 `catch [DirectoryNotFoundException]` ловив зайнятість файла (вимір 28.11 у стенді). #>
+    for ($i = 0; ; $i++) {
+        try { return [System.IO.File]::ReadAllText($Path, $script:Utf8) }
+        catch {
+            $e = $_.Exception
+            if ($e.InnerException) { $e = $e.InnerException }
+            $busy = $e -is [System.IO.IOException] -and $e -isnot [System.IO.FileNotFoundException] -and $e -isnot [System.IO.DirectoryNotFoundException]
+            if (-not $busy -or $i -ge $script:FileRetries - 1) { throw }
+            Start-Sleep -Milliseconds $script:FileRetryMs
+        }
+    }
+}
+
 function Test-HoldLine([string]$Line) { $Line -cmatch $script:HoldLineTemplate }
 
 function Add-HoldLine([string]$Line) {
