@@ -249,12 +249,13 @@ function підставити(html, фід, підпис) {
   });
 }
 
-function сторінка({url, фід = "каталог_brief.xml", підпис = "каталог_стенд.xml · 639 речей", idb = null} = {}) {
+function сторінка({url, фід = "каталог_brief.xml", підпис = "каталог_стенд.xml · 639 речей", idb = null, сховище = {}} = {}) {
   let html = підставити(шаблон, фід, підпис)
     .replace(/<script [^>]*src="https:\/\/cdn\.jsdelivr\.net[^"]*"[^>]*><\/script>/, "<script>window.loadPyodide=null;</script>");
   const помилки = [];
   const дом = new JSDOM(html, {runScripts: "dangerously", pretendToBeVisual: true, url,
     beforeParse(w) {
+      for (const [ключ, вибір] of Object.entries(сховище)) w.localStorage.setItem(ключ, вибір);
       // jsdom has no modal dialog implementation; browser tests cover the actual top layer.
       w.HTMLDialogElement.prototype.showModal = function(){ this.setAttribute('open',''); };
       w.HTMLDialogElement.prototype.close = function(){ this.removeAttribute('open'); this.dispatchEvent(new w.Event('close')); };
@@ -3826,7 +3827,7 @@ async function звіритиНамірОцінки(){
        жінка. Python не піднімається: `містП` — заглушка, яка повторює контракт
        `bridge.паспорт`; сам розбір міряють гейти §126. */
     /* шлях БЕЗ мовного шару (виклик 0 і латки, як до 25.09); шлях шару — розділ 1е */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема&ядро=0"});
     await чекатиСтарт(w);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -4000,7 +4001,7 @@ async function звіритиНамірОцінки(){
        повідомлень. Python не піднімається: `містП` — заглушка, яка повторює
        контракт `bridge.паспорт`; сам розбір міряють гейти §126. */
     /* шлях БЕЗ мовного шару (виклик 0 і латки, як до 25.09); шлях шару — розділ 1е */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема&ядро=0"});
     await чекатиСтарт(w);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -5618,7 +5619,7 @@ async function звіритиНамірОцінки(){
        картку разом із дужками. Тут батарея проганяє всі чотири руки на
        заглушках моста й дивиться на записані картки. */
     /* шлях БЕЗ мовного шару (виклик 0 і латки, як до 25.09); шлях шару — розділ 1е */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема&ядро=0"});
     await чекатиСтарт(w);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -5736,7 +5737,7 @@ async function звіритиНамірОцінки(){
        шаблон заміни. Друге: етап виклику переліку писав у `відповідь_сира` прозу руки, і
        «назвала 6 → на картці 5» не було чим звірити (розбір 2/8, В-5). Третє: мова вільного
        тексту відповіді їде в міст за шаром (без шару — Ukrainian). */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема&ядро=0"});
     await чекатиСтарт(w);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -5901,7 +5902,7 @@ async function звіритиНамірОцінки(){
        (`is_outfit` → міст `опис_образ`): не «так» — один повтор руки, далі «не вимальовувався» і
        причина у звіті. `ПОВТОР` — що дасть повтор руки 4: та сама відмова чи образ. */
     for (const ПОВТОР of ["відмова", "образ"]) {
-      const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
+      const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема&ядро=0"});
       await чекатиСтарт(w);
       const $ = id => d.getElementById(id);
       w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -6029,7 +6030,7 @@ async function звіритиНамірОцінки(){
        картку їхав цей найповніший кандидат із рядком «лиши по одній у кожному слоті» і
        з описом. Тепер рука без прийнятого образу — збій: ні речей, ні опису, а причина
        й кандидат — у діагнозі руки. */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема&ядро=0"});
     await чекатиСтарт(w);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -8267,7 +8268,7 @@ async function звіритиНамірОцінки(){
   }
   {
     /* 4021, збирання: звіт власника бере `не_взято_кодом` і останнього паспорта, і кожного ходу — рядок раз */
-    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема"});
+    const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=http://localhost:8787&т=tok-a1&модель_мови=нема&ядро=0"});
     await чекатиСтарт(w);
     const $ = id => d.getElementById(id);
     w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae', кільце:null, точки:null}");
@@ -8766,6 +8767,39 @@ async function звіритиНамірОцінки(){
     w.eval("змінитиПаспортП('сценарій', 'відновити', {паспорт: null, зміни: [{хто: 'давній', як: 'замінити'}]})");
     тест("давній запис журналу без полів читається порожнім переліком", w.eval("JSON.stringify(журналПаспортаП()[0].поля)") === '[]', null);
     тест("без винятків", помилки.length === 0, помилки);
+  }
+
+  розділ("ЯДРО — ТИПОВИЙ ШЛЯХ ЗБИРАННЯ, СТАРИЙ ШЛЯХ — ЯВНИЙ ВИБІР");
+  {
+    const адреса = "https://mightyrochy.github.io/kod-shi-data/показ.html";
+    for (const [назва, хеш, сховище, шлях] of [
+      ["без посилання", "", {}, "ядро:почати"],
+      ["із давнім вибором старого шляху", "", {"міст:ядро": "0"}, "ядро:почати"],
+      ["із #ядро=0 попри збережене ядро", "#ядро=0", {"міст:ядро:v2": "1"}, "старий"],
+      ["зі збереженим після переходу старим шляхом", "", {"міст:ядро:v2": "0"}, "старий"],
+      ["із #ядро=1 попри збережений старий шлях", "#ядро=1", {"міст:ядро:v2": "0"}, "ядро:почати"],
+      ["із невідомим значенням посилання", "#ядро=невідомо", {}, "ядро:почати"]
+    ]){
+      const {дом, w, помилки} = сторінка({url: адреса + хеш, сховище});
+      try {
+        await чекатиСтарт(w);
+        w.eval(`window.__шляхиЗбирання = [];
+          МІСТ_П.токен = 'tok-a1';
+          чогоБракує = () => [];
+          if (typeof __РЕЗЕРВ_КАНАЛУ__ === 'undefined') window.__РЕЗЕРВ_КАНАЛУ__ = {};
+          немаВизначальнихП = () => true;
+          ПАМ_ЯТЬ_ЧУЖИХ_П.clear = () => { window.__шляхиЗбирання.push('старий'); };
+          транспортМостуП = async (ім, вхід) => {
+            window.__шляхиЗбирання.push(ім + ':' + JSON.parse(вхід).дія);
+            return {кінець: true, збій: {частина: 'запит', вид: 'межа_транспорту'}};
+          };`);
+        await w.eval("зібратиОбразиП()");
+        const шляхи = Array.from(w.__шляхиЗбирання);
+        тест(назва + " → " + шлях, шляхи.join() === шлях && !помилки.length, {шляхи, помилки});
+        if (хеш === "#ядро=0" || хеш === "#ядро=1")
+          тест("явний вибір зберігся для наступного відкриття", w.localStorage.getItem("міст:ядро:v2") === хеш.at(-1), хеш);
+      } finally { дом.window.close(); }
+    }
   }
 
   дійшлоДоКінця = true;

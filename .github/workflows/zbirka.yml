@@ -582,7 +582,7 @@ jobs:
           sh аудит/проби/стенд_pyodide_кеш.sh "${RUNNER_TEMP}/pyodide"
           mkdir -p "${RUNNER_TEMP}/стенд"
           cp index.html "${RUNNER_TEMP}/стенд/index.html"
-          NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js \
+          YADRO=0 NODE_PATH=джерела/node_modules node аудит/проби/рв6_стенд.js \
             http://127.0.0.1:8765 "${RUNNER_TEMP}/стенд" "${RUNNER_TEMP}/pyodide" 3 2>&1 | tee стенд.log
           NODE_PATH=джерела/node_modules node аудит/проби/пара_чернетка.js "${RUNNER_TEMP}/стенд/index.html"
 

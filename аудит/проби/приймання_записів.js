@@ -103,7 +103,8 @@ function середовищеСцени(сцена, тека, стенд = path.
   const код = fs.readFileSync(стенд, 'utf8');
   for (const м of код.matchAll(/process\.env\.([\p{Lu}_][\p{Lu}\d_]*)/gu))
     if (!['CHROMIUM', 'NODE_PATH', 'HTTPS_PROXY'].includes(м[1])) delete середовище[м[1]];
-  Object.assign(середовище, сцена.змінні, {ZNIMKY: path.join(тека, 'знімки')});
+  // Старі записи без вибору зроблено до переходу на ядро. Нові зберігають фактичний шлях сторінки.
+  Object.assign(середовище, {YADRO: '0'}, сцена.змінні, {ZNIMKY: path.join(тека, 'знімки')});
   if (сцена.жінка) {
     fs.mkdirSync(тека, {recursive: true});
     const файл = path.join(тека, 'жінка.json');
