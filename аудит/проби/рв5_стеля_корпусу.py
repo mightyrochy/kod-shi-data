@@ -54,7 +54,7 @@ for п, р in sorted(РП.ПОЛІТИКА_РЕГІСТРУ.items()):
                  "  гейт_знято" if "гейт_знято" in з else ""))
 
 print("\n── 2. ШІСТЬ СЦЕН СТЕНДА: чиї стелі й зняті гейти доходять до виходу суду")
-import bridge as B, pipeline as PL, composer as КМ, colorspace as cs
+import bridge as B, pipeline as PL, геометрія_речі as КМ, colorspace as cs
 вх0 = json.load(open("стенд_вх.json", encoding="utf-8"))
 разом = {"стеля_корпусу": {}, "стеля_тіру": {}, "гейт_знято": {}}
 for назва, сцен in СЗ.СЦЕНАРІЇ.items():

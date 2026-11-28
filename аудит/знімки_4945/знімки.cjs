@@ -79,19 +79,36 @@ async function main() {
           const видимі = кольори('#mirror-my-colors .стрічка i');
           return видимі && видимі === кольори('#пал-стрічка i');
         });
-        const стан = await стор.evaluate(() => ({
-          основа: ВИБІР.вибір_кольору.база_hex,
-          смуга: [...document.querySelectorAll('#mirror-my-colors .стрічка i')].map(і=>і.style.backgroundColor),
-          плитки: ПАЛІТРА.гілки.map(г => {
-            const ч = [...document.querySelectorAll('#пал-схема .чип')]
-              .find(е=>е.dataset.ключ === 'палітра-схема:' + г.схема);
-            return {назва:г.схема, зразки:г.зразки, підпис:ч.textContent,
-              кольори:[...ч.querySelectorAll('.зразки i')].map(і=>і.style.backgroundColor)};
-          })
-        }));
+        const стан = await стор.evaluate(() => {
+          const основа = ВИБІР.вибір_кольору.база_hex;
+          const rgb = hex => 'rgb(' + hex.slice(1).match(/../g).map(к => parseInt(к, 16)).join(', ') + ')';
+          return {
+            основа, основаRgb:rgb(основа),
+            смуга: [...document.querySelectorAll('#mirror-my-colors .стрічка i')].map(і=>і.style.backgroundColor),
+            плитки: ПАЛІТРА.гілки.map(г => {
+              const ч = [...document.querySelectorAll('#пал-схема .чип')]
+                .find(е=>е.dataset.ключ === 'палітра-схема:' + г.схема);
+              const орієнтир = ч.querySelector('.орієнтир-тону');
+              return {назва:г.схема, зразки:г.зразки, підпис:ч.textContent,
+                основаПозаВікнами:г.основа_поза_вікнами,
+                першийКолір:ч.querySelector('i')?.style.backgroundColor || null,
+                орієнтир:орієнтир?.textContent || null,
+                зразкиRgb:г.зразки.map(rgb),
+                кольори:[...ч.querySelectorAll('.зразки i')].map(і=>і.style.backgroundColor)};
+            })
+          };
+        });
         const тріада = стан.плитки.find(п => п.назва === 'тріада');
-        if (режим === 'після' && стан.плитки.some(п => п.зразки?.length && п.зразки[0] !== стан.основа)) {
-          throw new Error('Перший зразок не дорівнює основі: ' + JSON.stringify(стан));
+        if (режим === 'після') {
+          for (const плитка of стан.плитки.filter(п => п.зразки.length)) {
+            if (плитка.першийКолір !== стан.основаRgb ||
+                JSON.stringify(плитка.кольори) !== JSON.stringify(плитка.зразкиRgb) ||
+                (плитка.основаПозаВікнами ?
+                  !плитка.орієнтир?.includes('поза добором') || плитка.зразки.includes(стан.основа) :
+                  плитка.орієнтир || плитка.зразки[0] !== стан.основа)) {
+              throw new Error('Плитка не показує основу й допустимі зразки: ' + JSON.stringify(плитка));
+            }
+          }
         }
         if (режим === 'після' && JSON.stringify(стан.смуга) !== JSON.stringify(тріада.кольори)) {
           throw new Error('Смужка відрізняється від плитки: ' + JSON.stringify(стан));

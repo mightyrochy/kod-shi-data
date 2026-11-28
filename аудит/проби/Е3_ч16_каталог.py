@@ -23,7 +23,7 @@ import sys, pathlib, json, collections, os, io, contextlib
 КОРІНЬ = pathlib.Path(__file__).resolve().parents[2]
 код = pathlib.Path(sys.argv[sys.argv.index("--код") + 1]).resolve() if "--код" in sys.argv else КОРІНЬ / "джерела"
 os.chdir(код); sys.path.insert(0, str(код))
-import feed as Ф, bridge as B, composer as КМ, fit as ПС
+import feed as Ф, bridge as B, геометрія_речі as КМ, fit as ПС
 import аксесуари_носіння as АН, аксесуари_край as АК, суд_силует as СС, композитор_річ as КР
 
 вх = json.load(open(код / "стенд_вх.json", encoding="utf-8"))

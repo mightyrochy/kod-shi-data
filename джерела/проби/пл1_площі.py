@@ -5,7 +5,7 @@ import sys, os, json, collections
 if len(sys.argv) < 2:   # прилад над звітом стенда, не проба без входу: без звіту — «не виміряно», а не IndexError
     sys.exit(print("НЕ ВИМІРЯНО: потрібен звіт стенда РВ-6 аргументом (ZVIT_OUT рв6_стенда.txt)"))
 ТУТ = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ТУТ); os.chdir(ТУТ)
-import bridge as B, composer as КМ, fit as ПС, outfit as O, pipeline as PL, colorspace as cs, gate_площі as G
+import bridge as B, геометрія_речі as КМ, fit as ПС, outfit as O, pipeline as PL, colorspace as cs, gate_площі as G
 with open("стенд_вх.json") as файл:
     B.виклик("запити", json.dumps(dict(json.load(файл), сценарій=G.СЦЕНАРІЇ["офіс·18°C"], випадок="пл1")))
 кат = {x["id"]: x for x in B.каталог_останнього_пакета()}

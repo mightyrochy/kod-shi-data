@@ -20,7 +20,7 @@
 import slots as _СЛОТИ
 import os, sys, tempfile
 import colorspace as cs, feed, outfit as O, fit as ПС
-import composer as КМ, coordination as КО, run_outfit as ПО
+import композитор_збирання as КМ, coordination as КО, run_outfit as ПО
 
 
 def _каталог():

@@ -117,6 +117,7 @@ try {
     $script:SlotDir = Join-Path $RunsDir 'slots'; [void][System.IO.Directory]::CreateDirectory($script:SlotDir)
     $script:HealthAlertDir = Join-Path $OutDir 'alerts'
     $script:Agy = "$tmpRoot/agy.cmd"
+    function Test-EngineReachable { $true }  # вузол входу «досяжний»: стенд не ходить у зовнішню мережу (недосяжний — сценарії_auth_мережа.ps1)
     $env:FAKE_HEALTH_MODE = ''
     $c = Update-UsageCache
     $u = ConvertFrom-UsageText $c.text $c.time
