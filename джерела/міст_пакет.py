@@ -33,7 +33,7 @@ from пакет_моделі import не_ця_руки as _не_ця_руки, �
 import паспорт_нагоди as _ПН
 import палітра_схеми as _ПСХ
 import поломки as _ПОЛ
-import accessory as _АК
+import аксесуари_ціна as _АК
 import colorspace as _cs
 import семплер as _С
 from композитор_збирання import зібрати_кроками
