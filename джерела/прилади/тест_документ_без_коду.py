@@ -1237,6 +1237,19 @@ class Код(unittest.TestCase):
         тред["isResolved"] = True
         self.обійти(п, True, "розібрані")
 
+    def test_планове_рішення_після_закриття_останнього_треда(self):
+        п, тред = self.з_тредами("Copilot")
+        self.обійти(п, False, "тред Copilot без відповіді")
+        тред["isResolved"] = True  # Та сама голова, CI і останній коментар.
+        self.обійти(п, True, "розібрані")
+
+        шлях = os.path.join(КОРІНЬ, ".github/workflows/samozlyttia.yml")
+        with open(шлях, encoding="utf-8") as ф:
+            процес = ф.read()
+        self.assertRegex(процес, r"(?m)^  schedule:\n    - cron: ")
+        _, _, умови = групи_з_yml()
+        self.assertIn("github.event_name == 'schedule'", умови["rishennia"])
+
     def test_тред_чужого_акаунта(self):
         п, тред = self.з_тредами("Copilot")
         тред["firstComment"]["nodes"][0]["author"]["__typename"] = "User"

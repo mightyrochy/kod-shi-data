@@ -6,6 +6,7 @@
 # Мітка «злити» від mightyrochy, зафіксована на зеленому SHA, лишає диспетчерові шлях злиття коду. Нова голова робить
 # мітку застарілою (дошка 17101). «Рішення» і «злиття» беруть лише прилад з main; рецензії, треди й файли PR — з API.
 # Події рецензій приходять з окремого сигналу без checkout і прав. Дані цього запуску лише будять рішення.
+# Закриття треда GitHub передає вебхуком, тому стан тредів перечитуємо також за розкладом кожні 15 хвилин.
 # Злиття — squash з очікуваним SHA. Злиття токеном CI не будить push, тож крок сам викликає zbirka.yml з main до
 # злиття (pered) і комітом злиття (pislia); для коду — повний шлях (kod: true).
 name: самозлиття документа
@@ -17,6 +18,8 @@ on:
   pull_request_target:
     branches: [main]
     types: [labeled, ready_for_review]
+  schedule:
+    - cron: '7,22,37,52 * * * *'
 
 permissions: {}
 
@@ -58,7 +61,7 @@ jobs:
   rishennia:
     name: рішення
     needs: mitka
-    if: github.event.workflow_run.event == 'pull_request' || github.event.workflow_run.event == 'pull_request_review' || github.event.workflow_run.event == 'pull_request_review_comment' || (github.event_name == 'pull_request_target' && github.event.label.name == 'злити') || github.event.action == 'ready_for_review'
+    if: github.event.workflow_run.event == 'pull_request' || github.event.workflow_run.event == 'pull_request_review' || github.event.workflow_run.event == 'pull_request_review_comment' || (github.event_name == 'pull_request_target' && github.event.label.name == 'злити') || github.event.action == 'ready_for_review' || github.event_name == 'schedule'
     permissions:
       contents: read
       pull-requests: read
