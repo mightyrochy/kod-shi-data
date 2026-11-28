@@ -23,7 +23,6 @@ import геометрія_речі as _КМ0
 import порядок_запиту as _ПЗ
 import pipeline as _P
 import повнота_образу as _ПО
-import accessory as _АР
 import різноманітність_пулу as _РП
 import формальність as _ФОРМ_СМ
 import вибір_палітри as _ВП

@@ -17,7 +17,7 @@
 #   cd джерела && PYTHONPATH=. python3 ../аудит/проби/x_table.py
 import sys
 
-import accessory as A
+import аксесуари_реєстр as A
 import верхнє_реєстр as OU
 import fit as F
 

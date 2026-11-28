@@ -3,7 +3,7 @@
 import sys, pathlib, json, collections
 _КОРІНЬ = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_КОРІНЬ))
-import feed as Ф, bridge as B, accessory as АК, fit as ПС, внутрішня_мова as М
+import feed as Ф, bridge as B, аксесуари_край as АК, аксесуари_реєстр as АР, fit as ПС, внутрішня_мова as М
 
 def головна():
     """Звіряє нульову вагу, видиму причину невідомого та відсутній вхід ланцюга."""
@@ -14,7 +14,7 @@ def головна():
     тіло = ПС.тіло(float(вх["зріст"]), {к: float(в) for к, в in вх["обхвати"].items()})
     прик = [р for р in кат if р.get("ланцюг_см") is not None and р.get("слот") in АК.ЛАНЦЮГОВІ_СЛОТИ
             and not М.тип_на_голові(р.get("тип"))]
-    сукні = [р for р in кат if р.get("слот") == "сукня" and р.get("виріз_тип") in АК.ГЛИБИНИ_ВИРІЗУ]
+    сукні = [р for р in кат if р.get("слот") == "сукня" and р.get("виріз_тип") in АР.ГЛИБИНИ_ВИРІЗУ]
     assert прик and сукні, "каталог не дав кольє з довжиною або сукні з горловиною"
     пар = collections.Counter()
     for в in сукні:
