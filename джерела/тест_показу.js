@@ -373,6 +373,22 @@ function поверненняЗаглушка(w){
          && $("pair-scene").querySelector('[data-ux=library]')
          && !$("pair-chat-welcome").hidden
          && $("mirror-input").contains($("чат-ввід")), w.eval("Екран.стан.режим"));
+    тест("Люстерко представляється своїм ім’ям і приймає питання про застосунок",
+         $("pair-chat-welcome").textContent.includes("я Люстерко")
+         && $("pair-chat-welcome").textContent.includes("користуванням Люстерком"));
+    $("mirror-person").click();
+    await чекатиНа(() => d.documentElement.dataset.pairPage === 'профіль', 'профіль не відкрився');
+    тест("підпис чату в профілі — Запитай", $("pair-latest").textContent === 'Запитай');
+    for (const hand of ['vytynanka', 'klyny', 'kahlia']) {
+      if ($("mirror-intro").open) $("mirror-intro").close();
+      $("mirror-style").click();
+      d.querySelector('[data-ux=hand][data-value='+hand+']').click();
+      await чекатиНа(() => $("mirror-intro").open, 'зміна теми не відкрила заставку');
+      тест("зміна теми "+hand+" показує заставку й зберігає профіль",
+           $("mirror-intro").querySelector('[data-hand='+hand+']')
+           && d.documentElement.dataset.pairPage === 'профіль');
+    }
+    $("mirror-intro").close(); $("mirror-home").click();
     const повтор = сторінка({idb: w.indexedDB, url: "https://mightyrochy.github.io/kod-shi-data/показ.html"});
     await чекатиНа(() => повтор.d.documentElement.dataset.pairPage === 'mirror' && повтор.w.eval("Екран.стан.запущено"), 'збережений профіль не відкрив головну');
     тест("повторний запуск зі збереженим профілем відкриває головну",
@@ -8319,7 +8335,7 @@ function поверненняЗаглушка(w){
          d.getElementById("сц-губи-поле").hidden && w.getComputedStyle(d.getElementById("сц-губи-поле")).display === "none");
     const чат = d.getElementById("чат-поле");
     тест("поле розмови має сталий підпис, що не зникає з плейсхолдером",
-         чат.getAttribute("aria-label") === "Повідомлення стилістці", чат.getAttribute("aria-label"));
+         чат.getAttribute("aria-label") === "Запитай Люстерко про стиль або застосунок", чат.getAttribute("aria-label"));
     const жива = id => { const е = d.getElementById(id);
       return !!е && е.getAttribute("role") === "status" && е.getAttribute("aria-live") === "polite" && е.getAttribute("aria-atomic") === "true"; };
     тест("статуси збирання живуть у постійних областях aria-live (polite, atomic) — вони є в розмітці до першого збирання",

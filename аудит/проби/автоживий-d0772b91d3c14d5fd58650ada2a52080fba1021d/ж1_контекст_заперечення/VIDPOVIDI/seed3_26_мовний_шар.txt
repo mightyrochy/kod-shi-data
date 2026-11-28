@@ -1,0 +1,55 @@
+── ПРОМПТ (6379 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: jeans · about it: text н=1
+2 — kind: belt · about it: text н=2
+3 — kind: ring · about it: text н=3
+4 — kind: heeled_sandals · about it: text н=4
+5 — kind: t_shirt · about it: text н=5
+6 — kind: tote · about it: text н=6
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "The jeans offer you comfort and ease of movement, essential as you recover from illness, while their relaxed fit supports your natural silhouette without constriction.",
+"2": "The feathered belt introduces softness and visual interest at your waist, creating a gentle focal point that celebrates your figure rather than altering it.",
+"3": "The diamond ring adds a touch of refined sparkle that complements your occasion without overpowering your overall presence—just enough to draw a glance, then return to you.",
+"4": "The sheer heeled sandals bring lightness and breathability suited for summer evenings, allowing you to walk confidently while maintaining an elegant profile.",
+"5": "The simple t-shirt top provides a clean, unobtrusive base that lets your accessories and the texture of your belt become the stars of your ensemble.",
+"6": "The tote bag offers practical elegance—spacious enough for essentials yet styled with a soft drawstring detail that keeps your look effortless and ready for whatever comes next.",
+"7": "I chose this look to honor your wish to avoid a forced style shift while still embracing the warmth and lightness of summer. The relaxed jeans ground you with quiet confidence, the sheer sandals bring breathability without sacrificing elegance, and the ring catches every glance as a subtle yet meaningful accent. The feathered belt adds texture that feels both delicate and intentional—perfect for an evening where you want to feel celebrated, not over-dressed.",
+"8": "Layer the sheer sandals with confidence—they’re meant to be worn as-is, letting your legs breathe in the summer heat while keeping you grounded on any surface.",
+"9": "Let the feathered belt rest just above your hip to draw attention upward without constriction—this placement keeps you feeling light and mobile throughout your evening.",
+"10": "Wear the ring on your right hand or left, whichever feels most natural; its understated sparkle will complement your presence without demanding attention."
+}
+
+── ВІДПОВІДЬ (1985 симв., 12.8 с, HTTP 200) ──
+```json
+{
+  "1": "Ці джинси дарують тобі комфорт і свободу рухів, що так важливо під час одужання, а їхній вільний крій підтримує твою природну фігуру без зайвого тиску.",
+  "2": "Пояс із пір’ям додає м’якості та візуального інтересу на лінії твоєї талії, створюючи ніжний акцент, який відзначає твою фігуру, а не змінює її.",
+  "3": "Діамантова каблучка дарує витончений блиск, що доповнює твій образ без зайвої нав’язливості — лише достатньо, щоб привернути погляд і знову повернутися до тебе.",
+  "4": "Прозорі босоніжки на підборах додають легкості та повітропроникності, які так потрібні в літні вечори. Ти зможеш ходити впевнено, зберігаючи при цьому елегантний вигляд.",
+  "5": "Звичайна футболка створює чисту основу, яка дозволяє твоїм аксесуарам і текстурі пояса стати головними зірками твого ансамблю.",
+  "6": "Сумка-тоут пропонує практичну елегантність — достатньо простору для необхідних речей, але стилізована м’яким шнурком, який робить твій образ без зусиль і готовим до всього наступного.",
+  "7": "Я обрала цей лук, щоб поважати твоє бажання уникнути різкої зміни стилю, водночас насолоджуючись теплом і легкістю літа. Вільні джинси дарують тобі тиху впевненість, прозорі босоніжки — повітропроникність без втрати елегантності, а каблучка привертає погляд як ледь помітний, але значущий акцент. Пояс із пір’ям додає текстури, яка відчувається одночасно ніжною та продуманою — ідеально для вечора, коли ти хочеш почуватися відзначеною, а не переодягненою.",
+  "8": "Носи босоніжки на підборах із впевненістю — вони створені саме так, щоб дати твоїм ногам дихати в літню спеку, водночас зберігаючи тебе стійкою на будь-якій поверхні.",
+  "9": "Залиш пояс із пір’ям трохи вище стегна, щоб привернути увагу до верху без зайвого тиску — це розташування дозволить тобі почуватися легкою та рухливою протягом усього вечора.",
+  "10": "Носи каблучку на правій або лівій руці, як тобі більше подобається; її стриманий блиск доповнить твою присутність без зайвої уваги."
+}
+```

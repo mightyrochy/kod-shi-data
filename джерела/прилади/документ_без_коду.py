@@ -47,9 +47,10 @@ python3 джерела/прилади/документ_без_коду.py --зл
 (`filter=latest`, без витіснених запусків і job-ів самозлиття) завершені з `success` чи `skipped`; останні коміт-статуси
 мають `success`. За повним списком файлів (до межі API) документ зливається на зеленій голові (`рішення_pr`).
 Для коду без мітки (`_файли_коду`, `_рецензії_коду`) обидва імені кожного файла мають бути поза закритими місцями:
-CI, хуками, обгорткою, файлами правил, приладом самозлиття, його тестом і записами API. REST має показати подану
-рецензію Copilot саме на SHA голови. У всіх тредах, початих ботами Codex і Copilot, GraphQL має показати
-`isResolved` або останній коментар від `mightyrochy`. Закриті місця, рецензію й треди коду звіряємо й у job злиття.
+CI, хуками, обгорткою, файлами правил, приладом самозлиття, його тестом і записами API. Достатньо поданої рецензії
+Codex чи Copilot саме на SHA голови або 30 хвилин від пізнішої події: старт першого CI на цій голові чи останній вихід
+із чернетки. У всіх тредах, початих цими ботами, потрібне GitHub `isResolved` або останній коментар від `mightyrochy`.
+Job злиття повторно читає файли, рецензії, треди й останній вихід із чернетки. Час першого CI прив'язано до SHA.
 
 Мітка «злити» зберігає шлях диспетчера (`рішення_мітка`): останню мітку поставив `mightyrochy`, job фіксації
 підтвердив її статусом на поточному SHA, після мітки не було force-push, голова зелена. Нова голова робить мітку
@@ -144,8 +145,9 @@ JOB_САМОЗЛИТТЯ = ("мітка", "рішення", "злиття", "з�
 ЗАКРИТІ_ФАЙЛИ = ФАЙЛИ_ПРАВИЛ | {
     "джерела/прилади/документ_без_коду.py", "джерела/прилади/тест_документ_без_коду.py",
 }
-COPILOT = "copilot-pull-request-reviewer"
-БОТИ_РЕЦЕНЗІЇ = {COPILOT: "Copilot", "chatgpt-codex-connector": "Codex"}
+БОТИ_РЕЦЕНЗІЇ = {"copilot-pull-request-reviewer": "Copilot", "chatgpt-codex-connector": "Codex"}
+БОТИ_РЕЦЕНЗІЇ_REST = {f"{логін}[bot]": назва for логін, назва in БОТИ_РЕЦЕНЗІЇ.items()}
+ХВИЛИН_ДЛЯ_РЕЦЕНЗІЇ = 30
 МАКС_ФАЙЛІВ = 3000
 МІТКА = "злити"
 КОНТЕКСТ_МІТКИ = "самозлиття: мітка «злити»"
@@ -380,6 +382,29 @@ def _час(текст):
     return datetime.datetime.strptime(текст, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
 
 
+def _зараз():
+    return datetime.datetime.now(datetime.timezone.utc)
+
+
+def _початок_першого_ci(api, голова, запуски):
+    """Перший старт CI на цьому SHA, включно з першою спробою повторно запущених workflow."""
+    початки = []
+    for запуск in запуски:
+        if запуск.get("event") != "pull_request" or запуск.get("head_sha") != голова:
+            continue
+        if (запуск.get("run_attempt") or 1) > 1:
+            try:
+                код, запуск, _ = api.запит("GET", f"/repos/{api.р}/actions/runs/{запуск['id']}/attempts/1")
+            except (OSError, ValueError):
+                continue
+            if код != 200 or not запуск or запуск.get("head_sha") != голова:
+                continue
+        початок = запуск.get("run_started_at")
+        if початок:
+            початки.append(початок)
+    return min(початки, default=None)
+
+
 def _мітка_стан(pr, події, статуси, зараз=None):
     """(діє?, причина, стара?): мітка «злити» стоїть на PR, поставлена `mightyrochy` на САМІЙ поточній голові.
 
@@ -411,7 +436,7 @@ def _мітка_стан(pr, події, статуси, зараз=None):
     if (статус and статус.get("state") == "success" and (статус.get("creator") or {}).get("login") == БОТ
             and (статус.get("created_at") or "") >= час_мітки):
         return True, f"мітка від {АВТОР} {час_мітки} зафіксована на цій голові ({статус['created_at']})", False
-    зараз = зараз or datetime.datetime.now(datetime.timezone.utc)
+    зараз = зараз or _зараз()
     if зараз - _час(час_мітки) > ПІЛЬГА_СТАТУСА:
         return False, (f"мітка {час_мітки} не зафіксована на поточній голові — голова з'явилась знову (новий коміт, "
                        "rebase) чи job фіксації не відпрацював; постав мітку ще раз"), True
@@ -481,6 +506,9 @@ query ($owner: String!, $repo: String!, $number: Int!, $cursor: String) {
   repository(owner: $owner, name: $repo) {
     pullRequest(number: $number) {
       headRefOid
+      readyForReview: timelineItems(last: 1, itemTypes: [READY_FOR_REVIEW_EVENT]) {
+        nodes { ... on ReadyForReviewEvent { createdAt } }
+      }
       reviewThreads(first: 100, after: $cursor) {
         pageInfo { hasNextPage endCursor }
         nodes {
@@ -495,16 +523,19 @@ query ($owner: String!, $repo: String!, $number: Int!, $cursor: String) {
 """
 
 
-def _рецензії_коду(api, н, голова):
-    """REST підтверджує рецензію на голові, GraphQL повертає стан і крайні коментарі кожного треда."""
+def _рецензії_коду(api, н, голова, початок_ci=None):
+    """REST підтверджує рецензію, GraphQL дає останній вихід із чернетки й стан кожного треда."""
     try:
-        рецензії = api.усі(f"/repos/{api.р}/pulls/{н}/reviews")
-        є_рецензія = any((р.get("user") or {}).get("login") == f"{COPILOT}[bot]" and р.get("commit_id") == голова
-                         and р.get("state") in {"APPROVED", "COMMENTED", "CHANGES_REQUESTED"} for р in рецензії)
+        рецензент = None
+        for р in api.усі(f"/repos/{api.р}/pulls/{н}/reviews"):
+            if р.get("commit_id") == голова and р.get("state") in {"APPROVED", "COMMENTED", "CHANGES_REQUESTED"}:
+                рецензент = БОТИ_РЕЦЕНЗІЇ_REST.get((р.get("user") or {}).get("login"))
+                if рецензент:
+                    break
     except (RuntimeError, OSError, ValueError, TypeError, AttributeError):
         return False, "не вдалося прочитати рецензії"
-    if not є_рецензія:
-        return False, "нема рецензії Copilot на голові"
+    if not рецензент and not початок_ci:
+        return False, "рецензії на голові нема, бракує часу першого CI на голові"
 
     власник, репозиторій = api.р.split("/", 1)
     змінні = {"owner": власник, "repo": репозиторій, "number": н, "cursor": None}
@@ -516,6 +547,15 @@ def _рецензії_коду(api, н, голова):
             pr = дані["data"]["repository"]["pullRequest"]
             if pr["headRefOid"] != голова:
                 return False, "голова змінилась під час читання тредів"
+            if рецензент:
+                причина = f"рецензія {рецензент} на голові"
+            else:
+                події = pr["readyForReview"]["nodes"]
+                початок_очікування = max([_час(початок_ci)] + [_час(п["createdAt"]) for п in події])
+                хвилин = max(0, (_зараз() - початок_очікування) // datetime.timedelta(minutes=1))
+                причина = f"рецензії на голові нема, голові {хвилин} хв"
+                if хвилин < ХВИЛИН_ДЛЯ_РЕЦЕНЗІЇ:
+                    return False, причина
             треди = pr["reviewThreads"]
             for тред in треди["nodes"]:
                 перший, = тред["firstComment"]["nodes"]
@@ -530,7 +570,7 @@ def _рецензії_коду(api, н, голова):
                     return False, f"тред {назва} без відповіді: {перший['url']}"
             сторінка = треди["pageInfo"]
             if сторінка["hasNextPage"] is False:
-                return True, "рецензія Copilot на голові, треди ботів розібрані"
+                return True, f"{причина}, треди ботів розібрані"
             курсор = сторінка["endCursor"]
             if not курсор or курсор == змінні["cursor"]:
                 break
@@ -540,10 +580,10 @@ def _рецензії_коду(api, н, голова):
     return False, "не вдалося прочитати всі сторінки тредів рецензії"
 
 
-def обійти(api, свій_запуск="", старі=None):
+def обійти(api, свій_запуск="", старі=None, початки_ci=None):
     """Відкриті PR → [(номер, голова, злити?, причина, спосіб)]; спосіб — «документ», «мітка» чи «код».
 
-    `старі` (список) доповнюється номерами й головами PR із застарілою міткою (`мітка_стара`)."""
+    `старі` поповнюється PR із застарілою міткою, `початки_ci` — часом першого CI на головах кандидатів коду."""
     р = f"/repos/{api.р}"
     підсумок = []
     for коротко in api.усі(f"{р}/pulls?state=open&base={БАЗА}"):
@@ -588,8 +628,11 @@ def обійти(api, свій_запуск="", старі=None):
             причина_мітки = f" · {чому}" if з_міткою else ""
             так, чому = (False, закрите) if закрите else перевірки_голови(голова, запуски, check_runs, статуси, свій_запуск)
             if так:
-                так, рецензії = _рецензії_коду(api, н, голова)
+                початок_ci = _початок_першого_ci(api, голова, запуски)
+                так, рецензії = _рецензії_коду(api, н, голова, початок_ci)
                 чому = f"{чому}; {рецензії}" if так else рецензії
+                if так and початок_ci and початки_ci is not None:
+                    початки_ci[н] = початок_ci
             if not так:
                 чому += причина_мітки
             спосіб = "код"
@@ -652,7 +695,7 @@ def злити(api, кандидати):
                 except (RuntimeError, OSError, ValueError, KeyError, TypeError):
                     відмова = "не вдалося прочитати файли PR"
             if not відмова:
-                так, чому = _рецензії_коду(api, н, голова)
+                так, чому = _рецензії_коду(api, н, голова, к.get("початок_ci"))
                 if not так:
                     відмова = чому
             if відмова:
@@ -793,8 +836,12 @@ def main(argv=None):
             _вихід(kandydaty="[]", stari="[]")
             return 2
         старі = []
-        підсумок = обійти(api, os.environ.get("GITHUB_RUN_ID", ""), старі)
+        початки_ci = {}
+        підсумок = обійти(api, os.environ.get("GITHUB_RUN_ID", ""), старі, початки_ci)
         кандидати = [{"номер": н, "голова": г, "спосіб": с} for н, г, так, _, с in підсумок if так]
+        for кандидат in кандидати:
+            if (початок_ci := початки_ci.get(кандидат["номер"])) is not None:
+                кандидат["початок_ci"] = початок_ci
         _підсумок(["### Самозлиття: рішення", ""] +
                   [f"- #{н} `{г[:8]}`: {'ЗЛИТИ' if так else 'не зливати'} ({с}) — {чому}" for н, г, так, чому, с in підсумок]
                   + ([] if підсумок else ["- відкритих PR-кандидатів нема"]))

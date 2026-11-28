@@ -27,6 +27,7 @@ import re
 import subprocess
 import sys
 import unittest
+from unittest import mock
 
 ТУТ = os.path.dirname(os.path.abspath(__file__))
 КОРІНЬ = os.path.normpath(os.path.join(ТУТ, "..", ".."))
@@ -1176,6 +1177,9 @@ class ЗаписAPIКоду(ОбхідAPI):
             if змінні["number"] != self.п["pr"]["number"]:
                 raise AssertionError(змінні)
             return 200, self.п.get(змінні["cursor"] or "треди"), ""
+        if метод == "GET" and шлях.endswith("/attempts/1"):
+            ід = int(шлях.split("/")[-3])
+            return 200, self.п["перші_спроби"][ід], ""
         if метод == "PUT" and шлях.endswith("/merge"):
             self.записи_злиття.append(тіло)
             return 200, {"merged": True, "sha": "c" * 40}, ""
@@ -1197,8 +1201,10 @@ class Код(unittest.TestCase):
         п["pr"].update(state="open", merged=False)
         return п
 
-    def обійти(self, п, злити, причина, спосіб="код"):
-        підсумок = д.обійти(ЗаписAPIКоду(п))
+    def обійти(self, п, злити, причина, спосіб="код", час="2026-11-28T03:35:00Z"):
+        зараз = datetime.datetime.fromisoformat(час)
+        with mock.patch.object(д, "_зараз", return_value=зараз, create=True):
+            підсумок = д.обійти(ЗаписAPIКоду(п))
         self.assertEqual(len(підсумок), 1, підсумок)
         н, г, так, чому, як = підсумок[0]
         self.assertEqual((н, г), (п["pr"]["number"], п["pr"]["head"]["sha"]))
@@ -1215,10 +1221,54 @@ class Код(unittest.TestCase):
     def test_зелена_голова_без_тредів(self):
         self.обійти(self.стан(), True, "перевірки голови зелені")
 
+    def test_рецензія_Codex_на_голові(self):
+        п = self.стан()
+        п["рецензії"] = п["рецензії_Codex"]
+        п["рецензії"][0]["commit_id"] = п["pr"]["head"]["sha"]
+        self.обійти(п, True, "рецензія Codex на голові")
+
     def test_рецензія_попередньої_голови(self):
         п = self.стан()
         п["рецензії"][0]["commit_id"] = "a" * 40
-        self.обійти(п, False, "нема рецензії Copilot на голові")
+        self.обійти(п, False, "рецензії на голові нема, голові 20 хв")
+
+    def test_30_хв_після_виходу_з_чернетки(self):
+        п = self.стан()
+        п["рецензії"] = []
+        self.обійти(п, False, "голові 29 хв", час="2026-11-28T03:44:13Z")
+        self.обійти(п, True, "голові 30 хв", час="2026-11-28T03:44:14Z")
+
+    def test_30_хв_після_першого_ci_тієї_самої_голови(self):
+        п = self.стан()
+        п["рецензії"] = []
+        готовність = п["треди"]["data"]["repository"]["pullRequest"]["readyForReview"]["nodes"]
+        готовність[0]["createdAt"] = "2026-11-28T01:40:00Z"
+        п["запуски"] = [з for з in п["запуски"] if з["run_started_at"] < "2026-11-28T03:00:00Z"]
+        п["запуски"].append({**п["запуски"][0], "head_sha": "a" * 40, "run_started_at": "2026-11-27T22:00:00Z"})
+        self.обійти(п, False, "голові 29 хв", час="2026-11-28T02:22:47Z")
+        self.обійти(п, True, "голові 30 хв", час="2026-11-28T02:22:48Z")
+
+    def test_старий_нерозібраний_тред_стримує_після_30_хв(self):
+        п, _ = self.з_тредами("Codex")
+        п["рецензії"] = []
+        self.обійти(п, False, "тред Codex без відповіді", час="2026-11-28T03:50:00Z")
+
+    def test_повтор_перевірки_зберігає_час_першої_спроби(self):
+        п = self.стан()
+        п["рецензії"] = []
+        п["треди"]["data"]["repository"]["pullRequest"]["readyForReview"]["nodes"].clear()
+        п["запуски"] = [з for з in п["запуски"] if з["run_started_at"] == "2026-11-28T01:52:48Z"]
+        п["перші_спроби"] = {з["id"]: з.copy() for з in п["запуски"]}
+        for запуск in п["запуски"]:
+            запуск.update(run_attempt=2, run_started_at="2026-11-28T02:10:00Z")
+        self.обійти(п, True, "голові 30 хв", час="2026-11-28T02:22:48Z")
+
+    def test_бракує_часу_першого_ci(self):
+        п = self.стан()
+        п["рецензії"] = []
+        for запуск in п["запуски"]:
+            запуск.pop("run_started_at")
+        self.обійти(п, False, "бракує часу першого CI")
 
     def test_треди_ботів_без_відповіді(self):
         for бот in ("Copilot", "Codex"):
@@ -1331,6 +1381,25 @@ class Код(unittest.TestCase):
         self.assertEqual(злито, [])
         self.assertEqual(api.записи_злиття, [])
         self.assertIn("тред Copilot без відповіді", рядки[0])
+
+    def test_очікування_і_повторний_вихід_з_чернетки_перед_злиттям(self):
+        п = self.стан()
+        п["рецензії"] = []
+        api = ЗаписAPIКоду(п)
+        зараз = datetime.datetime.fromisoformat("2026-11-28T03:45:15Z")
+        with mock.patch.object(д, "_зараз", return_value=зараз):
+            початки_ci = {}
+            self.assertTrue(д.обійти(api, початки_ci=початки_ci)[0][2])
+            кандидат = {"номер": 4957, "голова": п["pr"]["head"]["sha"], "спосіб": "код", "початок_ci": початки_ci[4957]}
+            злито, _, _ = д.злити(api, [кандидат])
+            self.assertEqual(злито, [(4957, "c" * 40, True)])
+
+            готовність = п["треди"]["data"]["repository"]["pullRequest"]["readyForReview"]["nodes"]
+            готовність[0]["createdAt"] = "2026-11-28T03:44:14Z"
+            злито, _, рядки = д.злити(api, [кандидат])
+            self.assertEqual(злито, [])
+            self.assertEqual(len(api.записи_злиття), 1)
+            self.assertIn("голові 1 хв", рядки[0])
 
     def test_рецензія_і_зняття_чернетки_будять_рішення(self):
         тека = os.path.join(КОРІНЬ, ".github/workflows")
