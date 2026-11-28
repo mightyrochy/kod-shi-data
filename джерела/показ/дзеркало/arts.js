@@ -445,7 +445,7 @@
   function art(theme, mode='welcome', phase=0, portrait='') {
     const name = kind(theme);
     if (mode === 'portrait') return voice(name,portrait);
-    if (!['welcome','solo','waiting','error'].includes(mode)) mode='welcome';
+    if (!['welcome','solo','waiting','building','error'].includes(mode)) mode='welcome';
     const stage = Math.max(0,Math.min(5,Math.floor(Number(phase)||0)));
     const completed = Array.from({length:stage},(_,i)=>' step-' + (i+1)).join('');
     const id = nextId();
