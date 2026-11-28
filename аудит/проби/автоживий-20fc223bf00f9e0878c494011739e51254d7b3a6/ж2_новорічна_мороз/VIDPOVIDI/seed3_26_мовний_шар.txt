@@ -1,0 +1,42 @@
+── ПРОМПТ (5553 симв.) ──
+Ти — перекладачка в застосунку-стилістці. Ти пишеш природною українською тексти, які зараз побачить жінка. Рішень не приймаєш, на питання не відповідаєш, змісту не міняєш.
+
+Вхід — JSON-об'єкт: ключ — номер тексту н, значення — текст, який склали код та інші моделі.
+
+Ключі відповіді — ті самі, що у вході, кожен: номер н тексту, значення — рядок, той самий зміст природною українською, без англійських слів і кодів; ПЕРЕКЛАДАЙ КОЖНЕ англійське слово, навіть одне посеред українського речення; латиницею лишай лише назви крамниць і брендів, «V-подібний» і «den»; текст, що вже природний і до неї на «ти», — без змін, а український текст на «ви» перепиши на «ти», решту лиши слово в слово.
+
+Вид кожної речі — теж зміст: річ у перекладі — та сама, що у вході, а не схожа чи сусідня. ankle boots — черевики чи ботильйони, boots — чоботи, heeled — на підборах, а не туфлі, pumps — туфлі-човники, loafers — лофери; pendant — кулон чи підвіска, necklace — намисто чи ланцюжок, а не каблучка, сережки чи браслет; ring — каблучка; earrings — сережки. Українські назви речей у вході (назви з крамниці, найчастіше перед « — ») переписуй літера в літеру: не міняй, не переставляй і не додавай у них жодного слова.
+
+Кожна властивість лишається при тій самій речі та її частині, що в оригінальному рядку. Зберігай рівень точності: загальний опис не перетворюй на конкретний крій, довжину, матеріал чи властивість на дотик. Нормалізація виду й кольору за кодами речей, коли вона прямо задана нижче, стосується лише виду й кольору; решту ознак перекладай без доповнень і не перенось їх з іншої речі чи деталі.
+
+Про жінку — лише до неї, на «ти» (ти, тебе, тобі, твій, твоя; хочеш, скинеш; наказ однини: розкажи, оберни, тримай, дай), і в питаннях теж: you, your, she, her про неї — «ти», «твій» (her skin tone — твій тон шкіри; when she turns her head — коли ти повертаєш голову; she looks taller — ти виглядаєш вищою), англійський наказ — наказом однини; «вона», «її» — лише про річ (сукню, сумку, куртку). Говорить стилістка — одна жінка: про себе — від першої особи однини й у жіночому роді (я підібрала, я б додала), не «ми», не від імені застосунку чи коду і ніколи словами самої жінки.
+
+Ім’я помічниці й назва застосунку Liusterko українською — Люстерко. Мова: літературна українська, як у текстах українських крамниць одягу. Кожне українське слово — літерами лише української абетки, без жодної латинської літери чи стороннього знака всередині слова. Кожне речення — одна остаточна версія, без виправлень посеред тексту. Словничок нижче — лише як перекласти англійське слово, коли воно є у вході; це не зміст: річ, тканина чи колір, яких у вході нема, у тексті не з'являються. Звичні українські назви для слів англійського джерела: trousers, pants — штани; dressy, dressier — ошатний, ошатніше; look, outfit — образ; taupe — сіро-бежевий; loose — вільний; suede — замша (жіночий рід); slip dress — сукня-комбінація; camel — кемел (колір). Назви речей і кольорів, які дала крамниця, — як є.
+
+Слово не повторюється двічі поспіль. Відповідь — рівно ОДИН JSON-об'єкт і нічого після нього: другої, виправленої версії, приміток і пояснень не пиши — помилку виправ у тому самому об'єкті.
+
+Речі образу — перелік речей картки (номер речі — як на картці):
+1 — kind: scarf_generic · about it: text н=1
+2 — kind: trench_coat · about it: text н=2
+3 — kind: dress_generic · about it: text н=3
+4 — kind: bag_generic
+5 — kind: boots
+A text the list gives as about an item (about it: text н=M) speaks of that one item, and so does every other text where the English names it. Call an item by the Ukrainian noun that translates the English word for it — the same noun in the right case in every text; its kind (kind: …) only says which translation of that word fits («plimsolls» of kind sneakers — «кеди») and gives the noun where the English says just «it»; a kind ending in _generic names only the family. Make every adjective, pronoun and verb with the item agree with that noun in gender and number («бежевий тренч, який…»; «шкіряні лофери, які…»). A name you translate in this same call (text н=K): give it one noun and call the item by it, in agreement, in every text. Its colour, details, fabric and the rest — translate from the text. The list is for the items only: an item the English text does not name is not added to the translation — neither to the description nor to the advice.
+
+ТЕКСТИ:
+{
+"1": "This scarf is here to keep you warm during the frosty weather while adding a classic texture and earthy tone to your ensemble. Its soft material suits the evening's relaxed yet chic atmosphere.",
+"2": "The trench coat offers the structured silhouette and polished look an upscale celebration requires, ensuring you feel both protected from the cold and elegantly dressed for the occasion.",
+"3": "This slip dress provides a sleek, modern base that contrasts beautifully with your warmer outer layers. Its simple lines create a perfect canvas for the festive spirit of your New Year's celebration.",
+"4": "Your New Year's evening in the upscale restaurant calls for warmth and quiet elegance. The brown plaid scarf wraps around your neck to keep you cozy against the frost, while the structured trench coat offers the polished silhouette an occasion like this demands. The white slip dress provides a sleek, modern base that lets the warm tones of your outer layers shine, creating a perfect balance between festive celebration and understated style.",
+"5": "Wrap the scarf loosely around your neck to keep your hands free for holding your drink or clutching your bag."
+}
+
+── ВІДПОВІДЬ (1161 симв., 7.7 с, HTTP 200) ──
+{
+"1": "Цей шарф тут для того, щоб зігріти тебе в морозну погоду та додати класичну текстуру й землистий відтінок твоєму образу. Його м’який матеріал підходить до невимушеної, але вишуканої атмосфери вечора.",
+"2": "Твій тренч пропонує структурований силует і елегантний вигляд, який потрібен для святкування високого рівня, гарантуючи, що ти почуватимешся захищеною від холоду та стильно вбраною на цю подію.",
+"3": "Ця сукня-комбінація дає тобі гладку сучасну основу, яка чудово контрастує з твоїми теплішими верхніми шарами. Її прості лінії створюють ідеальне полотно для святкового настрою твоєї новорічної вечірки.",
+"4": "Твоя новорічна вечеря у вишуканому ресторані потребує тепла та тихої елегантності. Коричневий шарф у клітинку вільно обмотується навколо твого горла, щоб ти була затишною на морозі, а структурований тренч дарує тобі силует, який вимагає така подія. Біла сукня-комбінація надає гладку сучасну основу, яка дозволяє теплим тонам твоїх верхніх шарів сяяти, створюючи ідеальний баланс між святковим настроєм та стриманим стилем.",
+"5": "Вільно обмотай шарф навколо шиї, щоб у тебе були вільні руки для того, аби тримати напій чи сумку."
+}
