@@ -19,6 +19,7 @@ function Check([string]$Name, [bool]$Ok) {
 }
 function Get-Prompt { 'синтетичний наряд' }
 function Write-Log { param($Text) }
+function Test-EngineReachable { $true }  # вузол входу «досяжний»: стенд не ходить у зовнішню мережу (недосяжний — сценарії_auth_мережа.ps1)
 function Get-BranchPath { param($Slug) Join-Path $WorkDir 'branch.txt' }
 function Get-RemoteSha { param($Branch) if ($Branch -eq 'claude/проба-звіту') { $script:remote } else { '' } }
 function Test-ClaudeBranch { param($Branch) $Branch -cmatch '^claude/[\p{L}\p{Nd}._-]+$' }

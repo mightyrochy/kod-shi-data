@@ -307,7 +307,9 @@ if __name__ == "__main__":
     print("D. МОВЧАЗНИЙ ДВІЙНИК: те саме імʼя проти того самого числа у двох модулях")
     print("=" * 78)
     _мод = ["outfit", "colorspace", "palette", "silhouette", "fit", "coordination",
-            "areas", "feed", "profile", "extract", "composer", "pipeline",
+            "areas", "feed", "profile", "extract", "pipeline",
+            "композитор_реєстр", "композитор_придатні", "композитор_слоти", "композитор_річ",
+            "композитор_оцінка", "композитор_полюси", "композитор_збирання",
             "status", "language_gate", "verify"]
     дв = мовчазні_двійники(_мод)
     for (ім, val), місця in sorted(дв.items()):

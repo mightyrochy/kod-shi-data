@@ -49,6 +49,7 @@ import фрази_формату as _ФФ
 import людський_вихід as _ЛВ
 from людський_вихід import ЗВЕРТАННЯ_ТИ as _ЗВЕРТАННЯ_ТИ
 import внутрішня_мова as _ВМ
+from сценарій import МЕЖІ_СМУГ_ДЛЯ_МОДЕЛІ
 import знання_речі as _ЗН
 import паспорт_поля as _ПП
 # «невідомо» на кожному рівні й вільний текст — у внутрішній мові, її речі шару — у речі з фото (3.3, К-4)
@@ -3409,9 +3410,7 @@ _ПОЛЯ_EN = {
     # мітки бази знань, не вимога; знято (Е2-промпти, п.1)
     "weather_band": "the weather band, from the degrees she names (digits or words) or her feeling of "
                     "the weather: "
-                    "deep_frost: below -8 C; frost: -8 to below 2 C; cold: 2 to below 10 C; "
-                    "cool: 10 to below 18 C; mild: 18 to below 22 C; warm: 22 to below 26 C; "
-                    "hot: 26 C and above. Read her whole phrase, including the sign and a number "
+                    + МЕЖІ_СМУГ_ДЛЯ_МОДЕЛІ + " Read her whole phrase, including the sign and a number "
                     "written in words; when she gives no degrees, choose a band from her weather "
                     "words, or the usual weather of the season, month, holiday or place she names, "
                     "with that word as quote. No weather evidence — absent",

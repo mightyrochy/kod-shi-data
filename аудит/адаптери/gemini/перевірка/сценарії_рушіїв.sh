@@ -2,7 +2,7 @@
 # Стенд рушіїв М.9-В (pwsh 7, git, python3; PWSH — шлях до pwsh): fake_codex.py через сценарії_прогону.sh.
 # Кожен випадок: «ім'я | оточення | сценарій | модель | очікуваний фрагмент рядка вихідних». Вихід 1, якщо хоч один не збігся.
 set -u
-H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; bad=0
+H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; bad=0; auth_hosts_local
 case_() {
   local name=$1 env=$2 sc=$3 model=$4 want=$5 got
   env $env EXTRA="${EXTRA:-{\"EnableCodex\":true\}}" "$H/сценарії_прогону.sh" "m9v-$name" "$sc" print "$model" >/dev/null 2>&1
