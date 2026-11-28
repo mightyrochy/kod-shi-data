@@ -4005,7 +4005,7 @@ function підсумокМоделі(){
     await знімок('tap_pole', ПАРА ? '#mirror-work' : '#е-випадок');
   }
   /* Н4: картка сценарію, яку вона бачить після розмови (і тапу), — знімок 390×844 і картка ядра даними */
-  if (process.env.YADRO === '1'){
+  if (await стор.evaluate(() => typeof ЯДРО_П !== 'undefined' && ЯДРО_П)){
     const кя = await стор.evaluate(() => ({картка: typeof картаСценаріюЯдраП === 'function' ? картаСценаріюЯдраП() : null,
       ситуація: typeof ситуаціяЯдраП === 'function' ? ситуаціяЯдраП() : null,
       екран: ((document.querySelector('#mirror-work') || document.querySelector('#е-випадок') || {}).innerText || '').slice(0, 3000)}));
