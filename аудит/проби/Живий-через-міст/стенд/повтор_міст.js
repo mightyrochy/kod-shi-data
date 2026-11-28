@@ -1,6 +1,8 @@
 /* Прилад проби «Живий-як-людина-4»: повтор записаних дій без моделі-жінки (скрипт із хід.md третього прогону). Запуск: node повтор.js <ситуація> <вихід> <порт>. MIST_LOCAL=<адреса> — міст сторінки йде на місцевий стенд (`живий-як-людина-3/стенд/міст_claude.py`, за підпискою), а не на справжній.
    STOR — свіжа збірка, PYODIDE — кеш. Слова беруться лише з хід.md третього прогону. */
 const fs = require('fs'), path = require('path'), http = require('http');
+const {станЗбору} = require('../../потік_стенда.js');
+const {знайомствоПовтору, умовиПовтору, зібратиВПовторі} = require('../../повтор_дій.js');
 const {chromium} = require('playwright');
 const {знімокРук, доЗавантажитиФото} = require('../../живий-як-людина-4/стенд/руки_зі_сторінки.js');
 const джерело = fs.readFileSync(path.join(__dirname, '../../живий-як-людина-4/стенд/людина.js'), 'utf8');
@@ -78,7 +80,7 @@ async function знайти(мітка){
   return null;
 }
 async function головна(){
-  браузер=await chromium.launch({headless:true,proxy:process.env.HTTPS_PROXY?{server:process.env.HTTPS_PROXY,bypass:'localhost,127.0.0.1'}:undefined});
+  браузер=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM||undefined,proxy:process.env.HTTPS_PROXY?{server:process.env.HTTPS_PROXY,bypass:'localhost,127.0.0.1'}:undefined});
   const [ШИР,ВИС]=(process.env.VIEWPORT||'390x844').split('x').map(Number),ТЕЛ=ШИР<600;
   const ctx=await браузер.newContext({viewport:{width:ШИР,height:ВИС},deviceScaleFactor:1,isMobile:ТЕЛ,hasTouch:ТЕЛ,locale:'uk-UA',timezoneId:'Europe/Kyiv',ignoreHTTPSErrors:true,acceptDownloads:true,
     userAgent:ТЕЛ?'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36':undefined});
@@ -106,7 +108,8 @@ async function головна(){
     if(process.env.STELYA&&викликів>=Number(process.env.STELYA)){fs.appendFileSync(path.join(службове,'обміни.jsonl'),JSON.stringify({час:new Date().toISOString(),прохід,стеля:true})+'\n');return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:{type:'стеля',message:'стеля проходу: міст не кликано'}})});}
     викликів++;активні++;останнійВиклик=Date.now();const т0=Date.now();const тіло=route.request().postData()||'{}',початок=new Date().toISOString();
     try{
-      const r=await route.fetch(process.env.MIST_LOCAL?{url:process.env.MIST_LOCAL,timeout:960000}:{timeout:960000});const body=await r.text();const h=r.headers();
+      const r=await route.fetch(process.env.MIST_LOCAL?{url:process.env.MIST_LOCAL,timeout:960000,
+        headers:{...route.request().headers(),'x-prohid':encodeURIComponent(ситуація+' · '+прохід)}}:{timeout:960000});const body=await r.text();const h=r.headers();
       const x={};for(const n in h)if(/^x-|^retry-after|^anthropic-ratelimit/.test(n))x[n]=h[n];
       fs.appendFileSync(path.join(службове,'обміни.jsonl'),JSON.stringify({час:початок,с:(Date.now()-т0)/1000,прохід,статус:r.status(),заголовки:x,запит:тіло,відповідь:body})+'\n');
       if(h['x-runs-left']&&h['x-runs-left']!=='n/a')блокер='ЗУПИНКА: x-runs-left='+h['x-runs-left'];
@@ -116,7 +119,10 @@ async function головна(){
     finally{активні--;останнійВиклик=Date.now();}
   });
   await стор.goto(база+'/kod-shi-data/index.html#міст='+МІСТ+'&т=tok-stub',{waitUntil:'load',timeout:180000});
-  await сон(8000);await спокій();
+  await (await стор.waitForFunction(() => typeof Екран !== 'undefined' && Екран.стан.запущено,
+    null, {timeout:180000})).dispose();
+  await спокій();
+  let доЗбору = await станЗбору(стор);
   запис('хід.md',`# Повтор ${ситуація}: записані слова й дії; жінка — скрипт`);
   summary.кроки=[];
   const ляг=(дія,так,чому)=>summary.кроки.push({крок:дія.крок,прохід,дія:дія.текст.slice(0,200),лягло:так,...(так?{}:{чому})});
@@ -124,7 +130,22 @@ async function головна(){
     await спокій();const стан=await кадр('джерело, крок '+дія.крок+': '+дія.текст,true);
     const ввід=дія.текст.match(/^надрукувала в «([\s\S]*?)»: «([\s\S]*)»$/),тап=дія.текст.match(/^натиснула «([\s\S]*?)»/);
     if(ввід || тап){
-      const мітка=(ввід||тап)[1],знайдено=await знайти(мітка);
+      const мітка=(ввід||тап)[1];
+      if (тап && /^кнопка: Зібрати образи?$/.test(мітка)){
+        const готовий = await зібратиВПовторі(стор, доЗбору);
+        if (готовий.відмова){
+          розбіжність(дія,'збір: '+готовий.відмова,await екран(стор));ляг(дія,false,готовий.відмова);
+        } else {
+          доЗбору = готовий;
+          ляг(дія,true);
+          await кадр(готовий.розмова ? 'картки після початку збору з розмови' : 'картки після дотику',true);
+          if (process.env.SCENE_STOP_AFTER_COLLECT) break;
+        }
+        continue;
+      }
+      const перехід = await знайомствоПовтору(стор, мітка);
+      if (перехід?.виконано){ляг(дія,true);continue;}
+      const знайдено=перехід || await умовиПовтору(стор, мітка) || await знайти(мітка);
       if(!знайдено){розбіжність(дія,'записаного елемента немає на екрані',await екран(стор));ляг(дія,false,'елемента немає');if(ввід){пропущено++;summary.слова.push({прохід,крок:дія.крок,текст:ввід[2],лягло:false});}continue;}
       try{
         if(ввід){await знайдено.лок.fill(ввід[2]);слів++;summary.слова.push({прохід,крок:дія.крок,текст:ввід[2],лягло:true});}
@@ -132,8 +153,7 @@ async function головна(){
           if(мітка==='кнопка: Новий'&&process.env.ONE_PASS){ляг(дія,true);break;}   // один прохід: до «Новий», без нього
           const тип=await знайдено.лок.evaluate(x=>x.tagName+':'+(x.type||''));
           if(!/INPUT:file/.test(тип))await знайдено.лок.click();
-          if(мітка==='кнопка: Новий')прохід++;
-          if(process.env.SCENE_STOP_AFTER_COLLECT && мітка==='кнопка: Зібрати образи'){ляг(дія,true);await сон(5000);await спокій();await кадр('сцена: після збирання образів — один прохід',true);break;}
+          if(мітка==='кнопка: Новий'){прохід++;доЗбору=await станЗбору(стор);}
         }
         ляг(дія,true);
       }catch(e){
