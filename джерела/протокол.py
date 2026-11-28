@@ -311,7 +311,7 @@ def _причина_розбору(е, сир):
     return причина_не_json(е)
 
 
-def розбір(текст, пари=False):
+def розбір(текст, пари=False, *, тільки_json=False):
     """→ (обʼєкт, причина-код). Одна з двох завжди None. `пари=True` — замість обʼєкта пари кореня [(ключ,
     значення)…] у порядку тексту, з повтореними ключами (обʼєкт бере останній; повтор бачить лише той, хто читає пари).
 
@@ -320,11 +320,12 @@ def розбір(текст, пари=False):
     причини не давав другій спробі чого сказати моделі, і повторний виклик просив
     те саме тими самими словами, які вже не спрацювали.
 
-    СУВОРО (Е2-межі п.4): обʼєкт — увесь текст або вміст огорожі, що охоплює весь текст; інакше причина."""
+    СУВОРО (Е2-межі п.4): обʼєкт — увесь текст або вміст огорожі, що охоплює весь текст; інакше причина.
+    Декодер схеми (`тільки_json`) повертає чистий JSON без огорожі й повторених ключів."""
     т = str(текст or "").strip()
     if not т:
         return None, "empty_answer"
-    м = _ОГОРОЖА.fullmatch(т)
+    м = None if тільки_json else _ОГОРОЖА.fullmatch(т)
     сир = м.group(1).strip() if м else т
     # ПРОЗА ЗАМІСТЬ JSON — найчастіший провал, і він має зватись своїм кодом, а не
     # «Expecting value: line 1 column 1» від розбирача.
@@ -337,6 +338,8 @@ def розбір(текст, пари=False):
         об = _json_.loads(сир, object_pairs_hook=lambda п: корені.append(п) or dict(п))
     except _json_.JSONDecodeError as е:
         return None, _причина_розбору(е, сир)
+    if тільки_json and any(len(п) != len(dict(п)) for п in корені):
+        return None, "duplicate_json_key"
     if isinstance(об, dict):
         return (корені[-1] if пари else об), None
     return None, "json_not_object(%s)" % КОД_ТИПУ.get(type(об), type(об).__name__)
@@ -376,6 +379,23 @@ def візерунок_ключа(поле):
             альт = [с] + list(_ЛАТ.get(с, "")) + list(_ЛАТ_ДОВГІ.get(с, ()))
             частини.append("(?:%s)" % "|".join(_re.escape(а) for а in альт))
     return _re.compile("^" + "".join(частини) + "$")
+
+
+def за_json_схемою(об, схема):
+    """Звіряє об'єкт із закритим піднабором JSON Schema дроту складання."""
+    тип = схема["type"]
+    типи = (тип,) if isinstance(тип, str) else тип
+    класи = {"object": dict, "array": list, "string": str, "null": type(None)}
+    if not isinstance(об, tuple(класи[т] for т in типи)) or ("enum" in схема and об not in схема["enum"]):
+        return False
+    if isinstance(об, dict):
+        поля = схема["properties"]
+        return (set(схема["required"]) <= об.keys() <= поля.keys()
+                and all(за_json_схемою(в, поля[к]) for к, в in об.items()))
+    if isinstance(об, list):
+        return (схема["minItems"] <= len(об) <= схема["maxItems"]
+                and all(за_json_схемою(в, схема["items"]) for в in об))
+    return not isinstance(об, str) or схема.get("minLength", 0) <= len(об) <= схема.get("maxLength", len(об))
 
 
 def розбір_за_схемою(текст, схема):

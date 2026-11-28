@@ -76,13 +76,13 @@ def _опис(образ, **поля):
 
 
 class ПалітраУШтатномуЗапуску(TestCase):
-    def _перший_запит(self, каталог, *, намір="conventional", схема=None, портрет=None):
+    def _перший_запит(self, каталог, *, намір="conventional", схема=None, портрет=None, записи="нові", вибір=None):
         профіль = {"колір": (портрет if портрет is not None else
                              {"шкіра": ["#dbab95"], "волосся": ["#473227"], "очі": "#625448"}),
-                   "палітра": {"схема": схема},
+                   "палітра": {"схема": схема, "вибір_кольору": вибір},
                    "сценарій": {"нагода": "everyday", "місце": "park"}}
         вхід = обвязка.вхід_с5(розмова="фікстура палітри", каталог=каталог,
-                               профіль=профіль, факти={"намір": намір})
+                               профіль=профіль, факти={"намір": намір}, перемикачі={"записи_речі": записи})
         результат = обвязка.почати(протокол, вхід)
         self.assertIsNone(результат.get("збій"), результат)
         self.addCleanup(протокол._СЕСІЇ.pop, результат["сесія"], None)
@@ -90,6 +90,31 @@ class ПалітраУШтатномуЗапуску(TestCase):
         тіло = json.loads(запитання["модель"]["messages"][0]["content"])
         рядки = [dict(zip(тіло["pool"]["cols"], рядок)) for рядок in тіло["pool"]["rows"]]
         return тіло, рядки
+
+    def test_прикраси_для_волосся_дістають_вікно_палітри(self):
+        """Прикраси у своєму слоті потрапляють у ядро палітри понад підлогу добору."""
+        from colorspace import hx
+
+        мітки = {"опис": "Обруч", "мітки": {"тип": {"значення": "headband", "джерело": "фото"},
+                                            "слот": {"значення": "головний_убір", "джерело": "фото"}}}
+        основа = {"база_тип": "нейтраль", "база_hex": "#74704c"}
+        for вибір in (None, основа):
+            with self.subTest(основа=вибір):
+                # Нейтральна основа аналогової схеми лишає прикрасі кольорову роль.
+                колір = {"lab": hx("#c6926d") if вибір else (50, 0, 0),
+                         "колір_тип": "вимір", "колір_джерело": "фото"}
+                каталог = [_запис("dress", "сукня", lab=(8, -16, 12),
+                                  колір_тип="вимір", колір_джерело="фото")]
+                каталог += [_запис(f"hair-{і:02}", "головний_убір", мітки_речі=мітки, **колір)
+                            for і in range(24)]
+                тіло, рядки = self._перший_запит(каталог, схема="аналогова", вибір=вибір)
+                волосся = [р for р in рядки if р["kind"] == "hair"]
+                self.assertEqual(len(волосся), 24)
+                self.assertEqual({р["palette_branch"] for р in волосся}, {"ядро"})
+                self.assertEqual(тіло["person"]["palette"]["value"]["slot_roles"]["hair"], "accent")
+        тіло, рядки = self._перший_запит(каталог, схема="аналогова", записи="без")
+        self.assertNotIn("hair", тіло["person"]["palette"]["value"]["slot_roles"])
+        self.assertEqual({р["kind"] for р in рядки}, {"dress", "headwear"})
 
     def test_спільна_палітра_й_запасна_хвиля_в_першому_запиті(self):
         """Слот без основного влучання отримує кандидата саме з запасної хвилі."""
@@ -169,9 +194,16 @@ class ПортретУШтатномуСуді(TestCase):
                 return _відповідь(outfits=[{"id": "o1", "items": [р[адреса] for р in пакунок["rows"]]}])
             if дріт["вид"] == "ремонт":
                 вирок, = тіло["verdict"]
-                self.assertCountEqual([(з["rule"], з["code"], з["weight"]) for з in вирок["findings"]], [
+                очікувані = [
                     ("K-CRA-02", "focus_count_over_ceiling", .5), ("K-COL-05", "accent_orphan", .5),
-                ])
+                    ("K-KOH-05", "outfit_level_off_occasion", .25),
+                    ("K-CRA-04", "item_removable_no_metric_drops", .08),
+                    ("K-CRA-01", "no_third_piece_dressed_not_styled", .75),
+                    ("K-SIL-09", "mono_object_silhouette", .5),
+                ]
+                if дріт["рука"] == 2:
+                    очікувані.append(("K-ACC-01", "loud_accessory_without_role", .75))
+                self.assertCountEqual([(з["rule"], з["code"], з["weight"]) for з in вирок["findings"]], очікувані)
                 return _відповідь(outfits=[{"id": вирок["id"], "items": вирок["items"]}])
             if дріт["вид"] == "вибір":
                 return _відповідь(chosen="o1")
@@ -853,8 +885,8 @@ class ДоговірН2(TestCase):
         self.assertEqual(повна["kind_colours"]["shoes"]["area"], [5, 15])
         self.assertEqual(повна["kind_colours"]["shoes"]["shares_role_with"], ["bag"])
         self.assertEqual(повна["colour_kinds"], ["shoes", "bag", "belt", "headwear", "scarf", "jewelry"])
-        self.assertEqual(повна["base"], {"colour": "graphite #4b4b4b", "chosen_by": "stylist"})
-        self.assertEqual(дріт(основа)["base"], {"colour": "graphite #4b4b4b", "chosen_by": "unknown"})
+        self.assertEqual(повна["base"], {"colour": "graphite #4b4b4b", "chosen_by": "stylist", "role": "dominant"})
+        self.assertEqual(дріт(основа)["base"], {"colour": "graphite #4b4b4b", "chosen_by": "unknown", "role": "dominant"})
         self.assertNotIn("base", дріт(None))
         self.assertEqual(дріт(основа, {}), {"base": {"colour": "graphite #4b4b4b", "chosen_by": "unknown"}})
 
@@ -1029,18 +1061,22 @@ class ДоговірН2(TestCase):
             картка.зібрати(self.образ, self.вирок, опис, self.пул, (), без_фото="lost")
 
     def test_запит_влазить_у_вікно(self):
-        """Т38. Мале й резервне вікно ріжуть повний запит; велике зберігає 1020 рядків."""
+        """Т38. Мале й середнє вікна скорочують запит; велике зберігає рядки всіх слотів."""
         п = пул.зібрати(self.день, 1, 37, [_запис(f"{слот}-{і}", слот) for слот in пул.СЛОТИ for і in range(60)])
-        мале, велике = 12_000, 120_000
+        мале, середнє, велике = 12_000, 120_000, 130_000
         повний = запит.запит("складання", п, self.день, {}, модель={"вихід": 4_000})
         широкий = запит.запит("складання", п, self.день, {}, модель={"вікно": велике, "вихід": 4_000})
+        середній = запит.запит("складання", п, self.день, {}, модель={"вікно": середнє, "вихід": 4_000})
         короткий = запит.запит("складання", п, self.день, {}, модель={"вікно": мале, "вихід": 4_000})
         # Рушій не дав вікна — ядро його не вигадує: повний пул, і розмір каже, що вікна не було (рішення 25.11).
         self.assertEqual((повний.розмір["context_tokens"], повний.розмір["limit_tokens"]), (None, None))
         self.assertEqual(повний.розмір["limit_source"], "no_engine_window")
         self.assertEqual((повний.знято, len(повний.номери)), (0, 60 * len(пул.СЛОТИ)))
         self.assertEqual(len(широкий.номери), 60 * len(пул.СЛОТИ))
-        self.assertGreater(len(широкий.номери), len(короткий.номери))
+        self.assertGreater(len(широкий.номери), len(середній.номери))
+        self.assertGreater(len(середній.номери), len(короткий.номери))
+        self.assertGreater(середній.знято, 0)
+        self.assertLessEqual(середній.розмір["json_tokens_estimate"] + 4_000, середнє)
         self.assertGreater(короткий.знято, 0)
         self.assertLessEqual(короткий.розмір["json_tokens_estimate"] + 4_000, мале)
         текст = короткий.модель["messages"][0]["content"]

@@ -43,7 +43,8 @@ def _без_чужих(де, д, дозволені):
 
 def _в_json(з):
     if isinstance(з, _Поняття):
-        return {п.name: _в_json(getattr(з, п.name)) for п in fields(з)}
+        return {п.name: _в_json(значення) for п in fields(з)
+                if (значення := getattr(з, п.name)) is not None or not п.metadata.get("пропустити_none")}
     if isinstance(з, Mapping):
         return {к: _в_json(в) for к, в in з.items()}
     if isinstance(з, (list, tuple)):
@@ -230,7 +231,7 @@ class Ситуація(_Поняття):
 
 ПОЛЯ_РЕЧІ = ("тип", "довжина", "довжина_виробу", "тканина", "сезон_тканини", "крій", "візерунок", "блиск", "ошатність", "колір",
              "колір_другий", "каблук", "підошва", "рукав", "виріз", "посадка", "реєстр", "ярус_крою", "метал", "комір",
-             "водостійкість", "утеплення", "тепло_шару")
+             "водостійкість", "утеплення", "тепло_шару", "мірки_крамниці")
 
 
 @dataclass(frozen=True)
@@ -249,6 +250,7 @@ class Річ(_Поняття):
     опис: str = НЕВІДОМО
     поля: dict = field(default_factory=dict)
     збої: tuple = ()
+    джерело_слота: str = field(default=None, metadata={"пропустити_none": True})
 
     def __post_init__(self):
         _без_чужих("Річ.поля", self.поля, ПОЛЯ_РЕЧІ)

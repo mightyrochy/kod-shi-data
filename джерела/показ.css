@@ -790,6 +790,9 @@ button.як-слово{min-height:24px;background:none;border:0;padding:0;font:i
 #пал-схема .чип:has(.зразки) .зразки{display:flex;width:calc(100% + 20px);margin:0 -10px 8px}
 #пал-схема .чип:has(.зразки) .зразки i{flex:1;height:40px;border:0}
 #пал-схема .чип:has(.зразки) .зразки i+i{border-left:1px solid rgba(0,0,0,.1)}
+#пал-схема .орієнтир-тону{display:flex;align-items:center;gap:6px;margin:6px 0}
+#пал-схема .орієнтир-тону i{width:14px;height:14px;flex:none;border-radius:50%}
+#пал-схема .чип.вибр .орієнтир-тону{padding-right:12px}
 #пал-схема .чип.вибр:has(.зразки){background:var(--аркуш);color:var(--чорнило);border-color:var(--чорнило);box-shadow:inset 0 0 0 1px var(--чорнило);padding-left:10px}
 #пал-схема .чип.вибр:has(.зразки)::before{left:auto;right:9px;top:9px;margin:0;z-index:1;background:var(--чорнило);box-shadow:6px 0 0 var(--чорнило)}
 /* ── РІДШІ СХЕМИ: ТАКІ САМІ ПЛИТКИ, ЛИШЕ СТРИМАНІШІ (21.09.2026, рядок 117) ──
@@ -1987,11 +1990,28 @@ html[data-pair-page=mirror] .pair-app #mirror-input #чат-поле { min-heigh
 #mirror-work:has(#pair-profile-finish:not([hidden])) #пф-стан { display:none; }
 .pair-profile-intro > button { font-size:1.2rem; margin-bottom:16px; text-align:left; }
 .pair-profile .pair-image { width:100%; min-width:0; }
-.pair-profile .pair-image img { max-width:100%; height:240px; object-fit:contain; }
+.pair-profile .pair-image:has(img) { height:240px; aspect-ratio:auto; }
+.pair-profile .pair-image img { width:100%; max-width:100%; height:100%; object-fit:cover; object-position:center top; }
 .pair-app #е-огляд .рядок { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 16px; position:relative; }
 .pair-app #е-огляд .рядок .н { min-width:0; grid-column:1; }
 .pair-app #е-огляд .рядок .прев { grid-column:1; grid-row:2; width:auto; max-width:100%; text-align:left; white-space:normal; overflow-wrap:anywhere; }
 .pair-app #е-огляд .рядок:after { grid-column:2; grid-row:1/3; }
+/* Кахля: глазуровані зразки й округла керамічна рамка замість базового паперового зрізу. */
+[data-hand=kahlia] :is(#пал-основа,#пал-схема) .чип:has(.зразки) {
+  clip-path:none; border:1.5px solid var(--hair); border-radius:8px 23px 9px 12px;
+  padding:10px 10px 12px; overflow:hidden; background:var(--surface); color:var(--ink);
+}
+[data-hand=kahlia] #пал-основа .чип:has(.зразки)::after { content:none; }
+[data-hand=kahlia] :is(#пал-основа,#пал-схема) .чип:has(.зразки) .зразки {
+  width:100%; margin:0 0 10px; gap:5px;
+}
+[data-hand=kahlia] :is(#пал-основа,#пал-схема) .чип:has(.зразки) .зразки i {
+  min-width:0; border:1.5px solid var(--ink); border-radius:48% 40% 52% 25%;
+  clip-path:none; box-shadow:inset 2px 2px 3px #fff5,inset -1px -2px 2px #0002;
+}
+[data-hand=kahlia] :is(#пал-основа,#пал-схема) .чип.вибр:has(.зразки) {
+  border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink),0 0 0 3px var(--wash);
+}
 [data-hand=vytynanka] :is(.pair-swatches,.зразки) i { border-radius:0; clip-path:polygon(50% 0,100% 25%,85% 80%,50% 100%,0 75%,15% 20%); box-shadow:none; }
 [data-hand=klyny] :is(.pair-swatches,.зразки) i { border-radius:0; clip-path:polygon(25% 0,100% 0,75% 100%,0 100%); box-shadow:none; }
 
@@ -2014,3 +2034,28 @@ html[data-pair-page=mirror] .pair-app #mirror-input #чат-поле { min-heigh
 
 .pair-profile .pair-image { flex-direction:column; gap:10px; padding:8px; overflow-wrap:normal; font-size:.9rem; }
 .pair-profile .pair-image:has(img) { padding:0; }
+
+/* Пара очікування має власну висоту; старі рамки не є ще одним результатом. */
+.pair-app #mirror-making { height:auto; border:0; background:transparent; margin:18px 0; }
+.pair-app :is(#стани,#рамки) { display:none; }
+.pair-app .pair-person-photo:has(img),.pair-app .pair-fitted { padding:0; border:0; }
+.pair-app :is(.pair-person-photo,.pair-fitted)>img { width:100%; height:100%; object-fit:cover; object-position:center top; }
+.pair-app :is(.pair-progress,.pair-outfit)>section { display:flex; flex-direction:column; }
+.pair-app :is(.pair-progress,.pair-outfit) .pair-person-photo { flex:1; min-height:180px; }
+.pair-app :is(.pair-progress,.pair-outfit) .pair-person-photo>img { position:absolute; inset:0; }
+.pair-progress-art { flex:1; min-height:180px; }
+.pair-app .pair-outfit-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; align-content:start; }
+.pair-app .pair-outfit-grid button { display:grid; place-items:center; min-width:0; min-height:44px; padding:0; aspect-ratio:1; background:var(--surface); overflow:hidden; border:1px solid var(--hair); border-radius:var(--radius); }
+.pair-app .pair-outfit-grid img { display:block; width:100%; height:100%; object-fit:contain; }
+.pair-app .pair-outfit-grid span { padding:6px; font-size:.8rem; }
+.pair-app .pair-reverse-pieces { grid-template-columns:repeat(3,minmax(0,1fr)); margin-block:12px; }
+.pair-piece-detail .pair-swap-photo { width:100%; height:min(45vh,350px); }
+.pair-piece-detail strong { display:none; }
+/* Рух очікування триває між реальними стадіями; стадії не прискорюємо таймером. */
+@media (prefers-reduced-motion:no-preference) {
+  #mirror-making[data-busy=true] .pair-progress-art { animation:pair-wait-breathe 2.8s ease-in-out infinite; will-change:transform; }
+}
+@keyframes pair-wait-breathe { 0%,100% { transform:translateY(2px) scale(.97); } 50% { transform:translateY(-3px) scale(1); } }
+
+/* В основному образі речі відкриваються з плиток; сліпий перегляд лишає свій показ. */
+html[data-pair-looks=one] .pair-app #картки .картка>:is(.к-шапка,.колаж-поле,.список) { display:none; }
