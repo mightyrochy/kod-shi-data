@@ -1904,6 +1904,61 @@ async function звіритиНамірОцінки(){
     тест("без винятків", помилки.length === 0, помилки);
   }
 
+  розділ("1п. ПАРА ОБРАЗУ: всі речі й деталі без повторного списку");
+  {
+    const {w,d,дом,помилки}=сторінка();
+    await чекатиНа(()=>w.MirrorRoom?.available(), 'Люстерко не відкрилося');
+    w.eval(`П={ід:'пара-проба',картки:[{рука:'1',текст:'Образ',опис:'',речі:
+      ['Костюм','Пальто','Взуття','Сумка','Сережки'].map((назва,i)=>({id:'test@'+i,назва,
+        фото:'https://example.com/'+i+'.jpg',ціна:100,урл:'https://example.com/'+i}))}]};
+      Екран.змінити({образ:{поз:0}});
+      document.getElementById('картки').replaceChildren(рендерКартку(0));
+      MirrorRoom.route('образи');`);
+    const host=d.getElementById('mirror-look-sides');
+    await чекатиНа(()=>host.querySelector('[data-ux=pair-piece]'), 'нема плиток комплекту');
+    тест('комплект показує всі п’ять речей, а не лише першу',host.querySelectorAll('[data-ux=pair-piece]').length===5);
+    тест('немає дубльованих згорнутих описів',!host.querySelector('.pair-item-details'));
+    const плитки=[...host.querySelectorAll('[data-ux=pair-piece]')];
+    for(const [i,tile] of плитки.entries()){
+      tile.click();
+      тест('плитка '+i+' відкриває саме свою річ',d.getElementById('mirror-sheet-title').textContent===tile.getAttribute('aria-label')
+        && d.getElementById('mirror-sheet-content').querySelector('img').src==='https://example.com/'+i+'.jpg');
+      w.MirrorRoom.close();
+    }
+    let замін=0;
+    d.getElementById('замін-0-0').addEventListener('click',()=>замін++);
+    плитки[0].click();
+    d.querySelector('#mirror-sheet-content [data-ux=pair-native-replace]').click();
+    тест('заміна з деталей закриває діалог і викликає чинну дію речі',замін===1&&!d.getElementById('mirror-sheet').open);
+    host.querySelector('[data-ux=pair-reverse]').click();
+    тест('на звороті кожна річ теж показана один раз',host.querySelectorAll('[data-ux=pair-piece]').length===5);
+    w.eval(`П.сценарій_знімок={чат:[{фото:[{ід:'ф1',тип:'image/jpeg',дані:'AAAA'}]}]};
+      ЧАТ_П=[{фото:[{ід:'ф1',тип:'image/jpeg',дані:'BBBB'}]}];
+      Object.assign(П.картки[0].речі[0],{власна:true,фото_ід:'ф1',фото:null});
+      П.картки[0].речі[1].фото_усі=['https://example.com/1.jpg','https://example.com/backup.jpg'];
+      MirrorRoom.refresh();`);
+    await чекатиНа(()=>host.querySelector('[data-pair-piece-photo="0"]')?.src==='data:image/jpeg;base64,AAAA', 'власне фото не підставилось');
+    host.querySelector('[data-ux=pair-piece]').click();
+    тест('власне фото в плитці й діалозі — зі сценарію образу, а не з іншої розмови',
+      d.querySelector('#mirror-sheet-content img').src==='data:image/jpeg;base64,AAAA');
+    w.MirrorRoom.close();
+    const запасне=host.querySelector('[data-pair-piece-photo="1"]');
+    запасне.dispatchEvent(new w.Event('error'));
+    тест('плитка переходить до запасного фото після помилки',запасне.src==='https://example.com/backup.jpg');
+    host.querySelectorAll('[data-ux=pair-piece]')[1].click();
+    const велике=d.querySelector('#mirror-sheet-content img');
+    велике.dispatchEvent(new w.Event('error'));
+    тест('велике фото в деталях також переходить до запасного',велике.src==='https://example.com/backup.jpg');
+    for(let n=0;n<3;n++)велике.dispatchEvent(new w.Event('error'));
+    тест('коли всі фото вичерпані, немає зламаного зображення',!d.querySelector('#mirror-sheet-content img'));
+    w.MirrorRoom.close();
+    w.eval(`П.картки[0].картинка='https://example.com/fitted.jpg';MirrorRoom.refresh();`);
+    await чекатиНа(()=>host.querySelector('.pair-fitted'), 'примірка не відобразилась');
+    тест('примірка не ховає речей зі звороту',host.querySelectorAll('[data-ux=pair-piece]').length===5);
+    тест('без винятків',помилки.length===0,помилки);
+    дом.window.close();
+  }
+
   розділ("2. ХЕШ ІЗ ПАРАМЕТРАМИ МОСТУ — НЕ ПАКЕТ");
   {
     const {w, d, помилки} = сторінка({url: "https://mightyrochy.github.io/kod-shi-data/показ.html#міст=https://lyusterko-mist.mighty-rochy.workers.dev&т=tok-a1&модель=claude-sonnet-5"});
