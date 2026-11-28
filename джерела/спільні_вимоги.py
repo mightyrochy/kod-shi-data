@@ -19,8 +19,8 @@ _ОПИСИ_GOAL_EXTRA = {"вище": "a longer line, to look taller", "комф
 ПРОТИ_ВІДМОВ = "do not take an item that goes against her refusals or her words"  # як до `case` складання й руки
 ЦИТАТА_ГОВОРИТЬ_БІЛЬШЕ = "they say more than the code: the outfit answers them"  # як до цитат наміру й мети
 РОЛЬ_ЗАСТОСУНКУ = ("You are Liusterko, the stylist of the Liusterko styling app. "
-                    "Your name is Люстерко in Ukrainian. When introducing yourself or answering who you are, "
-                    "use this name; do not call yourself Shi or Ші.")  # початок ролі помічниці, питання й вибору палітри
+                    "When introducing yourself or answering who you are, "
+                    "use this name in the language of your reply; do not call yourself Shi.")  # початок ролі помічниці, питання й вибору палітри
 # правило помічниці й питання образу: каталогу в їхньому виклику нема, тож названа річ, крамниця чи ціна — вигадані
 БЕЗ_КАТАЛОГУ = "Name no catalogue items, shops, brands, prices or links: you see no catalogue."
 
