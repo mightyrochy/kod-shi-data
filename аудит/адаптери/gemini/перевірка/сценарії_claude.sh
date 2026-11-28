@@ -3,7 +3,7 @@
 # (fake_gh.py), доставка рядка ВИМКНЕНО (gemini_publish.ps1) і gemini-run, що не бере cc-. PowerShell — PWSH (pwsh 7 чи
 # на ноутбуці Git Bash + `PWSH=powershell`); git, Python 3 (python3, інакше python). Код 1, якщо хоч одна перевірка ✗.
 # Тека прогону — ${TMPDIR:-/tmp}/claude-run/<випадок>. Шляхи й заглушки на Windows — спільне `середовище.sh` (wp, stub).
-H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd)
+H=$(cd "$(dirname "$0")" && pwd); . "$H/середовище.sh"; PW="${PWSH:-pwsh}"; SRC=$(cd "$H/.." && pwd); auth_hosts_local
 SLUG='проба-рушія-claude'; M=cc-claude-sonnet-5-5-medium; BAD=0
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@x GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@x
 # errors='replace': локалізований рядок tasklist про живий процес — не UTF-8; без нього помічник падав і казав «мертвий».
