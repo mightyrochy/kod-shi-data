@@ -454,7 +454,7 @@ function Get-StateFailurePath($Failure) {
 
 function Read-ChainStateText([string]$Path) {
     <# Зберігає точний шлях невдалого читання, лишаючи початковий виняток і стек. #>
-    try { [IO.File]::ReadAllText($Path, $script:Utf8) }
+    try { (Read-FileText $Path) }
     catch { $_.Exception.Data['StatePath'] = [IO.Path]::GetFullPath($Path); throw }
 }
 

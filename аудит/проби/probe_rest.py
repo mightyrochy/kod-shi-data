@@ -12,7 +12,8 @@ def run(name, fn):
         tb = traceback.format_exc().splitlines()[-3:-1]; print("     ", ' | '.join(l.strip()[:120] for l in tb))
 
 import colorspace as cs, bridge as B, fit as ПС, hypergraph as HG, silhouette as SL, outfit as O, pipeline as PL
-import personal_palette as PP, palettes as PLS, palette as PAL, coordination as CO, accessory as AC, верхнє_догляд as OU, face_contrast as FC, bases as BS, areas as AR, feed as FD
+import personal_palette as PP, palettes as PLS, palette as PAL, coordination as CO, аксесуари_суд as AC, верхнє_догляд as OU, face_contrast as FC, bases as BS, areas as AR, feed as FD
+from аксесуари_розмір import ворота_розміру
 
 sec("P08 H/X межа")
 def p08():
@@ -83,7 +84,10 @@ def p22():
     rx = getattr(PL, '_ВИМКНЕНІ_СЛОВА', None); print("  _ВИМКНЕНІ_СЛОВА:", getattr(rx, 'pattern', rx))
     fn = [n for n in dir(PL) if 'вимкн' in n.lower()]; print("  функції:", fn)
     words = ['припуск', 'прилягання', 'тісн', 'ковзанн']
-    for f in ['silhouette.py', 'fit.py', 'outfit.py', 'верхнє_стан.py', 'верхнє_суд.py', 'accessory.py']:
+    for f in ['silhouette.py', 'fit.py', 'outfit.py', 'верхнє_стан.py', 'верхнє_суд.py',
+              'аксесуари_реєстр.py', 'аксесуари_розмір.py', 'аксесуари_край.py',
+              'аксесуари_взуття.py', 'аксесуари_носіння.py', 'аксесуари_структура.py',
+              'аксесуари_ціна.py', 'аксесуари_суд.py']:
         hits = [(n, ln.strip()[:110]) for n, ln in enumerate(open(f, encoding='utf-8'), 1) if any(w in ln for w in words) and ('суть' in ln or '"' in ln) and not ln.strip().startswith('#')]
         print(f"  {f}: {len(hits)} рядків із цими словами у рядкових літералах; напр. {hits[:3]}")
 run("P22", p22)
@@ -152,7 +156,7 @@ def p32():
     for k in ('ворота', 'преференції', 'питання', 'без_відповіді', 'без_входу'):
         print(f"  {k}: {ids(k) if k != 'без_входу' else (r.get(k) or [])[:12]}")
     print("  лишились:", [x.get('id') for x in (r.get('лишились') or [])])
-    вр = AC.ворота_розміру(T, речі) if 'ворота_розміру' in dir(AC) else None
+    вр = ворота_розміру(T, речі)
     if вр is not None:
         зн = вр[0] if isinstance(вр, tuple) else вр.get('знахідки') if isinstance(вр, dict) else вр
         print("  ворота_розміру прямо:", [(z.get('правило'), z.get('сила'), z.get('блокує')) for z in (зн or []) if isinstance(z, dict)][:6])

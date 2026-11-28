@@ -104,24 +104,6 @@ function Get-Sha256Hex([string]$Text) {
     finally { $sha.Dispose() }
 }
 
-function Write-FileAtomic([string]$Path, [string]$Text) {
-    <# Запис через тимчасовий файл і заміну: читач не бачить половини.
-
-    Спільні файли (стан, heartbeat, кеш квоти) пишуть водночас планувальник і процеси нарядів: зайнята ціль — кілька
-    спроб, а не виняток посеред наряду. #>
-    $tmp = $Path + '.' + [guid]::NewGuid().ToString('N').Substring(0, 8) + '.part'
-    [System.IO.File]::WriteAllText($tmp, $Text, $script:Utf8)
-    for ($i = 0; $i -lt 20; $i++) {
-        try {
-            if ([System.IO.File]::Exists($Path)) { [System.IO.File]::Replace($tmp, $Path, [NullString]::Value) } else { [System.IO.File]::Move($tmp, $Path) }
-            return
-        } catch {
-            if ($i -eq 19) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue; throw }
-            Start-Sleep -Milliseconds 50
-        }
-    }
-}
-
 function Get-UtcStamp([datetime]$When) {
     <# Час у UTC рядком ISO з Z. #>
     $When.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -544,7 +526,7 @@ function Get-Limits {
     $sd = $(try { [string]$script:StateDir } catch { '' })
     $prevPath = $(if ($sd) { Join-Path $sd 'limits.json' } else { '' })
     $prev = $null
-    if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { try { $prev = [System.IO.File]::ReadAllText($prevPath, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { try { $prev = (Read-FileText $prevPath) | ConvertFrom-Json } catch { $null = $_ } }
     $doc = $null
     $r = Invoke-Git @('cat-file', 'blob', "$script:RemoteRoot/main:$script:LanesPath") -AllowFail
     if ($r.Code -eq 0 -and $r.Out.Length -le 8192) {
@@ -577,7 +559,7 @@ function Get-Limits {
         }
     }
     $text = $accepted | ConvertTo-Json -Compress
-    $old = $(if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { [System.IO.File]::ReadAllText($prevPath, $script:Utf8) } else { '' })
+    $old = $(if ($prevPath -and (Test-Path -LiteralPath $prevPath)) { (Read-FileText $prevPath) } else { '' })
     if ($prevPath -and $accepted.Count -gt 0 -and $text -cne $old) { Write-FileAtomic $prevPath $text }
     # Наряди Claude, яким потрібен ноутбук без відеокарти (LM Studio, фото, локальні програми): лише назви за шаблоном.
     $l.claude_laptop = @(@(Get-JsonProp $doc 'claude_laptop') | Where-Object { $_ -is [string] -and $_ -cmatch $script:SlugPattern } | Select-Object -First 64)
@@ -755,7 +737,7 @@ function Read-AutoApiBudget([string]$Path, [long]$Now) {
     бюджет; пошкоджений — $null (непорахованих запитів не дозволяємо). Викликач тримає замок `review-api.lock`. #>
     if (-not (Test-Path -LiteralPath $Path)) { return [pscustomobject]@{ Calls = @(); Until = 0L } }
     try {
-        $saved = [IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json
+        $saved = (Read-FileText $Path) | ConvertFrom-Json
         # Get-JsonProp не годиться для calls: порожній масив функція віддає в конвеєр як $null.
         $pc = $(if ($saved -is [pscustomobject]) { $saved.PSObject.Properties['calls'] }); $pu = $(if ($saved -is [pscustomobject]) { $saved.PSObject.Properties['until'] })
         if ($null -eq $pc -or $null -eq $pu -or $null -eq $pc.Value -or $null -eq $pu.Value) { return $null }
@@ -914,7 +896,7 @@ function Get-MarkerState($M, [string]$StateDir = $script:StateDir) {
     $sp = Get-StatePath (Get-MarkerKey $M) $StateDir
     if (Test-Path -LiteralPath (Get-ClaimPath $sp)) { return [pscustomobject]@{ Kind = 'TAKEN'; Wait = $null } }
     if (-not (Test-Path -LiteralPath $sp)) { return [pscustomobject]@{ Kind = 'NEW'; Wait = $null } }
-    $t = [System.IO.File]::ReadAllText($sp, $script:Utf8)
+    $t = (Read-FileText $sp)
     if ($t.StartsWith('WAIT {')) {
         try { return [pscustomobject]@{ Kind = 'WAIT'; Wait = ($t.Substring(5) | ConvertFrom-Json) } } catch { $null = $_ }
     }
@@ -945,7 +927,7 @@ function Get-Retakes([string]$StatePath) {
     <# Скільки разів позначку вже повернули в чергу за квотою: лічильник `retakes` несуть і WAIT, і STARTED (запуск не
     стирає його — інакше кожна відмова рахувалась би першою і межа MaxRetakes була б недосяжна). #>
     if (-not (Test-Path -LiteralPath $StatePath)) { return 0 }
-    $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8)
+    $t = (Read-FileText $StatePath)
     if ($t -match '^(WAIT|STARTED) .*"retakes":\s*([0-9]{1,3})') { return [int]$Matches[2] }
     0
 }
@@ -976,7 +958,7 @@ function Clear-UnstartedClaim([string]$StatePath) {
     <# Узяття без запуску: помилка до STARTED (робоча копія, запуск процесу наряду) не лишає позначку вилученою з черги —
     claim звільняється, стан (NEW чи WAIT) зберігається. Позначку з STARTED закриває Resume-Interrupted. #>
     $t = ''
-    if (Test-Path -LiteralPath $StatePath) { try { $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8) } catch { $null = $_ } }
+    if (Test-Path -LiteralPath $StatePath) { try { $t = (Read-FileText $StatePath) } catch { $null = $_ } }
     if ($t.StartsWith('STARTED ')) { return }
     Remove-Claim $StatePath
 }
@@ -1015,7 +997,7 @@ function Get-StartFailReason([string]$StatePath, [string]$Reason = '') {
     if ($Reason) { return $Reason }
     if (-not (Test-Path -LiteralPath $StatePath)) { return '' }
     try {
-        $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8)
+        $t = (Read-FileText $StatePath)
         if ($t.StartsWith('WAIT {')) {
             $j = $t.Substring(5) | ConvertFrom-Json
             if ([string](Get-JsonProp $j 'group') -ceq 'START') { return [string](Get-JsonProp $j 'reason') }
@@ -1040,7 +1022,7 @@ function Step-FailedStart($M, [string]$StatePath, [string]$Reason = '') {
     причина — поле `reason`); 'LIMIT' — межа: чекання не записано, claim лишається, викликач закриває позначку
     кінцевим станом і рядком. #>
     $t = ''
-    if (Test-Path -LiteralPath $StatePath) { try { $t = [System.IO.File]::ReadAllText($StatePath, $script:Utf8) } catch { $null = $_ } }
+    if (Test-Path -LiteralPath $StatePath) { try { $t = (Read-FileText $StatePath) } catch { $null = $_ } }
     if ($t.StartsWith('STARTED ') -or -not (Test-Path -LiteralPath (Get-ClaimPath $StatePath))) { return 'NONE' }
     # Продовження попереднього чекання за квотою (голова й основа доставки) не губиться.
     $wait = $null
@@ -1058,11 +1040,11 @@ function Clear-OrphanClaims([string]$RunsRoot) {
     foreach ($c in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.claim' -File -ErrorAction SilentlyContinue)) {
         if (((Get-Date) - $c.LastWriteTime).TotalMinutes -lt 10) { continue }
         $sp = $c.FullName -replace '\.claim$', '.txt'
-        $id = ''; try { $id = [System.IO.File]::ReadAllText($c.FullName, $script:Utf8).Trim() } catch { continue }
+        $id = ''; try { $id = (Read-FileText $c.FullName).Trim() } catch { continue }
         if ($id -notmatch '^[0-9]{8}-[0-9]{6}-[0-9a-f]{12}$') { continue }
         $wf = Join-Path (Join-Path $RunsRoot $id) 'worker.json'
         if (Test-Path -LiteralPath $wf) {
-            $slot = ''; try { $slot = [string](Get-JsonProp ([System.IO.File]::ReadAllText($wf, $script:Utf8) | ConvertFrom-Json) 'slot') } catch { continue }
+            $slot = ''; try { $slot = [string](Get-JsonProp ((Read-FileText $wf) | ConvertFrom-Json) 'slot') } catch { continue }
             if (-not (Test-SlotName $slot) -or -not (Test-LockFree (Join-Path $script:SlotDir "$slot.lock"))) { continue }
         }
         Write-Log "узяття $id без запуску — звільнено"
@@ -1086,7 +1068,7 @@ function Get-WaitingMarkers {
     try { $live = Get-LiveStateNames } catch { Write-Log "чекання квоти: позначки не прочитано — $($_.Exception.Message)"; return @() }
     @(foreach ($f in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
         if (-not $live.ContainsKey($f.Name)) { continue }
-        $t = [System.IO.File]::ReadAllText($f.FullName, $script:Utf8)
+        $t = (Read-FileText $f.FullName)
         if (-not $t.StartsWith('WAIT {')) { continue }
         try { $j = $t.Substring(5) | ConvertFrom-Json } catch { continue }
         [pscustomobject]@{ Marker = [string]$j.marker; Until = [string]$j.until_utc; Group = [string](Get-JsonProp $j 'group') }
@@ -1106,7 +1088,7 @@ function Remove-OrphanWaits {
     $n = 0
     foreach ($f in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
         if ($live.ContainsKey($f.Name) -or (Test-Path -LiteralPath (Get-ClaimPath $f.FullName))) { continue }
-        $t = [System.IO.File]::ReadAllText($f.FullName, $script:Utf8)
+        $t = (Read-FileText $f.FullName)
         if (-not $t.StartsWith('WAIT {')) { continue }
         $until = 0L
         try { $until = [long](($t.Substring(5) | ConvertFrom-Json).until) } catch { continue }
@@ -1174,7 +1156,7 @@ function Get-MeasureCache([string]$Dir, [string]$Name, [string[]]$MeasureArgs, [
     не чекають: обхід тек іде хвилини, а прохід стану чи heartbeat не можуть стояти. Процес — $script:MeasureProc. #>
     $path = Join-Path $Dir "$Name.json"
     $c = $null
-    if (Test-Path -LiteralPath $path) { try { $c = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    if (Test-Path -LiteralPath $path) { try { $c = (Read-FileText $path) | ConvertFrom-Json } catch { $null = $_ } }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     # Кеш без потрібного поля $Need (запис до його появи) — застарілий: міряється наново.
     if ($null -eq $c -or ($Need -and $null -eq $c.PSObject.Properties[$Need]) -or $now - [long]$c.time -ge $MaxAge) {
@@ -1483,7 +1465,7 @@ function Read-GpuSession {
     Запис v1 (одна оренда старої версії обгортки) — сесія з уже закінченою орендою: прибирання те саме, що було. #>
     $path = Join-Path $LaneDir 'gpu-models.json'
     if (-not [IO.File]::Exists($path)) { return $null }
-    $s = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json -ErrorAction Stop
+    $s = (Read-FileText $path) | ConvertFrom-Json -ErrorAction Stop
     $field = { param($Name) $p = $s.PSObject.Properties[$Name]; if ($null -ne $p) { , $p.Value } }
     $before = & $field 'before'
     if ($before -isnot [array]) { throw 'GPU: неповний знімок моделей' }
@@ -1643,7 +1625,7 @@ function Exit-GpuBeforeEnd($Job, [string]$Why) {
     проходить ворота. Кінець процесу наряду (Exit-GpuLease) відпущеної оренди не чіпає. #>
     $info = Join-Path $script:SlotDir "$($Job.slot).json"
     try {
-        $slot = ConvertTo-PlainJson ([IO.File]::ReadAllText($info, $script:Utf8) | ConvertFrom-Json)
+        $slot = ConvertTo-PlainJson ((Read-FileText $info) | ConvertFrom-Json)
         $slot.gpu = $false
         Write-FileAtomic $info ($slot | ConvertTo-Json -Compress)
     } catch { Write-Log "GPU: файл слота $info не оновлено — $($_.Exception.Message)" }
@@ -1702,7 +1684,7 @@ function Read-SlotInfo([string]$Lane) {
         $id = "$Lane-$k"; $j = Join-Path $script:SlotDir "$id.json"
         if (-not (Test-Path -LiteralPath $j)) { continue }
         if (Test-LockFree (Join-Path $script:SlotDir "$id.lock")) { continue }
-        try { [System.IO.File]::ReadAllText($j, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ }
+        try { (Read-FileText $j) | ConvertFrom-Json } catch { $null = $_ }
     })
 }
 
@@ -1731,7 +1713,7 @@ function Stop-CancelledRuns($M, $Workers, [string]$Code = 'CANCELLED') {
     }
     if ($slots.Count -eq 0) { return }
     foreach ($f in @(Get-ChildItem -LiteralPath $script:StateDir -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
-        $t = [IO.File]::ReadAllText($f.FullName, $script:Utf8)
+        $t = (Read-FileText $f.FullName)
         # gemini: `STARTED {json з id}`; claude: `STARTED <id> {json}`.
         if ($t -cnotmatch '^STARTED (?:([0-9]{8}-[0-9]{6}-[0-9a-f]{12}) )?(\{.*\})\s*$') { continue }
         $id = $Matches[1]
@@ -1763,7 +1745,7 @@ function Start-Worker([hashtable]$Job, [string]$Dir) {
 
 function Read-WorkerJob([string]$File) {
     <# Завдання процесу наряду; параметри скрипта з нього стають змінними скрипта (як у планувальника). #>
-    $job = [System.IO.File]::ReadAllText($File, $script:Utf8) | ConvertFrom-Json
+    $job = (Read-FileText $File) | ConvertFrom-Json
     $p = Get-JsonProp $job 'params'
     $script:Bound = @{}
     if ($null -ne $p) {
@@ -1789,7 +1771,7 @@ function Test-RunStarted([string]$StatePath) {
     До цього він міг лише звіритися й піти в чекання (REVIEW_API, PLAN_WAIT), не торкнувшись GPU. #>
     try {
         if (-not [IO.File]::Exists($StatePath)) { return $false }
-        $t = [IO.File]::ReadAllText($StatePath, $script:Utf8)
+        $t = (Read-FileText $StatePath)
         $t.StartsWith('STARTED ') -and $t -cnotmatch '"start":\s*""'
     } catch { $false }
 }
@@ -2142,7 +2124,7 @@ function Clear-TaskCopies([string]$Root, [scriptblock]$Delivered) {
         $slot = [IO.Path]::GetFileNameWithoutExtension($l.Name)
         $busy[$slot] = $true
         try {
-            $copy = [string](Get-JsonProp ([IO.File]::ReadAllText((Join-Path $script:SlotDir "$slot.json"), $script:Utf8) | ConvertFrom-Json) 'copy')
+            $copy = [string](Get-JsonProp ((Read-FileText (Join-Path $script:SlotDir "$slot.json")) | ConvertFrom-Json) 'copy')
             if ($copy) { $busy[(Split-Path -Leaf $copy)] = $true }
         } catch { $null = $_ }
     }
@@ -3261,7 +3243,7 @@ function Read-JsonArray([string]$Path) {
     <# Елементи JSON-масиву з файла в конвеєр (викликач бере @(Read-JsonArray …)); нема файла чи не JSON — нічого.
     PowerShell 5.1 пише масив з ConvertFrom-Json у конвеєр одним об'єктом: @(… | ConvertFrom-Json) давав масив у масиві, і
     таблиця «Позначки без старту» в #1856 31.10 мала по рядку з порожніми клітинками на файл. #>
-    try { $parsed = ConvertFrom-Json ([System.IO.File]::ReadAllText($Path, $script:Utf8)) } catch { return }
+    try { $parsed = ConvertFrom-Json ((Read-FileText $Path)) } catch { return }
     foreach ($x in @($parsed)) { if ($null -ne $x) { $x } }
 }
 
@@ -3331,7 +3313,7 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
     $path = Join-Path $script:StateDir 'holds.json'
     $prev = @{}
     if (Test-Path -LiteralPath $path) {
-        try { foreach ($p in ([System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json).PSObject.Properties) { $prev[$p.Name] = $p.Value } } catch { $null = $_ }
+        try { foreach ($p in ((Read-FileText $path) | ConvertFrom-Json).PSObject.Properties) { $prev[$p.Name] = $p.Value } } catch { $null = $_ }
     }
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $after = [double](Get-Limit $script:Limits 'QuotaWaitMinutes' 'quota_wait_minutes') * 60
@@ -3348,7 +3330,7 @@ function Update-HoldSignals([hashtable]$Held, [scriptblock]$Send) {
     }
     if ($next.Count -eq 0) { Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue; return }
     $text = $next | ConvertTo-Json -Compress
-    $cur = $(if (Test-Path -LiteralPath $path) { [System.IO.File]::ReadAllText($path, $script:Utf8) } else { '' })
+    $cur = $(if (Test-Path -LiteralPath $path) { (Read-FileText $path) } else { '' })
     if ($text -cne $cur) { Write-FileAtomic $path $text }
 }
 
@@ -3386,7 +3368,7 @@ function Update-GpuWatch($Holders, $Sample, [scriptblock]$Send, [string]$Path = 
     $rx = '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$'
     $fmt = "yyyy-MM-dd'T'HH:mm:ss'Z'"
     $st = $null
-    if (Test-Path -LiteralPath $Path) { try { $st = [System.IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    if (Test-Path -LiteralPath $Path) { try { $st = (Read-FileText $Path) | ConvertFrom-Json } catch { $null = $_ } }
     if ($null -ne $st) { $st = ConvertTo-PlainJson $st }
     # Ряд — за замок: позначка й початок замка. Повтор тієї самої позначки (повтор після сну чи квоти) — новий замок, лічба з нуля.
     $since = [string]$h[0].Since
@@ -3500,7 +3482,7 @@ function Get-GpuStallVerdict([string]$Path = '') {
     <# Вирок сторожа GPU (`gpu-stall.json` у $LaneDir, пише Update-GpuWatch планувальника claude-run): позначка й початок замка
     наряду, чий стенд не звертався до моделі довше за gpu_stall_minutes неспання. Нема чи не за форматом — $null. #>
     if (-not $Path) { $Path = Join-Path $LaneDir 'gpu-stall.json' }
-    try { $j = [IO.File]::ReadAllText($Path, $script:Utf8) | ConvertFrom-Json } catch { return $null }
+    try { $j = (Read-FileText $Path) | ConvertFrom-Json } catch { return $null }
     $marker = [string](Get-JsonProp $j 'marker')
     $since = Get-JsonProp $j 'since'
     if ($since -is [datetime]) { $since = Get-UtcStamp $since }
@@ -3566,7 +3548,7 @@ function Update-Idle([bool]$Busy, [scriptblock]$Send, [bool]$Reset = $false, [st
     $path = Join-Path $script:StateDir 'idle.json'
     $now = Get-UtcStamp (Get-Date)
     $prev = $null
-    if (Test-Path -LiteralPath $path) { try { $prev = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json } catch { $null = $_ } }
+    if (Test-Path -LiteralPath $path) { try { $prev = (Read-FileText $path) | ConvertFrom-Json } catch { $null = $_ } }
     if ($Busy) {
         Write-FileAtomic $path ((@{ busy_utc = $now; since = ''; sent = $false }) | ConvertTo-Json -Compress)
         return

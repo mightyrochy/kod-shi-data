@@ -98,13 +98,6 @@ function Write-WrapperLog([string]$Text) {
     [System.IO.File]::AppendAllText((Join-Path $WorkDir 'publish.log'), $line + "`n", $script:Utf8)
 }
 
-function Write-FileAtomic([string]$Path, [string]$Text) {
-    $tmp = $Path + '.part'
-    [System.IO.File]::WriteAllText($tmp, $Text, $script:Utf8)
-    if (Test-Path -LiteralPath $Path) { Remove-Item -LiteralPath $Path -Force }
-    Move-Item -LiteralPath $tmp -Destination $Path
-}
-
 function ConvertTo-ArgString([string[]]$Items) {
     $parts = foreach ($a in $Items) {
         if ($a -eq '') { '""'; continue }
@@ -436,7 +429,7 @@ function Get-SleepTaskCount($Event) {
     $from = Get-SleepTime ([string]$Event.from); $seen = @{}
     if ([string](Get-Prop $Event 'source') -ceq 'heartbeat/boot') { $from = Get-SleepTime ([string]$Event.to) }
     try {
-        $beat = [IO.File]::ReadAllText((Join-Path $OutDir 'heartbeat.json'), $script:Utf8) | ConvertFrom-Json
+        $beat = (Read-FileText (Join-Path $OutDir 'heartbeat.json')) | ConvertFrom-Json
         foreach ($lane in @(Get-Prop $beat 'lanes')) {
             foreach ($busy in @(Get-Prop $lane 'busy')) {
                 $since = Get-SleepTime ([string](Get-Prop $busy 'since')); $marker = [string](Get-Prop $busy 'marker')
@@ -462,7 +455,7 @@ function Update-SleepEvents {
     <# Пише один рядок на пробудження; зберігає події та heartbeat між запусками публікатора. #>
     $path = Join-Path $WorkDir 'sleep-events.json'; $now = (Get-PowerTime).ToUniversalTime()
     $saved = $null; $script:SleepOpenFrom = $null
-    if (Test-Path -LiteralPath $path) { $saved = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json }
+    if (Test-Path -LiteralPath $path) { $saved = (Read-FileText $path) | ConvertFrom-Json }
     $last = $null; if ($null -ne $saved) { $last = Get-SleepTime ([string](Get-Prop $saved 'read_utc')) }
     $events = @(); if ($null -ne $saved) { $events = @(Get-Prop $saved 'events') }
     if ($null -ne $last) {
@@ -518,7 +511,7 @@ function Get-SleepPublicationKey($Status, [string]$Queue, [string]$Marker) {
     if ($parent -cnotmatch $script:IdPattern) { return '' }
     $path = Join-Path (Join-Path $WorkDir 'sleep-retries') ($parent + '.json')
     if (-not (Test-Path -LiteralPath $path)) { return '' }
-    $permit = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+    $permit = (Read-FileText $path) | ConvertFrom-Json
     if ($permit.queue -cne $Queue -or $permit.marker -cne $Marker) { return '' }
     "$key sleep $parent"
 }
@@ -535,7 +528,7 @@ function Request-SleepRetry($Status, [string]$Queue, [string]$Marker, [string]$H
     $dir = Join-Path $WorkDir 'sleep-retries'; [void][IO.Directory]::CreateDirectory($dir)
     $guard = Join-Path $dir ((Get-Sha256Hex ($Queue + ' ' + $Marker)) + '.parent')
     if (Test-Path -LiteralPath $guard) {
-        if ([IO.File]::ReadAllText($guard, $script:Utf8) -cne [string]$Status.id) { return $false }
+        if ((Read-FileText $guard) -cne [string]$Status.id) { return $false }
     } else { Write-FileAtomic $guard ([string]$Status.id) }
     $permit = [ordered]@{parent=[string]$Status.id; queue=$Queue; marker=$Marker; head=$Head; sleep=$event.key}
     $text = $permit | ConvertTo-Json -Compress
@@ -557,7 +550,7 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
     $path = Join-Path $OutDir ($Id + '.json')
     try {
         if ((Get-Item -LiteralPath $path).Length -gt 65536) { return Get-BadLine $Id 'завеликий' }
-        $s = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+        $s = (Read-FileText $path) | ConvertFrom-Json
     } catch { return Get-BadLine $Id 'не читається як JSON' $_ }
     # Облік живлення використовує той самий читач формату й чинну межу Get-Line.
     # Тут вихід до будь-якої публікації, дозволу повтору чи зміни seen.
@@ -594,7 +587,7 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
     $resumed = $false
     if (Test-Path -LiteralPath $publishedPath) {
         # ID з власного стану не дозволяє чужому JSON відкрити вже закриту позначку.
-        if ([IO.File]::ReadAllText($publishedPath, $script:Utf8) -cne ($publicationKey + "`n" + $Id) -or
+        if ((Read-FileText $publishedPath) -cne ($publicationKey + "`n" + $Id) -or
             -not $head -or (Get-RefSha "refs/remotes/origin/gemini/$slug") -cne $head) { return $null }
         # Той самий результат уже запушено, а обробку обірвав виняток (Receive-RunState лишає стан на повтор): кінець
         # іде далі без другого пушу — запит повтору після сну й рядок диспетчерові не губляться.
@@ -675,7 +668,7 @@ function Get-Line([string]$Id, [switch]$StatusOnly) {
 function Get-MarkerStateText([string]$Queue, [string]$Marker) {
     $path = Join-Path (Join-Path $OutDir 'marker-state') ((Get-Sha256Hex "refs/remotes/origin/$Queue $Marker") + '.txt')
     if (-not (Test-Path -LiteralPath $path)) { return '' }
-    try { ([IO.File]::ReadAllText($path, $script:Utf8)).Trim() } catch { '' }
+    try { ((Read-FileText $path)).Trim() } catch { '' }
 }
 function Test-MarkerEndConfirmed([string]$State, [string]$Id, [string]$Code) { $State -ceq "DONE $Id $Code" }
 
@@ -700,7 +693,7 @@ function Confirm-PendingMarkers {
     if ($DryRun) { return }
     $dir = Join-Path $WorkDir 'finish-pending'
     foreach ($f in @(Get-ChildItem -LiteralPath $dir -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
-        $p = @(([IO.File]::ReadAllText($f.FullName, $script:Utf8)).Trim() -split ' ')
+        $p = @(((Read-FileText $f.FullName)).Trim() -split ' ')
         if ($p.Count -ne 4 -or $p[0] -cnotmatch '^gemini-queue/\S+$' -or $p[0].Contains('..') -or $p[1] -cnotmatch $script:ShaPattern -or
             $p[2] -cnotmatch $script:IdPattern -or $p[3] -cnotmatch '^[A-Z0-9_]{2,40}$') {
             Remove-Item -LiteralPath $f.FullName -Force; continue
@@ -730,7 +723,7 @@ function Remove-FinishedMarkers([datetime]$Since) {
     $dirs = @((Join-Path $WorkDir 'finished'), (Join-Path (Join-Path (Split-Path -Parent $WorkDir) 'claude-run') 'finished'))
     foreach ($f in @(Get-ChildItem -LiteralPath $dirs -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
         if ($f.LastWriteTimeUtc -ge $Since) { continue }
-        $p = @(([IO.File]::ReadAllText($f.FullName, $script:Utf8)).Trim() -split ' ')
+        $p = @(((Read-FileText $f.FullName)).Trim() -split ' ')
         if ($p.Count -ne 2 -or $p[0] -cnotmatch '^gemini-queue/\S+$' -or $p[0].Contains('..') -or $p[1] -cnotmatch $script:ShaPattern) {
             Remove-Item -LiteralPath $f.FullName -Force; continue
         }
@@ -813,7 +806,7 @@ function Reset-ReturnedRefusals {
             $kept = "republish-kept $key"
             if (-not $code -or (Test-Path -LiteralPath (Get-SeenPath $kept))) { continue }
         } else {
-            $r = @(([IO.File]::ReadAllText($record, $script:Utf8)).Trim() -split ' ')
+            $r = @(((Read-FileText $record)).Trim() -split ' ')
             if ($r.Count -ne 3) { continue }
             $rid = $r[0]; $code = $r[1]; $version = $r[2]
         }
@@ -871,7 +864,7 @@ function Resolve-Exe([string]$Name) {
 function Reset-State([string]$Id) {
     if ($Id -notmatch $script:IdPattern) { throw "не id стану: $Id" }
     Remove-Item -LiteralPath (Join-Path (Join-Path $WorkDir 'state') ($Id + '.json')) -Force -ErrorAction SilentlyContinue
-    $s = [System.IO.File]::ReadAllText((Join-Path $OutDir ($Id + '.json')), $script:Utf8) | ConvertFrom-Json
+    $s = (Read-FileText (Join-Path $OutDir ($Id + '.json'))) | ConvertFrom-Json
     $cond = [string](Get-Prop $s 'cond')
     $key = "gemini-queue/$(Get-Prop $s 'slug')/$(Get-Prop $s 'model')/$(Get-Prop $s 'n')$(if ($cond -cmatch $script:CondPattern) { '/' + $cond }) $(Get-Prop $s 'marker')"
     foreach ($k in @("retry $key", "$key refused PUSH_FAILED")) {
@@ -961,7 +954,7 @@ function Add-PoolsLine {
     $path = Join-Path $OutDir 'pools.json'
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { return }
     if ((Get-Item -LiteralPath $path).Length -gt 8192) { Write-WrapperLog 'pools.json завеликий — пропущено'; return }
-    try { $p = [System.IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json }
+    try { $p = (Read-FileText $path) | ConvertFrom-Json }
     catch { Write-WrapperLog 'pools.json не читається як JSON — пропущено'; return }
     $ver = [string](Get-Prop $p 'agy')
     $parts = @('V=' + $(if ($ver -cmatch '^[0-9]+(\.[0-9]+){1,3}$') { $ver } else { '-' }))
@@ -978,7 +971,7 @@ function Add-PoolsLine {
     if ($line.Length -gt 300) { Write-WrapperLog 'рядок ПУЛИ довший за 300 знаків — пропущено'; return }
     if ((Test-OutboxLine $line) -ne '') { Write-WrapperLog 'рядок ПУЛИ не збігся з шаблоном — пропущено'; return }
     $last = Join-Path $WorkDir 'pools_last.txt'
-    if ((Test-Path -LiteralPath $last) -and [System.IO.File]::ReadAllText($last, $script:Utf8) -eq $line) { return }
+    if ((Test-Path -LiteralPath $last) -and (Read-FileText $last) -eq $line) { return }
     $now = Get-Date
     if (Test-Seen ('pools ' + $now.ToString('yyyyMMdd') + '-' + [int][Math]::Floor($now.Hour / 3))) { return }
     Write-FileAtomic $last $line
@@ -1010,10 +1003,10 @@ function Receive-Outbox {
         $source = Join-Path (Join-Path $WorkDir 'state') ($f.BaseName + '.json')
         # Рядок повтору публікації названо не id стану: стан — за записом republish\<id>.txt з цим іменем.
         foreach ($again in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'republish') -Filter '*.txt' -File -ErrorAction SilentlyContinue)) {
-            if (([IO.File]::ReadAllText($again.FullName, $script:Utf8)).Trim() -ceq $f.Name) { $source = Join-Path (Join-Path $WorkDir 'state') ($again.BaseName + '.json') }
+            if (((Read-FileText $again.FullName)).Trim() -ceq $f.Name) { $source = Join-Path (Join-Path $WorkDir 'state') ($again.BaseName + '.json') }
         }
         if (Test-Path -LiteralPath $source) {
-            $origin = ConvertFrom-Json ([IO.File]::ReadAllText($source, $script:Utf8))
+            $origin = ConvertFrom-Json ((Read-FileText $source))
             if ([string](Get-Prop $origin 'outbox') -ceq $f.Name) { $slug = [string](Get-Prop $origin 'slug') }
         }
         Write-FileAtomic $statePath (([ordered]@{ line = $r[0]; slug = $slug; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
@@ -1056,7 +1049,7 @@ function Get-QuotaWindows {
     $map = @{}
     if (-not (Test-Path -LiteralPath $path)) { return $map }
     try {
-        $o = [IO.File]::ReadAllText($path, $script:Utf8) | ConvertFrom-Json
+        $o = (Read-FileText $path) | ConvertFrom-Json
         foreach ($pr in @($o.PSObject.Properties)) { $map[[string]$pr.Name] = [string]$pr.Value }
     } catch { Write-WrapperLog 'quota-windows.json не прочитано, вікна квоти порожні' }
     $map
@@ -1116,7 +1109,7 @@ $script:BlockedGroupsCap = 20
 function Merge-BlockedLines {
     $groups = [ordered]@{}
     foreach ($sf in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File | Sort-Object Name)) {
-        $st = [System.IO.File]::ReadAllText($sf.FullName, $script:Utf8) | ConvertFrom-Json
+        $st = (Read-FileText $sf.FullName) | ConvertFrom-Json
         if ((Get-Prop $st 'sent') -eq $true -or (Get-Prop $st 'exhausted') -eq $true -or [int](Get-Prop $st 'attempts') -gt 0 -or [int](Get-Prop $st 'fallback_attempts') -gt 0) { continue }
         if ([string](Get-Prop $st 'line') -cnotmatch '\AGEMINI ОБГОРТКА: ЗАБЛОКОВАНО ((?:gemini|codex|claude)/\S+) ([A-Z0-9_]{2,40})\z') { continue }
         $branch = $Matches[1]
@@ -1134,12 +1127,12 @@ function Merge-BlockedLines {
             Write-FileAtomic $grouped (([ordered]@{ line = $line; sent = $false; attempts = 0 }) | ConvertTo-Json -Compress)
             $path = Join-Path $WorkDir 'blocked-groups.json'
             $old = @()
-            if (Test-Path -LiteralPath $path) { try { $old = @((ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8)))) } catch { $null = $_ } }
+            if (Test-Path -LiteralPath $path) { try { $old = @((ConvertFrom-Json ((Read-FileText $path)))) } catch { $null = $_ } }
             $entry = [ordered]@{ utc = [datetime]::UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"); code = $code; n = $items.Count; branches = @($items | ForEach-Object { $_.Branch }) }
             Write-FileAtomic $path (ConvertTo-Json -InputObject @(@($old | Select-Object -Last ($script:BlockedGroupsCap - 1)) + @($entry)) -Compress -Depth 4)
         }
         foreach ($it in $items) {
-            $st = [System.IO.File]::ReadAllText($it.File.FullName, $script:Utf8) | ConvertFrom-Json
+            $st = (Read-FileText $it.File.FullName) | ConvertFrom-Json
             Write-FileAtomic $it.File.FullName (([ordered]@{ line = [string](Get-Prop $st 'line'); slug = [string](Get-Prop $st 'slug'); sent = $true; attempts = 0; channel = 'grouped'; group = ('g-' + $items[0].File.Name) }) | ConvertTo-Json -Compress)
         }
         Write-WrapperLog "зведено $($items.Count) рядків ЗАБЛОКОВАНО $code в один"
@@ -1150,7 +1143,7 @@ function Get-LocalLines {
     $path = Join-Path $WorkDir 'local-lines.json'
     if (-not (Test-Path -LiteralPath $path)) { return @() }
     # PowerShell 5.1 пише JSON-масив у конвеєр одним об'єктом: @(ConvertFrom-Json …) дав би масив у масиві.
-    $parsed = ConvertFrom-Json ([IO.File]::ReadAllText($path, $script:Utf8))
+    $parsed = ConvertFrom-Json ((Read-FileText $path))
     @($parsed)
 }
 
@@ -1242,7 +1235,7 @@ function Send-Fallback([string]$Line) {
 
 function Send-Pending([System.IO.FileInfo]$File) {
     <# Стан доставки збережено перед мережею; рядок лишається після вичерпання обох бюджетів. #>
-    $st = [System.IO.File]::ReadAllText($File.FullName, $script:Utf8) | ConvertFrom-Json
+    $st = (Read-FileText $File.FullName) | ConvertFrom-Json
     if ($st.sent -or (Get-Prop $st 'exhausted') -eq $true) { return }
     if (-not (Test-DispatcherAction ([string]$st.line))) {
         Save-LocalLine ([string]$st.line)
@@ -1277,7 +1270,7 @@ function Write-DeliveryStatus {
     <# Підсумок доставки для читача стану ноутбука, без вмісту рядків. #>
     $pending = 0; $exhausted = 0
     foreach ($f in @(Get-ChildItem -LiteralPath (Join-Path $WorkDir 'state') -Filter '*.json' -File)) {
-        $s = [System.IO.File]::ReadAllText($f.FullName, $script:Utf8) | ConvertFrom-Json
+        $s = (Read-FileText $f.FullName) | ConvertFrom-Json
         if (-not $s.sent) { $pending++; if ((Get-Prop $s 'exhausted') -eq $true) { $exhausted++ } }
     }
     Write-FileAtomic (Join-Path $WorkDir 'delivery.json') (([ordered]@{ read_utc = [datetime]::UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"); pending = $pending; exhausted = $exhausted }) | ConvertTo-Json -Compress)
@@ -1305,7 +1298,7 @@ function Receive-RunState([string]$Id) {
         # доставка — з неї, як для рядків інших скриптів.
         $outbox = $Id + '.txt'
         $again = Join-Path (Join-Path $WorkDir 'republish') ($Id + '.txt')
-        if (Test-Path -LiteralPath $again) { $outbox = ([IO.File]::ReadAllText($again, $script:Utf8)).Trim() }
+        if (Test-Path -LiteralPath $again) { $outbox = ((Read-FileText $again)).Trim() }
         Add-OutboxLine $outbox $line.Outbox
         Write-FileAtomic $statePath (([ordered]@{ line = ''; slug = [string](Get-Prop $line 'Slug'); sent = $true; attempts = 0; outbox = $outbox }) | ConvertTo-Json -Compress)
         return
