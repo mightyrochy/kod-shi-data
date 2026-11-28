@@ -960,7 +960,10 @@ class Посадка_ОдинКрай(unittest.TestCase):
                 пакет = json.loads(складання["модель"]["messages"][0]["content"])
                 self.assertTrue(пакет["silhouette"]["knowledge"])
                 self.assertEqual("girths_cm" in пакет["person"]["body"], bool(її_мірки))
-                опис = next(з for з in журнал["запити"] if з["рука"] == 1 and з["вид"] == "опис")
+                картка = next(к for к in вихід["картки"] if к["рука"] == 1)
+                опис = next((з for з in журнал["запити"] if з["рука"] == 1 and з["вид"] == "опис"), None)
+                self.assertIsNotNone(опис, (картка.get("збій") or картка.get("збій_опису"),
+                                            [(з["вид"], з["ключ"]) for з in журнал["запити"] if з["рука"] == 1]))
                 факти = json.loads(опис["модель"]["messages"][0]["content"])["facts"]
                 класи_краю = [(н, ф) for н, ф in факти.items() if ф.get("field") == "length"]
                 self.assertEqual(len(класи_краю), 1, класи_краю)
@@ -972,7 +975,6 @@ class Посадка_ОдинКрай(unittest.TestCase):
                                  (край["items"], "крамниця", 104))
                 профіль = {н: ф for н, ф in факти.items() if ф.get("field") == "silhouette_measurements"}
                 self.assertEqual(bool(профіль), bool(її_мірки))
-                картка = next(к for к in вихід["картки"] if к["рука"] == 1)
                 речення, = картка["речення"]["text"]
                 self.assertTrue({номер_краю, *край["items"], *профіль}.issubset(речення["about"]))
                 self.assertEqual("твою талію" in речення["says"], bool(її_мірки))
