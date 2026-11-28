@@ -29,11 +29,12 @@ _ПОЛЯ_РЕЧІ = {
     "колір_другий": "secondary_color", "каблук": "heel", "підошва": "sole", "рукав": "sleeve",
     "виріз": "neckline", "посадка": "rise", "реєстр": "register", "ярус_крою": "cut_tier", "метал": "metal",
     "водостійкість": "water_resistant", "утеплення": "insulation", "тепло_шару": "layer_warmth",
+    "мірки_крамниці": "shop_measurements",
 }
 _КОЛОНКИ_КОЛЬОРУ = ("color", "hex", "family", "L", "branch_source", "in_arc", "L_from", "palette_branch")
 _КОЛОНКИ = ("n", "price", "kind", *_КОЛОНКИ_КОЛЬОРУ, *_ПОЛЯ_РЕЧІ.values(), "description", "reason", "sources", "rank_facts")
 _КОЛОНКИ_ЗАПИСУ = {"water_resistant": "водостійкість", "insulation": "утеплення", "layer_warmth": "тепло_шару",
-                   "description": "опис"}
+                   "description": "опис", "shop_measurements": "мірки_крамниці"}
 
 
 def _колонки_запису(колонки, речі, повний_пул):
@@ -46,6 +47,8 @@ def _колонки_запису(колонки, речі, повний_пул):
         if колонка == "description":
             return not повний_пул and any(_значення(р.опис) != "unknown" for р in речі)
         поле = _КОЛОНКИ_ЗАПИСУ[колонка]
+        if колонка == "shop_measurements":
+            return any(_компактні_мірки(р.поля[поле].значення) for р in речі)
         return any(_значення(р.поля[поле].значення) != "unknown" for р in речі)
 
     return tuple(к for к in колонки if к not in _КОЛОНКИ_ЗАПИСУ or відомі(к))
@@ -185,6 +188,11 @@ def поломка_складання(ситуація, профіль, злам
             _людина(ситуація, профіль, "складання", знання.прогін_поломок(зламані)))
 
 
+def _компактні_мірки(мірки):
+    """Подає мірки речі без окремої таблиці розмірів."""
+    return {к: в for к, в in мірки.items() if к != "таблиця_мірок"} if isinstance(мірки, dict) else {}
+
+
 def _річ_для_опису(річ):
     """Повертає рід, тип і відомі характеристики обраної речі."""
     from знання_речі import тип_кодом, тип_свого_роду
@@ -193,7 +201,16 @@ def _річ_для_опису(річ):
     тип = тип_кодом({"тип": річ.поля["тип"].значення})
     if річ.поля["тип"].джерело not in ("фото", "крамниця") or річ.джерело_слота is None:
         тип = тип_свого_роду(тип, рід)
-    return {"kind": рід, "type": тип or "unknown", **знання.відоме_для_опису(річ)}
+    вихід = {"kind": рід, "type": тип or "unknown", **знання.відоме_для_опису(річ)}
+    мірки = річ.поля["мірки_крамниці"].значення
+    if isinstance(мірки, dict) and (таблиця := мірки.get("таблиця_мірок")):
+        вихід["size_chart"] = таблиця
+    if компактні := _компактні_мірки(мірки):
+        вихід["shop_measurements"] = компактні
+    довжина = річ.поля["довжина_виробу"]
+    if isinstance(довжина.значення, dict) and довжина.значення.get("unit") == "cm":
+        вихід["garment_length"] = {**довжина.значення, "source": довжина.джерело}
+    return вихід
 
 
 _ТЕМИ_КАРТКИ = {
@@ -341,6 +358,13 @@ def _рядок(н, річ, кандидат):
     вихід.update({дріт: _значення(річ.поля[поле].значення) for поле, дріт in _ПОЛЯ_РЕЧІ.items()})
     вихід["sources"] = {дріт: _поле(річ.поля[поле]) for поле, дріт in _ПОЛЯ_РЕЧІ.items()
                         if річ.поля[поле].джерело}
+    мірки = вихід["shop_measurements"]
+    if isinstance(мірки, dict):
+        вихід["shop_measurements"] = _компактні_мірки(мірки) or "unknown"
+        if вихід["shop_measurements"] == "unknown":
+            вихід["sources"].pop("shop_measurements", None)
+        else:
+            вихід["sources"]["shop_measurements"]["value"] = вихід["shop_measurements"]
     вихід["rank_facts"] = {к: в for к, в in ранг.items() if к != "branch"}
     for назва, факт in вихід["sources"].items():
         if факт["value"] == вихід[назва]:
@@ -707,6 +731,24 @@ def запит(вид, пул, ситуація, профіль, *, образи
         "kind_limits": пул.межі_слотів, "kinds_missing": [СЛОТИ[р["слот"]] for р in пул.нема_в_каталозі],
         "answer_schema": розбір.схема(вид),
     }
+    if вид in ("опис", "ремонт", "вибір") and any(
+        пул.записи[н].поля["мірки_крамниці"].джерело
+        or (isinstance(довжина := пул.записи[н].поля["довжина_виробу"].значення, dict)
+            and довжина.get("unit") == "cm")
+        for н in склад
+    ):
+        тіло["task"]["rules"].append(
+            "Use the shop measurements for these items as stated, with their units. A size chart can guide what "
+            "to compare before trying the item on. Use a numerical comparison only with the same kind of measurement."
+        )
+    if вид in ("ремонт", "вибір"):
+        таблиці = {}
+        for н in склад:
+            мірки = пул.записи[н].поля["мірки_крамниці"].значення
+            if isinstance(мірки, dict) and (таблиця := мірки.get("таблиця_мірок")):
+                таблиці[н] = таблиця
+        if таблиці:
+            тіло["size_charts"] = таблиці
     if вид != "складання":
         тіло["style_rules"] = _стани(ситуація, [пул.записи[н] for н in склад], профіль)
     if вид in ("складання", "ремонт"):
