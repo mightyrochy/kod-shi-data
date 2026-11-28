@@ -60,6 +60,7 @@ jobs:
     timeout-minutes: 10
     outputs:
       produkt: ${{ steps.zmina.outputs.produkt }}
+      zapysy: ${{ steps.zmina.outputs.zapysy }}
       pravyla: ${{ steps.zmina.outputs.pravyla }}
       perevirenyi_run: ${{ steps.derevo.outputs.run_id }}
       perevirenyi_vantazh: ${{ steps.derevo.outputs.artifact }}
@@ -121,6 +122,7 @@ jobs:
           fi
           # Невідомий diff і ручний запуск — повна перевірка, без тихого пропуску.
           produkt=true
+          zapysy=false
           pravyla=true
           pravyla_dok=false
           znano=false
@@ -139,6 +141,8 @@ jobs:
               case "${shliakh}" in
                 # Звіти автоживого — дані, збірка їх не читає (читає лише аудит/проби/нічні й скрипти).
                 аудит/проби/автоживий-*) ;;
+                аудит/проби/нічні/*)
+                  if [ "${GITHUB_EVENT_NAME}" = pull_request ]; then zapysy=true; else produkt=true; fi ;;
                 джерела/*|аудит/проби/*|каталог_повний.xml.gz|index.html|build.txt|.github/workflows/zbirka.yml|.github/scripts/perevirene-derevo.sh) produkt=true ;;
               esac
               case "${shliakh}" in
@@ -179,8 +183,9 @@ jobs:
             fi
           fi
           echo "produkt=${produkt}" >> "$GITHUB_OUTPUT"
+          echo "zapysy=${zapysy}" >> "$GITHUB_OUTPUT"
           echo "pravyla=${pravyla}" >> "$GITHUB_OUTPUT"
-          echo "продукт: ${produkt}; правила й документи: ${pravyla}" >> "$GITHUB_STEP_SUMMARY"
+          echo "продукт: ${produkt}; записи: ${zapysy}; правила й документи: ${pravyla}" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         if: steps.zmina.outputs.produkt == 'false'
@@ -459,7 +464,7 @@ jobs:
     permissions:
       contents: read
     needs: zminy
-    if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
+    if: (needs.zminy.outputs.produkt == 'true' || needs.zminy.outputs.zapysy == 'true') && needs.zminy.outputs.perevirenyi_run == ''
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -649,7 +654,7 @@ jobs:
       contents: read
     name: базовий показ main для записаних сцен
     needs: zminy
-    if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
+    if: (needs.zminy.outputs.produkt == 'true' || needs.zminy.outputs.zapysy == 'true') && needs.zminy.outputs.perevirenyi_run == ''
     # Повну збірку базового main кожна з 10 частин записаного живого шляху робила сама (мед 5,2 хв × 10 на запуск —
     # чверть хвилин раннерів тижня 01–08.11, а раннерів 20 на всіх: черга PR). Тепер її робить один джоб паралельно з
     # перевіркою джерел, частини беруть готовий показ (`аудит/перевірка/ci_час_0811/`).
@@ -725,7 +730,7 @@ jobs:
       contents: read
       pull-requests: read
     needs: [zminy, pokaz, bazovyi]
-    if: needs.zminy.outputs.produkt == 'true' && needs.zminy.outputs.perevirenyi_run == ''
+    if: (needs.zminy.outputs.produkt == 'true' || needs.zminy.outputs.zapysy == 'true') && needs.zminy.outputs.perevirenyi_run == ''
     # 3.12.1 (байткод Pyodide) є в versions-manifest лише для 24.04; на 26.04 setup-python падає (прогін 42342674729)
     runs-on: ubuntu-24.04
     timeout-minutes: 40
@@ -821,10 +826,13 @@ jobs:
           REPLAY_BASE_BUILD: ${{ runner.temp }}/main-pokaz
           REPLAY_BASE_ROOT: ${{ github.workspace }}/main-replay
           REPLAY_MATRIX_SUMMARY: ${{ runner.temp }}/replay-summary.json
+          REPLAY_PRODUCT: ${{ needs.zminy.outputs.produkt }}
         run: |
           node аудит/проби/приймання_записів.js "${RUNNER_TEMP}/pokaz" "${RUNNER_TEMP}/pyodide" \
             "${RUNNER_TEMP}/replay" ${{ matrix.chastyna }} 2
-          GITHUB_TOKEN="${{ github.event_name == 'push' && github.token || '' }}${ZLYTTIA_TOKEN}" node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/replay"
+          if [ "$REPLAY_PRODUCT" = true ]; then
+            GITHUB_TOKEN="${{ github.event_name == 'push' && github.token || '' }}${ZLYTTIA_TOKEN}" node аудит/проби/живий_після_CI.js "${RUNNER_TEMP}/replay"
+          fi
       - name: докази всіх сцен, зокрема невдалих
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -846,7 +854,7 @@ jobs:
 
   pidsumok_pryimannia:
     name: підсумок записаних сцен через продукт
-    needs: pryimannia
+    needs: [zminy, pryimannia]
     if: ${{ !cancelled() && needs.pryimannia.result != 'skipped' }}
     permissions:
       contents: read
@@ -868,6 +876,7 @@ jobs:
       - name: звірити всі частини записаних сцен
         env:
           SOURCE_SHA: ${{ inputs.pislia || github.sha }}
+          REPLAY_PRODUCT: ${{ needs.zminy.outputs.produkt }}
         run: |
           node аудит/проби/підсумок_відтворення.js \
             "${RUNNER_TEMP}/replay-summary/replay-summary-0-${SOURCE_SHA}/replay-summary.json" \
@@ -985,7 +994,10 @@ jobs:
     needs: [zminy, perevirka, dosiazhnist, pokaz, stend, yadro, rozdily, pryimannia, pidsumok_pryimannia]
     if: >-
       ${{ !cancelled() && needs.zminy.result == 'success' &&
-          (needs.zminy.outputs.produkt == 'false' || needs.zminy.outputs.perevirenyi_run != '' ||
+          ((needs.zminy.outputs.produkt == 'false' &&
+            (needs.zminy.outputs.zapysy != 'true' ||
+             (needs.pryimannia.result == 'success' && needs.pidsumok_pryimannia.result == 'success'))) ||
+           needs.zminy.outputs.perevirenyi_run != '' ||
            (needs.perevirka.result == 'success' && needs.dosiazhnist.result == 'success' &&
             needs.pokaz.result == 'success' && needs.stend.result == 'success' && needs.yadro.result == 'success' &&
             needs.rozdily.result == 'success' && needs.pryimannia.result == 'success' &&
