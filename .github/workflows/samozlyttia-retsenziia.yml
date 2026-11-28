@@ -1,0 +1,20 @@
+# Завершення цього процесу будить рішення з main у samozlyttia.yml.
+name: рецензія для самозлиття
+
+on:
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+
+permissions: {}
+
+jobs:
+  syhnal:
+    name: сигнал рецензії
+    # Пропущений job дає completed без виділення раннера.
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - run: 'true'
