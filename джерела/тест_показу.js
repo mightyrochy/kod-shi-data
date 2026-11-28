@@ -2007,8 +2007,13 @@ async function звіритиНамірОцінки(){
     тест('збій не викликає нескінченних автоматичних повторів',w.fits.length===1);
     d.querySelector('#mirror-look-sides [data-ux=pair-fit]').click();
     await чекатиНа(()=>w.fits.length===2,'явний повтор не працює');
+    await чекатиНа(()=>d.querySelector('#mirror-look-sides [data-reveal-art]'),'немає малюнка примірки');
+    const lastArt=d.querySelector('#mirror-look-sides [data-reveal-art]');
     w.eval(`П.картки[0].картинка='https://example.com/fitted.jpg';ПОКАЗ_ПРИМІРКИ_П.set(П.картки[0],{іде:false,код:'підпис'});показатиПримірку(0);`);
+    await new Promise(r=>setTimeout(r,30));
+    тест('ранній готовий кадр не обриває видимий малюнок',lastArt.isConnected&&!d.querySelector('.pair-result-hero .pair-fitted img'));
     await чекатиНа(()=>d.querySelector('.pair-result-hero .pair-fitted img'),'немає готового кадру');
+    тест('перед появою кадру малюнок завершений',lastArt.dataset.reveal==='1');
     тест('готовий кадр — перший у результаті, без звичайного фото',d.getElementById('е-образи').firstElementChild.id==='mirror-look-sides'
       &&!d.querySelector('#mirror-look-sides .pair-person-photo'));
     w.MirrorRoom.route('сценарій');await new Promise(r=>setTimeout(r,30));
