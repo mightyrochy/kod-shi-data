@@ -714,13 +714,6 @@ def запит(вид, пул, ситуація, профіль, *, образи
         "kind_limits": пул.межі_слотів, "kinds_missing": [СЛОТИ[р["слот"]] for р in пул.нема_в_каталозі],
         "answer_schema": розбір.схема(вид),
     }
-    if нові_записи:
-        тіло["person"]["body"].update(силует.мірки(профіль))
-        тіло["silhouette"] = {"goal_from_her_words": силует.мета(ситуація), "knowledge": силует.ЗНАННЯ}
-        тіло["task"]["rules"].append(
-            "Use cut and length with their sources to explain the silhouette in the outfit's reason. Use only supplied "
-            "body measurements and take the direction of emphasis from silhouette.goal_from_her_words. A photo class "
-            "describes the garment on the shop model. Check the fit on her during a fitting.")
     if вид != "складання":
         тіло["style_rules"] = _стани(ситуація, [пул.записи[н] for н in склад], профіль)
     if вид in ("складання", "ремонт"):
@@ -829,6 +822,15 @@ def запит(вид, пул, ситуація, профіль, *, образи
             if перевірити_кадр in з_фото:
                 тіло["task"]["rules"].append(_ЗАДАЧІ["опис"]["звірка_заміни"])
     базові_правила = тіло["task"]["rules"]
+    з_класами = {н for н in номери if силует.ознаки(пул.записи[н])} if нові_записи and not текстова_межа else set()
+    if з_класами:
+        тіло_без_силуету = тіло["person"]["body"]
+        тіло_із_силуетом = {**тіло_без_силуету, **силует.мірки(профіль)}
+        знання_силуету = {"goal_from_her_words": силует.мета(ситуація), "knowledge": силует.ЗНАННЯ}
+        правила_силуету = [*базові_правила,
+            "Use cut and length with their sources to explain the silhouette in the outfit's reason. Use only supplied "
+            "body measurements and take the direction of emphasis from silhouette.goal_from_her_words. A photo class "
+            "describes the garment on the shop model. Check the fit on her during a fitting."]
 
     def блоки_пулу(видимі):
         """Повертає блоки, істинні для речей після обрізання пакета."""
@@ -837,6 +839,16 @@ def запит(вид, пул, ситуація, профіль, *, образи
             заміни = [номери_запасних[н] for н in видимі if н in номери_запасних]
             тіло["task"]["rules"] = ([*базові_правила, _ЗАДАЧІ["опис"]["заміна"]] if заміни else базові_правила)
             return dict(facts={н: ф for н, ф in факти.items() if н not in пропущені}, swap_candidates=заміни)
+        правила_запиту = базові_правила
+        if з_класами:
+            if з_класами.isdisjoint(видимі):
+                тіло["person"]["body"] = тіло_без_силуету
+                тіло.pop("silhouette", None)
+            else:
+                тіло["person"]["body"] = тіло_із_силуетом
+                тіло["silhouette"] = знання_силуету
+                правила_запиту = правила_силуету
+            тіло["task"]["rules"] = правила_запиту
         речі = [пул.записи[н] for н in видимі]
         результат = {}
         if вид == "складання":
@@ -858,8 +870,8 @@ def запит(вид, пул, ситуація, профіль, *, образи
         elif вид == "опис":
             запасні = [н for н in видимі if н not in склад]
             результат["swap_candidates"] = запасні
-            тіло["task"]["rules"] = ([*базові_правила, _ЗАДАЧІ["опис"]["заміна"]]
-                                    if запасні else базові_правила)
+            тіло["task"]["rules"] = ([*правила_запиту, _ЗАДАЧІ["опис"]["заміна"]]
+                                    if запасні else правила_запиту)
         return результат
     if збій and not текстова_межа:
         тіло["format_error" if вид == "опис" else "retry"] = {"field": збій.поле, "reason": збій.що}
