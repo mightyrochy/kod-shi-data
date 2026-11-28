@@ -2056,8 +2056,6 @@ html[data-pair-looks=one] .pair-app #картки .картка>:is(.к-шапк
 /* Збирання — один великий малюнок; готовий образ починається з примірки. */
 .pair-making-art { width:100%; height:clamp(300px,58svh,620px); display:grid; place-items:center; overflow:hidden; }
 .pair-making-art .hand-art { display:block; width:100%; height:100%; max-height:none; }
-.hand-building .vt-pr { transform-box:fill-box; transform-origin:center; }
-.hand-building .vt-p { transform-origin:627px 627px; }
 @media (prefers-reduced-motion:no-preference) {
   .hand-building :is(.vt-pr,.vt-p,.sh,.pl,.pol,.kl-ch,.shar.zhov path,.shar.zel path) { transition:opacity .55s linear,transform .55s linear,stroke-dashoffset .55s linear; }
 }
@@ -2070,3 +2068,8 @@ html[data-pair-looks=one] .pair-app #картки .картка>:is(.к-шапк
 .pair-result-record .hand-seal { width:64px; height:64px; }
 html[data-pair-looks=one] .pair-app #картки .полотно { display:none; }
 html[data-pair-looks=one] .pair-app #е-образи:not(:has(.pair-fitted)) #картки :is(.ряд:has([id^="прмк-"]),[id^="прм-"]) { display:none; }
+
+/* Вибір схеми — плитками, без дубльованого переліку пояснень під ними. */
+.pair-app :is(#пал-рідші,#пал-нота) { display:none; }
+
+.reveal-finishing .hand-building :is(.vt-pr,.sh,.pl,.pol,.kl-ch,.shar.zhov path,.shar.zel path) { transition-duration:.12s; }

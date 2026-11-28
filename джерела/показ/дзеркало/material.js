@@ -88,28 +88,48 @@ window.MirrorMaterial = (() => {
     const lines=[...svg.querySelectorAll('.sh')];
     const pigments=[...svg.querySelectorAll('.shar.zhov path,.shar.zel path,.pl,.pol')];
     const planes=[...svg.querySelectorAll('.kl-ch')];
-    const fold=svg.querySelector('.vt-p');
+    const ordered=side=>[...svg.querySelectorAll('.vt-'+side+'-cut')].sort((a,b)=>Number(a.dataset.cutPair)-Number(b.dataset.cutPair));
+    const leftCuts=ordered('l'),rightCuts=ordered('p');
+    const pairs=Math.max(leftCuts.length,rightCuts.length);
     const clamp=x=>Math.max(0,Math.min(1,x));
     const part=(p,i,n,from=0,to=.88)=>clamp((p-from-i/Math.max(1,n-1)*(to-from))/.12);
     for(const path of lines){path.setAttribute('pathLength','1');path.style.strokeDasharray='1';}
-    let frame=0,last=-Infinity,stopped=false;
+    for(const path of cuts){path.setAttribute('pathLength','1');path.style.stroke='black';path.style.strokeWidth='3';path.style.strokeDasharray='1';}
+    let frame=0,last=-Infinity,stopped=false,progress=0,finishing=null,done=complete;
     function draw(now){
       if(stopped||!host.isConnected)return;
-      if(now-last>=250){
+      if(now-last>=(finishing?16:250)){
         last=now;
         const seconds=Math.max(0,(Date.now()-startedAt)/1000);
-        const p=complete||reduced?.matches?1:1-Math.exp(-seconds/Math.max(30,expectedSeconds));
+        const p=complete||reduced?.matches?1:finishing?finishing.from+(1-finishing.from)*clamp((now-finishing.at)/900):1-Math.exp(-seconds/Math.max(30,expectedSeconds));
+        progress=p;
+        if(finishing&&p===1&&finishing.completeAt==null)finishing.completeAt=now;
         host.dataset.reveal=String(p);
-        cuts.forEach((path,i)=>{const t=part(p,i,cuts.length,.02,.87);path.style.opacity=t;path.style.transform='scale('+(.12+.88*t)+')';});
-        if(fold)fold.style.transform='scaleX('+(.06+.94*Math.sqrt(p))+')';
+        // Проріз обводиться до замикання; папір забирається тільки після завершення контуру.
+        for(let i=0;i<pairs;i++){
+          const t=clamp(p*pairs-i);
+          for(const path of [leftCuts[i],rightCuts[i]])if(path){
+            path.style.fill=t===1?'black':'none';path.style.strokeDashoffset=1-t;
+          }
+        }
         lines.forEach((path,i)=>{path.style.strokeDashoffset=1-part(p,i,lines.length,0,.72);});
         pigments.forEach((path,i)=>{path.style.opacity=part(p,i,pigments.length,.12,.88);});
         planes.forEach((path,i)=>{const t=part(p,i,planes.length,0,.88);path.style.opacity=t;path.style.transform='translate(calc(var(--dx, 0px) * '+(1-t)+'),calc(var(--dy, 0px) * '+(1-t)+'))';});
       }
+      if(finishing&&(reduced?.matches||finishing.completeAt!=null&&now-finishing.completeAt>=200)){
+        done=true;const callback=finishing.callback;finishing=null;callback?.();return;
+      }
       if(!complete)frame=requestAnimationFrame(draw);
     }
     draw(0);
-    return {host,theme,startedAt,stop(){stopped=true;cancelAnimationFrame(frame);}};
+    return {host,theme,startedAt,get done(){return done;},
+      finish(callback){
+        if(stopped||finishing||done)return;
+        host.classList.add("reveal-finishing");
+        finishing={at:performance.now(),from:progress,callback};last=-Infinity;
+      },
+      stop(){stopped=true;cancelAnimationFrame(frame);finishing=null;}
+    };
   }
 
   function error() { return window.Hand.art(active, "error"); }
