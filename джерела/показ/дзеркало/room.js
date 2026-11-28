@@ -196,6 +196,9 @@
     if(!inCase&&!extra)setHeading(titles[mode]||'Люстерко',mode==='бібліотека'?button('closet','Мої речі','вішак'):mode==='профіль'?button('access','Доступ'):button('face','До люстерка','назад'));
     const previousPage=document.documentElement.dataset.pairPage;
     pair.render(mode,extra);
+    const save=node('pair-profile-finish');
+    const saveBefore=!save.hidden&&Екран.стан.аркуш?node('аркуш-тіло'):node('pair-scene');
+    if(save.nextElementSibling!==saveBefore)saveBefore.before(save);
     if(previousPage!==document.documentElement.dataset.pairPage||document.documentElement.dataset.pairPage==='mirror')setDrawer(false);
     feedback.hidden=!!extra||!inCase||document.documentElement.dataset.pairPage!=='understood';
     if(mode==='бібліотека'&&!extra){nativeSeals();node('mirror-saved-manual').hidden=pair.blindShelf();if(!pair.blindShelf())window.Rack?.library();}
@@ -299,11 +302,10 @@
     const colors=document.createElement('div');colors.id='mirror-my-colors';node('пал-картка').before(colors);
     const looks=document.createElement('div');looks.id='mirror-look-sides';node('картки').before(looks);
     move(node('журнал'),node('е-огляд'));
-    const finish=document.createElement('div');finish.id='pair-profile-finish';finish.className='pair-actions';node('е-огляд').append(finish);
     const shelf=document.createElement('div');shelf.id='mirror-saved-manual';node('біб-список').before(shelf);
     node('mirror-home').addEventListener('click',goFace);
     node('mirror-style').addEventListener('click',showThemes);node('mirror-person').addEventListener('click',()=>route('профіль'));
-    node('чат-поле').setAttribute('aria-label','Повідомлення стилістці');
+    node('чат-поле').setAttribute('aria-label','Запитай Люстерко про стиль або застосунок');
     node('чат-слати').innerHTML=ik('далі');node('чат-слати').setAttribute('aria-label','Надіслати');
     if(window.ResizeObserver){
       const size=new ResizeObserver(()=>decorateChoices());size.observe(node('mirror-choices'));size.observe(node('аркуш'));size.observe(node('pair-scene'));size.observe(node('пал-картка'));
@@ -333,7 +335,7 @@
     window.addEventListener('pagehide',()=>{if(hiddenAt===null)hiddenAt=Date.now();});
     window.addEventListener('pageshow',event=>{if(event.persisted)resumeIntro();});
     playIntro();
-    Екран.малювач('дзеркало-робота',['режим','вхід','крок','запущено','панель','розмова','випадок','сценарій','профілі','поля','аркуш','збирання','образ','образи','палітра','фото','бібліотека','кошик','заміна','картка','статус_збирання','стан_палітри','оцінка'],schedule);
+    Екран.малювач('дзеркало-робота',['режим','вхід','крок','запущено','панель','розмова','випадок','сценарій','профілі','мірки','колір','поля','аркуш','збирання','образ','образи','палітра','фото','бібліотека','кошик','заміна','картка','статус_збирання','стан_палітри','оцінка'],schedule);
   }
   const handlers={talk:()=>goTalk(),speak:()=>editWords(true),write:()=>editWords(),face:goFace,cases:()=>route('сценарії'),assess:()=>route('оцінка'),library:()=>pair.dailyShelf(),profile:()=>route('профіль'),access,'edit-note':editNote,'save-note':saveNote,hand:k=>{M.set(k);close();},'close-sheet':close,occasion:chooseOccasion,
     'context-question':()=>{if(contextWords)startWords(contextWords);},'my-colors':personalColors, collapse:()=>{setDrawer(false);node('pair-handle').focus({preventScroll:true});},

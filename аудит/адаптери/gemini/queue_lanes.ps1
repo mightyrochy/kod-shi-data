@@ -434,6 +434,36 @@ function Get-PollSeconds {
     [int][math]::Round($poll * 60)
 }
 
+# Вузол, без якого рушій не може оновити вхід (точка оновлення токена), і порт: `хост[:порт]`, порт за замовчуванням 443.
+# Джерело — рядки виконуваних файлів, прочитані 28.11: agy 1.4.x — `https://oauth2.googleapis.com/token` (поряд
+# `…: dial tcp: lookup oauth2.googleapis.com: no such host`; модельний вузол agy — `daily-cloudcode-pa.googleapis.com`);
+# codex 0.171 (`app/resources/codex.exe` пакета OpenAI.Codex) — `https://auth.openai.com/oauth/token`; claude (`~/.local/bin/
+# claude.exe`) — `TOKEN_URL: https://platform.claude.com/v1/oauth/token` (вузол запитів — `api.anthropic.com`). Стенд
+# підставляє сюди локальний порт: слухач — «мережа є», закритий порт — «нема».
+$script:EngineAuthHosts = @{ agy = 'oauth2.googleapis.com'; codex = 'auth.openai.com'; claude = 'platform.claude.com' }
+# Змінна процесу ENGINE_AUTH_HOSTS=`рушій=хост[:порт];…` замінює вузли: стенди, що запускають обгортку окремими процесами, ставлять
+# локальний слухач і не залежать від зовнішньої мережі (середовище.sh, auth_hosts_local).
+foreach ($pair in ([string]$env:ENGINE_AUTH_HOSTS -split ';')) {
+    $name, $target = $pair -split '=', 2
+    if ($target) { $script:EngineAuthHosts[$name.Trim().ToLowerInvariant()] = $target.Trim() }
+}
+
+function Test-EngineReachable([string]$Engine) {
+    <# Чи досяжний саме зараз вузол оновлення входу цього рушія (EngineAuthHosts): TCP-з'єднання з портом за межу очікування
+    мережі — інтервал проходу (Get-PollSeconds, poll_minutes: «спільна межа очікування мережі»). Не GitHub і не «мережа
+    взагалі»: 28.11 GitHub був недосяжний, а claude ходив до свого API; рушій без свого вузла не оновить токен і друкує
+    «потрібен вхід» так само, як за справжнього виходу з акаунта. З'єднання, а не розв'язання імені: DNS-кеш Windows
+    тримає ім'я ще певний час після обриву. Рушій не з таблиці — $true (перевірити нічим). Dispose перериває з'єднання,
+    що не встигло. #>
+    $target = [string]$script:EngineAuthHosts[$Engine.ToLowerInvariant()]
+    if (-not $target) { return $true }
+    $hostName, $port = $target -split ':', 2
+    $client = New-Object System.Net.Sockets.TcpClient
+    try { return [bool]($client.ConnectAsync($hostName, $(if ($port) { [int]$port } else { 443 })).Wait((Get-PollSeconds) * 1000) -and $client.Connected) }
+    catch { return $false }
+    finally { $client.Dispose() }
+}
+
 function Get-GitStallOptions([string[]]$GitArgs) {
     <# Мережевій команді git (fetch, ls-remote, push) — межа застряглої передачі: нуль байтів довше за poll_minutes (інтервал
     між проходами) обриває команду, а не тримає прохід до межі Invoke-Native (10 хв неспання). Нижча межа швидкості — 1 Б/с:

@@ -1,0 +1,27 @@
+{
+ "версія": 1,
+ "запит": {
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 4000,
+  "messages": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "text",
+      "text": "{\"task\": {\"role\": \"You read the description of an outfit and list its items as data.\", \"rules\": [\"One object per item — garment, shoes, bag, accessory, jewelry — in the order of the description, with its words and hex.\", \"One item carries one thing — of two alternatives list the first; a note in brackets is not an item.\", \"Slot \\\"accessory\\\" is for an item no other slot fits.\", \"\\\"is_outfit\\\" says whether the description is an outfit: no — when in place of items it has a refusal, a question or a note.\"], \"limits\": [\"Rely only on the input: do not invent what it does not contain.\", \"The answer is one JSON object following \\\"answer_schema\\\", without explanations and without ```.\"], \"language\": \"English\", \"answer\": \"ITEM_LIST\", \"answer_schema\": {\"is_outfit\": \"yes|no\", \"items\": [{\"name\": \"<what the item is>\", \"details\": \"<its cut, length and fabric>\", \"slot\": \"top|bottom|dress|set|outerwear|shoes|bag|scarf|headwear|belt|tights|socks|jewelry|earrings|collar_necklace|necklace|brooch|bracelet|ring|glasses|gloves|watch|swimwear|underwear|accessory\", \"color_hex\": \"<#rrggbb or null>\", \"worn\": \"<true, or false when the description says the outfit goes without it>\"}]}, \"input\": [\"\\\"description\\\" — the outfit description\"]}, \"description\": \"Emerald Green Satin Sheath Dress, knee-length with a subtle A-line silhouette and a modest neckline, #059468, woven silk charmeuse for breathability.\\nSilver Metallic Toe Box Pump, stiletto heel height of 9 cm with a pointed toe, #E5E4E2, polished metal-finish leather that reflects summer light without adding bulk.\\nGold Vermeil Drop Earrings and Delicate Chain Necklace, featuring smooth geometric links in medium scale to complement the jewelry accent goal, mixed textures of polished gold and brushed gold.\\nThis outfit honors her wish for recovery by prioritizing comfortable, unrestrictive fabrics like silk while adhering to the \\\"no conscious style hack\\\" rule through a refined yet simple silhouette that avoids over-dressing. The emerald color provides a refreshing, cool contrast to the autumn season and complements her warm skin tones without requiring tightness or restrictive layering. The metallic shoe adds just enough sparkle for a charity event in an upscale restaurant while respecting her refusal of heavy stockings and maintaining a balance between elegance and ease of movement.\"}"
+     }
+    ]
+   }
+  ],
+  "temperature": 1
+ },
+ "відповідь": {
+  "status": 200,
+  "contentType": "application/json",
+  "headers": {
+   "x-model": "qwen/qwen3.5-9b"
+  },
+  "body": "{\"content\":[{\"type\":\"text\",\"text\":\"{\\n  \\\"is_outfit\\\": \\\"yes\\\",\\n  \\\"items\\\": [\\n    {\\n      \\\"name\\\": \\\"Emerald Green Satin Sheath Dress\\\",\\n      \\\"details\\\": \\\"knee-length with a subtle A-line silhouette and a modest neckline, woven silk charmeuse for breathability\\\",\\n      \\\"slot\\\": \\\"dress\\\",\\n      \\\"color_hex\\\": \\\"#059468\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Silver Metallic Toe Box Pump\\\",\\n      \\\"details\\\": \\\"stiletto heel height of 9 cm with a pointed toe, polished metal-finish leather that reflects summer light without adding bulk\\\",\\n      \\\"slot\\\": \\\"shoes\\\",\\n      \\\"color_hex\\\": \\\"#E5E4E2\\\",\\n      \\\"worn\\\": true\\n    },\\n    {\\n      \\\"name\\\": \\\"Gold Vermeil Drop Earrings and Delicate Chain Necklace\\\",\\n      \\\"details\\\": \\\"featuring smooth geometric links in medium scale to complement the jewelry accent goal, mixed textures of polished gold and brushed gold\\\",\\n      \\\"slot\\\": \\\"accessory\\\",\\n      \\\"color_hex\\\": null,\\n      \\\"worn\\\": true\\n    }\\n  ]\\n}\"}],\"usage\":{\"input_tokens\":575,\"output_tokens\":261},\"stop_reason\":\"end_turn\"}"
+ }
+}

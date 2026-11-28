@@ -355,13 +355,40 @@ function поверненняЗаглушка(w){
          w.eval("Екран.стан.режим") === "профіль" && d.querySelector('[data-ux=pair-name]')
          && d.querySelector('[data-ux=pair-photos]') && d.querySelector('[data-ux=pair-photo]')
          && !$("pair-profile-finish").hidden, w.eval("Екран.стан.режим"));
-    d.querySelector('[data-ux=pair-profile-done]').click();
+    const зберегти = d.querySelector('[data-ux=pair-profile-done]');
+    зберегти.click();
+    await чекатиНа(() => $("pair-profile-missing").closest("#аркуш"), "збереження без даних не відкрило аркуш");
+    тест("порожній профіль не створено, показано обидва пропуски й відкрито кольори",
+         !w.eval("ПРОФІЛЬ_СТВОРЕНО") && d.documentElement.dataset.pairPage === 'профіль'
+         && $("аркуш-тіло").contains($("кол-блок")) && /кольори.*обхвати й зріст/.test($("pair-profile-missing").textContent));
+    w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae'}; показатиПрофіль();");
+    зберегти.click();
+    await чекатиНа(() => $("аркуш-тіло").contains($("мір-блок")), "після кольорів не відкрито обхвати");
+    for (const [і, v] of [["мр-зріст", 167], ["мр-плечі", 96], ["мр-груди", 92], ["мр-талія", 74], ["мр-стегна", 100]]) ввести($(і), v);
+    зберегти.click();
     await чекатиНа(() => d.documentElement.dataset.pairPage === 'mirror', 'збереження профілю не відкрило головну');
-    тест("після збереження — головна з розмовою й діями без картки профілю",
+    тест("після збереження — головна з привітанням, розмовою й діями без картки профілю",
          w.eval("ПРОФІЛЬ_СТВОРЕНО") && !$("pair-scene").querySelector(".pair-profile")
          && $("pair-scene").querySelector('[data-ux=pair-occasion]')
          && $("pair-scene").querySelector('[data-ux=library]')
+         && !$("pair-chat-welcome").hidden
          && $("mirror-input").contains($("чат-ввід")), w.eval("Екран.стан.режим"));
+    тест("Люстерко представляється своїм ім’ям і приймає питання про застосунок",
+         $("pair-chat-welcome").textContent.includes("я Люстерко")
+         && $("pair-chat-welcome").textContent.includes("користуванням Люстерком"));
+    $("mirror-person").click();
+    await чекатиНа(() => d.documentElement.dataset.pairPage === 'профіль', 'профіль не відкрився');
+    тест("підпис чату в профілі — Запитай", $("pair-latest").textContent === 'Запитай');
+    for (const hand of ['vytynanka', 'klyny', 'kahlia']) {
+      if ($("mirror-intro").open) $("mirror-intro").close();
+      $("mirror-style").click();
+      d.querySelector('[data-ux=hand][data-value='+hand+']').click();
+      await чекатиНа(() => $("mirror-intro").open, 'зміна теми не відкрила заставку');
+      тест("зміна теми "+hand+" показує заставку й зберігає профіль",
+           $("mirror-intro").querySelector('[data-hand='+hand+']')
+           && d.documentElement.dataset.pairPage === 'профіль');
+    }
+    $("mirror-intro").close(); $("mirror-home").click();
     const повтор = сторінка({idb: w.indexedDB, url: "https://mightyrochy.github.io/kod-shi-data/показ.html"});
     await чекатиНа(() => повтор.d.documentElement.dataset.pairPage === 'mirror' && повтор.w.eval("Екран.стан.запущено"), 'збережений профіль не відкрив головну');
     тест("повторний запуск зі збереженим профілем відкриває головну",
@@ -382,6 +409,8 @@ function поверненняЗаглушка(w){
          /Зібрати образи/.test($("зб-зібрати").textContent) && $("зб-зібрати").closest("#е-випадок") !== null
          && $("зб-зібрати").closest("#ніг") === null && $("ніг-дії").style.display === "none",
          [$("зб-зібрати").textContent, $("ніг-дії").style.display]);
+    w.eval("КОЛІР = {шкіра:null, волосся:null, очі:null}; показатиПрофіль();");
+    ввести($("мр-груди"), "");
     $("зб-зібрати").click();
     await чекатиНа(() => $("зб-статус").textContent !== "",
                    "зб-статус лишився порожнім після кліку «Зібрати образи»");
@@ -4011,6 +4040,7 @@ function поверненняЗаглушка(w){
     тест("крок 3 — «Фігура», і лише там кнопка стає «Готово»",
          w.eval("Екран.стан.крок") === 2 && $("е-мірки").style.display === "block" && $("н-далі-текст").textContent === "Готово",
          [w.eval("Екран.стан.крок"), $("н-далі-текст").textContent]);
+    w.eval("КОЛІР = {шкіра:'#f2d6c4', волосся:'#4a4644', очі:'#6b8cae'}; показатиПрофіль();");
     for (const [і, v] of [["мр-зріст", 167], ["мр-плечі", 96], ["мр-груди", 92], ["мр-талія", 74], ["мр-стегна", 100]]) ввести($(і), v);
     $("н-далі").click();
     await чекатиНа(() => w.eval("Екран.стан.режим") === "сценарій" && w.eval("ПРОФІЛЬ_СТВОРЕНО") === true, "«Готово» не створило профіль і не повело на сценарій");
@@ -4034,8 +4064,8 @@ function поверненняЗаглушка(w){
     тест("сім рядків огляду: фото, кольори, ім'я, до лиця, обхвати, розширені, налаштування — з прев'ю зі стану",
          [...d.querySelectorAll("#е-огляд .рядок")].map(р => р.dataset.аркуш).join(",") === "ф-блок,кол-блок,проф-блок,др-блок,мір-блок,мр-розширені,пф-блок"
          && $("ог-мірки").textContent.indexOf("96 · 92 · 74 · 100") === 0
-         && /ще не зчитано/.test($("ог-кольори").textContent) && $("ог-кольори").className.indexOf("брак") >= 0,
-         [$("ог-мірки").textContent, $("ог-кольори").textContent]);
+         && $("ог-кольори").querySelectorAll('.зразки i').length === 3 && !$("ог-кольори").classList.contains("брак"),
+         [$("ог-мірки").textContent, $("ог-кольори").innerHTML]);
     d.querySelector('#е-огляд .рядок[data-аркуш="мір-блок"]').click();
     тест("тап по рядку «Обхвати і зріст» відкриває аркуш знизу з ТИМ САМИМ блоком, що й на кроці знайомства",
          $("аркуш").hidden === false && $("заслона").hidden === false && $("аркуш-назва").textContent === "Обхвати і зріст"
@@ -8305,7 +8335,7 @@ function поверненняЗаглушка(w){
          d.getElementById("сц-губи-поле").hidden && w.getComputedStyle(d.getElementById("сц-губи-поле")).display === "none");
     const чат = d.getElementById("чат-поле");
     тест("поле розмови має сталий підпис, що не зникає з плейсхолдером",
-         чат.getAttribute("aria-label") === "Повідомлення стилістці", чат.getAttribute("aria-label"));
+         чат.getAttribute("aria-label") === "Запитай Люстерко про стиль або застосунок", чат.getAttribute("aria-label"));
     const жива = id => { const е = d.getElementById(id);
       return !!е && е.getAttribute("role") === "status" && е.getAttribute("aria-live") === "polite" && е.getAttribute("aria-atomic") === "true"; };
     тест("статуси збирання живуть у постійних областях aria-live (polite, atomic) — вони є в розмітці до першого збирання",
