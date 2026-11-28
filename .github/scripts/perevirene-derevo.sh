@@ -38,20 +38,48 @@ znayty_dokaz() {
 }
 
 zberehty_dokaz() {
-  local chastyna derevo teky="$RUNNER_TEMP/dokaz"
-  [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-  [[ "$BASE_SHA" = "$(git cat-file commit HEAD | sed -n '2s/^parent //p')" ]]
-  derevo=$(git rev-parse 'HEAD^{tree}')
+  local chastyna sha batko derevo teky zapys
+  if [[ ! ${BASE_SHA:-} =~ ^[0-9a-f]{40}$ ]]; then
+    echo 'Доказ: BASE_SHA має містити 40 шістнадцяткових символів.' >&2
+    return 1
+  fi
+  if ! sha=$(git rev-parse --verify HEAD) ||
+    ! batko=$(git cat-file commit "$sha" | sed -n '2s/^parent //p') ||
+    [[ ! $batko =~ ^[0-9a-f]{40}$ ]]; then
+    echo 'Доказ: не вдалося прочитати SHA та першого батька перевіреного коміту.' >&2
+    return 1
+  fi
+  printf 'Доказ: база події %s, перший батько коміту %s — %s.\n' "$BASE_SHA" "$sha" "$batko"
+  if [[ "$BASE_SHA" != "$batko" ]]; then
+    echo 'Доказ пропущено: база події й перший батько різні. Після злиття без точного доказу потрібні повні звірки.'
+    return 0
+  fi
+  if [[ ${GITHUB_SHA:-} != "$sha" ]]; then
+    echo 'Доказ: GITHUB_SHA для підсумків приймання має збігатися з перевіреним комітом.' >&2
+    return 1
+  fi
+  if [[ -z ${RUNNER_TEMP:-} || -z ${GITHUB_OUTPUT:-} || ! ${GITHUB_RUN_ATTEMPT:-} =~ ^[1-9][0-9]*$ ]]; then
+    echo 'Доказ: потрібні RUNNER_TEMP, GITHUB_OUTPUT і додатний номер GITHUB_RUN_ATTEMPT.' >&2
+    return 1
+  fi
+  if ! derevo=$(git rev-parse --verify 'HEAD^{tree}'); then
+    echo 'Доказ: не вдалося прочитати дерево перевіреного коміту.' >&2
+    return 1
+  fi
+  teky="$RUNNER_TEMP/dokaz"
+  printf 'Доказ: дерево %s, спроба %s. Готую index.html і звіт досяжності.\n' "$derevo" "$GITHUB_RUN_ATTEMPT"
   mkdir -p "$teky"
-  git rev-parse HEAD > "$teky/sha"
+  printf '%s\n' "$sha" > "$teky/sha"
   cp index.html "$teky/"
   cp джерела/аудит/ДОСЯЖНІСТЬ.md "$teky/"
   for chastyna in 0 1; do
+    zapys="$RUNNER_TEMP/perevirene-zapysy/replay-summary-$chastyna-$sha/replay-summary.json"
+    printf 'Доказ: додаю підсумок приймання частини %s для %s.\n' "$chastyna" "$sha"
     mkdir "$teky/replay-$chastyna"
-    cp "$RUNNER_TEMP/perevirene-zapysy/replay-summary-$chastyna-$GITHUB_SHA/replay-summary.json" \
-      "$teky/replay-$chastyna/підсумок.json"
+    cp "$zapys" "$teky/replay-$chastyna/підсумок.json"
   done
   printf 'artifact=perevirene-%s-%s-%s\n' "$derevo" "$BASE_SHA" "$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+  echo 'Доказ підготовлено: пакунок можна завантажити як артефакт CI.'
 }
 
 zibraty() {
