@@ -50,7 +50,8 @@ def вимір(вихід, код=None):
     код = код.resolve() if код else корінь / "джерела"
     os.chdir(код)
     sys.path.insert(0, str(код))
-    import accessory as АК
+    import аксесуари_край as АК
+    import аксесуари_реєстр as АР
     import bridge as М
     import feed as Ф
     import fit as ПС
@@ -68,7 +69,7 @@ def вимір(вихід, код=None):
     прикраси = [р for р in каталог if р.get("слот") in АК.ЛАНЦЮГОВІ_СЛОТИ
                 and р.get("ланцюг_см") is not None]
     верхи = [р for р in каталог if р.get("слот") in ("верх", "сукня", "комплект")
-             and (р.get("виріз_тип") in АК.ГЛИБИНИ_ВИРІЗУ
+             and (р.get("виріз_тип") in АР.ГЛИБИНИ_ВИРІЗУ
                   or (р.get("край_джерело") == "річ" and р.get("верх_см") is not None))]
     результат = dict(каталог=[len(каталог), len(прикраси), len(верхи)], тіла={})
     print("каталог / кольє / горловини:", результат["каталог"])

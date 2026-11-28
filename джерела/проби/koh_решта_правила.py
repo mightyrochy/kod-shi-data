@@ -1,7 +1,7 @@
 """Друкує різницю між браком контексту, запереченням і заявленим задумом."""
 import pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-import суд_образу as С, accessory as А, fit as П
+import суд_образу as С, аксесуари_структура as А, fit as П
 import реєстри as РЕ, реєстр_правил as Р
 import json, мовний_шар as М, паспорт_нагоди as Н, формальність as Ф
 from вхід_правила import нема_входу

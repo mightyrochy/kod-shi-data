@@ -56,7 +56,7 @@ import паспорт_поля as _ПП
 import суд_погода as _АП_в
 import знання_дріт as _ЗД
 import fit as _ПС
-import accessory as _A
+import суд_погода as _A
 import profile as _PR_в
 import колір_річ as _КР_в
 import colorspace as _КС
