@@ -39,7 +39,7 @@ import outfit as _O
 import місце_речі as _МІСЦЕ
 import coordination as _C
 import формальність as _ФОРМ
-import composer as _КМ
+import композитор_оцінка as _КМ
 import graph as _ГР
 import суд_погода as _ПОГ
 import суд_ремесло as _СР_ф

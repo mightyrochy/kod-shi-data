@@ -15,7 +15,7 @@
 import sys, pathlib, json, collections
 _КОРІНЬ = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_КОРІНЬ))
-import feed as Ф, bridge as B, composer as КМ, pipeline as PL
+import feed as Ф, bridge as B, композитор_полюси as КМ, pipeline as PL
 
 with open(_КОРІНЬ / "стенд_вх.json", encoding="utf-8") as файл:
     вх = json.load(файл)

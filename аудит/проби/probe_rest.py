@@ -12,7 +12,7 @@ def run(name, fn):
         tb = traceback.format_exc().splitlines()[-3:-1]; print("     ", ' | '.join(l.strip()[:120] for l in tb))
 
 import colorspace as cs, bridge as B, fit as ПС, hypergraph as HG, silhouette as SL, outfit as O, pipeline as PL
-import personal_palette as PP, palettes as PLS, palette as PAL, coordination as CO, accessory as AC, верхнє_догляд as OU, face_contrast as FC, bases as BS, areas as AR, feed as FD, composer as KM
+import personal_palette as PP, palettes as PLS, palette as PAL, coordination as CO, accessory as AC, верхнє_догляд as OU, face_contrast as FC, bases as BS, areas as AR, feed as FD
 
 sec("P08 H/X межа")
 def p08():
@@ -134,7 +134,7 @@ run("P30", p30)
 
 sec("P31 K-VAR-01 / K-COMP-02 / _портфель")
 def p31():
-    for f in ['composer.py', 'pipeline.py', 'bridge.py']:
+    for f in ['композитор_полюси.py', 'pipeline.py', 'bridge.py']:
         s = open(f, encoding='utf-8').read()
         print(f"  {f}: _портфель={s.count('_портфель')} K-VAR-01={s.count('K-VAR-01')} K-COMP-02={s.count('K-COMP-02')} ПОЛЮСИ_ОБРАЗУ={s.count('ПОЛЮСИ_ОБРАЗУ')}")
     c = ''.join(open(f, encoding='utf-8').read() for f in glob.glob('тема-4*.md'))

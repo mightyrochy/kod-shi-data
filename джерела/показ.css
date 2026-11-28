@@ -1967,10 +1967,24 @@ html[data-pair-page=mirror] .pair-app .pair-mast { grid-area:1/1; }
 html[data-pair-page=mirror] .studio.pair-app .studio-work { grid-area:3/1; max-height:38dvh; padding-bottom:12px; }
 html[data-pair-page=mirror] .studio.pair-app .pair-drawer { grid-area:2/1; position:relative; inset:auto; height:auto; min-height:240px; border:1px solid var(--ink); margin:8px var(--pair-pad); padding:12px; box-shadow:none; }
 html[data-pair-page=mirror] #mirror-letter { display:block; flex:1; min-height:100px; }
+#pair-chat-welcome p { margin:5px 0 0; }
 html[data-pair-page=mirror] :is(#pair-handle,.pair-chat-head button,.pair-chat-tools,.pair-topline) { display:none; }
 html[data-pair-page=mirror] .pair-app #mirror-input #чат-поле { min-height:70px; }
 .pair-app .pair-mast { grid-template-columns:minmax(110px,1fr) minmax(60px,120px) auto; }
 .pair-my { white-space:nowrap; }
+#pair-profile-finish { position:sticky; top:0; z-index:2; padding-block:8px; background:var(--bg); }
+#аркуш #pair-profile-finish { background:var(--surface); }
+#pair-profile-finish[hidden] { display:none; }
+#pair-profile-finish button {
+  width:100%; min-height:49px; padding:9px 15px; white-space:nowrap; clip-path:none;
+  border:1px solid var(--ink); border-radius:26px; background:var(--ink); color:var(--bg);
+  font:500 1rem/1.2 var(--body-font);
+}
+[data-hand=vytynanka] #pair-profile-finish button { border-radius:2px 17px; background:var(--accent); border-color:var(--accent); }
+[data-hand=klyny] #pair-profile-finish button { border-radius:0; background:var(--accent); border-color:var(--accent); }
+#pair-profile-missing { margin:6px 0 0; font-size:.85rem; }
+#pair-profile-missing:empty { margin:0; }
+#mirror-work:has(#pair-profile-finish:not([hidden])) #пф-стан { display:none; }
 .pair-profile-intro > button { font-size:1.2rem; margin-bottom:16px; text-align:left; }
 .pair-profile .pair-image { width:100%; min-width:0; }
 .pair-profile .pair-image img { max-width:100%; height:240px; object-fit:contain; }

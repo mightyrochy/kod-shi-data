@@ -331,6 +331,13 @@ async function клікЗБібліотеки() {
       (значення === undefined ? '' : '[data-value="' + значення + '"]') + ':visible').first().click();
     const дані = () => стор.evaluate(() => читатиКв('дзеркало:речі:1:' + АКТИВНИЙ));
     await відкрити();
+    await стор.evaluate(() => {
+      КОЛІР = {шкіра: '#f2d6c4', волосся: '#4a4644', очі: '#6b8cae'};
+      for (const [поле, значення] of Object.entries({зріст: 167, плечі: 96, груди: 92, талія: 74, стегна: 100})) {
+        записатиПолеПрофіляП(поле, значення);
+      }
+      показатиПрофіль();
+    });
     await дія('pair-profile-done');
     await стор.waitForFunction(() => document.documentElement.dataset.pairPage === 'mirror');
     await стор.evaluate(async () => {
