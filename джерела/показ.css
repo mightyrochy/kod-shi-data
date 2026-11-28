@@ -2050,12 +2050,23 @@ html[data-pair-page=mirror] .pair-app #mirror-input #чат-поле { min-heigh
 .pair-app .pair-outfit-grid span { padding:6px; font-size:.8rem; }
 .pair-app .pair-reverse-pieces { grid-template-columns:repeat(3,minmax(0,1fr)); margin-block:12px; }
 .pair-piece-detail .pair-swap-photo { width:100%; height:min(45vh,350px); }
-.pair-piece-detail strong { display:none; }
-/* Рух очікування триває між реальними стадіями; стадії не прискорюємо таймером. */
-@media (prefers-reduced-motion:no-preference) {
-  #mirror-making[data-busy=true] .pair-progress-art { animation:pair-wait-breathe 2.8s ease-in-out infinite; will-change:transform; }
-}
-@keyframes pair-wait-breathe { 0%,100% { transform:translateY(2px) scale(.97); } 50% { transform:translateY(-3px) scale(1); } }
-
 /* В основному образі речі відкриваються з плиток; сліпий перегляд лишає свій показ. */
 html[data-pair-looks=one] .pair-app #картки .картка>:is(.к-шапка,.колаж-поле,.список) { display:none; }
+
+/* Збирання — один великий малюнок; готовий образ починається з примірки. */
+.pair-making-art { width:100%; height:clamp(300px,58svh,620px); display:grid; place-items:center; overflow:hidden; }
+.pair-making-art .hand-art { display:block; width:100%; height:100%; max-height:none; }
+.hand-building .vt-pr { transform-box:fill-box; transform-origin:center; }
+.hand-building .vt-p { transform-origin:627px 627px; }
+@media (prefers-reduced-motion:no-preference) {
+  .hand-building :is(.vt-pr,.vt-p,.sh,.pl,.pol,.kl-ch,.shar.zhov path,.shar.zel path) { transition:opacity .55s linear,transform .55s linear,stroke-dashoffset .55s linear; }
+}
+.pair-result-hero { width:100%; margin:0 0 14px; }
+.pair-app .pair-result-hero .pair-fitted { display:block; width:100%; height:auto; aspect-ratio:auto; padding:0; border:0; background:transparent; }
+.pair-app .pair-result-hero .pair-fitted>img { display:block; width:100%; height:auto; max-height:none; object-fit:contain; }
+.pair-fitting-placeholder { background:var(--wash); border:1px solid var(--hair); padding:14px; text-align:center; }
+.pair-fitting-placeholder p { margin:12px 0; }
+.pair-result-record { display:flex; align-items:center; flex-wrap:wrap; gap:14px; padding:16px; background:var(--wash); }
+.pair-result-record .hand-seal { width:64px; height:64px; }
+html[data-pair-looks=one] .pair-app #картки .полотно { display:none; }
+html[data-pair-looks=one] .pair-app #е-образи:not(:has(.pair-fitted)) #картки :is(.ряд:has([id^="прмк-"]),[id^="прм-"]) { display:none; }
